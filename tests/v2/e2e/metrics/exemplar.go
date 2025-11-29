@@ -171,7 +171,7 @@ func (e *exemplar) Offer(latency time.Duration, requestID string, err error, msg
 	if !isError && latInt <= minLat && latInt >= maxLat {
 		// Probabilistic sampling: only record 1 out of avgSamplingRate samples.
 		// We use a fast bitwise check assuming avgSamplingRate is a power of 2.
-		if rand.Uint64()&(avgSamplingRate-1) != 0 {
+		if rand.Uint64()&(avgSamplingRate-1) != 0 { //nolint:gosec // use math/rand/v2 for performance
 			return
 		}
 
@@ -237,7 +237,7 @@ func (e *exemplar) updateAverageSample(item *ExemplarItem) {
 	if len(e.avgSamples) < e.k {
 		e.avgSamples = append(e.avgSamples, item)
 	} else {
-		j := rand.Uint64N(e.avgCount)
+		j := rand.Uint64N(e.avgCount) //nolint:gosec // use math/rand/v2 for performance
 		// Ensure e.k is non-negative before casting
 		if e.k > 0 && j < uint64(e.k) {
 			e.avgSamples[j] = item
@@ -250,7 +250,7 @@ func (e *exemplar) updateFailureSample(item *ExemplarItem) {
 	if len(e.failureSamples) < e.k {
 		e.failureSamples = append(e.failureSamples, item)
 	} else {
-		j := rand.Uint64N(e.failureCount)
+		j := rand.Uint64N(e.failureCount) //nolint:gosec // use math/rand/v2 for performance
 		// Ensure e.k is non-negative before casting
 		if e.k > 0 && j < uint64(e.k) {
 			e.failureSamples[j] = item
@@ -532,7 +532,7 @@ func (e *exemplar) Clone() Exemplar {
 
 // ExemplarItem is an item in the priority queue.
 type ExemplarItem struct {
-	Err       error         `json:"error,omitempty"`
+	Err       error         `json:"err,omitempty"`
 	RequestID string        `json:"request_id,omitempty"`
 	Msg       string        `json:"msg,omitempty"`
 	Latency   time.Duration `json:"latency,omitempty"`
