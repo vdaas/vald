@@ -77,6 +77,7 @@ func PutRequestResult(rr *RequestResult) {
 	requestResultPool.Put(rr)
 }
 
+// nolint:gochecknoglobals
 var requestResultPool = sync.Pool{
 	New: func() any {
 		return new(RequestResult)
@@ -180,6 +181,7 @@ type collector struct {
 	mu             sync.RWMutex
 }
 
+// nolint:gochecknoglobals
 var collectorIDCounter atomic.Uint64
 
 // NewCollector creates and initializes a new Collector with the provided options.
