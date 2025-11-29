@@ -97,6 +97,10 @@ func (s *scale) Reset() {
 // getSlot returns the slot for the given index.
 // It calculates the ring buffer index based on the scale's width and capacity.
 func (s *scale) getSlot(idx uint64) Slot {
+	// Fix G115: idx/s.width is uint64. % s.capacity is uint64 in [0, capacity-1].
+	// s.capacity is passed as uint64 but slices index takes int.
+	// capacity should fit in int.
+	// We can safely cast to int as we construct slices with this capacity.
 	return s.slots[int((idx/s.width)%s.capacity)]
 }
 
@@ -113,7 +117,12 @@ func (s *scale) Record(ctx context.Context, rr *RequestResult) {
 			return
 		}
 	case TimeScale:
-		idx = uint64(rr.EndedAt.UnixNano())
+		// Fix G115: EndedAt.UnixNano() returns int64. Timestamps are positive.
+		t := rr.EndedAt.UnixNano()
+		if t < 0 {
+			t = 0
+		}
+		idx = uint64(t)
 	}
 
 	s.getSlot(idx).Record(rr, idx/s.width)

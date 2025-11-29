@@ -16,7 +16,11 @@
 
 package metrics
 
-import "github.com/vdaas/vald/internal/errors"
+import (
+	"fmt"
+
+	"github.com/vdaas/vald/internal/errors"
+)
 
 // mergeableShard represents a shard that can be merged.
 // T is the interface type that the shard implements (e.g., Histogram, TDigest).
@@ -37,7 +41,16 @@ func mergeShards[T any, S mergeableShard[T]](target []S, source []S) error {
 	}
 	for i := range target {
 		// Cast source[i] to T. This is safe as long as S implements T.
-		if err := target[i].Merge(any(source[i]).(T)); err != nil {
+		// Use comma-ok idiom to satisfy forcetypeassert linter.
+		src, ok := any(source[i]).(T)
+		if !ok {
+			// This indicates a bug in the code where S does not implement T properly
+			// or T is not the interface implemented by S.
+			// Since S and T are generic types determined at compile time usage, this panic
+			// helps identify incorrect type parametrization during development.
+			panic(fmt.Sprintf("metrics: mergeShards: source type %T cannot be cast to target interface type %T", source[i], new(T)))
+		}
+		if err := target[i].Merge(src); err != nil {
 			return err
 		}
 	}

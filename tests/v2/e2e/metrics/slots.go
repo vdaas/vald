@@ -14,10 +14,9 @@
 package metrics
 
 import (
-	"sync/atomic"
-
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 )
 
 // slot holds the metrics for a single window in a scale.

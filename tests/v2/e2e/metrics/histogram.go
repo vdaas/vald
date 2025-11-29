@@ -29,6 +29,12 @@ import (
 // It is set to 128 bytes, which covers two cache lines on most architectures (64 bytes each).
 const paddingSize = 128
 
+// bucketGrowthOptimized is the growth factor that allows for optimized log2 calculation (2.0).
+const bucketGrowthOptimized = 2.0
+
+// binarySearchThreshold is the number of buckets below which binary search is preferred.
+const binarySearchThreshold = 100
+
 // histogram is a thread-safe, sharded histogram that uses geometric bucketing.
 // It is designed for high-performance, concurrent metric recording by distributing
 // updates across multiple shards, reducing false-sharing and contention.
@@ -127,9 +133,9 @@ func (h *histogram) Init(opts ...HistogramOption) error {
 }
 
 func (h *histogram) setBucketFinder() {
-	if h.growth == 2.0 {
+	if h.growth == bucketGrowthOptimized {
 		h.bucketFinder = h.findBucketGrowth2
-	} else if h.numBuckets < 100 {
+	} else if h.numBuckets < binarySearchThreshold {
 		h.bucketFinder = h.findBucketBinarySearch
 	} else {
 		h.bucketFinder = h.findBucketLog
@@ -200,7 +206,10 @@ func (sh *shardedHistogram) shardIndexForValue(val float64) int {
 // It distributes values across shards to reduce lock contention.
 func (sh *shardedHistogram) Record(val float64) {
 	idx := sh.shardIndexForValue(val)
-	sh.shards[idx].Record(val)
+	// Ensure index is within bounds, although computeHash % len guarantees it (if len > 0)
+	if idx >= 0 && idx < len(sh.shards) {
+		sh.shards[idx].Record(val)
+	}
 }
 
 // Record adds a value to the histogram. It is thread-safe.
@@ -219,7 +228,9 @@ func (h *histogram) Record(val float64) {
 	defer h.mu.Unlock()
 
 	// Update bucket count and total count.
-	h.counts[bucketIdx]++
+	if bucketIdx >= 0 && bucketIdx < len(h.counts) {
+		h.counts[bucketIdx]++
+	}
 	h.total++
 
 	// Update min and max.
@@ -280,7 +291,7 @@ func (h *histogram) findBucketBinarySearch(val float64) int {
 	if val <= h.minVal {
 		return 0
 	}
-	if val > h.bounds[len(h.bounds)-1] {
+	if len(h.bounds) > 0 && val > h.bounds[len(h.bounds)-1] {
 		return h.numBuckets - 1
 	}
 
@@ -328,7 +339,13 @@ func (sh *shardedHistogram) Clone() Histogram {
 		shards: make([]*histogram, len(sh.shards)),
 	}
 	for i, h := range sh.shards {
-		newSH.shards[i] = h.Clone().(*histogram)
+		// Fix forcetypeassert
+		cloned := h.Clone()
+		c, ok := cloned.(*histogram)
+		if !ok {
+			panic(fmt.Sprintf("histogram: failed to cast cloned histogram: %T", cloned))
+		}
+		newSH.shards[i] = c
 	}
 	return newSH
 }

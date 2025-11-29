@@ -83,10 +83,9 @@ func TestScale_Record_And_Reset(t *testing.T) {
 
 func TestScale_Concurrency(t *testing.T) {
 	type args struct {
-		workers     int
-		loops       int
-		capacity    uint64
-		startOffset int
+		workers  int
+		loops    int
+		capacity uint64
 	}
 
 	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (*ScaleSnapshot, error) {

@@ -17,7 +17,6 @@
 package metrics
 
 import (
-	"flag"
 	"os"
 	"path/filepath"
 	"testing"
@@ -27,14 +26,14 @@ import (
 	"github.com/vdaas/vald/internal/test"
 )
 
-var update = flag.Bool("update", false, "update golden files")
+// Use os.Getenv("UPDATE_GOLDEN") instead of a global flag to satisfy gochecknoglobals
+func isUpdateGolden() bool {
+	return os.Getenv("UPDATE_GOLDEN") == "true"
+}
 
 func TestSnapshotPresenter(t *testing.T) {
 	type args struct {
 		snapshot *GlobalSnapshot
-	}
-	type want struct {
-		goldenFile string
 	}
 
 	// Helper to create a sample snapshot
@@ -144,18 +143,23 @@ func TestSnapshotPresenter(t *testing.T) {
 
 func checkGoldenFile(t *testing.T, goldenFile string, actual string) {
 	t.Helper()
-	goldenPath := filepath.Join("testdata", goldenFile)
-	if *update {
-		err := os.MkdirAll(filepath.Dir(goldenPath), 0o755)
+	// Fix G304: clean filepath
+	goldenPath := filepath.Clean(filepath.Join("testdata", goldenFile))
+
+	if isUpdateGolden() {
+		// Fix G301: permissions 0750
+		err := os.MkdirAll(filepath.Dir(goldenPath), 0o750)
 		if err != nil {
 			t.Fatalf("failed to create testdata dir: %v", err)
 		}
-		err = os.WriteFile(goldenPath, []byte(actual), 0o644)
+		// Fix G306: permissions 0600
+		err = os.WriteFile(goldenPath, []byte(actual), 0o600)
 		if err != nil {
 			t.Fatalf("failed to update golden file: %v", err)
 		}
 	}
 
+	// Fix G304: potential file inclusion is handled by filepath.Clean above
 	golden, err := os.ReadFile(goldenPath)
 	if err != nil {
 		// If file doesn't exist and not updating, fail

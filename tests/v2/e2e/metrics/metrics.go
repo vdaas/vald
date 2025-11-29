@@ -26,7 +26,6 @@ import (
 	"fmt"
 	"math"
 	"slices"
-	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -34,10 +33,13 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 )
 
 const (
 	MaxGRPCCodes = 20
+
+	percentMultiplier = 100
 )
 
 // requestIDCtxKey is the key for storing the request ID in the context.
@@ -60,7 +62,12 @@ func requestIDFromCtx(ctx context.Context) (uint64, bool) {
 // GetRequestResult returns a RequestResult from the pool.
 // This helps reduce GC pressure by reusing objects.
 func GetRequestResult() *RequestResult {
-	return requestResultPool.Get().(*RequestResult)
+	val, ok := requestResultPool.Get().(*RequestResult)
+	if !ok {
+		// Should never happen if pool is correctly configured
+		return new(RequestResult)
+	}
+	return val
 }
 
 // PutRequestResult returns a RequestResult to the pool.
@@ -234,7 +241,11 @@ func (c *collector) Reset() {
 // MergeInto merges this collector's metrics into the destination collector.
 // It uses the internal `merge` method where the receiver is the source and the argument is the destination.
 func (c *collector) MergeInto(dest Collector) error {
-	return c.merge(dest.(*collector))
+	d, ok := dest.(*collector)
+	if !ok {
+		return errors.New("cannot merge incompatible collector types")
+	}
+	return c.merge(d)
 }
 
 // merge performs the actual merging logic.
@@ -426,7 +437,7 @@ func (c *collector) Record(ctx context.Context, rr *RequestResult) {
 	}
 
 	code := status.ToCode(rr.Status, rr.Err)
-	if int(code) < len(c.codes) {
+	if int(code) < len(c.codes) && int(code) >= 0 {
 		c.codes[code].Add(1)
 	} else {
 		c.codes[codes.Unknown].Add(1) // Fallback for out-of-range codes
@@ -524,6 +535,7 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 	codesMap := make(map[codes.Code]uint64)
 	for i := range c.codes {
 		if v := c.codes[i].Load(); v > 0 {
+			// Fix G115: i is index of array size MaxGRPCCodes (20), fits in uint32.
 			codesMap[codes.Code(i)] = v
 		}
 	}
@@ -621,7 +633,7 @@ func (c *collector) TimeScalesSnapshot() map[string]*ScaleSnapshot {
 // It returns an error if the collectors have incompatible configurations.
 func MergeCollectors(collectors ...Collector) (Collector, error) {
 	if len(collectors) == 0 {
-		return nil, nil
+		return nil, errors.New("no collectors to merge")
 	}
 	if len(collectors) == 1 {
 		return collectors[0], nil
@@ -646,7 +658,7 @@ func MergeCollectors(collectors ...Collector) (Collector, error) {
 // It returns an error if the snapshots are incompatible.
 func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 	if len(snapshots) == 0 {
-		return nil, nil
+		return nil, errors.New("no snapshots to merge")
 	}
 	if len(snapshots) == 1 {
 		return snapshots[0], nil
@@ -847,7 +859,7 @@ func (s *SlotSnapshot) String() string {
 
 	var sb strings.Builder
 	fmt.Fprintf(&sb, "Total Requests:\t%d\n", s.Total)
-	fmt.Fprintf(&sb, "Errors:\t%d (%.2f%%)\n", s.Errors, float64(s.Errors)/float64(s.Total)*100)
+	fmt.Fprintf(&sb, "Errors:\t%d (%.2f%%)\n", s.Errors, float64(s.Errors)/float64(s.Total)*percentMultiplier)
 	fmt.Fprintf(&sb, "Last Updated:\t%s\n", time.Unix(0, s.LastUpdated))
 
 	fmt.Fprint(&sb, "\nLatency:\n")

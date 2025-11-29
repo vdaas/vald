@@ -19,19 +19,23 @@ package metrics
 import (
 	"cmp"
 	"container/heap"
+	"fmt"
 	"math/rand/v2"
 	"slices"
-	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/zeebo/xxh3"
 )
 
 const (
 	// avgSamplingRate is the sampling rate for average exemplars (1/16).
 	avgSamplingRate = 16
+
+	// defaultCapacity is the default capacity for exemplar heaps/reservoirs.
+	defaultCapacity = 10
 )
 
 // exemplar is a thread-safe exemplar storage.
@@ -39,7 +43,6 @@ const (
 type exemplar struct {
 	slowest        priorityQueue
 	fastest        smallestLatencyHeap
-	failures       priorityQueue
 	avgSamples     []*ExemplarItem
 	failureSamples []*ExemplarItem
 	k              int
@@ -64,7 +67,7 @@ type exemplarConfig struct {
 // Init initializes the exemplar with the given options.
 func (e *exemplar) Init(opts ...ExemplarOption) {
 	cfg := exemplarConfig{
-		Capacity: 10,
+		Capacity: defaultCapacity,
 	}
 	// Apply user options
 	for _, opt := range opts {
@@ -106,7 +109,7 @@ func (e *exemplar) initHeaps() {
 // NewExemplar creates a new Exemplar with the given options.
 func NewExemplar(opts ...ExemplarOption) Exemplar {
 	cfg := exemplarConfig{
-		Capacity: 10,
+		Capacity: defaultCapacity,
 	}
 	for _, opt := range append(defaultExemplarOpts, opts...) {
 		opt(&cfg)
@@ -236,7 +239,8 @@ func (e *exemplar) updateAverageSample(item *ExemplarItem) {
 		e.avgSamples = append(e.avgSamples, item)
 	} else {
 		j := rand.Uint64N(e.avgCount)
-		if j < uint64(e.k) {
+		// Ensure e.k is non-negative before casting
+		if e.k > 0 && j < uint64(e.k) {
 			e.avgSamples[j] = item
 		}
 	}
@@ -248,7 +252,8 @@ func (e *exemplar) updateFailureSample(item *ExemplarItem) {
 		e.failureSamples = append(e.failureSamples, item)
 	} else {
 		j := rand.Uint64N(e.failureCount)
-		if j < uint64(e.k) {
+		// Ensure e.k is non-negative before casting
+		if e.k > 0 && j < uint64(e.k) {
 			e.failureSamples[j] = item
 		}
 	}
@@ -275,7 +280,7 @@ func (e *exemplar) Snapshot() []*ExemplarItem {
 // DetailedSnapshot returns all categories.
 func (se *shardedExemplar) DetailedSnapshot() (*ExemplarDetails, error) {
 	if len(se.shards) == 0 {
-		return nil, nil
+		return nil, errors.New("exemplar: no shards available")
 	}
 
 	// Create a temporary exemplar to merge all shards
@@ -471,7 +476,12 @@ func (se *shardedExemplar) Clone() Exemplar {
 		shards: make([]*exemplar, len(se.shards)),
 	}
 	for i, e := range se.shards {
-		newSE.shards[i] = e.Clone().(*exemplar)
+		cloned := e.Clone()
+		c, ok := cloned.(*exemplar)
+		if !ok {
+			panic(fmt.Sprintf("exemplar: failed to cast cloned exemplar: %T", cloned))
+		}
+		newSE.shards[i] = c
 	}
 	return newSE
 }
@@ -524,10 +534,10 @@ func (e *exemplar) Clone() Exemplar {
 
 // ExemplarItem is an item in the priority queue.
 type ExemplarItem struct {
-	Err       error
-	RequestID string
-	Msg       string
-	Latency   time.Duration
+	Err       error         `json:"error,omitempty"`
+	RequestID string        `json:"request_id,omitempty"`
+	Msg       string        `json:"msg,omitempty"`
+	Latency   time.Duration `json:"latency,omitempty"`
 }
 
 // priorityQueue implements min-heap.
@@ -543,7 +553,10 @@ func (pq priorityQueue) Swap(i, j int) {
 }
 
 func (pq *priorityQueue) Push(x any) {
-	item := x.(*ExemplarItem)
+	item, ok := x.(*ExemplarItem)
+	if !ok {
+		panic(fmt.Sprintf("exemplar: priorityQueue Push expected *ExemplarItem, got %T", x))
+	}
 	*pq = append(*pq, item)
 }
 
@@ -570,7 +583,10 @@ func (pq smallestLatencyHeap) Swap(i, j int) {
 }
 
 func (pq *smallestLatencyHeap) Push(x any) {
-	item := x.(*ExemplarItem)
+	item, ok := x.(*ExemplarItem)
+	if !ok {
+		panic(fmt.Sprintf("exemplar: smallestLatencyHeap Push expected *ExemplarItem, got %T", x))
+	}
 	*pq = append(*pq, item)
 }
 
@@ -584,8 +600,8 @@ func (pq *smallestLatencyHeap) Pop() any {
 }
 
 type ExemplarDetails struct {
-	Slowest  []*ExemplarItem
-	Fastest  []*ExemplarItem
-	Average  []*ExemplarItem
-	Failures []*ExemplarItem
+	Slowest  []*ExemplarItem `json:"slowest,omitempty"`
+	Fastest  []*ExemplarItem `json:"fastest,omitempty"`
+	Average  []*ExemplarItem `json:"average,omitempty"`
+	Failures []*ExemplarItem `json:"failures,omitempty"`
 }

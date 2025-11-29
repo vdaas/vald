@@ -27,8 +27,8 @@ import (
 // centroid represents a centroid in the t-digest.
 // It is unexported to encapsulate the implementation details of the TDigest.
 type centroid struct {
-	Mean   float64
-	Weight float64
+	Mean   float64 `json:"mean"`
+	Weight float64 `json:"weight"`
 }
 
 const (
@@ -36,6 +36,8 @@ const (
 	// maxBufferCapacity defines a threshold to shrink buffers if they grow too large.
 	// 4096 * 8 bytes (float64) = 32KB.
 	maxBufferCapacity = 4096
+
+	centroidWeightFactor = 2.0
 )
 
 // tdigest is a custom implementation of the t-digest algorithm (used as a shard).
@@ -388,7 +390,7 @@ func (t *tdigest) Quantile(q float64) float64 {
 		return 0
 	}
 
-	firstCenter := t.centroids[0].Weight / 2.0
+	firstCenter := t.centroids[0].Weight / centroidWeightFactor
 	if target < firstCenter {
 		return t.centroids[0].Mean
 	}
@@ -396,14 +398,14 @@ func (t *tdigest) Quantile(q float64) float64 {
 	cumulative = 0
 	for i := 0; i < len(t.centroids); i++ {
 		c := t.centroids[i]
-		center := cumulative + c.Weight/2.0
+		center := cumulative + c.Weight/centroidWeightFactor
 
 		if target < center {
 			if i == 0 {
 				return c.Mean
 			}
 			prev := t.centroids[i-1]
-			prevCenter := (cumulative - prev.Weight) + prev.Weight/2.0
+			prevCenter := (cumulative - prev.Weight) + prev.Weight/centroidWeightFactor
 
 			// Interpolate
 			// fraction of the way from prevCenter to center
@@ -542,7 +544,13 @@ func (t *shardedTDigest) Clone() TDigest {
 		quantiles: slices.Clone(t.quantiles),
 	}
 	for i, shard := range t.shards {
-		newT.shards[i] = shard.Clone().(*tdigest)
+		// Fix forcetypeassert
+		cloned := shard.Clone()
+		if c, ok := cloned.(*tdigest); ok {
+			newT.shards[i] = c
+		} else {
+			panic("cloned shard is not *tdigest")
+		}
 	}
 	return newT
 }

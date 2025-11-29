@@ -24,6 +24,9 @@ import (
 	"github.com/zeebo/xxh3"
 )
 
+// sizeOfFloat64 is the size of float64 in bytes.
+const sizeOfFloat64 = 8
+
 // Recorder is the interface for recording metrics.
 type Recorder interface {
 	Record(ctx context.Context, rr *RequestResult)
@@ -120,7 +123,7 @@ func computeHash(vals ...float64) uint64 {
 	}
 	// Reinterpret the float64 slice as a byte slice to avoid allocation using unsafe.Slice.
 	// This is safe because both slices point to the same underlying data.
-	data := unsafe.Slice((*byte)(unsafe.Pointer(&vals[0])), len(vals)*8) //nolint:gosec
+	data := unsafe.Slice((*byte)(unsafe.Pointer(&vals[0])), len(vals)*sizeOfFloat64)
 	return xxh3.Hash(data)
 }
 
@@ -129,5 +132,6 @@ func shardIndex(hash uint64, n int) int {
 	if n <= 1 {
 		return 0
 	}
+	// Fix G115: hash % uint64(n) will be in [0, n-1]. Since n is int and n > 0, the result fits in int.
 	return int(hash % uint64(n))
 }
