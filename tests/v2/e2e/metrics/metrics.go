@@ -26,13 +26,13 @@ import (
 	"fmt"
 	"math"
 	"slices"
+	"strings"
 	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
-	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
 )
 
@@ -559,10 +559,19 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 
 	var latPercentiles, qwPercentiles TDigest
 	if c.latPercentiles != nil {
-		latPercentiles = c.latPercentiles.Clone()
+		// Ensure we always return a merged *tdigest for consistent serialization
+		if sharded, ok := c.latPercentiles.(*shardedTDigest); ok {
+			latPercentiles = sharded.mergeAllShards()
+		} else {
+			latPercentiles = c.latPercentiles.Clone()
+		}
 	}
 	if c.qwPercentiles != nil {
-		qwPercentiles = c.qwPercentiles.Clone()
+		if sharded, ok := c.qwPercentiles.(*shardedTDigest); ok {
+			qwPercentiles = sharded.mergeAllShards()
+		} else {
+			qwPercentiles = c.qwPercentiles.Clone()
+		}
 	}
 
 	return &GlobalSnapshot{
@@ -739,7 +748,36 @@ type GlobalSnapshot struct {
 
 // MarshalJSON implements the json.Marshaler interface.
 func (s *GlobalSnapshot) MarshalJSON() ([]byte, error) {
-	return json.Marshal(*s)
+	// Alias GlobalSnapshot to avoid recursion
+	type Alias GlobalSnapshot
+	return json.Marshal((*Alias)(s))
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface.
+func (s *GlobalSnapshot) UnmarshalJSON(data []byte) error {
+	type Alias GlobalSnapshot
+	// Define a shadow struct with concrete *tdigest fields
+	aux := &struct {
+		LatPercentiles *tdigest `json:"lat_percentiles"`
+		QWPercentiles  *tdigest `json:"qw_percentiles"`
+		*Alias
+	}{
+		Alias: (*Alias)(s),
+	}
+
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+
+	// Assign the concrete types to the interface fields
+	if aux.LatPercentiles != nil {
+		s.LatPercentiles = aux.LatPercentiles
+	}
+	if aux.QWPercentiles != nil {
+		s.QWPercentiles = aux.QWPercentiles
+	}
+
+	return nil
 }
 
 // String implements the fmt.Stringer interface.

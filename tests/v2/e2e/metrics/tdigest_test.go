@@ -17,6 +17,7 @@
 package metrics
 
 import (
+	"encoding/json"
 	"math"
 	"testing"
 
@@ -276,6 +277,175 @@ func TestTDigest_Concurrency(t *testing.T) {
 		},
 	}...); err != nil {
 		t.Error(err)
+	}
+}
+
+func TestTDigest_Quantile_Accuracy(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		values    []float64
+		weights   []float64 // If empty, assume weight 1
+		quantile  float64
+		want      float64
+		tolerance float64
+	}{
+		{
+			name:      "Simple Median",
+			values:    []float64{10, 20},
+			weights:   []float64{1, 1},
+			quantile:  0.5,
+			want:      15.0,
+			tolerance: 0.001,
+		},
+		{
+			name:      "Three values",
+			values:    []float64{10, 20, 30},
+			weights:   []float64{1, 1, 1},
+			quantile:  0.5,
+			want:      20.0,
+			tolerance: 0.001,
+		},
+		{
+			name:      "Weighted Median",
+			values:    []float64{10, 30},
+			weights:   []float64{1, 3}, // Total 4. Mean of C0=10 (w=1), C1=30 (w=3).
+			// Centers: C0 at 0.5. C1 at 1 + 1.5 = 2.5.
+			// Target q=0.5 -> 2.0.
+			// 2.0 is between 0.5 and 2.5.
+			// Interpolate: prev=10, prevCenter=0.5. curr=30, center=2.5.
+			// frac = (2.0 - 0.5) / (2.5 - 0.5) = 1.5 / 2.0 = 0.75.
+			// Val = 10 + 0.75 * (30 - 10) = 10 + 15 = 25.
+			quantile:  0.5,
+			want:      25.0,
+			tolerance: 0.001,
+		},
+		{
+			name:      "Min",
+			values:    []float64{10, 20},
+			quantile:  0.0,
+			want:      10.0,
+			tolerance: 0.001,
+		},
+		{
+			name:      "Max",
+			values:    []float64{10, 20},
+			quantile:  1.0,
+			want:      20.0,
+			tolerance: 0.001,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			td, err := NewTDigest(WithTDigestCompression(100))
+			if err != nil {
+				t.Fatal(err)
+			}
+			impl := td.(*tdigest)
+
+			for i, v := range tt.values {
+				w := 1.0
+				if len(tt.weights) > i {
+					w = tt.weights[i]
+				}
+				// Manually add centroid to bypass buffer/merge logic for precise test control
+				impl.centroids = append(impl.centroids, centroid{Mean: v, Weight: w})
+				impl.count += w
+			}
+
+			got := td.Quantile(tt.quantile)
+			if diff := got - tt.want; diff < -tt.tolerance || diff > tt.tolerance {
+				t.Errorf("Quantile(%v) = %v, want %v (diff %v)", tt.quantile, got, tt.want, diff)
+			}
+		})
+	}
+}
+
+func TestGlobalSnapshot_JSON(t *testing.T) {
+	t.Parallel()
+
+	// 1. Create a collector and populate it
+	c, err := NewCollector()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Add some data
+	c.Record(nil, &RequestResult{
+		Latency:   100, // ns
+		QueueWait: 50,  // ns
+	})
+	c.Record(nil, &RequestResult{
+		Latency:   200, // ns
+		QueueWait: 60,  // ns
+	})
+
+	// 2. Snapshot
+	snap := c.GlobalSnapshot()
+
+	// 3. Marshal
+	data, err := json.Marshal(snap)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// 4. Unmarshal into new snapshot
+	var restored GlobalSnapshot
+	if err := json.Unmarshal(data, &restored); err != nil {
+		t.Fatal(err)
+	}
+
+	// 5. Verify TDigests are not nil and contain data
+	if restored.LatPercentiles == nil {
+		t.Fatal("LatPercentiles is nil after unmarshal")
+	}
+	if restored.QWPercentiles == nil {
+		t.Fatal("QWPercentiles is nil after unmarshal")
+	}
+
+	// Check counts via interface
+	// Since TDigest interface doesn't have Count(), we check via Quantile
+	// With 2 samples, min/max should be preserved roughly or at least Quantile works.
+	// Actually we know it's *tdigest so we can check.
+
+	latTD, ok := restored.LatPercentiles.(*tdigest)
+	if !ok {
+		t.Fatal("Restored LatPercentiles is not *tdigest")
+	}
+	if latTD.count != 2 {
+		t.Errorf("Restored Lat count = %v, want 2", latTD.count)
+	}
+	// Check quantiles
+	// With {100, 200}, median should be 150
+	if got := restored.LatPercentiles.Quantile(0.5); got != 150 {
+		t.Errorf("Restored Lat Median = %v, want 150", got)
+	}
+}
+
+func TestTDigest_MarshalJSON(t *testing.T) {
+	t.Parallel()
+
+	td, _ := NewTDigest()
+	td.Add(10)
+	td.Add(20)
+
+	data, err := json.Marshal(td)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var td2 tdigest
+	if err := json.Unmarshal(data, &td2); err != nil {
+		t.Fatal(err)
+	}
+
+	if td2.count != 2 {
+		t.Errorf("Count = %v, want 2", td2.count)
+	}
+	if q := td2.Quantile(0.5); q != 15 {
+		t.Errorf("Quantile(0.5) = %v, want 15", q)
 	}
 }
 
