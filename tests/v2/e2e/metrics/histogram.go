@@ -127,8 +127,10 @@ func (h *histogram) Init(opts ...HistogramOption) error {
 }
 
 func (h *histogram) setBucketFinder() {
+	//nolint:mnd
 	if h.growth == 2.0 {
 		h.bucketFinder = h.findBucketGrowth2
+		//nolint:mnd
 	} else if h.numBuckets < 100 {
 		h.bucketFinder = h.findBucketBinarySearch
 	} else {
@@ -193,6 +195,7 @@ func (sh *shardedHistogram) shardIndexForValue(val float64) int {
 	if len(sh.shards) <= 1 {
 		return 0
 	}
+	//nolint:gosec
 	return int(computeHash(val) % uint64(len(sh.shards)))
 }
 

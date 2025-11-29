@@ -28,13 +28,13 @@ import (
 )
 
 func TestNewExemplar(t *testing.T) {
-	if err := test.Run(t.Context(), t, func(tt *testing.T, opts []ExemplarOption) (Exemplar, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, opts []ExemplarOption) (Exemplar, error) {
 		return NewExemplar(opts...), nil
 	}, []test.Case[Exemplar, []ExemplarOption]{
 		{
 			Name: "initialized with default options",
 			Args: nil,
-			CheckFunc: func(tt *testing.T, want test.Result[Exemplar], got test.Result[Exemplar]) error {
+			CheckFunc: func(t *testing.T, want test.Result[Exemplar], got test.Result[Exemplar]) error {
 				if got.Val == nil {
 					return errors.New("got nil exemplar")
 				}
@@ -57,7 +57,7 @@ func TestNewExemplar(t *testing.T) {
 				WithExemplarCapacity(10),
 				WithExemplarNumShards(1), // Force single shard for capacity check simplicity
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[Exemplar], got test.Result[Exemplar]) error {
+			CheckFunc: func(t *testing.T, want test.Result[Exemplar], got test.Result[Exemplar]) error {
 				if got.Val == nil {
 					return errors.New("got nil exemplar")
 				}
@@ -86,7 +86,7 @@ func TestExemplar_Offer(t *testing.T) {
 		offers []offer
 	}
 
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) ([]*ExemplarItem, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, args args) ([]*ExemplarItem, error) {
 		e := NewExemplar(args.opts...)
 		for _, o := range args.offers {
 			e.Offer(o.latency, o.id, nil, "")
@@ -105,7 +105,7 @@ func TestExemplar_Offer(t *testing.T) {
 					{id: "req-4", latency: 300 * time.Millisecond},
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[[]*ExemplarItem], got test.Result[[]*ExemplarItem]) error {
+			CheckFunc: func(t *testing.T, want test.Result[[]*ExemplarItem], got test.Result[[]*ExemplarItem]) error {
 				snap := got.Val
 				if len(snap) != 3 {
 					return errors.Errorf("expected snapshot length 3, got %d", len(snap))
@@ -130,7 +130,7 @@ func TestExemplar_Offer(t *testing.T) {
 					{id: "req-4", latency: 300 * time.Millisecond},
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[[]*ExemplarItem], got test.Result[[]*ExemplarItem]) error {
+			CheckFunc: func(t *testing.T, want test.Result[[]*ExemplarItem], got test.Result[[]*ExemplarItem]) error {
 				snap := got.Val
 				if len(snap) != 3 {
 					return errors.Errorf("expected snapshot length 3, got %d", len(snap))
@@ -143,7 +143,7 @@ func TestExemplar_Offer(t *testing.T) {
 			Args: args{
 				opts: []ExemplarOption{WithExemplarCapacity(3)},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[[]*ExemplarItem], got test.Result[[]*ExemplarItem]) error {
+			CheckFunc: func(t *testing.T, want test.Result[[]*ExemplarItem], got test.Result[[]*ExemplarItem]) error {
 				snap := got.Val
 				if len(snap) != 0 {
 					return errors.Errorf("expected snapshot length 0, got %d", len(snap))
@@ -161,7 +161,7 @@ func TestExemplar_Offer(t *testing.T) {
 					{id: "req-3", latency: 300 * time.Millisecond},
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[[]*ExemplarItem], got test.Result[[]*ExemplarItem]) error {
+			CheckFunc: func(t *testing.T, want test.Result[[]*ExemplarItem], got test.Result[[]*ExemplarItem]) error {
 				snap := got.Val
 				if len(snap) != 3 {
 					return errors.Errorf("expected snapshot length 3, got %d", len(snap))
@@ -189,7 +189,7 @@ func TestExemplar_Reset(t *testing.T) {
 		}
 	}
 
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (Exemplar, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, args args) (Exemplar, error) {
 		e := NewExemplar(args.opts...)
 		for _, o := range args.offers {
 			e.Offer(o.latency, o.id, nil, "")
@@ -209,7 +209,7 @@ func TestExemplar_Reset(t *testing.T) {
 					{id: "req-2", latency: 200 * time.Millisecond},
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[Exemplar], got test.Result[Exemplar]) error {
+			CheckFunc: func(t *testing.T, want test.Result[Exemplar], got test.Result[Exemplar]) error {
 				if got.Val == nil {
 					return errors.New("got nil exemplar")
 				}
@@ -234,7 +234,7 @@ func TestExemplar_Clone(t *testing.T) {
 		}
 	}
 
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (Exemplar, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, args args) (Exemplar, error) {
 		e := NewExemplar(args.opts...)
 		for _, o := range args.offers {
 			e.Offer(o.latency, o.id, nil, "")
@@ -253,7 +253,7 @@ func TestExemplar_Clone(t *testing.T) {
 					{id: "req-2", latency: 200 * time.Millisecond},
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[Exemplar], got test.Result[Exemplar]) error {
+			CheckFunc: func(t *testing.T, want test.Result[Exemplar], got test.Result[Exemplar]) error {
 				if got.Val == nil {
 					return errors.New("got nil exemplar")
 				}
@@ -290,7 +290,7 @@ func TestExemplar_Concurrent(t *testing.T) {
 		requestsPerWorker int
 	}
 
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (Exemplar, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, args args) (Exemplar, error) {
 		e := NewExemplar(WithExemplarCapacity(args.capacity))
 		var wg sync.WaitGroup
 		for i := 0; i < args.workers; i++ {
@@ -312,7 +312,7 @@ func TestExemplar_Concurrent(t *testing.T) {
 				workers:           10,
 				requestsPerWorker: 100,
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[Exemplar], got test.Result[Exemplar]) error {
+			CheckFunc: func(t *testing.T, want test.Result[Exemplar], got test.Result[Exemplar]) error {
 				snap := got.Val.Snapshot()
 				if len(snap) != 10 {
 					return errors.Errorf("expected 10 exemplars, got %d", len(snap))
@@ -332,7 +332,7 @@ func TestExemplar_Race(t *testing.T) {
 		requestsPerWorker int
 	}
 	// This test verifies no race conditions when Offer and Snapshot are called concurrently.
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (Exemplar, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, args args) (Exemplar, error) {
 		e := NewExemplar(WithExemplarCapacity(args.capacity))
 		eg, _ := errgroup.New(t.Context())
 		for i := 0; i < args.workers; i++ {
@@ -353,7 +353,7 @@ func TestExemplar_Race(t *testing.T) {
 				workers:           10,
 				requestsPerWorker: 100,
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[Exemplar], got test.Result[Exemplar]) error {
+			CheckFunc: func(t *testing.T, want test.Result[Exemplar], got test.Result[Exemplar]) error {
 				// Just completion is enough to prove no panic/race (race detector needed).
 				return nil
 			},
@@ -380,7 +380,7 @@ func TestExemplar_Categories(t *testing.T) {
 	type args struct {
 		opts []ExemplarOption
 	}
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (*ExemplarDetails, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, args args) (*ExemplarDetails, error) {
 		e := NewExemplar(args.opts...)
 
 		// Offer 5 items with varying latencies
@@ -403,7 +403,7 @@ func TestExemplar_Categories(t *testing.T) {
 				// Use 1 shard to simplify verification of Exact K behavior
 				opts: []ExemplarOption{WithExemplarCapacity(3), WithExemplarNumShards(1)},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[*ExemplarDetails], got test.Result[*ExemplarDetails]) error {
+			CheckFunc: func(t *testing.T, want test.Result[*ExemplarDetails], got test.Result[*ExemplarDetails]) error {
 				d := got.Val
 
 				// Slowest (Top 3 Max): 100 (fail), 90, 50
@@ -451,7 +451,7 @@ func TestExemplar_ProbabilisticSampling(t *testing.T) {
 	type args struct {
 		opts []ExemplarOption
 	}
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (*ExemplarDetails, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, args args) (*ExemplarDetails, error) {
 		e := NewExemplar(args.opts...)
 
 		// 1. Offer distinct Slowest/Fastest candidates.
@@ -477,7 +477,7 @@ func TestExemplar_ProbabilisticSampling(t *testing.T) {
 			Args: args{
 				opts: []ExemplarOption{WithExemplarCapacity(10), WithExemplarNumShards(1)},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[*ExemplarDetails], got test.Result[*ExemplarDetails]) error {
+			CheckFunc: func(t *testing.T, want test.Result[*ExemplarDetails], got test.Result[*ExemplarDetails]) error {
 				d := got.Val
 				if d == nil {
 					return errors.New("got nil details")

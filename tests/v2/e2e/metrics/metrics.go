@@ -26,7 +26,7 @@ import (
 	"fmt"
 	"math"
 	"slices"
-	"sync/atomic"
+	"sync/atomic" //nolint:depguard
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -38,6 +38,8 @@ import (
 
 const (
 	MaxGRPCCodes = 20
+	// percentMultiplier is the multiplier to convert ratio to percentage.
+	percentMultiplier = 100
 )
 
 // requestIDCtxKey is the key for storing the request ID in the context.
@@ -70,6 +72,7 @@ func PutRequestResult(rr *RequestResult) {
 	requestResultPool.Put(rr)
 }
 
+//nolint:gochecknoglobals
 var requestResultPool = sync.Pool{
 	New: func() any {
 		return new(RequestResult)
@@ -173,6 +176,7 @@ type collector struct {
 	mu             sync.RWMutex
 }
 
+//nolint:gochecknoglobals
 var collectorIDCounter atomic.Uint64
 
 // NewCollector creates and initializes a new Collector with the provided options.
@@ -524,6 +528,7 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 	codesMap := make(map[codes.Code]uint64)
 	for i := range c.codes {
 		if v := c.codes[i].Load(); v > 0 {
+			//nolint:gosec
 			codesMap[codes.Code(i)] = v
 		}
 	}
@@ -604,7 +609,7 @@ func (c *collector) TimeScalesSnapshot() map[string]*ScaleSnapshot {
 // It returns an error if the collectors have incompatible configurations.
 func MergeCollectors(collectors ...Collector) (Collector, error) {
 	if len(collectors) == 0 {
-		return nil, nil
+		return nil, errors.New("no collectors to merge")
 	}
 	if len(collectors) == 1 {
 		return collectors[0], nil
@@ -629,7 +634,7 @@ func MergeCollectors(collectors ...Collector) (Collector, error) {
 // It returns an error if the snapshots are incompatible.
 func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 	if len(snapshots) == 0 {
-		return nil, nil
+		return nil, errors.New("no snapshots to merge")
 	}
 	if len(snapshots) == 1 {
 		return snapshots[0], nil
@@ -801,7 +806,7 @@ func (s *SlotSnapshot) String() string {
 
 	var sb strings.Builder
 	fmt.Fprintf(&sb, "Total Requests:\t%d\n", s.Total)
-	fmt.Fprintf(&sb, "Errors:\t%d (%.2f%%)\n", s.Errors, float64(s.Errors)/float64(s.Total)*100)
+	fmt.Fprintf(&sb, "Errors:\t%d (%.2f%%)\n", s.Errors, float64(s.Errors)/float64(s.Total)*percentMultiplier)
 	fmt.Fprintf(&sb, "Last Updated:\t%s\n", time.Unix(0, s.LastUpdated))
 
 	fmt.Fprint(&sb, "\nLatency:\n")

@@ -32,7 +32,7 @@ func TestSlot_Record_And_Reset(t *testing.T) {
 		win uint64
 	}
 
-	if err := test.Run(t.Context(), t, func(tt *testing.T, rs []record) (Slot, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, rs []record) (Slot, error) {
 		// Using real histograms/exemplars to fully test integration
 		h, err := NewHistogram(WithHistogramNumBuckets(10))
 		if err != nil {
@@ -58,7 +58,7 @@ func TestSlot_Record_And_Reset(t *testing.T) {
 					win: 0,
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[Slot], got test.Result[Slot]) error {
+			CheckFunc: func(t *testing.T, want test.Result[Slot], got test.Result[Slot]) error {
 				if got.Err != nil {
 					return got.Err
 				}
@@ -84,7 +84,7 @@ func TestSlot_Record_And_Reset(t *testing.T) {
 					win: 1,
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[Slot], got test.Result[Slot]) error {
+			CheckFunc: func(t *testing.T, want test.Result[Slot], got test.Result[Slot]) error {
 				if got.Err != nil {
 					return got.Err
 				}
@@ -110,7 +110,7 @@ func TestSlot_Merge(t *testing.T) {
 		s2Init func(*slot)
 	}
 
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (Slot, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, args args) (Slot, error) {
 		s1 := newSlot(1, nil, nil, nil).(*slot)
 		if args.s1Init != nil {
 			args.s1Init(s1)
@@ -138,7 +138,7 @@ func TestSlot_Merge(t *testing.T) {
 					s.updatedNS.Store(200)
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[Slot], got test.Result[Slot]) error {
+			CheckFunc: func(t *testing.T, want test.Result[Slot], got test.Result[Slot]) error {
 				if got.Err != nil {
 					return got.Err
 				}
@@ -166,7 +166,7 @@ func TestSlot_Concurrent_Record(t *testing.T) {
 		loops   int
 	}
 
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (Slot, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, args args) (Slot, error) {
 		s := newSlot(0, nil, nil, nil)
 		var wg sync.WaitGroup
 		start := time.Now()
@@ -176,6 +176,7 @@ func TestSlot_Concurrent_Record(t *testing.T) {
 				defer wg.Done()
 				for j := 0; j < args.loops; j++ {
 					// Switch window index every 10 iterations to force rapid resets
+					//nolint:gosec
 					win := uint64((id*args.loops + j) / 10)
 					s.Record(&RequestResult{
 						EndedAt: start,
@@ -193,7 +194,7 @@ func TestSlot_Concurrent_Record(t *testing.T) {
 				workers: 10,
 				loops:   100,
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[Slot], got test.Result[Slot]) error {
+			CheckFunc: func(t *testing.T, want test.Result[Slot], got test.Result[Slot]) error {
 				if got.Err != nil {
 					return got.Err
 				}
@@ -207,7 +208,7 @@ func TestSlot_Concurrent_Record(t *testing.T) {
 }
 
 func TestSlot_Clone(t *testing.T) {
-	if err := test.Run(t.Context(), t, func(tt *testing.T, total uint64) (Slot, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, total uint64) (Slot, error) {
 		s1 := newSlot(1, nil, nil, nil).(*slot)
 		s1.Total.Store(total)
 		s2 := s1.Clone()
@@ -218,7 +219,7 @@ func TestSlot_Clone(t *testing.T) {
 		{
 			Name: "clone independence",
 			Args: 10,
-			CheckFunc: func(tt *testing.T, want test.Result[Slot], got test.Result[Slot]) error {
+			CheckFunc: func(t *testing.T, want test.Result[Slot], got test.Result[Slot]) error {
 				if got.Err != nil {
 					return got.Err
 				}

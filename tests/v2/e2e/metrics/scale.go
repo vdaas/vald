@@ -97,6 +97,7 @@ func (s *scale) Reset() {
 // getSlot returns the slot for the given index.
 // It calculates the ring buffer index based on the scale's width and capacity.
 func (s *scale) getSlot(idx uint64) Slot {
+	//nolint:gosec
 	return s.slots[int((idx/s.width)%s.capacity)]
 }
 
@@ -113,6 +114,7 @@ func (s *scale) Record(ctx context.Context, rr *RequestResult) {
 			return
 		}
 	case TimeScale:
+		//nolint:gosec
 		idx = uint64(rr.EndedAt.UnixNano())
 	}
 

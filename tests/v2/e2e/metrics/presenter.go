@@ -71,14 +71,16 @@ func (p *SnapshotPresenter) renderSummary(sb *strings.Builder) {
 	if totalDuration.Seconds() > 0 {
 		fmt.Fprintf(sb, "Requests/sec:\t%.2f\n", float64(total)/totalDuration.Seconds())
 	}
-	fmt.Fprintf(sb, "Errors:\t%d (%.2f%%)\n", errs, float64(errs)/float64(total)*100)
+	fmt.Fprintf(sb, "Errors:\t%d (%.2f%%)\n", errs, float64(errs)/float64(total)*percentMultiplier)
 }
 
 func (p *SnapshotPresenter) renderLatency(sb *strings.Builder) {
+	//nolint:gosec
 	sb.WriteString(p.renderHistogram("Latency", p.snapshot.Latencies, p.snapshot.LatPercentiles))
 }
 
 func (p *SnapshotPresenter) renderQueueWait(sb *strings.Builder) {
+	//nolint:gosec
 	sb.WriteString(p.renderHistogram("Queue Wait", p.snapshot.QueueWaits, p.snapshot.QWPercentiles))
 }
 
@@ -94,7 +96,7 @@ func (p *SnapshotPresenter) renderStatusCodes(sb *strings.Builder) {
 		slices.Sort(codes)
 		for _, code := range codes {
 			count := s.Codes[code]
-			fmt.Fprintf(sb, "\t- %s:\t%d (%.2f%%)\n", code.String(), count, float64(count)/float64(total)*100)
+			fmt.Fprintf(sb, "\t- %s:\t%d (%.2f%%)\n", code.String(), count, float64(count)/float64(total)*percentMultiplier)
 		}
 	}
 }
@@ -189,9 +191,10 @@ func (p *SnapshotPresenter) asSeparatedValue(separator rune) (string, error) {
 	headers = append(headers, "QueueWaitMin", "QueueWaitMean", "QueueWaitMax")
 	if s.QWPercentiles != nil {
 		for _, q := range s.QWPercentiles.Quantiles() {
-			headers = append(headers, fmt.Sprintf("QueueWaitP%d", int(q*100)))
+			headers = append(headers, fmt.Sprintf("QueueWaitP%d", int(q*percentMultiplier)))
 		}
 	}
+	//nolint:gosec
 	writer.Write(headers)
 
 	totalDuration := s.LastUpdated.Sub(s.StartTime).Seconds()
@@ -207,9 +210,9 @@ func (p *SnapshotPresenter) asSeparatedValue(separator rune) (string, error) {
 
 	latMin, latMean, latMax := 0.0, 0.0, 0.0
 	if s.Latencies != nil {
-		latMin = float64(s.Latencies.Min) / 1e9
-		latMean = float64(s.Latencies.Mean) / 1e9
-		latMax = float64(s.Latencies.Max) / 1e9
+		latMin = float64(s.Latencies.Min) / float64(time.Second)
+		latMean = float64(s.Latencies.Mean) / float64(time.Second)
+		latMax = float64(s.Latencies.Max) / float64(time.Second)
 	}
 
 	row := []string{
@@ -224,15 +227,15 @@ func (p *SnapshotPresenter) asSeparatedValue(separator rune) (string, error) {
 	}
 	if s.LatPercentiles != nil {
 		for _, q := range s.LatPercentiles.Quantiles() {
-			row = append(row, fmt.Sprintf("%.4f", s.LatPercentiles.Quantile(q)/1e9))
+			row = append(row, fmt.Sprintf("%.4f", s.LatPercentiles.Quantile(q)/float64(time.Second)))
 		}
 	}
 
 	qwMin, qwMean, qwMax := 0.0, 0.0, 0.0
 	if s.QueueWaits != nil {
-		qwMin = float64(s.QueueWaits.Min) / 1e9
-		qwMean = float64(s.QueueWaits.Mean) / 1e9
-		qwMax = float64(s.QueueWaits.Max) / 1e9
+		qwMin = float64(s.QueueWaits.Min) / float64(time.Second)
+		qwMean = float64(s.QueueWaits.Mean) / float64(time.Second)
+		qwMax = float64(s.QueueWaits.Max) / float64(time.Second)
 	}
 
 	row = append(row,
@@ -242,7 +245,7 @@ func (p *SnapshotPresenter) asSeparatedValue(separator rune) (string, error) {
 	)
 	if s.QWPercentiles != nil {
 		for _, q := range s.QWPercentiles.Quantiles() {
-			row = append(row, fmt.Sprintf("%.4f", s.QWPercentiles.Quantile(q)/1e9))
+			row = append(row, fmt.Sprintf("%.4f", s.QWPercentiles.Quantile(q)/float64(time.Second)))
 		}
 	}
 
@@ -310,7 +313,8 @@ func (p *SnapshotPresenter) renderHistogram(title string, h *HistogramSnapshot, 
 			}
 			var bar string
 			if maxCount > 0 {
-				bar = strings.Repeat("∎", int(float64(count)/float64(maxCount)*40))
+				const barWidth = 40
+				bar = strings.Repeat("∎", int(float64(count)/float64(maxCount)*barWidth))
 			}
 			var lowerBound, upperBound string
 			if i == 0 {

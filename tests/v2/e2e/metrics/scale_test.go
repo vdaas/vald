@@ -35,7 +35,7 @@ func TestScale_Record_And_Reset(t *testing.T) {
 		st       ScaleType
 	}
 
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (*ScaleSnapshot, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, args args) (*ScaleSnapshot, error) {
 		s, err := newScale(args.name, args.width, args.capacity, 0, args.st, nil, nil, nil)
 		if err != nil {
 			return nil, err
@@ -58,7 +58,7 @@ func TestScale_Record_And_Reset(t *testing.T) {
 					{EndedAt: time.Unix(2, 0)}, // Slot 0 (Reset)
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[*ScaleSnapshot], got test.Result[*ScaleSnapshot]) error {
+			CheckFunc: func(t *testing.T, want test.Result[*ScaleSnapshot], got test.Result[*ScaleSnapshot]) error {
 				if got.Err != nil {
 					return got.Err
 				}
@@ -83,13 +83,12 @@ func TestScale_Record_And_Reset(t *testing.T) {
 
 func TestScale_Concurrency(t *testing.T) {
 	type args struct {
-		workers     int
-		loops       int
-		capacity    uint64
-		startOffset int
+		workers  int
+		loops    int
+		capacity uint64
 	}
 
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (*ScaleSnapshot, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, args args) (*ScaleSnapshot, error) {
 		s, err := newScale("concurrent", uint64(time.Second), args.capacity, 0, TimeScale, nil, nil, nil)
 		if err != nil {
 			return nil, err
@@ -121,7 +120,7 @@ func TestScale_Concurrency(t *testing.T) {
 				loops:    100,
 				capacity: 5,
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[*ScaleSnapshot], got test.Result[*ScaleSnapshot]) error {
+			CheckFunc: func(t *testing.T, want test.Result[*ScaleSnapshot], got test.Result[*ScaleSnapshot]) error {
 				if got.Err != nil {
 					return got.Err
 				}
@@ -147,7 +146,7 @@ func TestScale_Merge(t *testing.T) {
 		capacity2 uint64
 	}
 
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (*ScaleSnapshot, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, args args) (*ScaleSnapshot, error) {
 		s1, err := newScale("test", args.width1, args.capacity1, 0, TimeScale, nil, nil, nil)
 		if err != nil {
 			return nil, err
@@ -180,7 +179,7 @@ func TestScale_Merge(t *testing.T) {
 					{EndedAt: time.Unix(1, 0)},
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[*ScaleSnapshot], got test.Result[*ScaleSnapshot]) error {
+			CheckFunc: func(t *testing.T, want test.Result[*ScaleSnapshot], got test.Result[*ScaleSnapshot]) error {
 				if got.Err != nil {
 					return got.Err
 				}
@@ -202,7 +201,7 @@ func TestScale_Merge(t *testing.T) {
 				width1: uint64(time.Second), capacity1: 2,
 				width2: uint64(time.Second * 2), capacity2: 2, // different width
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[*ScaleSnapshot], got test.Result[*ScaleSnapshot]) error {
+			CheckFunc: func(t *testing.T, want test.Result[*ScaleSnapshot], got test.Result[*ScaleSnapshot]) error {
 				if got.Err == nil {
 					return errors.New("expected error, got nil")
 				}
@@ -218,7 +217,7 @@ func TestScale_Merge(t *testing.T) {
 }
 
 func TestScale_Clone(t *testing.T) {
-	if err := test.Run(t.Context(), t, func(tt *testing.T, rr []*RequestResult) (*ScaleSnapshot, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, rr []*RequestResult) (*ScaleSnapshot, error) {
 		s1, err := newScale("test", uint64(time.Second), 2, 0, TimeScale, nil, nil, nil)
 		if err != nil {
 			return nil, err
@@ -234,7 +233,7 @@ func TestScale_Clone(t *testing.T) {
 		{
 			Name: "clone independence",
 			Args: []*RequestResult{{EndedAt: time.Unix(0, 0)}},
-			CheckFunc: func(tt *testing.T, want test.Result[*ScaleSnapshot], got test.Result[*ScaleSnapshot]) error {
+			CheckFunc: func(t *testing.T, want test.Result[*ScaleSnapshot], got test.Result[*ScaleSnapshot]) error {
 				if got.Err != nil {
 					return got.Err
 				}
@@ -258,7 +257,7 @@ func TestScale_RingBuffer_WrapAndReset(t *testing.T) {
 		capacity uint64
 	}
 	// This test verifies wrapping logic specifically
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (*ScaleSnapshot, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, args args) (*ScaleSnapshot, error) {
 		s, err := newScale("test_wrap", args.width, args.capacity, 0, TimeScale, nil, nil, nil)
 		if err != nil {
 			return nil, err
@@ -280,7 +279,7 @@ func TestScale_RingBuffer_WrapAndReset(t *testing.T) {
 					{EndedAt: time.Unix(3, 0)}, // Slot 0 (Reset!)
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[*ScaleSnapshot], got test.Result[*ScaleSnapshot]) error {
+			CheckFunc: func(t *testing.T, want test.Result[*ScaleSnapshot], got test.Result[*ScaleSnapshot]) error {
 				if got.Err != nil {
 					return got.Err
 				}
@@ -316,7 +315,7 @@ func TestScale_RingBuffer_WrapAndReset(t *testing.T) {
 					{EndedAt: time.Unix(5, 0)}, // Slot 2 (Reset) - skipping Slot 1
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[*ScaleSnapshot], got test.Result[*ScaleSnapshot]) error {
+			CheckFunc: func(t *testing.T, want test.Result[*ScaleSnapshot], got test.Result[*ScaleSnapshot]) error {
 				if got.Err != nil {
 					return got.Err
 				}

@@ -21,7 +21,7 @@ import (
 	"container/heap"
 	"math/rand/v2"
 	"slices"
-	"sync/atomic"
+	"sync/atomic" //nolint:depguard
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -32,6 +32,8 @@ import (
 const (
 	// avgSamplingRate is the sampling rate for average exemplars (1/16).
 	avgSamplingRate = 16
+
+	defaultCapacity = 10
 )
 
 // exemplar is a thread-safe exemplar storage.
@@ -39,7 +41,6 @@ const (
 type exemplar struct {
 	slowest        priorityQueue
 	fastest        smallestLatencyHeap
-	failures       priorityQueue
 	avgSamples     []*ExemplarItem
 	failureSamples []*ExemplarItem
 	k              int
@@ -64,7 +65,7 @@ type exemplarConfig struct {
 // Init initializes the exemplar with the given options.
 func (e *exemplar) Init(opts ...ExemplarOption) {
 	cfg := exemplarConfig{
-		Capacity: 10,
+		Capacity: defaultCapacity,
 	}
 	// Apply user options
 	for _, opt := range opts {
@@ -106,7 +107,7 @@ func (e *exemplar) initHeaps() {
 // NewExemplar creates a new Exemplar with the given options.
 func NewExemplar(opts ...ExemplarOption) Exemplar {
 	cfg := exemplarConfig{
-		Capacity: 10,
+		Capacity: defaultCapacity,
 	}
 	for _, opt := range append(defaultExemplarOpts, opts...) {
 		opt(&cfg)
@@ -169,6 +170,7 @@ func (e *exemplar) Offer(latency time.Duration, requestID string, err error, msg
 	if !isError && latInt <= minLat && latInt >= maxLat {
 		// Probabilistic sampling: only record 1 out of avgSamplingRate samples.
 		// We use a fast bitwise check assuming avgSamplingRate is a power of 2.
+		//nolint:gosec
 		if rand.Uint64()&(avgSamplingRate-1) != 0 {
 			return
 		}
@@ -235,7 +237,9 @@ func (e *exemplar) updateAverageSample(item *ExemplarItem) {
 	if len(e.avgSamples) < e.k {
 		e.avgSamples = append(e.avgSamples, item)
 	} else {
+		//nolint:gosec
 		j := rand.Uint64N(e.avgCount)
+		//nolint:gosec
 		if j < uint64(e.k) {
 			e.avgSamples[j] = item
 		}
@@ -247,7 +251,9 @@ func (e *exemplar) updateFailureSample(item *ExemplarItem) {
 	if len(e.failureSamples) < e.k {
 		e.failureSamples = append(e.failureSamples, item)
 	} else {
+		//nolint:gosec
 		j := rand.Uint64N(e.failureCount)
+		//nolint:gosec
 		if j < uint64(e.k) {
 			e.failureSamples[j] = item
 		}
@@ -275,7 +281,7 @@ func (e *exemplar) Snapshot() []*ExemplarItem {
 // DetailedSnapshot returns all categories.
 func (se *shardedExemplar) DetailedSnapshot() (*ExemplarDetails, error) {
 	if len(se.shards) == 0 {
-		return nil, nil
+		return &ExemplarDetails{}, nil
 	}
 
 	// Create a temporary exemplar to merge all shards
@@ -437,9 +443,11 @@ func mergeReservoir(dst, src []*ExemplarItem, n1, n2 uint64, k int) []*ExemplarI
 	s := src
 
 	for range k {
+		//nolint:gosec
 		if rand.Uint64N(n) < currN1 {
 			// Draw from the first reservoir.
 			if len(d) > 0 {
+				//nolint:gosec
 				idx := rand.IntN(len(d))
 				newReservoir = append(newReservoir, d[idx])
 				// Remove the selected item.
@@ -451,6 +459,7 @@ func mergeReservoir(dst, src []*ExemplarItem, n1, n2 uint64, k int) []*ExemplarI
 		} else {
 			// Draw from the second reservoir.
 			if len(s) > 0 {
+				//nolint:gosec
 				idx := rand.IntN(len(s))
 				newReservoir = append(newReservoir, s[idx])
 				// Remove the selected item.
@@ -471,6 +480,7 @@ func (se *shardedExemplar) Clone() Exemplar {
 		shards: make([]*exemplar, len(se.shards)),
 	}
 	for i, e := range se.shards {
+		//nolint:forcetypeassert
 		newSE.shards[i] = e.Clone().(*exemplar)
 	}
 	return newSE
@@ -543,6 +553,7 @@ func (pq priorityQueue) Swap(i, j int) {
 }
 
 func (pq *priorityQueue) Push(x any) {
+	//nolint:forcetypeassert
 	item := x.(*ExemplarItem)
 	*pq = append(*pq, item)
 }
@@ -570,6 +581,7 @@ func (pq smallestLatencyHeap) Swap(i, j int) {
 }
 
 func (pq *smallestLatencyHeap) Push(x any) {
+	//nolint:forcetypeassert
 	item := x.(*ExemplarItem)
 	*pq = append(*pq, item)
 }
