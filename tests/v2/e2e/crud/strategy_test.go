@@ -139,24 +139,6 @@ func TestE2EStrategy(t *testing.T) {
 		}); err != nil {
 			tt.Errorf("failed to process operations: %v", err)
 		}
-		for _, strategy := range cfg.Strategies {
-			for _, op := range strategy.Operations {
-				for _, exec := range op.Executions {
-					if exec.Metrics != nil && exec.Metrics.Enabled && exec.Collector != nil {
-						snapshot := exec.Collector.GlobalSnapshot()
-						log.Infof("Execution Metrics for %s/%s/%s:\n%s", strategy.Name, op.Name, exec.Name, snapshot)
-					}
-				}
-				if op.Metrics != nil && op.Metrics.Enabled && op.Collector != nil {
-					snapshot := op.Collector.GlobalSnapshot()
-					log.Infof("Operation Metrics for %s/%s:\n%s", strategy.Name, op.Name, snapshot)
-				}
-			}
-			if strategy.Metrics != nil && strategy.Metrics.Enabled && strategy.Collector != nil {
-				snapshot := strategy.Collector.GlobalSnapshot()
-				log.Infof("Strategy Metrics for %s:\n%s", strategy.Name, snapshot)
-			}
-		}
 		if cfg.Metrics != nil && cfg.Metrics.Enabled && cfg.Collector != nil {
 			snapshot := cfg.Collector.GlobalSnapshot()
 			log.Infof("Global Metrics for %s:\n%s", cfg.FilePath, snapshot)
@@ -186,7 +168,7 @@ func (r *runner) processStrategy(
 				if op != nil {
 					i, op := i, op
 					eg.Go(func() error {
-						c := r.processOperation(ttt, egctx, i, op)
+						c := r.processOperation(ttt, egctx, st.Name, i, op)
 						if st.Metrics != nil && st.Metrics.Enabled && col != nil && c != nil {
 							st.Operations[i].Collector = c
 							if err := c.MergeInto(col); err != nil {
@@ -201,12 +183,16 @@ func (r *runner) processStrategy(
 		}); err != nil {
 			tt.Errorf("failed to process operations: %v", err)
 		}
+		if st.Metrics != nil && st.Metrics.Enabled && col != nil {
+			snapshot := col.GlobalSnapshot()
+			log.Infof("Strategy Metrics for %s:\n%s", st.Name, snapshot)
+		}
 	})
 	return col
 }
 
 func (r *runner) processOperation(
-	t *testing.T, ctx context.Context, idx int, op *config.Operation,
+	t *testing.T, ctx context.Context, strategyName string, idx int, op *config.Operation,
 ) (col metrics.Collector) {
 	t.Helper()
 	if r == nil || op == nil {
@@ -217,7 +203,7 @@ func (r *runner) processOperation(
 		if err := executeWithTimings(tt, ctx, op, op.Name, "operation", func(ttt *testing.T, ctx context.Context) error {
 			ttt.Helper()
 			for i, e := range op.Executions {
-				c := r.processExecution(ttt, ctx, i, e)
+				c := r.processExecution(ttt, ctx, strategyName, op.Name, i, e)
 				if op.Metrics != nil && op.Metrics.Enabled && col != nil && c != nil {
 					op.Executions[i].Collector = c
 					if err := c.MergeInto(col); err != nil {
@@ -229,12 +215,16 @@ func (r *runner) processOperation(
 		}); err != nil {
 			tt.Errorf("failed to process operation: %v", err)
 		}
+		if op.Metrics != nil && op.Metrics.Enabled && col != nil {
+			snapshot := col.GlobalSnapshot()
+			log.Infof("Operation Metrics for %s/%s:\n%s", strategyName, op.Name, snapshot)
+		}
 	})
 	return col
 }
 
 func (r *runner) processExecution(
-	t *testing.T, ctx context.Context, idx int, e *config.Execution,
+	t *testing.T, ctx context.Context, strategyName, opName string, idx int, e *config.Execution,
 ) (col metrics.Collector) {
 	t.Helper()
 	if r == nil || e == nil {
@@ -332,6 +322,10 @@ func (r *runner) processExecution(
 			return nil
 		}); err != nil {
 			tt.Errorf("failed to process execution: %v", err)
+		}
+		if e.Metrics != nil && e.Metrics.Enabled && e.Collector != nil {
+			snapshot := e.Collector.GlobalSnapshot()
+			log.Infof("Execution Metrics for %s/%s/%s:\n%s", strategyName, opName, e.Name, snapshot)
 		}
 	})
 	return e.Collector
