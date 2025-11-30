@@ -27,6 +27,9 @@ import (
 )
 
 // Use os.Getenv("UPDATE_GOLDEN") instead of a global flag to satisfy gochecknoglobals.
+// To update the golden files, run the tests with UPDATE_GOLDEN=true environment variable.
+// Example: UPDATE_GOLDEN=true go test ./tests/v2/e2e/metrics/...
+// WARNING: Only set this when you intend to update the expected output.
 func isUpdateGolden() bool {
 	return os.Getenv("UPDATE_GOLDEN") == "true"
 }

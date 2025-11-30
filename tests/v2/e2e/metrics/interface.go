@@ -132,6 +132,11 @@ func shardIndex(hash uint64, n int) int {
 	if n <= 1 {
 		return 0
 	}
+	// Optimized for power of 2
+	if (n & (n - 1)) == 0 {
+		// Fix G115: hash & uint64(n-1) will be in [0, n-1].
+		return int(hash & uint64(n-1)) //nolint:gosec // bitwise and with positive int fits in int
+	}
 	// Fix G115: hash % uint64(n) will be in [0, n-1]. Since n is int and n > 0, the result fits in int.
 	return int(hash % uint64(n)) //nolint:gosec // hash modulo length is always within int bounds
 }

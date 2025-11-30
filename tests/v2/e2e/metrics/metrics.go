@@ -434,7 +434,7 @@ func (c *collector) Record(ctx context.Context, rr *RequestResult) {
 	}
 
 	code := status.ToCode(rr.Status, rr.Err)
-	if int(code) < len(c.codes) && int(code) >= 0 {
+	if int(code) < len(c.codes) {
 		c.codes[code].Add(1)
 	} else {
 		c.codes[codes.Unknown].Add(1) // Fallback for out-of-range codes

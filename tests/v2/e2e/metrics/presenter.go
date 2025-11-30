@@ -295,12 +295,8 @@ func (p *SnapshotPresenter) renderHistogram(title string, h *HistogramSnapshot, 
 		}
 	}
 	if q != nil {
-		// TDigest stores raw values (nanoseconds). Its String() method might print raw floats.
-		// We should probably implement a better stringer for TDigest or handle it here.
-		// Since TDigest interface has String(), let's assume it might not be time-aware.
-		// Let's check TDigest implementation or just use Quantiles().
-		// The TDigest implementation in this package (tdigest.go) likely implements String().
-		// If we can't change TDigest easily, we can iterate quantiles here.
+		// TDigest stores raw values (nanoseconds).
+		// We rely on predefined quantiles for reporting.
 		qs := q.Quantiles()
 		if len(qs) > 0 {
 			_, _ = fmt.Fprint(&sb, "Percentiles:\n")
