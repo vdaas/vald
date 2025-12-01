@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"math"
 	"slices"
+	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/sync"
@@ -29,32 +30,22 @@ import (
 // It is set to 128 bytes, which covers two cache lines on most architectures (64 bytes each).
 const paddingSize = 128
 
-// bucketGrowthOptimized is the growth factor that allows for optimized log2 calculation (2.0).
-const bucketGrowthOptimized = 2.0
-
-// binarySearchThreshold is the number of buckets below which binary search is preferred.
-const binarySearchThreshold = 100
-
-// histogram is a thread-safe, sharded histogram that uses geometric bucketing.
-// It is designed for high-performance, concurrent metric recording by distributing
-// updates across multiple shards, reducing false-sharing and contention.
+// histogram is a thread-safe, sharded histogram that uses dynamic bucketing.
+// It uses a TDigest to store samples and generates buckets at report time.
 type histogram struct {
-	bucketFinder func(float64) int
-	bounds       []float64
-	counts       []uint64
-	numBuckets   int
-	boundsHash   uint64
-	total        uint64
-	maxVal       float64
-	m2           float64
-	min          float64
-	minVal       float64
-	mean         float64
-	growth       float64
-	invLogGrowth float64
-	max          float64
-	mu           sync.Mutex
-	_            [paddingSize]byte
+	digest         TDigest
+	bucketInterval float64
+	tailSegments   int
+	maxBuckets     int
+
+	total uint64
+	mean  float64
+	m2    float64
+	min   float64
+	max   float64
+
+	mu sync.Mutex
+	_  [paddingSize]byte
 }
 
 // shardedHistogram is a sharded wrapper around histogram.
@@ -64,11 +55,10 @@ type shardedHistogram struct {
 
 // histogramConfig holds configuration for Histogram.
 type histogramConfig struct {
-	Min        float64 `json:"min"         yaml:"min"`
-	Max        float64 `json:"max"         yaml:"max"`
-	Growth     float64 `json:"growth"      yaml:"growth"`
-	NumBuckets int     `json:"num_buckets" yaml:"num_buckets"`
-	NumShards  int     `json:"num_shards"  yaml:"num_shards"`
+	NumShards      int           `json:"num_shards"      yaml:"num_shards"`
+	BucketInterval time.Duration `json:"bucket_interval" yaml:"bucket_interval"`
+	TailSegments   int           `json:"tail_segments"   yaml:"tail_segments"`
+	MaxBuckets     int           `json:"max_buckets"     yaml:"max_buckets"`
 }
 
 // Init initializes the histogram with the provided options.
@@ -87,21 +77,17 @@ func (h *histogram) Init(opts ...HistogramOption) error {
 		}
 	}
 
-	h.minVal = cfg.Min
-	h.maxVal = cfg.Max
-	h.growth = cfg.Growth
-	h.numBuckets = cfg.NumBuckets
-	h.invLogGrowth = 1.0 / math.Log(h.growth)
+	h.bucketInterval = float64(cfg.BucketInterval.Nanoseconds())
+	h.tailSegments = cfg.TailSegments
+	h.maxBuckets = cfg.MaxBuckets
+
+	var err error
+	h.digest, err = NewTDigest(defaultTDigestOpts...)
+	if err != nil {
+		return err
+	}
 
 	h.mu.Lock()
-	if len(h.counts) < h.numBuckets {
-		h.counts = make([]uint64, h.numBuckets)
-	} else {
-		for j := range h.counts {
-			h.counts[j] = 0
-		}
-		h.counts = h.counts[:h.numBuckets]
-	}
 	h.total = 0
 	h.mean = 0
 	h.m2 = 0
@@ -109,41 +95,10 @@ func (h *histogram) Init(opts ...HistogramOption) error {
 	h.max = math.Inf(-1)
 	h.mu.Unlock()
 
-	if len(h.bounds) < h.numBuckets-1 {
-		h.bounds = make([]float64, h.numBuckets-1)
-	} else {
-		h.bounds = h.bounds[:h.numBuckets-1]
-	}
-
-	// Build geometric bucket boundaries.
-	// Geometric buckets grow exponentially based on the growth factor.
-	// bounds[i] = min * growth^i
-	h.bounds[0] = h.minVal
-	for i := 1; i < h.numBuckets-1; i++ {
-		h.bounds[i] = h.minVal * math.Pow(h.growth, float64(i))
-	}
-
-	// Precompute boundsHash for compatibility checks on merge.
-	h.boundsHash = computeHash(h.bounds...)
-
-	// Select optimal bucket finding strategy
-	h.setBucketFinder()
-
 	return nil
 }
 
-func (h *histogram) setBucketFinder() {
-	if h.growth == bucketGrowthOptimized {
-		h.bucketFinder = h.findBucketGrowth2
-	} else if h.numBuckets < binarySearchThreshold {
-		h.bucketFinder = h.findBucketBinarySearch
-	} else {
-		h.bucketFinder = h.findBucketLog
-	}
-}
-
-// NewHistogram creates a new sharded histogram with geometric bucketing.
-// It takes a variable number of HistogramOption functions to configure the histogram.
+// NewHistogram creates a new sharded histogram with dynamic bucketing.
 func NewHistogram(opts ...HistogramOption) (Histogram, error) {
 	cfg := histogramConfig{}
 	for _, opt := range append(defaultHistogramOpts, opts...) {
@@ -183,15 +138,15 @@ func (sh *shardedHistogram) Reset() {
 // Reset resets the histogram to its initial state.
 func (h *histogram) Reset() {
 	h.mu.Lock()
+	defer h.mu.Unlock()
 	h.total = 0
 	h.mean = 0
 	h.m2 = 0
 	h.min = math.Inf(1)
 	h.max = math.Inf(-1)
-	for j := range h.counts {
-		h.counts[j] = 0
+	if h.digest != nil {
+		h.digest.Reset()
 	}
-	h.mu.Unlock()
 }
 
 // shardIndexForValue selects a shard index for the given value.
@@ -203,37 +158,25 @@ func (sh *shardedHistogram) shardIndexForValue(val float64) int {
 }
 
 // Record adds a value to the sharded histogram.
-// It distributes values across shards to reduce lock contention.
 func (sh *shardedHistogram) Record(val float64) {
 	idx := sh.shardIndexForValue(val)
-	// Ensure index is within bounds, although computeHash % len guarantees it (if len > 0)
 	if idx >= 0 && idx < len(sh.shards) {
 		sh.shards[idx].Record(val)
 	}
 }
 
-// Record adds a value to the histogram. It is thread-safe.
-//
-// It hashes the value to select a shard, then updates the shard's
-// bucket counts and summary statistics using Welford's algorithm.
+// Record adds a value to the histogram.
 func (h *histogram) Record(val float64) {
 	if math.IsNaN(val) || math.IsInf(val, 0) {
 		return
 	}
 
-	// Determine bucket index for this value.
-	bucketIdx := h.findBucket(val)
+	h.digest.Add(val)
 
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	// Update bucket count and total count.
-	if bucketIdx >= 0 && bucketIdx < len(h.counts) {
-		h.counts[bucketIdx]++
-	}
 	h.total++
-
-	// Update min and max.
 	if val < h.min {
 		h.min = val
 	}
@@ -241,96 +184,10 @@ func (h *histogram) Record(val float64) {
 		h.max = val
 	}
 
-	// Update mean and m2 using Welford's online algorithm for variance.
-	// This method is numerically stable and avoids catastrophic cancellation.
-	//
-	// Let M_n be the sum of squares of differences from the current mean:
-	//   M_n = Σ_{i=1 to n} (x_i - mean_n)^2
-	//
-	// The recurrence relations are:
-	//   mean_n = mean_{n-1} + (x_n - mean_{n-1}) / n
-	//   M_n = M_{n-1} + (x_n - mean_{n-1}) * (x_n - mean_n)
-	//
-	// Here, `s.mean` is mean_n, `s.m2` is M_n, and `val` is x_n.
-	// We use FMA (Fused Multiply-Add) for better precision.
+	// Update mean and m2 using Welford's algorithm
 	delta := val - h.mean
 	h.mean = math.FMA(delta, 1.0/float64(h.total), h.mean)
 	h.m2 = math.FMA(delta, val-h.mean, h.m2)
-}
-
-// findBucket delegates to the selected strategy.
-func (h *histogram) findBucket(val float64) int {
-	return h.bucketFinder(val)
-}
-
-// findBucketLog determines the correct bucket index for a given value using
-// a logarithmic formula for geometric buckets.
-//
-// Formula: index = log_{growth}(val / min) + 1
-//
-//	index = ln(val/min) / ln(growth) + 1
-func (h *histogram) findBucketLog(val float64) int {
-	if val <= h.minVal {
-		return 0
-	}
-
-	// Use precomputed inverse log growth to avoid division
-	idx := int(math.Ceil(math.Log(val/h.minVal) * h.invLogGrowth))
-
-	if idx < 0 {
-		return 0
-	}
-	if idx >= h.numBuckets {
-		return h.numBuckets - 1
-	}
-	return idx
-}
-
-// findBucketBinarySearch uses binary search on bounds.
-func (h *histogram) findBucketBinarySearch(val float64) int {
-	if val <= h.minVal {
-		return 0
-	}
-	if len(h.bounds) > 0 && val > h.bounds[len(h.bounds)-1] {
-		return h.numBuckets - 1
-	}
-
-	// slices.BinarySearch finds the smallest index i such that bounds[i] >= val
-	idx, _ := slices.BinarySearch(h.bounds, val)
-	// The buckets are:
-	// 0: <= bounds[0] (which is minVal, covered by check above)
-	// 1: (bounds[0], bounds[1]]
-	// ...
-	// i: (bounds[i-1], bounds[i]]
-	//
-	// If val is in bucket i, then bounds[i-1] < val <= bounds[i].
-	// BinarySearch returns i such that bounds[i] >= val.
-	// So the index returned matches the bucket index, except for the 0th bucket check.
-	// But wait, bounds[0] == minVal.
-	// if val <= minVal, returned 0.
-	// if val > minVal:
-	//   if val <= bounds[1], idx will be 1. Correct.
-	//   if val > bounds[1] and val <= bounds[2], idx will be 2. Correct.
-	return idx
-}
-
-// findBucketGrowth2 uses math.Log2 which is potentially faster than math.Log.
-func (h *histogram) findBucketGrowth2(val float64) int {
-	if val <= h.minVal {
-		return 0
-	}
-
-	// index = log2(val / min) + 1
-	idx := int(math.Ceil(math.Log2(val / h.minVal)))
-
-	// Check bounds
-	if idx < 0 {
-		return 0
-	}
-	if idx >= h.numBuckets {
-		return h.numBuckets - 1
-	}
-	return idx
 }
 
 // Clone returns a deep copy of the sharded histogram.
@@ -339,7 +196,6 @@ func (sh *shardedHistogram) Clone() Histogram {
 		shards: make([]*histogram, len(sh.shards)),
 	}
 	for i, h := range sh.shards {
-		// Fix forcetypeassert
 		cloned := h.Clone()
 		c, ok := cloned.(*histogram)
 		if ok {
@@ -352,17 +208,12 @@ func (sh *shardedHistogram) Clone() Histogram {
 // Clone returns a deep copy of the histogram.
 func (h *histogram) Clone() Histogram {
 	newH := new(histogram)
-	newH.minVal = h.minVal
-	newH.maxVal = h.maxVal
-	newH.growth = h.growth
-	newH.invLogGrowth = h.invLogGrowth
-	newH.numBuckets = h.numBuckets
-	newH.boundsHash = h.boundsHash
-	newH.setBucketFinder()
-
-	// Copy bounds
-	// Bounds are immutable after initialization, so we can share the underlying array.
-	newH.bounds = h.bounds
+	newH.bucketInterval = h.bucketInterval
+	newH.tailSegments = h.tailSegments
+	newH.maxBuckets = h.maxBuckets
+	if h.digest != nil {
+		newH.digest = h.digest.Clone()
+	}
 
 	h.mu.Lock()
 	newH.total = h.total
@@ -370,12 +221,6 @@ func (h *histogram) Clone() Histogram {
 	newH.m2 = h.m2
 	newH.min = h.min
 	newH.max = h.max
-
-	if cap(newH.counts) < len(h.counts) {
-		newH.counts = make([]uint64, len(h.counts))
-	}
-	newH.counts = newH.counts[:len(h.counts)]
-	copy(newH.counts, h.counts)
 	h.mu.Unlock()
 
 	return newH
@@ -411,8 +256,11 @@ func (h *histogram) Merge(other Histogram) error {
 
 // mergeHistogram merges data from src into h.
 func (h *histogram) mergeHistogram(src *histogram) error {
-	if h.boundsHash != src.boundsHash {
-		return errors.New("incompatible histograms: bounds checksum mismatch")
+	// Check configuration compatibility?
+	// For now, assume consistent config from same collector factory.
+
+	if err := h.digest.Merge(src.digest); err != nil {
+		return err
 	}
 
 	src.mu.Lock()
@@ -425,19 +273,11 @@ func (h *histogram) mergeHistogram(src *histogram) error {
 	srcM2 := src.m2
 	srcMin := src.min
 	srcMax := src.max
-	srcCounts := slices.Clone(src.counts)
 	src.mu.Unlock()
 
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	for j := range h.counts {
-		if j < len(srcCounts) {
-			h.counts[j] += srcCounts[j]
-		}
-	}
-
-	// Merge statistics using Welford's method for combined variance
 	if h.total == 0 {
 		h.total = srcTotal
 		h.mean = srcMean
@@ -466,87 +306,31 @@ func (h *histogram) mergeHistogram(src *histogram) error {
 
 // Snapshot returns a merged, consistent view of the histogram's data.
 func (sh *shardedHistogram) Snapshot() *HistogramSnapshot {
-	snap := &HistogramSnapshot{
-		Min: math.Inf(1),
-		Max: math.Inf(-1),
-	}
-
 	if len(sh.shards) == 0 {
-		return snap
+		return &HistogramSnapshot{
+			Min: math.Inf(1),
+			Max: math.Inf(-1),
+		}
 	}
 
-	first := sh.shards[0]
-	snap.Bounds = first.bounds
-	snap.Counts = make([]uint64, first.numBuckets)
-
-	var totalCount uint64
-	var grandMean float64
-	var grandM2 float64
-
-	for _, h := range sh.shards {
-		h.mu.Lock()
-		total := h.total
-		if total == 0 {
-			h.mu.Unlock()
-			continue
-		}
-
-		for j := range h.counts {
-			snap.Counts[j] += h.counts[j]
-		}
-
-		if h.min < snap.Min {
-			snap.Min = h.min
-		}
-		if h.max > snap.Max {
-			snap.Max = h.max
-		}
-
-		// Aggregate Mean/M2 using Welford's algorithm
-		if totalCount == 0 {
-			grandMean = h.mean
-			grandM2 = h.m2
-			totalCount = total
-		} else {
-			n1 := float64(totalCount)
-			n2 := float64(total)
-			delta := h.mean - grandMean
-			newTotal := n1 + n2
-
-			grandMean = grandMean + delta*n2/newTotal
-			grandM2 = grandM2 + h.m2 + delta*delta*n1*n2/newTotal
-			totalCount += total
-		}
-		h.mu.Unlock()
+	// Merge all shards into one histogram to generate buckets correctly.
+	merged := sh.shards[0].Clone().(*histogram)
+	for i := 1; i < len(sh.shards); i++ {
+		// Ignore error as shards are compatible
+		_ = merged.mergeHistogram(sh.shards[i])
 	}
-
-	snap.Total = totalCount
-	snap.Mean = grandMean
-	snap.M2 = grandM2
-	snap.Sum = grandMean * float64(totalCount)
-
-	if totalCount > 0 {
-		snap.SumSq = grandM2 + (grandMean*grandMean)*float64(totalCount)
-		snap.StdDev = math.Sqrt(grandM2 / float64(totalCount))
-	}
-
-	return snap
+	return merged.Snapshot()
 }
 
 func (h *histogram) Snapshot() *HistogramSnapshot {
 	h.mu.Lock()
-	defer h.mu.Unlock()
-
 	snap := &HistogramSnapshot{
-		Counts: slices.Clone(h.counts),
-		Bounds: h.bounds,
-		Total:  h.total,
-		Mean:   h.mean,
-		M2:     h.m2,
-		Min:    h.min,
-		Max:    h.max,
+		Total: h.total,
+		Mean:  h.mean,
+		M2:    h.m2,
+		Min:   h.min,
+		Max:   h.max,
 	}
-
 	snap.Sum = h.mean * float64(h.total)
 	if h.total > 0 {
 		snap.SumSq = h.m2 + (h.mean*h.mean)*float64(h.total)
@@ -555,18 +339,122 @@ func (h *histogram) Snapshot() *HistogramSnapshot {
 		snap.Min = math.Inf(1)
 		snap.Max = math.Inf(-1)
 	}
+	h.mu.Unlock()
+
+	if snap.Total == 0 {
+		return snap
+	}
+
+	// Dynamic Bucketing Strategy
+	// Clone digest to use for analysis (thread-safe after clone)
+	// Actually Clone takes lock, so we should do it outside lock above?
+	// h.digest is safe to Clone if h.digest is thread safe. TDigest impl is thread safe.
+	// However, merging might be happening. TDigest locking handles it.
+	digest := h.digest.Clone()
+
+	// Step A: Analyze Distribution
+	p99 := digest.Quantile(0.99)
+	maxVal := snap.Max
+	if math.IsInf(maxVal, 0) {
+		maxVal = 0 // Should not happen if Total > 0
+	}
+
+	// Step B: Phase 1 - Main Body (0 to P99)
+	var bounds []float64
+	current := 0.0
+	// Use h.bucketInterval (float64 ns)
+	interval := h.bucketInterval
+	if interval <= 0 {
+		interval = 10 * 1e6 // 10ms fallback
+	}
+
+	// Safety check loop count
+	limit := h.maxBuckets
+	if limit <= 0 {
+		limit = 1000
+	}
+
+	// If P99 is very large compared to interval, increase interval
+	// Estimate buckets: P99 / interval.
+	estimated := p99 / interval
+	if estimated > float64(limit) {
+		interval = p99 / float64(limit)
+		// Round interval up to nicer number? keeping it simple for now.
+	}
+
+	for current < p99 {
+		current += interval
+		bounds = append(bounds, current)
+		if len(bounds) >= limit {
+			break
+		}
+	}
+
+	// Step C: Phase 2 - Long Tail (P99 to Max)
+	if maxVal > current {
+		remainingBuckets := h.tailSegments
+		if remainingBuckets <= 0 {
+			remainingBuckets = 10
+		}
+
+		// If we already hit limit, we might only add one bucket to Max?
+		// Or if we adjusted interval, we should be fine.
+		// If we hit limit in Phase 1, current is at limit * interval (~P99).
+		// We should add at least one bucket to Max if Max > current.
+
+		tailRange := maxVal - current
+		step := tailRange / float64(remainingBuckets)
+
+		for i := 0; i < remainingBuckets; i++ {
+			current += step
+			// Ensure we don't exceed Max due to float precision, or ensure last is Max.
+			if i == remainingBuckets-1 {
+				current = maxVal
+			}
+			bounds = append(bounds, current)
+		}
+	}
+
+	// Deduplicate bounds if any (e.g. if P99 > Max due to estimation error, or step is 0)
+	// Also ensure monotonic increasing
+	// Sanitize bounds
+	validBounds := make([]float64, 0, len(bounds))
+	prev := 0.0 // Start from 0
+	for _, b := range bounds {
+		if b > prev {
+			validBounds = append(validBounds, b)
+			prev = b
+		}
+	}
+	snap.Bounds = validBounds
+
+	// Calculate counts using CDF
+	snap.Counts = make([]uint64, len(validBounds))
+	prevCDF := 0.0 // CDF at 0 is 0
+
+	for i, b := range validBounds {
+		cdf := digest.CDF(b)
+		count := (cdf - prevCDF) * float64(snap.Total)
+		// Round to nearest int
+		snap.Counts[i] = uint64(math.Round(count))
+		prevCDF = cdf
+	}
+
+	// Adjust total count mismatch due to rounding?
+	// Presenter doesn't require sum(Counts) == Total.
+	// But it's good to be consistent.
+	// We won't force it for now.
+
 	return snap
 }
 
 func (sh *shardedHistogram) BoundsHash() uint64 {
-	if len(sh.shards) > 0 {
-		return sh.shards[0].BoundsHash()
-	}
+	// Not applicable for dynamic histogram, return 0 or consistent value
 	return 0
 }
 
 func (h *histogram) BoundsHash() uint64 {
-	return h.boundsHash
+	return 0
 }
 
 // HistogramSnapshot represents a consistent point-in-time view of a Histogram.
@@ -604,14 +492,58 @@ func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) error {
 		return nil
 	}
 
+	// For dynamic histograms, bounds might differ.
+	// Simple merging of counts is not possible if bounds mismatch.
+	// However, MergeSnapshots is used for aggregating snapshots from different collectors.
+	// If collectors are configured identically and see similar data, bounds might be close but likely not identical.
+	// Dynamic histogram snapshot merging requires re-binning or just erroring out?
+	// If we use TDigest in GlobalSnapshot, we can regenerate buckets from merged TDigest?
+	// But GlobalSnapshot stores *HistogramSnapshot.
+	// If HistogramSnapshot stores Counts/Bounds, we can't merge them if bounds differ.
+	//
+	// In the original code, bounds were static, so merging was easy.
+	// With dynamic bounds, merging snapshots is hard.
+	// However, GlobalSnapshot also has `LatPercentiles` (TDigest).
+	// Ideally, we should merge TDigests and then generate HistogramSnapshot from merged TDigest.
+	//
+	// `metrics.go` `MergeSnapshots` merges histograms.
+	// If we cannot merge histograms, the `Latencies` field in merged snapshot will be invalid.
+	//
+	// For now, I will implement a basic merge that only works if bounds match, else errors or clears buckets.
+	// Or, if this is for display only, maybe we don't need to merge HistogramSnapshots?
+	// But `MergeSnapshots` is used.
+	//
+	// Given the scope, I will implement strict check.
+
 	if len(other.Counts) > 0 {
 		if len(s.Counts) == 0 {
-			s.Counts = make([]uint64, len(other.Counts))
-		} else if len(s.Counts) != len(other.Counts) {
-			return errors.New("cannot merge histograms with different bucket counts")
-		}
-		for i, c := range other.Counts {
-			s.Counts[i] += c
+			s.Counts = slices.Clone(other.Counts)
+			s.Bounds = slices.Clone(other.Bounds)
+		} else {
+			// Check compatibility
+			if len(s.Bounds) != len(other.Bounds) {
+				// Fallback: Clear histogram data, keep summary stats
+				s.Counts = nil
+				s.Bounds = nil
+				// return errors.New("cannot merge histograms with different bucket counts")
+			} else {
+				// Check bounds equality (approximate)
+				match := true
+				for i := range s.Bounds {
+					if math.Abs(s.Bounds[i]-other.Bounds[i]) > 1e-9 {
+						match = false
+						break
+					}
+				}
+				if match {
+					for i, c := range other.Counts {
+						s.Counts[i] += c
+					}
+				} else {
+					s.Counts = nil
+					s.Bounds = nil
+				}
+			}
 		}
 	}
 
@@ -644,10 +576,6 @@ func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) error {
 		s.Sum += other.Sum
 		s.SumSq += other.SumSq
 		s.Total += other.Total
-	}
-
-	if len(s.Bounds) == 0 {
-		s.Bounds = other.Bounds
 	}
 	return nil
 }

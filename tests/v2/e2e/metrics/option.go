@@ -45,10 +45,9 @@ var (
 	}
 
 	defaultHistogramOpts = []HistogramOption{
-		WithHistogramMin(1000),        // 1us
-		WithHistogramMax(60000000000), // 60s (soft limit)
-		WithHistogramGrowth(1.2),
-		WithHistogramNumBuckets(100), // Covers range from us to min
+		WithBucketInterval(10 * time.Millisecond),
+		WithTailSegments(10),
+		WithHistogramMaxBuckets(1000),
 		WithHistogramNumShards(16),
 	}
 
@@ -162,43 +161,35 @@ func WithExemplar(opts ...ExemplarOption) Option {
 	}
 }
 
-// WithHistogramMin sets the minimum value for the histogram.
-func WithHistogramMin(minVal float64) HistogramOption {
+// WithBucketInterval sets the interval for the main buckets in the histogram.
+func WithBucketInterval(interval time.Duration) HistogramOption {
 	return func(cfg *histogramConfig) error {
-		cfg.Min = minVal
-		if cfg.Min <= 0 {
-			return errors.New("histogram min must be > 0 for geometric buckets")
+		if interval <= 0 {
+			return errors.New("bucket interval must be positive")
 		}
+		cfg.BucketInterval = interval
 		return nil
 	}
 }
 
-// WithHistogramMax sets the maximum value for the histogram.
-func WithHistogramMax(maxVal float64) HistogramOption {
+// WithTailSegments sets the number of segments for the tail buckets in the histogram.
+func WithTailSegments(count int) HistogramOption {
 	return func(cfg *histogramConfig) error {
-		cfg.Max = maxVal
+		if count <= 0 {
+			return errors.New("tail segments must be positive")
+		}
+		cfg.TailSegments = count
 		return nil
 	}
 }
 
-// WithHistogramGrowth sets the growth factor for the histogram.
-func WithHistogramGrowth(growth float64) HistogramOption {
+// WithHistogramMaxBuckets sets the maximum number of buckets allowed.
+func WithHistogramMaxBuckets(count int) HistogramOption {
 	return func(cfg *histogramConfig) error {
-		cfg.Growth = growth
-		if cfg.Growth <= 1 {
-			return errors.New("histogram growth must be > 1 for geometric buckets")
+		if count <= 0 {
+			return errors.New("max buckets must be positive")
 		}
-		return nil
-	}
-}
-
-// WithHistogramNumBuckets sets the number of buckets for the histogram.
-func WithHistogramNumBuckets(n int) HistogramOption {
-	return func(cfg *histogramConfig) error {
-		cfg.NumBuckets = n
-		if cfg.NumBuckets < 2 {
-			return errors.New("numBuckets must be at least 2")
-		}
+		cfg.MaxBuckets = count
 		return nil
 	}
 }
@@ -210,6 +201,36 @@ func WithHistogramNumShards(n int) HistogramOption {
 		if cfg.NumShards <= 0 {
 			return errors.New("numShards must be positive")
 		}
+		return nil
+	}
+}
+
+// Deprecated options maintained for compatibility but no-op or mapped if possible.
+
+// WithHistogramMin is deprecated.
+func WithHistogramMin(minVal float64) HistogramOption {
+	return func(cfg *histogramConfig) error {
+		return nil
+	}
+}
+
+// WithHistogramMax is deprecated.
+func WithHistogramMax(maxVal float64) HistogramOption {
+	return func(cfg *histogramConfig) error {
+		return nil
+	}
+}
+
+// WithHistogramGrowth is deprecated.
+func WithHistogramGrowth(growth float64) HistogramOption {
+	return func(cfg *histogramConfig) error {
+		return nil
+	}
+}
+
+// WithHistogramNumBuckets is deprecated.
+func WithHistogramNumBuckets(n int) HistogramOption {
+	return func(cfg *histogramConfig) error {
 		return nil
 	}
 }

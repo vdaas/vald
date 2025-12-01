@@ -172,6 +172,12 @@ func (t *shardedTDigest) Quantile(q float64) float64 {
 	return merged.Quantile(q)
 }
 
+// CDF returns the estimated cumulative distribution function value for the given value.
+func (t *shardedTDigest) CDF(value float64) float64 {
+	merged := t.mergeAllShards()
+	return merged.CDF(value)
+}
+
 // mergeAllShards merges all shards into a single tdigest for querying.
 func (t *shardedTDigest) mergeAllShards() *tdigest {
 	// Create a new temporary shard
@@ -417,6 +423,48 @@ func (t *tdigest) Quantile(q float64) float64 {
 	}
 
 	return t.centroids[len(t.centroids)-1].Mean
+}
+
+// CDF returns the estimated cumulative distribution function value for the given value.
+func (t *tdigest) CDF(value float64) float64 {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	t.flushLocked()
+
+	if t.count == 0 || len(t.centroids) == 0 {
+		return 0
+	}
+
+	if value < t.centroids[0].Mean {
+		return 0
+	}
+	if value >= t.centroids[len(t.centroids)-1].Mean {
+		return 1
+	}
+
+	if len(t.centroids) == 1 {
+		return 1
+	}
+
+	cumulative := 0.0
+	for i := 1; i < len(t.centroids); i++ {
+		prev := t.centroids[i-1]
+		curr := t.centroids[i]
+
+		if value < curr.Mean {
+			// Interpolate between prev and curr
+			prevCenter := cumulative + prev.Weight/centroidWeightFactor
+			currCenter := (cumulative + prev.Weight) + curr.Weight/centroidWeightFactor
+
+			fraction := (value - prev.Mean) / (curr.Mean - prev.Mean)
+			weight := prevCenter + fraction*(currCenter-prevCenter)
+
+			return weight / t.count
+		}
+		cumulative += prev.Weight
+	}
+
+	return 1
 }
 
 // Merge merges another t-digest into this one.

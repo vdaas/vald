@@ -80,6 +80,7 @@ type Exemplar interface {
 type TDigest interface {
 	Add(value float64)
 	Quantile(q float64) float64
+	CDF(value float64) float64
 	Quantiles() []float64
 	Merge(other TDigest) error
 	Clone() TDigest
