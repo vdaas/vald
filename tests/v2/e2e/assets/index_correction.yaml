@@ -1,18 +1,3 @@
-#
-# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
 time_zone: UTC
 logging:
   format: raw
@@ -30,8 +15,8 @@ kubernetes:
     target_port: 8081
 target:
   addrs:
-    - 127.0.0.1:8082
-  health_check_duration: "1s"
+  - 127.0.0.1:8082
+  health_check_duration: 1s
   connection_pool:
     enable_dns_resolver: true
     enable_rebalance: true
@@ -47,27 +32,27 @@ target:
     maximum_duration: 5s
     retry_count: 100
   call_option:
-    content_subtype: ""
+    content_subtype: ''
     max_recv_msg_size: 0
     max_retry_rpc_buffer_size: 0
     max_send_msg_size: 0
     wait_for_ready: true
   dial_option:
-    authority: ""
+    authority: ''
     backoff_base_delay: 1s
     backoff_jitter: 0.2
     backoff_max_delay: 120s
     backoff_multiplier: 1.6
     disable_retry: false
     enable_backoff: true
-    idle_timeout: ""
+    idle_timeout: ''
     initial_connection_window_size: 2097152
     initial_window_size: 1048576
     insecure: true
     interceptors: []
     keepalive:
       permit_without_stream: false
-      time: ""
+      time: ''
       timeout: 30s
     max_call_attempts: 0
     max_header_list_size: 0
@@ -76,8 +61,8 @@ target:
     net:
       dialer:
         dual_stack_enabled: true
-        keepalive: ""
-        timeout: ""
+        keepalive: ''
+        timeout: ''
       dns:
         cache_enabled: true
         cache_expiration: 1h
@@ -101,7 +86,7 @@ target:
         key: /path/to/key
     read_buffer_size: 0
     shared_write_buffer: true
-    timeout: ""
+    timeout: ''
     user_agent: Vald-gRPC
     write_buffer_size: 0
   tls:
@@ -118,16 +103,8 @@ metadata_string: key4=value4,key5=value5
 metrics:
   enabled: true
   latency_histogram:
-    min: 0.001
-    max: 10.0
-    growth: 2.0
-    num_buckets: 10
     num_shards: 10
   queue_wait_histogram:
-    min: 0.0001
-    max: 1.0
-    growth: 2.0
-    num_buckets: 10
     num_shards: 10
   latency_tdigest:
     compression: 100
@@ -140,131 +117,131 @@ metrics:
   exemplar:
     capacity: 10
   range_scales:
-    - name: "0-100"
-      width: 10
-      capacity: 10
+  - name: 0-100
+    width: 10
+    capacity: 10
   time_scales:
-    - name: "0-10s"
-      width: 1
-      capacity: 10
+  - name: 0-10s
+    width: 1
+    capacity: 10
   custom_counters:
-    - "custom_counter_1"
+  - custom_counter_1
 strategies:
-  - concurrency: 1
-    name: check Index Property
-    operations:
-      - name: IndexProperty
-        executions:
-          - mode: unary
-            name: IndexProperty
-            type: index_property
-            wait: 3s
-            expect:
-              - status_code: ok
-                path: $.details.length()
-                op: ge
-                value: 3
-  - concurrency: 1
-    name: Initial Insert and Wait
-    operations:
-      - name: Insert Operation
-        executions:
-          - name: Flush
-            mode: unary
-            type: flush
-            wait: 20s
-          - mode: unary
-            name: IndexInfo
-            type: index_info
-            expect:
-              - value: {}
-          - name: Insert
-            type: insert
-            mode: unary
-            parallelism: _E2E_PARALLELISM_
-            num: _E2E_INSERT_COUNT_
-            qps: _E2E_QPS_
-            wait: 2m
-          - mode: unary
-            name: IndexInfo
-            type: index_info
-            retry_until_success_timeout: 5m
-            expect:
-              - status_code: ok
-                path: $.sum()
-                value: _E2E_EXPECTED_INDEX_
-  - concurrency: 1
-    name: Index Correction -> Check the number of Replica
-    operations:
-      - name: IndexCorrection
-        executions:
-          - name: IndexCorrection
-            type: kubernetes
-            mode: other
-            kubernetes:
-              kind: job
-              namespace: default
-              name: vald-index-correction
-              action: create
-          - name: Wait
-            type: kubernetes
-            mode: other
-            kubernetes:
-              kind: pod
-              namespace: default
-              label_selector: "app=vald-index-correction"
-              action: wait
-              status: completed
-          - mode: unary
-            name: IndexInfo
-            type: index_info
-            expect:
-              - status_code: ok
-                path: $.sum()
-                value: _E2E_EXPECTED_INDEX_
-  - concurrency: 1
-    name: Kill an agent -> Index Correction -> Check the number of Replica
-    operations:
-      - name: IndexCorrection
-        executions:
-          - name: KillAgent
-            type: kubernetes
-            mode: other
-            wait: 10s
-            kubernetes:
-              kind: pod
-              namespace: default
-              name: vald-agent-0
-              action: delete
-          - mode: unary
-            name: IndexInfo
-            type: index_info
-            expect:
-              - status_code: ok
-                path: $.sum()
-                op: lt
-                value: _E2E_EXPECTED_INDEX_
-          - name: IndexCorrection
-            type: kubernetes
-            mode: other
-            kubernetes:
-              kind: job
-              namespace: default
-              name: vald-index-correction
-              action: create
-          - name: Wait
-            type: kubernetes
-            mode: other
-            kubernetes:
-              kind: pod
-              namespace: default
-              label_selector: "app=vald-index-correction"
-              status: completed
-              action: wait
-          - mode: unary
-            name: IndexInfo
-            type: index_info
-            expect:
-              - status_code: ok
-                path: $.sum()
-                value: _E2E_EXPECTED_INDEX_
+- concurrency: 1
+  name: check Index Property
+  operations:
+  - name: IndexProperty
+    executions:
+    - mode: unary
+      name: IndexProperty
+      type: index_property
+      wait: 3s
+      expect:
+      - status_code: ok
+        path: $.details.length()
+        op: ge
+        value: 3
+- concurrency: 1
+  name: Initial Insert and Wait
+  operations:
+  - name: Insert Operation
+    executions:
+    - name: Flush
+      mode: unary
+      type: flush
+      wait: 20s
+    - mode: unary
+      name: IndexInfo
+      type: index_info
+      expect:
+      - value: {}
+    - name: Insert
+      type: insert
+      mode: unary
+      parallelism: _E2E_PARALLELISM_
+      num: _E2E_INSERT_COUNT_
+      qps: _E2E_QPS_
+      wait: 2m
+    - mode: unary
+      name: IndexInfo
+      type: index_info
+      retry_until_success_timeout: 5m
+      expect:
+      - status_code: ok
+        path: $.sum()
+        value: _E2E_EXPECTED_INDEX_
+- concurrency: 1
+  name: Index Correction -> Check the number of Replica
+  operations:
+  - name: IndexCorrection
+    executions:
+    - name: IndexCorrection
+      type: kubernetes
+      mode: other
+      kubernetes:
+        kind: job
+        namespace: default
+        name: vald-index-correction
+        action: create
+    - name: Wait
+      type: kubernetes
+      mode: other
+      kubernetes:
+        kind: pod
+        namespace: default
+        label_selector: app=vald-index-correction
+        action: wait
+        status: completed
+    - mode: unary
+      name: IndexInfo
+      type: index_info
+      expect:
+      - status_code: ok
+        path: $.sum()
+        value: _E2E_EXPECTED_INDEX_
+- concurrency: 1
+  name: Kill an agent -> Index Correction -> Check the number of Replica
+  operations:
+  - name: IndexCorrection
+    executions:
+    - name: KillAgent
+      type: kubernetes
+      mode: other
+      wait: 10s
+      kubernetes:
+        kind: pod
+        namespace: default
+        name: vald-agent-0
+        action: delete
+    - mode: unary
+      name: IndexInfo
+      type: index_info
+      expect:
+      - status_code: ok
+        path: $.sum()
+        op: lt
+        value: _E2E_EXPECTED_INDEX_
+    - name: IndexCorrection
+      type: kubernetes
+      mode: other
+      kubernetes:
+        kind: job
+        namespace: default
+        name: vald-index-correction
+        action: create
+    - name: Wait
+      type: kubernetes
+      mode: other
+      kubernetes:
+        kind: pod
+        namespace: default
+        label_selector: app=vald-index-correction
+        status: completed
+        action: wait
+    - mode: unary
+      name: IndexInfo
+      type: index_info
+      expect:
+      - status_code: ok
+        path: $.sum()
+        value: _E2E_EXPECTED_INDEX_

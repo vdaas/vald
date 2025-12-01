@@ -172,6 +172,18 @@ func (t *shardedTDigest) Quantile(q float64) float64 {
 	return merged.Quantile(q)
 }
 
+// CDF returns the estimated cumulative distribution function value for the given value.
+func (t *shardedTDigest) CDF(value, min, max float64) float64 {
+	merged := t.mergeAllShards()
+	return merged.CDF(value, min, max)
+}
+
+// ForEachCentroid iterates over all centroids in the t-digest.
+func (t *shardedTDigest) ForEachCentroid(f func(mean, weight float64) bool) {
+	merged := t.mergeAllShards()
+	merged.ForEachCentroid(f)
+}
+
 // mergeAllShards merges all shards into a single tdigest for querying.
 func (t *shardedTDigest) mergeAllShards() *tdigest {
 	// Create a new temporary shard
@@ -417,6 +429,95 @@ func (t *tdigest) Quantile(q float64) float64 {
 	}
 
 	return t.centroids[len(t.centroids)-1].Mean
+}
+
+// CDF returns the estimated cumulative distribution function value for the given value.
+func (t *tdigest) CDF(value, minVal, maxVal float64) float64 {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	t.flushLocked()
+
+	if t.count == 0 || len(t.centroids) == 0 {
+		return 0
+	}
+
+	if value < minVal {
+		return 0
+	}
+	if value >= maxVal {
+		return 1
+	}
+
+	// Single centroid case
+	if len(t.centroids) == 1 {
+		if maxVal > minVal {
+			return (value - minVal) / (maxVal - minVal)
+		}
+		if value >= minVal {
+			return 1
+		}
+		return 0
+	}
+
+	first := t.centroids[0]
+	// Interpolate lower tail [minVal, first.Mean]
+	if value < first.Mean {
+		rangeWidth := first.Mean - minVal
+		if rangeWidth <= 0 {
+			return 0
+		}
+		fraction := (value - minVal) / rangeWidth
+		// Weight in this range is half of first centroid
+		weight := fraction * (first.Weight / centroidWeightFactor)
+		return weight / t.count
+	}
+
+	last := t.centroids[len(t.centroids)-1]
+	// Interpolate upper tail [last.Mean, maxVal]
+	if value > last.Mean {
+		rangeWidth := maxVal - last.Mean
+		if rangeWidth <= 0 {
+			return 1
+		}
+		fraction := (value - last.Mean) / rangeWidth
+		weight := (last.Weight / centroidWeightFactor) * fraction
+		// Base is Total - last.Weight/2
+		cdfAtLast := t.count - (last.Weight / centroidWeightFactor)
+		return (cdfAtLast + weight) / t.count
+	}
+
+	cumulative := 0.0
+	for i := 1; i < len(t.centroids); i++ {
+		prev := t.centroids[i-1]
+		curr := t.centroids[i]
+
+		if value < curr.Mean {
+			// Interpolate between prev and curr
+			prevCenter := cumulative + prev.Weight/centroidWeightFactor
+			currCenter := (cumulative + prev.Weight) + curr.Weight/centroidWeightFactor
+
+			fraction := (value - prev.Mean) / (curr.Mean - prev.Mean)
+			weight := prevCenter + fraction*(currCenter-prevCenter)
+
+			return weight / t.count
+		}
+		cumulative += prev.Weight
+	}
+
+	return 1
+}
+
+// ForEachCentroid iterates over all centroids in the t-digest.
+func (t *tdigest) ForEachCentroid(f func(mean, weight float64) bool) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	t.flushLocked()
+
+	for _, c := range t.centroids {
+		if !f(c.Mean, c.Weight) {
+			break
+		}
+	}
 }
 
 // Merge merges another t-digest into this one.

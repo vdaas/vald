@@ -57,10 +57,14 @@ func (p *SnapshotPresenter) AsString() string {
 	var sb strings.Builder
 
 	p.renderSummary(&sb)
-	p.renderLatency(&sb)
-	p.renderQueueWait(&sb)
+	if p.snapshot.Total > 1 {
+		p.renderLatency(&sb)
+		p.renderQueueWait(&sb)
+	}
 	p.renderStatusCodes(&sb)
-	p.renderExemplars(&sb)
+	if p.snapshot.Total > 1 {
+		p.renderExemplars(&sb)
+	}
 
 	return sb.String()
 }
@@ -314,12 +318,39 @@ func (p *SnapshotPresenter) renderHistogram(title string, h *HistogramSnapshot, 
 				maxCount = count
 			}
 		}
-		for i, count := range h.Counts {
+		for i := 0; i < len(h.Counts); i++ {
+			count := h.Counts[i]
+			// Consolidate consecutive zero buckets
 			if count == 0 {
-				continue // Skip empty buckets for cleaner output? Or keep them?
-				// Keeping them helps visualize distribution, but if we have 100 buckets and most empty...
-				// Let's keep all buckets for now as per original code.
+				startIdx := i
+				endIdx := i
+				for j := i + 1; j < len(h.Counts); j++ {
+					if h.Counts[j] == 0 {
+						endIdx = j
+					} else {
+						break
+					}
+				}
+				// Render consolidated zero bucket
+				var lowerBound, upperBound string
+				if startIdx == 0 {
+					lowerBound = "0"
+				} else if startIdx-1 < len(h.Bounds) {
+					lowerBound = fmtDur(h.Bounds[startIdx-1])
+				} else {
+					lowerBound = "?"
+				}
+
+				if endIdx >= len(h.Bounds) {
+					upperBound = "inf"
+				} else {
+					upperBound = fmtDur(h.Bounds[endIdx])
+				}
+				_, _ = fmt.Fprintf(&sb, "\t%s - %s [0]\t|\n", lowerBound, upperBound)
+				i = endIdx
+				continue
 			}
+
 			var bar string
 			if maxCount > 0 {
 				bar = strings.Repeat("∎", int(float64(count)/float64(maxCount)*barWidth))

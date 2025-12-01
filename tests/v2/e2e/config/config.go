@@ -95,11 +95,7 @@ type TimeScale struct {
 
 // Histogram represents the configuration for a histogram.
 type Histogram struct {
-	Min        float64 `json:"min,omitempty"         yaml:"min,omitempty"`
-	Max        float64 `json:"max,omitempty"         yaml:"max,omitempty"`
-	Growth     float64 `json:"growth,omitempty"      yaml:"growth,omitempty"`
-	NumBuckets int     `json:"num_buckets,omitempty" yaml:"num_buckets,omitempty"`
-	NumShards  int     `json:"num_shards,omitempty"  yaml:"num_shards,omitempty"`
+	NumShards int `json:"num_shards,omitempty"      yaml:"num_shards,omitempty"`
 }
 
 // TDigest represents the configuration for a TDigest.
@@ -970,22 +966,18 @@ func (m *Metrics) Opts() (opts []metrics.Option) {
 		opts = append(opts, metrics.WithCustomCounters(m.CustomCounters...))
 	}
 	if m.LatencyHistogram != nil {
-		opts = append(opts, metrics.WithLatencyHistogram(
-			metrics.WithHistogramMin(m.LatencyHistogram.Min),
-			metrics.WithHistogramMax(m.LatencyHistogram.Max),
-			metrics.WithHistogramGrowth(m.LatencyHistogram.Growth),
-			metrics.WithHistogramNumBuckets(m.LatencyHistogram.NumBuckets),
-			metrics.WithHistogramNumShards(m.LatencyHistogram.NumShards),
-		))
+		hopts := make([]metrics.HistogramOption, 0, 4)
+		if m.LatencyHistogram.NumShards > 0 {
+			hopts = append(hopts, metrics.WithHistogramNumShards(m.LatencyHistogram.NumShards))
+		}
+		opts = append(opts, metrics.WithLatencyHistogram(hopts...))
 	}
 	if m.QueueWaitHistogram != nil {
-		opts = append(opts, metrics.WithQueueWaitHistogram(
-			metrics.WithHistogramMin(m.QueueWaitHistogram.Min),
-			metrics.WithHistogramMax(m.QueueWaitHistogram.Max),
-			metrics.WithHistogramGrowth(m.QueueWaitHistogram.Growth),
-			metrics.WithHistogramNumBuckets(m.QueueWaitHistogram.NumBuckets),
-			metrics.WithHistogramNumShards(m.QueueWaitHistogram.NumShards),
-		))
+		hopts := make([]metrics.HistogramOption, 0, 4)
+		if m.QueueWaitHistogram.NumShards > 0 {
+			hopts = append(hopts, metrics.WithHistogramNumShards(m.QueueWaitHistogram.NumShards))
+		}
+		opts = append(opts, metrics.WithQueueWaitHistogram(hopts...))
 	}
 	if m.LatencyTDigest != nil {
 		opts = append(opts, metrics.WithLatencyTDigest(

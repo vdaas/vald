@@ -19,9 +19,11 @@ package metrics
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/test"
 )
@@ -99,6 +101,32 @@ func TestSnapshotPresenter(t *testing.T) {
 							return got.Err
 						}
 						checkGoldenFile(tt, goldenFile, got.Val)
+						return nil
+					},
+				},
+				{
+					Name: "single request snapshot",
+					Args: args{
+						snapshot: &GlobalSnapshot{
+							Total: 1,
+							Latencies: &HistogramSnapshot{Total: 1, Mean: 100},
+							QueueWaits: &HistogramSnapshot{Total: 1, Mean: 10},
+							Codes: map[codes.Code]uint64{codes.OK: 1},
+						},
+					},
+					CheckFunc: func(tt *testing.T, want test.Result[string], got test.Result[string]) error {
+						if got.Err != nil {
+							return got.Err
+						}
+						// Verify logic for single request (only AsString uses this logic so far)
+						if name == "AsString" {
+							if strings.Contains(got.Val, "Histogram:") || strings.Contains(got.Val, "Percentiles:") || strings.Contains(got.Val, "Exemplars") {
+								return errors.New("output should not contain Histogram/Percentiles/Exemplars for single request")
+							}
+							if !strings.Contains(got.Val, "Summary") || !strings.Contains(got.Val, "Status Codes") {
+								return errors.New("output should contain Summary and Status Codes")
+							}
+						}
 						return nil
 					},
 				},

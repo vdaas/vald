@@ -45,10 +45,6 @@ var (
 	}
 
 	defaultHistogramOpts = []HistogramOption{
-		WithHistogramMin(1000),        // 1us
-		WithHistogramMax(60000000000), // 60s (soft limit)
-		WithHistogramGrowth(1.2),
-		WithHistogramNumBuckets(100), // Covers range from us to min
 		WithHistogramNumShards(16),
 	}
 
@@ -162,43 +158,23 @@ func WithExemplar(opts ...ExemplarOption) Option {
 	}
 }
 
-// WithHistogramMin sets the minimum value for the histogram.
-func WithHistogramMin(minVal float64) HistogramOption {
+// WithBucketInterval is deprecated and ignored.
+func WithBucketInterval(interval time.Duration) HistogramOption {
 	return func(cfg *histogramConfig) error {
-		cfg.Min = minVal
-		if cfg.Min <= 0 {
-			return errors.New("histogram min must be > 0 for geometric buckets")
-		}
 		return nil
 	}
 }
 
-// WithHistogramMax sets the maximum value for the histogram.
-func WithHistogramMax(maxVal float64) HistogramOption {
+// WithTailSegments is deprecated and ignored.
+func WithTailSegments(count int) HistogramOption {
 	return func(cfg *histogramConfig) error {
-		cfg.Max = maxVal
 		return nil
 	}
 }
 
-// WithHistogramGrowth sets the growth factor for the histogram.
-func WithHistogramGrowth(growth float64) HistogramOption {
+// WithHistogramMaxBuckets is deprecated and ignored.
+func WithHistogramMaxBuckets(count int) HistogramOption {
 	return func(cfg *histogramConfig) error {
-		cfg.Growth = growth
-		if cfg.Growth <= 1 {
-			return errors.New("histogram growth must be > 1 for geometric buckets")
-		}
-		return nil
-	}
-}
-
-// WithHistogramNumBuckets sets the number of buckets for the histogram.
-func WithHistogramNumBuckets(n int) HistogramOption {
-	return func(cfg *histogramConfig) error {
-		cfg.NumBuckets = n
-		if cfg.NumBuckets < 2 {
-			return errors.New("numBuckets must be at least 2")
-		}
 		return nil
 	}
 }
@@ -210,6 +186,36 @@ func WithHistogramNumShards(n int) HistogramOption {
 		if cfg.NumShards <= 0 {
 			return errors.New("numShards must be positive")
 		}
+		return nil
+	}
+}
+
+// Deprecated options maintained for compatibility but no-op or mapped if possible.
+
+// WithHistogramMin is deprecated.
+func WithHistogramMin(minVal float64) HistogramOption {
+	return func(cfg *histogramConfig) error {
+		return nil
+	}
+}
+
+// WithHistogramMax is deprecated.
+func WithHistogramMax(maxVal float64) HistogramOption {
+	return func(cfg *histogramConfig) error {
+		return nil
+	}
+}
+
+// WithHistogramGrowth is deprecated.
+func WithHistogramGrowth(growth float64) HistogramOption {
+	return func(cfg *histogramConfig) error {
+		return nil
+	}
+}
+
+// WithHistogramNumBuckets is deprecated.
+func WithHistogramNumBuckets(n int) HistogramOption {
+	return func(cfg *histogramConfig) error {
 		return nil
 	}
 }

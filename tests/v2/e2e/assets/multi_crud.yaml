@@ -1,18 +1,3 @@
-#
-# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
 time_zone: UTC
 logging:
   format: raw
@@ -30,8 +15,8 @@ kubernetes:
     target_port: 8081
 target:
   addrs:
-    - 127.0.0.1:8082
-  health_check_duration: "1s"
+  - 127.0.0.1:8082
+  health_check_duration: 1s
   connection_pool:
     enable_dns_resolver: true
     enable_rebalance: true
@@ -46,34 +31,28 @@ target:
     jitter_limit: 100ms
     maximum_duration: 5s
     retry_count: 100
-  #  circuit_breaker:
-  #    closed_error_rate: 0.7
-  #    closed_refresh_timeout: 10s
-  #    half_open_error_rate: 0.5
-  #    min_samples: 1000
-  #    open_timeout: 1s
   call_option:
-    content_subtype: ""
+    content_subtype: ''
     max_recv_msg_size: 0
     max_retry_rpc_buffer_size: 0
     max_send_msg_size: 0
     wait_for_ready: true
   dial_option:
-    authority: ""
+    authority: ''
     backoff_base_delay: 1s
     backoff_jitter: 0.2
     backoff_max_delay: 120s
     backoff_multiplier: 1.6
     disable_retry: false
     enable_backoff: true
-    idle_timeout: ""
+    idle_timeout: ''
     initial_connection_window_size: 2097152
     initial_window_size: 1048576
     insecure: true
     interceptors: []
     keepalive:
       permit_without_stream: false
-      time: ""
+      time: ''
       timeout: 30s
     max_call_attempts: 0
     max_header_list_size: 0
@@ -82,8 +61,8 @@ target:
     net:
       dialer:
         dual_stack_enabled: true
-        keepalive: ""
-        timeout: ""
+        keepalive: ''
+        timeout: ''
       dns:
         cache_enabled: true
         cache_expiration: 1h
@@ -107,7 +86,7 @@ target:
         key: /path/to/key
     read_buffer_size: 0
     shared_write_buffer: true
-    timeout: ""
+    timeout: ''
     user_agent: Vald-gRPC
     write_buffer_size: 0
   tls:
@@ -123,16 +102,8 @@ metadata:
 metadata_string: key4=value4,key5=value5
 metrics:
   latency_histogram:
-    min: 0.001
-    max: 10.0
-    growth: 2.0
-    num_buckets: 10
     num_shards: 16
   queue_wait_histogram:
-    min: 0.0001
-    max: 1.0
-    growth: 2.0
-    num_buckets: 10
     num_shards: 16
   latency_tdigest:
     compression: 100
@@ -146,372 +117,318 @@ metrics:
     capacity: 10
     num_shards: 16
   range_scales:
-    - name: "0-100"
-      width: 10
-      capacity: 10
+  - name: 0-100
+    width: 10
+    capacity: 10
   time_scales:
-    - name: "0-10s"
-      width: 1
-      capacity: 10
+  - name: 0-10s
+    width: 1
+    capacity: 10
   custom_counters:
-    - "custom_counter_1"
+  - custom_counter_1
 strategies:
-  # - name: Schema
-  #   concurrency: 1
-  #   delay: ""
-  #   wait: ""
-  #   timeout: ""
-  #   operations:
-  #     - name: Schema
-  #       delay: ""
-  #       wait: ""
-  #       timeout: ""
-  #       executions:
-  #         - name: Schema
-  #           type: index_property
-  #           mode: unary
-  #           parallelism: 0
-  #           num: 0
-  #           offset: 0
-  #           bulk_size: 0
-  #           # for timing setting
-  #           delay: ""
-  #           wait: ""
-  #           timeout: ""
-  #           # for search configurations
-  #           search:
-  #             - k: 10
-  #               radius: -1
-  #               epsilon: 0.05
-  #               algorithm: cq
-  #               min_num: 2
-  #               ration: 0
-  #               nprobe: 0
-  #               timeout: 3s
-  #             - k: 20
-  #               radius: -1
-  #               epsilon: 0.05
-  #               algorithm: ph
-  #               min_num: 2
-  #               ration: 0
-  #               nprobe: 0
-  #               timeout: 6s
-  #           # for modification like (Insert, Update, Upsert, Remove, RemoveByTimestamp)
-  #           modification:
-  #             skip_strict_exist_check: false
-  #             timestamp: 0
-  #           # expected patterns of test status codes
-  #           expect:
-  #             - status_code: ok
-  #             - status_code: already_exists
-  #             - status_code: not_found
-  #           # for kubernetes configurations
-  #           kubernetes:
-  #             kind: "statefulset"
-  #             namespace: "default"
-  #             name: "vald-agent"
-  #             action: rollout
-  - concurrency: 1
-    name: check Index Property
-    operations:
-      - name: IndexProperty
-        executions:
-          - mode: unary
-            name: IndexProperty
-            type: index_property
-            wait: 3s
-            expect:
-              - status_code: ok
-                path: $.details.length()
-                op: ge
-                value: 3
-  - concurrency: 1
-    name: Initial Insert and Wait
-    operations:
-      - name: Insert -> IndexInfo
-        executions:
-          - name: Flush
-            mode: unary
-            type: flush
-            wait: 20s
-          - mode: unary
-            name: IndexInfo
-            type: index_info
-            expect:
-              - value: {}
-          - name: Insert
-            type: insert
-            mode: unary
-            parallelism: _E2E_PARALLELISM_
-            num: _E2E_INSERT_COUNT_
-            qps: _E2E_QPS_
-            wait: 2m
-          - mode: unary
-            name: IndexInfo
-            type: index_info
-            retry_until_success_timeout: 5m
-            expect:
-              - status_code: ok
-                path: $.stored
-                value: _E2E_EXPECTED_INDEX_
-  - concurrency: 4
-    name: Parallel Search Opeation (Search, SearchByID, LinearSearch, LinearSearchByID) x (ConcurrentQueue, SortSlice, SortPoolSlice, PairingHeap) = 16
-    operations:
-      - name: Search Operation
-        executions:
-          - name: Search with ConcurrentQueue
-            type: search
-            mode: multiple
-            bulk_size: _E2E_BULK_SIZE_
-            parallelism: _E2E_PARALLELISM_
-            num: _E2E_SEARCH_COUNT_
-            search:
-              timeout: 3s
-              algorithm: cq
-          - name: Search with SortSlice
-            type: search
-            mode: multiple
-            bulk_size: _E2E_BULK_SIZE_
-            parallelism: _E2E_PARALLELISM_
-            num: _E2E_SEARCH_COUNT_
-            search:
-              timeout: 3s
-              algorithm: ss
-          - name: Search with SortPoolSlice
-            type: search
-            mode: multiple
-            bulk_size: _E2E_BULK_SIZE_
-            parallelism: _E2E_PARALLELISM_
-            num: _E2E_SEARCH_COUNT_
-            search:
-              timeout: 3s
-              algorithm: ps
-          - name: Search with PairingHeap
-            type: search
-            mode: multiple
-            bulk_size: _E2E_BULK_SIZE_
-            parallelism: _E2E_PARALLELISM_
-            num: _E2E_SEARCH_COUNT_
-            search:
-              timeout: 3s
-              algorithm: ph
-      - name: SearchByID Operation
-        executions:
-          - name: SearchByID with ConcurrentQueue
-            type: search_by_id
-            mode: multiple
-            bulk_size: _E2E_BULK_SIZE_
-            parallelism: _E2E_PARALLELISM_
-            num: _E2E_SEARCH_COUNT_
-            search:
-              timeout: 3s
-              algorithm: cq
-          - name: SearchByID with SortSlice
-            type: search_by_id
-            mode: multiple
-            bulk_size: _E2E_BULK_SIZE_
-            parallelism: _E2E_PARALLELISM_
-            num: _E2E_SEARCH_COUNT_
-            search:
-              timeout: 3s
-              algorithm: ss
-          - name: SearchByID with SortPoolSlice
-            type: search_by_id
-            mode: multiple
-            bulk_size: _E2E_BULK_SIZE_
-            parallelism: _E2E_PARALLELISM_
-            num: _E2E_SEARCH_COUNT_
-            search:
-              timeout: 3s
-              algorithm: ps
-          - name: SearchByID with PairingHeap
-            type: search_by_id
-            mode: multiple
-            bulk_size: _E2E_BULK_SIZE_
-            parallelism: _E2E_PARALLELISM_
-            num: _E2E_SEARCH_COUNT_
-            search:
-              timeout: 3s
-              algorithm: ph
-      - name: LinearSearch Operation
-        executions:
-          - name: LinearSearch with ConcurrentQueue
-            type: linear_search
-            mode: multiple
-            bulk_size: _E2E_BULK_SIZE_
-            parallelism: _E2E_PARALLELISM_
-            num: _E2E_SEARCH_COUNT_
-            search:
-              timeout: 3s
-              algorithm: cq
-          - name: LinearSearch with SortSlice
-            type: linear_search
-            mode: multiple
-            bulk_size: _E2E_BULK_SIZE_
-            parallelism: _E2E_PARALLELISM_
-            num: _E2E_SEARCH_COUNT_
-            search:
-              timeout: 3s
-              algorithm: ss
-          - name: LinearSearch with SortPoolSlice
-            type: linear_search
-            mode: multiple
-            bulk_size: _E2E_BULK_SIZE_
-            parallelism: _E2E_PARALLELISM_
-            num: _E2E_SEARCH_COUNT_
-            search:
-              timeout: 3s
-              algorithm: ps
-          - name: LinearSearch with PairingHeap
-            type: linear_search
-            mode: multiple
-            bulk_size: _E2E_BULK_SIZE_
-            parallelism: _E2E_PARALLELISM_
-            num: _E2E_SEARCH_COUNT_
-            search:
-              timeout: 3s
-              algorithm: ph
-      - name: LinearSearchByID Operation
-        executions:
-          - name: LinearSearchByID with ConcurrentQueue
-            type: linear_search_by_id
-            mode: multiple
-            bulk_size: _E2E_BULK_SIZE_
-            parallelism: _E2E_PARALLELISM_
-            num: _E2E_SEARCH_COUNT_
-            search:
-              timeout: 3s
-              algorithm: cq
-          - name: LinearSearchByID with SortSlice
-            type: linear_search_by_id
-            mode: multiple
-            bulk_size: _E2E_BULK_SIZE_
-            parallelism: _E2E_PARALLELISM_
-            num: _E2E_SEARCH_COUNT_
-            search:
-              timeout: 3s
-              algorithm: ss
-          - name: LinearSearchByID with SortPoolSlice
-            type: linear_search_by_id
-            mode: multiple
-            bulk_size: _E2E_BULK_SIZE_
-            parallelism: _E2E_PARALLELISM_
-            num: _E2E_SEARCH_COUNT_
-            search:
-              timeout: 3s
-              algorithm: ps
-          - name: LinearSearchByID with PairingHeap
-            type: linear_search_by_id
-            mode: multiple
-            bulk_size: _E2E_BULK_SIZE_
-            parallelism: _E2E_PARALLELISM_
-            num: _E2E_SEARCH_COUNT_
-            search:
-              timeout: 3s
-              algorithm: ph
-  - concurrency: 3
-    name: GetObject/Exists/GetTimestamp Opeation
-    operations:
-      - name: GetObject Operation
-        executions:
-          - name: GetObject
-            type: object
-            mode: unary
-            parallelism: _E2E_PARALLELISM_
-            num: _E2E_SEARCH_COUNT_
-      - name: Exists Operation
-        executions:
-          - name: Exists
-            type: exists
-            mode: unary
-            parallelism: _E2E_PARALLELISM_
-            num: _E2E_SEARCH_COUNT_
-      - name: GetTimestamp Operation
-        executions:
-          - name: GetTimestamp
-            type: timestamp
-            mode: unary
-            parallelism: _E2E_PARALLELISM_
-            num: _E2E_SEARCH_COUNT_
-  - concurrency: 1
-    name: Update -> Index Detail
-    operations:
-      - name: Update Index Detail Operation
-        executions:
-          - name: Update
-            type: update
-            mode: multiple
-            bulk_size: _E2E_BULK_SIZE_
-            parallelism: _E2E_PARALLELISM_
-            num: _E2E_UPDATE_COUNT_
-            offset: 0
-            wait: 2m
-          - name: IndexDetail
-            type: index_detail
-            mode: unary
-  - concurrency: 2
-    name: Remove with Upsert -> Index stats and detail
-    operations:
-      - name: Remove IndexStatistics Operation
-        executions:
-          - name: Remove
-            type: remove
-            mode: multiple
-            bulk_size: _E2E_BULK_SIZE_
-            parallelism: _E2E_PARALLELISM_
-            num: _E2E_UPDATE_COUNT_
-          - name: IndexStatistics
-            type: index_statistics
-            mode: unary
-      - name: Upsert IndexDetail Operation
-        executions:
-          - name: Upsert
-            type: upsert
-            mode: multiple
-            bulk_size: _E2E_BULK_SIZE_
-            parallelism: _E2E_PARALLELISM_
-            num: _E2E_UPDATE_COUNT_
-          - name: IndexDetail
-            type: index_detail
-            mode: unary
-    wait: 2m
-  - concurrency: 1
-    name: RemoveByTimestamp -> IndexDetail -> Upsert -> IndexDetail
-    operations:
-      - name: RemoveByTimestamp IndexDetail Upsert Operation
-        executions:
-          - name: RemoveByTimestamp
-            mode: unary
-            type: remove_by_timestamp
-            wait: 2m
-            num: 1
-          - name: IndexDetail
-            mode: unary
-            type: index_detail
-          - name: Upsert
-            parallelism: _E2E_PARALLELISM_
-            mode: multiple
-            bulk_size: _E2E_BULK_SIZE_
-            num: _E2E_UPDATE_COUNT_
-            offset: 0
-            type: upsert
-            wait: 2m
-          - name: IndexDetail
-            mode: unary
-            type: index_detail
-  - concurrency: 1
-    name: IndexStatistics -> Flush -> IndexInfo
-    operations:
-      - executions:
-          - name: IndexStatistics
-            mode: unary
-            type: index_statistics_detail
-          - name: Flush
-            mode: unary
-            type: flush
-            wait: 20s
-          - name: IndexInfo
-            mode: unary
-            type: index_info
-            expect:
-              - value: {}
+- concurrency: 1
+  name: check Index Property
+  operations:
+  - name: IndexProperty
+    executions:
+    - mode: unary
+      name: IndexProperty
+      type: index_property
+      wait: 3s
+      expect:
+      - status_code: ok
+        path: $.details.length()
+        op: ge
+        value: 3
+- concurrency: 1
+  name: Initial Insert and Wait
+  operations:
+  - name: Insert -> IndexInfo
+    executions:
+    - name: Flush
+      mode: unary
+      type: flush
+      wait: 20s
+    - mode: unary
+      name: IndexInfo
+      type: index_info
+      expect:
+      - value: {}
+    - name: Insert
+      type: insert
+      mode: unary
+      parallelism: _E2E_PARALLELISM_
+      num: _E2E_INSERT_COUNT_
+      qps: _E2E_QPS_
+      wait: 2m
+    - mode: unary
+      name: IndexInfo
+      type: index_info
+      retry_until_success_timeout: 5m
+      expect:
+      - status_code: ok
+        path: $.stored
+        value: _E2E_EXPECTED_INDEX_
+- concurrency: 4
+  name: Parallel Search Opeation (Search, SearchByID, LinearSearch, LinearSearchByID)
+    x (ConcurrentQueue, SortSlice, SortPoolSlice, PairingHeap) = 16
+  operations:
+  - name: Search Operation
+    executions:
+    - name: Search with ConcurrentQueue
+      type: search
+      mode: multiple
+      bulk_size: _E2E_BULK_SIZE_
+      parallelism: _E2E_PARALLELISM_
+      num: _E2E_SEARCH_COUNT_
+      search:
+        timeout: 3s
+        algorithm: cq
+    - name: Search with SortSlice
+      type: search
+      mode: multiple
+      bulk_size: _E2E_BULK_SIZE_
+      parallelism: _E2E_PARALLELISM_
+      num: _E2E_SEARCH_COUNT_
+      search:
+        timeout: 3s
+        algorithm: ss
+    - name: Search with SortPoolSlice
+      type: search
+      mode: multiple
+      bulk_size: _E2E_BULK_SIZE_
+      parallelism: _E2E_PARALLELISM_
+      num: _E2E_SEARCH_COUNT_
+      search:
+        timeout: 3s
+        algorithm: ps
+    - name: Search with PairingHeap
+      type: search
+      mode: multiple
+      bulk_size: _E2E_BULK_SIZE_
+      parallelism: _E2E_PARALLELISM_
+      num: _E2E_SEARCH_COUNT_
+      search:
+        timeout: 3s
+        algorithm: ph
+  - name: SearchByID Operation
+    executions:
+    - name: SearchByID with ConcurrentQueue
+      type: search_by_id
+      mode: multiple
+      bulk_size: _E2E_BULK_SIZE_
+      parallelism: _E2E_PARALLELISM_
+      num: _E2E_SEARCH_COUNT_
+      search:
+        timeout: 3s
+        algorithm: cq
+    - name: SearchByID with SortSlice
+      type: search_by_id
+      mode: multiple
+      bulk_size: _E2E_BULK_SIZE_
+      parallelism: _E2E_PARALLELISM_
+      num: _E2E_SEARCH_COUNT_
+      search:
+        timeout: 3s
+        algorithm: ss
+    - name: SearchByID with SortPoolSlice
+      type: search_by_id
+      mode: multiple
+      bulk_size: _E2E_BULK_SIZE_
+      parallelism: _E2E_PARALLELISM_
+      num: _E2E_SEARCH_COUNT_
+      search:
+        timeout: 3s
+        algorithm: ps
+    - name: SearchByID with PairingHeap
+      type: search_by_id
+      mode: multiple
+      bulk_size: _E2E_BULK_SIZE_
+      parallelism: _E2E_PARALLELISM_
+      num: _E2E_SEARCH_COUNT_
+      search:
+        timeout: 3s
+        algorithm: ph
+  - name: LinearSearch Operation
+    executions:
+    - name: LinearSearch with ConcurrentQueue
+      type: linear_search
+      mode: multiple
+      bulk_size: _E2E_BULK_SIZE_
+      parallelism: _E2E_PARALLELISM_
+      num: _E2E_SEARCH_COUNT_
+      search:
+        timeout: 3s
+        algorithm: cq
+    - name: LinearSearch with SortSlice
+      type: linear_search
+      mode: multiple
+      bulk_size: _E2E_BULK_SIZE_
+      parallelism: _E2E_PARALLELISM_
+      num: _E2E_SEARCH_COUNT_
+      search:
+        timeout: 3s
+        algorithm: ss
+    - name: LinearSearch with SortPoolSlice
+      type: linear_search
+      mode: multiple
+      bulk_size: _E2E_BULK_SIZE_
+      parallelism: _E2E_PARALLELISM_
+      num: _E2E_SEARCH_COUNT_
+      search:
+        timeout: 3s
+        algorithm: ps
+    - name: LinearSearch with PairingHeap
+      type: linear_search
+      mode: multiple
+      bulk_size: _E2E_BULK_SIZE_
+      parallelism: _E2E_PARALLELISM_
+      num: _E2E_SEARCH_COUNT_
+      search:
+        timeout: 3s
+        algorithm: ph
+  - name: LinearSearchByID Operation
+    executions:
+    - name: LinearSearchByID with ConcurrentQueue
+      type: linear_search_by_id
+      mode: multiple
+      bulk_size: _E2E_BULK_SIZE_
+      parallelism: _E2E_PARALLELISM_
+      num: _E2E_SEARCH_COUNT_
+      search:
+        timeout: 3s
+        algorithm: cq
+    - name: LinearSearchByID with SortSlice
+      type: linear_search_by_id
+      mode: multiple
+      bulk_size: _E2E_BULK_SIZE_
+      parallelism: _E2E_PARALLELISM_
+      num: _E2E_SEARCH_COUNT_
+      search:
+        timeout: 3s
+        algorithm: ss
+    - name: LinearSearchByID with SortPoolSlice
+      type: linear_search_by_id
+      mode: multiple
+      bulk_size: _E2E_BULK_SIZE_
+      parallelism: _E2E_PARALLELISM_
+      num: _E2E_SEARCH_COUNT_
+      search:
+        timeout: 3s
+        algorithm: ps
+    - name: LinearSearchByID with PairingHeap
+      type: linear_search_by_id
+      mode: multiple
+      bulk_size: _E2E_BULK_SIZE_
+      parallelism: _E2E_PARALLELISM_
+      num: _E2E_SEARCH_COUNT_
+      search:
+        timeout: 3s
+        algorithm: ph
+- concurrency: 3
+  name: GetObject/Exists/GetTimestamp Opeation
+  operations:
+  - name: GetObject Operation
+    executions:
+    - name: GetObject
+      type: object
+      mode: unary
+      parallelism: _E2E_PARALLELISM_
+      num: _E2E_SEARCH_COUNT_
+  - name: Exists Operation
+    executions:
+    - name: Exists
+      type: exists
+      mode: unary
+      parallelism: _E2E_PARALLELISM_
+      num: _E2E_SEARCH_COUNT_
+  - name: GetTimestamp Operation
+    executions:
+    - name: GetTimestamp
+      type: timestamp
+      mode: unary
+      parallelism: _E2E_PARALLELISM_
+      num: _E2E_SEARCH_COUNT_
+- concurrency: 1
+  name: Update -> Index Detail
+  operations:
+  - name: Update Index Detail Operation
+    executions:
+    - name: Update
+      type: update
+      mode: multiple
+      bulk_size: _E2E_BULK_SIZE_
+      parallelism: _E2E_PARALLELISM_
+      num: _E2E_UPDATE_COUNT_
+      offset: 0
+      wait: 2m
+    - name: IndexDetail
+      type: index_detail
+      mode: unary
+- concurrency: 2
+  name: Remove with Upsert -> Index stats and detail
+  operations:
+  - name: Remove IndexStatistics Operation
+    executions:
+    - name: Remove
+      type: remove
+      mode: multiple
+      bulk_size: _E2E_BULK_SIZE_
+      parallelism: _E2E_PARALLELISM_
+      num: _E2E_UPDATE_COUNT_
+    - name: IndexStatistics
+      type: index_statistics
+      mode: unary
+  - name: Upsert IndexDetail Operation
+    executions:
+    - name: Upsert
+      type: upsert
+      mode: multiple
+      bulk_size: _E2E_BULK_SIZE_
+      parallelism: _E2E_PARALLELISM_
+      num: _E2E_UPDATE_COUNT_
+    - name: IndexDetail
+      type: index_detail
+      mode: unary
+  wait: 2m
+- concurrency: 1
+  name: RemoveByTimestamp -> IndexDetail -> Upsert -> IndexDetail
+  operations:
+  - name: RemoveByTimestamp IndexDetail Upsert Operation
+    executions:
+    - name: RemoveByTimestamp
+      mode: unary
+      type: remove_by_timestamp
+      wait: 2m
+      num: 1
+    - name: IndexDetail
+      mode: unary
+      type: index_detail
+    - name: Upsert
+      parallelism: _E2E_PARALLELISM_
+      mode: multiple
+      bulk_size: _E2E_BULK_SIZE_
+      num: _E2E_UPDATE_COUNT_
+      offset: 0
+      type: upsert
+      wait: 2m
+    - name: IndexDetail
+      mode: unary
+      type: index_detail
+- concurrency: 1
+  name: IndexStatistics -> Flush -> IndexInfo
+  operations:
+  - executions:
+    - name: IndexStatistics
+      mode: unary
+      type: index_statistics_detail
+    - name: Flush
+      mode: unary
+      type: flush
+      wait: 20s
+    - name: IndexInfo
+      mode: unary
+      type: index_info
+      expect:
+      - value: {}
