@@ -503,3 +503,191 @@ func TestHistogram_BucketsValidation(t *testing.T) {
 		t.Log("Data is distributed properly?")
 	}
 }
+
+func TestHistogramBucketsConfiguration(t *testing.T) {
+	t.Run("Default buckets should be used when no options provided", func(t *testing.T) {
+		// NewHistogram uses defaultHistogramOpts which we modified to use WithHistogramBuckets
+		// Using 2 shards to ensure shardedHistogram
+		h, err := NewHistogram(WithHistogramNumShards(2))
+		if err != nil {
+			t.Fatalf("NewHistogram failed: %v", err)
+		}
+
+		sh, ok := h.(*shardedHistogram)
+		if !ok {
+			t.Fatalf("Expected shardedHistogram, got %T", h)
+		}
+		hist := sh.shards[0]
+
+		// Check if bounds match defaultHistogramBuckets
+		if len(hist.bounds) != len(defaultHistogramBuckets) {
+			t.Errorf("Expected %d bounds, got %d", len(defaultHistogramBuckets), len(hist.bounds))
+		}
+
+		// Check a few values
+		if hist.bounds[0] != defaultHistogramBuckets[0] {
+			t.Errorf("Expected first bound %v, got %v", defaultHistogramBuckets[0], hist.bounds[0])
+		}
+
+		// Verify bucket finder is binary search
+		// 5e6 is 5ms.
+		// Record 4ms -> bucket 0 (<= 5ms)
+		// Record 6ms -> bucket 1 (5ms - 10ms]
+
+		hist.Record(4e6)
+		hist.Record(6e6)
+
+		snap := h.Snapshot()
+		if snap.Counts[0] != 1 {
+			t.Errorf("Expected count 1 in bucket 0, got %d", snap.Counts[0])
+		}
+		if snap.Counts[1] != 1 {
+			t.Errorf("Expected count 1 in bucket 1, got %d", snap.Counts[1])
+		}
+	})
+
+	t.Run("Explicit buckets should be used when provided", func(t *testing.T) {
+		customBuckets := []float64{10, 20, 30}
+		h, err := NewHistogram(
+			WithHistogramBuckets(customBuckets),
+			WithHistogramNumShards(2),
+		)
+		if err != nil {
+			t.Fatalf("NewHistogram failed: %v", err)
+		}
+
+		sh, ok := h.(*shardedHistogram)
+		if !ok {
+			t.Fatalf("Expected shardedHistogram, got %T", h)
+		}
+		hist := sh.shards[0]
+
+		if len(hist.bounds) != 3 {
+			t.Errorf("Expected 3 bounds, got %d", len(hist.bounds))
+		}
+		if hist.bounds[0] != 10 {
+			t.Errorf("Expected first bound 10, got %v", hist.bounds[0])
+		}
+
+		// Test recording
+		// <= 10 -> bucket 0
+		// 15 -> bucket 1
+		// 25 -> bucket 2
+		// 35 -> bucket 3 (last)
+
+		hist.Record(5)
+		hist.Record(15)
+		hist.Record(25)
+		hist.Record(35)
+
+		snap := h.Snapshot()
+		if snap.Counts[0] != 1 {
+			t.Errorf("Bucket 0 count mismatch")
+		}
+		if snap.Counts[1] != 1 {
+			t.Errorf("Bucket 1 count mismatch")
+		}
+		if snap.Counts[2] != 1 {
+			t.Errorf("Bucket 2 count mismatch")
+		}
+		if snap.Counts[3] != 1 {
+			t.Errorf("Bucket 3 count mismatch")
+		}
+	})
+
+	t.Run("Geometric buckets should be used when Min/Growth provided", func(t *testing.T) {
+		// Providing WithHistogramMin should clear explicit buckets
+		h, err := NewHistogram(
+			WithHistogramMin(10),
+			WithHistogramGrowth(2),
+			WithHistogramNumBuckets(5),
+			WithHistogramNumShards(2),
+		)
+		if err != nil {
+			t.Fatalf("NewHistogram failed: %v", err)
+		}
+
+		sh, ok := h.(*shardedHistogram)
+		if !ok {
+			t.Fatalf("Expected shardedHistogram, got %T", h)
+		}
+		hist := sh.shards[0]
+
+		// Bounds: 10, 20, 40, 80
+		// numBuckets: 5
+		// len(bounds): 4
+
+		if len(hist.bounds) != 4 {
+			t.Errorf("Expected 4 bounds, got %d", len(hist.bounds))
+		}
+
+		if hist.bounds[0] != 10 {
+			t.Errorf("Expected bound[0] 10, got %v", hist.bounds[0])
+		}
+		if hist.bounds[1] != 20 {
+			t.Errorf("Expected bound[1] 20, got %v", hist.bounds[1])
+		}
+
+		// Verify geometric finder logic
+		// Record 15 -> 10 * 2^0=10, 10*2^1=20. 15 is in (10, 20]. Bucket 1.
+		// Record 5 -> <= 10. Bucket 0.
+
+		hist.Record(5)
+		hist.Record(15)
+
+		snap := h.Snapshot()
+		if snap.Counts[0] != 1 {
+			t.Errorf("Bucket 0 count mismatch")
+		}
+		if snap.Counts[1] != 1 {
+			t.Errorf("Bucket 1 count mismatch")
+		}
+	})
+
+	t.Run("Mixed configuration priority", func(t *testing.T) {
+		// Buckets provided AFTER Min should win
+		customBuckets := []float64{100, 200}
+		h, err := NewHistogram(
+			WithHistogramMin(10),
+			WithHistogramBuckets(customBuckets),
+			WithHistogramNumShards(2),
+		)
+		if err != nil {
+			t.Fatalf("NewHistogram failed: %v", err)
+		}
+		sh, ok := h.(*shardedHistogram)
+		if !ok {
+			t.Fatalf("Expected shardedHistogram, got %T", h)
+		}
+		hist := sh.shards[0]
+		if len(hist.bounds) != 2 {
+			t.Errorf("Expected explicit buckets to win, got %d bounds", len(hist.bounds))
+		}
+		if hist.bounds[0] != 100 {
+			t.Errorf("Expected first bound 100")
+		}
+
+		// Min provided AFTER Buckets should win (and use geometric)
+		h2, err := NewHistogram(
+			WithHistogramBuckets(customBuckets),
+			WithHistogramMin(10),
+			WithHistogramGrowth(2),
+			WithHistogramNumBuckets(4),
+			WithHistogramNumShards(2),
+		)
+		if err != nil {
+			t.Fatalf("NewHistogram failed: %v", err)
+		}
+		sh2, ok := h2.(*shardedHistogram)
+		if !ok {
+			t.Fatalf("Expected shardedHistogram, got %T", h2)
+		}
+		hist2 := sh2.shards[0]
+		if len(hist2.bounds) != 3 { // NumBuckets 4 -> 3 bounds
+			t.Errorf("Expected geometric to win, got %d bounds", len(hist2.bounds))
+		}
+		if hist2.bounds[0] != 10 {
+			t.Errorf("Expected first bound 10")
+		}
+	})
+}

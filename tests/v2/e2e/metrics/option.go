@@ -44,11 +44,15 @@ var (
 		WithTDigestQuantiles([]float64{0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99}...),
 	}
 
+	// defaultHistogramBuckets defines sensible default buckets for latency measurement (in nanoseconds).
+	// Range: 5ms to 10s.
+	defaultHistogramBuckets = []float64{
+		5e6, 10e6, 25e6, 50e6, 100e6,
+		250e6, 500e6, 1e9, 2.5e9, 5e9, 10e9,
+	}
+
 	defaultHistogramOpts = []HistogramOption{
-		WithHistogramMin(1000),        // 1us
-		WithHistogramMax(60000000000), // 60s (soft limit)
-		WithHistogramGrowth(1.2),
-		WithHistogramNumBuckets(100), // Covers range from us to min
+		WithHistogramBuckets(defaultHistogramBuckets),
 		WithHistogramNumShards(16),
 	}
 
@@ -162,13 +166,27 @@ func WithExemplar(opts ...ExemplarOption) Option {
 	}
 }
 
+// WithHistogramBuckets sets explicit bucket boundaries for the histogram.
+// Providing buckets overrides geometric bucketing parameters (Min, Max, Growth).
+func WithHistogramBuckets(buckets []float64) HistogramOption {
+	return func(cfg *histogramConfig) error {
+		if len(buckets) == 0 {
+			return errors.New("buckets must not be empty")
+		}
+		cfg.Buckets = buckets
+		return nil
+	}
+}
+
 // WithHistogramMin sets the minimum value for the histogram.
+// Setting this implies geometric bucketing and clears any explicit buckets.
 func WithHistogramMin(minVal float64) HistogramOption {
 	return func(cfg *histogramConfig) error {
 		cfg.Min = minVal
 		if cfg.Min <= 0 {
 			return errors.New("histogram min must be > 0 for geometric buckets")
 		}
+		cfg.Buckets = nil // clear explicit buckets
 		return nil
 	}
 }
@@ -182,23 +200,27 @@ func WithHistogramMax(maxVal float64) HistogramOption {
 }
 
 // WithHistogramGrowth sets the growth factor for the histogram.
+// Setting this implies geometric bucketing and clears any explicit buckets.
 func WithHistogramGrowth(growth float64) HistogramOption {
 	return func(cfg *histogramConfig) error {
 		cfg.Growth = growth
 		if cfg.Growth <= 1 {
 			return errors.New("histogram growth must be > 1 for geometric buckets")
 		}
+		cfg.Buckets = nil // clear explicit buckets
 		return nil
 	}
 }
 
 // WithHistogramNumBuckets sets the number of buckets for the histogram.
+// Setting this implies geometric bucketing and clears any explicit buckets.
 func WithHistogramNumBuckets(n int) HistogramOption {
 	return func(cfg *histogramConfig) error {
 		cfg.NumBuckets = n
 		if cfg.NumBuckets < 2 {
 			return errors.New("numBuckets must be at least 2")
 		}
+		cfg.Buckets = nil // clear explicit buckets
 		return nil
 	}
 }

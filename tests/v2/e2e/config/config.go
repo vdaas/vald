@@ -95,11 +95,12 @@ type TimeScale struct {
 
 // Histogram represents the configuration for a histogram.
 type Histogram struct {
-	Min        float64 `json:"min,omitempty"         yaml:"min,omitempty"`
-	Max        float64 `json:"max,omitempty"         yaml:"max,omitempty"`
-	Growth     float64 `json:"growth,omitempty"      yaml:"growth,omitempty"`
-	NumBuckets int     `json:"num_buckets,omitempty" yaml:"num_buckets,omitempty"`
-	NumShards  int     `json:"num_shards,omitempty"  yaml:"num_shards,omitempty"`
+	Min        float64   `json:"min,omitempty"         yaml:"min,omitempty"`
+	Max        float64   `json:"max,omitempty"         yaml:"max,omitempty"`
+	Growth     float64   `json:"growth,omitempty"      yaml:"growth,omitempty"`
+	NumBuckets int       `json:"num_buckets,omitempty" yaml:"num_buckets,omitempty"`
+	NumShards  int       `json:"num_shards,omitempty"  yaml:"num_shards,omitempty"`
+	Buckets    []float64 `json:"buckets,omitempty"     yaml:"buckets,omitempty"`
 }
 
 // TDigest represents the configuration for a TDigest.
@@ -976,6 +977,7 @@ func (m *Metrics) Opts() (opts []metrics.Option) {
 			metrics.WithHistogramGrowth(m.LatencyHistogram.Growth),
 			metrics.WithHistogramNumBuckets(m.LatencyHistogram.NumBuckets),
 			metrics.WithHistogramNumShards(m.LatencyHistogram.NumShards),
+			metrics.WithHistogramBuckets(m.LatencyHistogram.Buckets),
 		))
 	}
 	if m.QueueWaitHistogram != nil {
@@ -985,6 +987,7 @@ func (m *Metrics) Opts() (opts []metrics.Option) {
 			metrics.WithHistogramGrowth(m.QueueWaitHistogram.Growth),
 			metrics.WithHistogramNumBuckets(m.QueueWaitHistogram.NumBuckets),
 			metrics.WithHistogramNumShards(m.QueueWaitHistogram.NumShards),
+			metrics.WithHistogramBuckets(m.QueueWaitHistogram.Buckets),
 		))
 	}
 	if m.LatencyTDigest != nil {

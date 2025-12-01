@@ -64,11 +64,12 @@ type shardedHistogram struct {
 
 // histogramConfig holds configuration for Histogram.
 type histogramConfig struct {
-	Min        float64 `json:"min"         yaml:"min"`
-	Max        float64 `json:"max"         yaml:"max"`
-	Growth     float64 `json:"growth"      yaml:"growth"`
-	NumBuckets int     `json:"num_buckets" yaml:"num_buckets"`
-	NumShards  int     `json:"num_shards"  yaml:"num_shards"`
+	Min        float64   `json:"min"         yaml:"min"`
+	Max        float64   `json:"max"         yaml:"max"`
+	Growth     float64   `json:"growth"      yaml:"growth"`
+	NumBuckets int       `json:"num_buckets" yaml:"num_buckets"`
+	NumShards  int       `json:"num_shards"  yaml:"num_shards"`
+	Buckets    []float64 `json:"buckets"     yaml:"buckets"`
 }
 
 // Init initializes the histogram with the provided options.
@@ -91,7 +92,21 @@ func (h *histogram) Init(opts ...HistogramOption) error {
 	h.maxVal = cfg.Max
 	h.growth = cfg.Growth
 	h.numBuckets = cfg.NumBuckets
-	h.invLogGrowth = 1.0 / math.Log(h.growth)
+	h.invLogGrowth = 0
+	if h.growth > 1 {
+		h.invLogGrowth = 1.0 / math.Log(h.growth)
+	}
+
+	// Buckets take precedence
+	if len(cfg.Buckets) > 0 {
+		h.bounds = slices.Clone(cfg.Buckets)
+		slices.Sort(h.bounds)
+		// Dedup
+		h.bounds = slices.Compact(h.bounds)
+		h.numBuckets = len(h.bounds) + 1
+		h.minVal = h.bounds[0]
+		h.growth = 0 // Disable geometric
+	}
 
 	h.mu.Lock()
 	if len(h.counts) < h.numBuckets {
@@ -109,18 +124,23 @@ func (h *histogram) Init(opts ...HistogramOption) error {
 	h.max = math.Inf(-1)
 	h.mu.Unlock()
 
-	if len(h.bounds) < h.numBuckets-1 {
-		h.bounds = make([]float64, h.numBuckets-1)
-	} else {
-		h.bounds = h.bounds[:h.numBuckets-1]
-	}
-
-	// Build geometric bucket boundaries.
-	// Geometric buckets grow exponentially based on the growth factor.
-	// bounds[i] = min * growth^i
-	h.bounds[0] = h.minVal
-	for i := 1; i < h.numBuckets-1; i++ {
-		h.bounds[i] = h.minVal * math.Pow(h.growth, float64(i))
+	// If explicit buckets are used, bounds are already set.
+	// If geometric, compute bounds.
+	if len(cfg.Buckets) == 0 {
+		if len(h.bounds) < h.numBuckets-1 {
+			h.bounds = make([]float64, h.numBuckets-1)
+		} else {
+			h.bounds = h.bounds[:h.numBuckets-1]
+		}
+		// Build geometric bucket boundaries.
+		// Geometric buckets grow exponentially based on the growth factor.
+		// bounds[i] = min * growth^i
+		if len(h.bounds) > 0 {
+			h.bounds[0] = h.minVal
+			for i := 1; i < h.numBuckets-1; i++ {
+				h.bounds[i] = h.minVal * math.Pow(h.growth, float64(i))
+			}
+		}
 	}
 
 	// Precompute boundsHash for compatibility checks on merge.
@@ -133,12 +153,14 @@ func (h *histogram) Init(opts ...HistogramOption) error {
 }
 
 func (h *histogram) setBucketFinder() {
-	if h.growth == bucketGrowthOptimized {
+	// If using explicit buckets (growth == 0 or len(cfg.Buckets)>0), use binary search.
+	// Or if numBuckets is small.
+	if h.growth > 1 && h.growth == bucketGrowthOptimized {
 		h.bucketFinder = h.findBucketGrowth2
-	} else if h.numBuckets < binarySearchThreshold {
-		h.bucketFinder = h.findBucketBinarySearch
-	} else {
+	} else if h.growth > 1 && h.numBuckets >= binarySearchThreshold {
 		h.bucketFinder = h.findBucketLog
+	} else {
+		h.bucketFinder = h.findBucketBinarySearch
 	}
 }
 
@@ -288,29 +310,31 @@ func (h *histogram) findBucketLog(val float64) int {
 
 // findBucketBinarySearch uses binary search on bounds.
 func (h *histogram) findBucketBinarySearch(val float64) int {
-	if val <= h.minVal {
+	if len(h.bounds) == 0 {
 		return 0
 	}
-	if len(h.bounds) > 0 && val > h.bounds[len(h.bounds)-1] {
-		return h.numBuckets - 1
-	}
-
-	// slices.BinarySearch finds the smallest index i such that bounds[i] >= val
-	idx, _ := slices.BinarySearch(h.bounds, val)
-	// The buckets are:
-	// 0: <= bounds[0] (which is minVal, covered by check above)
-	// 1: (bounds[0], bounds[1]]
+	// bounds[i] is the UPPER bound of bucket i (usually?)
+	// Actually in geometric:
+	// Bucket 0: <= bounds[0] (minVal)
+	// Bucket 1: (bounds[0], bounds[1]]
 	// ...
-	// i: (bounds[i-1], bounds[i]]
-	//
-	// If val is in bucket i, then bounds[i-1] < val <= bounds[i].
-	// BinarySearch returns i such that bounds[i] >= val.
-	// So the index returned matches the bucket index, except for the 0th bucket check.
-	// But wait, bounds[0] == minVal.
-	// if val <= minVal, returned 0.
-	// if val > minVal:
-	//   if val <= bounds[1], idx will be 1. Correct.
-	//   if val > bounds[1] and val <= bounds[2], idx will be 2. Correct.
+	// Bucket N-1: > bounds[N-2]
+
+	// With explicit buckets:
+	// If bounds = [10, 20, 30]
+	// Bucket 0: <= 10
+	// Bucket 1: 10 < val <= 20
+	// Bucket 2: 20 < val <= 30
+	// Bucket 3: > 30
+
+	// slices.BinarySearch returns the index of the first element >= val.
+	idx, _ := slices.BinarySearch(h.bounds, val)
+	// If val = 5, bounds[0]=10 >= 5. idx=0. Correct.
+	// If val = 15, bounds[1]=20 >= 15. idx=1. Correct.
+	// If val = 20, bounds[1]=20 >= 20. idx=1. Correct.
+	// If val = 25, bounds[2]=30 >= 25. idx=2. Correct.
+	// If val = 35. idx=3 (len). Correct (last bucket).
+
 	return idx
 }
 
