@@ -14,21 +14,21 @@
 package operation
 
 import (
-	"context"
 	"strconv"
+	"sync"
 	"sync/atomic"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/internal/io"
-	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
-func (o *operation) Search(ctx context.Context, b *testing.B, ds assets.Dataset) {
+func (o *operation) Search(b *testing.B, ds assets.Dataset) {
 	b.ResetTimer()
 	b.Run("Search", func(b *testing.B) {
+		ctx := b.Context()
 		cfg := &payload.Search_Config{
 			Num:     10,
 			Radius:  -1,
@@ -53,9 +53,10 @@ func (o *operation) Search(ctx context.Context, b *testing.B, ds assets.Dataset)
 	})
 }
 
-func (o *operation) StreamSearch(ctx context.Context, b *testing.B, ds assets.Dataset) {
+func (o *operation) StreamSearch(b *testing.B, ds assets.Dataset) {
 	b.ResetTimer()
 	b.Run("StreamSearch", func(b *testing.B) {
+		ctx := b.Context()
 		sc, err := o.client.StreamSearch(ctx)
 		if err != nil {
 			b.Fatal(err)
@@ -73,6 +74,7 @@ func (o *operation) StreamSearch(ctx context.Context, b *testing.B, ds assets.Da
 
 		errgroup.Go(func() error {
 			defer wg.Done()
+
 			for {
 				res, err := sc.Recv()
 				if err == io.EOF {
@@ -86,7 +88,6 @@ func (o *operation) StreamSearch(ctx context.Context, b *testing.B, ds assets.Da
 					b.Error("returned response is nil")
 				}
 			}
-			return nil
 		})
 
 		for i := 0; i < b.N; i++ {
@@ -108,12 +109,14 @@ func (o *operation) StreamSearch(ctx context.Context, b *testing.B, ds assets.Da
 		if err := sc.CloseSend(); err != nil {
 			b.Fatal(err)
 		}
+
 		wg.Wait()
 	})
 }
 
-func (o *operation) SearchByID(ctx context.Context, b *testing.B, maxIdNum int) {
+func (o *operation) SearchByID(b *testing.B, maxIdNum int) {
 	b.Run("SearchByID", func(b *testing.B) {
+		ctx := b.Context()
 		cfg := &payload.Search_Config{
 			Num:     10,
 			Radius:  -1,
@@ -133,9 +136,10 @@ func (o *operation) SearchByID(ctx context.Context, b *testing.B, maxIdNum int) 
 	})
 }
 
-func (o *operation) StreamSearchByID(ctx context.Context, b *testing.B, maxIdNum int) {
+func (o *operation) StreamSearchByID(b *testing.B, maxIdNum int) {
 	b.ResetTimer()
 	b.Run("StreamSearchByID", func(b *testing.B) {
+		ctx := b.Context()
 		sc, err := o.client.StreamSearchByID(ctx)
 		if err != nil {
 			b.Fatal(err)
@@ -152,13 +156,15 @@ func (o *operation) StreamSearchByID(ctx context.Context, b *testing.B, maxIdNum
 			Radius:  -1,
 			Epsilon: 0.1,
 		}
-		b.ResetTimer()
 
 		var finished atomic.Bool
 		finished.Store(false)
 
+		b.ResetTimer()
+
 		errgroup.Go(func() error {
 			defer wg.Done()
+
 			for sc != nil {
 				res, err := sc.Recv()
 				if err == io.EOF {
@@ -191,6 +197,7 @@ func (o *operation) StreamSearchByID(ctx context.Context, b *testing.B, maxIdNum
 				b.Fatal(err)
 			}
 		}
+
 		wg.Wait()
 	})
 }
