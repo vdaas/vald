@@ -14,7 +14,10 @@
 // limitations under the License.
 //
 
-pub mod bidirectional_map;
 pub mod codec;
 pub mod error;
 pub mod types;
+
+pub(crate) mod base;
+pub(crate) mod bidirectional_map;
+pub(crate) mod unidirectional_map;
