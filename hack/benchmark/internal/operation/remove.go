@@ -14,18 +14,19 @@
 package operation
 
 import (
-	"context"
 	"strconv"
+	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/io"
-	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
-func (o *operation) Remove(ctx context.Context, b *testing.B, maxIdNum int) {
+func (o *operation) Remove(b *testing.B, maxIdNum int) {
 	b.ResetTimer()
 	b.Run("Remove", func(b *testing.B) {
+		ctx := b.Context()
 		req := &payload.Remove_Request{
 			Id: &payload.Object_ID{},
 			Config: &payload.Remove_Config{
@@ -48,9 +49,10 @@ func (o *operation) Remove(ctx context.Context, b *testing.B, maxIdNum int) {
 	})
 }
 
-func (o *operation) StreamRemove(ctx context.Context, b *testing.B, maxIdNum int) {
+func (o *operation) StreamRemove(b *testing.B, maxIdNum int) {
 	b.ResetTimer()
 	b.Run("StreamRemove", func(b *testing.B) {
+		ctx := b.Context()
 		sc, err := o.client.StreamRemove(ctx)
 		if err != nil {
 			b.Fatal(err)
@@ -67,13 +69,13 @@ func (o *operation) StreamRemove(ctx context.Context, b *testing.B, maxIdNum int
 		}
 		b.ResetTimer()
 
-		go func() {
+		errgroup.Go(func() error {
 			defer wg.Done()
 
 			for {
 				res, err := sc.Recv()
 				if err == io.EOF {
-					return
+					return nil
 				}
 
 				if err != nil {
@@ -93,7 +95,7 @@ func (o *operation) StreamRemove(ctx context.Context, b *testing.B, maxIdNum int
 					continue
 				}
 			}
-		}()
+		})
 
 		for i := 0; i < b.N; i++ {
 			req.Id.Id = strconv.Itoa(i % maxIdNum)
@@ -106,6 +108,7 @@ func (o *operation) StreamRemove(ctx context.Context, b *testing.B, maxIdNum int
 		if err := sc.CloseSend(); err != nil {
 			b.Fatal(err)
 		}
+
 		wg.Wait()
 	})
 }
