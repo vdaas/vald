@@ -583,7 +583,7 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 		}
 	}
 
-	return &GlobalSnapshot{
+	snap := &GlobalSnapshot{
 		Total:           c.total.Load(),
 		Errors:          c.errors.Load(),
 		StartTime:       startTime,
@@ -596,6 +596,12 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 		ExemplarDetails: exDetails,
 		Codes:           codesMap,
 	}
+
+	if snap.Latencies != nil && snap.ExemplarDetails != nil {
+		snap.Latencies.EnforceExemplarConsistency(snap.ExemplarDetails)
+	}
+
+	return snap
 }
 
 // RangeScalesSnapshot returns snapshots for all configured range-based windows.

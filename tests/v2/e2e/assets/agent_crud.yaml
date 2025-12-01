@@ -20,10 +20,9 @@ logging:
   logger: glg
 metrics:
   histogram:
-    min: 1
-    max: 1000000000
-    growth: 1.6
-    num_buckets: 30
+    bucket_interval: 10ms
+    tail_segments: 10
+    max_buckets: 1000
     num_shards: 16
   tdigest:
     compression: 100

@@ -118,16 +118,14 @@ metadata_string: key4=value4,key5=value5
 metrics:
   enabled: true
   latency_histogram:
-    min: 0.001
-    max: 10.0
-    growth: 2.0
-    num_buckets: 10
+    bucket_interval: 10ms
+    tail_segments: 10
+    max_buckets: 1000
     num_shards: 10
   queue_wait_histogram:
-    min: 0.0001
-    max: 1.0
-    growth: 2.0
-    num_buckets: 10
+    bucket_interval: 10ms
+    tail_segments: 10
+    max_buckets: 1000
     num_shards: 10
   latency_tdigest:
     compression: 100

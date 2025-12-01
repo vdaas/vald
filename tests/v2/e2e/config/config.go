@@ -95,11 +95,10 @@ type TimeScale struct {
 
 // Histogram represents the configuration for a histogram.
 type Histogram struct {
-	Min        float64 `json:"min,omitempty"         yaml:"min,omitempty"`
-	Max        float64 `json:"max,omitempty"         yaml:"max,omitempty"`
-	Growth     float64 `json:"growth,omitempty"      yaml:"growth,omitempty"`
-	NumBuckets int     `json:"num_buckets,omitempty" yaml:"num_buckets,omitempty"`
-	NumShards  int     `json:"num_shards,omitempty"  yaml:"num_shards,omitempty"`
+	BucketInterval timeutil.DurationString `json:"bucket_interval,omitempty" yaml:"bucket_interval,omitempty"`
+	TailSegments   int                     `json:"tail_segments,omitempty"   yaml:"tail_segments,omitempty"`
+	MaxBuckets     int                     `json:"max_buckets,omitempty"     yaml:"max_buckets,omitempty"`
+	NumShards      int                     `json:"num_shards,omitempty"      yaml:"num_shards,omitempty"`
 }
 
 // TDigest represents the configuration for a TDigest.
@@ -970,22 +969,36 @@ func (m *Metrics) Opts() (opts []metrics.Option) {
 		opts = append(opts, metrics.WithCustomCounters(m.CustomCounters...))
 	}
 	if m.LatencyHistogram != nil {
-		opts = append(opts, metrics.WithLatencyHistogram(
-			metrics.WithHistogramMin(m.LatencyHistogram.Min),
-			metrics.WithHistogramMax(m.LatencyHistogram.Max),
-			metrics.WithHistogramGrowth(m.LatencyHistogram.Growth),
-			metrics.WithHistogramNumBuckets(m.LatencyHistogram.NumBuckets),
-			metrics.WithHistogramNumShards(m.LatencyHistogram.NumShards),
-		))
+		hopts := make([]metrics.HistogramOption, 0, 4)
+		if dur, err := m.LatencyHistogram.BucketInterval.Duration(); err == nil && dur > 0 {
+			hopts = append(hopts, metrics.WithBucketInterval(dur))
+		}
+		if m.LatencyHistogram.TailSegments > 0 {
+			hopts = append(hopts, metrics.WithTailSegments(m.LatencyHistogram.TailSegments))
+		}
+		if m.LatencyHistogram.MaxBuckets > 0 {
+			hopts = append(hopts, metrics.WithHistogramMaxBuckets(m.LatencyHistogram.MaxBuckets))
+		}
+		if m.LatencyHistogram.NumShards > 0 {
+			hopts = append(hopts, metrics.WithHistogramNumShards(m.LatencyHistogram.NumShards))
+		}
+		opts = append(opts, metrics.WithLatencyHistogram(hopts...))
 	}
 	if m.QueueWaitHistogram != nil {
-		opts = append(opts, metrics.WithQueueWaitHistogram(
-			metrics.WithHistogramMin(m.QueueWaitHistogram.Min),
-			metrics.WithHistogramMax(m.QueueWaitHistogram.Max),
-			metrics.WithHistogramGrowth(m.QueueWaitHistogram.Growth),
-			metrics.WithHistogramNumBuckets(m.QueueWaitHistogram.NumBuckets),
-			metrics.WithHistogramNumShards(m.QueueWaitHistogram.NumShards),
-		))
+		hopts := make([]metrics.HistogramOption, 0, 4)
+		if dur, err := m.QueueWaitHistogram.BucketInterval.Duration(); err == nil && dur > 0 {
+			hopts = append(hopts, metrics.WithBucketInterval(dur))
+		}
+		if m.QueueWaitHistogram.TailSegments > 0 {
+			hopts = append(hopts, metrics.WithTailSegments(m.QueueWaitHistogram.TailSegments))
+		}
+		if m.QueueWaitHistogram.MaxBuckets > 0 {
+			hopts = append(hopts, metrics.WithHistogramMaxBuckets(m.QueueWaitHistogram.MaxBuckets))
+		}
+		if m.QueueWaitHistogram.NumShards > 0 {
+			hopts = append(hopts, metrics.WithHistogramNumShards(m.QueueWaitHistogram.NumShards))
+		}
+		opts = append(opts, metrics.WithQueueWaitHistogram(hopts...))
 	}
 	if m.LatencyTDigest != nil {
 		opts = append(opts, metrics.WithLatencyTDigest(
@@ -1027,6 +1040,7 @@ func (h *Histogram) Bind() (bound *Histogram, err error) {
 	if h == nil {
 		return nil, nil
 	}
+	h.BucketInterval = config.GetActualValue(h.BucketInterval)
 	return h, nil
 }
 

@@ -80,6 +80,8 @@ type Exemplar interface {
 type TDigest interface {
 	Add(value float64)
 	Quantile(q float64) float64
+	CDF(value, min, max float64) float64
+	ForEachCentroid(f func(mean, weight float64) bool)
 	Quantiles() []float64
 	Merge(other TDigest) error
 	Clone() TDigest
