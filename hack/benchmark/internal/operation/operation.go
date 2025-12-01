@@ -14,7 +14,6 @@
 package operation
 
 import (
-	"context"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -25,15 +24,15 @@ import (
 )
 
 type Operation interface {
-	Search(ctx context.Context, b *testing.B, ds assets.Dataset)
-	SearchByID(ctx context.Context, b *testing.B, maxIdNum int)
-	StreamSearch(ctx context.Context, b *testing.B, ds assets.Dataset)
-	StreamSearchByID(ctx context.Context, b *testing.B, maxIdNum int)
-	Insert(ctx context.Context, b *testing.B, ds assets.Dataset) (insertedNum int)
-	StreamInsert(ctx context.Context, b *testing.B, ds assets.Dataset) (insertedNum int)
-	Remove(ctx context.Context, b *testing.B, maxIdNum int)
-	StreamRemove(ctx context.Context, b *testing.B, maxIdNum int)
-	CreateIndex(ctx context.Context, b *testing.B)
+	Search(b *testing.B, ds assets.Dataset)
+	SearchByID(b *testing.B, maxIdNum int)
+	StreamSearch(b *testing.B, ds assets.Dataset)
+	StreamSearchByID(b *testing.B, maxIdNum int)
+	Insert(b *testing.B, ds assets.Dataset) (insertedNum int)
+	StreamInsert(b *testing.B, ds assets.Dataset) (insertedNum int)
+	Remove(b *testing.B, maxIdNum int)
+	StreamRemove(b *testing.B, maxIdNum int)
+	CreateIndex(b *testing.B)
 }
 
 type operation struct {
@@ -49,12 +48,13 @@ func New(opts ...Option) Operation {
 	return o
 }
 
-func (o *operation) CreateIndex(ctx context.Context, b *testing.B) {
+func (o *operation) CreateIndex(b *testing.B) {
 	req := &payload.Control_CreateIndexRequest{
-		PoolSize: 10000,
+		PoolSize: 16,
 	}
 	b.ResetTimer()
 	b.Run("CreateIndex", func(b *testing.B) {
+		ctx := b.Context()
 		for i := 0; i < b.N; i++ {
 			_, err := o.indexerC.CreateIndex(ctx, req)
 			if err != nil {
