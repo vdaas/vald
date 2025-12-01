@@ -73,6 +73,12 @@ func (e *exemplar) Init(opts ...ExemplarOption) {
 		opt(&cfg)
 	}
 	e.k = max(cfg.Capacity, 1)
+
+	// Ensure avgSamplingRate is a power of 2 for efficient bitwise sampling
+	if avgSamplingRate&(avgSamplingRate-1) != 0 {
+		panic("avgSamplingRate must be a power of 2")
+	}
+
 	e.initHeaps()
 }
 
@@ -166,8 +172,11 @@ func (e *exemplar) Offer(latency time.Duration, requestID string, err error, msg
 	minLat := e.minLatency.Load()
 	maxLat := e.maxLatency.Load()
 
-	// If it's not an error, and the latency is between the fastest and slowest top-K,
-	// we can skip the heap updates. However, we must still consider it for reservoir sampling.
+	// Fast Path (Check 1): avoid locking if it's not an outlier candidate.
+	// minLatency is the lower bound of the Slowest (Top-K) bucket.
+	// maxLatency is the upper bound of the Fastest (Bottom-K) bucket.
+	// Therefore, an average sample lies in [maxLatency, minLatency].
+	// Note: In steady state, minLatency (e.g. 100ms) > maxLatency (e.g. 10ms).
 	if !isError && latInt <= minLat && latInt >= maxLat {
 		// Probabilistic sampling: only record 1 out of avgSamplingRate samples.
 		// We use a fast bitwise check assuming avgSamplingRate is a power of 2.
@@ -175,6 +184,7 @@ func (e *exemplar) Offer(latency time.Duration, requestID string, err error, msg
 			return
 		}
 
+		// Must lock before updating reservoir state
 		e.mu.Lock()
 		e.updateAverageSample(&ExemplarItem{
 			Latency:   latency,
@@ -195,6 +205,18 @@ func (e *exemplar) Offer(latency time.Duration, requestID string, err error, msg
 
 	e.mu.Lock()
 	defer e.mu.Unlock()
+
+	// Double Check (Check 2): Re-read atomic values after acquiring lock
+	if !isError {
+		minLat = e.minLatency.Load()
+		maxLat = e.maxLatency.Load()
+		if latInt <= minLat && latInt >= maxLat {
+			// Race condition: another goroutine updated min/max while we waited for lock.
+			// This request is no longer an outlier. Treat as average.
+			e.updateAverageSample(newItem)
+			return
+		}
+	}
 
 	e.updateSlowest(newItem)
 	e.updateFastest(newItem)

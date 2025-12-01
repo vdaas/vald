@@ -108,14 +108,10 @@ func (s *scale) getSlot(idx uint64) Slot {
 // It determines the index based on the scale type (Time or Range) and delegates recording to the target slot.
 func (s *scale) Record(ctx context.Context, rr *RequestResult) {
 	var idx uint64
-	var ok bool
 
 	switch s.scaleType {
 	case RangeScale:
-		idx, ok = requestIDFromCtx(ctx)
-		if !ok {
-			return
-		}
+		idx = rr.ID
 	case TimeScale:
 		// Fix G115: EndedAt.UnixNano() returns int64. Timestamps are positive.
 		t := rr.EndedAt.UnixNano()
