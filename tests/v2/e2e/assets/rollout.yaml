@@ -21,7 +21,7 @@ logging:
 dataset:
   name: _E2E_DATASET_PATH_
 kubernetes:
-  kube_config: $HOME/.kube/config
+  kube_config: _KUBECONFIG_
   port_forward:
     enabled: true
     local_port: 8082
@@ -60,7 +60,7 @@ target:
     backoff_multiplier: 1.6
     disable_retry: false
     enable_backoff: true
-    idle_timeout: 1h
+    idle_timeout: ""
     initial_connection_window_size: 2097152
     initial_window_size: 1048576
     insecure: true
@@ -100,7 +100,7 @@ target:
         insecure_skip_verify: false
         key: /path/to/key
     read_buffer_size: 0
-    shared_write_buffer: false
+    shared_write_buffer: true
     timeout: ""
     user_agent: Vald-gRPC
     write_buffer_size: 0
@@ -125,6 +125,11 @@ strategies:
             name: IndexProperty
             type: index_property
             wait: 3s
+            expect:
+              - status_code: ok
+                path: $.details.length()
+                op: ge
+                value: 3
   - concurrency: 1
     name: Initial Insert and Wait
     operations:
@@ -142,18 +147,18 @@ strategies:
           - name: Insert
             type: insert
             mode: unary
-            parallelism: 10
-            num: 60000
-            qps: 3000
+            parallelism: _E2E_PARALLELISM_
+            num: _E2E_INSERT_COUNT_
+            qps: _E2E_QPS_
             wait: 2m
           - mode: unary
             name: IndexInfo
             type: index_info
+            retry_until_success_timeout: 5m
             expect:
               - status_code: ok
                 path: $.stored
-                op: gt
-                value: 30000
+                value: _E2E_EXPECTED_INDEX_
   - name: Search_with_RolloutRestartAgent
     concurrency: 2
     operations:
@@ -162,9 +167,9 @@ strategies:
           - name: Search
             type: search
             mode: unary
-            parallelism: 100
-            num: 100000
-            qps: 3000
+            parallelism: _E2E_PARALLELISM_
+            num: _E2E_SEARCH_COUNT_
+            qps: _E2E_QPS_
             offset: 0
             wait: 2m
             timeout: ""
@@ -211,9 +216,9 @@ strategies:
             type: remove
             mode: stream
             parallelism: 0
-            num: 60000
+            num: _E2E_INSERT_COUNT_
             offset: 0
-            bulk_size: 20
+            bulk_size: _E2E_BULK_SIZE_
             wait: "2m"
             # for modification like (Insert, Update, Upsert, Remove, RemoveByTimestamp)
             modification:

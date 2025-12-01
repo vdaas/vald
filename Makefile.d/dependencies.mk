@@ -18,6 +18,7 @@
 ## update vald libraries including tools
 update/libs: \
 	update/buf \
+	update/busybox \
 	update/chaos-mesh \
 	update/cmake \
 	update/docker \
@@ -65,6 +66,7 @@ go/deps:
         		$(ROOTDIR)/go.sum \
         		$(ROOTDIR)/go.mod 2>/dev/null; \
         	cp $(ROOTDIR)/hack/go.mod.default $(ROOTDIR)/go.mod ; \
+			sed -i "s/#.*//" $(ROOTDIR)/go.mod ; \
         	GOPRIVATE=$(GOPRIVATE) go mod tidy ; \
         	go clean -cache -modcache -testcache -i -r ; \
         	rm -rf $(ROOTDIR)/vendor \
@@ -73,10 +75,14 @@ go/deps:
         		$(ROOTDIR)/go.sum \
         		$(ROOTDIR)/go.mod 2>/dev/null; \
         	cp $(ROOTDIR)/hack/go.mod.default $(ROOTDIR)/go.mod ; \
+			sed -i "s/#.*//" $(ROOTDIR)/go.mod ; \
 	fi
 	cp $(ROOTDIR)/hack/go.mod.default $(ROOTDIR)/go.mod
-	GOPRIVATE=$(GOPRIVATE) go mod tidy
-	go get -u all 2>/dev/null || true
+	sed -i "s/#.*//" $(ROOTDIR)/go.mod
+	GOTOOLCHAIN=go$(GO_VERSION) GOPRIVATE=$(GOPRIVATE) go mod tidy
+	GOTOOLCHAIN=go$(GO_VERSION) go get -u all 2>/dev/null || true
+	# TODO: Avoid go get after go get -u all
+	GOTOOLCHAIN=go$(GO_VERSION) go get github.com/unum-cloud/usearch/golang@$(shell git ls-remote https://github.com/unum-cloud/usearch refs/tags/v$(USEARCH_VERSION) | cut -f1)
 
 .PHONY: go/example/deps
 ## install Go package dependencies
@@ -94,7 +100,6 @@ go/example/deps:
 ## install Rust package dependencies
 rust/deps: \
 	rust/install
-	sed -i "17s/channel = \"[0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?.*\"/channel = \"$(RUST_VERSION)\"/g" $(ROOTDIR)/rust/rust-toolchain.toml
 	rustup toolchain install $(RUST_VERSION)
 	rustup default $(RUST_VERSION)
 	cd $(ROOTDIR)/rust && $(CARGO_HOME)/bin/cargo update && cd -
@@ -135,7 +140,8 @@ update/golangci-lint:
 ## update rust version
 update/rust:
 	curl -fsSL https://releases.rs | grep -Po 'Stable: \K[\d.]+' | head -n 1 > $(ROOTDIR)/versions/RUST_VERSION
-	cp -f $(ROOTDIR)/versions/RUST_VERSION $(ROOTDIR)/rust/rust-toolchain
+	$(eval RUST_VERSION    := $(shell $(MAKE) -s version/rust))
+	sed -i "17s/channel = \"[0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?.*\"/channel = \"$(RUST_VERSION)\"/g" $(ROOTDIR)/rust/rust-toolchain.toml
 
 .PHONY: update/docker
 ## update docker version
@@ -166,6 +172,11 @@ update/protobuf:
 ## update buf version
 update/buf:
 	curl -fsSL https://api.github.com/repos/bufbuild/buf/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/BUF_VERSION
+
+.PHONY: update/busybox
+## update busybox version
+update/busybox:
+	curl -fsSL "https://hub.docker.com/v2/repositories/library/busybox/tags/?page_size=100" | jq -r '.results[].name' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$$' | sort -V | tail -n 1 > $(ROOTDIR)/versions/BUSYBOX_VERSION
 
 .PHONY: update/kind
 ## update kind (kubernetes in docker) version

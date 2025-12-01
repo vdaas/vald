@@ -19,7 +19,6 @@ package service
 
 import (
 	"context"
-	"os"
 	"reflect"
 	"strconv"
 	"syscall"
@@ -33,6 +32,7 @@ import (
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync/errgroup"
@@ -296,24 +296,24 @@ func (j *job) Start(ctx context.Context) (<-chan error, error) {
 		if err != nil {
 			log.Errorf("[benchmark job] failed to job: %v", err)
 		}
-		return
+		return err
 	})
 	return ech, nil
 }
 
 func (j *job) Stop(ctx context.Context) (err error) {
 	err = j.client.Stop(ctx)
-	return
+	return err
 }
 
 func calcRecall(linearRes, searchRes *payload.Search_Response) (recall float64) {
 	if linearRes == nil || searchRes == nil {
-		return
+		return recall
 	}
 	lres := linearRes.Results
 	sres := searchRes.Results
 	if len(lres) == 0 || len(sres) == 0 {
-		return
+		return recall
 	}
 	linearIds := map[string]struct{}{}
 	for _, v := range lres {

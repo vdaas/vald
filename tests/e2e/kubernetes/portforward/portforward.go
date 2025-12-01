@@ -23,8 +23,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/strings"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/rest"

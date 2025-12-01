@@ -23,7 +23,6 @@ import (
 	"fmt"
 	"io/fs"
 	"math"
-	"os"
 	"path/filepath"
 	"reflect"
 	"runtime"
@@ -43,6 +42,7 @@ import (
 	"github.com/vdaas/vald/internal/k8s/vald"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
@@ -237,6 +237,7 @@ func newNGT(cfg *config.NGT, opts ...Option) (n *ngt, err error) {
 		core.WithDefaultPoolSize(n.poolSize),
 		core.WithDefaultRadius(n.radius),
 		core.WithDefaultEpsilon(n.epsilon),
+		core.WithEpsilonForCreation(cfg.EpsilonForCreation),
 		core.WithDimension(cfg.Dimension),
 		core.WithDistanceTypeByString(cfg.DistanceType),
 		core.WithObjectTypeByString(cfg.ObjectType),
@@ -1579,7 +1580,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 
 	nocie := atomic.LoadUint64(&n.nocie)
 	if atomic.LoadUint64(&n.lastNocie) == nocie {
-		return
+		return err
 	}
 	atomic.SwapUint64(&n.lastNocie, nocie)
 	err = func() error {
@@ -2052,6 +2053,7 @@ func (n *ngt) IndexProperty() (*payload.Info_Index_Property, error) {
 		MaxMagnitude:                  p.MaxMagnitude,
 		NOfNeighborsForInsertionOrder: p.NOfNeighborsForInsertionOrder,
 		EpsilonForInsertionOrder:      p.EpsilonForInsertionOrder,
+		EpsilonForCreation:            p.EpsilonForCreation,
 		RefinementObjectType:          p.RefinementObjectType.String(),
 		TruncationThreshold:           p.TruncationThreshold,
 		EdgeSizeForCreation:           p.EdgeSizeForCreation,

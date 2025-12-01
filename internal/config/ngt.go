@@ -73,6 +73,9 @@ type NGT struct {
 	// DefaultEpsilon represent default epsilon used for search
 	DefaultEpsilon float32 `json:"default_epsilon,omitempty" yaml:"default_epsilon"`
 
+	// EpsilonForCreation represent default epsilon used for creation
+	EpsilonForCreation float32 `json:"epsilon_for_creation,omitempty" yaml:"epsilon_for_creation"`
+
 	// MinLoadIndexTimeout represents minimum duration of load index timeout
 	MinLoadIndexTimeout string `json:"min_load_index_timeout,omitempty" yaml:"min_load_index_timeout"`
 

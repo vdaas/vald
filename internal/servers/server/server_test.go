@@ -65,7 +65,7 @@ func TestServerMode_String(t *testing.T) {
 
 	for _, tc := range tests {
 		test := tc
-		t.Run(test.name, func(tt *testing.T) {
+		t.Run(test.name, func(_ *testing.T) {
 			got := test.m.String()
 			if test.want != got {
 				t.Errorf("String is wrong. want: %v, got: %v", test.want, got)
@@ -191,7 +191,7 @@ func TestNew(t *testing.T) {
 		}(),
 
 		func() test {
-			fn := func(g *grpc.Server) {}
+			fn := func(_ *grpc.Server) {}
 
 			return test{
 				name: "returns gRPC server instance when in gRPC mode",
@@ -426,7 +426,7 @@ func Test_server_ListenAndServe(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			eg, ctx := errgroup.New(ctx)
 
-			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			handler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				w.WriteHeader(200)
 			})
 
@@ -512,10 +512,11 @@ func Test_server_ListenAndServe(t *testing.T) {
 					starter: test.field.httpSrvStarter,
 				},
 				grpc: struct {
-					srv       *grpc.Server
-					keepAlive *grpcKeepalive
-					opts      []grpc.ServerOption
-					regs      []func(*grpc.Server)
+					srv        *grpc.Server
+					keepAlive  *grpcKeepalive
+					maxMsgSize int
+					opts       []grpc.ServerOption
+					regs       []func(*grpc.Server)
 				}{
 					srv: test.field.grpcSrv,
 				},
@@ -585,7 +586,7 @@ func Test_server_Shutdown(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			eg, ctx := errgroup.New(ctx)
 
-			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			handler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				w.WriteHeader(200)
 			})
 			testSrv := httptest.NewServer(handler)
@@ -673,10 +674,11 @@ func Test_server_Shutdown(t *testing.T) {
 					srv: test.field.httpSrv,
 				},
 				grpc: struct {
-					srv       *grpc.Server
-					keepAlive *grpcKeepalive
-					opts      []grpc.ServerOption
-					regs      []func(*grpc.Server)
+					srv        *grpc.Server
+					keepAlive  *grpcKeepalive
+					maxMsgSize int
+					opts       []grpc.ServerOption
+					regs       []func(*grpc.Server)
 				}{
 					srv: test.field.grpcSrv,
 				},

@@ -275,6 +275,15 @@
         "tool",
         "code"
       ]
+    },
+    {
+      "login": "nac-39",
+      "name": "nac-39",
+      "avatar_url": "https://avatars.githubusercontent.com/u/83295760?v=4",
+      "profile": "https://nac-39.com",
+      "contributions": [
+        "infra"
+      ]
     }
   ],
   "contributorsPerLine": 7,

@@ -35,12 +35,12 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
 	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 

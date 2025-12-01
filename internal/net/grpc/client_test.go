@@ -1064,6 +1064,101 @@ package grpc
 // 	}
 // }
 //
+// func TestRoundRobin(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		c   Client
+// 		f   func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (R, error)
+// 	}
+// 	type want struct {
+// 		wantData R
+// 		err      error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, R, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotData R, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotData, w.wantData) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotData, w.wantData)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           c:nil,
+// 		           f:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           c:nil,
+// 		           f:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			gotData, err := RoundRobin(test.args.ctx, test.args.c, test.args.f)
+// 			if err := checkFunc(test.want, gotData, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
 // func Test_gRPCClient_RoundRobin(t *testing.T) {
 // 	type args struct {
 // 		ctx context.Context
@@ -1453,13 +1548,12 @@ package grpc
 // 	}
 // }
 //
-// func Test_gRPCClient_connectWithBackoff(t *testing.T) {
+// func Test_gRPCClient_executeRPC(t *testing.T) {
 // 	type args struct {
-// 		ctx           context.Context
-// 		p             pool.Conn
-// 		addr          string
-// 		enableBackoff bool
-// 		f             func(ctx context.Context, conn *ClientConn, copts ...CallOption) (any, error)
+// 		ctx  context.Context
+// 		p    pool.Conn
+// 		addr string
+// 		f    func(ctx context.Context, conn *ClientConn, copts ...CallOption) (any, error)
 // 	}
 // 	type fields struct {
 // 		name                   string
@@ -1487,24 +1581,28 @@ package grpc
 // 		stopMonitor            context.CancelFunc
 // 	}
 // 	type want struct {
-// 		wantData any
-// 		err      error
+// 		wantRes       any
+// 		wantRetryable bool
+// 		err           error
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, any, error) error
+// 		checkFunc  func(want, any, bool, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, gotData any, err error) error {
+// 	defaultCheckFunc := func(w want, gotRes any, gotRetryable bool, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
-// 		if !reflect.DeepEqual(gotData, w.wantData) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotData, w.wantData)
+// 		if !reflect.DeepEqual(gotRes, w.wantRes) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+// 		}
+// 		if !reflect.DeepEqual(gotRetryable, w.wantRetryable) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRetryable, w.wantRetryable)
 // 		}
 // 		return nil
 // 	}
@@ -1517,7 +1615,6 @@ package grpc
 // 		           ctx:nil,
 // 		           p:nil,
 // 		           addr:"",
-// 		           enableBackoff:false,
 // 		           f:nil,
 // 		       },
 // 		       fields: fields {
@@ -1565,7 +1662,6 @@ package grpc
 // 		           ctx:nil,
 // 		           p:nil,
 // 		           addr:"",
-// 		           enableBackoff:false,
 // 		           f:nil,
 // 		           },
 // 		           fields: fields {
@@ -1647,7 +1743,206 @@ package grpc
 // 				stopMonitor:            test.fields.stopMonitor,
 // 			}
 //
-// 			gotData, err := g.connectWithBackoff(test.args.ctx, test.args.p, test.args.addr, test.args.enableBackoff, test.args.f)
+// 			gotRes, gotRetryable, err := g.executeRPC(test.args.ctx, test.args.p, test.args.addr, test.args.f)
+// 			if err := checkFunc(test.want, gotRes, gotRetryable, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_gRPCClient_do(t *testing.T) {
+// 	type args struct {
+// 		ctx  context.Context
+// 		p    pool.Conn
+// 		addr string
+// 		f    func(ctx context.Context, conn *ClientConn, copts ...CallOption) (any, error)
+// 	}
+// 	type fields struct {
+// 		name                   string
+// 		addrs                  map[string]struct{}
+// 		poolSize               uint64
+// 		clientCount            uint64
+// 		conns                  sync.Map[string, pool.Conn]
+// 		hcDur                  time.Duration
+// 		prDur                  time.Duration
+// 		dialer                 net.Dialer
+// 		enablePoolRebalance    bool
+// 		disableResolveDNSAddrs sync.Map[string, bool]
+// 		resolveDNS             bool
+// 		dopts                  []DialOption
+// 		copts                  []CallOption
+// 		roccd                  string
+// 		eg                     errgroup.Group
+// 		bo                     backoff.Backoff
+// 		cb                     circuitbreaker.CircuitBreaker
+// 		gbo                    gbackoff.Config
+// 		mcd                    time.Duration
+// 		crl                    sync.Map[string, bool]
+// 		ech                    <-chan error
+// 		monitorRunning         atomic.Bool
+// 		stopMonitor            context.CancelFunc
+// 	}
+// 	type want struct {
+// 		wantData any
+// 		err      error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, any, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotData any, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotData, w.wantData) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotData, w.wantData)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           p:nil,
+// 		           addr:"",
+// 		           f:nil,
+// 		       },
+// 		       fields: fields {
+// 		           name:"",
+// 		           addrs:nil,
+// 		           poolSize:0,
+// 		           clientCount:0,
+// 		           conns:nil,
+// 		           hcDur:nil,
+// 		           prDur:nil,
+// 		           dialer:nil,
+// 		           enablePoolRebalance:false,
+// 		           disableResolveDNSAddrs:nil,
+// 		           resolveDNS:false,
+// 		           dopts:nil,
+// 		           copts:nil,
+// 		           roccd:"",
+// 		           eg:nil,
+// 		           bo:nil,
+// 		           cb:nil,
+// 		           gbo:nil,
+// 		           mcd:nil,
+// 		           crl:nil,
+// 		           ech:nil,
+// 		           monitorRunning:nil,
+// 		           stopMonitor:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           p:nil,
+// 		           addr:"",
+// 		           f:nil,
+// 		           },
+// 		           fields: fields {
+// 		           name:"",
+// 		           addrs:nil,
+// 		           poolSize:0,
+// 		           clientCount:0,
+// 		           conns:nil,
+// 		           hcDur:nil,
+// 		           prDur:nil,
+// 		           dialer:nil,
+// 		           enablePoolRebalance:false,
+// 		           disableResolveDNSAddrs:nil,
+// 		           resolveDNS:false,
+// 		           dopts:nil,
+// 		           copts:nil,
+// 		           roccd:"",
+// 		           eg:nil,
+// 		           bo:nil,
+// 		           cb:nil,
+// 		           gbo:nil,
+// 		           mcd:nil,
+// 		           crl:nil,
+// 		           ech:nil,
+// 		           monitorRunning:nil,
+// 		           stopMonitor:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			g := &gRPCClient{
+// 				name:                   test.fields.name,
+// 				addrs:                  test.fields.addrs,
+// 				poolSize:               test.fields.poolSize,
+// 				clientCount:            test.fields.clientCount,
+// 				conns:                  test.fields.conns,
+// 				hcDur:                  test.fields.hcDur,
+// 				prDur:                  test.fields.prDur,
+// 				dialer:                 test.fields.dialer,
+// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				disableResolveDNSAddrs: test.fields.disableResolveDNSAddrs,
+// 				resolveDNS:             test.fields.resolveDNS,
+// 				dopts:                  test.fields.dopts,
+// 				copts:                  test.fields.copts,
+// 				roccd:                  test.fields.roccd,
+// 				eg:                     test.fields.eg,
+// 				bo:                     test.fields.bo,
+// 				cb:                     test.fields.cb,
+// 				gbo:                    test.fields.gbo,
+// 				mcd:                    test.fields.mcd,
+// 				crl:                    test.fields.crl,
+// 				ech:                    test.fields.ech,
+// 				monitorRunning:         test.fields.monitorRunning,
+// 				stopMonitor:            test.fields.stopMonitor,
+// 			}
+//
+// 			gotData, err := g.do(test.args.ctx, test.args.p, test.args.addr, test.args.f)
 // 			if err := checkFunc(test.want, gotData, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -2943,7 +3238,7 @@ package grpc
 //
 // func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
 // 	type args struct {
-// 		ctx context.Context
+// 		in0 context.Context
 // 	}
 // 	type fields struct {
 // 		name                   string
@@ -2994,7 +3289,7 @@ package grpc
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           ctx:nil,
+// 		           in0:nil,
 // 		       },
 // 		       fields: fields {
 // 		           name:"",
@@ -3038,7 +3333,7 @@ package grpc
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           ctx:nil,
+// 		           in0:nil,
 // 		           },
 // 		           fields: fields {
 // 		           name:"",
@@ -3119,7 +3414,7 @@ package grpc
 // 				stopMonitor:            test.fields.stopMonitor,
 // 			}
 //
-// 			gotAddrs := g.ConnectedAddrs(test.args.ctx)
+// 			gotAddrs := g.ConnectedAddrs(test.args.in0)
 // 			if err := checkFunc(test.want, gotAddrs); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -3315,9 +3610,8 @@ package grpc
 //
 // func Test_gRPCClient_rangeConns(t *testing.T) {
 // 	type args struct {
-// 		ctx   context.Context
-// 		force bool
-// 		fn    func(addr string, p pool.Conn) bool
+// 		action string
+// 		fn     func(addr string, p pool.Conn) bool
 // 	}
 // 	type fields struct {
 // 		name                   string
@@ -3368,8 +3662,7 @@ package grpc
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           ctx:nil,
-// 		           force:false,
+// 		           action:"",
 // 		           fn:nil,
 // 		       },
 // 		       fields: fields {
@@ -3414,8 +3707,7 @@ package grpc
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           ctx:nil,
-// 		           force:false,
+// 		           action:"",
 // 		           fn:nil,
 // 		           },
 // 		           fields: fields {
@@ -3497,7 +3789,7 @@ package grpc
 // 				stopMonitor:            test.fields.stopMonitor,
 // 			}
 //
-// 			err := g.rangeConns(test.args.ctx, test.args.force, test.args.fn)
+// 			err := g.rangeConns(test.args.action, test.args.fn)
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

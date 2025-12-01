@@ -39,7 +39,7 @@ func wrapErrors(errs []error) (wrapped error) {
 			}
 		}
 	}
-	return
+	return wrapped
 }
 
 func insertAndCreateIndex32(
@@ -71,7 +71,7 @@ func insertAndCreateIndex32(
 	if err != nil {
 		return nil, err
 	}
-	return
+	return ids, err
 }
 
 func insertAndCreateIndex64(
@@ -103,7 +103,7 @@ func insertAndCreateIndex64(
 	if err != nil {
 		return nil, err
 	}
-	return
+	return ids, err
 }
 
 func float32To64(x []float32) (y []float64) {

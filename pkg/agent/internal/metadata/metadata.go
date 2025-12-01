@@ -18,12 +18,12 @@ package metadata
 
 import (
 	"io/fs"
-	"os"
 
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/io"
+	"github.com/vdaas/vald/internal/os"
 )
 
 const (

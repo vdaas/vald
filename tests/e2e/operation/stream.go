@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 type (
@@ -106,13 +107,12 @@ func (c *client) SearchWithParameters(
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	var mu sync.Mutex
-	go func() {
+	errgroup.Go(func() error {
 		defer wg.Done()
-
 		for {
 			res, err := sc.Recv()
 			if err == io.EOF {
-				return
+				return nil
 			}
 
 			if err != nil {
@@ -127,7 +127,7 @@ func (c *client) SearchWithParameters(
 					)
 					mu.Unlock()
 				}
-				return
+				return nil
 			}
 
 			resp := res.GetResponse()
@@ -173,7 +173,7 @@ func (c *client) SearchWithParameters(
 
 			t.Logf("algo: %s, id: %d, results: %d, recall: %f", right, idx, len(topKIDs), c.recall(topKIDs, ds.Neighbors[idx][:len(topKIDs)]))
 		}
-	}()
+	})
 
 	for i := 0; i < len(ds.Test); i++ {
 		id := strconv.Itoa(i)

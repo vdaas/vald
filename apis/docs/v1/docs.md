@@ -19,6 +19,7 @@
   - [Info.Annotations](#payload-v1-Info-Annotations)
   - [Info.Annotations.AnnotationsEntry](#payload-v1-Info-Annotations-AnnotationsEntry)
   - [Info.CPU](#payload-v1-Info-CPU)
+  - [Info.CgroupStats](#payload-v1-Info-CgroupStats)
   - [Info.IPs](#payload-v1-Info-IPs)
   - [Info.Index](#payload-v1-Info-Index)
   - [Info.Index.Count](#payload-v1-Info-Index-Count)
@@ -40,6 +41,7 @@
   - [Info.Nodes](#payload-v1-Info-Nodes)
   - [Info.Pod](#payload-v1-Info-Pod)
   - [Info.Pods](#payload-v1-Info-Pods)
+  - [Info.ResourceStats](#payload-v1-Info-ResourceStats)
   - [Info.Service](#payload-v1-Info-Service)
   - [Info.ServicePort](#payload-v1-Info-ServicePort)
   - [Info.Services](#payload-v1-Info-Services)
@@ -139,6 +141,8 @@
   - [RequestInfo](#rpc-v1-RequestInfo)
   - [ResourceInfo](#rpc-v1-ResourceInfo)
   - [RetryInfo](#rpc-v1-RetryInfo)
+- [v1/rpc/stats/stats.proto](#v1_rpc_stats_stats-proto)
+  - [Stats](#rpc-v1-Stats)
 - [v1/vald/filter.proto](#v1_vald_filter-proto)
   - [Filter](#vald-v1-Filter)
 - [v1/vald/flush.proto](#v1_vald_flush-proto)
@@ -279,6 +283,17 @@ Represent the CPU information message.
 | request | [double](#double) |       | The CPU resource requested. |
 | usage   | [double](#double) |       | The CPU usage.              |
 
+<a name="payload-v1-Info-CgroupStats"></a>
+
+### Info.CgroupStats
+
+| Field              | Type              | Label | Description                         |
+| ------------------ | ----------------- | ----- | ----------------------------------- |
+| cpu_limit_cores    | [double](#double) |       | CPU cores available                 |
+| cpu_usage_cores    | [double](#double) |       | CPU usage in cores (not percentage) |
+| memory_limit_bytes | [uint64](#uint64) |       | Memory limit in bytes               |
+| memory_usage_bytes | [uint64](#uint64) |       | Memory usage in bytes               |
+
 <a name="payload-v1-Info-IPs"></a>
 
 ### Info.IPs
@@ -371,6 +386,7 @@ Represents index Property
 | build_time_limit                   | [float](#float)   |       |             |
 | outgoing_edge                      | [int32](#int32)   |       |             |
 | incoming_edge                      | [int32](#int32)   |       |             |
+| epsilon_for_creation               | [float](#float)   |       |             |
 
 <a name="payload-v1-Info-Index-PropertyDetail"></a>
 
@@ -559,6 +575,18 @@ Represent the multiple pod information message.
 | Field | Type                             | Label    | Description                   |
 | ----- | -------------------------------- | -------- | ----------------------------- |
 | pods  | [Info.Pod](#payload-v1-Info-Pod) | repeated | The multiple pod information. |
+
+<a name="payload-v1-Info-ResourceStats"></a>
+
+### Info.ResourceStats
+
+Represent the resource stats
+
+| Field        | Type                                             | Label | Description                         |
+| ------------ | ------------------------------------------------ | ----- | ----------------------------------- |
+| name         | [string](#string)                                |       |                                     |
+| ip           | [string](#string)                                |       |                                     |
+| cgroup_stats | [Info.CgroupStats](#payload-v1-Info-CgroupStats) |       | Container resource usage statistics |
 
 <a name="payload-v1-Info-Service"></a>
 
@@ -1621,6 +1649,23 @@ reached.
 | Field       | Type                                                  | Label | Description                                                               |
 | ----------- | ----------------------------------------------------- | ----- | ------------------------------------------------------------------------- |
 | retry_delay | [google.protobuf.Duration](#google-protobuf-Duration) |       | Clients should wait at least this long between retrying the same request. |
+
+<a name="v1_rpc_stats_stats-proto"></a>
+
+<p align="right"><a href="#top">Top</a></p>
+
+## v1/rpc/stats/stats.proto
+
+<a name="rpc-v1-Stats"></a>
+
+### Stats
+
+Overview
+Represent the resource stats service.
+
+| Method Name   | Request Type                           | Response Type                                                    | Description                                           |
+| ------------- | -------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------- |
+| ResourceStats | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.ResourceStats](#payload-v1-Info-ResourceStats) | Overview Represent the RPC to get the resource stats. |
 
 <a name="v1_vald_filter-proto"></a>
 

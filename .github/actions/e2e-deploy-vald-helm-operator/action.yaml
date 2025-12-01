@@ -86,6 +86,7 @@ runs:
 
         sleep 6
 
+        kubectl wait --for=create svc/vald-lb-gateway --timeout=${WAIT_FOR_TIMEOUT}
         kubectl wait --for=condition=Ready pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
         kubectl wait --for=condition=ContainersReady pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
 

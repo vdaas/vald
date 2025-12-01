@@ -15,6 +15,7 @@
 #
 
 .PHONY: minikube/install
+## install minikube
 minikube/install: $(BINDIR)/minikube
 
 $(BINDIR)/minikube:
@@ -25,6 +26,7 @@ $(BINDIR)/minikube:
 # Start minikube with CSI Driver and Volume Snapshots support
 # Only use this for development related to Volume Snapshots. Usually k3d is faster.
 .PHONY: minikube/start
+## start minikube
 minikube/start:
 	minikube config set driver docker
 	minikube start --driver=docker --force
@@ -36,10 +38,12 @@ minikube/start:
 	kubectl patch storageclass csi-hostpath-sc -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
 .PHONY: minikube/delete
+## delete minikube
 minikube/delete:
 	minikube delete
 
 .PHONY: minikube/restart
+## restart minikube
 minikube/restart: \
 	minikube/delete \
 	minikube/start

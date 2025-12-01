@@ -18,13 +18,13 @@ package runner
 
 import (
 	"context"
-	"os"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 

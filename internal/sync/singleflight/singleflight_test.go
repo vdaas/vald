@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"os"
 	"os/exec"
 	"reflect"
 	"runtime"
@@ -30,8 +29,10 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -57,7 +58,8 @@ func TestNew(t *testing.T) {
 			name: "returns Group implementation",
 			want: want{
 				want: &group[any]{
-					m: make(map[string]*call[any]),
+					m:  make(map[string]*call[any]),
+					eg: errgroup.Get(),
 				},
 			},
 		},
@@ -382,18 +384,18 @@ func TestForget(t *testing.T) {
 	)
 
 	go func() {
-		g.Do(context.Background(), "key", func(ctx context.Context) (i int, e error) {
+		g.Do(context.Background(), "key", func(_ context.Context) (i int, e error) {
 			close(firstStarted)
 			<-unblockFirst
 			close(firstFinished)
-			return
+			return i, e
 		})
 	}()
 	<-firstStarted
 	g.Forget("key")
 
 	unblockSecond := make(chan struct{})
-	secondResult := g.DoChan(context.Background(), "key", func(ctx context.Context) (i int, e error) {
+	secondResult := g.DoChan(context.Background(), "key", func(_ context.Context) (i int, e error) {
 		t.Log(2, "key")
 		<-unblockSecond
 		return 2, nil
@@ -402,7 +404,7 @@ func TestForget(t *testing.T) {
 	close(unblockFirst)
 	<-firstFinished
 
-	thirdResult := g.DoChan(context.Background(), "key", func(ctx context.Context) (i int, e error) {
+	thirdResult := g.DoChan(context.Background(), "key", func(_ context.Context) (i int, e error) {
 		t.Log(3, "key")
 		return 3, nil
 	})
@@ -417,7 +419,7 @@ func TestForget(t *testing.T) {
 
 func TestDoChan(t *testing.T) {
 	g := New[string]()
-	ch := g.DoChan(context.Background(), "key", func(ctx context.Context) (string, error) {
+	ch := g.DoChan(context.Background(), "key", func(_ context.Context) (string, error) {
 		return "bar", nil
 	})
 
@@ -436,7 +438,7 @@ func TestDoChan(t *testing.T) {
 // See https://github.com/golang/go/issues/41133
 func TestPanicDo(t *testing.T) {
 	g := New[any]()
-	fn := func(ctx context.Context) (any, error) {
+	fn := func(_ context.Context) (any, error) {
 		panic("invalid memory address or nil pointer dereference")
 	}
 
@@ -688,3 +690,533 @@ func TestDoMultipleErrors(t *testing.T) {
 }
 
 // NOT IMPLEMENTED BELOW
+//
+// func Test_panicError_Error(t *testing.T) {
+// 	type fields struct {
+// 		value  any
+// 		detail info.Detail
+// 	}
+// 	type want struct {
+// 		want string
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, string) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got string) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           value:nil,
+// 		           detail:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           value:nil,
+// 		           detail:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			p := &panicError{
+// 				value:  test.fields.value,
+// 				detail: test.fields.detail,
+// 			}
+//
+// 			got := p.Error()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_newPanicError(t *testing.T) {
+// 	type args struct {
+// 		v any
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           v:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           v:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			err := newPanicError(test.args.v)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_group_DoChan(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		key string
+// 		fn  func(context.Context) (V, error)
+// 	}
+// 	type want struct {
+// 		want <-chan Result[V]
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		g          *group[V]
+// 		want       want
+// 		checkFunc  func(want, <-chan Result[V]) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got <-chan Result[V]) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           key:"",
+// 		           fn:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           key:"",
+// 		           fn:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			g := &group[V]{}
+//
+// 			got := g.DoChan(test.args.ctx, test.args.key, test.args.fn)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_group_doCall(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		c   *call[V]
+// 		key string
+// 		fn  func(ctx context.Context) (V, error)
+// 	}
+// 	type want struct{}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		g          *group[V]
+// 		want       want
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want) error {
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           c:call[V]{},
+// 		           key:"",
+// 		           fn:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           c:call[V]{},
+// 		           key:"",
+// 		           fn:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			g := &group[V]{}
+//
+// 			g.doCall(test.args.ctx, test.args.c, test.args.key, test.args.fn)
+// 			if err := checkFunc(test.want); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_group_Forget(t *testing.T) {
+// 	type args struct {
+// 		key string
+// 	}
+// 	type want struct{}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		g          *group[V]
+// 		want       want
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want) error {
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           key:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           key:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			g := &group[V]{}
+//
+// 			g.Forget(test.args.key)
+// 			if err := checkFunc(test.want); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_group_ForgetUnshared(t *testing.T) {
+// 	type args struct {
+// 		key string
+// 	}
+// 	type want struct {
+// 		want bool
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		g          *group[V]
+// 		want       want
+// 		checkFunc  func(want, bool) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got bool) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           key:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           key:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			g := &group[V]{}
+//
+// 			got := g.ForgetUnshared(test.args.key)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }

@@ -16,48 +16,199 @@
 
 .PHONY: golangci-lint/install
 ## install golangci-lint
-golangci-lint/install: $(BINDIR)/golangci-lint
+golangci-lint/install: \
+	$(BINDIR)/golangci-lint
 
 $(BINDIR)/golangci-lint:
 	curl -fsSL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
 		| sh -s -- -b $(BINDIR) $(GOLANGCILINT_VERSION)
 
 .PHONY: goimports/install
-goimports/install: $(GOBIN)/goimports
+## install goimports
+goimports/install: \
+	$(GOBIN)/goimports
 
 $(GOBIN)/goimports:
 	$(call go-tool-install)
 
 .PHONY: strictgoimports/install
-strictgoimports/install: $(GOBIN)/strictgoimports
+## install strictgoimports
+strictgoimports/install: \
+	$(GOBIN)/strictgoimports
 
 $(GOBIN)/strictgoimports:
 	$(call go-tool-install)
 
 .PHONY: gofumpt/install
-gofumpt/install: $(GOBIN)/gofumpt
+## install gofumpt
+gofumpt/install: \
+	$(GOBIN)/gofumpt
 
 $(GOBIN)/gofumpt:
 	$(call go-tool-install)
 
 .PHONY: golines/install
-golines/install: $(GOBIN)/golines
+## install golines
+golines/install: \
+	$(GOBIN)/golines
 
 $(GOBIN)/golines:
 	$(call go-tool-install)
 
 .PHONY: crlfmt/install
-crlfmt/install: $(GOBIN)/crlfmt
+## install crlfmt
+crlfmt/install: \
+	$(GOBIN)/crlfmt
 
 $(GOBIN)/crlfmt:
 	$(call go-tool-install)
 
+.PHONY: actionlint/install
+## install actionlint
+actionlint/install: \
+	$(GOBIN)/actionlint
+
+$(GOBIN)/actionlint:
+	$(call go-tool-install)
+
+.PHONY: ghalint/install
+## install ghalint
+ghalint/install: \
+	$(GOBIN)/ghalint
+
+$(GOBIN)/ghalint:
+	$(call go-tool-install)
+
+.PHONY: pinact/install
+## install pinact
+pinact/install: \
+	$(GOBIN)/pinact
+
+$(GOBIN)/pinact:
+	$(call go-tool-install)
+
+.PHONY: ghatm/install
+## install ghatm
+ghatm/install: \
+	$(GOBIN)/ghatm
+
+$(GOBIN)/ghatm:
+	$(call go-tool-install)
+
+.PHONY: buf/install
+## install buf
+buf/install: \
+	$(GOBIN)/buf
+
+$(GOBIN)/buf:
+	$(call go-tool-install)
+
+.PHONY: k9s/install
+## install k9s
+k9s/install: \
+	$(GOBIN)/k9s
+
+$(GOBIN)/k9s:
+	$(call go-tool-install)
+
+.PHONY: stern/install
+## install stern
+stern/install: \
+	$(GOBIN)/stern
+
+$(GOBIN)/stern:
+	$(call go-tool-install)
+
+.PHONY: yamlfmt/install
+## install yamlfmt
+yamlfmt/install: \
+	$(GOBIN)/yamlfmt
+
+$(GOBIN)/yamlfmt:
+	$(call go-tool-install)
+
+.PHONY: gomodifytags/install
+## install gomodifytags
+gomodifytags/install: \
+	$(GOBIN)/gomodifytags
+
+$(GOBIN)/gomodifytags:
+	$(call go-tool-install)
+
+.PHONY: impl/install
+## install impl
+impl/install: \
+	$(GOBIN)/impl
+
+$(GOBIN)/impl:
+	$(call go-tool-install)
+
+.PHONY: delve/install
+## install delve
+delve/install: \
+	$(GOBIN)/dlv
+
+$(GOBIN)/dlv:
+	$(call go-tool-install)
+
+.PHONY: staticcheck/install
+## install staticcheck
+staticcheck/install: \
+	$(GOBIN)/staticcheck
+
+$(GOBIN)/staticcheck:
+	$(call go-tool-install)
+
+.PHONY: tparse/install
+## install tparse
+tparse/install: \
+	$(GOBIN)/tparse
+
+$(GOBIN)/tparse:
+	$(call go-tool-install)
+
+.PHONY: gotestfmt/install
+## install gotestfmt
+gotestfmt/install: \
+	$(GOBIN)/gotestfmt
+
+$(GOBIN)/gotestfmt:
+	$(call go-tool-install)
+
+.PHONY: gotests/install
+## install gotests
+gotests/install: \
+	$(GOBIN)/gotests
+
+$(GOBIN)/gotests:
+	$(call go-tool-install)
+
+.PHONY: protoc-gen-doc/install
+## install protoc-gen-doc
+protoc-gen-doc/install: \
+	$(GOBIN)/protoc-gen-doc
+
+$(GOBIN)/protoc-gen-doc:
+	$(call go-tool-install)
+
+.PHONY: go/tools/install
+## install go tools
+go/tools/install:
+	$(call go-tool-install)
+
+.PHONY: gopls/install
+## install gopls
+gopls/install: \
+	$(GOBIN)/gopls
+
+$(GOBIN)/gopls:
+	GO111MODULE=on go install -mod=readonly golang.org/x/tools/gopls@latest
+
 .PHONY: prettier/install
-prettier/install: $(NPM_GLOBAL_PREFIX)/bin/prettier
-$(NPM_GLOBAL_PREFIX)/bin/prettier:
-	npm config -g set registry http://registry.npmjs.org/
-	npm cache clean --force
-	type prettier || npm install -g prettier
+## Install prettier via Bun (global)
+prettier/install: $(BUN_GLOBAL_BIN)/prettier
+$(BUN_GLOBAL_BIN)/prettier: bun/install
+	command -v prettier >/dev/null 2>&1 || bun add --global prettier
 
 .PHONY: reviewdog/install
 ## install reviewdog
@@ -68,6 +219,7 @@ $(BINDIR)/reviewdog:
 		| sh -s -- -b $(BINDIR) $(REVIEWDOG_VERSION)
 
 .PHONY: kubectl/install
+## install kubectl
 kubectl/install: $(BINDIR)/kubectl
 
 $(BINDIR)/kubectl:
@@ -76,21 +228,31 @@ $(BINDIR)/kubectl:
 	chmod a+x $(BINDIR)/kubectl
 
 .PHONY: textlint/install
-textlint/install: $(NPM_GLOBAL_PREFIX)/bin/textlint
-
-$(NPM_GLOBAL_PREFIX)/bin/textlint:
-	npm install -g textlint textlint-rule-en-spell textlint-rule-prh textlint-rule-write-good
+## Install textlint & rules via Bun (global)
+textlint/install: $(BUN_GLOBAL_BIN)/textlint
+$(BUN_GLOBAL_BIN)/textlint: bun/install
+	bun add --global \
+		textlint \
+		textlint-rule-en-spell \
+		textlint-rule-prh \
+		textlint-rule-write-good
 
 .PHONY: textlint/ci/install
-textlint/ci/install:
-	npm init -y
-	npm install --save-dev textlint textlint-rule-en-spell textlint-rule-prh textlint-rule-write-good
+## Install textlint & rules for CI via Bun (local devDependencies)
+textlint/ci/install: bun/install
+	[ -f package.json ] || (bun init -y >/dev/null 2>&1 || echo '{}' > package.json)
+	bun add --dev \
+		textlint \
+		textlint-rule-en-spell \
+		textlint-rule-prh \
+		textlint-rule-write-good
 
 .PHONY: cspell/install
-cspell/install: $(NPM_GLOBAL_PREFIX)/bin/cspell
-
-$(NPM_GLOBAL_PREFIX)/bin/cspell:
-	npm install -g cspell@latest \
+## Install cspell & dictionaries via Bun (global)
+cspell/install: $(BUN_GLOBAL_BIN)/cspell
+$(BUN_GLOBAL_BIN)/cspell: bun/install
+	bun add --global \
+		cspell@latest \
 		@cspell/dict-cpp \
 		@cspell/dict-docker \
 		@cspell/dict-en_us \
@@ -118,70 +280,15 @@ $(NPM_GLOBAL_PREFIX)/bin/cspell:
 	cspell link add @cspell/dict-rust
 	cspell link add @cspell/dict-shell
 
-.PHONY: buf/install
-buf/install: $(BINDIR)/buf
+.PHONY: bun/install
+## Install Bun runtime into $(BUN_INSTALL) if not already installed
+bun/install: $(BINDIR)/bun
 
-$(BINDIR)/buf:
-	curl -fsSL \
-	"https://github.com/bufbuild/buf/releases/download/$(BUF_VERSION)/buf-$(shell uname -s)-$(shell uname -m)" \
-	-o "${BINDIR}/buf" && \
-	chmod +x "${BINDIR}/buf"
-
-.PHONY: k9s/install
-k9s/install: $(GOPATH)/bin/k9s
-
-$(GOPATH)/bin/k9s:
-	$(call go-install, github.com/derailed/k9s)
-
-.PHONY: stern/install
-stern/install: $(GOPATH)/bin/stern
-
-$(GOPATH)/bin/stern:
-	$(call go-install, github.com/stern/stern)
-
-.PHONY: yamlfmt/install
-yamlfmt/install: $(GOPATH)/bin/yamlfmt
-
-$(GOPATH)/bin/yamlfmt:
-	$(call go-install, github.com/google/yamlfmt/cmd/yamlfmt)
-
-.PHONY: gopls/install
-gopls/install: $(GOPATH)/bin/gopls
-
-$(GOPATH)/bin/gopls:
-	$(call go-install, golang.org/x/tools/gopls)
-
-.PHONY: gomodifytags/install
-gomodifytags/install: $(GOPATH)/bin/gomodifytags
-
-$(GOPATH)/bin/gomodifytags:
-	$(call go-install, github.com/fatih/gomodifytags)
-
-.PHONY: impl/install
-impl/install: $(GOPATH)/bin/impl
-
-$(GOPATH)/bin/impl:
-	$(call go-install, github.com/josharian/impl)
-
-.PHONY: goplay/install
-goplay/install: $(GOPATH)/bin/goplay
-
-$(GOPATH)/bin/goplay:
-	$(call go-install, github.com/haya14busa/goplay/cmd/goplay)
-
-.PHONY: delve/install
-delve/install: $(GOPATH)/bin/dlv
-
-$(GOPATH)/bin/dlv:
-	$(call go-install, github.com/go-delve/delve/cmd/dlv)
-
-.PHONY: staticcheck/install
-staticcheck/install: $(GOPATH)/bin/staticcheck
-
-$(GOPATH)/bin/staticcheck:
-	$(call go-install, honnef.co/go/tools/cmd/staticcheck)
+$(BINDIR)/bun:
+	curl -fsSL https://bun.sh/install | BUN_INSTALL=$(BUN_INSTALL) bash
 
 .PHONY: go/install
+## install go
 go/install: $(GOROOT)/bin/go
 
 $(GOROOT)/bin/go:
@@ -194,6 +301,7 @@ $(GOROOT)/bin/go:
 	&& $(GOROOT)/bin/go version
 
 .PHONY: rust/install
+## install rust
 rust/install: $(CARGO_HOME)/bin/cargo
 
 $(CARGO_HOME)/bin/cargo:
@@ -203,6 +311,7 @@ $(CARGO_HOME)/bin/cargo:
 	source "${CARGO_HOME}/env"
 
 .PHONY: zlib/install
+## install zlib
 zlib/install: $(LIB_PATH)/libz.a
 
 $(LIB_PATH)/libz.a: $(LIB_PATH)
@@ -232,6 +341,7 @@ $(LIB_PATH)/libz.a: $(LIB_PATH)
 	&& rm -rf $(TEMP_DIR)/zlib-$(ZLIB_VERSION).tar.gz $(TEMP_DIR)/zlib $(LIB_PATH)/libz.s*
 
 .PHONY: hdf5/install
+## install hdf5
 hdf5/install: $(LIB_PATH)/libhdf5.a
 
 $(LIB_PATH)/libhdf5.a: $(LIB_PATH) \
@@ -272,10 +382,11 @@ $(BINDIR)/yq:
 	mkdir -p $(BINDIR)
 	$(eval DARCH := $(subst aarch64,arm64,$(ARCH)))
 	cd $(TEMP_DIR) \
-	    && curl -fsSL https://github.com/mikefarah/yq/releases/download/$(YQ_VERSION)/yq_$(OS)_$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]')) -o $(BINDIR)/yq \
-	    && chmod a+x $(BINDIR)/yq
+		&& curl -fsSL https://github.com/mikefarah/yq/releases/download/$(YQ_VERSION)/yq_$(OS)_$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]')) -o $(BINDIR)/yq \
+		&& chmod a+x $(BINDIR)/yq
 
 .PHONY: docker-cli/install
+## install docker-cli
 docker-cli/install: $(BINDIR)/docker
 
 $(BINDIR)/docker: $(BINDIR)
@@ -283,3 +394,8 @@ $(BINDIR)/docker: $(BINDIR)
 		&& tar -xzvf $(TEMP_DIR)/docker.tgz -C $(TEMP_DIR) \
 		&& mv $(TEMP_DIR)/docker/docker $(BINDIR) \
 		&& rm -rf $(TEMP_DIR)/docker{.tgz,}
+
+.PHONY: replace/busybox
+## replace busybox version
+replace/busybox:
+	find . -type f \( -name "*.yaml" -o -name "*.md" \) -exec sed -i -E 's/busybox:([0-9]+\.[0-9]+\.[0-9]+|latest)/busybox:$(BUSYBOX_VERSION)/g' {} +

@@ -32,6 +32,6 @@ roleRef:
   name: {{ $discoverer.clusterRole.name }}
 subjects:
   - kind: ServiceAccount
-    name: {{ $discoverer.serviceAccount.name }}
+    name: {{ default $discoverer.name $discoverer.serviceAccountName }}
     namespace: {{ .Release.Namespace }}
 {{- end }}

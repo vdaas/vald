@@ -240,7 +240,7 @@ func (c *client) connect(ctx context.Context, addr string) (err error) {
 			err = c.onConnect(ctx, c, addr)
 		}
 	}
-	return
+	return err
 }
 
 func (c *client) disconnect(ctx context.Context, addr string) (err error) {
@@ -250,7 +250,7 @@ func (c *client) disconnect(ctx context.Context, addr string) (err error) {
 			err = c.onDisconnect(ctx, c, addr)
 		}
 	}
-	return
+	return err
 }
 
 func (c *client) dnsDiscovery(ctx context.Context) (addrs []string, err error) {
@@ -340,7 +340,7 @@ func (c *client) updateDiscoveryInfo(ctx context.Context) (connected []string, e
 }
 
 func (c *client) discoverNodes(ctx context.Context) (nodes *payload.Info_Nodes, err error) {
-	nodes, err = grpc.RoundRobin(c.dscClient, grpc.WithGRPCMethod(ctx, "discoverer.v1.Discoverer/Nodes"), func(ctx context.Context,
+	nodes, err = grpc.RoundRobin(grpc.WithGRPCMethod(ctx, "discoverer.v1.Discoverer/Nodes"), c.dscClient, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (*payload.Info_Nodes, error) {
 		return discoverer.NewDiscovererClient(conn).
@@ -395,7 +395,7 @@ func (c *client) discoverAddrs(
 				if node != nil &&
 					node.GetPods() != nil &&
 					len(node.GetPods().GetPods()) > i &&
-					len(node.GetPods().GetPods()[i].GetIp()) != 0 {
+					node.GetPods().GetPods()[i].GetIp() != "" {
 					addr := net.JoinHostPort(node.GetPods().GetPods()[i].GetIp(), uint16(c.port))
 					if err = c.connect(ctx, addr); err != nil {
 						log.Debugf("resource based discovery connect from discoverer API for addr = %s failed %v", addr, errors.ErrAddrCouldNotDiscover(err, addr))
@@ -437,8 +437,8 @@ func (c *client) disconnectOldAddrs(
 	if c.client != nil {
 		if err = c.client.RangeConcurrent(ctx, len(connectedAddrs)/3, func(ctx context.Context,
 			addr string,
-			conn *grpc.ClientConn,
-			copts ...grpc.CallOption,
+			_ *grpc.ClientConn,
+			_ ...grpc.CallOption,
 		) (err error) {
 			_, ok := cur.Load(addr)
 			if !ok {

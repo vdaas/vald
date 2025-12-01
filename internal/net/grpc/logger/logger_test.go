@@ -14,12 +14,12 @@
 package logger
 
 import (
-	"os"
 	"os/exec"
 	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"google.golang.org/grpc/grpclog"
@@ -91,7 +91,7 @@ func TestInit(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			Init()
+			internalInit()
 			if err := test.checkFunc(); err != nil {
 				tt.Errorf("error = %v", err)
 			}

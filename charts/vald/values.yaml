@@ -250,7 +250,7 @@ defaults:
               - "RecoverInterceptor"
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.shared_write_buffer", "type": "boolean"}
             # defaults.server_config.servers.grpc.server.grpc.shared_write_buffer -- gRPC server write buffer sharing option
-            shared_write_buffer: false
+            shared_write_buffer: true
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.wait_for_handlers", "type": "boolean"}
             # defaults.server_config.servers.grpc.server.grpc.wait_for_handlers -- gRPC server wait for handlers when stop
             wait_for_handlers: true
@@ -259,10 +259,10 @@ defaults:
             enable_reflection: true
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.enable_admin", "type": "boolean"}
             # defaults.server_config.servers.grpc.server.grpc.enable_admin -- gRPC server admin option
-            enable_admin: true
+            enable_admin: false
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.enable_channelz", "type": "boolean"}
             # defaults.server_config.servers.grpc.server.grpc.enable_channelz -- gRPC server channelz option
-            enable_channelz: true
+            enable_channelz: false
           # @schema {"name": "defaults.server_config.servers.grpc.server.socket_option", "alias": "socket_option"}
           socket_option:
             # defaults.server_config.servers.grpc.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
@@ -669,9 +669,15 @@ defaults:
       # @schema {"name": "defaults.server_config.tls.ca", "type": "string"}
       # defaults.server_config.tls.ca -- TLS ca path
       ca: /path/to/ca
+      # @schema {"name": "defaults.server_config.tls.crl", "type": "string"}
+      # defaults.server_config.tls.crl -- TLS certificate revocation list (CRL) path
+      crl: /path/to/crl
       # @schema {"name": "defaults.server_config.tls.insecure_skip_verify", "type": "boolean"}
       # defaults.server_config.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
       insecure_skip_verify: false
+      # @schema {"name": "defaults.server_config.tls.hot_reload", "type": "boolean"}
+      # defaults.server_config.tls.hot_reload -- enable dynamically reload certificate on each handshake
+      hot_reload: false
       # @schema {"name": "defaults.server_config.tls.server_name", "type": "string"}
       # defaults.server_config.tls.server_name -- SSL Server Name
       server_name: ""
@@ -811,13 +817,13 @@ defaults:
         insecure: true
         # @schema {"name": "defaults.grpc.client.dial_option.shared_write_buffer", "type": "boolean"}
         # defaults.grpc.client.dial_option.shared_write_buffer -- gRPC client dial option sharing write buffer
-        shared_write_buffer: false
+        shared_write_buffer: true
         # @schema {"name": "defaults.grpc.client.dial_option.authority", "type": "string"}
         # defaults.grpc.client.dial_option.authority -- gRPC client dial option authority
         authority: ""
         # @schema {"name": "defaults.grpc.client.dial_option.idle_timeout", "type": "string"}
         # defaults.grpc.client.dial_option.idle_timeout -- gRPC client dial option idle_timeout
-        idle_timeout: "1h"
+        idle_timeout: ""
         # @schema {"name": "defaults.grpc.client.dial_option.user_agent", "type": "string"}
         # defaults.grpc.client.dial_option.user_agent -- gRPC client dial option user_agent
         user_agent: "Vald-gRPC"
@@ -864,8 +870,14 @@ defaults:
             key: /path/to/key
             # defaults.grpc.client.dial_option.net.tls.ca -- TLS ca path
             ca: /path/to/ca
+            # @schema {"name": "defaults.grpc.client.dial_option.net.tls.crl", "type": "string"}
+            # defaults.grpc.client.dial_option.net.tls.crl -- TLS certificate revocation list (CRL) path
+            crl: /path/to/crl
             # defaults.grpc.client.dial_option.net.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
             insecure_skip_verify: false
+            # @schema {"name": "defaults.grpc.client.dial_option.net.tls.hot_reload", "type": "boolean"}
+            # defaults.grpc.client.dial_option.net.tls.hot_reload -- enable dynamically reload certificate on each handshake
+            hot_reload: false
             # defaults.grpc.client.dial_option.net.tls.server_name -- SSL Server Name
             server_name: ""
             # defaults.grpc.client.dial_option.net.tls.client_auth -- client auth type
@@ -911,8 +923,14 @@ defaults:
         key: /path/to/key
         # defaults.grpc.client.tls.ca -- TLS ca path
         ca: /path/to/ca
+        # @schema {"name": "defaults.grpc.client.tls.crl", "type": "string"}
+        # defaults.grpc.client.tls.crl -- TLS certificate revocation list (CRL) path
+        crl: /path/to/crl
         # defaults.grpc.client.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
         insecure_skip_verify: false
+        # @schema {"name": "defaults.grpc.client.tls.hot_reload", "type": "boolean"}
+        # defaults.grpc.client.tls.hot_reload -- enable dynamically reload certificate on each handshake
+        hot_reload: false
         # defaults.grpc.client.tls.server_name -- SSL Server Name
         server_name: ""
         # defaults.grpc.client.tls.client_auth -- client auth type
@@ -1133,13 +1151,13 @@ gateway:
       - type: wait-for
         name: wait-for-discoverer
         target: discoverer
-        image: busybox:stable
+        image: busybox:1.37.0
         imagePullPolicy: Always
         sleepDuration: 2
       - type: wait-for
         name: wait-for-agent
         target: agent
-        image: busybox:stable
+        image: busybox:1.37.0
         imagePullPolicy: Always
         sleepDuration: 2
     # @schema {"name": "gateway.lb.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
@@ -1248,6 +1266,11 @@ gateway:
       # @schema {"name": "gateway.lb.ingress.servicePort", "type": "string"}
       # gateway.lb.ingress.servicePort -- service port to be exposed by ingress
       servicePort: grpc
+      # @schema {"name": "gateway.lb.ingress.tls", "type": "array", "items": {"type": "object"}}
+      # gateway.lb.ingress.tls -- ingress tls config
+      tls:
+        - hosts: []
+          secretName: ""
       # @schema {"name": "gateway.lb.ingress.defaultBackend", "type": "object"}
       # gateway.lb.ingress.defaultBackend -- defaultBackend config
       defaultBackend:
@@ -1293,6 +1316,10 @@ gateway:
         # @schema {"name": "gateway.lb.gateway_config.discoverer.read_client", "alias": "grpc.client"}
         # gateway.lb.gateway_config.discoverer.read_client -- gRPC client for discoverer (overrides defaults.grpc.client)
         read_client: {}
+    # @schema {"name": "gateway.lb.serviceAccountName", "type": "string"}
+    # gateway.lb.serviceAccountName -- serviceAccountName -- Name of the service account to use.
+    # If not set, a service account is created.
+    serviceAccountName: ""
   # @schema {"name": "gateway.filter", "type": "object"}
   filter:
     # @schema {"name": "gateway.filter.enabled", "type": "boolean"}
@@ -1420,7 +1447,7 @@ gateway:
       - type: wait-for
         name: wait-for-gateway-lb
         target: gateway-lb
-        image: busybox:stable
+        image: busybox:1.37.0
         imagePullPolicy: Always
         sleepDuration: 2
     # @schema {"name": "gateway.filter.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
@@ -1529,6 +1556,11 @@ gateway:
       # @schema {"name": "gateway.filter.ingress.servicePort", "type": "string"}
       # gateway.filter.ingress.servicePort -- service port to be exposed by ingress
       servicePort: grpc
+      # @schema {"name": "gateway.filter.ingress.tls", "type": "array", "items": {"type": "object"}}
+      # gateway.filter.ingress.tls -- ingress tls config
+      tls:
+        - hosts: []
+          secretName: ""
       # @schema {"name": "gateway.filter.ingress.defaultBackend", "type": "object"}
       # gateway.filter.ingress.defaultBackend -- defaultBackend config
       defaultBackend:
@@ -1584,6 +1616,10 @@ gateway:
         # @schema {"name": "gateway.filter.gateway_config.egress_filter.distance_filters", "type": "array", "items": {"type": "string"}}
         # gateway.filter.gateway_config.egress_filter.distance_filters -- distance egress vector filter targets
         distance_filters: []
+    # @schema {"name": "gateway.filter.serviceAccountName", "type": "string"}
+    # gateway.filter.serviceAccountName -- serviceAccountName -- Name of the service account to use.
+    # If not set, a service account is created.
+    serviceAccountName: ""
   # @schema {"name": "gateway.mirror", "type": "object"}
   mirror:
     # @schema {"name": "gateway.mirror.enabled", "type": "boolean"}
@@ -1711,7 +1747,7 @@ gateway:
       - type: wait-for
         name: wait-for-gateway-lb
         target: gateway-lb
-        image: busybox:stable
+        image: busybox:1.37.0
         imagePullPolicy: Always
         sleepDuration: 2
     # @schema {"name": "gateway.mirror.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
@@ -1820,6 +1856,11 @@ gateway:
       # @schema {"name": "gateway.mirror.ingress.servicePort", "type": "string"}
       # gateway.mirror.ingress.servicePort -- service port to be exposed by ingress
       servicePort: grpc
+      # @schema {"name": "gateway.mirror.ingress.tls", "type": "array", "items": {"type": "object"}}
+      # "gateway.mirror.ingress.tls -- ingress tls config
+      tls:
+        - hosts: []
+          secretName: ""
       # @schema {"name": "gateway.mirror.ingress.defaultBackend", "type": "object"}
       # gateway.mirror.ingress.defaultBackend -- defaultBackend config
       defaultBackend:
@@ -1935,14 +1976,10 @@ gateway:
       # @schema {"name": "gateway.mirror.clusterRoleBinding.name", "type": "string"}
       # gateway.mirror.clusterRoleBinding.name -- name of clusterRoleBinding
       name: gateway-mirror
-    # @schema {"name": "gateway.mirror.serviceAccount", "type": "object"}
-    serviceAccount:
-      # @schema {"name": "gateway.mirror.serviceAccount.enabled", "type": "boolean"}
-      # gateway.mirror.serviceAccount.enabled -- creates service account
-      enabled: true
-      # @schema {"name": "gateway.mirror.serviceAccount.name", "type": "string"}
-      # gateway.mirror.serviceAccount.name -- name of service account
-      name: gateway-mirror
+    # @schema {"name": "gateway.mirror.serviceAccountName", "type": "string"}
+    # gateway.mirror.serviceAccountName -- serviceAccountName -- Name of the service account to use.
+    # If not set, a service account is created.
+    serviceAccountName: gateway-mirror
 # @schema {"name": "agent", "type": "object"}
 agent:
   # @schema {"name": "agent.enabled", "type": "boolean"}
@@ -2099,14 +2136,10 @@ agent:
     # @schema {"name": "agent.clusterRoleBinding.name", "type": "string"}
     # agent.clusterRoleBinding.name -- name of clusterRoleBinding
     name: agent
-  # @schema {"name": "agent.serviceAccount", "type": "object"}
-  serviceAccount:
-    # @schema {"name": "agent.serviceAccount.enabled", "type": "boolean"}
-    # agent.serviceAccount.enabled -- creates service account
-    enabled: true
-    # @schema {"name": "agent.serviceAccount.name", "type": "string"}
-    # agent.serviceAccount.name -- name of service account
-    name: agent-ngt
+  # @schema {"name": "agent.serviceAccountName", "type": "string"}
+  # agent.serviceAccountName -- serviceAccountName -- Name of the service account to use.
+  # If not set, a service account is created.
+  serviceAccountName: agent-ngt
   # @schema {"name": "agent.env", "alias": "env"}
   # agent.env -- environment variables
   env:
@@ -2300,6 +2333,9 @@ agent:
     # @schema {"name": "agent.ngt.default_epsilon", "type": "number"}
     # agent.ngt.default_epsilon -- default epsilon used for search
     default_epsilon: 0.05
+    # @schema {"name": "agent.ngt.epsilon_for_creation", "type": "number"}
+    # agent.ngt.epsilon_for_creation -- the epsilon used for creation
+    epsilon_for_creation: 0.05
     # @schema {"name": "agent.ngt.min_load_index_timeout", "type": "string"}
     # agent.ngt.min_load_index_timeout -- minimum duration of load index timeout
     min_load_index_timeout: 3m
@@ -3116,14 +3152,10 @@ discoverer:
     # @schema {"name": "discoverer.clusterRoleBinding.name", "type": "string"}
     # discoverer.clusterRoleBinding.name -- name of clusterRoleBinding
     name: discoverer
-  # @schema {"name": "discoverer.serviceAccount", "type": "object"}
-  serviceAccount:
-    # @schema {"name": "discoverer.serviceAccount.enabled", "type": "boolean"}
-    # discoverer.serviceAccount.enabled -- creates service account
-    enabled: true
-    # @schema {"name": "discoverer.serviceAccount.name", "type": "string"}
-    # discoverer.serviceAccount.name -- name of service account
-    name: vald
+  # @schema {"name": "discoverer.serviceAccountName", "type": "string"}
+  # discoverer.serviceAccountName -- serviceAccountName -- Name of the service account to use.
+  # If not set, a service account is created.
+  serviceAccountName: vald
 # @schema {"name": "manager", "type": "object"}
 manager:
   # @schema {"name": "manager.index", "type": "object"}
@@ -3228,13 +3260,13 @@ manager:
       - type: wait-for
         name: wait-for-agent
         target: agent
-        image: busybox:stable
+        image: busybox:1.37.0
         imagePullPolicy: Always
         sleepDuration: 2
       - type: wait-for
         name: wait-for-discoverer
         target: discoverer
-        image: busybox:stable
+        image: busybox:1.37.0
         imagePullPolicy: Always
         sleepDuration: 2
     # @schema {"name": "manager.index.env", "alias": "env"}
@@ -3315,6 +3347,9 @@ manager:
       limits:
         cpu: 1000m
         memory: 500Mi
+    # @schema {"name": "manager.index.serviceAccountName", "type": "string"}
+    # manager.index.serviceAccountName -- serviceAccountName -- Name of the service account to use.
+    serviceAccountName: ""
     # @schema {"name": "manager.index.indexer", "type": "object"}
     indexer:
       # @schema {"name": "manager.index.indexer.agent_namespace", "type": "string"}
@@ -3390,13 +3425,13 @@ manager:
         - type: wait-for
           name: wait-for-agent
           target: agent
-          image: busybox:stable
+          image: busybox:1.37.0
           imagePullPolicy: Always
           sleepDuration: 2
         - type: wait-for
           name: wait-for-discoverer
           target: discoverer
-          image: busybox:stable
+          image: busybox:1.37.0
           imagePullPolicy: Always
           sleepDuration: 2
       # @schema {"name": "manager.index.corrector.env", "alias": "env"}
@@ -3477,6 +3512,9 @@ manager:
           preferredDuringSchedulingIgnoredDuringExecution: []
           # manager.index.corrector.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
           requiredDuringSchedulingIgnoredDuringExecution: []
+      # @schema {"name": "manager.index.corrector.serviceAccountName", "type": "string"}
+      # manager.index.corrector.serviceAccountName -- serviceAccountName -- Name of the service account to use.
+      serviceAccountName: ""
       # @schema {"name": "manager.index.corrector.gateway", "alias": "grpc.client"}
       # manager.index.corrector.gateway -- gRPC client for gateway (overrides defaults.grpc.client)
       gateway: {}
@@ -3526,13 +3564,13 @@ manager:
         - type: wait-for
           name: wait-for-agent
           target: agent
-          image: busybox:stable
+          image: busybox:1.37.0
           imagePullPolicy: Always
           sleepDuration: 2
         - type: wait-for
           name: wait-for-discoverer
           target: discoverer
-          image: busybox:stable
+          image: busybox:1.37.0
           imagePullPolicy: Always
           sleepDuration: 2
       # @schema {"name": "manager.index.creator.env", "alias": "env"}
@@ -3613,6 +3651,9 @@ manager:
           preferredDuringSchedulingIgnoredDuringExecution: []
           # manager.index.creator.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
           requiredDuringSchedulingIgnoredDuringExecution: []
+      # @schema {"name": "manager.index.creator.serviceAccountName", "type": "string"}
+      # manager.index.creator.serviceAccountName -- serviceAccountName -- Name of the service account to use.
+      serviceAccountName: ""
       # @schema {"name": "manager.index.creator.discoverer", "type": "object"}
       discoverer:
         # @schema {"name": "manager.index.creator.discoverer.duration", "type": "string"}
@@ -3654,18 +3695,18 @@ manager:
         metrics:
           pprof: {}
       # @schema {"name": "manager.index.deleter.initContainers", "alias": "initContainers"}
-      # manager.index.creator.initContainers -- init containers
+      # manager.index.deleter.initContainers -- init containers
       initContainers:
         - type: wait-for
           name: wait-for-agent
           target: agent
-          image: busybox:stable
+          image: busybox:1.37.0
           imagePullPolicy: Always
           sleepDuration: 2
         - type: wait-for
           name: wait-for-discoverer
           target: discoverer
-          image: busybox:stable
+          image: busybox:1.37.0
           imagePullPolicy: Always
           sleepDuration: 2
       # @schema {"name": "manager.index.deleter.env", "alias": "env"}
@@ -3746,6 +3787,9 @@ manager:
           preferredDuringSchedulingIgnoredDuringExecution: []
           # manager.index.deleter.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
           requiredDuringSchedulingIgnoredDuringExecution: []
+      # @schema {"name": "manager.index.deleter.serviceAccountName", "type": "string"}
+      # manager.index.deleter.serviceAccountName -- serviceAccountName -- Name of the service account to use.
+      serviceAccountName: ""
       # @schema {"name": "manager.index.deleter.discoverer", "type": "object"}
       discoverer:
         # @schema {"name": "manager.index.deleter.discoverer.duration", "type": "string"}
@@ -3792,13 +3836,13 @@ manager:
         - type: wait-for
           name: wait-for-agent
           target: agent
-          image: busybox:stable
+          image: busybox:1.37.0
           imagePullPolicy: Always
           sleepDuration: 2
         - type: wait-for
           name: wait-for-discoverer
           target: discoverer
-          image: busybox:stable
+          image: busybox:1.37.0
           imagePullPolicy: Always
           sleepDuration: 2
       # @schema {"name": "manager.index.saver.env", "alias": "env"}
@@ -3876,6 +3920,9 @@ manager:
           preferredDuringSchedulingIgnoredDuringExecution: []
           # manager.index.saver.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
           requiredDuringSchedulingIgnoredDuringExecution: []
+      # @schema {"name": "manager.index.saver.serviceAccountName", "type": "string"}
+      # manager.index.saver.serviceAccountName -- serviceAccountName -- Name of the service account to use.
+      serviceAccountName: ""
       # @schema {"name": "manager.index.saver.discoverer", "type": "object"}
       discoverer:
         # @schema {"name": "manager.index.saver.discoverer.duration", "type": "string"}
@@ -3975,14 +4022,9 @@ manager:
         # @schema {"name": "manager.index.readreplica.rotator.agent_namespace", "type": "string"}
         # manager.index.readreplica.rotator.agent_namespace -- namespace of agent pods to manage
         agent_namespace: _MY_POD_NAMESPACE_
-        # @schema {"name": "manager.index.readreplica.rotator.serviceAccount", "type": "object"}
-        serviceAccount:
-          # @schema {"name": "manager.index.readreplica.rotator.serviceAccount.enabled", "type": "boolean"}
-          # manager.index.readreplica.rotator.serviceAccount.enabled -- creates service account
-          enabled: true
-          # @schema {"name": "manager.index.readreplica.rotator.serviceAccount.name", "type": "string"}
-          # manager.index.readreplica.rotator.serviceAccount.name -- name of service account
-          name: vald-readreplica-rotate
+        # @schema {"name": "manager.index.readreplica.rotator.serviceAccountName", "type": "string"}
+        # manager.index.readreplica.rotator.serviceAccountName -- serviceAccountName -- Name of the service account to use.
+        serviceAccountName: vald-readreplica-rotate
         # @schema {"name": "manager.index.readreplica.rotator.clusterRole", "type": "object"}
         clusterRole:
           # @schema {"name": "manager.index.readreplica.rotator.clusterRole.enabled", "type": "boolean"}
@@ -4171,6 +4213,25 @@ manager:
         limits:
           cpu: 600m
           memory: 200Mi
+      # @schema {"name": "manager.index.operator.serviceAccountName", "type": "string"}
+      # manager.index.operator.serviceAccountName -- serviceAccountName -- Name of the service account to use.
+      serviceAccountName: "vald-index-operator"
+      # @schema {"name": "manager.index.operator.clusterRole", "type": "object"}
+      clusterRole:
+        # @schema {"name": "manager.index.operator.clusterRole.enabled", "type": "boolean"}
+        # manager.index.operator.clusterRole.enabled -- creates clusterRole resource
+        enabled: true
+        # @schema {"name": "manager.index.operator.clusterRole.name", "type": "string"}
+        # manager.index.operator.clusterRole.name -- name of clusterRole
+        name: vald-index-operator
+      # @schema {"name": "manager.index.operator.clusterRoleBinding", "type": "object"}
+      clusterRoleBinding:
+        # @schema {"name": "manager.index.operator.clusterRoleBinding.enabled", "type": "boolean"}
+        # manager.index.operator.clusterRoleBinding.enabled -- creates clusterRoleBinding resource
+        enabled: true
+        # @schema {"name": "manager.index.operator.clusterRoleBinding.name", "type": "string"}
+        # manager.index.operator.clusterRoleBinding.name -- name of clusterRoleBinding
+        name: vald-index-operator
       # @schema {"name": "manager.index.operator.rotation_job_concurrency", "type": "integer", "minimum": 1}
       # manager.index.operator.rotation_job_concurrency -- maximum concurrent rotator job run.
       rotation_job_concurrency: 2

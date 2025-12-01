@@ -907,3 +907,391 @@ func TestCassandra_Opts(t *testing.T) {
 }
 
 // NOT IMPLEMENTED BELOW
+//
+// func TestPoolConfig_Bind(t *testing.T) {
+// 	type fields struct {
+// 		DataCenter               string
+// 		DCAwareRouting           bool
+// 		NonLocalReplicasFallback bool
+// 		ShuffleReplicas          bool
+// 		TokenAwareHostPolicy     bool
+// 	}
+// 	type want struct {
+// 		want *PoolConfig
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *PoolConfig) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *PoolConfig) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           DataCenter:"",
+// 		           DCAwareRouting:false,
+// 		           NonLocalReplicasFallback:false,
+// 		           ShuffleReplicas:false,
+// 		           TokenAwareHostPolicy:false,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           DataCenter:"",
+// 		           DCAwareRouting:false,
+// 		           NonLocalReplicasFallback:false,
+// 		           ShuffleReplicas:false,
+// 		           TokenAwareHostPolicy:false,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			pc := &PoolConfig{
+// 				DataCenter:               test.fields.DataCenter,
+// 				DCAwareRouting:           test.fields.DCAwareRouting,
+// 				NonLocalReplicasFallback: test.fields.NonLocalReplicasFallback,
+// 				ShuffleReplicas:          test.fields.ShuffleReplicas,
+// 				TokenAwareHostPolicy:     test.fields.TokenAwareHostPolicy,
+// 			}
+//
+// 			got := pc.Bind()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func TestRetryPolicy_Bind(t *testing.T) {
+// 	type fields struct {
+// 		NumRetries  int
+// 		MinDuration string
+// 		MaxDuration string
+// 	}
+// 	type want struct {
+// 		want *RetryPolicy
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *RetryPolicy) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *RetryPolicy) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           NumRetries:0,
+// 		           MinDuration:"",
+// 		           MaxDuration:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           NumRetries:0,
+// 		           MinDuration:"",
+// 		           MaxDuration:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			rp := &RetryPolicy{
+// 				NumRetries:  test.fields.NumRetries,
+// 				MinDuration: test.fields.MinDuration,
+// 				MaxDuration: test.fields.MaxDuration,
+// 			}
+//
+// 			got := rp.Bind()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func TestReconnectionPolicy_Bind(t *testing.T) {
+// 	type fields struct {
+// 		MaxRetries      int
+// 		InitialInterval string
+// 	}
+// 	type want struct {
+// 		want *ReconnectionPolicy
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *ReconnectionPolicy) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *ReconnectionPolicy) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           MaxRetries:0,
+// 		           InitialInterval:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           MaxRetries:0,
+// 		           InitialInterval:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			rp := &ReconnectionPolicy{
+// 				MaxRetries:      test.fields.MaxRetries,
+// 				InitialInterval: test.fields.InitialInterval,
+// 			}
+//
+// 			got := rp.Bind()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func TestHostFilter_Bind(t *testing.T) {
+// 	type fields struct {
+// 		Enabled    bool
+// 		DataCenter string
+// 		WhiteList  []string
+// 	}
+// 	type want struct {
+// 		want *HostFilter
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *HostFilter) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *HostFilter) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           Enabled:false,
+// 		           DataCenter:"",
+// 		           WhiteList:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           Enabled:false,
+// 		           DataCenter:"",
+// 		           WhiteList:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			hf := &HostFilter{
+// 				Enabled:    test.fields.Enabled,
+// 				DataCenter: test.fields.DataCenter,
+// 				WhiteList:  test.fields.WhiteList,
+// 			}
+//
+// 			got := hf.Bind()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }

@@ -148,7 +148,6 @@ package grpc
 // 			if err := checkFunc(test.want, gotId, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -286,7 +285,6 @@ package grpc
 // 			if err := checkFunc(test.want, gotId, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -424,7 +422,6 @@ package grpc
 // 			if err := checkFunc(test.want, gotVec, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -562,7 +559,6 @@ package grpc
 // 			if err := checkFunc(test.want, gotVec, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -693,7 +689,6 @@ package grpc
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -827,7 +822,6 @@ package grpc
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -965,7 +959,6 @@ package grpc
 // 			if err := checkFunc(test.want, gotTs, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

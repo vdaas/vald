@@ -21,19 +21,28 @@ on:
       - "!release/v*.*.*"
 jobs:
   dump-contexts-to-log:
-    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/dump-context
   semver-auto:
-    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    runs-on: ubuntu-slim
     outputs:
       RELEASE_BRANCH_NAME_SUFFIX: ${{ steps.set_context.outputs.RELEASE_BRANCH_NAME_SUFFIX }}
       RELEASE_TAG: ${{ steps.upgrade_semver.outputs.RELEASE_TAG }}
       RELEASE: ${{ steps.upgrade_semver.outputs.RELEASE }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
+          persist-credentials: false
           fetch-depth: 0
       - name: Set context
         id: set_context
@@ -68,6 +77,8 @@ jobs:
 
           echo "RELEASE_TAG=${RELEASE_TAG}"
   release-pr:
+    permissions:
+      contents: read
     if: ${{ needs.semver-auto.outputs.RELEASE == 'true' }}
     needs:
       - semver-auto
@@ -75,4 +86,9 @@ jobs:
     with:
       release_branch_name: "release/${{ needs.semver-auto.outputs.RELEASE_BRANCH_NAME_SUFFIX }}"
       release_tag: ${{ needs.semver-auto.outputs.RELEASE_TAG }}
-    secrets: inherit
+    secrets:
+      PACKAGE_USER: ${{ secrets.PACKAGE_USER }}
+      PACKAGE_TOKEN: ${{ secrets.PACKAGE_TOKEN }}
+      DISPATCH_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+      GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+      DISPATCH_USER: ${{ secrets.DISPATCH_USER }}

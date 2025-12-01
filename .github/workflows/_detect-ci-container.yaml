@@ -24,7 +24,10 @@ env:
   TARGET_IMAGE: vdaas/vald-ci-container
 jobs:
   detect:
-    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    runs-on: ubuntu-slim
     if: >-
       ${{
         (github.event_name == 'pull_request' &&
@@ -39,12 +42,15 @@ jobs:
         (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
         (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/v')) ||
         startsWith(github.ref, 'refs/tags/') ||
-        (github.event_name == 'schedule')
+        (github.event_name == 'schedule') ||
+        (github.event_name == 'workflow_dispatch')
       }}
     outputs:
       TAG: ${{ steps.get_tag_name.outputs.TAG }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
       - name: Determine Docker image tag
         id: determine_tag_name
         uses: ./.github/actions/determine-docker-image-tag

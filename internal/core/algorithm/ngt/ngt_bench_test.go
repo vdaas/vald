@@ -18,10 +18,10 @@ package ngt
 
 import (
 	"fmt"
-	"os"
 	"runtime"
 	"testing"
 
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/strings"
 	"gonum.org/v1/hdf5"
 )
@@ -167,5 +167,5 @@ func load(path string) (train, test [][]float32, err error) {
 		return nil, nil, err
 	}
 
-	return
+	return train, test, err
 }

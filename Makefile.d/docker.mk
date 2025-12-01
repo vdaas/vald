@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 .PHONY: docker/build
 ## build all docker images
 docker/build: \
@@ -44,6 +45,8 @@ docker/build: \
 	docker/build/readreplica-rotate \
 	docker/build/e2e
 
+.PHONY: docker/xpanes/build
+## build all docker images using xpanes
 docker/xpanes/build:
 	@xpanes -s -c "make -f $(ROOTDIR)/Makefile {}" \
 		docker/build/agent \
@@ -75,16 +78,27 @@ docker/xpanes/build:
 		docker/build/e2e
 
 .PHONY: docker/name/org
+## print docker organization name
 docker/name/org:
 	@echo "$(ORG)"
 
 .PHONY: docker/name/org/alter
+## print alternative docker organization name
 docker/name/org/alter:
 	@echo "$(GHCRORG)"
 
 .PHONY: docker/platforms
+## print docker platforms
 docker/platforms:
 	@echo "linux/amd64,linux/arm64"
+
+.PHONY: docker/darch
+docker/darch:
+	@echo $(subst x86_64,amd64,$(subst aarch64,arm64,$(ARCH)))
+
+.PHONY: docker/platform
+docker/platform:
+	@echo linux/$(shell $(MAKE) -s docker/darch)
 
 .PHONY: docker/build/image
 ## Generalized docker build function
@@ -122,7 +136,30 @@ else
 		-f $(DOCKERFILE) $(ROOTDIR)
 endif
 
+.PHONY: docker/create/manifest
+docker/create/manifest:
+	$(eval image := $(shell $(MAKE) ORG=$(ORG) -s docker/name/$(TARGET)))
+	$(eval images := $(foreach arch,$(ARCHS),$(image):$(TAG)-$(arch)))
+	docker buildx imagetools create \
+		-t $(image):$(TAG) \
+		$(images) \
+		$(EXTRA_IMAGES)
+
+.PHONY: docker/create/manifest/alter
+docker/create/manifest/alter:
+	@make ORG=$(GHCRORG) docker/create/manifest
+
+.PHONY: docker/inspect/image
+docker/inspect/image:
+	$(eval image := $(shell $(MAKE) ORG=$(ORG) -s docker/name/$(TARGET)))
+	docker buildx imagetools inspect $(image):$(TAG)
+
+.PHONY: docker/inspect/image/alter
+docker/inspect/image/alter:
+	@make ORG=$(GHCRORG) docker/inspect/image
+
 .PHONY: docker/name/agent-ngt
+## print agent-ngt image name
 docker/name/agent-ngt:
 	@echo "$(ORG)/$(AGENT_NGT_IMAGE)"
 
@@ -134,6 +171,7 @@ docker/build/agent-ngt:
 		docker/build/image
 
 .PHONY: docker/name/agent-faiss
+## print agent-faiss image name
 docker/name/agent-faiss:
 	@echo "$(ORG)/$(AGENT_FAISS_IMAGE)"
 
@@ -145,6 +183,7 @@ docker/build/agent-faiss:
 		docker/build/image
 
 .PHONY: docker/name/agent-sidecar
+## print agent-sidecar image name
 docker/name/agent-sidecar:
 	@echo "$(ORG)/$(AGENT_SIDECAR_IMAGE)"
 
@@ -156,6 +195,7 @@ docker/build/agent-sidecar:
 		docker/build/image
 
 .PHONY: docker/name/agent
+## print agent image name
 docker/name/agent:
 	@echo "$(ORG)/$(AGENT_IMAGE)"
 
@@ -166,6 +206,7 @@ docker/build/agent:
 		docker/build/image
 
 .PHONY: docker/name/discoverer-k8s
+## print discoverer-k8s image name
 docker/name/discoverer-k8s:
 	@echo "$(ORG)/$(DISCOVERER_IMAGE)"
 
@@ -177,6 +218,7 @@ docker/build/discoverer-k8s:
 		docker/build/image
 
 .PHONY: docker/name/gateway-lb
+## print gateway-lb image name
 docker/name/gateway-lb:
 	@echo "$(ORG)/$(LB_GATEWAY_IMAGE)"
 
@@ -188,6 +230,7 @@ docker/build/gateway-lb:
 		docker/build/image
 
 .PHONY: docker/name/gateway-filter
+## print gateway-filter image name
 docker/name/gateway-filter:
 	@echo "$(ORG)/$(FILTER_GATEWAY_IMAGE)"
 
@@ -199,6 +242,7 @@ docker/build/gateway-filter:
 		docker/build/image
 
 .PHONY: docker/name/gateway-mirror
+## print gateway-mirror image name
 docker/name/gateway-mirror:
 	@echo "$(ORG)/$(MIRROR_GATEWAY_IMAGE)"
 
@@ -210,6 +254,7 @@ docker/build/gateway-mirror:
 		docker/build/image
 
 .PHONY: docker/name/manager-index
+## print manager-index image name
 docker/name/manager-index:
 	@echo "$(ORG)/$(MANAGER_INDEX_IMAGE)"
 
@@ -221,6 +266,7 @@ docker/build/manager-index:
 		docker/build/image
 
 .PHONY: docker/name/buildbase
+## print buildbase image name
 docker/name/buildbase:
 	@echo "$(ORG)/$(BUILDBASE_IMAGE)"
 
@@ -232,6 +278,7 @@ docker/build/buildbase:
 		docker/build/image
 
 .PHONY: docker/name/buildkit
+## print buildkit image name
 docker/name/buildkit:
 	@echo "$(ORG)/$(BUILDKIT_IMAGE)"
 
@@ -243,6 +290,7 @@ docker/build/buildkit:
 		docker/build/image
 
 .PHONY: docker/name/binfmt
+## print binfmt image name
 docker/name/binfmt:
 	@echo "$(ORG)/$(BINFMT_IMAGE)"
 
@@ -253,7 +301,8 @@ docker/build/binfmt:
 		IMAGE=$(BINFMT_IMAGE) \
 		docker/build/image
 
-PHONY: docker/name/buildkit-syft-scanner
+.PHONY: docker/name/buildkit-syft-scanner
+## print buildkit-syft-scanner image name
 docker/name/buildkit-syft-scanner:
 	@echo "$(ORG)/$(BUILDKIT_SYFT_SCANNER_IMAGE)"
 
@@ -266,6 +315,7 @@ docker/build/buildkit-syft-scanner:
 		docker/build/image
 
 .PHONY: docker/name/ci-container
+## print ci-container image name
 docker/name/ci-container:
 	@echo "$(ORG)/$(CI_CONTAINER_IMAGE)"
 
@@ -278,6 +328,7 @@ docker/build/ci-container:
 		docker/build/image
 
 .PHONY: docker/name/dev-container
+## print dev-container image name
 docker/name/dev-container:
 	@echo "$(ORG)/$(DEV_CONTAINER_IMAGE)"
 
@@ -289,6 +340,7 @@ docker/build/dev-container:
 		docker/build/image
 
 .PHONY: docker/name/helm-operator
+## print helm-operator image name
 docker/name/helm-operator:
 	@echo "$(ORG)/$(HELM_OPERATOR_IMAGE)"
 
@@ -301,6 +353,7 @@ docker/build/helm-operator:
 		docker/build/image
 
 .PHONY: docker/name/index-correction
+## print index-correction image name
 docker/name/index-correction:
 	@echo "$(ORG)/$(INDEX_CORRECTION_IMAGE)"
 
@@ -312,6 +365,7 @@ docker/build/index-correction:
 		docker/build/image
 
 .PHONY: docker/name/index-creation
+## print index-creation image name
 docker/name/index-creation:
 	@echo "$(ORG)/$(INDEX_CREATION_IMAGE)"
 
@@ -323,6 +377,7 @@ docker/build/index-creation:
 		docker/build/image
 
 .PHONY: docker/name/index-save
+## print index-save image name
 docker/name/index-save:
 	@echo "$(ORG)/$(INDEX_SAVE_IMAGE)"
 
@@ -334,6 +389,7 @@ docker/build/index-save:
 		docker/build/image
 
 .PHONY: docker/name/index-deletion
+## print index-deletion image name
 docker/name/index-deletion:
 	@echo "$(ORG)/$(INDEX_DELETION_IMAGE)"
 
@@ -345,6 +401,7 @@ docker/build/index-deletion:
 		docker/build/image
 
 .PHONY: docker/name/index-exportation
+## print index-exportation image name
 docker/name/index-exportation:
 	@echo "$(ORG)/$(INDEX_EXPORTATION_IMAGE)"
 
@@ -356,6 +413,7 @@ docker/build/index-exportation:
 		docker/build/image
 
 .PHONY: docker/name/index-operator
+## print index-operator image name
 docker/name/index-operator:
 	@echo "$(ORG)/$(INDEX_OPERATOR_IMAGE)"
 
@@ -367,6 +425,7 @@ docker/build/index-operator:
 		docker/build/image
 
 .PHONY: docker/name/readreplica-rotate
+## print readreplica-rotate image name
 docker/name/readreplica-rotate:
 	@echo "$(ORG)/$(READREPLICA_ROTATE_IMAGE)"
 
@@ -378,6 +437,7 @@ docker/build/readreplica-rotate:
 		docker/build/image
 
 .PHONY: docker/name/benchmark-job
+## print benchmark-job image name
 docker/name/benchmark-job:
 	@echo "$(ORG)/$(BENCHMARK_JOB_IMAGE)"
 
@@ -390,6 +450,7 @@ docker/build/benchmark-job:
 		docker/build/image
 
 .PHONY: docker/name/benchmark-operator
+## print benchmark-operator image name
 docker/name/benchmark-operator:
 	@echo "$(ORG)/$(BENCHMARK_OPERATOR_IMAGE)"
 
@@ -401,6 +462,7 @@ docker/build/benchmark-operator:
 		docker/build/image
 
 .PHONY: docker/name/example-client
+## print example-client image name
 docker/name/example-client:
 	@echo "$(ORG)/$(EXAMPLE_CLIENT_IMAGE)"
 
@@ -413,6 +475,7 @@ docker/build/example-client:
 		docker/build/image
 
 .PHONY: docker/name/e2e
+## print e2e image name
 docker/name/e2e:
 	@echo "$(ORG)/$(E2E_IMAGE)"
 

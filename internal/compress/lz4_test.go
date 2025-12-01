@@ -60,7 +60,7 @@ func TestNewLZ4(t *testing.T) {
 				want: &lz4Compressor{
 					gobc: func() (gob Compressor) {
 						gob, _ = NewGob()
-						return
+						return gob
 					}(),
 					compressionLevel: 0,
 					lz4:              lz4.New(),
@@ -78,7 +78,7 @@ func TestNewLZ4(t *testing.T) {
 				want: &lz4Compressor{
 					gobc: func() (gob Compressor) {
 						gob, _ = NewGob()
-						return
+						return gob
 					}(),
 					compressionLevel: -1,
 					lz4:              lz4.New(),

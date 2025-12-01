@@ -22,20 +22,29 @@ env:
   BACKPORT_LABEL_PREFIX: "actions/backport/"
 jobs:
   dump-contexts-to-log:
-    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/dump-context
   semver-auto:
-    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    runs-on: ubuntu-slim
     needs: [dump-contexts-to-log]
     outputs:
       RELEASE_BRANCH_NAME: ${{ steps.upgrade_semver.outputs.RELEASE_BRANCH_NAME }}
       RELEASE_TAG: ${{ steps.upgrade_semver.outputs.RELEASE_TAG }}
       RELEASE: ${{ steps.setup_for_release.outputs.RELEASE }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
+          persist-credentials: false
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
       - name: Set Git config
@@ -84,6 +93,7 @@ jobs:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
         run: |
+          git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git checkout -b ${RELEASE_BRANCH_NAME} && git push origin ${RELEASE_BRANCH_NAME}
           gh label create "${BACKPORT_LABEL_PREFIX}${RELEASE_BRANCH_NAME}" # e.g) actions/backport/release/v1.8
 
@@ -92,6 +102,8 @@ jobs:
           echo "RELEASE_BRANCH_NAME=${RELEASE_BRANCH_NAME}"
           echo "LABEL_NAME=${BACKPORT_LABEL_PREFIX}${RELEASE_BRANCH_NAME}"
   release-pr:
+    permissions:
+      contents: read
     if: ${{ needs.semver-auto.outputs.RELEASE == 'true' }}
     needs:
       - semver-auto
@@ -99,4 +111,9 @@ jobs:
     with:
       release_branch_name: ${{ needs.semver-auto.outputs.RELEASE_BRANCH_NAME }}
       release_tag: ${{ needs.semver-auto.outputs.RELEASE_TAG }}
-    secrets: inherit
+    secrets:
+      PACKAGE_USER: ${{ secrets.PACKAGE_USER }}
+      PACKAGE_TOKEN: ${{ secrets.PACKAGE_TOKEN }}
+      DISPATCH_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+      GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+      DISPATCH_USER: ${{ secrets.DISPATCH_USER }}

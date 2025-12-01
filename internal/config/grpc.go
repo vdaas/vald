@@ -190,7 +190,7 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 	}
 	opts := make([]grpc.Option, 0, 18)
 
-	if len(g.HealthCheckDuration) != 0 {
+	if g.HealthCheckDuration != "" {
 		opts = append(opts, grpc.WithHealthCheckDuration(g.HealthCheckDuration))
 	}
 
@@ -208,14 +208,14 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 		}
 	}
 
-	if g.Addrs != nil && len(g.Addrs) != 0 {
+	if len(g.Addrs) != 0 {
 		opts = append(opts,
 			grpc.WithAddrs(g.Addrs...),
 		)
 	}
 
 	if g.Backoff != nil &&
-		len(g.Backoff.InitialDuration) != 0 &&
+		g.Backoff.InitialDuration != "" &&
 		g.Backoff.RetryCount > 2 {
 		opts = append(opts,
 			grpc.WithBackoff(
@@ -272,7 +272,7 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 		)
 
 		if g.DialOption.Net != nil && g.DialOption.Net.Dialer != nil &&
-			len(g.DialOption.Net.Dialer.Timeout) != 0 {
+			g.DialOption.Net.Dialer.Timeout != "" {
 			if g.DialOption.Net.TLS != nil && g.DialOption.Net.TLS.Enabled {
 				opts = append(opts,
 					grpc.WithInsecure(false),
