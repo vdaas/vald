@@ -14,8 +14,8 @@
 package operation
 
 import (
-	"context"
 	"strconv"
+	"sync"
 	"sync/atomic"
 	"testing"
 
@@ -24,12 +24,13 @@ import (
 	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
-	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
-func (o *operation) Insert(ctx context.Context, b *testing.B, ds assets.Dataset) (insertedNum int) {
+func (o *operation) Insert(b *testing.B, ds assets.Dataset) (insertedNum int) {
 	b.ResetTimer()
 	b.Run("Insert", func(b *testing.B) {
+		ctx := b.Context()
 		req := &payload.Insert_Request{
 			Vector: &payload.Object_Vector{},
 			Config: &payload.Insert_Config{
@@ -63,10 +64,11 @@ func (o *operation) Insert(ctx context.Context, b *testing.B, ds assets.Dataset)
 	return insertedNum
 }
 
-func (o *operation) StreamInsert(ctx context.Context, b *testing.B, ds assets.Dataset) int {
+func (o *operation) StreamInsert(b *testing.B, ds assets.Dataset) int {
 	var insertedNum int64
 	b.ResetTimer()
 	b.Run("StreamInsert", func(b *testing.B) {
+		ctx := b.Context()
 		sc, err := o.client.StreamInsert(ctx)
 		if err != nil {
 			b.Fatal(err)
@@ -83,20 +85,19 @@ func (o *operation) StreamInsert(ctx context.Context, b *testing.B, ds assets.Da
 		}
 		b.ResetTimer()
 
-		go func() {
+		errgroup.Go(func() error {
 			defer wg.Done()
-
 			for {
 				res, err := sc.Recv()
 				if err == io.EOF {
-					return
+					return nil
 				}
 
 				if err != nil {
 					// When the StreamInsert handler on the Server side returns an error, the error will be returned to Recv method.
 					// In the case of multiple executions, such as benchmarking, an error will occur even if AlreadyExist occurs for some of them.
 					// To prevent this, we close the stream early when an error occurs.
-					return
+					return err
 				}
 
 				loc := res.GetLocation()
@@ -113,7 +114,7 @@ func (o *operation) StreamInsert(ctx context.Context, b *testing.B, ds assets.Da
 				}
 				atomic.AddInt64(&insertedNum, 1)
 			}
-		}()
+		})
 
 		for i := 0; i < b.N; i++ {
 			v, err := ds.Train(i % ds.TrainSize())
@@ -131,6 +132,7 @@ func (o *operation) StreamInsert(ctx context.Context, b *testing.B, ds assets.Da
 		if err := sc.CloseSend(); err != nil {
 			b.Fatal(err)
 		}
+
 		wg.Wait()
 	})
 
