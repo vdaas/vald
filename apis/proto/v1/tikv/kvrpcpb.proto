@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 syntax = "proto3";
-package kvrpcpb;
+package tikv;
 
 import "v1/tikv/errorpb.proto";
 
@@ -29,7 +29,7 @@ message RawGetRequest {
 }
 
 message RawGetResponse {
-  errorpb.Error region_error = 1;
+  tikv.Error region_error = 1;
   string error = 2;
   bytes value = 3;
   bool not_found = 4;
@@ -42,7 +42,7 @@ message RawBatchGetRequest {
 }
 
 message RawBatchGetResponse {
-  errorpb.Error region_error = 1;
+  tikv.Error region_error = 1;
   repeated KvPair pairs = 2;
 }
 
@@ -56,7 +56,7 @@ message RawPutRequest {
 }
 
 message RawPutResponse {
-  errorpb.Error region_error = 1;
+  tikv.Error region_error = 1;
   string error = 2;
 }
 
@@ -74,7 +74,7 @@ message RawBatchPutRequest {
 }
 
 message RawBatchPutResponse {
-  errorpb.Error region_error = 1;
+  tikv.Error region_error = 1;
   string error = 2;
 }
 
@@ -86,7 +86,7 @@ message RawDeleteRequest {
 }
 
 message RawDeleteResponse {
-  errorpb.Error region_error = 1;
+  tikv.Error region_error = 1;
   string error = 2;
 }
 
@@ -98,7 +98,7 @@ message RawBatchDeleteRequest {
 }
 
 message RawBatchDeleteResponse {
-  errorpb.Error region_error = 1;
+  tikv.Error region_error = 1;
   string error = 2;
 }
 

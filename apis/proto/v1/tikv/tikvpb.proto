@@ -15,17 +15,17 @@
 //
 syntax = "proto3";
 
-package tikvpb;
+package tikv;
 
 import "v1/tikv/kvrpcpb.proto";
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/tikv";
 
 service Tikv {
-  rpc RawGet(kvrpcpb.RawGetRequest) returns (kvrpcpb.RawGetResponse) {}
-  rpc RawBatchGet(kvrpcpb.RawBatchGetRequest) returns (kvrpcpb.RawBatchGetResponse) {}
-  rpc RawPut(kvrpcpb.RawPutRequest) returns (kvrpcpb.RawPutResponse) {}
-  rpc RawBatchPut(kvrpcpb.RawBatchPutRequest) returns (kvrpcpb.RawBatchPutResponse) {}
-  rpc RawDelete(kvrpcpb.RawDeleteRequest) returns (kvrpcpb.RawDeleteResponse) {}
-  rpc RawBatchDelete(kvrpcpb.RawBatchDeleteRequest) returns (kvrpcpb.RawBatchDeleteResponse) {}
+  rpc RawGet(tikv.RawGetRequest) returns (tikv.RawGetResponse) {}
+  rpc RawBatchGet(tikv.RawBatchGetRequest) returns (tikv.RawBatchGetResponse) {}
+  rpc RawPut(tikv.RawPutRequest) returns (tikv.RawPutResponse) {}
+  rpc RawBatchPut(tikv.RawBatchPutRequest) returns (tikv.RawBatchPutResponse) {}
+  rpc RawDelete(tikv.RawDeleteRequest) returns (tikv.RawDeleteResponse) {}
+  rpc RawBatchDelete(tikv.RawBatchDeleteRequest) returns (tikv.RawBatchDeleteResponse) {}
 }

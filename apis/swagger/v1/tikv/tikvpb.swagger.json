@@ -27,7 +27,85 @@
       "default": "Unknown",
       "description": " - Optimistic: in optimistic transactions.\n - PessimisticRetry: a lock acquisition request waits for a lock and awakes, or meets a newer version of data, let TiDB retry.\n - SelfRolledBack: the transaction itself has been rolled back when it tries to prewrite.\n - RcCheckTs: RcCheckTs failure by meeting a newer version, let TiDB retry.\n - LazyUniquenessCheck: write conflict found when deferring constraint checks in pessimistic transactions. Deprecated in next-gen (cloud-storage-engine).\n - NotLockedKeyConflict: write conflict found on keys that do not acquire pessimistic locks in pessimistic transactions."
     },
-    "errorpbBucketVersionNotMatch": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com. As of May 2023, there are no widely used type server\nimplementations and no plans to implement one.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
+        }
+      },
+      "additionalProperties": {},
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(\u0026foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n    // or ...\n    if (any.isSameTypeAs(Foo.getDefaultInstance())) {\n      foo = any.unpack(Foo.getDefaultInstance());\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := \u0026pb.Foo{...}\n     any, err := anypb.New(foo)\n     if err != nil {\n       ...\n     }\n     ...\n     foo := \u0026pb.Foo{}\n     if err := any.UnmarshalTo(foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": \u003cstring\u003e,\n      \"lastName\": \u003cstring\u003e\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The status code, which should be an enum value of\n[google.rpc.Code][google.rpc.Code]."
+        },
+        "message": {
+          "type": "string",
+          "description": "A developer-facing error message, which should be in English. Any\nuser-facing error message should be localized and sent in the\n[google.rpc.Status.details][google.rpc.Status.details] field, or localized\nby the client."
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          },
+          "description": "A list of messages that carry the error details.  There is a common set of\nmessage types for APIs to use."
+        }
+      },
+      "description": "The `Status` type defines a logical error model that is suitable for\ndifferent programming environments, including REST APIs and RPC APIs. It is\nused by [gRPC](https://github.com/grpc). Each `Status` message contains\nthree pieces of data: error code, error message, and error details.\n\nYou can find out more about this error model and how to work with it in the\n[API Design Guide](https://cloud.google.com/apis/design/errors)."
+    },
+    "tikvAPIVersion": {
+      "type": "string",
+      "enum": ["V1", "V1TTL", "V2"],
+      "default": "V1",
+      "description": "The API version the server and the client is using.\nSee more details in https://github.com/tikv/rfcs/blob/master/text/0069-api-v2.md.\n\n - V1: `V1` is mainly for TiDB \u0026 TxnKV, and is not safe to use RawKV along with the others.\nV1 server only accepts V1 requests. V1 raw requests with TTL will be rejected.\n - V1TTL: `V1TTL` is only available to RawKV, and 8 bytes representing the unix timestamp in\nseconds for expiring time will be append to the value of all RawKV entries. For example:\n------------------------------------------------------------\n| User value     | Expire Ts                               |\n------------------------------------------------------------\n| 0x12 0x34 0x56 | 0x00 0x00 0x00 0x00 0x00 0x00 0xff 0xff |\n------------------------------------------------------------\nV1TTL server only accepts V1 raw requests.\nV1 client should not use `V1TTL` in request. V1 client should always send `V1`.\n - V2: `V2` use new encoding for RawKV \u0026 TxnKV to support more features.\n\nKey Encoding:\n TiDB: start with `m` or `t`, the same as `V1`.\n TxnKV: prefix with `x`, encoded as `MCE( x{keyspace id} + {user key} ) + timestamp`.\n RawKV: prefix with `r`, encoded as `MCE( r{keyspace id} + {user key} ) + timestamp`.\n Where the `{keyspace id}` is fixed-length of 3 bytes in network byte order.\n Besides, RawKV entires must be in `default` CF.\n\nValue Encoding:\n TiDB \u0026 TxnKV: the same as `V1`.\n RawKV: `{user value} + {optional fields} + {meta flag}`. The last byte in the\n raw value must be meta flags. For example:\n --------------------------------------\n | User value     | Meta flags        |\n --------------------------------------\n | 0x12 0x34 0x56 | 0x00 (0b00000000) |\n --------------------------------------\n Bit 0 of meta flags is for TTL. If set, the value contains 8 bytes expiring time as\n unix timestamp in seconds at the very left to the meta flags.\n --------------------------------------------------------------------------------\n | User value     | Expiring time                           | Meta flags        |\n --------------------------------------------------------------------------------\n | 0x12 0x34 0x56 | 0x00 0x00 0x00 0x00 0x00 0x00 0xff 0xff | 0x01 (0b00000001) |\n --------------------------------------------------------------------------------\n Bit 1 is for deletion. If set, the entry is logical deleted.\n ---------------------\n | Meta flags        |\n ---------------------\n | 0x02 (0b00000010) |\n ---------------------\n\nV2 server accpets V2 requests and V1 transactional requests that statrts with TiDB key\nprefix (`m` and `t`)."
+    },
+    "tikvAlreadyExist": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "tikvAssertion": {
+      "type": "string",
+      "enum": ["None", "Exist", "NotExist"],
+      "default": "None"
+    },
+    "tikvAssertionFailed": {
+      "type": "object",
+      "properties": {
+        "startTs": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "key": {
+          "type": "string",
+          "format": "byte"
+        },
+        "assertion": {
+          "$ref": "#/definitions/tikvAssertion"
+        },
+        "existingStartTs": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "existingCommitTs": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "tikvBucketVersionNotMatch": {
       "type": "object",
       "properties": {
         "version": {
@@ -44,392 +122,13 @@
       },
       "description": "BucketVersionNotMatch is the error variant that tells the request buckets version is not match.\nclient should update the buckets version and retry."
     },
-    "errorpbDataIsNotReady": {
-      "type": "object",
-      "properties": {
-        "regionId": {
-          "type": "string",
-          "format": "uint64",
-          "title": "The requested region ID"
-        },
-        "peerId": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "safeTs": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
-    },
-    "errorpbDiskFull": {
-      "type": "object",
-      "properties": {
-        "storeId": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uint64"
-          },
-          "title": "The requested store ID"
-        },
-        "reason": {
-          "type": "string",
-          "title": "The detailed info"
-        }
-      }
-    },
-    "errorpbEpochNotMatch": {
-      "type": "object",
-      "description": "EpochNotMatch is the error variant that tells a region has been updated.\n(e.g. by splitting / merging, or raft Confchange.)\nHence, a command is based on a stale version of a region.\n\n// Available regions that may be siblings of the requested one.\n repeated metapb.Region current_regions = 1;"
-    },
-    "errorpbError": {
-      "type": "object",
-      "properties": {
-        "message": {
-          "type": "string",
-          "title": "The error message"
-        },
-        "notLeader": {
-          "$ref": "#/definitions/errorpbNotLeader"
-        },
-        "regionNotFound": {
-          "$ref": "#/definitions/errorpbRegionNotFound"
-        },
-        "keyNotInRegion": {
-          "$ref": "#/definitions/errorpbKeyNotInRegion"
-        },
-        "epochNotMatch": {
-          "$ref": "#/definitions/errorpbEpochNotMatch"
-        },
-        "serverIsBusy": {
-          "$ref": "#/definitions/errorpbServerIsBusy"
-        },
-        "staleCommand": {
-          "$ref": "#/definitions/errorpbStaleCommand"
-        },
-        "storeNotMatch": {
-          "$ref": "#/definitions/errorpbStoreNotMatch"
-        },
-        "raftEntryTooLarge": {
-          "$ref": "#/definitions/errorpbRaftEntryTooLarge"
-        },
-        "maxTimestampNotSynced": {
-          "$ref": "#/definitions/errorpbMaxTimestampNotSynced"
-        },
-        "readIndexNotReady": {
-          "$ref": "#/definitions/errorpbReadIndexNotReady"
-        },
-        "proposalInMergingMode": {
-          "$ref": "#/definitions/errorpbProposalInMergingMode"
-        },
-        "dataIsNotReady": {
-          "$ref": "#/definitions/errorpbDataIsNotReady"
-        },
-        "regionNotInitialized": {
-          "$ref": "#/definitions/errorpbRegionNotInitialized"
-        },
-        "diskFull": {
-          "$ref": "#/definitions/errorpbDiskFull"
-        },
-        "RecoveryInProgress": {
-          "$ref": "#/definitions/errorpbRecoveryInProgress",
-          "title": "Online recovery is still in performing, reject writes to avoid potential issues"
-        },
-        "FlashbackInProgress": {
-          "$ref": "#/definitions/errorpbFlashbackInProgress",
-          "description": "Flashback is still in performing, reject any read or write to avoid potential issues.\nNOTICE: this error is non-retryable, the request should fail ASAP when it meets this error."
-        },
-        "FlashbackNotPrepared": {
-          "$ref": "#/definitions/errorpbFlashbackNotPrepared",
-          "description": "If the second phase flashback request is sent to a region that is not prepared for the flashback,\nthis error will be returned.\nNOTICE: this error is non-retryable, the client should retry the first phase flashback request when it meets this error."
-        },
-        "isWitness": {
-          "$ref": "#/definitions/errorpbIsWitness",
-          "description": "IsWitness is the error variant that tells a request be handle by witness\nwhich should be forbidden and retry."
-        },
-        "mismatchPeerId": {
-          "$ref": "#/definitions/errorpbMismatchPeerId"
-        },
-        "bucketVersionNotMatch": {
-          "$ref": "#/definitions/errorpbBucketVersionNotMatch",
-          "description": "BucketVersionNotMatch is the error variant that tells the request buckets version is not match."
-        },
-        "undeterminedResult": {
-          "$ref": "#/definitions/errorpbUndeterminedResult",
-          "description": "UndeterminedResult is the error variant that tells the result is not determined yet."
-        }
-      },
-      "description": "Error wraps all region errors, indicates an error encountered by a request."
-    },
-    "errorpbFlashbackInProgress": {
-      "type": "object",
-      "properties": {
-        "regionId": {
-          "type": "string",
-          "format": "uint64",
-          "title": "The requested region ID"
-        },
-        "flashbackStartTs": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
-    },
-    "errorpbFlashbackNotPrepared": {
-      "type": "object",
-      "properties": {
-        "regionId": {
-          "type": "string",
-          "format": "uint64",
-          "title": "The requested region ID"
-        }
-      }
-    },
-    "errorpbIsWitness": {
-      "type": "object",
-      "properties": {
-        "regionId": {
-          "type": "string",
-          "format": "uint64",
-          "title": "The requested region ID"
-        }
-      },
-      "description": "IsWitness is the error variant that tells a request be handle by witness\nwhich should be forbidden and retry."
-    },
-    "errorpbKeyNotInRegion": {
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string",
-          "format": "byte",
-          "title": "The requested key"
-        },
-        "regionId": {
-          "type": "string",
-          "format": "uint64",
-          "title": "The requested region ID"
-        },
-        "startKey": {
-          "type": "string",
-          "format": "byte",
-          "title": "Start key of the requested region"
-        },
-        "endKey": {
-          "type": "string",
-          "format": "byte",
-          "title": "Snd key of the requested region"
-        }
-      },
-      "description": "KeyNotInRegion is the error variant that tells the key the request requires isn't present in\nthis region."
-    },
-    "errorpbMaxTimestampNotSynced": {
-      "type": "object",
-      "description": "MaxTimestampNotSynced is the error variant that tells the peer has just become a leader and\nupdating the max timestamp in the concurrency manager from PD TSO is ongoing. In this case,\nthe prewrite of an async commit transaction cannot succeed. The client can backoff and\nresend the request."
-    },
-    "errorpbMismatchPeerId": {
-      "type": "object",
-      "properties": {
-        "requestPeerId": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "storePeerId": {
-          "type": "string",
-          "format": "uint64"
-        }
-      },
-      "description": "MismatchPeerId is the error variant that tells the request is sent to wrong peer.\nClient receives this error should reload the region info and retry."
-    },
-    "errorpbNotLeader": {
-      "type": "object",
-      "properties": {
-        "regionId": {
-          "type": "string",
-          "format": "uint64",
-          "description": "// Region leader of the requested region\n metapb.Peer leader = 2;",
-          "title": "The requested region ID"
-        }
-      },
-      "description": "NotLeader is the error variant that tells a request be handle by raft leader\nis sent to raft follower or learner."
-    },
-    "errorpbProposalInMergingMode": {
-      "type": "object",
-      "properties": {
-        "regionId": {
-          "type": "string",
-          "format": "uint64",
-          "title": "The requested region ID"
-        }
-      },
-      "description": "ProposalInMergingMode is the error variant that tells the proposal is rejected because raft is\nin the merging mode. This may happen when BR/Lightning try to ingest SST.\nThis can be retried at most time."
-    },
-    "errorpbRaftEntryTooLarge": {
-      "type": "object",
-      "properties": {
-        "regionId": {
-          "type": "string",
-          "format": "uint64",
-          "title": "The requested region ID"
-        },
-        "entrySize": {
-          "type": "string",
-          "format": "uint64",
-          "title": "Size of the raft entry"
-        }
-      },
-      "title": "RaftEntryTooLarge is the error variant that tells the request is too large to be serialized to a\nreasonable small raft entry.\n(i.e. greater than the configured value `raft_entry_max_size` in `raftstore`)"
-    },
-    "errorpbReadIndexNotReady": {
-      "type": "object",
-      "properties": {
-        "reason": {
-          "type": "string",
-          "title": "The reason why the region is not ready to serve read index request"
-        },
-        "regionId": {
-          "type": "string",
-          "format": "uint64",
-          "title": "The requested region ID"
-        }
-      },
-      "description": "ReadIndexNotReady is the error variant that tells the read index request is not ready, that is,\nthe current region is in a status that not ready to serve the read index request. For example,\nregion is in splitting or merging status.\nThis can be retried at most time."
-    },
-    "errorpbRecoveryInProgress": {
-      "type": "object",
-      "properties": {
-        "regionId": {
-          "type": "string",
-          "format": "uint64",
-          "title": "The requested region ID"
-        }
-      }
-    },
-    "errorpbRegionNotFound": {
-      "type": "object",
-      "properties": {
-        "regionId": {
-          "type": "string",
-          "format": "uint64",
-          "title": "The requested region ID"
-        }
-      },
-      "description": "RegionNotFound is the error variant that tells there isn't any region in this TiKV\nmatches the requested region ID."
-    },
-    "errorpbRegionNotInitialized": {
-      "type": "object",
-      "properties": {
-        "regionId": {
-          "type": "string",
-          "format": "uint64",
-          "title": "The request region ID"
-        }
-      },
-      "description": "RegionNotInitialized is the error variant that tells there isn't any initialized peer\nmatchesthe request region ID."
-    },
-    "errorpbServerIsBusy": {
-      "type": "object",
-      "properties": {
-        "reason": {
-          "type": "string"
-        },
-        "backoffMs": {
-          "type": "string",
-          "format": "uint64",
-          "title": "The suggested backoff time"
-        },
-        "estimatedWaitMs": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "appliedIndex": {
-          "type": "string",
-          "format": "uint64",
-          "description": "Current applied_index at the leader, may be used in replica read."
-        }
-      },
-      "description": "ServerIsBusy is the error variant that tells the server is too busy to response."
-    },
-    "errorpbStaleCommand": {
-      "type": "object",
-      "description": "StaleCommand is the error variant that tells the command is stale, that is,\nthe current request term is lower than current raft term.\nThis can be retried at most time."
-    },
-    "errorpbStoreNotMatch": {
-      "type": "object",
-      "properties": {
-        "requestStoreId": {
-          "type": "string",
-          "format": "uint64",
-          "title": "Store id in request"
-        },
-        "actualStoreId": {
-          "type": "string",
-          "format": "uint64",
-          "title": "Actual store id"
-        }
-      },
-      "title": "StoreNotMatch is the error variant that tells the request is sent to wrong store.\n(i.e. inconsistency of the store ID that request shows and the real store ID of this server.)"
-    },
-    "errorpbUndeterminedResult": {
-      "type": "object",
-      "properties": {
-        "message": {
-          "type": "string"
-        }
-      },
-      "description": "UndeterminedResult is the error variant that tells the result is not determined yet.\nFor example, the raft protocol timed out and the apply result is unknown."
-    },
-    "kvrpcpbAPIVersion": {
-      "type": "string",
-      "enum": ["V1", "V1TTL", "V2"],
-      "default": "V1",
-      "description": "The API version the server and the client is using.\nSee more details in https://github.com/tikv/rfcs/blob/master/text/0069-api-v2.md.\n\n - V1: `V1` is mainly for TiDB \u0026 TxnKV, and is not safe to use RawKV along with the others.\nV1 server only accepts V1 requests. V1 raw requests with TTL will be rejected.\n - V1TTL: `V1TTL` is only available to RawKV, and 8 bytes representing the unix timestamp in\nseconds for expiring time will be append to the value of all RawKV entries. For example:\n------------------------------------------------------------\n| User value     | Expire Ts                               |\n------------------------------------------------------------\n| 0x12 0x34 0x56 | 0x00 0x00 0x00 0x00 0x00 0x00 0xff 0xff |\n------------------------------------------------------------\nV1TTL server only accepts V1 raw requests.\nV1 client should not use `V1TTL` in request. V1 client should always send `V1`.\n - V2: `V2` use new encoding for RawKV \u0026 TxnKV to support more features.\n\nKey Encoding:\n TiDB: start with `m` or `t`, the same as `V1`.\n TxnKV: prefix with `x`, encoded as `MCE( x{keyspace id} + {user key} ) + timestamp`.\n RawKV: prefix with `r`, encoded as `MCE( r{keyspace id} + {user key} ) + timestamp`.\n Where the `{keyspace id}` is fixed-length of 3 bytes in network byte order.\n Besides, RawKV entires must be in `default` CF.\n\nValue Encoding:\n TiDB \u0026 TxnKV: the same as `V1`.\n RawKV: `{user value} + {optional fields} + {meta flag}`. The last byte in the\n raw value must be meta flags. For example:\n --------------------------------------\n | User value     | Meta flags        |\n --------------------------------------\n | 0x12 0x34 0x56 | 0x00 (0b00000000) |\n --------------------------------------\n Bit 0 of meta flags is for TTL. If set, the value contains 8 bytes expiring time as\n unix timestamp in seconds at the very left to the meta flags.\n --------------------------------------------------------------------------------\n | User value     | Expiring time                           | Meta flags        |\n --------------------------------------------------------------------------------\n | 0x12 0x34 0x56 | 0x00 0x00 0x00 0x00 0x00 0x00 0xff 0xff | 0x01 (0b00000001) |\n --------------------------------------------------------------------------------\n Bit 1 is for deletion. If set, the entry is logical deleted.\n ---------------------\n | Meta flags        |\n ---------------------\n | 0x02 (0b00000010) |\n ---------------------\n\nV2 server accpets V2 requests and V1 transactional requests that statrts with TiDB key\nprefix (`m` and `t`)."
-    },
-    "kvrpcpbAlreadyExist": {
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "kvrpcpbAssertion": {
-      "type": "string",
-      "enum": ["None", "Exist", "NotExist"],
-      "default": "None"
-    },
-    "kvrpcpbAssertionFailed": {
-      "type": "object",
-      "properties": {
-        "startTs": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "key": {
-          "type": "string",
-          "format": "byte"
-        },
-        "assertion": {
-          "$ref": "#/definitions/kvrpcpbAssertion"
-        },
-        "existingStartTs": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "existingCommitTs": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
-    },
-    "kvrpcpbCommandPri": {
+    "tikvCommandPri": {
       "type": "string",
       "enum": ["Normal", "Low", "High"],
       "default": "Normal",
       "description": " - Normal: Normal is the default value."
     },
-    "kvrpcpbCommitTsExpired": {
+    "tikvCommitTsExpired": {
       "type": "object",
       "properties": {
         "startTs": {
@@ -450,7 +149,7 @@
         }
       }
     },
-    "kvrpcpbCommitTsTooLarge": {
+    "tikvCommitTsTooLarge": {
       "type": "object",
       "properties": {
         "commitTs": {
@@ -460,7 +159,7 @@
         }
       }
     },
-    "kvrpcpbContext": {
+    "tikvContext": {
       "type": "object",
       "properties": {
         "regionId": {
@@ -473,10 +172,10 @@
           "title": "metapb.RegionEpoch region_epoch = 2;\nmetapb.Peer peer = 3;"
         },
         "priority": {
-          "$ref": "#/definitions/kvrpcpbCommandPri"
+          "$ref": "#/definitions/tikvCommandPri"
         },
         "isolationLevel": {
-          "$ref": "#/definitions/kvrpcpbIsolationLevel"
+          "$ref": "#/definitions/tikvIsolationLevel"
         },
         "notFillCache": {
           "type": "boolean"
@@ -527,7 +226,7 @@
           "description": "Any additional serialized information about the request."
         },
         "diskFullOpt": {
-          "$ref": "#/definitions/kvrpcpbDiskFullOpt",
+          "$ref": "#/definitions/tikvDiskFullOpt",
           "description": "Used to tell TiKV whether operations are allowed or not on different disk usages."
         },
         "isRetryRequest": {
@@ -535,7 +234,7 @@
           "description": "Indicates the request is a retry request and the same request may have been sent before."
         },
         "apiVersion": {
-          "$ref": "#/definitions/kvrpcpbAPIVersion",
+          "$ref": "#/definitions/tikvAPIVersion",
           "description": "API version implies the encode of the key and value."
         },
         "committedLocks": {
@@ -561,7 +260,7 @@
           "description": "If `busy_threshold_ms` is given, TiKV can reject the request and return a `ServerIsBusy`\nerror before processing if the estimated waiting duration exceeds the threshold."
         },
         "resourceControlContext": {
-          "$ref": "#/definitions/kvrpcpbResourceControlContext",
+          "$ref": "#/definitions/tikvResourceControlContext",
           "description": "Some information used for resource control."
         },
         "keyspaceName": {
@@ -579,7 +278,7 @@
           "description": "The buckets version that the request is sent to.\nNOTE: This field is only meaningful while enable buckets."
         },
         "sourceStmt": {
-          "$ref": "#/definitions/kvrpcpbSourceStmt",
+          "$ref": "#/definitions/tikvSourceStmt",
           "description": "It tells us where the request comes from in TiDB. If it isn't from TiDB, leave it blank.\nThis is for tests only and thus can be safely changed/removed without affecting compatibility."
         },
         "clusterId": {
@@ -600,19 +299,54 @@
       },
       "description": "Miscellaneous metadata attached to most requests."
     },
-    "kvrpcpbDebugInfo": {
+    "tikvDataIsNotReady": {
+      "type": "object",
+      "properties": {
+        "regionId": {
+          "type": "string",
+          "format": "uint64",
+          "title": "The requested region ID"
+        },
+        "peerId": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "safeTs": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "tikvDebugInfo": {
       "type": "object",
       "properties": {
         "mvccInfo": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/kvrpcpbMvccDebugInfo"
+            "$ref": "#/definitions/tikvMvccDebugInfo"
           }
         }
       }
     },
-    "kvrpcpbDiskFullOpt": {
+    "tikvDiskFull": {
+      "type": "object",
+      "properties": {
+        "storeId": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          },
+          "title": "The requested store ID"
+        },
+        "reason": {
+          "type": "string",
+          "title": "The detailed info"
+        }
+      }
+    },
+    "tikvDiskFullOpt": {
       "type": "string",
       "enum": [
         "NotAllowedOnFull",
@@ -622,17 +356,135 @@
       "default": "NotAllowedOnFull",
       "description": "Operation allowed info during each TiKV storage threshold.\n\n - NotAllowedOnFull: The default value, means operations are not allowed either under almost full or already full.\n - AllowedOnAlmostFull: Means operations will be allowed when disk is almost full.\n - AllowedOnAlreadyFull: Means operations will be allowed when disk is already full."
     },
-    "kvrpcpbIsolationLevel": {
+    "tikvEpochNotMatch": {
+      "type": "object",
+      "description": "EpochNotMatch is the error variant that tells a region has been updated.\n(e.g. by splitting / merging, or raft Confchange.)\nHence, a command is based on a stale version of a region.\n\n// Available regions that may be siblings of the requested one.\n repeated metapb.Region current_regions = 1;"
+    },
+    "tikvError": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "title": "The error message"
+        },
+        "notLeader": {
+          "$ref": "#/definitions/tikvNotLeader"
+        },
+        "regionNotFound": {
+          "$ref": "#/definitions/tikvRegionNotFound"
+        },
+        "keyNotInRegion": {
+          "$ref": "#/definitions/tikvKeyNotInRegion"
+        },
+        "epochNotMatch": {
+          "$ref": "#/definitions/tikvEpochNotMatch"
+        },
+        "serverIsBusy": {
+          "$ref": "#/definitions/tikvServerIsBusy"
+        },
+        "staleCommand": {
+          "$ref": "#/definitions/tikvStaleCommand"
+        },
+        "storeNotMatch": {
+          "$ref": "#/definitions/tikvStoreNotMatch"
+        },
+        "raftEntryTooLarge": {
+          "$ref": "#/definitions/tikvRaftEntryTooLarge"
+        },
+        "maxTimestampNotSynced": {
+          "$ref": "#/definitions/tikvMaxTimestampNotSynced"
+        },
+        "readIndexNotReady": {
+          "$ref": "#/definitions/tikvReadIndexNotReady"
+        },
+        "proposalInMergingMode": {
+          "$ref": "#/definitions/tikvProposalInMergingMode"
+        },
+        "dataIsNotReady": {
+          "$ref": "#/definitions/tikvDataIsNotReady"
+        },
+        "regionNotInitialized": {
+          "$ref": "#/definitions/tikvRegionNotInitialized"
+        },
+        "diskFull": {
+          "$ref": "#/definitions/tikvDiskFull"
+        },
+        "RecoveryInProgress": {
+          "$ref": "#/definitions/tikvRecoveryInProgress",
+          "title": "Online recovery is still in performing, reject writes to avoid potential issues"
+        },
+        "FlashbackInProgress": {
+          "$ref": "#/definitions/tikvFlashbackInProgress",
+          "description": "Flashback is still in performing, reject any read or write to avoid potential issues.\nNOTICE: this error is non-retryable, the request should fail ASAP when it meets this error."
+        },
+        "FlashbackNotPrepared": {
+          "$ref": "#/definitions/tikvFlashbackNotPrepared",
+          "description": "If the second phase flashback request is sent to a region that is not prepared for the flashback,\nthis error will be returned.\nNOTICE: this error is non-retryable, the client should retry the first phase flashback request when it meets this error."
+        },
+        "isWitness": {
+          "$ref": "#/definitions/tikvIsWitness",
+          "description": "IsWitness is the error variant that tells a request be handle by witness\nwhich should be forbidden and retry."
+        },
+        "mismatchPeerId": {
+          "$ref": "#/definitions/tikvMismatchPeerId"
+        },
+        "bucketVersionNotMatch": {
+          "$ref": "#/definitions/tikvBucketVersionNotMatch",
+          "description": "BucketVersionNotMatch is the error variant that tells the request buckets version is not match."
+        },
+        "undeterminedResult": {
+          "$ref": "#/definitions/tikvUndeterminedResult",
+          "description": "UndeterminedResult is the error variant that tells the result is not determined yet."
+        }
+      },
+      "description": "Error wraps all region errors, indicates an error encountered by a request."
+    },
+    "tikvFlashbackInProgress": {
+      "type": "object",
+      "properties": {
+        "regionId": {
+          "type": "string",
+          "format": "uint64",
+          "title": "The requested region ID"
+        },
+        "flashbackStartTs": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "tikvFlashbackNotPrepared": {
+      "type": "object",
+      "properties": {
+        "regionId": {
+          "type": "string",
+          "format": "uint64",
+          "title": "The requested region ID"
+        }
+      }
+    },
+    "tikvIsWitness": {
+      "type": "object",
+      "properties": {
+        "regionId": {
+          "type": "string",
+          "format": "uint64",
+          "title": "The requested region ID"
+        }
+      },
+      "description": "IsWitness is the error variant that tells a request be handle by witness\nwhich should be forbidden and retry."
+    },
+    "tikvIsolationLevel": {
       "type": "string",
       "enum": ["SI", "RC", "RCCheckTS"],
       "default": "SI",
       "description": " - SI: SI = snapshot isolation\n - RC: RC = read committed\n - RCCheckTS: RC read and it's needed to check if there exists more recent versions."
     },
-    "kvrpcpbKeyError": {
+    "tikvKeyError": {
       "type": "object",
       "properties": {
         "locked": {
-          "$ref": "#/definitions/kvrpcpbLockInfo",
+          "$ref": "#/definitions/tikvLockInfo",
           "description": "Client should backoff or cleanup the lock then retry."
         },
         "retryable": {
@@ -644,48 +496,74 @@
           "description": "Client should abort the txn."
         },
         "conflict": {
-          "$ref": "#/definitions/kvrpcpbWriteConflict",
+          "$ref": "#/definitions/tikvWriteConflict",
           "description": "Write conflict is moved from retryable to here."
         },
         "alreadyExist": {
-          "$ref": "#/definitions/kvrpcpbAlreadyExist",
+          "$ref": "#/definitions/tikvAlreadyExist",
           "title": "Key already exists"
         },
         "commitTsExpired": {
-          "$ref": "#/definitions/kvrpcpbCommitTsExpired",
+          "$ref": "#/definitions/tikvCommitTsExpired",
           "description": "Deadlock deadlock = 6; // Deadlock is used in pessimistic transaction for single statement rollback.\n\nCommit ts is earlier than min commit ts of a transaction."
         },
         "txnNotFound": {
-          "$ref": "#/definitions/kvrpcpbTxnNotFound",
+          "$ref": "#/definitions/tikvTxnNotFound",
           "description": "Txn not found when checking txn status."
         },
         "commitTsTooLarge": {
-          "$ref": "#/definitions/kvrpcpbCommitTsTooLarge",
+          "$ref": "#/definitions/tikvCommitTsTooLarge",
           "description": "Calculated commit TS exceeds the limit given by the user."
         },
         "assertionFailed": {
-          "$ref": "#/definitions/kvrpcpbAssertionFailed",
+          "$ref": "#/definitions/tikvAssertionFailed",
           "description": "Assertion of a `Mutation` is evaluated as a failure."
         },
         "primaryMismatch": {
-          "$ref": "#/definitions/kvrpcpbPrimaryMismatch",
+          "$ref": "#/definitions/tikvPrimaryMismatch",
           "description": "CheckTxnStatus is sent to a lock that's not the primary."
         },
         "txnLockNotFound": {
-          "$ref": "#/definitions/kvrpcpbTxnLockNotFound",
+          "$ref": "#/definitions/tikvTxnLockNotFound",
           "description": "TxnLockNotFound indicates the txn lock is not found."
         },
         "debugInfo": {
-          "$ref": "#/definitions/kvrpcpbDebugInfo",
+          "$ref": "#/definitions/tikvDebugInfo",
           "title": "Extra information for error debugging"
         }
       }
     },
-    "kvrpcpbKvPair": {
+    "tikvKeyNotInRegion": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "format": "byte",
+          "title": "The requested key"
+        },
+        "regionId": {
+          "type": "string",
+          "format": "uint64",
+          "title": "The requested region ID"
+        },
+        "startKey": {
+          "type": "string",
+          "format": "byte",
+          "title": "Start key of the requested region"
+        },
+        "endKey": {
+          "type": "string",
+          "format": "byte",
+          "title": "Snd key of the requested region"
+        }
+      },
+      "description": "KeyNotInRegion is the error variant that tells the key the request requires isn't present in\nthis region."
+    },
+    "tikvKvPair": {
       "type": "object",
       "properties": {
         "error": {
-          "$ref": "#/definitions/kvrpcpbKeyError"
+          "$ref": "#/definitions/tikvKeyError"
         },
         "key": {
           "type": "string",
@@ -702,7 +580,7 @@
         }
       }
     },
-    "kvrpcpbLockInfo": {
+    "tikvLockInfo": {
       "type": "object",
       "properties": {
         "primaryLock": {
@@ -727,7 +605,7 @@
           "description": "How many keys this transaction involves in this region."
         },
         "lockType": {
-          "$ref": "#/definitions/kvrpcpbOp"
+          "$ref": "#/definitions/tikvOp"
         },
         "lockForUpdateTs": {
           "type": "string",
@@ -759,7 +637,25 @@
         }
       }
     },
-    "kvrpcpbMvccDebugInfo": {
+    "tikvMaxTimestampNotSynced": {
+      "type": "object",
+      "description": "MaxTimestampNotSynced is the error variant that tells the peer has just become a leader and\nupdating the max timestamp in the concurrency manager from PD TSO is ongoing. In this case,\nthe prewrite of an async commit transaction cannot succeed. The client can backoff and\nresend the request."
+    },
+    "tikvMismatchPeerId": {
+      "type": "object",
+      "properties": {
+        "requestPeerId": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "storePeerId": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "description": "MismatchPeerId is the error variant that tells the request is sent to wrong peer.\nClient receives this error should reload the region info and retry."
+    },
+    "tikvMvccDebugInfo": {
       "type": "object",
       "properties": {
         "key": {
@@ -767,37 +663,37 @@
           "format": "byte"
         },
         "mvcc": {
-          "$ref": "#/definitions/kvrpcpbMvccInfo"
+          "$ref": "#/definitions/tikvMvccInfo"
         }
       }
     },
-    "kvrpcpbMvccInfo": {
+    "tikvMvccInfo": {
       "type": "object",
       "properties": {
         "lock": {
-          "$ref": "#/definitions/kvrpcpbMvccLock"
+          "$ref": "#/definitions/tikvMvccLock"
         },
         "writes": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/kvrpcpbMvccWrite"
+            "$ref": "#/definitions/tikvMvccWrite"
           }
         },
         "values": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/kvrpcpbMvccValue"
+            "$ref": "#/definitions/tikvMvccValue"
           }
         }
       }
     },
-    "kvrpcpbMvccLock": {
+    "tikvMvccLock": {
       "type": "object",
       "properties": {
         "type": {
-          "$ref": "#/definitions/kvrpcpbOp"
+          "$ref": "#/definitions/tikvOp"
         },
         "startTs": {
           "type": "string",
@@ -850,7 +746,7 @@
         }
       }
     },
-    "kvrpcpbMvccValue": {
+    "tikvMvccValue": {
       "type": "object",
       "properties": {
         "startTs": {
@@ -863,11 +759,11 @@
         }
       }
     },
-    "kvrpcpbMvccWrite": {
+    "tikvMvccWrite": {
       "type": "object",
       "properties": {
         "type": {
-          "$ref": "#/definitions/kvrpcpbOp"
+          "$ref": "#/definitions/tikvOp"
         },
         "startTs": {
           "type": "string",
@@ -901,7 +797,19 @@
         }
       }
     },
-    "kvrpcpbOp": {
+    "tikvNotLeader": {
+      "type": "object",
+      "properties": {
+        "regionId": {
+          "type": "string",
+          "format": "uint64",
+          "description": "// Region leader of the requested region\n metapb.Peer leader = 2;",
+          "title": "The requested region ID"
+        }
+      },
+      "description": "NotLeader is the error variant that tells a request be handle by raft leader\nis sent to raft follower or learner."
+    },
+    "tikvOp": {
       "type": "string",
       "enum": [
         "Put",
@@ -915,67 +823,94 @@
       "default": "Put",
       "description": " - Insert: insert operation has a constraint that key should not exist before."
     },
-    "kvrpcpbPrimaryMismatch": {
+    "tikvPrimaryMismatch": {
       "type": "object",
       "properties": {
         "lockInfo": {
-          "$ref": "#/definitions/kvrpcpbLockInfo"
+          "$ref": "#/definitions/tikvLockInfo"
         }
       }
     },
-    "kvrpcpbRawBatchDeleteResponse": {
+    "tikvProposalInMergingMode": {
+      "type": "object",
+      "properties": {
+        "regionId": {
+          "type": "string",
+          "format": "uint64",
+          "title": "The requested region ID"
+        }
+      },
+      "description": "ProposalInMergingMode is the error variant that tells the proposal is rejected because raft is\nin the merging mode. This may happen when BR/Lightning try to ingest SST.\nThis can be retried at most time."
+    },
+    "tikvRaftEntryTooLarge": {
+      "type": "object",
+      "properties": {
+        "regionId": {
+          "type": "string",
+          "format": "uint64",
+          "title": "The requested region ID"
+        },
+        "entrySize": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Size of the raft entry"
+        }
+      },
+      "title": "RaftEntryTooLarge is the error variant that tells the request is too large to be serialized to a\nreasonable small raft entry.\n(i.e. greater than the configured value `raft_entry_max_size` in `raftstore`)"
+    },
+    "tikvRawBatchDeleteResponse": {
       "type": "object",
       "properties": {
         "regionError": {
-          "$ref": "#/definitions/errorpbError"
+          "$ref": "#/definitions/tikvError"
         },
         "error": {
           "type": "string"
         }
       }
     },
-    "kvrpcpbRawBatchGetResponse": {
+    "tikvRawBatchGetResponse": {
       "type": "object",
       "properties": {
         "regionError": {
-          "$ref": "#/definitions/errorpbError"
+          "$ref": "#/definitions/tikvError"
         },
         "pairs": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/kvrpcpbKvPair"
+            "$ref": "#/definitions/tikvKvPair"
           }
         }
       }
     },
-    "kvrpcpbRawBatchPutResponse": {
+    "tikvRawBatchPutResponse": {
       "type": "object",
       "properties": {
         "regionError": {
-          "$ref": "#/definitions/errorpbError"
+          "$ref": "#/definitions/tikvError"
         },
         "error": {
           "type": "string"
         }
       }
     },
-    "kvrpcpbRawDeleteResponse": {
+    "tikvRawDeleteResponse": {
       "type": "object",
       "properties": {
         "regionError": {
-          "$ref": "#/definitions/errorpbError"
+          "$ref": "#/definitions/tikvError"
         },
         "error": {
           "type": "string"
         }
       }
     },
-    "kvrpcpbRawGetResponse": {
+    "tikvRawGetResponse": {
       "type": "object",
       "properties": {
         "regionError": {
-          "$ref": "#/definitions/errorpbError"
+          "$ref": "#/definitions/tikvError"
         },
         "error": {
           "type": "string"
@@ -989,18 +924,65 @@
         }
       }
     },
-    "kvrpcpbRawPutResponse": {
+    "tikvRawPutResponse": {
       "type": "object",
       "properties": {
         "regionError": {
-          "$ref": "#/definitions/errorpbError"
+          "$ref": "#/definitions/tikvError"
         },
         "error": {
           "type": "string"
         }
       }
     },
-    "kvrpcpbResourceControlContext": {
+    "tikvReadIndexNotReady": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string",
+          "title": "The reason why the region is not ready to serve read index request"
+        },
+        "regionId": {
+          "type": "string",
+          "format": "uint64",
+          "title": "The requested region ID"
+        }
+      },
+      "description": "ReadIndexNotReady is the error variant that tells the read index request is not ready, that is,\nthe current region is in a status that not ready to serve the read index request. For example,\nregion is in splitting or merging status.\nThis can be retried at most time."
+    },
+    "tikvRecoveryInProgress": {
+      "type": "object",
+      "properties": {
+        "regionId": {
+          "type": "string",
+          "format": "uint64",
+          "title": "The requested region ID"
+        }
+      }
+    },
+    "tikvRegionNotFound": {
+      "type": "object",
+      "properties": {
+        "regionId": {
+          "type": "string",
+          "format": "uint64",
+          "title": "The requested region ID"
+        }
+      },
+      "description": "RegionNotFound is the error variant that tells there isn't any region in this TiKV\nmatches the requested region ID."
+    },
+    "tikvRegionNotInitialized": {
+      "type": "object",
+      "properties": {
+        "regionId": {
+          "type": "string",
+          "format": "uint64",
+          "title": "The request region ID"
+        }
+      },
+      "description": "RegionNotInitialized is the error variant that tells there isn't any initialized peer\nmatchesthe request region ID."
+    },
+    "tikvResourceControlContext": {
       "type": "object",
       "properties": {
         "resourceGroupName": {
@@ -1014,7 +996,30 @@
         }
       }
     },
-    "kvrpcpbSourceStmt": {
+    "tikvServerIsBusy": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string"
+        },
+        "backoffMs": {
+          "type": "string",
+          "format": "uint64",
+          "title": "The suggested backoff time"
+        },
+        "estimatedWaitMs": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "appliedIndex": {
+          "type": "string",
+          "format": "uint64",
+          "description": "Current applied_index at the leader, may be used in replica read."
+        }
+      },
+      "description": "ServerIsBusy is the error variant that tells the server is too busy to response."
+    },
+    "tikvSourceStmt": {
       "type": "object",
       "properties": {
         "startTs": {
@@ -1035,7 +1040,27 @@
         }
       }
     },
-    "kvrpcpbTxnLockNotFound": {
+    "tikvStaleCommand": {
+      "type": "object",
+      "description": "StaleCommand is the error variant that tells the command is stale, that is,\nthe current request term is lower than current raft term.\nThis can be retried at most time."
+    },
+    "tikvStoreNotMatch": {
+      "type": "object",
+      "properties": {
+        "requestStoreId": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Store id in request"
+        },
+        "actualStoreId": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Actual store id"
+        }
+      },
+      "title": "StoreNotMatch is the error variant that tells the request is sent to wrong store.\n(i.e. inconsistency of the store ID that request shows and the real store ID of this server.)"
+    },
+    "tikvTxnLockNotFound": {
       "type": "object",
       "properties": {
         "key": {
@@ -1044,7 +1069,7 @@
         }
       }
     },
-    "kvrpcpbTxnNotFound": {
+    "tikvTxnNotFound": {
       "type": "object",
       "properties": {
         "startTs": {
@@ -1057,7 +1082,16 @@
         }
       }
     },
-    "kvrpcpbWriteConflict": {
+    "tikvUndeterminedResult": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      },
+      "description": "UndeterminedResult is the error variant that tells the result is not determined yet.\nFor example, the raft protocol timed out and the apply result is unknown."
+    },
+    "tikvWriteConflict": {
       "type": "object",
       "properties": {
         "startTs": {
@@ -1084,40 +1118,6 @@
           "$ref": "#/definitions/WriteConflictReason"
         }
       }
-    },
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "@type": {
-          "type": "string",
-          "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com. As of May 2023, there are no widely used type server\nimplementations and no plans to implement one.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
-        }
-      },
-      "additionalProperties": {},
-      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(\u0026foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n    // or ...\n    if (any.isSameTypeAs(Foo.getDefaultInstance())) {\n      foo = any.unpack(Foo.getDefaultInstance());\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := \u0026pb.Foo{...}\n     any, err := anypb.New(foo)\n     if err != nil {\n       ...\n     }\n     ...\n     foo := \u0026pb.Foo{}\n     if err := any.UnmarshalTo(foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": \u003cstring\u003e,\n      \"lastName\": \u003cstring\u003e\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
-    },
-    "rpcStatus": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "format": "int32",
-          "description": "The status code, which should be an enum value of\n[google.rpc.Code][google.rpc.Code]."
-        },
-        "message": {
-          "type": "string",
-          "description": "A developer-facing error message, which should be in English. Any\nuser-facing error message should be localized and sent in the\n[google.rpc.Status.details][google.rpc.Status.details] field, or localized\nby the client."
-        },
-        "details": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/protobufAny"
-          },
-          "description": "A list of messages that carry the error details.  There is a common set of\nmessage types for APIs to use."
-        }
-      },
-      "description": "The `Status` type defines a logical error model that is suitable for\ndifferent programming environments, including REST APIs and RPC APIs. It is\nused by [gRPC](https://github.com/grpc). Each `Status` message contains\nthree pieces of data: error code, error message, and error details.\n\nYou can find out more about this error model and how to work with it in the\n[API Design Guide](https://cloud.google.com/apis/design/errors)."
     }
   }
 }

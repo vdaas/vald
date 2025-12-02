@@ -23,11 +23,12 @@
 package tikv
 
 import (
+	reflect "reflect"
+	unsafe "unsafe"
+
+	sync "github.com/vdaas/vald/internal/sync"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	reflect "reflect"
-	sync "sync"
-	unsafe "unsafe"
 )
 
 const (
@@ -42,7 +43,7 @@ const (
 type NotLeader struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The requested region ID
-	RegionId      uint64 `protobuf:"varint,1,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
+	RegionId      uint64 `                   protobuf:"varint,1,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -89,7 +90,7 @@ func (x *NotLeader) GetRegionId() uint64 {
 type IsWitness struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The requested region ID
-	RegionId      uint64 `protobuf:"varint,1,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
+	RegionId      uint64 `                   protobuf:"varint,1,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -135,8 +136,8 @@ func (x *IsWitness) GetRegionId() uint64 {
 // client should update the buckets version and retry.
 type BucketVersionNotMatch struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Version       uint64                 `protobuf:"varint,1,opt,name=version,proto3" json:"version,omitempty"`
-	Keys          [][]byte               `protobuf:"bytes,2,rep,name=keys,proto3" json:"keys,omitempty"`
+	Version       uint64                 `                   protobuf:"varint,1,opt,name=version,proto3" json:"version,omitempty"`
+	Keys          [][]byte               `                   protobuf:"bytes,2,rep,name=keys,proto3"     json:"keys,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -188,9 +189,9 @@ func (x *BucketVersionNotMatch) GetKeys() [][]byte {
 type DiskFull struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The requested store ID
-	StoreId []uint64 `protobuf:"varint,1,rep,packed,name=store_id,json=storeId,proto3" json:"store_id,omitempty"`
+	StoreId []uint64 `                   protobuf:"varint,1,rep,packed,name=store_id,json=storeId,proto3" json:"store_id,omitempty"`
 	// The detailed info
-	Reason        string `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"`
+	Reason        string `                   protobuf:"bytes,2,opt,name=reason,proto3"                        json:"reason,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -244,9 +245,9 @@ func (x *DiskFull) GetReason() string {
 type StoreNotMatch struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Store id in request
-	RequestStoreId uint64 `protobuf:"varint,1,opt,name=request_store_id,json=requestStoreId,proto3" json:"request_store_id,omitempty"`
+	RequestStoreId uint64 `                   protobuf:"varint,1,opt,name=request_store_id,json=requestStoreId,proto3" json:"request_store_id,omitempty"`
 	// Actual store id
-	ActualStoreId uint64 `protobuf:"varint,2,opt,name=actual_store_id,json=actualStoreId,proto3" json:"actual_store_id,omitempty"`
+	ActualStoreId uint64 `                   protobuf:"varint,2,opt,name=actual_store_id,json=actualStoreId,proto3"   json:"actual_store_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -300,7 +301,7 @@ func (x *StoreNotMatch) GetActualStoreId() uint64 {
 type RegionNotFound struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The requested region ID
-	RegionId      uint64 `protobuf:"varint,1,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
+	RegionId      uint64 `                   protobuf:"varint,1,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -347,7 +348,7 @@ func (x *RegionNotFound) GetRegionId() uint64 {
 type RegionNotInitialized struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The request region ID
-	RegionId      uint64 `protobuf:"varint,1,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
+	RegionId      uint64 `                   protobuf:"varint,1,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -394,13 +395,13 @@ func (x *RegionNotInitialized) GetRegionId() uint64 {
 type KeyNotInRegion struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The requested key
-	Key []byte `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	Key []byte `                   protobuf:"bytes,1,opt,name=key,proto3"                      json:"key,omitempty"`
 	// The requested region ID
-	RegionId uint64 `protobuf:"varint,2,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
+	RegionId uint64 `                   protobuf:"varint,2,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
 	// Start key of the requested region
-	StartKey []byte `protobuf:"bytes,3,opt,name=start_key,json=startKey,proto3" json:"start_key,omitempty"`
+	StartKey []byte `                   protobuf:"bytes,3,opt,name=start_key,json=startKey,proto3"  json:"start_key,omitempty"`
 	// Snd key of the requested region
-	EndKey        []byte `protobuf:"bytes,4,opt,name=end_key,json=endKey,proto3" json:"end_key,omitempty"`
+	EndKey        []byte `                   protobuf:"bytes,4,opt,name=end_key,json=endKey,proto3"      json:"end_key,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -505,12 +506,12 @@ func (*EpochNotMatch) Descriptor() ([]byte, []int) {
 // ServerIsBusy is the error variant that tells the server is too busy to response.
 type ServerIsBusy struct {
 	state  protoimpl.MessageState `protogen:"open.v1"`
-	Reason string                 `protobuf:"bytes,1,opt,name=reason,proto3" json:"reason,omitempty"`
+	Reason string                 `                   protobuf:"bytes,1,opt,name=reason,proto3"                                  json:"reason,omitempty"`
 	// The suggested backoff time
-	BackoffMs       uint64 `protobuf:"varint,2,opt,name=backoff_ms,json=backoffMs,proto3" json:"backoff_ms,omitempty"`
-	EstimatedWaitMs uint32 `protobuf:"varint,3,opt,name=estimated_wait_ms,json=estimatedWaitMs,proto3" json:"estimated_wait_ms,omitempty"`
+	BackoffMs       uint64 `                   protobuf:"varint,2,opt,name=backoff_ms,json=backoffMs,proto3"              json:"backoff_ms,omitempty"`
+	EstimatedWaitMs uint32 `                   protobuf:"varint,3,opt,name=estimated_wait_ms,json=estimatedWaitMs,proto3" json:"estimated_wait_ms,omitempty"`
 	// Current applied_index at the leader, may be used in replica read.
-	AppliedIndex  uint64 `protobuf:"varint,4,opt,name=applied_index,json=appliedIndex,proto3" json:"applied_index,omitempty"`
+	AppliedIndex  uint64 `                   protobuf:"varint,4,opt,name=applied_index,json=appliedIndex,proto3"        json:"applied_index,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -618,9 +619,9 @@ func (*StaleCommand) Descriptor() ([]byte, []int) {
 type RaftEntryTooLarge struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The requested region ID
-	RegionId uint64 `protobuf:"varint,1,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
+	RegionId uint64 `                   protobuf:"varint,1,opt,name=region_id,json=regionId,proto3"   json:"region_id,omitempty"`
 	// Size of the raft entry
-	EntrySize     uint64 `protobuf:"varint,2,opt,name=entry_size,json=entrySize,proto3" json:"entry_size,omitempty"`
+	EntrySize     uint64 `                   protobuf:"varint,2,opt,name=entry_size,json=entrySize,proto3" json:"entry_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -716,9 +717,9 @@ func (*MaxTimestampNotSynced) Descriptor() ([]byte, []int) {
 type ReadIndexNotReady struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The reason why the region is not ready to serve read index request
-	Reason string `protobuf:"bytes,1,opt,name=reason,proto3" json:"reason,omitempty"`
+	Reason string `                   protobuf:"bytes,1,opt,name=reason,proto3"                   json:"reason,omitempty"`
 	// The requested region ID
-	RegionId      uint64 `protobuf:"varint,2,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
+	RegionId      uint64 `                   protobuf:"varint,2,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -773,7 +774,7 @@ func (x *ReadIndexNotReady) GetRegionId() uint64 {
 type ProposalInMergingMode struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The requested region ID
-	RegionId      uint64 `protobuf:"varint,1,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
+	RegionId      uint64 `                   protobuf:"varint,1,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -818,9 +819,9 @@ func (x *ProposalInMergingMode) GetRegionId() uint64 {
 type DataIsNotReady struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The requested region ID
-	RegionId      uint64 `protobuf:"varint,1,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
-	PeerId        uint64 `protobuf:"varint,2,opt,name=peer_id,json=peerId,proto3" json:"peer_id,omitempty"`
-	SafeTs        uint64 `protobuf:"varint,3,opt,name=safe_ts,json=safeTs,proto3" json:"safe_ts,omitempty"`
+	RegionId      uint64 `                   protobuf:"varint,1,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
+	PeerId        uint64 `                   protobuf:"varint,2,opt,name=peer_id,json=peerId,proto3"     json:"peer_id,omitempty"`
+	SafeTs        uint64 `                   protobuf:"varint,3,opt,name=safe_ts,json=safeTs,proto3"     json:"safe_ts,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -879,7 +880,7 @@ func (x *DataIsNotReady) GetSafeTs() uint64 {
 type RecoveryInProgress struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The requested region ID
-	RegionId      uint64 `protobuf:"varint,1,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
+	RegionId      uint64 `                   protobuf:"varint,1,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -924,8 +925,8 @@ func (x *RecoveryInProgress) GetRegionId() uint64 {
 type FlashbackInProgress struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The requested region ID
-	RegionId         uint64 `protobuf:"varint,1,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
-	FlashbackStartTs uint64 `protobuf:"varint,2,opt,name=flashback_start_ts,json=flashbackStartTs,proto3" json:"flashback_start_ts,omitempty"`
+	RegionId         uint64 `                   protobuf:"varint,1,opt,name=region_id,json=regionId,proto3"                  json:"region_id,omitempty"`
+	FlashbackStartTs uint64 `                   protobuf:"varint,2,opt,name=flashback_start_ts,json=flashbackStartTs,proto3" json:"flashback_start_ts,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -977,7 +978,7 @@ func (x *FlashbackInProgress) GetFlashbackStartTs() uint64 {
 type FlashbackNotPrepared struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The requested region ID
-	RegionId      uint64 `protobuf:"varint,1,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
+	RegionId      uint64 `                   protobuf:"varint,1,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1023,8 +1024,8 @@ func (x *FlashbackNotPrepared) GetRegionId() uint64 {
 // Client receives this error should reload the region info and retry.
 type MismatchPeerId struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	RequestPeerId uint64                 `protobuf:"varint,1,opt,name=request_peer_id,json=requestPeerId,proto3" json:"request_peer_id,omitempty"`
-	StorePeerId   uint64                 `protobuf:"varint,2,opt,name=store_peer_id,json=storePeerId,proto3" json:"store_peer_id,omitempty"`
+	RequestPeerId uint64                 `                   protobuf:"varint,1,opt,name=request_peer_id,json=requestPeerId,proto3" json:"request_peer_id,omitempty"`
+	StorePeerId   uint64                 `                   protobuf:"varint,2,opt,name=store_peer_id,json=storePeerId,proto3"     json:"store_peer_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1077,7 +1078,7 @@ func (x *MismatchPeerId) GetStorePeerId() uint64 {
 // For example, the raft protocol timed out and the apply result is unknown.
 type UndeterminedResult struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	Message       string                 `                   protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1123,38 +1124,38 @@ func (x *UndeterminedResult) GetMessage() string {
 type Error struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The error message
-	Message               string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
-	NotLeader             *NotLeader             `protobuf:"bytes,2,opt,name=not_leader,json=notLeader,proto3" json:"not_leader,omitempty"`
-	RegionNotFound        *RegionNotFound        `protobuf:"bytes,3,opt,name=region_not_found,json=regionNotFound,proto3" json:"region_not_found,omitempty"`
-	KeyNotInRegion        *KeyNotInRegion        `protobuf:"bytes,4,opt,name=key_not_in_region,json=keyNotInRegion,proto3" json:"key_not_in_region,omitempty"`
-	EpochNotMatch         *EpochNotMatch         `protobuf:"bytes,5,opt,name=epoch_not_match,json=epochNotMatch,proto3" json:"epoch_not_match,omitempty"`
-	ServerIsBusy          *ServerIsBusy          `protobuf:"bytes,6,opt,name=server_is_busy,json=serverIsBusy,proto3" json:"server_is_busy,omitempty"`
-	StaleCommand          *StaleCommand          `protobuf:"bytes,7,opt,name=stale_command,json=staleCommand,proto3" json:"stale_command,omitempty"`
-	StoreNotMatch         *StoreNotMatch         `protobuf:"bytes,8,opt,name=store_not_match,json=storeNotMatch,proto3" json:"store_not_match,omitempty"`
-	RaftEntryTooLarge     *RaftEntryTooLarge     `protobuf:"bytes,9,opt,name=raft_entry_too_large,json=raftEntryTooLarge,proto3" json:"raft_entry_too_large,omitempty"`
-	MaxTimestampNotSynced *MaxTimestampNotSynced `protobuf:"bytes,10,opt,name=max_timestamp_not_synced,json=maxTimestampNotSynced,proto3" json:"max_timestamp_not_synced,omitempty"`
-	ReadIndexNotReady     *ReadIndexNotReady     `protobuf:"bytes,11,opt,name=read_index_not_ready,json=readIndexNotReady,proto3" json:"read_index_not_ready,omitempty"`
-	ProposalInMergingMode *ProposalInMergingMode `protobuf:"bytes,12,opt,name=proposal_in_merging_mode,json=proposalInMergingMode,proto3" json:"proposal_in_merging_mode,omitempty"`
-	DataIsNotReady        *DataIsNotReady        `protobuf:"bytes,13,opt,name=data_is_not_ready,json=dataIsNotReady,proto3" json:"data_is_not_ready,omitempty"`
-	RegionNotInitialized  *RegionNotInitialized  `protobuf:"bytes,14,opt,name=region_not_initialized,json=regionNotInitialized,proto3" json:"region_not_initialized,omitempty"`
-	DiskFull              *DiskFull              `protobuf:"bytes,15,opt,name=disk_full,json=diskFull,proto3" json:"disk_full,omitempty"`
+	Message               string                 `                   protobuf:"bytes,1,opt,name=message,proto3"                                              json:"message,omitempty"`
+	NotLeader             *NotLeader             `                   protobuf:"bytes,2,opt,name=not_leader,json=notLeader,proto3"                            json:"not_leader,omitempty"`
+	RegionNotFound        *RegionNotFound        `                   protobuf:"bytes,3,opt,name=region_not_found,json=regionNotFound,proto3"                 json:"region_not_found,omitempty"`
+	KeyNotInRegion        *KeyNotInRegion        `                   protobuf:"bytes,4,opt,name=key_not_in_region,json=keyNotInRegion,proto3"                json:"key_not_in_region,omitempty"`
+	EpochNotMatch         *EpochNotMatch         `                   protobuf:"bytes,5,opt,name=epoch_not_match,json=epochNotMatch,proto3"                   json:"epoch_not_match,omitempty"`
+	ServerIsBusy          *ServerIsBusy          `                   protobuf:"bytes,6,opt,name=server_is_busy,json=serverIsBusy,proto3"                     json:"server_is_busy,omitempty"`
+	StaleCommand          *StaleCommand          `                   protobuf:"bytes,7,opt,name=stale_command,json=staleCommand,proto3"                      json:"stale_command,omitempty"`
+	StoreNotMatch         *StoreNotMatch         `                   protobuf:"bytes,8,opt,name=store_not_match,json=storeNotMatch,proto3"                   json:"store_not_match,omitempty"`
+	RaftEntryTooLarge     *RaftEntryTooLarge     `                   protobuf:"bytes,9,opt,name=raft_entry_too_large,json=raftEntryTooLarge,proto3"          json:"raft_entry_too_large,omitempty"`
+	MaxTimestampNotSynced *MaxTimestampNotSynced `                   protobuf:"bytes,10,opt,name=max_timestamp_not_synced,json=maxTimestampNotSynced,proto3" json:"max_timestamp_not_synced,omitempty"`
+	ReadIndexNotReady     *ReadIndexNotReady     `                   protobuf:"bytes,11,opt,name=read_index_not_ready,json=readIndexNotReady,proto3"         json:"read_index_not_ready,omitempty"`
+	ProposalInMergingMode *ProposalInMergingMode `                   protobuf:"bytes,12,opt,name=proposal_in_merging_mode,json=proposalInMergingMode,proto3" json:"proposal_in_merging_mode,omitempty"`
+	DataIsNotReady        *DataIsNotReady        `                   protobuf:"bytes,13,opt,name=data_is_not_ready,json=dataIsNotReady,proto3"               json:"data_is_not_ready,omitempty"`
+	RegionNotInitialized  *RegionNotInitialized  `                   protobuf:"bytes,14,opt,name=region_not_initialized,json=regionNotInitialized,proto3"    json:"region_not_initialized,omitempty"`
+	DiskFull              *DiskFull              `                   protobuf:"bytes,15,opt,name=disk_full,json=diskFull,proto3"                             json:"disk_full,omitempty"`
 	// Online recovery is still in performing, reject writes to avoid potential issues
-	RecoveryInProgress *RecoveryInProgress `protobuf:"bytes,16,opt,name=RecoveryInProgress,proto3" json:"RecoveryInProgress,omitempty"`
+	RecoveryInProgress *RecoveryInProgress `                   protobuf:"bytes,16,opt,name=RecoveryInProgress,proto3"                                  json:"RecoveryInProgress,omitempty"`
 	// Flashback is still in performing, reject any read or write to avoid potential issues.
 	// NOTICE: this error is non-retryable, the request should fail ASAP when it meets this error.
-	FlashbackInProgress *FlashbackInProgress `protobuf:"bytes,17,opt,name=FlashbackInProgress,proto3" json:"FlashbackInProgress,omitempty"`
+	FlashbackInProgress *FlashbackInProgress `                   protobuf:"bytes,17,opt,name=FlashbackInProgress,proto3"                                 json:"FlashbackInProgress,omitempty"`
 	// If the second phase flashback request is sent to a region that is not prepared for the flashback,
 	// this error will be returned.
 	// NOTICE: this error is non-retryable, the client should retry the first phase flashback request when it meets this error.
-	FlashbackNotPrepared *FlashbackNotPrepared `protobuf:"bytes,18,opt,name=FlashbackNotPrepared,proto3" json:"FlashbackNotPrepared,omitempty"`
+	FlashbackNotPrepared *FlashbackNotPrepared `                   protobuf:"bytes,18,opt,name=FlashbackNotPrepared,proto3"                                json:"FlashbackNotPrepared,omitempty"`
 	// IsWitness is the error variant that tells a request be handle by witness
 	// which should be forbidden and retry.
-	IsWitness      *IsWitness      `protobuf:"bytes,19,opt,name=is_witness,json=isWitness,proto3" json:"is_witness,omitempty"`
-	MismatchPeerId *MismatchPeerId `protobuf:"bytes,20,opt,name=mismatch_peer_id,json=mismatchPeerId,proto3" json:"mismatch_peer_id,omitempty"`
+	IsWitness      *IsWitness      `                   protobuf:"bytes,19,opt,name=is_witness,json=isWitness,proto3"                           json:"is_witness,omitempty"`
+	MismatchPeerId *MismatchPeerId `                   protobuf:"bytes,20,opt,name=mismatch_peer_id,json=mismatchPeerId,proto3"                json:"mismatch_peer_id,omitempty"`
 	// BucketVersionNotMatch is the error variant that tells the request buckets version is not match.
-	BucketVersionNotMatch *BucketVersionNotMatch `protobuf:"bytes,21,opt,name=bucket_version_not_match,json=bucketVersionNotMatch,proto3" json:"bucket_version_not_match,omitempty"`
+	BucketVersionNotMatch *BucketVersionNotMatch `                   protobuf:"bytes,21,opt,name=bucket_version_not_match,json=bucketVersionNotMatch,proto3" json:"bucket_version_not_match,omitempty"`
 	// UndeterminedResult is the error variant that tells the result is not determined yet.
-	UndeterminedResult *UndeterminedResult `protobuf:"bytes,22,opt,name=undetermined_result,json=undeterminedResult,proto3" json:"undetermined_result,omitempty"`
+	UndeterminedResult *UndeterminedResult `                   protobuf:"bytes,22,opt,name=undetermined_result,json=undeterminedResult,proto3"         json:"undetermined_result,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -1347,7 +1348,7 @@ var File_v1_tikv_errorpb_proto protoreflect.FileDescriptor
 
 const file_v1_tikv_errorpb_proto_rawDesc = "" +
 	"\n" +
-	"\x15v1/tikv/errorpb.proto\x12\aerrorpb\"(\n" +
+	"\x15v1/tikv/errorpb.proto\x12\x04tikv\"(\n" +
 	"\tNotLeader\x12\x1b\n" +
 	"\tregion_id\x18\x01 \x01(\x04R\bregionId\"(\n" +
 	"\tIsWitness\x12\x1b\n" +
@@ -1403,33 +1404,33 @@ const file_v1_tikv_errorpb_proto_rawDesc = "" +
 	"\x0frequest_peer_id\x18\x01 \x01(\x04R\rrequestPeerId\x12\"\n" +
 	"\rstore_peer_id\x18\x02 \x01(\x04R\vstorePeerId\".\n" +
 	"\x12UndeterminedResult\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage\"\x83\f\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage\"\xc4\v\n" +
 	"\x05Error\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage\x121\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage\x12.\n" +
 	"\n" +
-	"not_leader\x18\x02 \x01(\v2\x12.errorpb.NotLeaderR\tnotLeader\x12A\n" +
-	"\x10region_not_found\x18\x03 \x01(\v2\x17.errorpb.RegionNotFoundR\x0eregionNotFound\x12B\n" +
-	"\x11key_not_in_region\x18\x04 \x01(\v2\x17.errorpb.KeyNotInRegionR\x0ekeyNotInRegion\x12>\n" +
-	"\x0fepoch_not_match\x18\x05 \x01(\v2\x16.errorpb.EpochNotMatchR\repochNotMatch\x12;\n" +
-	"\x0eserver_is_busy\x18\x06 \x01(\v2\x15.errorpb.ServerIsBusyR\fserverIsBusy\x12:\n" +
-	"\rstale_command\x18\a \x01(\v2\x15.errorpb.StaleCommandR\fstaleCommand\x12>\n" +
-	"\x0fstore_not_match\x18\b \x01(\v2\x16.errorpb.StoreNotMatchR\rstoreNotMatch\x12K\n" +
-	"\x14raft_entry_too_large\x18\t \x01(\v2\x1a.errorpb.RaftEntryTooLargeR\x11raftEntryTooLarge\x12W\n" +
+	"not_leader\x18\x02 \x01(\v2\x0f.tikv.NotLeaderR\tnotLeader\x12>\n" +
+	"\x10region_not_found\x18\x03 \x01(\v2\x14.tikv.RegionNotFoundR\x0eregionNotFound\x12?\n" +
+	"\x11key_not_in_region\x18\x04 \x01(\v2\x14.tikv.KeyNotInRegionR\x0ekeyNotInRegion\x12;\n" +
+	"\x0fepoch_not_match\x18\x05 \x01(\v2\x13.tikv.EpochNotMatchR\repochNotMatch\x128\n" +
+	"\x0eserver_is_busy\x18\x06 \x01(\v2\x12.tikv.ServerIsBusyR\fserverIsBusy\x127\n" +
+	"\rstale_command\x18\a \x01(\v2\x12.tikv.StaleCommandR\fstaleCommand\x12;\n" +
+	"\x0fstore_not_match\x18\b \x01(\v2\x13.tikv.StoreNotMatchR\rstoreNotMatch\x12H\n" +
+	"\x14raft_entry_too_large\x18\t \x01(\v2\x17.tikv.RaftEntryTooLargeR\x11raftEntryTooLarge\x12T\n" +
 	"\x18max_timestamp_not_synced\x18\n" +
-	" \x01(\v2\x1e.errorpb.MaxTimestampNotSyncedR\x15maxTimestampNotSynced\x12K\n" +
-	"\x14read_index_not_ready\x18\v \x01(\v2\x1a.errorpb.ReadIndexNotReadyR\x11readIndexNotReady\x12W\n" +
-	"\x18proposal_in_merging_mode\x18\f \x01(\v2\x1e.errorpb.ProposalInMergingModeR\x15proposalInMergingMode\x12B\n" +
-	"\x11data_is_not_ready\x18\r \x01(\v2\x17.errorpb.DataIsNotReadyR\x0edataIsNotReady\x12S\n" +
-	"\x16region_not_initialized\x18\x0e \x01(\v2\x1d.errorpb.RegionNotInitializedR\x14regionNotInitialized\x12.\n" +
-	"\tdisk_full\x18\x0f \x01(\v2\x11.errorpb.DiskFullR\bdiskFull\x12K\n" +
-	"\x12RecoveryInProgress\x18\x10 \x01(\v2\x1b.errorpb.RecoveryInProgressR\x12RecoveryInProgress\x12N\n" +
-	"\x13FlashbackInProgress\x18\x11 \x01(\v2\x1c.errorpb.FlashbackInProgressR\x13FlashbackInProgress\x12Q\n" +
-	"\x14FlashbackNotPrepared\x18\x12 \x01(\v2\x1d.errorpb.FlashbackNotPreparedR\x14FlashbackNotPrepared\x121\n" +
+	" \x01(\v2\x1b.tikv.MaxTimestampNotSyncedR\x15maxTimestampNotSynced\x12H\n" +
+	"\x14read_index_not_ready\x18\v \x01(\v2\x17.tikv.ReadIndexNotReadyR\x11readIndexNotReady\x12T\n" +
+	"\x18proposal_in_merging_mode\x18\f \x01(\v2\x1b.tikv.ProposalInMergingModeR\x15proposalInMergingMode\x12?\n" +
+	"\x11data_is_not_ready\x18\r \x01(\v2\x14.tikv.DataIsNotReadyR\x0edataIsNotReady\x12P\n" +
+	"\x16region_not_initialized\x18\x0e \x01(\v2\x1a.tikv.RegionNotInitializedR\x14regionNotInitialized\x12+\n" +
+	"\tdisk_full\x18\x0f \x01(\v2\x0e.tikv.DiskFullR\bdiskFull\x12H\n" +
+	"\x12RecoveryInProgress\x18\x10 \x01(\v2\x18.tikv.RecoveryInProgressR\x12RecoveryInProgress\x12K\n" +
+	"\x13FlashbackInProgress\x18\x11 \x01(\v2\x19.tikv.FlashbackInProgressR\x13FlashbackInProgress\x12N\n" +
+	"\x14FlashbackNotPrepared\x18\x12 \x01(\v2\x1a.tikv.FlashbackNotPreparedR\x14FlashbackNotPrepared\x12.\n" +
 	"\n" +
-	"is_witness\x18\x13 \x01(\v2\x12.errorpb.IsWitnessR\tisWitness\x12A\n" +
-	"\x10mismatch_peer_id\x18\x14 \x01(\v2\x17.errorpb.MismatchPeerIdR\x0emismatchPeerId\x12W\n" +
-	"\x18bucket_version_not_match\x18\x15 \x01(\v2\x1e.errorpb.BucketVersionNotMatchR\x15bucketVersionNotMatch\x12L\n" +
-	"\x13undetermined_result\x18\x16 \x01(\v2\x1b.errorpb.UndeterminedResultR\x12undeterminedResultR\vstale_epochB)Z'github.com/vdaas/vald/apis/grpc/v1/tikvb\x06proto3"
+	"is_witness\x18\x13 \x01(\v2\x0f.tikv.IsWitnessR\tisWitness\x12>\n" +
+	"\x10mismatch_peer_id\x18\x14 \x01(\v2\x14.tikv.MismatchPeerIdR\x0emismatchPeerId\x12T\n" +
+	"\x18bucket_version_not_match\x18\x15 \x01(\v2\x1b.tikv.BucketVersionNotMatchR\x15bucketVersionNotMatch\x12I\n" +
+	"\x13undetermined_result\x18\x16 \x01(\v2\x18.tikv.UndeterminedResultR\x12undeterminedResultR\vstale_epochB)Z'github.com/vdaas/vald/apis/grpc/v1/tikvb\x06proto3"
 
 var (
 	file_v1_tikv_errorpb_proto_rawDescOnce sync.Once
@@ -1443,53 +1444,56 @@ func file_v1_tikv_errorpb_proto_rawDescGZIP() []byte {
 	return file_v1_tikv_errorpb_proto_rawDescData
 }
 
-var file_v1_tikv_errorpb_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
-var file_v1_tikv_errorpb_proto_goTypes = []any{
-	(*NotLeader)(nil),             // 0: errorpb.NotLeader
-	(*IsWitness)(nil),             // 1: errorpb.IsWitness
-	(*BucketVersionNotMatch)(nil), // 2: errorpb.BucketVersionNotMatch
-	(*DiskFull)(nil),              // 3: errorpb.DiskFull
-	(*StoreNotMatch)(nil),         // 4: errorpb.StoreNotMatch
-	(*RegionNotFound)(nil),        // 5: errorpb.RegionNotFound
-	(*RegionNotInitialized)(nil),  // 6: errorpb.RegionNotInitialized
-	(*KeyNotInRegion)(nil),        // 7: errorpb.KeyNotInRegion
-	(*EpochNotMatch)(nil),         // 8: errorpb.EpochNotMatch
-	(*ServerIsBusy)(nil),          // 9: errorpb.ServerIsBusy
-	(*StaleCommand)(nil),          // 10: errorpb.StaleCommand
-	(*RaftEntryTooLarge)(nil),     // 11: errorpb.RaftEntryTooLarge
-	(*MaxTimestampNotSynced)(nil), // 12: errorpb.MaxTimestampNotSynced
-	(*ReadIndexNotReady)(nil),     // 13: errorpb.ReadIndexNotReady
-	(*ProposalInMergingMode)(nil), // 14: errorpb.ProposalInMergingMode
-	(*DataIsNotReady)(nil),        // 15: errorpb.DataIsNotReady
-	(*RecoveryInProgress)(nil),    // 16: errorpb.RecoveryInProgress
-	(*FlashbackInProgress)(nil),   // 17: errorpb.FlashbackInProgress
-	(*FlashbackNotPrepared)(nil),  // 18: errorpb.FlashbackNotPrepared
-	(*MismatchPeerId)(nil),        // 19: errorpb.MismatchPeerId
-	(*UndeterminedResult)(nil),    // 20: errorpb.UndeterminedResult
-	(*Error)(nil),                 // 21: errorpb.Error
-}
+var (
+	file_v1_tikv_errorpb_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
+	file_v1_tikv_errorpb_proto_goTypes  = []any{
+		(*NotLeader)(nil),             // 0: tikv.NotLeader
+		(*IsWitness)(nil),             // 1: tikv.IsWitness
+		(*BucketVersionNotMatch)(nil), // 2: tikv.BucketVersionNotMatch
+		(*DiskFull)(nil),              // 3: tikv.DiskFull
+		(*StoreNotMatch)(nil),         // 4: tikv.StoreNotMatch
+		(*RegionNotFound)(nil),        // 5: tikv.RegionNotFound
+		(*RegionNotInitialized)(nil),  // 6: tikv.RegionNotInitialized
+		(*KeyNotInRegion)(nil),        // 7: tikv.KeyNotInRegion
+		(*EpochNotMatch)(nil),         // 8: tikv.EpochNotMatch
+		(*ServerIsBusy)(nil),          // 9: tikv.ServerIsBusy
+		(*StaleCommand)(nil),          // 10: tikv.StaleCommand
+		(*RaftEntryTooLarge)(nil),     // 11: tikv.RaftEntryTooLarge
+		(*MaxTimestampNotSynced)(nil), // 12: tikv.MaxTimestampNotSynced
+		(*ReadIndexNotReady)(nil),     // 13: tikv.ReadIndexNotReady
+		(*ProposalInMergingMode)(nil), // 14: tikv.ProposalInMergingMode
+		(*DataIsNotReady)(nil),        // 15: tikv.DataIsNotReady
+		(*RecoveryInProgress)(nil),    // 16: tikv.RecoveryInProgress
+		(*FlashbackInProgress)(nil),   // 17: tikv.FlashbackInProgress
+		(*FlashbackNotPrepared)(nil),  // 18: tikv.FlashbackNotPrepared
+		(*MismatchPeerId)(nil),        // 19: tikv.MismatchPeerId
+		(*UndeterminedResult)(nil),    // 20: tikv.UndeterminedResult
+		(*Error)(nil),                 // 21: tikv.Error
+	}
+)
+
 var file_v1_tikv_errorpb_proto_depIdxs = []int32{
-	0,  // 0: errorpb.Error.not_leader:type_name -> errorpb.NotLeader
-	5,  // 1: errorpb.Error.region_not_found:type_name -> errorpb.RegionNotFound
-	7,  // 2: errorpb.Error.key_not_in_region:type_name -> errorpb.KeyNotInRegion
-	8,  // 3: errorpb.Error.epoch_not_match:type_name -> errorpb.EpochNotMatch
-	9,  // 4: errorpb.Error.server_is_busy:type_name -> errorpb.ServerIsBusy
-	10, // 5: errorpb.Error.stale_command:type_name -> errorpb.StaleCommand
-	4,  // 6: errorpb.Error.store_not_match:type_name -> errorpb.StoreNotMatch
-	11, // 7: errorpb.Error.raft_entry_too_large:type_name -> errorpb.RaftEntryTooLarge
-	12, // 8: errorpb.Error.max_timestamp_not_synced:type_name -> errorpb.MaxTimestampNotSynced
-	13, // 9: errorpb.Error.read_index_not_ready:type_name -> errorpb.ReadIndexNotReady
-	14, // 10: errorpb.Error.proposal_in_merging_mode:type_name -> errorpb.ProposalInMergingMode
-	15, // 11: errorpb.Error.data_is_not_ready:type_name -> errorpb.DataIsNotReady
-	6,  // 12: errorpb.Error.region_not_initialized:type_name -> errorpb.RegionNotInitialized
-	3,  // 13: errorpb.Error.disk_full:type_name -> errorpb.DiskFull
-	16, // 14: errorpb.Error.RecoveryInProgress:type_name -> errorpb.RecoveryInProgress
-	17, // 15: errorpb.Error.FlashbackInProgress:type_name -> errorpb.FlashbackInProgress
-	18, // 16: errorpb.Error.FlashbackNotPrepared:type_name -> errorpb.FlashbackNotPrepared
-	1,  // 17: errorpb.Error.is_witness:type_name -> errorpb.IsWitness
-	19, // 18: errorpb.Error.mismatch_peer_id:type_name -> errorpb.MismatchPeerId
-	2,  // 19: errorpb.Error.bucket_version_not_match:type_name -> errorpb.BucketVersionNotMatch
-	20, // 20: errorpb.Error.undetermined_result:type_name -> errorpb.UndeterminedResult
+	0,  // 0: tikv.Error.not_leader:type_name -> tikv.NotLeader
+	5,  // 1: tikv.Error.region_not_found:type_name -> tikv.RegionNotFound
+	7,  // 2: tikv.Error.key_not_in_region:type_name -> tikv.KeyNotInRegion
+	8,  // 3: tikv.Error.epoch_not_match:type_name -> tikv.EpochNotMatch
+	9,  // 4: tikv.Error.server_is_busy:type_name -> tikv.ServerIsBusy
+	10, // 5: tikv.Error.stale_command:type_name -> tikv.StaleCommand
+	4,  // 6: tikv.Error.store_not_match:type_name -> tikv.StoreNotMatch
+	11, // 7: tikv.Error.raft_entry_too_large:type_name -> tikv.RaftEntryTooLarge
+	12, // 8: tikv.Error.max_timestamp_not_synced:type_name -> tikv.MaxTimestampNotSynced
+	13, // 9: tikv.Error.read_index_not_ready:type_name -> tikv.ReadIndexNotReady
+	14, // 10: tikv.Error.proposal_in_merging_mode:type_name -> tikv.ProposalInMergingMode
+	15, // 11: tikv.Error.data_is_not_ready:type_name -> tikv.DataIsNotReady
+	6,  // 12: tikv.Error.region_not_initialized:type_name -> tikv.RegionNotInitialized
+	3,  // 13: tikv.Error.disk_full:type_name -> tikv.DiskFull
+	16, // 14: tikv.Error.RecoveryInProgress:type_name -> tikv.RecoveryInProgress
+	17, // 15: tikv.Error.FlashbackInProgress:type_name -> tikv.FlashbackInProgress
+	18, // 16: tikv.Error.FlashbackNotPrepared:type_name -> tikv.FlashbackNotPrepared
+	1,  // 17: tikv.Error.is_witness:type_name -> tikv.IsWitness
+	19, // 18: tikv.Error.mismatch_peer_id:type_name -> tikv.MismatchPeerId
+	2,  // 19: tikv.Error.bucket_version_not_match:type_name -> tikv.BucketVersionNotMatch
+	20, // 20: tikv.Error.undetermined_result:type_name -> tikv.UndeterminedResult
 	21, // [21:21] is the sub-list for method output_type
 	21, // [21:21] is the sub-list for method input_type
 	21, // [21:21] is the sub-list for extension type_name

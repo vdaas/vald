@@ -23,10 +23,11 @@
 package tikv
 
 import (
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	unsafe "unsafe"
+
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -40,42 +41,43 @@ var File_v1_tikv_tikvpb_proto protoreflect.FileDescriptor
 
 const file_v1_tikv_tikvpb_proto_rawDesc = "" +
 	"\n" +
-	"\x14v1/tikv/tikvpb.proto\x12\x06tikvpb\x1a\x15v1/tikv/kvrpcpb.proto2\xb3\x03\n" +
-	"\x04Tikv\x12;\n" +
-	"\x06RawGet\x12\x16.kvrpcpb.RawGetRequest\x1a\x17.kvrpcpb.RawGetResponse\"\x00\x12J\n" +
-	"\vRawBatchGet\x12\x1b.kvrpcpb.RawBatchGetRequest\x1a\x1c.kvrpcpb.RawBatchGetResponse\"\x00\x12;\n" +
-	"\x06RawPut\x12\x16.kvrpcpb.RawPutRequest\x1a\x17.kvrpcpb.RawPutResponse\"\x00\x12J\n" +
-	"\vRawBatchPut\x12\x1b.kvrpcpb.RawBatchPutRequest\x1a\x1c.kvrpcpb.RawBatchPutResponse\"\x00\x12D\n" +
-	"\tRawDelete\x12\x19.kvrpcpb.RawDeleteRequest\x1a\x1a.kvrpcpb.RawDeleteResponse\"\x00\x12S\n" +
-	"\x0eRawBatchDelete\x12\x1e.kvrpcpb.RawBatchDeleteRequest\x1a\x1f.kvrpcpb.RawBatchDeleteResponse\"\x00B)Z'github.com/vdaas/vald/apis/grpc/v1/tikvb\x06proto3"
+	"\x14v1/tikv/tikvpb.proto\x12\x04tikv\x1a\x15v1/tikv/kvrpcpb.proto2\x8f\x03\n" +
+	"\x04Tikv\x125\n" +
+	"\x06RawGet\x12\x13.tikv.RawGetRequest\x1a\x14.tikv.RawGetResponse\"\x00\x12D\n" +
+	"\vRawBatchGet\x12\x18.tikv.RawBatchGetRequest\x1a\x19.tikv.RawBatchGetResponse\"\x00\x125\n" +
+	"\x06RawPut\x12\x13.tikv.RawPutRequest\x1a\x14.tikv.RawPutResponse\"\x00\x12D\n" +
+	"\vRawBatchPut\x12\x18.tikv.RawBatchPutRequest\x1a\x19.tikv.RawBatchPutResponse\"\x00\x12>\n" +
+	"\tRawDelete\x12\x16.tikv.RawDeleteRequest\x1a\x17.tikv.RawDeleteResponse\"\x00\x12M\n" +
+	"\x0eRawBatchDelete\x12\x1b.tikv.RawBatchDeleteRequest\x1a\x1c.tikv.RawBatchDeleteResponse\"\x00B)Z'github.com/vdaas/vald/apis/grpc/v1/tikvb\x06proto3"
 
 var file_v1_tikv_tikvpb_proto_goTypes = []any{
-	(*RawGetRequest)(nil),          // 0: kvrpcpb.RawGetRequest
-	(*RawBatchGetRequest)(nil),     // 1: kvrpcpb.RawBatchGetRequest
-	(*RawPutRequest)(nil),          // 2: kvrpcpb.RawPutRequest
-	(*RawBatchPutRequest)(nil),     // 3: kvrpcpb.RawBatchPutRequest
-	(*RawDeleteRequest)(nil),       // 4: kvrpcpb.RawDeleteRequest
-	(*RawBatchDeleteRequest)(nil),  // 5: kvrpcpb.RawBatchDeleteRequest
-	(*RawGetResponse)(nil),         // 6: kvrpcpb.RawGetResponse
-	(*RawBatchGetResponse)(nil),    // 7: kvrpcpb.RawBatchGetResponse
-	(*RawPutResponse)(nil),         // 8: kvrpcpb.RawPutResponse
-	(*RawBatchPutResponse)(nil),    // 9: kvrpcpb.RawBatchPutResponse
-	(*RawDeleteResponse)(nil),      // 10: kvrpcpb.RawDeleteResponse
-	(*RawBatchDeleteResponse)(nil), // 11: kvrpcpb.RawBatchDeleteResponse
+	(*RawGetRequest)(nil),          // 0: tikv.RawGetRequest
+	(*RawBatchGetRequest)(nil),     // 1: tikv.RawBatchGetRequest
+	(*RawPutRequest)(nil),          // 2: tikv.RawPutRequest
+	(*RawBatchPutRequest)(nil),     // 3: tikv.RawBatchPutRequest
+	(*RawDeleteRequest)(nil),       // 4: tikv.RawDeleteRequest
+	(*RawBatchDeleteRequest)(nil),  // 5: tikv.RawBatchDeleteRequest
+	(*RawGetResponse)(nil),         // 6: tikv.RawGetResponse
+	(*RawBatchGetResponse)(nil),    // 7: tikv.RawBatchGetResponse
+	(*RawPutResponse)(nil),         // 8: tikv.RawPutResponse
+	(*RawBatchPutResponse)(nil),    // 9: tikv.RawBatchPutResponse
+	(*RawDeleteResponse)(nil),      // 10: tikv.RawDeleteResponse
+	(*RawBatchDeleteResponse)(nil), // 11: tikv.RawBatchDeleteResponse
 }
+
 var file_v1_tikv_tikvpb_proto_depIdxs = []int32{
-	0,  // 0: tikvpb.Tikv.RawGet:input_type -> kvrpcpb.RawGetRequest
-	1,  // 1: tikvpb.Tikv.RawBatchGet:input_type -> kvrpcpb.RawBatchGetRequest
-	2,  // 2: tikvpb.Tikv.RawPut:input_type -> kvrpcpb.RawPutRequest
-	3,  // 3: tikvpb.Tikv.RawBatchPut:input_type -> kvrpcpb.RawBatchPutRequest
-	4,  // 4: tikvpb.Tikv.RawDelete:input_type -> kvrpcpb.RawDeleteRequest
-	5,  // 5: tikvpb.Tikv.RawBatchDelete:input_type -> kvrpcpb.RawBatchDeleteRequest
-	6,  // 6: tikvpb.Tikv.RawGet:output_type -> kvrpcpb.RawGetResponse
-	7,  // 7: tikvpb.Tikv.RawBatchGet:output_type -> kvrpcpb.RawBatchGetResponse
-	8,  // 8: tikvpb.Tikv.RawPut:output_type -> kvrpcpb.RawPutResponse
-	9,  // 9: tikvpb.Tikv.RawBatchPut:output_type -> kvrpcpb.RawBatchPutResponse
-	10, // 10: tikvpb.Tikv.RawDelete:output_type -> kvrpcpb.RawDeleteResponse
-	11, // 11: tikvpb.Tikv.RawBatchDelete:output_type -> kvrpcpb.RawBatchDeleteResponse
+	0,  // 0: tikv.Tikv.RawGet:input_type -> tikv.RawGetRequest
+	1,  // 1: tikv.Tikv.RawBatchGet:input_type -> tikv.RawBatchGetRequest
+	2,  // 2: tikv.Tikv.RawPut:input_type -> tikv.RawPutRequest
+	3,  // 3: tikv.Tikv.RawBatchPut:input_type -> tikv.RawBatchPutRequest
+	4,  // 4: tikv.Tikv.RawDelete:input_type -> tikv.RawDeleteRequest
+	5,  // 5: tikv.Tikv.RawBatchDelete:input_type -> tikv.RawBatchDeleteRequest
+	6,  // 6: tikv.Tikv.RawGet:output_type -> tikv.RawGetResponse
+	7,  // 7: tikv.Tikv.RawBatchGet:output_type -> tikv.RawBatchGetResponse
+	8,  // 8: tikv.Tikv.RawPut:output_type -> tikv.RawPutResponse
+	9,  // 9: tikv.Tikv.RawBatchPut:output_type -> tikv.RawBatchPutResponse
+	10, // 10: tikv.Tikv.RawDelete:output_type -> tikv.RawDeleteResponse
+	11, // 11: tikv.Tikv.RawBatchDelete:output_type -> tikv.RawBatchDeleteResponse
 	6,  // [6:12] is the sub-list for method output_type
 	0,  // [0:6] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
