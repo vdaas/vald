@@ -93,7 +93,6 @@ If there is major or minor upgrading, the chart structure may have changed.
    ```
 
 1. Edit `values.yaml`
-
    - We recommend setting a specific version as an image tag.
 
      ```yaml
@@ -130,7 +129,6 @@ The upgrading steps are below if you use `vald-helm-operator` for the deployment
    - Also, you can upgrade manually by editing `vhor.yaml` and applying it.
 
 1. Edit `vr.yaml`
-
    - We recommend setting a specific version as an image tag.
 
      ```yaml
