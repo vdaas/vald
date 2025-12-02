@@ -143,6 +143,80 @@
   - [RetryInfo](#rpc-v1-RetryInfo)
 - [v1/rpc/stats/stats.proto](#v1_rpc_stats_stats-proto)
   - [Stats](#rpc-v1-Stats)
+- [v1/tikv/errorpb.proto](#v1_tikv_errorpb-proto)
+  - [BucketVersionNotMatch](#errorpb-BucketVersionNotMatch)
+  - [DataIsNotReady](#errorpb-DataIsNotReady)
+  - [DiskFull](#errorpb-DiskFull)
+  - [EpochNotMatch](#errorpb-EpochNotMatch)
+  - [Error](#errorpb-Error)
+  - [FlashbackInProgress](#errorpb-FlashbackInProgress)
+  - [FlashbackNotPrepared](#errorpb-FlashbackNotPrepared)
+  - [IsWitness](#errorpb-IsWitness)
+  - [KeyNotInRegion](#errorpb-KeyNotInRegion)
+  - [MaxTimestampNotSynced](#errorpb-MaxTimestampNotSynced)
+  - [MismatchPeerId](#errorpb-MismatchPeerId)
+  - [NotLeader](#errorpb-NotLeader)
+  - [ProposalInMergingMode](#errorpb-ProposalInMergingMode)
+  - [RaftEntryTooLarge](#errorpb-RaftEntryTooLarge)
+  - [ReadIndexNotReady](#errorpb-ReadIndexNotReady)
+  - [RecoveryInProgress](#errorpb-RecoveryInProgress)
+  - [RegionNotFound](#errorpb-RegionNotFound)
+  - [RegionNotInitialized](#errorpb-RegionNotInitialized)
+  - [ServerIsBusy](#errorpb-ServerIsBusy)
+  - [StaleCommand](#errorpb-StaleCommand)
+  - [StoreNotMatch](#errorpb-StoreNotMatch)
+  - [UndeterminedResult](#errorpb-UndeterminedResult)
+- [v1/tikv/kvrpcpb.proto](#v1_tikv_kvrpcpb-proto)
+  - [AlreadyExist](#kvrpcpb-AlreadyExist)
+  - [AssertionFailed](#kvrpcpb-AssertionFailed)
+  - [CommitTsExpired](#kvrpcpb-CommitTsExpired)
+  - [CommitTsTooLarge](#kvrpcpb-CommitTsTooLarge)
+  - [Context](#kvrpcpb-Context)
+  - [DebugInfo](#kvrpcpb-DebugInfo)
+  - [ExecDetails](#kvrpcpb-ExecDetails)
+  - [ExecDetailsV2](#kvrpcpb-ExecDetailsV2)
+  - [KeyError](#kvrpcpb-KeyError)
+  - [KvPair](#kvrpcpb-KvPair)
+  - [LockInfo](#kvrpcpb-LockInfo)
+  - [MvccDebugInfo](#kvrpcpb-MvccDebugInfo)
+  - [MvccInfo](#kvrpcpb-MvccInfo)
+  - [MvccLock](#kvrpcpb-MvccLock)
+  - [MvccValue](#kvrpcpb-MvccValue)
+  - [MvccWrite](#kvrpcpb-MvccWrite)
+  - [PrimaryMismatch](#kvrpcpb-PrimaryMismatch)
+  - [RawBatchDeleteRequest](#kvrpcpb-RawBatchDeleteRequest)
+  - [RawBatchDeleteResponse](#kvrpcpb-RawBatchDeleteResponse)
+  - [RawBatchGetRequest](#kvrpcpb-RawBatchGetRequest)
+  - [RawBatchGetResponse](#kvrpcpb-RawBatchGetResponse)
+  - [RawBatchPutRequest](#kvrpcpb-RawBatchPutRequest)
+  - [RawBatchPutResponse](#kvrpcpb-RawBatchPutResponse)
+  - [RawDeleteRequest](#kvrpcpb-RawDeleteRequest)
+  - [RawDeleteResponse](#kvrpcpb-RawDeleteResponse)
+  - [RawGetRequest](#kvrpcpb-RawGetRequest)
+  - [RawGetResponse](#kvrpcpb-RawGetResponse)
+  - [RawPutRequest](#kvrpcpb-RawPutRequest)
+  - [RawPutResponse](#kvrpcpb-RawPutResponse)
+  - [ResourceControlContext](#kvrpcpb-ResourceControlContext)
+  - [ScanDetail](#kvrpcpb-ScanDetail)
+  - [ScanDetailV2](#kvrpcpb-ScanDetailV2)
+  - [ScanInfo](#kvrpcpb-ScanInfo)
+  - [SourceStmt](#kvrpcpb-SourceStmt)
+  - [TimeDetail](#kvrpcpb-TimeDetail)
+  - [TimeDetailV2](#kvrpcpb-TimeDetailV2)
+  - [TxnLockNotFound](#kvrpcpb-TxnLockNotFound)
+  - [TxnNotFound](#kvrpcpb-TxnNotFound)
+  - [WriteConflict](#kvrpcpb-WriteConflict)
+  - [WriteDetail](#kvrpcpb-WriteDetail)
+  - [APIVersion](#kvrpcpb-APIVersion)
+  - [Assertion](#kvrpcpb-Assertion)
+  - [CommandPri](#kvrpcpb-CommandPri)
+  - [DiskFullOpt](#kvrpcpb-DiskFullOpt)
+  - [IsolationLevel](#kvrpcpb-IsolationLevel)
+  - [Op](#kvrpcpb-Op)
+  - [WriteConflict.Reason](#kvrpcpb-WriteConflict-Reason)
+
+- [v1/tikv/tikvpb.proto](#v1_tikv_tikvpb-proto)
+  - [Tikv](#tikvpb-Tikv)
 - [v1/vald/filter.proto](#v1_vald_filter-proto)
   - [Filter](#vald-v1-Filter)
 - [v1/vald/flush.proto](#v1_vald_flush-proto)
@@ -1666,6 +1740,925 @@ Represent the resource stats service.
 | Method Name   | Request Type                           | Response Type                                                    | Description                                           |
 | ------------- | -------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------- |
 | ResourceStats | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.ResourceStats](#payload-v1-Info-ResourceStats) | Overview Represent the RPC to get the resource stats. |
+
+<a name="v1_tikv_errorpb-proto"></a>
+
+<p align="right"><a href="#top">Top</a></p>
+
+## v1/tikv/errorpb.proto
+
+Copyright (C) 2019-2025 vdaas.org vald team &lt;vald@vdaas.org&gt;
+
+Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+You may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+<a name="errorpb-BucketVersionNotMatch"></a>
+
+### BucketVersionNotMatch
+
+BucketVersionNotMatch is the error variant that tells the request buckets version is not match.
+client should update the buckets version and retry.
+
+| Field   | Type              | Label    | Description |
+| ------- | ----------------- | -------- | ----------- |
+| version | [uint64](#uint64) |          |             |
+| keys    | [bytes](#bytes)   | repeated |             |
+
+<a name="errorpb-DataIsNotReady"></a>
+
+### DataIsNotReady
+
+| Field     | Type              | Label | Description             |
+| --------- | ----------------- | ----- | ----------------------- |
+| region_id | [uint64](#uint64) |       | The requested region ID |
+| peer_id   | [uint64](#uint64) |       |                         |
+| safe_ts   | [uint64](#uint64) |       |                         |
+
+<a name="errorpb-DiskFull"></a>
+
+### DiskFull
+
+| Field    | Type              | Label    | Description            |
+| -------- | ----------------- | -------- | ---------------------- |
+| store_id | [uint64](#uint64) | repeated | The requested store ID |
+| reason   | [string](#string) |          | The detailed info      |
+
+<a name="errorpb-EpochNotMatch"></a>
+
+### EpochNotMatch
+
+EpochNotMatch is the error variant that tells a region has been updated.
+(e.g. by splitting / merging, or raft Confchange.)
+Hence, a command is based on a stale version of a region.
+
+// Available regions that may be siblings of the requested one.
+repeated metapb.Region current_regions = 1;
+
+<a name="errorpb-Error"></a>
+
+### Error
+
+Error wraps all region errors, indicates an error encountered by a request.
+
+| Field                    | Type                                                    | Label | Description                                                                                                                                                                                                                                             |
+| ------------------------ | ------------------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| message                  | [string](#string)                                       |       | The error message                                                                                                                                                                                                                                       |
+| not_leader               | [NotLeader](#errorpb-NotLeader)                         |       |                                                                                                                                                                                                                                                         |
+| region_not_found         | [RegionNotFound](#errorpb-RegionNotFound)               |       |                                                                                                                                                                                                                                                         |
+| key_not_in_region        | [KeyNotInRegion](#errorpb-KeyNotInRegion)               |       |                                                                                                                                                                                                                                                         |
+| epoch_not_match          | [EpochNotMatch](#errorpb-EpochNotMatch)                 |       |                                                                                                                                                                                                                                                         |
+| server_is_busy           | [ServerIsBusy](#errorpb-ServerIsBusy)                   |       |                                                                                                                                                                                                                                                         |
+| stale_command            | [StaleCommand](#errorpb-StaleCommand)                   |       |                                                                                                                                                                                                                                                         |
+| store_not_match          | [StoreNotMatch](#errorpb-StoreNotMatch)                 |       |                                                                                                                                                                                                                                                         |
+| raft_entry_too_large     | [RaftEntryTooLarge](#errorpb-RaftEntryTooLarge)         |       |                                                                                                                                                                                                                                                         |
+| max_timestamp_not_synced | [MaxTimestampNotSynced](#errorpb-MaxTimestampNotSynced) |       |                                                                                                                                                                                                                                                         |
+| read_index_not_ready     | [ReadIndexNotReady](#errorpb-ReadIndexNotReady)         |       |                                                                                                                                                                                                                                                         |
+| proposal_in_merging_mode | [ProposalInMergingMode](#errorpb-ProposalInMergingMode) |       |                                                                                                                                                                                                                                                         |
+| data_is_not_ready        | [DataIsNotReady](#errorpb-DataIsNotReady)               |       |                                                                                                                                                                                                                                                         |
+| region_not_initialized   | [RegionNotInitialized](#errorpb-RegionNotInitialized)   |       |                                                                                                                                                                                                                                                         |
+| disk_full                | [DiskFull](#errorpb-DiskFull)                           |       |                                                                                                                                                                                                                                                         |
+| RecoveryInProgress       | [RecoveryInProgress](#errorpb-RecoveryInProgress)       |       | Online recovery is still in performing, reject writes to avoid potential issues                                                                                                                                                                         |
+| FlashbackInProgress      | [FlashbackInProgress](#errorpb-FlashbackInProgress)     |       | Flashback is still in performing, reject any read or write to avoid potential issues. NOTICE: this error is non-retryable, the request should fail ASAP when it meets this error.                                                                       |
+| FlashbackNotPrepared     | [FlashbackNotPrepared](#errorpb-FlashbackNotPrepared)   |       | If the second phase flashback request is sent to a region that is not prepared for the flashback, this error will be returned. NOTICE: this error is non-retryable, the client should retry the first phase flashback request when it meets this error. |
+| is_witness               | [IsWitness](#errorpb-IsWitness)                         |       | IsWitness is the error variant that tells a request be handle by witness which should be forbidden and retry.                                                                                                                                           |
+| mismatch_peer_id         | [MismatchPeerId](#errorpb-MismatchPeerId)               |       |                                                                                                                                                                                                                                                         |
+| bucket_version_not_match | [BucketVersionNotMatch](#errorpb-BucketVersionNotMatch) |       | BucketVersionNotMatch is the error variant that tells the request buckets version is not match.                                                                                                                                                         |
+| undetermined_result      | [UndeterminedResult](#errorpb-UndeterminedResult)       |       | UndeterminedResult is the error variant that tells the result is not determined yet.                                                                                                                                                                    |
+
+<a name="errorpb-FlashbackInProgress"></a>
+
+### FlashbackInProgress
+
+| Field              | Type              | Label | Description             |
+| ------------------ | ----------------- | ----- | ----------------------- |
+| region_id          | [uint64](#uint64) |       | The requested region ID |
+| flashback_start_ts | [uint64](#uint64) |       |                         |
+
+<a name="errorpb-FlashbackNotPrepared"></a>
+
+### FlashbackNotPrepared
+
+| Field     | Type              | Label | Description             |
+| --------- | ----------------- | ----- | ----------------------- |
+| region_id | [uint64](#uint64) |       | The requested region ID |
+
+<a name="errorpb-IsWitness"></a>
+
+### IsWitness
+
+IsWitness is the error variant that tells a request be handle by witness
+which should be forbidden and retry.
+
+| Field     | Type              | Label | Description             |
+| --------- | ----------------- | ----- | ----------------------- |
+| region_id | [uint64](#uint64) |       | The requested region ID |
+
+<a name="errorpb-KeyNotInRegion"></a>
+
+### KeyNotInRegion
+
+KeyNotInRegion is the error variant that tells the key the request requires isn&#39;t present in
+this region.
+
+| Field     | Type              | Label | Description                       |
+| --------- | ----------------- | ----- | --------------------------------- |
+| key       | [bytes](#bytes)   |       | The requested key                 |
+| region_id | [uint64](#uint64) |       | The requested region ID           |
+| start_key | [bytes](#bytes)   |       | Start key of the requested region |
+| end_key   | [bytes](#bytes)   |       | Snd key of the requested region   |
+
+<a name="errorpb-MaxTimestampNotSynced"></a>
+
+### MaxTimestampNotSynced
+
+MaxTimestampNotSynced is the error variant that tells the peer has just become a leader and
+updating the max timestamp in the concurrency manager from PD TSO is ongoing. In this case,
+the prewrite of an async commit transaction cannot succeed. The client can backoff and
+resend the request.
+
+<a name="errorpb-MismatchPeerId"></a>
+
+### MismatchPeerId
+
+MismatchPeerId is the error variant that tells the request is sent to wrong peer.
+Client receives this error should reload the region info and retry.
+
+| Field           | Type              | Label | Description |
+| --------------- | ----------------- | ----- | ----------- |
+| request_peer_id | [uint64](#uint64) |       |             |
+| store_peer_id   | [uint64](#uint64) |       |             |
+
+<a name="errorpb-NotLeader"></a>
+
+### NotLeader
+
+NotLeader is the error variant that tells a request be handle by raft leader
+is sent to raft follower or learner.
+
+| Field     | Type              | Label | Description             |
+| --------- | ----------------- | ----- | ----------------------- |
+| region_id | [uint64](#uint64) |       | The requested region ID |
+
+// Region leader of the requested region metapb.Peer leader = 2; |
+
+<a name="errorpb-ProposalInMergingMode"></a>
+
+### ProposalInMergingMode
+
+ProposalInMergingMode is the error variant that tells the proposal is rejected because raft is
+in the merging mode. This may happen when BR/Lightning try to ingest SST.
+This can be retried at most time.
+
+| Field     | Type              | Label | Description             |
+| --------- | ----------------- | ----- | ----------------------- |
+| region_id | [uint64](#uint64) |       | The requested region ID |
+
+<a name="errorpb-RaftEntryTooLarge"></a>
+
+### RaftEntryTooLarge
+
+RaftEntryTooLarge is the error variant that tells the request is too large to be serialized to a
+reasonable small raft entry.
+(i.e. greater than the configured value `raft_entry_max_size` in `raftstore`)
+
+| Field      | Type              | Label | Description             |
+| ---------- | ----------------- | ----- | ----------------------- |
+| region_id  | [uint64](#uint64) |       | The requested region ID |
+| entry_size | [uint64](#uint64) |       | Size of the raft entry  |
+
+<a name="errorpb-ReadIndexNotReady"></a>
+
+### ReadIndexNotReady
+
+ReadIndexNotReady is the error variant that tells the read index request is not ready, that is,
+the current region is in a status that not ready to serve the read index request. For example,
+region is in splitting or merging status.
+This can be retried at most time.
+
+| Field     | Type              | Label | Description                                                        |
+| --------- | ----------------- | ----- | ------------------------------------------------------------------ |
+| reason    | [string](#string) |       | The reason why the region is not ready to serve read index request |
+| region_id | [uint64](#uint64) |       | The requested region ID                                            |
+
+<a name="errorpb-RecoveryInProgress"></a>
+
+### RecoveryInProgress
+
+| Field     | Type              | Label | Description             |
+| --------- | ----------------- | ----- | ----------------------- |
+| region_id | [uint64](#uint64) |       | The requested region ID |
+
+<a name="errorpb-RegionNotFound"></a>
+
+### RegionNotFound
+
+RegionNotFound is the error variant that tells there isn&#39;t any region in this TiKV
+matches the requested region ID.
+
+| Field     | Type              | Label | Description             |
+| --------- | ----------------- | ----- | ----------------------- |
+| region_id | [uint64](#uint64) |       | The requested region ID |
+
+<a name="errorpb-RegionNotInitialized"></a>
+
+### RegionNotInitialized
+
+RegionNotInitialized is the error variant that tells there isn&#39;t any initialized peer
+matchesthe request region ID.
+
+| Field     | Type              | Label | Description           |
+| --------- | ----------------- | ----- | --------------------- |
+| region_id | [uint64](#uint64) |       | The request region ID |
+
+<a name="errorpb-ServerIsBusy"></a>
+
+### ServerIsBusy
+
+ServerIsBusy is the error variant that tells the server is too busy to response.
+
+| Field             | Type              | Label | Description                                                       |
+| ----------------- | ----------------- | ----- | ----------------------------------------------------------------- |
+| reason            | [string](#string) |       |                                                                   |
+| backoff_ms        | [uint64](#uint64) |       | The suggested backoff time                                        |
+| estimated_wait_ms | [uint32](#uint32) |       |                                                                   |
+| applied_index     | [uint64](#uint64) |       | Current applied_index at the leader, may be used in replica read. |
+
+<a name="errorpb-StaleCommand"></a>
+
+### StaleCommand
+
+StaleCommand is the error variant that tells the command is stale, that is,
+the current request term is lower than current raft term.
+This can be retried at most time.
+
+<a name="errorpb-StoreNotMatch"></a>
+
+### StoreNotMatch
+
+StoreNotMatch is the error variant that tells the request is sent to wrong store.
+(i.e. inconsistency of the store ID that request shows and the real store ID of this server.)
+
+| Field            | Type              | Label | Description         |
+| ---------------- | ----------------- | ----- | ------------------- |
+| request_store_id | [uint64](#uint64) |       | Store id in request |
+| actual_store_id  | [uint64](#uint64) |       | Actual store id     |
+
+<a name="errorpb-UndeterminedResult"></a>
+
+### UndeterminedResult
+
+UndeterminedResult is the error variant that tells the result is not determined yet.
+For example, the raft protocol timed out and the apply result is unknown.
+
+| Field   | Type              | Label | Description |
+| ------- | ----------------- | ----- | ----------- |
+| message | [string](#string) |       |             |
+
+<a name="v1_tikv_kvrpcpb-proto"></a>
+
+<p align="right"><a href="#top">Top</a></p>
+
+## v1/tikv/kvrpcpb.proto
+
+Copyright (C) 2019-2025 vdaas.org vald team &lt;vald@vdaas.org&gt;
+
+Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+You may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+<a name="kvrpcpb-AlreadyExist"></a>
+
+### AlreadyExist
+
+| Field | Type            | Label | Description |
+| ----- | --------------- | ----- | ----------- |
+| key   | [bytes](#bytes) |       |             |
+
+<a name="kvrpcpb-AssertionFailed"></a>
+
+### AssertionFailed
+
+| Field              | Type                            | Label | Description |
+| ------------------ | ------------------------------- | ----- | ----------- |
+| start_ts           | [uint64](#uint64)               |       |             |
+| key                | [bytes](#bytes)                 |       |             |
+| assertion          | [Assertion](#kvrpcpb-Assertion) |       |             |
+| existing_start_ts  | [uint64](#uint64)               |       |             |
+| existing_commit_ts | [uint64](#uint64)               |       |             |
+
+<a name="kvrpcpb-CommitTsExpired"></a>
+
+### CommitTsExpired
+
+| Field               | Type              | Label | Description |
+| ------------------- | ----------------- | ----- | ----------- |
+| start_ts            | [uint64](#uint64) |       |             |
+| attempted_commit_ts | [uint64](#uint64) |       |             |
+| key                 | [bytes](#bytes)   |       |             |
+| min_commit_ts       | [uint64](#uint64) |       |             |
+
+<a name="kvrpcpb-CommitTsTooLarge"></a>
+
+### CommitTsTooLarge
+
+| Field     | Type              | Label | Description               |
+| --------- | ----------------- | ----- | ------------------------- |
+| commit_ts | [uint64](#uint64) |       | The calculated commit TS. |
+
+<a name="kvrpcpb-Context"></a>
+
+### Context
+
+Miscellaneous metadata attached to most requests.
+
+| Field                     | Type                                                      | Label    | Description                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ------------------------- | --------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| region_id                 | [uint64](#uint64)                                         |          |                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| term                      | [uint64](#uint64)                                         |          | metapb.RegionEpoch region_epoch = 2; metapb.Peer peer = 3;                                                                                                                                                                                                                                                                                                                                                         |
+| priority                  | [CommandPri](#kvrpcpb-CommandPri)                         |          |                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| isolation_level           | [IsolationLevel](#kvrpcpb-IsolationLevel)                 |          |                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| not_fill_cache            | [bool](#bool)                                             |          |                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| sync_log                  | [bool](#bool)                                             |          |                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| record_time_stat          | [bool](#bool)                                             |          | True means execution time statistics should be recorded and returned.                                                                                                                                                                                                                                                                                                                                              |
+| record_scan_stat          | [bool](#bool)                                             |          | True means RocksDB scan statistics should be recorded and returned.                                                                                                                                                                                                                                                                                                                                                |
+| replica_read              | [bool](#bool)                                             |          |                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| resolved_locks            | [uint64](#uint64)                                         | repeated | Read requests can ignore locks belonging to these transactions because either these transactions are rolled back or theirs commit_ts &gt; read request&#39;s start_ts.                                                                                                                                                                                                                                             |
+| max_execution_duration_ms | [uint64](#uint64)                                         |          |                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| applied_index             | [uint64](#uint64)                                         |          | After a region applies to `applied_index`, we can get a snapshot for the region even if the peer is a follower.                                                                                                                                                                                                                                                                                                    |
+| task_id                   | [uint64](#uint64)                                         |          | A hint for TiKV to schedule tasks more fairly. Query with same task ID may share same priority and resource quota.                                                                                                                                                                                                                                                                                                 |
+| stale_read                | [bool](#bool)                                             |          | Not required to read the most up-to-date data, replicas with `safe_ts` &gt;= `start_ts` can handle read request directly                                                                                                                                                                                                                                                                                           |
+| resource_group_tag        | [bytes](#bytes)                                           |          | Any additional serialized information about the request.                                                                                                                                                                                                                                                                                                                                                           |
+| disk_full_opt             | [DiskFullOpt](#kvrpcpb-DiskFullOpt)                       |          | Used to tell TiKV whether operations are allowed or not on different disk usages.                                                                                                                                                                                                                                                                                                                                  |
+| is_retry_request          | [bool](#bool)                                             |          | Indicates the request is a retry request and the same request may have been sent before.                                                                                                                                                                                                                                                                                                                           |
+| api_version               | [APIVersion](#kvrpcpb-APIVersion)                         |          | API version implies the encode of the key and value.                                                                                                                                                                                                                                                                                                                                                               |
+| committed_locks           | [uint64](#uint64)                                         | repeated | Read request should read through locks belonging to these transactions because these transactions are committed and theirs commit_ts &lt;= read request&#39;s start_ts.                                                                                                                                                                                                                                            |
+| request_source            | [string](#string)                                         |          | The source of the request, will be used as the tag of the metrics reporting. This field can be set for any requests that require to report metrics with any extra labels.                                                                                                                                                                                                                                          |
+| txn_source                | [uint64](#uint64)                                         |          | The source of the current transaction.                                                                                                                                                                                                                                                                                                                                                                             |
+| busy_threshold_ms         | [uint32](#uint32)                                         |          | If `busy_threshold_ms` is given, TiKV can reject the request and return a `ServerIsBusy` error before processing if the estimated waiting duration exceeds the threshold.                                                                                                                                                                                                                                          |
+| resource_control_context  | [ResourceControlContext](#kvrpcpb-ResourceControlContext) |          | Some information used for resource control.                                                                                                                                                                                                                                                                                                                                                                        |
+| keyspace_name             | [string](#string)                                         |          | The keyspace that the request is sent to. NOTE: This field is only meaningful while the api_version is V2.                                                                                                                                                                                                                                                                                                         |
+| keyspace_id               | [uint32](#uint32)                                         |          | The keyspace that the request is sent to. NOTE: This field is only meaningful while the api_version is V2.                                                                                                                                                                                                                                                                                                         |
+| buckets_version           | [uint64](#uint64)                                         |          | The buckets version that the request is sent to. NOTE: This field is only meaningful while enable buckets.                                                                                                                                                                                                                                                                                                         |
+| source_stmt               | [SourceStmt](#kvrpcpb-SourceStmt)                         |          | It tells us where the request comes from in TiDB. If it isn&#39;t from TiDB, leave it blank. This is for tests only and thus can be safely changed/removed without affecting compatibility.                                                                                                                                                                                                                        |
+| cluster_id                | [uint64](#uint64)                                         |          | The cluster id of the request                                                                                                                                                                                                                                                                                                                                                                                      |
+| trace_id                  | [bytes](#bytes)                                           |          | The trace id of the request, will be used for tracing the request&#39;s execution&#39;s inner steps.                                                                                                                                                                                                                                                                                                               |
+| trace_control_flags       | [uint64](#uint64)                                         |          | Control flags for trace logging behavior. Bit 0: immediate_log - Force immediate logging without buffering Bit 1: category_req_resp - Enable request/response tracing Bit 2: category_write_details - Enable detailed write tracing Bit 3: category_read_details - Enable detailed read tracing Bits 4-63: Reserved for future use This field is set by client-go based on an extractor function provided by TiDB. |
+
+<a name="kvrpcpb-DebugInfo"></a>
+
+### DebugInfo
+
+| Field     | Type                                    | Label    | Description |
+| --------- | --------------------------------------- | -------- | ----------- |
+| mvcc_info | [MvccDebugInfo](#kvrpcpb-MvccDebugInfo) | repeated |             |
+
+<a name="kvrpcpb-ExecDetails"></a>
+
+### ExecDetails
+
+| Field       | Type                              | Label | Description                                                    |
+| ----------- | --------------------------------- | ----- | -------------------------------------------------------------- |
+| time_detail | [TimeDetail](#kvrpcpb-TimeDetail) |       | Available when ctx.record_time_stat = true or meet slow query. |
+| scan_detail | [ScanDetail](#kvrpcpb-ScanDetail) |       | Available when ctx.record_scan_stat = true or meet slow query. |
+
+<a name="kvrpcpb-ExecDetailsV2"></a>
+
+### ExecDetailsV2
+
+| Field          | Type                                  | Label | Description                                                                                                     |
+| -------------- | ------------------------------------- | ----- | --------------------------------------------------------------------------------------------------------------- |
+| time_detail    | [TimeDetail](#kvrpcpb-TimeDetail)     |       | Available when ctx.record_time_stat = true or meet slow query. deprecated. Should use `time_detail_v2` instead. |
+| scan_detail_v2 | [ScanDetailV2](#kvrpcpb-ScanDetailV2) |       | Available when ctx.record_scan_stat = true or meet slow query.                                                  |
+| write_detail   | [WriteDetail](#kvrpcpb-WriteDetail)   |       | Raftstore writing durations of the request. Only available for some write requests.                             |
+| time_detail_v2 | [TimeDetailV2](#kvrpcpb-TimeDetailV2) |       | Available when ctx.record_time_stat = true or meet slow query.                                                  |
+
+<a name="kvrpcpb-KeyError"></a>
+
+### KeyError
+
+| Field             | Type                                        | Label | Description                                                                                          |
+| ----------------- | ------------------------------------------- | ----- | ---------------------------------------------------------------------------------------------------- |
+| locked            | [LockInfo](#kvrpcpb-LockInfo)               |       | Client should backoff or cleanup the lock then retry.                                                |
+| retryable         | [string](#string)                           |       | Client may restart the txn. e.g write conflict.                                                      |
+| abort             | [string](#string)                           |       | Client should abort the txn.                                                                         |
+| conflict          | [WriteConflict](#kvrpcpb-WriteConflict)     |       | Write conflict is moved from retryable to here.                                                      |
+| already_exist     | [AlreadyExist](#kvrpcpb-AlreadyExist)       |       | Key already exists                                                                                   |
+| commit_ts_expired | [CommitTsExpired](#kvrpcpb-CommitTsExpired) |       | Deadlock deadlock = 6; // Deadlock is used in pessimistic transaction for single statement rollback. |
+
+Commit ts is earlier than min commit ts of a transaction. |
+| txn_not_found | [TxnNotFound](#kvrpcpb-TxnNotFound) | | Txn not found when checking txn status. |
+| commit_ts_too_large | [CommitTsTooLarge](#kvrpcpb-CommitTsTooLarge) | | Calculated commit TS exceeds the limit given by the user. |
+| assertion_failed | [AssertionFailed](#kvrpcpb-AssertionFailed) | | Assertion of a `Mutation` is evaluated as a failure. |
+| primary_mismatch | [PrimaryMismatch](#kvrpcpb-PrimaryMismatch) | | CheckTxnStatus is sent to a lock that&#39;s not the primary. |
+| txn_lock_not_found | [TxnLockNotFound](#kvrpcpb-TxnLockNotFound) | | TxnLockNotFound indicates the txn lock is not found. |
+| debug_info | [DebugInfo](#kvrpcpb-DebugInfo) | | Extra information for error debugging |
+
+<a name="kvrpcpb-KvPair"></a>
+
+### KvPair
+
+| Field     | Type                          | Label | Description                                                                               |
+| --------- | ----------------------------- | ----- | ----------------------------------------------------------------------------------------- |
+| error     | [KeyError](#kvrpcpb-KeyError) |       |                                                                                           |
+| key       | [bytes](#bytes)               |       |                                                                                           |
+| value     | [bytes](#bytes)               |       |                                                                                           |
+| commit_ts | [uint64](#uint64)             |       | The commit timestamp of the key. If it is zero, it means the commit timestamp is unknown. |
+
+<a name="kvrpcpb-LockInfo"></a>
+
+### LockInfo
+
+| Field                      | Type              | Label    | Description                                                                                                                                                                                                        |
+| -------------------------- | ----------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| primary_lock               | [bytes](#bytes)   |          |                                                                                                                                                                                                                    |
+| lock_version               | [uint64](#uint64) |          |                                                                                                                                                                                                                    |
+| key                        | [bytes](#bytes)   |          |                                                                                                                                                                                                                    |
+| lock_ttl                   | [uint64](#uint64) |          |                                                                                                                                                                                                                    |
+| txn_size                   | [uint64](#uint64) |          | How many keys this transaction involves in this region.                                                                                                                                                            |
+| lock_type                  | [Op](#kvrpcpb-Op) |          |                                                                                                                                                                                                                    |
+| lock_for_update_ts         | [uint64](#uint64) |          |                                                                                                                                                                                                                    |
+| use_async_commit           | [bool](#bool)     |          | Fields for transactions that are using Async Commit.                                                                                                                                                               |
+| min_commit_ts              | [uint64](#uint64) |          |                                                                                                                                                                                                                    |
+| secondaries                | [bytes](#bytes)   | repeated |                                                                                                                                                                                                                    |
+| duration_to_last_update_ms | [uint64](#uint64) |          | The time elapsed since last update of lock wait info when waiting. It&#39;s used in timeout errors. 0 means unknown or not applicable. It can be used to help the client decide whether to try resolving the lock. |
+| is_txn_file                | [bool](#bool)     |          | Reserved for file based transaction.                                                                                                                                                                               |
+
+<a name="kvrpcpb-MvccDebugInfo"></a>
+
+### MvccDebugInfo
+
+| Field | Type                          | Label | Description |
+| ----- | ----------------------------- | ----- | ----------- |
+| key   | [bytes](#bytes)               |       |             |
+| mvcc  | [MvccInfo](#kvrpcpb-MvccInfo) |       |             |
+
+<a name="kvrpcpb-MvccInfo"></a>
+
+### MvccInfo
+
+| Field  | Type                            | Label    | Description |
+| ------ | ------------------------------- | -------- | ----------- |
+| lock   | [MvccLock](#kvrpcpb-MvccLock)   |          |             |
+| writes | [MvccWrite](#kvrpcpb-MvccWrite) | repeated |             |
+| values | [MvccValue](#kvrpcpb-MvccValue) | repeated |             |
+
+<a name="kvrpcpb-MvccLock"></a>
+
+### MvccLock
+
+| Field                   | Type              | Label    | Description |
+| ----------------------- | ----------------- | -------- | ----------- |
+| type                    | [Op](#kvrpcpb-Op) |          |             |
+| start_ts                | [uint64](#uint64) |          |             |
+| primary                 | [bytes](#bytes)   |          |             |
+| short_value             | [bytes](#bytes)   |          |             |
+| ttl                     | [uint64](#uint64) |          |             |
+| for_update_ts           | [uint64](#uint64) |          |             |
+| txn_size                | [uint64](#uint64) |          |             |
+| use_async_commit        | [bool](#bool)     |          |             |
+| secondaries             | [bytes](#bytes)   | repeated |             |
+| rollback_ts             | [uint64](#uint64) | repeated |             |
+| last_change_ts          | [uint64](#uint64) |          |             |
+| versions_to_last_change | [uint64](#uint64) |          |             |
+
+<a name="kvrpcpb-MvccValue"></a>
+
+### MvccValue
+
+| Field    | Type              | Label | Description |
+| -------- | ----------------- | ----- | ----------- |
+| start_ts | [uint64](#uint64) |       |             |
+| value    | [bytes](#bytes)   |       |             |
+
+<a name="kvrpcpb-MvccWrite"></a>
+
+### MvccWrite
+
+| Field                   | Type              | Label | Description |
+| ----------------------- | ----------------- | ----- | ----------- |
+| type                    | [Op](#kvrpcpb-Op) |       |             |
+| start_ts                | [uint64](#uint64) |       |             |
+| commit_ts               | [uint64](#uint64) |       |             |
+| short_value             | [bytes](#bytes)   |       |             |
+| has_overlapped_rollback | [bool](#bool)     |       |             |
+| has_gc_fence            | [bool](#bool)     |       |             |
+| gc_fence                | [uint64](#uint64) |       |             |
+| last_change_ts          | [uint64](#uint64) |       |             |
+| versions_to_last_change | [uint64](#uint64) |       |             |
+
+<a name="kvrpcpb-PrimaryMismatch"></a>
+
+### PrimaryMismatch
+
+| Field     | Type                          | Label | Description |
+| --------- | ----------------------------- | ----- | ----------- |
+| lock_info | [LockInfo](#kvrpcpb-LockInfo) |       |             |
+
+<a name="kvrpcpb-RawBatchDeleteRequest"></a>
+
+### RawBatchDeleteRequest
+
+| Field   | Type                        | Label    | Description |
+| ------- | --------------------------- | -------- | ----------- |
+| context | [Context](#kvrpcpb-Context) |          |             |
+| keys    | [bytes](#bytes)             | repeated |             |
+| cf      | [string](#string)           |          |             |
+| for_cas | [bool](#bool)               |          |             |
+
+<a name="kvrpcpb-RawBatchDeleteResponse"></a>
+
+### RawBatchDeleteResponse
+
+| Field        | Type                            | Label | Description |
+| ------------ | ------------------------------- | ----- | ----------- |
+| region_error | [errorpb.Error](#errorpb-Error) |       |             |
+| error        | [string](#string)               |       |             |
+
+<a name="kvrpcpb-RawBatchGetRequest"></a>
+
+### RawBatchGetRequest
+
+| Field   | Type                        | Label    | Description |
+| ------- | --------------------------- | -------- | ----------- |
+| context | [Context](#kvrpcpb-Context) |          |             |
+| keys    | [bytes](#bytes)             | repeated |             |
+| cf      | [string](#string)           |          |             |
+
+<a name="kvrpcpb-RawBatchGetResponse"></a>
+
+### RawBatchGetResponse
+
+| Field        | Type                            | Label    | Description |
+| ------------ | ------------------------------- | -------- | ----------- |
+| region_error | [errorpb.Error](#errorpb-Error) |          |             |
+| pairs        | [KvPair](#kvrpcpb-KvPair)       | repeated |             |
+
+<a name="kvrpcpb-RawBatchPutRequest"></a>
+
+### RawBatchPutRequest
+
+| Field   | Type                        | Label    | Description                                                                                                                                                                                                 |
+| ------- | --------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| context | [Context](#kvrpcpb-Context) |          |                                                                                                                                                                                                             |
+| pairs   | [KvPair](#kvrpcpb-KvPair)   | repeated |                                                                                                                                                                                                             |
+| cf      | [string](#string)           |          |                                                                                                                                                                                                             |
+| ttl     | [uint64](#uint64)           |          | **Deprecated.**                                                                                                                                                                                             |
+| for_cas | [bool](#bool)               |          |                                                                                                                                                                                                             |
+| ttls    | [uint64](#uint64)           | repeated | The time-to-live for each keys in seconds, and if the length of `ttls` is exactly one, the ttl will be applied to all keys. Otherwise, the length mismatch between `ttls` and `pairs` will return an error. |
+
+<a name="kvrpcpb-RawBatchPutResponse"></a>
+
+### RawBatchPutResponse
+
+| Field        | Type                            | Label | Description |
+| ------------ | ------------------------------- | ----- | ----------- |
+| region_error | [errorpb.Error](#errorpb-Error) |       |             |
+| error        | [string](#string)               |       |             |
+
+<a name="kvrpcpb-RawDeleteRequest"></a>
+
+### RawDeleteRequest
+
+| Field   | Type                        | Label | Description |
+| ------- | --------------------------- | ----- | ----------- |
+| context | [Context](#kvrpcpb-Context) |       |             |
+| key     | [bytes](#bytes)             |       |             |
+| cf      | [string](#string)           |       |             |
+| for_cas | [bool](#bool)               |       |             |
+
+<a name="kvrpcpb-RawDeleteResponse"></a>
+
+### RawDeleteResponse
+
+| Field        | Type                            | Label | Description |
+| ------------ | ------------------------------- | ----- | ----------- |
+| region_error | [errorpb.Error](#errorpb-Error) |       |             |
+| error        | [string](#string)               |       |             |
+
+<a name="kvrpcpb-RawGetRequest"></a>
+
+### RawGetRequest
+
+| Field   | Type                        | Label | Description |
+| ------- | --------------------------- | ----- | ----------- |
+| context | [Context](#kvrpcpb-Context) |       |             |
+| key     | [bytes](#bytes)             |       |             |
+| cf      | [string](#string)           |       |             |
+
+<a name="kvrpcpb-RawGetResponse"></a>
+
+### RawGetResponse
+
+| Field        | Type                            | Label | Description |
+| ------------ | ------------------------------- | ----- | ----------- |
+| region_error | [errorpb.Error](#errorpb-Error) |       |             |
+| error        | [string](#string)               |       |             |
+| value        | [bytes](#bytes)                 |       |             |
+| not_found    | [bool](#bool)                   |       |             |
+
+<a name="kvrpcpb-RawPutRequest"></a>
+
+### RawPutRequest
+
+| Field   | Type                        | Label | Description |
+| ------- | --------------------------- | ----- | ----------- |
+| context | [Context](#kvrpcpb-Context) |       |             |
+| key     | [bytes](#bytes)             |       |             |
+| value   | [bytes](#bytes)             |       |             |
+| cf      | [string](#string)           |       |             |
+| ttl     | [uint64](#uint64)           |       |             |
+| for_cas | [bool](#bool)               |       |             |
+
+<a name="kvrpcpb-RawPutResponse"></a>
+
+### RawPutResponse
+
+| Field        | Type                            | Label | Description |
+| ------------ | ------------------------------- | ----- | ----------- |
+| region_error | [errorpb.Error](#errorpb-Error) |       |             |
+| error        | [string](#string)               |       |             |
+
+<a name="kvrpcpb-ResourceControlContext"></a>
+
+### ResourceControlContext
+
+| Field               | Type              | Label | Description                                                                                                                         |
+| ------------------- | ----------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| resource_group_name | [string](#string) |       | It&#39;s used to identify which resource group the request belongs to.                                                              |
+| override_priority   | [uint64](#uint64) |       | This priority would override the original priority of the resource group for the request. Used to deprioritize the runaway queries. |
+
+<a name="kvrpcpb-ScanDetail"></a>
+
+### ScanDetail
+
+Only reserved for compatibility.
+
+| Field | Type                          | Label | Description |
+| ----- | ----------------------------- | ----- | ----------- |
+| write | [ScanInfo](#kvrpcpb-ScanInfo) |       |             |
+| lock  | [ScanInfo](#kvrpcpb-ScanInfo) |       |             |
+| data  | [ScanInfo](#kvrpcpb-ScanInfo) |       |             |
+
+<a name="kvrpcpb-ScanDetailV2"></a>
+
+### ScanDetailV2
+
+| Field                   | Type              | Label | Description                                                                                                                                                                                      |
+| ----------------------- | ----------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| processed_versions      | [uint64](#uint64) |       | Number of user keys scanned from the storage. It does not include deleted version or RocksDB tombstone keys. For Coprocessor requests, it includes keys that has been filtered out by Selection. |
+| processed_versions_size | [uint64](#uint64) |       | Number of bytes of user key-value pairs scanned from the storage, i.e. total size of data returned from MVCC layer.                                                                              |
+| total_versions          | [uint64](#uint64) |       | Approximate number of MVCC keys meet during scanning. It includes deleted versions, but does not include RocksDB tombstone keys.                                                                 |
+
+When this field is notably larger than `processed_versions`, it means there are a lot of deleted MVCC keys. |
+| rocksdb_delete_skipped_count | [uint64](#uint64) | | Total number of deletes and single deletes skipped over during iteration, i.e. how many RocksDB tombstones are skipped. |
+| rocksdb_key_skipped_count | [uint64](#uint64) | | Total number of internal keys skipped over during iteration. See https://github.com/facebook/rocksdb/blob/9f1c84ca471d8b1ad7be9f3eebfc2c7e07dfd7a7/include/rocksdb/perf_context.h#L84 for details. |
+| rocksdb_block_cache_hit_count | [uint64](#uint64) | | Total number of RocksDB block cache hits. |
+| rocksdb_block_read_count | [uint64](#uint64) | | Total number of block reads (with IO). |
+| rocksdb_block_read_byte | [uint64](#uint64) | | Total number of bytes from block reads. |
+| rocksdb_block_read_nanos | [uint64](#uint64) | | Total time used for block reads. |
+| get_snapshot_nanos | [uint64](#uint64) | | Time used for getting a raftstore snapshot (including proposing read index, leader confirmation and getting the RocksDB snapshot). |
+| read_index_propose_wait_nanos | [uint64](#uint64) | | Time used for proposing read index from read pool to store pool, equals 0 when performing lease read. |
+| read_index_confirm_wait_nanos | [uint64](#uint64) | | Time used for leader confirmation, equals 0 when performing lease read. |
+| read_pool_schedule_wait_nanos | [uint64](#uint64) | | Time used for read pool scheduling. |
+
+<a name="kvrpcpb-ScanInfo"></a>
+
+### ScanInfo
+
+| Field      | Type            | Label | Description |
+| ---------- | --------------- | ----- | ----------- |
+| total      | [int64](#int64) |       |             |
+| processed  | [int64](#int64) |       |             |
+| read_bytes | [int64](#int64) |       |             |
+
+<a name="kvrpcpb-SourceStmt"></a>
+
+### SourceStmt
+
+| Field         | Type              | Label | Description               |
+| ------------- | ----------------- | ----- | ------------------------- |
+| start_ts      | [uint64](#uint64) |       |                           |
+| connection_id | [uint64](#uint64) |       |                           |
+| stmt_id       | [uint64](#uint64) |       |                           |
+| session_alias | [string](#string) |       | session alias set by user |
+
+<a name="kvrpcpb-TimeDetail"></a>
+
+### TimeDetail
+
+| Field                  | Type              | Label | Description                                                                                                                                                                                                                                                                                                                                                |
+| ---------------------- | ----------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| wait_wall_time_ms      | [uint64](#uint64) |       | Off-cpu wall time elapsed in TiKV side. Usually this includes queue waiting time and other kind of waitings in series. (Wait time in the raftstore is not included.)                                                                                                                                                                                       |
+| process_wall_time_ms   | [uint64](#uint64) |       | Off-cpu and on-cpu wall time elapsed to actually process the request payload. It does not include `wait_wall_time`. This field is very close to the CPU time in most cases. Some wait time spend in RocksDB cannot be excluded for now, like Mutex wait time, which is included in this field, so that this field is called wall time instead of CPU time. |
+| kv_read_wall_time_ms   | [uint64](#uint64) |       | KV read wall Time means the time used in key/value scan and get.                                                                                                                                                                                                                                                                                           |
+| total_rpc_wall_time_ns | [uint64](#uint64) |       | Total wall clock time spent on this RPC in TiKV .                                                                                                                                                                                                                                                                                                          |
+
+<a name="kvrpcpb-TimeDetailV2"></a>
+
+### TimeDetailV2
+
+| Field                        | Type              | Label | Description                                                                                                                                                                                                                                                                                                                                                                        |
+| ---------------------------- | ----------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| wait_wall_time_ns            | [uint64](#uint64) |       | Off-cpu wall time elapsed in TiKV side. Usually this includes queue waiting time and other kind of waitings in series. (Wait time in the raftstore is not included.)                                                                                                                                                                                                               |
+| process_wall_time_ns         | [uint64](#uint64) |       | Off-cpu and on-cpu wall time elapsed to actually process the request payload. It does not include `wait_wall_time` and `suspend_wall_time`. This field is very close to the CPU time in most cases. Some wait time spend in RocksDB cannot be excluded for now, like Mutex wait time, which is included in this field, so that this field is called wall time instead of CPU time. |
+| process_suspend_wall_time_ns | [uint64](#uint64) |       | Cpu wall time elapsed that task is waiting in queue.                                                                                                                                                                                                                                                                                                                               |
+| kv_read_wall_time_ns         | [uint64](#uint64) |       | KV read wall Time means the time used in key/value scan and get.                                                                                                                                                                                                                                                                                                                   |
+| total_rpc_wall_time_ns       | [uint64](#uint64) |       | Total wall clock time spent on this RPC in TiKV .                                                                                                                                                                                                                                                                                                                                  |
+| kv_grpc_process_time_ns      | [uint64](#uint64) |       | Time spent on the gRPC layer.                                                                                                                                                                                                                                                                                                                                                      |
+| kv_grpc_wait_time_ns         | [uint64](#uint64) |       | Time spent on waiting for run again in grpc pool from other executor pool.                                                                                                                                                                                                                                                                                                         |
+
+<a name="kvrpcpb-TxnLockNotFound"></a>
+
+### TxnLockNotFound
+
+| Field | Type            | Label | Description |
+| ----- | --------------- | ----- | ----------- |
+| key   | [bytes](#bytes) |       |             |
+
+<a name="kvrpcpb-TxnNotFound"></a>
+
+### TxnNotFound
+
+| Field       | Type              | Label | Description |
+| ----------- | ----------------- | ----- | ----------- |
+| start_ts    | [uint64](#uint64) |       |             |
+| primary_key | [bytes](#bytes)   |       |             |
+
+<a name="kvrpcpb-WriteConflict"></a>
+
+### WriteConflict
+
+| Field              | Type                                                  | Label | Description |
+| ------------------ | ----------------------------------------------------- | ----- | ----------- |
+| start_ts           | [uint64](#uint64)                                     |       |             |
+| conflict_ts        | [uint64](#uint64)                                     |       |             |
+| key                | [bytes](#bytes)                                       |       |             |
+| primary            | [bytes](#bytes)                                       |       |             |
+| conflict_commit_ts | [uint64](#uint64)                                     |       |             |
+| reason             | [WriteConflict.Reason](#kvrpcpb-WriteConflict-Reason) |       |             |
+
+<a name="kvrpcpb-WriteDetail"></a>
+
+### WriteDetail
+
+| Field                           | Type              | Label | Description                                                                                                            |
+| ------------------------------- | ----------------- | ----- | ---------------------------------------------------------------------------------------------------------------------- |
+| store_batch_wait_nanos          | [uint64](#uint64) |       | Wait duration in the store loop.                                                                                       |
+| propose_send_wait_nanos         | [uint64](#uint64) |       | Wait duration before sending proposal to peers.                                                                        |
+| persist_log_nanos               | [uint64](#uint64) |       | Total time spent on persisting the log.                                                                                |
+| raft_db_write_leader_wait_nanos | [uint64](#uint64) |       | Wait time until the Raft log write leader begins to write.                                                             |
+| raft_db_sync_log_nanos          | [uint64](#uint64) |       | Time spent on synchronizing the Raft log to the disk.                                                                  |
+| raft_db_write_memtable_nanos    | [uint64](#uint64) |       | Time spent on writing the Raft log to the Raft memtable.                                                               |
+| commit_log_nanos                | [uint64](#uint64) |       | Time waiting for peers to confirm the proposal (counting from the instant when the leader sends the proposal message). |
+| apply_batch_wait_nanos          | [uint64](#uint64) |       | Wait duration in the apply loop.                                                                                       |
+| apply_log_nanos                 | [uint64](#uint64) |       | Total time spend to applying the log.                                                                                  |
+| apply_mutex_lock_nanos          | [uint64](#uint64) |       | Wait time until the KV RocksDB lock is acquired.                                                                       |
+| apply_write_leader_wait_nanos   | [uint64](#uint64) |       | Wait time until becoming the KV RocksDB write leader.                                                                  |
+| apply_write_wal_nanos           | [uint64](#uint64) |       | Time spent on writing the KV DB WAL to the disk.                                                                       |
+| apply_write_memtable_nanos      | [uint64](#uint64) |       | Time spent on writing to the memtable of the KV RocksDB.                                                               |
+| latch_wait_nanos                | [uint64](#uint64) |       | Time spent on waiting in the latch.                                                                                    |
+| process_nanos                   | [uint64](#uint64) |       | Processing time in the transaction layer.                                                                              |
+| throttle_nanos                  | [uint64](#uint64) |       | Wait time because of the scheduler flow control or quota limiter throttling.                                           |
+| pessimistic_lock_wait_nanos     | [uint64](#uint64) |       | Wait time in the waiter manager for pessimistic locking.                                                               |
+
+<a name="kvrpcpb-APIVersion"></a>
+
+### APIVersion
+
+The API version the server and the client is using.
+See more details in https://github.com/tikv/rfcs/blob/master/text/0069-api-v2.md.
+
+| Name  | Number | Description                                                                                                                                                                                                                              |
+| ----- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | --------- | ------------------------------------------------------------ | -------------- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| V1    | 0      | `V1` is mainly for TiDB &amp; TxnKV, and is not safe to use RawKV along with the others. V1 server only accepts V1 requests. V1 raw requests with TTL will be rejected.                                                                  |
+| V1TTL | 1      | `V1TTL` is only available to RawKV, and 8 bytes representing the unix timestamp in seconds for expiring time will be append to the value of all RawKV entries. For example: ------------------------------------------------------------ | User value | Expire Ts | ------------------------------------------------------------ | 0x12 0x34 0x56 | 0x00 0x00 0x00 0x00 0x00 0x00 0xff 0xff | ------------------------------------------------------------ V1TTL server only accepts V1 raw requests. V1 client should not use `V1TTL` in request. V1 client should always send `V1`. |
+| V2    | 2      | `V2` use new encoding for RawKV &amp; TxnKV to support more features.                                                                                                                                                                    |
+
+Key Encoding: TiDB: start with `m` or `t`, the same as `V1`. TxnKV: prefix with `x`, encoded as `MCE( x{keyspace id} &#43; {user key} ) &#43; timestamp`. RawKV: prefix with `r`, encoded as `MCE( r{keyspace id} &#43; {user key} ) &#43; timestamp`. Where the `{keyspace id}` is fixed-length of 3 bytes in network byte order. Besides, RawKV entires must be in `default` CF.
+
+Value Encoding: TiDB &amp; TxnKV: the same as `V1`. RawKV: `{user value} &#43; {optional fields} &#43; {meta flag}`. The last byte in the raw value must be meta flags. For example: -------------------------------------- | User value | Meta flags | -------------------------------------- | 0x12 0x34 0x56 | 0x00 (0b00000000) | -------------------------------------- Bit 0 of meta flags is for TTL. If set, the value contains 8 bytes expiring time as unix timestamp in seconds at the very left to the meta flags. -------------------------------------------------------------------------------- | User value | Expiring time | Meta flags | -------------------------------------------------------------------------------- | 0x12 0x34 0x56 | 0x00 0x00 0x00 0x00 0x00 0x00 0xff 0xff | 0x01 (0b00000001) | -------------------------------------------------------------------------------- Bit 1 is for deletion. If set, the entry is logical deleted. --------------------- | Meta flags | --------------------- | 0x02 (0b00000010) | ---------------------
+
+V2 server accpets V2 requests and V1 transactional requests that statrts with TiDB key prefix (`m` and `t`). |
+
+<a name="kvrpcpb-Assertion"></a>
+
+### Assertion
+
+| Name     | Number | Description |
+| -------- | ------ | ----------- |
+| None     | 0      |             |
+| Exist    | 1      |             |
+| NotExist | 2      |             |
+
+<a name="kvrpcpb-CommandPri"></a>
+
+### CommandPri
+
+| Name   | Number | Description                  |
+| ------ | ------ | ---------------------------- |
+| Normal | 0      | Normal is the default value. |
+| Low    | 1      |                              |
+| High   | 2      |                              |
+
+<a name="kvrpcpb-DiskFullOpt"></a>
+
+### DiskFullOpt
+
+Operation allowed info during each TiKV storage threshold.
+
+| Name                 | Number | Description                                                                                   |
+| -------------------- | ------ | --------------------------------------------------------------------------------------------- |
+| NotAllowedOnFull     | 0      | The default value, means operations are not allowed either under almost full or already full. |
+| AllowedOnAlmostFull  | 1      | Means operations will be allowed when disk is almost full.                                    |
+| AllowedOnAlreadyFull | 2      | Means operations will be allowed when disk is already full.                                   |
+
+<a name="kvrpcpb-IsolationLevel"></a>
+
+### IsolationLevel
+
+| Name      | Number | Description                                                                |
+| --------- | ------ | -------------------------------------------------------------------------- |
+| SI        | 0      | SI = snapshot isolation                                                    |
+| RC        | 1      | RC = read committed                                                        |
+| RCCheckTS | 2      | RC read and it&#39;s needed to check if there exists more recent versions. |
+
+<a name="kvrpcpb-Op"></a>
+
+### Op
+
+| Name            | Number | Description                                                         |
+| --------------- | ------ | ------------------------------------------------------------------- |
+| Put             | 0      |                                                                     |
+| Del             | 1      |                                                                     |
+| Lock            | 2      |                                                                     |
+| Rollback        | 3      |                                                                     |
+| Insert          | 4      | insert operation has a constraint that key should not exist before. |
+| PessimisticLock | 5      |                                                                     |
+| CheckNotExists  | 6      |                                                                     |
+
+<a name="kvrpcpb-WriteConflict-Reason"></a>
+
+### WriteConflict.Reason
+
+| Name                 | Number | Description                                                                                                                       |
+| -------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| Unknown              | 0      |                                                                                                                                   |
+| Optimistic           | 1      | in optimistic transactions.                                                                                                       |
+| PessimisticRetry     | 2      | a lock acquisition request waits for a lock and awakes, or meets a newer version of data, let TiDB retry.                         |
+| SelfRolledBack       | 3      | the transaction itself has been rolled back when it tries to prewrite.                                                            |
+| RcCheckTs            | 4      | RcCheckTs failure by meeting a newer version, let TiDB retry.                                                                     |
+| LazyUniquenessCheck  | 5      | write conflict found when deferring constraint checks in pessimistic transactions. Deprecated in next-gen (cloud-storage-engine). |
+| NotLockedKeyConflict | 6      | write conflict found on keys that do not acquire pessimistic locks in pessimistic transactions.                                   |
+
+<a name="v1_tikv_tikvpb-proto"></a>
+
+<p align="right"><a href="#top">Top</a></p>
+
+## v1/tikv/tikvpb.proto
+
+Copyright (C) 2019-2025 vdaas.org vald team &lt;vald@vdaas.org&gt;
+
+Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+You may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+<a name="tikvpb-Tikv"></a>
+
+### Tikv
+
+| Method Name    | Request Type                                                     | Response Type                                                      | Description |
+| -------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------ | ----------- |
+| RawGet         | [.kvrpcpb.RawGetRequest](#kvrpcpb-RawGetRequest)                 | [.kvrpcpb.RawGetResponse](#kvrpcpb-RawGetResponse)                 |             |
+| RawBatchGet    | [.kvrpcpb.RawBatchGetRequest](#kvrpcpb-RawBatchGetRequest)       | [.kvrpcpb.RawBatchGetResponse](#kvrpcpb-RawBatchGetResponse)       |             |
+| RawPut         | [.kvrpcpb.RawPutRequest](#kvrpcpb-RawPutRequest)                 | [.kvrpcpb.RawPutResponse](#kvrpcpb-RawPutResponse)                 |             |
+| RawBatchPut    | [.kvrpcpb.RawBatchPutRequest](#kvrpcpb-RawBatchPutRequest)       | [.kvrpcpb.RawBatchPutResponse](#kvrpcpb-RawBatchPutResponse)       |             |
+| RawDelete      | [.kvrpcpb.RawDeleteRequest](#kvrpcpb-RawDeleteRequest)           | [.kvrpcpb.RawDeleteResponse](#kvrpcpb-RawDeleteResponse)           |             |
+| RawBatchDelete | [.kvrpcpb.RawBatchDeleteRequest](#kvrpcpb-RawBatchDeleteRequest) | [.kvrpcpb.RawBatchDeleteResponse](#kvrpcpb-RawBatchDeleteResponse) |             |
 
 <a name="v1_vald_filter-proto"></a>
 
