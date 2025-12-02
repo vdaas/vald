@@ -66,17 +66,18 @@ type Data struct {
 
 // Metrics represents the configuration for the metrics collector.
 type Metrics struct {
-	Enabled            bool          `json:"enabled"                        yaml:"enabled"`
-	Histogram          *Histogram    `json:"histogram,omitempty"            yaml:"histogram,omitempty"`
-	LatencyHistogram   *Histogram    `json:"latency_histogram,omitempty"    yaml:"latency_histogram,omitempty"`
-	QueueWaitHistogram *Histogram    `json:"queue_wait_histogram,omitempty" yaml:"queue_wait_histogram,omitempty"`
-	TDigest            *TDigest      `json:"tdigest,omitempty"              yaml:"tdigest,omitempty"`
-	LatencyTDigest     *TDigest      `json:"latency_tdigest,omitempty"      yaml:"latency_tdigest,omitempty"`
-	QueueWaitTDigest   *TDigest      `json:"queue_wait_tdigest,omitempty"   yaml:"queue_wait_tdigest,omitempty"`
-	Exemplar           *Exemplar     `json:"exemplar,omitempty"             yaml:"exemplar,omitempty"`
-	RangeScales        []*RangeScale `json:"range_scales,omitempty"         yaml:"range_scales,omitempty"`
-	TimeScales         []*TimeScale  `json:"time_scales,omitempty"          yaml:"time_scales,omitempty"`
-	CustomCounters     []string      `json:"custom_counters,omitempty"      yaml:"custom_counters,omitempty"`
+	Enabled               bool          `json:"enabled"                         yaml:"enabled"`
+	Histogram             *Histogram    `json:"histogram,omitempty"             yaml:"histogram,omitempty"`
+	LatencyHistogram      *Histogram    `json:"latency_histogram,omitempty"     yaml:"latency_histogram,omitempty"`
+	QueueWaitHistogram    *Histogram    `json:"queue_wait_histogram,omitempty"  yaml:"queue_wait_histogram,omitempty"`
+	TDigest               *TDigest      `json:"tdigest,omitempty"               yaml:"tdigest,omitempty"`
+	LatencyTDigest        *TDigest      `json:"latency_tdigest,omitempty"       yaml:"latency_tdigest,omitempty"`
+	QueueWaitTDigest      *TDigest      `json:"queue_wait_tdigest,omitempty"    yaml:"queue_wait_tdigest,omitempty"`
+	Exemplar              *Exemplar     `json:"exemplar,omitempty"              yaml:"exemplar,omitempty"`
+	RangeScales           []*RangeScale `json:"range_scales,omitempty"          yaml:"range_scales,omitempty"`
+	TimeScales            []*TimeScale  `json:"time_scales,omitempty"           yaml:"time_scales,omitempty"`
+	CustomCounters        []string      `json:"custom_counters,omitempty"       yaml:"custom_counters,omitempty"`
+	DetailedErrorTracking bool          `json:"detailed_error_tracking"         yaml:"detailed_error_tracking"`
 }
 
 // RangeScale represents the configuration for a range scale.
@@ -108,8 +109,9 @@ type TDigest struct {
 
 // Exemplar represents the configuration for an exemplar.
 type Exemplar struct {
-	Capacity  int `json:"capacity,omitempty"   yaml:"capacity,omitempty"`
-	NumShards int `json:"num_shards,omitempty" yaml:"num_shards,omitempty"`
+	Capacity     int `json:"capacity,omitempty"      yaml:"capacity,omitempty"`
+	NumShards    int `json:"num_shards,omitempty"    yaml:"num_shards,omitempty"`
+	SamplingRate int `json:"sampling_rate,omitempty" yaml:"sampling_rate,omitempty"`
 }
 
 // Strategy represents a test strategy.
@@ -999,8 +1001,10 @@ func (m *Metrics) Opts() (opts []metrics.Option) {
 		opts = append(opts, metrics.WithExemplar(
 			metrics.WithExemplarCapacity(m.Exemplar.Capacity),
 			metrics.WithExemplarNumShards(m.Exemplar.NumShards),
+			metrics.WithExemplarSamplingRate(m.Exemplar.SamplingRate),
 		))
 	}
+	opts = append(opts, metrics.WithDetailedErrorTracking(m.DetailedErrorTracking))
 	if m.RangeScales != nil {
 		for _, rs := range m.RangeScales {
 			opts = append(opts, metrics.WithRangeScale(rs.Name, rs.Width, rs.Capacity))
@@ -1129,6 +1133,11 @@ func (parent *Metrics) Merge(child *Metrics) (merged *Metrics) {
 		merged.CustomCounters = child.CustomCounters
 	} else {
 		merged.CustomCounters = parent.CustomCounters
+	}
+
+	if parent.DetailedErrorTracking ||
+		(!parent.DetailedErrorTracking && child.DetailedErrorTracking) {
+		merged.DetailedErrorTracking = true
 	}
 
 	return merged

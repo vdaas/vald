@@ -240,7 +240,6 @@ func single[Q, R proto.Message](
 	}
 
 	queuedAt := time.Now()
-	ctx = metrics.WithRequestID(ctx, idx)
 	if plan.BaseConfig != nil && plan.BaseConfig.Limiter != nil {
 		plan.BaseConfig.Limiter.Wait(ctx)
 	}
@@ -259,7 +258,7 @@ func single[Q, R proto.Message](
 		rr.QueuedAt = queuedAt
 		rr.StartedAt = startedAt
 		rr.EndedAt = endedAt
-		plan.Collector.Record(ctx, rr)
+		plan.Collector.Record(ctx, idx, rr)
 	}
 	if rerr != nil && errors.IsNot(err, rerr) {
 		return rerr
@@ -416,7 +415,11 @@ func stream[Q, R proto.Message, S grpc.TypedClientStream[Q, R]](
 		if plan.Metrics != nil && plan.Metrics.Enabled && plan.Collector != nil {
 			rr.Err = err
 			rr.EndedAt = endedAt
-			plan.Collector.Record(ctx, rr)
+			id, err := strconv.ParseUint(rr.RequestID, 10, 64)
+			if err != nil {
+				id = 0
+			}
+			plan.Collector.Record(ctx, id, rr)
 		}
 		if rerr != nil && errors.IsNot(err, rerr) {
 			return false
