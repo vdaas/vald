@@ -42,23 +42,6 @@ const (
 	percentMultiplier = 100
 )
 
-// requestIDCtxKey is the key for storing the request ID in the context.
-// It's an unexported type to prevent collisions with context keys from other packages.
-type requestIDCtxKey struct{}
-
-// WithRequestID attaches a request ID to the context for RangeScale bucketing.
-// This allows tracking metrics for specific requests across different operations.
-func WithRequestID(ctx context.Context, id uint64) context.Context {
-	return context.WithValue(ctx, requestIDCtxKey{}, id)
-}
-
-// requestIDFromCtx retrieves the request ID from the context.
-// It returns the ID and a boolean indicating whether the ID was found.
-func requestIDFromCtx(ctx context.Context) (uint64, bool) {
-	id, ok := ctx.Value(requestIDCtxKey{}).(uint64)
-	return id, ok
-}
-
 // GetRequestResult returns a RequestResult from the pool.
 // This helps reduce GC pressure by reusing objects.
 func GetRequestResult() *RequestResult {
@@ -99,15 +82,20 @@ type RequestResult struct {
 
 // Reset resets the RequestResult to its zero value.
 func (rr *RequestResult) Reset() {
-	rr.RequestID = ""
-	rr.Status = 0
+	// Explicitly reset pointer and interface fields to nil to prevent memory leaks and data pollution
 	rr.Err = nil
+	rr.RequestID = ""
 	rr.Msg = ""
+
+	// Reset scalar fields
+	rr.Status = 0
+	rr.QueueWait = 0
+	rr.Latency = 0
+
+	// Reset time fields
 	rr.QueuedAt = time.Time{}
 	rr.StartedAt = time.Time{}
 	rr.EndedAt = time.Time{}
-	rr.QueueWait = 0
-	rr.Latency = 0
 }
 
 // --- Counter ---
@@ -142,20 +130,24 @@ func (h *CounterHandle) Add(val int64) {
 // collector is the main entry point for metrics aggregation. It is thread-safe.
 // It manages global metrics, per-window scales, and custom counters.
 type collector struct {
-	qwPercentiles  TDigest
-	latPercentiles TDigest
-	queueWaits     Histogram
-	exemplars      Exemplar
-	latencies      Histogram
-	counters       map[string]*CounterHandle
-	scales         []Scale
-	codes          [MaxGRPCCodes]atomic.Uint64
-	lastUpdated    atomic.Int64
-	id             uint64
-	startTime      atomic.Int64
-	errors         atomic.Uint64
-	total          atomic.Uint64
-	mu             sync.RWMutex
+	qwPercentiles         TDigest
+	latPercentiles        TDigest
+	queueWaits            Histogram
+	exemplars             Exemplar
+	latencies             Histogram
+	counters              map[string]*CounterHandle
+	errorCounts           map[string]*atomic.Uint64
+	scales                []Scale
+	codes                 [MaxGRPCCodes]atomic.Uint64
+	lastUpdated           atomic.Int64
+	id                    uint64
+	startTime             atomic.Int64
+	errors                atomic.Uint64
+	total                 atomic.Uint64
+	detailedErrorsEnabled bool
+	// padding to prevent false sharing between frequently written fields (total/errors) and other fields
+	_  [64]byte
+	mu sync.RWMutex
 }
 
 // nolint:gochecknoglobals
@@ -164,8 +156,9 @@ var collectorIDCounter atomic.Uint64
 // NewCollector creates and initializes a new Collector with the provided options.
 func NewCollector(opts ...Option) (Collector, error) {
 	c := &collector{
-		id:       collectorIDCounter.Add(1),
-		counters: make(map[string]*CounterHandle),
+		id:          collectorIDCounter.Add(1),
+		counters:    make(map[string]*CounterHandle),
+		errorCounts: make(map[string]*atomic.Uint64),
 	}
 
 	// Prepend default options and apply all options.
@@ -203,6 +196,9 @@ func (c *collector) Reset() {
 	}
 	for _, h := range c.counters {
 		h.value.Store(0)
+	}
+	for _, ec := range c.errorCounts {
+		ec.Store(0)
 	}
 	for i := range c.codes {
 		c.codes[i].Store(0)
@@ -259,6 +255,7 @@ func (c *collector) merge(other *collector) error {
 	}
 
 	c.mergeCounters(other)
+	c.mergeErrorCounts(other)
 	if err := c.mergeScales(other); err != nil {
 		return err
 	}
@@ -342,6 +339,17 @@ func (c *collector) mergeCounters(other *collector) {
 	}
 }
 
+func (c *collector) mergeErrorCounts(other *collector) {
+	for msg, ec := range c.errorCounts {
+		if oe, ok := other.errorCounts[msg]; ok {
+			oe.Add(ec.Load())
+		} else {
+			other.errorCounts[msg] = new(atomic.Uint64)
+			other.errorCounts[msg].Store(ec.Load())
+		}
+	}
+}
+
 func (c *collector) mergeScales(other *collector) error {
 	for i, s := range c.scales {
 		if i < len(other.scales) {
@@ -364,7 +372,7 @@ func (c *collector) mergeCodes(other *collector) {
 // Record processes a single RequestResult, updating all relevant metrics.
 // This method is optimized for high-throughput, low-latency execution.
 // It updates global histograms, t-digests, exemplars, and all configured scales.
-func (c *collector) Record(ctx context.Context, rr *RequestResult) {
+func (c *collector) Record(ctx context.Context, key uint64, rr *RequestResult) {
 	// Update startTime (min) with check-then-CAS
 	if s := rr.StartedAt.UnixNano(); s > 0 {
 		for {
@@ -393,6 +401,26 @@ func (c *collector) Record(ctx context.Context, rr *RequestResult) {
 	c.total.Add(1)
 	if rr.Err != nil {
 		c.errors.Add(1)
+		// Only track detailed errors if enabled
+		if c.detailedErrorsEnabled {
+			msg := rr.Err.Error()
+			c.mu.RLock()
+			ec, ok := c.errorCounts[msg]
+			c.mu.RUnlock()
+			if ok {
+				ec.Add(1)
+			} else {
+				c.mu.Lock()
+				// Double check
+				ec, ok = c.errorCounts[msg]
+				if !ok {
+					ec = new(atomic.Uint64)
+					c.errorCounts[msg] = ec
+				}
+				c.mu.Unlock()
+				ec.Add(1)
+			}
+		}
 	}
 
 	// Fallback calculation for latency/queue wait if timestamps are present but duration is missing.
@@ -436,7 +464,7 @@ func (c *collector) Record(ctx context.Context, rr *RequestResult) {
 	}
 
 	for _, s := range c.scales {
-		s.Record(ctx, rr)
+		s.Record(ctx, key, rr)
 	}
 }
 
@@ -452,6 +480,7 @@ func (c *collector) CounterHandle(name string) (*CounterHandle, error) {
 
 // IncCounter increments a custom counter by a given value.
 // It is a convenience wrapper and may be slightly slower than using a CounterHandle.
+// For performance-critical code, use CounterHandle directly.
 func (c *collector) IncCounter(name string, val int64) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -467,8 +496,10 @@ func (c *collector) Clone() (Collector, error) {
 	defer c.mu.RUnlock()
 
 	newC := &collector{
-		id:       collectorIDCounter.Add(1),
-		counters: make(map[string]*CounterHandle),
+		id:                    collectorIDCounter.Add(1),
+		counters:              make(map[string]*CounterHandle),
+		errorCounts:           make(map[string]*atomic.Uint64),
+		detailedErrorsEnabled: c.detailedErrorsEnabled,
 	}
 
 	// Copy atomics
@@ -502,6 +533,12 @@ func (c *collector) Clone() (Collector, error) {
 		newC.counters[name].value.Store(h.value.Load())
 	}
 
+	// Copy error counts
+	for msg, ec := range c.errorCounts {
+		newC.errorCounts[msg] = new(atomic.Uint64)
+		newC.errorCounts[msg].Store(ec.Load())
+	}
+
 	// Copy codes
 	for i := range c.codes {
 		newC.codes[i].Store(c.codes[i].Load())
@@ -531,6 +568,13 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 			codesMap[codes.Code(i)] = v //nolint:gosec // i is index of small array (size 20), fits in uint32
 		}
 	}
+	errorDetails := make(map[string]uint64)
+	for msg, ec := range c.errorCounts {
+		if v := ec.Load(); v > 0 {
+			errorDetails[msg] = v
+		}
+	}
+
 	var latSnap, qwSnap *HistogramSnapshot
 	var exSnap []*ExemplarItem
 	var exDetails *ExemplarDetails
@@ -590,6 +634,7 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 		Exemplars:       exSnap,
 		ExemplarDetails: exDetails,
 		Codes:           codesMap,
+		ErrorDetails:    errorDetails,
 	}
 
 	if snap.Latencies != nil && snap.ExemplarDetails != nil {
@@ -668,6 +713,7 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 		LatPercentiles: snapshots[0].LatPercentiles,
 		QWPercentiles:  snapshots[0].QWPercentiles,
 		Codes:          make(map[codes.Code]uint64),
+		ErrorDetails:   make(map[string]uint64),
 	}
 	base := snapshots[0]
 	merged.StartTime = base.StartTime
@@ -730,6 +776,9 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 		for code, val := range s.Codes {
 			merged.Codes[code] += val
 		}
+		for msg, val := range s.ErrorDetails {
+			merged.ErrorDetails[msg] += val
+		}
 	}
 
 	return merged, nil
@@ -747,6 +796,7 @@ type GlobalSnapshot struct {
 	QueueWaits      *HistogramSnapshot    `json:"queue_waits"`
 	ExemplarDetails *ExemplarDetails      `json:"exemplar_details,omitempty"`
 	Codes           map[codes.Code]uint64 `json:"codes"`
+	ErrorDetails    map[string]uint64     `json:"error_details,omitempty"`
 	SchemaVersion   string                `json:"schema_version"`
 	SketchKind      string                `json:"sketch_kind"`
 	Exemplars       []*ExemplarItem       `json:"exemplars"`

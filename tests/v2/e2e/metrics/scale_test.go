@@ -41,7 +41,7 @@ func TestScale_Record_And_Reset(t *testing.T) {
 			return nil, err
 		}
 		for _, r := range args.records {
-			s.Record(context.Background(), r)
+			s.Record(context.Background(), 0, r)
 		}
 		return s.Snapshot(), nil
 	}, []test.Case[*ScaleSnapshot, args]{
@@ -104,7 +104,7 @@ func TestScale_Concurrency(t *testing.T) {
 				for j := 0; j < args.loops; j++ {
 					// Use fake times that increment to force wrapping
 					now := start.Add(time.Duration(offset+j) * time.Second)
-					s.Record(context.Background(), &RequestResult{
+					s.Record(context.Background(), 0, &RequestResult{
 						EndedAt: now,
 					})
 				}
@@ -156,10 +156,10 @@ func TestScale_Merge(t *testing.T) {
 		}
 
 		for _, r := range args.s1Recs {
-			s1.Record(context.Background(), r)
+			s1.Record(context.Background(), 0, r)
 		}
 		for _, r := range args.s2Recs {
-			s2.Record(context.Background(), r)
+			s2.Record(context.Background(), 0, r)
 		}
 
 		if err := s1.Merge(s2); err != nil {
@@ -222,11 +222,11 @@ func TestScale_Clone(t *testing.T) {
 			return nil, err
 		}
 		for _, r := range rr {
-			s1.Record(context.Background(), r)
+			s1.Record(context.Background(), 0, r)
 		}
 		s2 := s1.Clone()
 		// Modify s1
-		s1.Record(context.Background(), &RequestResult{EndedAt: time.Unix(0, 0)})
+		s1.Record(context.Background(), 0, &RequestResult{EndedAt: time.Unix(0, 0)})
 		return s2.Snapshot(), nil
 	}, []test.Case[*ScaleSnapshot, []*RequestResult]{
 		{
@@ -262,7 +262,7 @@ func TestScale_RingBuffer_WrapAndReset(t *testing.T) {
 			return nil, err
 		}
 		for _, r := range args.records {
-			s.Record(context.Background(), r)
+			s.Record(context.Background(), 0, r)
 		}
 		return s.Snapshot(), nil
 	}, []test.Case[*ScaleSnapshot, args]{
@@ -270,12 +270,13 @@ func TestScale_RingBuffer_WrapAndReset(t *testing.T) {
 			Name: "wrap around and reset",
 			Args: args{
 				width:    uint64(time.Second),
-				capacity: 3,
+				capacity: 4, // 3 -> 4 (pow2)
 				records: []*RequestResult{
 					{EndedAt: time.Unix(0, 0)}, // Slot 0
 					{EndedAt: time.Unix(1, 0)}, // Slot 1
 					{EndedAt: time.Unix(2, 0)}, // Slot 2
-					{EndedAt: time.Unix(3, 0)}, // Slot 0 (Reset!)
+					{EndedAt: time.Unix(3, 0)}, // Slot 3
+					{EndedAt: time.Unix(4, 0)}, // Slot 0 (Reset!)
 				},
 			},
 			CheckFunc: func(tt *testing.T, want test.Result[*ScaleSnapshot], got test.Result[*ScaleSnapshot]) error {
@@ -283,12 +284,12 @@ func TestScale_RingBuffer_WrapAndReset(t *testing.T) {
 					return got.Err
 				}
 				snap := got.Val
-				// Slot 0 should have 1 (from sec 3), not 2
+				// Slot 0 should have 1 (from sec 4), not 2
 				if snap.Slots[0].Total != 1 {
 					return errors.Errorf("Slot 0: expected 1, got %d", snap.Slots[0].Total)
 				}
-				if snap.Slots[0].LastUpdated != time.Unix(3, 0).UnixNano() {
-					return errors.Errorf("Slot 0 time: expected %d, got %d", time.Unix(3, 0).UnixNano(), snap.Slots[0].LastUpdated)
+				if snap.Slots[0].LastUpdated != time.Unix(4, 0).UnixNano() {
+					return errors.Errorf("Slot 0 time: expected %d, got %d", time.Unix(4, 0).UnixNano(), snap.Slots[0].LastUpdated)
 				}
 				// Slot 1 should have 1 (from sec 1)
 				if snap.Slots[1].Total != 1 {
@@ -298,6 +299,10 @@ func TestScale_RingBuffer_WrapAndReset(t *testing.T) {
 				if snap.Slots[2].Total != 1 {
 					return errors.Errorf("Slot 2: expected 1, got %d", snap.Slots[2].Total)
 				}
+				// Slot 3 should have 1 (from sec 3)
+				if snap.Slots[3].Total != 1 {
+					return errors.Errorf("Slot 3: expected 1, got %d", snap.Slots[3].Total)
+				}
 				return nil
 			},
 		},
@@ -305,13 +310,14 @@ func TestScale_RingBuffer_WrapAndReset(t *testing.T) {
 			Name: "wrap around skip slot",
 			Args: args{
 				width:    uint64(time.Second),
-				capacity: 3,
+				capacity: 4, // 3 -> 4 (pow2)
 				records: []*RequestResult{
 					{EndedAt: time.Unix(0, 0)}, // Slot 0
 					{EndedAt: time.Unix(1, 0)}, // Slot 1
 					{EndedAt: time.Unix(2, 0)}, // Slot 2
-					{EndedAt: time.Unix(3, 0)}, // Slot 0 (Reset)
-					{EndedAt: time.Unix(5, 0)}, // Slot 2 (Reset) - skipping Slot 1
+					{EndedAt: time.Unix(3, 0)}, // Slot 3
+					{EndedAt: time.Unix(4, 0)}, // Slot 0 (Reset)
+					{EndedAt: time.Unix(6, 0)}, // Slot 2 (Reset) - skipping Slot 1
 				},
 			},
 			CheckFunc: func(tt *testing.T, want test.Result[*ScaleSnapshot], got test.Result[*ScaleSnapshot]) error {
@@ -319,12 +325,12 @@ func TestScale_RingBuffer_WrapAndReset(t *testing.T) {
 					return got.Err
 				}
 				snap := got.Val
-				// Slot 2 should have 1 (from sec 5)
+				// Slot 2 should have 1 (from sec 6)
 				if snap.Slots[2].Total != 1 {
 					return errors.Errorf("Slot 2: expected 1, got %d", snap.Slots[2].Total)
 				}
-				if snap.Slots[2].LastUpdated != time.Unix(5, 0).UnixNano() {
-					return errors.Errorf("Slot 2 time: expected %d, got %d", time.Unix(5, 0).UnixNano(), snap.Slots[2].LastUpdated)
+				if snap.Slots[2].LastUpdated != time.Unix(6, 0).UnixNano() {
+					return errors.Errorf("Slot 2 time: expected %d, got %d", time.Unix(6, 0).UnixNano(), snap.Slots[2].LastUpdated)
 				}
 				return nil
 			},
@@ -342,7 +348,7 @@ func BenchmarkScale_Record(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		i := 0
 		for pb.Next() {
-			s.Record(ctx, &RequestResult{
+			s.Record(ctx, 0, &RequestResult{
 				EndedAt: time.Unix(int64(i), 0),
 			})
 			i++

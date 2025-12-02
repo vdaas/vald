@@ -57,7 +57,7 @@ func BenchmarkCollector_Record(b *testing.B) {
 			// Random status code (0-19)
 			rr.Status = codes.Code(rand.N(uint32(MaxGRPCCodes)))
 
-			c.Record(ctx, rr)
+			c.Record(ctx, 0, rr)
 
 			PutRequestResult(rr)
 		}
@@ -76,7 +76,7 @@ func BenchmarkCollector_Snapshot(b *testing.B) {
 		rr := GetRequestResult()
 		rr.Latency = time.Millisecond + time.Duration(rand.N(int64(100*time.Millisecond)))
 		rr.Status = codes.Code(rand.N(uint32(MaxGRPCCodes)))
-		c.Record(ctx, rr)
+		c.Record(ctx, 0, rr)
 		PutRequestResult(rr)
 	}
 
@@ -122,7 +122,7 @@ func BenchmarkCollector_Record_WithBackgroundSnapshot(b *testing.B) {
 			// Random status code (0-19)
 			rr.Status = codes.Code(rand.N(uint32(MaxGRPCCodes)))
 
-			c.Record(ctx, rr)
+			c.Record(ctx, 0, rr)
 
 			PutRequestResult(rr)
 		}

@@ -79,7 +79,7 @@ func TestCollector_Record_And_Snapshot(t *testing.T) {
 			return nil, err
 		}
 		for _, r := range args.records {
-			c.Record(context.Background(), r)
+			c.Record(context.Background(), 0, r)
 		}
 		return c.GlobalSnapshot(), nil
 	}, []test.Case[*GlobalSnapshot, args]{
@@ -187,7 +187,7 @@ func TestCollector_Merge(t *testing.T) {
 			return nil, err
 		}
 		for _, r := range args.c1Records {
-			c1.Record(context.Background(), r)
+			c1.Record(context.Background(), 0, r)
 		}
 
 		c2, err := NewCollector(args.c2Opts...)
@@ -195,7 +195,7 @@ func TestCollector_Merge(t *testing.T) {
 			return nil, err
 		}
 		for _, r := range args.c2Records {
-			c2.Record(context.Background(), r)
+			c2.Record(context.Background(), 0, r)
 		}
 
 		if err := c2.MergeInto(c1); err != nil {

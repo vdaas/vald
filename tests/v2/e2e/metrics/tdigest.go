@@ -32,10 +32,10 @@ type centroid struct {
 }
 
 const (
-	defaultBufferCapacity = 128
-	// maxBufferCapacity defines a threshold to shrink buffers if they grow too large.
+	DefaultBufferCapacity = 128
+	// MaxBufferCapacity defines a threshold to shrink buffers if they grow too large.
 	// 4096 * 8 bytes (float64) = 32KB.
-	maxBufferCapacity = 4096
+	MaxBufferCapacity = 4096
 
 	centroidWeightFactor = 2.0
 )
@@ -70,8 +70,8 @@ type tdigest struct {
 var tdigestPool = sync.Pool{
 	New: func() any {
 		return &tdigest{
-			buffer:     make([]float64, 0, defaultBufferCapacity),
-			backBuffer: make([]float64, 0, defaultBufferCapacity),
+			buffer:     make([]float64, 0, DefaultBufferCapacity),
+			backBuffer: make([]float64, 0, DefaultBufferCapacity),
 			// centroids, scratch, swap will be allocated as needed or reused if pooled object has them
 		}
 	},
@@ -104,7 +104,7 @@ func NewTDigest(opts ...TDigestOption) (TDigest, error) {
 	if cfg.NumShards <= 1 {
 		t := &tdigest{
 			id:                       collectorIDCounter.Add(1),
-			buffer:                   make([]float64, 0, defaultBufferCapacity),
+			buffer:                   make([]float64, 0, DefaultBufferCapacity),
 			compression:              cfg.Compression,
 			compressionTriggerFactor: cfg.CompressionTriggerFactor,
 			quantiles:                cfg.Quantiles,
@@ -119,7 +119,7 @@ func NewTDigest(opts ...TDigestOption) (TDigest, error) {
 	for i := range t.shards {
 		t.shards[i] = &tdigest{
 			id:                       collectorIDCounter.Add(1),
-			buffer:                   make([]float64, 0, defaultBufferCapacity),
+			buffer:                   make([]float64, 0, DefaultBufferCapacity),
 			compression:              cfg.Compression,
 			compressionTriggerFactor: cfg.CompressionTriggerFactor,
 			// Shards don't need quantiles, only the wrapper or main TDigest does,
@@ -145,14 +145,14 @@ func (t *tdigest) Reset() {
 	t.epoch++
 
 	// Release memory if buffers are excessively large
-	if cap(t.buffer) > maxBufferCapacity {
-		t.buffer = make([]float64, 0, defaultBufferCapacity)
+	if cap(t.buffer) > MaxBufferCapacity {
+		t.buffer = make([]float64, 0, DefaultBufferCapacity)
 	} else {
 		t.buffer = t.buffer[:0]
 	}
 
-	if cap(t.backBuffer) > maxBufferCapacity {
-		t.backBuffer = make([]float64, 0, defaultBufferCapacity)
+	if cap(t.backBuffer) > MaxBufferCapacity {
+		t.backBuffer = make([]float64, 0, DefaultBufferCapacity)
 	} else {
 		t.backBuffer = t.backBuffer[:0]
 	}
@@ -160,20 +160,20 @@ func (t *tdigest) Reset() {
 	// For centroids, scratch, and swap, we use a similar heuristic
 	// assuming typical usage won't require massive centroid lists if compressed.
 	// But if they grew large (e.g. before compression or during heavy merge), shrink them.
-	// Using maxBufferCapacity as a proxy for acceptable size.
-	if cap(t.centroids) > maxBufferCapacity {
-		t.centroids = make([]centroid, 0, defaultBufferCapacity)
+	// Using MaxBufferCapacity as a proxy for acceptable size.
+	if cap(t.centroids) > MaxBufferCapacity {
+		t.centroids = make([]centroid, 0, DefaultBufferCapacity)
 	} else {
 		t.centroids = t.centroids[:0]
 	}
 
-	if cap(t.scratch) > maxBufferCapacity {
+	if cap(t.scratch) > MaxBufferCapacity {
 		t.scratch = nil // Lazy re-allocation on next use
 	} else {
 		t.scratch = t.scratch[:0]
 	}
 
-	if cap(t.swap) > maxBufferCapacity {
+	if cap(t.swap) > MaxBufferCapacity {
 		t.swap = nil // Lazy re-allocation on next use
 	} else {
 		t.swap = t.swap[:0]
@@ -215,8 +215,8 @@ func (t *shardedTDigest) mergeAllShards() *tdigest {
 	} else {
 		// Allocate new with default capacity if pool is empty
 		merged = &tdigest{
-			buffer:     make([]float64, 0, defaultBufferCapacity),
-			backBuffer: make([]float64, 0, defaultBufferCapacity),
+			buffer:     make([]float64, 0, DefaultBufferCapacity),
+			backBuffer: make([]float64, 0, DefaultBufferCapacity),
 		}
 	}
 
@@ -263,10 +263,10 @@ func (t *tdigest) flush() {
 
 	// Double buffering: swap buffer with backBuffer to sort outside the lock
 	processing := t.buffer
-	if cap(t.backBuffer) >= defaultBufferCapacity {
+	if cap(t.backBuffer) >= DefaultBufferCapacity {
 		t.buffer = t.backBuffer[:0]
 	} else {
-		t.buffer = make([]float64, 0, defaultBufferCapacity)
+		t.buffer = make([]float64, 0, DefaultBufferCapacity)
 	}
 	// Mark backBuffer as in-use (or empty)
 	t.backBuffer = nil
@@ -346,6 +346,7 @@ func (t *tdigest) mergeCentroids(incoming []centroid) {
 		for _, c := range incoming {
 			t.count += c.Weight
 		}
+		// Only compress if the size significantly exceeds the threshold
 		if float64(len(t.centroids)) > t.compression*t.compressionTriggerFactor {
 			t.compress()
 		}
@@ -385,7 +386,7 @@ func (t *tdigest) mergeCentroids(incoming []centroid) {
 		t.count += c.Weight
 	}
 
-	// Compress if the number of centroids exceeds the configured trigger.
+	// Only compress if the size significantly exceeds the threshold
 	if float64(len(t.centroids)) > t.compression*t.compressionTriggerFactor {
 		t.compress()
 	}
@@ -408,7 +409,7 @@ func (t *tdigest) Add(value float64) {
 	defer t.mu.Unlock()
 
 	t.buffer = append(t.buffer, value)
-	if len(t.buffer) >= defaultBufferCapacity {
+	if len(t.buffer) >= DefaultBufferCapacity {
 		t.flush()
 	}
 }
@@ -639,6 +640,13 @@ func (t *tdigest) Merge(other TDigest) error {
 
 // compress merges centroids to reduce their number while preserving accuracy.
 func (t *tdigest) compress() {
+	// Optimization: Only compress if number of centroids significantly exceeds limit.
+	// This reduces the frequency of expensive compression passes.
+	// This check is redundant if called from mergeCentroids, but safe here.
+	if float64(len(t.centroids)) <= t.compression*t.compressionTriggerFactor {
+		return
+	}
+
 	n := len(t.centroids)
 	if n <= 1 {
 		return
@@ -770,7 +778,7 @@ func (t *tdigest) UnmarshalJSON(data []byte) error {
 
 	// Initialize buffers
 	if t.buffer == nil {
-		t.buffer = make([]float64, 0, defaultBufferCapacity)
+		t.buffer = make([]float64, 0, DefaultBufferCapacity)
 	}
 	if t.id == 0 {
 		t.id = collectorIDCounter.Add(1)

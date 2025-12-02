@@ -373,11 +373,11 @@ func TestGlobalSnapshot_JSON(t *testing.T) {
 	}
 
 	// Add some data
-	c.Record(nil, &RequestResult{
+	c.Record(nil, 0, &RequestResult{
 		Latency:   100, // ns
 		QueueWait: 50,  // ns
 	})
-	c.Record(nil, &RequestResult{
+	c.Record(nil, 0, &RequestResult{
 		Latency:   200, // ns
 		QueueWait: 60,  // ns
 	})

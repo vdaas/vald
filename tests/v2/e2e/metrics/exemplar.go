@@ -30,8 +30,8 @@ import (
 )
 
 const (
-	// avgSamplingRate is the sampling rate for average exemplars (1/16).
-	avgSamplingRate = 16
+	// defaultAvgSamplingRate is the default sampling rate for average exemplars (1/16).
+	defaultAvgSamplingRate = 16
 
 	// defaultCapacity is the default capacity for exemplar heaps/reservoirs.
 	defaultCapacity = 10
@@ -45,6 +45,8 @@ type exemplar struct {
 	avgSamples     []*ExemplarItem
 	failureSamples []*ExemplarItem
 	k              int
+	samplingRate   uint64
+	storedCount    atomic.Uint64
 	avgCount       uint64
 	failureCount   uint64
 	minLatency     atomic.Int64
@@ -59,14 +61,16 @@ type shardedExemplar struct {
 
 // exemplarConfig holds configuration for Exemplar.
 type exemplarConfig struct {
-	Capacity  int `json:"capacity"   yaml:"capacity"`
-	NumShards int `json:"num_shards" yaml:"num_shards"`
+	Capacity     int `json:"capacity"      yaml:"capacity"`
+	NumShards    int `json:"num_shards"    yaml:"num_shards"`
+	SamplingRate int `json:"sampling_rate" yaml:"sampling_rate"`
 }
 
 // Init initializes the exemplar with the given options.
 func (e *exemplar) Init(opts ...ExemplarOption) error {
 	cfg := exemplarConfig{
-		Capacity: defaultCapacity,
+		Capacity:     defaultCapacity,
+		SamplingRate: defaultAvgSamplingRate,
 	}
 	// Apply user options
 	for _, opt := range opts {
@@ -74,10 +78,12 @@ func (e *exemplar) Init(opts ...ExemplarOption) error {
 	}
 	e.k = max(cfg.Capacity, 1)
 
-	// Ensure avgSamplingRate is a power of 2 for efficient bitwise sampling
-	if avgSamplingRate&(avgSamplingRate-1) != 0 {
-		return errors.New("avgSamplingRate must be a power of 2")
+	rate := max(cfg.SamplingRate, 1)
+	// Ensure samplingRate is a power of 2 for efficient bitwise sampling
+	if rate&(rate-1) != 0 {
+		return errors.New("samplingRate must be a power of 2")
 	}
+	e.samplingRate = uint64(rate)
 	e.initHeaps()
 	return nil
 }
@@ -107,6 +113,7 @@ func (e *exemplar) initHeaps() {
 	}
 	e.minLatency.Store(0)
 	e.maxLatency.Store(0)
+	e.storedCount.Store(0)
 	e.avgCount = 0
 	e.failureCount = 0
 }
@@ -114,7 +121,8 @@ func (e *exemplar) initHeaps() {
 // NewExemplar creates a new Exemplar with the given options.
 func NewExemplar(opts ...ExemplarOption) (Exemplar, error) {
 	cfg := exemplarConfig{
-		Capacity: defaultCapacity,
+		Capacity:     defaultCapacity,
+		SamplingRate: defaultAvgSamplingRate,
 	}
 	for _, opt := range append(defaultExemplarOpts, opts...) {
 		opt(&cfg)
@@ -173,33 +181,36 @@ func (e *exemplar) Offer(latency time.Duration, requestID string, err error, msg
 	latInt := int64(latency)
 	isError := err != nil
 
-	// Fast path check to avoid locking for requests that are neither slowest nor fastest.
-	// This is an optimistic check. Race conditions are handled by the lock below.
-	minLat := e.minLatency.Load()
-	maxLat := e.maxLatency.Load()
+	// Check if we have enough samples in the slowest heap.
+	// If not, force slow path to populate the heap.
+	// storedCount tracks the number of items in the slowest heap.
+	if e.storedCount.Load() >= uint64(e.k) {
+		// Fast path check to avoid locking for requests that are neither slowest nor fastest.
+		// This is an optimistic check. Race conditions are handled by the lock below.
+		minLat := e.minLatency.Load()
+		maxLat := e.maxLatency.Load()
 
-	// Fast Path (Check 1): avoid locking if it's not an outlier candidate.
-	// minLatency is the lower bound of the Slowest (Top-K) bucket.
-	// maxLatency is the upper bound of the Fastest (Bottom-K) bucket.
-	// Therefore, an average sample lies in [maxLatency, minLatency].
-	// Note: In steady state, minLatency (e.g. 100ms) > maxLatency (e.g. 10ms).
-	if !isError && latInt <= minLat && latInt >= maxLat {
-		// Probabilistic sampling: only record 1 out of avgSamplingRate samples.
-		// We use a fast bitwise check assuming avgSamplingRate is a power of 2.
-		if rand.Uint64()&(avgSamplingRate-1) != 0 { //nolint:gosec // use math/rand/v2 for performance
+		// Fast Path (Check 1): avoid locking if it's not an outlier candidate.
+		// minLatency is the lower bound of the Slowest (Top-K) bucket.
+		// maxLatency is the upper bound of the Fastest (Bottom-K) bucket.
+		if !isError && latInt <= minLat && latInt >= maxLat {
+			// Probabilistic sampling: only record 1 out of samplingRate samples.
+			// We use a fast bitwise check assuming samplingRate is a power of 2.
+			if rand.Uint64()&(e.samplingRate-1) != 0 { //nolint:gosec // use math/rand/v2 for performance
+				return
+			}
+
+			// Must lock before updating reservoir state
+			e.mu.Lock()
+			e.updateAverageSample(&ExemplarItem{
+				Latency:   latency,
+				RequestID: requestID,
+				Err:       err,
+				Msg:       msg,
+			})
+			e.mu.Unlock()
 			return
 		}
-
-		// Must lock before updating reservoir state
-		e.mu.Lock()
-		e.updateAverageSample(&ExemplarItem{
-			Latency:   latency,
-			RequestID: requestID,
-			Err:       err,
-			Msg:       msg,
-		})
-		e.mu.Unlock()
-		return
 	}
 
 	newItem := &ExemplarItem{
@@ -213,9 +224,9 @@ func (e *exemplar) Offer(latency time.Duration, requestID string, err error, msg
 	defer e.mu.Unlock()
 
 	// Double Check (Check 2): Re-read atomic values after acquiring lock
-	if !isError {
-		minLat = e.minLatency.Load()
-		maxLat = e.maxLatency.Load()
+	if !isError && e.storedCount.Load() >= uint64(e.k) {
+		minLat := e.minLatency.Load()
+		maxLat := e.maxLatency.Load()
 		if latInt <= minLat && latInt >= maxLat {
 			// Race condition: another goroutine updated min/max while we waited for lock.
 			// This request is no longer an outlier. Treat as average.
@@ -236,6 +247,7 @@ func (e *exemplar) updateSlowest(item *ExemplarItem) {
 	latInt := int64(item.Latency)
 	if len(e.slowest) < e.k {
 		heap.Push(&e.slowest, item)
+		e.storedCount.Add(1)
 		if len(e.slowest) == e.k {
 			e.minLatency.Store(int64(e.slowest[0].Latency))
 		}
@@ -312,8 +324,10 @@ func (se *shardedExemplar) DetailedSnapshot() (*ExemplarDetails, error) {
 
 	// Create a temporary exemplar to merge all shards
 	k := se.shards[0].k
+	rate := se.shards[0].samplingRate
 	merged := new(exemplar)
-	merged.Init(WithExemplarCapacity(k)) // Single shard
+	// Single shard, preserve config
+	merged.Init(WithExemplarCapacity(k), WithExemplarSamplingRate(int(rate)))
 
 	for _, shard := range se.shards {
 		shard.mu.Lock()
@@ -516,6 +530,7 @@ func (se *shardedExemplar) Clone() Exemplar {
 func (e *exemplar) Clone() Exemplar {
 	newE := new(exemplar)
 	newE.k = e.k
+	newE.samplingRate = e.samplingRate
 
 	e.mu.Lock()
 	defer e.mu.Unlock()
@@ -554,6 +569,7 @@ func (e *exemplar) Clone() Exemplar {
 	newE.failureCount = e.failureCount
 	newE.minLatency.Store(e.minLatency.Load())
 	newE.maxLatency.Store(e.maxLatency.Load())
+	newE.storedCount.Store(e.storedCount.Load())
 
 	return newE
 }

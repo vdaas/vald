@@ -29,7 +29,7 @@ const sizeOfFloat64 = 8
 
 // Recorder is the interface for recording metrics.
 type Recorder interface {
-	Record(ctx context.Context, rr *RequestResult)
+	Record(ctx context.Context, key uint64, rr *RequestResult)
 }
 
 // Reporter is the interface for reporting and exporting data.
@@ -99,7 +99,7 @@ type Slot interface {
 
 // Scale is the interface for a metrics scale (ring buffer of slots).
 type Scale interface {
-	Record(ctx context.Context, rr *RequestResult)
+	Record(ctx context.Context, key uint64, rr *RequestResult)
 	Merge(other Scale) error
 	Snapshot() *ScaleSnapshot
 	Reset()

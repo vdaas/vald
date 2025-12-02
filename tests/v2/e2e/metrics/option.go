@@ -51,6 +51,7 @@ var (
 	defaultExemplarOpts = []ExemplarOption{
 		WithExemplarCapacity(10),
 		WithExemplarNumShards(8),
+		WithExemplarSamplingRate(16),
 	}
 
 	defaultOptions = []Option{
@@ -59,6 +60,7 @@ var (
 		WithExemplar(defaultExemplarOpts...),
 		WithLatencyTDigest(defaultTDigestOpts...),
 		WithQueueWaitTDigest(defaultTDigestOpts...),
+		WithDetailedErrorTracking(true),
 	}
 )
 
@@ -69,6 +71,15 @@ func WithCustomCounters(names ...string) Option {
 			c.counters[name] = new(CounterHandle)
 			c.counters[name].value = new(atomic.Uint64)
 		}
+		return nil
+	}
+}
+
+// WithDetailedErrorTracking enables or disables detailed error message tracking.
+// This can be expensive under high error rates due to map locking.
+func WithDetailedErrorTracking(enabled bool) Option {
+	return func(c *collector) error {
+		c.detailedErrorsEnabled = enabled
 		return nil
 	}
 }
@@ -280,6 +291,15 @@ func WithExemplarNumShards(n int) ExemplarOption {
 	return func(cfg *exemplarConfig) {
 		if n >= 1 {
 			cfg.NumShards = n
+		}
+	}
+}
+
+// WithExemplarSamplingRate sets the sampling rate for the average exemplar.
+func WithExemplarSamplingRate(rate int) ExemplarOption {
+	return func(cfg *exemplarConfig) {
+		if rate >= 1 {
+			cfg.SamplingRate = rate
 		}
 	}
 }

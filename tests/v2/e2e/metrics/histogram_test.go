@@ -480,7 +480,7 @@ func TestHistogram_BucketsValidation(t *testing.T) {
 	rr := &RequestResult{
 		Latency: 100 * time.Millisecond,
 	}
-	c.Record(context.Background(), rr)
+	c.Record(context.Background(), 0, rr)
 
 	snap := c.GlobalSnapshot()
 	lat := snap.Latencies

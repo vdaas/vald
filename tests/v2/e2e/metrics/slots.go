@@ -31,7 +31,9 @@ type slot struct {
 	Total       atomic.Uint64
 	Errors      atomic.Uint64
 	updatedNS   atomic.Int64
-	mu          sync.RWMutex
+	// padding to prevent false sharing
+	_  [paddingSize]byte
+	mu sync.RWMutex
 }
 
 // newSlot creates a new Slot with the given configuration.

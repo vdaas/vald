@@ -18,6 +18,7 @@ package metrics
 
 import (
 	"context"
+	"math"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/sync"
@@ -48,9 +49,20 @@ func newScale(
 	if width == 0 {
 		return nil, errors.New("scale width must be > 0")
 	}
-	if capacity == 0 {
-		return nil, errors.New("scale capacity must be > 0")
+	// Check int max limit to be safe for slice allocation
+	if capacity == 0 || capacity > uint64(math.MaxInt) {
+		return nil, errors.New("scale capacity must be > 0 and fit in int")
 	}
+
+	// Optimize capacity to next power of 2 for bitwise masking if possible,
+	// unless it's strictly required to be exact? User request Fix 1-3 says "Power of 2".
+	// We adjust capacity to be >= requested and a power of 2.
+	capPow2 := uint64(1)
+	for capPow2 < capacity {
+		capPow2 <<= 1
+	}
+	capacity = capPow2
+
 	slots := make([]Slot, capacity)
 	for i := range slots {
 		// Use Clone to create new instances for each slot.
@@ -97,25 +109,19 @@ func (s *scale) Reset() {
 // getSlot returns the slot for the given index.
 // It calculates the ring buffer index based on the scale's width and capacity.
 func (s *scale) getSlot(idx uint64) Slot {
-	// Fix G115: idx/s.width is uint64. % s.capacity is uint64 in [0, capacity-1].
-	// s.capacity is passed as uint64 but slices index takes int.
-	// capacity should fit in int.
-	// We can safely cast to int as we construct slices with this capacity.
-	return s.slots[int((idx/s.width)%s.capacity)] //nolint:gosec // modulo capacity ensures index is within bounds
+	// idx/s.width gives the window index.
+	// Since capacity is always power of 2 (enforced in newScale), we use bitwise AND.
+	return s.slots[int((idx/s.width)&(s.capacity-1))]
 }
 
 // Record adds a request result to the appropriate slot in the scale.
 // It determines the index based on the scale type (Time or Range) and delegates recording to the target slot.
-func (s *scale) Record(ctx context.Context, rr *RequestResult) {
+func (s *scale) Record(ctx context.Context, key uint64, rr *RequestResult) {
 	var idx uint64
-	var ok bool
 
 	switch s.scaleType {
 	case RangeScale:
-		idx, ok = requestIDFromCtx(ctx)
-		if !ok {
-			return
-		}
+		idx = key
 	case TimeScale:
 		// Fix G115: EndedAt.UnixNano() returns int64. Timestamps are positive.
 		t := rr.EndedAt.UnixNano()

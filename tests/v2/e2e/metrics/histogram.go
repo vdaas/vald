@@ -31,6 +31,8 @@ const (
 	paddingSize         = 128
 	defaultMaxBuckets   = 1000
 	defaultTailSegments = 10
+	defaultNumShards    = 16
+	defaultInterval     = 10 * 1e6 // 10ms
 )
 
 // histogram is a thread-safe, sharded histogram that uses dynamic bucketing.
@@ -80,7 +82,7 @@ func (h *histogram) Init() error {
 // NewHistogram creates a new sharded histogram with dynamic bucketing.
 func NewHistogram(opts ...HistogramOption) (Histogram, error) {
 	cfg := histogramConfig{
-		NumShards: 16,
+		NumShards: defaultNumShards,
 	}
 	// Apply default options first
 	for _, opt := range defaultHistogramOpts {
@@ -170,8 +172,10 @@ func (h *histogram) Record(val float64) {
 
 	// Update mean and m2 using Welford's algorithm
 	delta := val - h.mean
-	h.mean = math.FMA(delta, 1.0/float64(h.total), h.mean)
-	h.m2 = math.FMA(delta, val-h.mean, h.m2)
+	// Use standard arithmetic instead of math.FMA for performance portability
+	// FMA can be slow if emulated in software
+	h.mean += delta / float64(h.total)
+	h.m2 += delta * (val - h.mean)
 }
 
 // Clone returns a deep copy of the sharded histogram.
@@ -408,8 +412,22 @@ func calculateBucketBoundaries(digest TDigest, minVal, maxVal float64, dst []flo
 		scaleVal = maxVal
 	}
 
-	interval := 10 * 1e6 // Default 10ms
-	if scaleVal > 0 {
+	interval := float64(defaultInterval) // Default 10ms
+
+	// Check lower quantiles to detect microsecond-level distributions
+	p01 := digest.Quantile(0.01)
+	p05 := digest.Quantile(0.05)
+
+	// If a significant portion of requests are very fast (e.g., < 1ms), reduce interval.
+	// 1ms = 1e6 ns.
+	if (p01 > 0 && p01 < 1e6) || (p05 > 0 && p05 < 1e6) || (scaleVal > 0 && scaleVal < 10*1e6) {
+		// Use a finer grain interval, e.g., 100us or 10us depending on min.
+		if minVal > 0 && minVal < 100e3 {
+			interval = 10e3 // 10us
+		} else {
+			interval = 100e3 // 100us
+		}
+	} else if scaleVal > 0 {
 		// Target ~20 buckets for the body
 		targetRes := scaleVal / 20.0
 		if targetRes < 1.0 {
