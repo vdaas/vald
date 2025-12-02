@@ -1471,7 +1471,6 @@ var (
 		(*Error)(nil),                 // 21: tikv.Error
 	}
 )
-
 var file_v1_tikv_errorpb_proto_depIdxs = []int32{
 	0,  // 0: tikv.Error.not_leader:type_name -> tikv.NotLeader
 	5,  // 1: tikv.Error.region_not_found:type_name -> tikv.RegionNotFound

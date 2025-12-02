@@ -497,6 +497,7 @@
     "errord",
     "errorf",
     "errorln",
+    "errorpb",
     "esac",
     "eucjp",
     "evanphx",
@@ -693,6 +694,7 @@
     "kubeconfig",
     "kubelinter",
     "kubeval",
+    "kvrpcpb",
     "kvsdb",
     "kvstore",
     "kvvk",
@@ -992,6 +994,8 @@
     "tgts",
     "thedrow",
     "threadcreate",
+    "tikv",
+    "tikvpb",
     "timelimit",
     "timepicker",
     "timeutil",
@@ -1108,11 +1112,7 @@
     "zeebo",
     "zerolog",
     "zoneinfo",
-    "zstd",
-    "tikv",
-    "tikvpb",
-    "errorpb",
-    "kvrpcpb"
+    "zstd"
   ],
   "ignoreWordsMap": {
     ".all-contributorsrc": [
