@@ -2351,7 +2351,8 @@ rust/libs/proto/src/rpc/v1/rpc.v1.tonic.rs
 rust/libs/proto/src/sidecar.v1.tonic.rs
 rust/libs/proto/src/sidecar/v1/sidecar.v1.rs
 rust/libs/proto/src/sidecar/v1/sidecar.v1.tonic.rs
-rust/libs/proto/src/tikvpb/tikvpb.rs
+rust/libs/proto/src/tikv/tikv.rs
+rust/libs/proto/src/tikv/tikv.tonic.rs
 rust/libs/proto/src/tikvpb/tikvpb.tonic.rs
 rust/libs/proto/src/vald.v1.tonic.rs
 rust/libs/proto/src/vald/v1/vald.v1.rs
