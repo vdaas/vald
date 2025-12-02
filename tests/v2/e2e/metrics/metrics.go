@@ -110,29 +110,6 @@ func (rr *RequestResult) Reset() {
 	rr.Latency = 0
 }
 
-// validate ensures the RequestResult has the necessary timing information.
-// It calculates Latency and QueueWait if they are zero but timestamps are present.
-// It also handles clock skew by ensuring calculated durations are non-negative.
-func (rr *RequestResult) validate() {
-	if rr == nil {
-		return
-	}
-	if rr.Latency == 0 && !rr.StartedAt.IsZero() && !rr.EndedAt.IsZero() {
-		if rr.EndedAt.Before(rr.StartedAt) {
-			rr.Latency = 0
-		} else {
-			rr.Latency = rr.EndedAt.Sub(rr.StartedAt)
-		}
-	}
-	if rr.QueueWait == 0 && !rr.QueuedAt.IsZero() && !rr.StartedAt.IsZero() {
-		if rr.StartedAt.Before(rr.QueuedAt) {
-			rr.QueueWait = 0
-		} else {
-			rr.QueueWait = rr.StartedAt.Sub(rr.QueuedAt)
-		}
-	}
-}
-
 // --- Counter ---
 
 // CounterHandle provides a direct, efficient way to increment a registered counter.
@@ -173,12 +150,12 @@ type collector struct {
 	counters       map[string]*CounterHandle
 	scales         []Scale
 	codes          [MaxGRPCCodes]atomic.Uint64
-	lastUpdated    atomic.Int64
-	id             uint64
-	startTime      atomic.Int64
-	errors         atomic.Uint64
-	total          atomic.Uint64
-	mu             sync.RWMutex
+	lastUpdated            atomic.Int64
+	id                     uint64
+	startTime              atomic.Int64
+	errors                 atomic.Uint64
+	total                  atomic.Uint64
+	mu                     sync.RWMutex
 }
 
 // nolint:gochecknoglobals
@@ -238,6 +215,9 @@ func (c *collector) Reset() {
 // MergeInto merges this collector's metrics into the destination collector.
 // It uses the internal `merge` method where the receiver is the source and the argument is the destination.
 func (c *collector) MergeInto(dest Collector) error {
+	if dest == nil {
+		return errors.New("cannot merge into nil collector")
+	}
 	d, ok := dest.(*collector)
 	if !ok {
 		return errors.New("cannot merge incompatible collector types")
@@ -385,8 +365,6 @@ func (c *collector) mergeCodes(other *collector) {
 // This method is optimized for high-throughput, low-latency execution.
 // It updates global histograms, t-digests, exemplars, and all configured scales.
 func (c *collector) Record(ctx context.Context, rr *RequestResult) {
-	rr.validate()
-
 	// Update startTime (min) with check-then-CAS
 	if s := rr.StartedAt.UnixNano(); s > 0 {
 		for {
@@ -415,6 +393,23 @@ func (c *collector) Record(ctx context.Context, rr *RequestResult) {
 	c.total.Add(1)
 	if rr.Err != nil {
 		c.errors.Add(1)
+	}
+
+	// Fallback calculation for latency/queue wait if timestamps are present but duration is missing.
+	// This maintains backward compatibility for callers relying on Record to calculate these values.
+	if rr.Latency == 0 && !rr.StartedAt.IsZero() && !rr.EndedAt.IsZero() {
+		if rr.EndedAt.Before(rr.StartedAt) {
+			rr.Latency = 0
+		} else {
+			rr.Latency = rr.EndedAt.Sub(rr.StartedAt)
+		}
+	}
+	if rr.QueueWait == 0 && !rr.QueuedAt.IsZero() && !rr.StartedAt.IsZero() {
+		if rr.StartedAt.Before(rr.QueuedAt) {
+			rr.QueueWait = 0
+		} else {
+			rr.QueueWait = rr.StartedAt.Sub(rr.QueuedAt)
+		}
 	}
 
 	if c.latencies != nil {

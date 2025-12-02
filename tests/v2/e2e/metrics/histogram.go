@@ -285,10 +285,10 @@ func (h *histogram) mergeHistogram(src *histogram) error {
 // Snapshot returns a merged, consistent view of the histogram's data.
 func (sh *shardedHistogram) Snapshot() *HistogramSnapshot {
 	if len(sh.shards) == 0 {
-		return &HistogramSnapshot{
-			Min: math.Inf(1),
-			Max: math.Inf(-1),
-		}
+		snap := GetHistogramSnapshot()
+		snap.Min = math.Inf(1)
+		snap.Max = math.Inf(-1)
+		return snap
 	}
 
 	merged := sh.shards[0].Clone().(*histogram)
@@ -300,13 +300,13 @@ func (sh *shardedHistogram) Snapshot() *HistogramSnapshot {
 
 func (h *histogram) Snapshot() *HistogramSnapshot {
 	h.mu.Lock()
-	snap := &HistogramSnapshot{
-		Total: h.total,
-		Mean:  h.mean,
-		M2:    h.m2,
-		Min:   h.min,
-		Max:   h.max,
-	}
+	snap := GetHistogramSnapshot()
+	snap.Total = h.total
+	snap.Mean = h.mean
+	snap.M2 = h.m2
+	snap.Min = h.min
+	snap.Max = h.max
+
 	snap.Sum = h.mean * float64(h.total)
 	if h.total > 0 {
 		snap.SumSq = h.m2 + (h.mean*h.mean)*float64(h.total)
@@ -322,89 +322,24 @@ func (h *histogram) Snapshot() *HistogramSnapshot {
 	}
 
 	digest := h.digest.Clone()
+	// Reuse existing buffer for bounds if available
+	snap.Bounds = calculateBucketBoundaries(digest, snap.Min, snap.Max, snap.Bounds[:0])
 
-	p99 := digest.Quantile(0.99)
-	maxVal := snap.Max
-	if math.IsInf(maxVal, 0) {
-		maxVal = 0
-	}
-
-	var bounds []float64
-	minVal := snap.Min
-	if math.IsInf(minVal, 0) {
-		minVal = 0
-	}
-
-	// Automatic Interval Calculation
-	// Determine scale from P90 (or P99/Max if P90 is 0)
-	scaleVal := digest.Quantile(0.90)
-	if scaleVal <= 0 {
-		scaleVal = p99
-	}
-	if scaleVal <= 0 {
-		scaleVal = maxVal
-	}
-
-	interval := 10 * 1e6 // Default 10ms
-	if scaleVal > 0 {
-		// Target ~20 buckets for the body
-		targetRes := scaleVal / 20.0
-		if targetRes < 1.0 {
-			targetRes = 1.0
-		}
-		interval = snapInterval(targetRes)
-	}
-
-	// Align start to interval
-	start := math.Floor(minVal/interval) * interval
-	current := start
-
-	limit := defaultMaxBuckets
-
-	for current <= p99 {
-		current += interval
-		bounds = append(bounds, current)
-		if len(bounds) >= limit {
-			break
+	neededCounts := len(snap.Bounds)
+	if cap(snap.Counts) < neededCounts {
+		snap.Counts = make([]uint64, neededCounts)
+	} else {
+		snap.Counts = snap.Counts[:neededCounts]
+		// Zero out reused memory
+		for i := range snap.Counts {
+			snap.Counts[i] = 0
 		}
 	}
 
-	ceilMax := math.Ceil(maxVal)
-	if ceilMax > current {
-		remainingBuckets := defaultTailSegments
-		tailRange := ceilMax - current
-		step := tailRange / float64(remainingBuckets)
-		step = snapInterval(step)
-		if step < interval {
-			step = interval
-		}
-
-		safetyLimit := defaultMaxBuckets
-		for i := 0; i < safetyLimit && current < ceilMax; i++ {
-			current += step
-			if current >= ceilMax {
-				current = ceilMax
-			}
-			bounds = append(bounds, current)
-		}
-	}
-
-	// Deduplicate bounds
-	validBounds := make([]float64, 0, len(bounds))
-	prev := 0.0
-	for _, b := range bounds {
-		if b > prev {
-			validBounds = append(validBounds, b)
-			prev = b
-		}
-	}
-	snap.Bounds = validBounds
-
-	snap.Counts = make([]uint64, len(validBounds))
-	bucketWeights := make([]float64, len(validBounds))
+	bucketWeights := make([]float64, len(snap.Bounds))
 
 	digest.ForEachCentroid(func(mean, weight float64) bool {
-		idx, _ := slices.BinarySearch(validBounds, mean)
+		idx, _ := slices.BinarySearch(snap.Bounds, mean)
 		if idx < len(bucketWeights) {
 			bucketWeights[idx] += weight
 		} else {
@@ -451,6 +386,124 @@ func (h *histogram) Snapshot() *HistogramSnapshot {
 	}
 
 	return snap
+}
+
+// calculateBucketBoundaries determines the optimal bucket boundaries based on the distribution.
+func calculateBucketBoundaries(digest TDigest, minVal, maxVal float64, dst []float64) []float64 {
+	p99 := digest.Quantile(0.99)
+	if math.IsInf(maxVal, 0) {
+		maxVal = 0
+	}
+	if math.IsInf(minVal, 0) {
+		minVal = 0
+	}
+
+	// Automatic Interval Calculation
+	// Determine scale from P90 (or P99/Max if P90 is 0)
+	scaleVal := digest.Quantile(0.90)
+	if scaleVal <= 0 {
+		scaleVal = p99
+	}
+	if scaleVal <= 0 {
+		scaleVal = maxVal
+	}
+
+	interval := 10 * 1e6 // Default 10ms
+	if scaleVal > 0 {
+		// Target ~20 buckets for the body
+		targetRes := scaleVal / 20.0
+		if targetRes < 1.0 {
+			targetRes = 1.0
+		}
+		interval = snapInterval(targetRes)
+	}
+
+	// Align start to interval
+	start := math.Floor(minVal/interval) * interval
+	current := start
+
+	// Reuse dst as bounds
+	bounds := dst
+	limit := defaultMaxBuckets
+
+	for current <= p99 {
+		current += interval
+		bounds = append(bounds, current)
+		if len(bounds) >= limit {
+			break
+		}
+	}
+
+	ceilMax := math.Ceil(maxVal)
+	if ceilMax > current {
+		remainingBuckets := defaultTailSegments
+		tailRange := ceilMax - current
+		step := tailRange / float64(remainingBuckets)
+		step = snapInterval(step)
+		if step < interval {
+			step = interval
+		}
+
+		safetyLimit := defaultMaxBuckets
+		for i := 0; i < safetyLimit && current < ceilMax; i++ {
+			current += step
+			if current >= ceilMax {
+				current = ceilMax
+			}
+			bounds = append(bounds, current)
+		}
+	}
+
+	// Deduplicate bounds
+	validBounds := make([]float64, 0, len(bounds))
+	prev := 0.0
+	for _, b := range bounds {
+		if b > prev {
+			validBounds = append(validBounds, b)
+			prev = b
+		}
+	}
+	return validBounds
+}
+
+// GetHistogramSnapshot returns a HistogramSnapshot from the pool.
+func GetHistogramSnapshot() *HistogramSnapshot {
+	val, ok := histogramSnapshotPool.Get().(*HistogramSnapshot)
+	if !ok {
+		return new(HistogramSnapshot)
+	}
+	return val
+}
+
+// PutHistogramSnapshot returns a HistogramSnapshot to the pool.
+func PutHistogramSnapshot(hs *HistogramSnapshot) {
+	hs.Reset()
+	histogramSnapshotPool.Put(hs)
+}
+
+// nolint:gochecknoglobals
+var histogramSnapshotPool = sync.Pool{
+	New: func() any {
+		return new(HistogramSnapshot)
+	},
+}
+
+// Reset resets the snapshot to its zero state, preserving slice capacity.
+func (s *HistogramSnapshot) Reset() {
+	if s.Counts != nil {
+		s.Counts = s.Counts[:0]
+	}
+	if s.Bounds != nil {
+		s.Bounds = s.Bounds[:0]
+	}
+	s.Total = 0
+	s.Sum = 0
+	s.SumSq = 0
+	s.M2 = 0
+	s.Mean = 0
+	s.StdDev = 0
+	s.Min = 0
+	s.Max = 0
 }
 
 func (sh *shardedHistogram) BoundsHash() uint64 {

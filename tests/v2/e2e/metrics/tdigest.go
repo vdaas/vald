@@ -60,7 +60,21 @@ type tdigest struct {
 	compression              float64
 	compressionTriggerFactor float64
 	count                    float64
+	epoch                    uint64
 	mu                       sync.Mutex
+}
+
+// tdigestPool returns a tdigest from the pool.
+// It is used to reduce allocations when creating temporary tdigests for merging.
+// nolint:gochecknoglobals
+var tdigestPool = sync.Pool{
+	New: func() any {
+		return &tdigest{
+			buffer:     make([]float64, 0, defaultBufferCapacity),
+			backBuffer: make([]float64, 0, defaultBufferCapacity),
+			// centroids, scratch, swap will be allocated as needed or reused if pooled object has them
+		}
+	},
 }
 
 // shardedTDigest is a sharded wrapper around tdigest.
@@ -128,6 +142,8 @@ func (t *tdigest) Reset() {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
+	t.epoch++
+
 	// Release memory if buffers are excessively large
 	if cap(t.buffer) > maxBufferCapacity {
 		t.buffer = make([]float64, 0, defaultBufferCapacity)
@@ -169,29 +185,44 @@ func (t *tdigest) Reset() {
 // Quantile returns the estimated quantile.
 func (t *shardedTDigest) Quantile(q float64) float64 {
 	merged := t.mergeAllShards()
+	defer tdigestPool.Put(merged)
 	return merged.Quantile(q)
 }
 
 // CDF returns the estimated cumulative distribution function value for the given value.
 func (t *shardedTDigest) CDF(value, min, max float64) float64 {
 	merged := t.mergeAllShards()
+	defer tdigestPool.Put(merged)
 	return merged.CDF(value, min, max)
 }
 
 // ForEachCentroid iterates over all centroids in the t-digest.
 func (t *shardedTDigest) ForEachCentroid(f func(mean, weight float64) bool) {
 	merged := t.mergeAllShards()
+	defer tdigestPool.Put(merged)
 	merged.ForEachCentroid(f)
 }
 
 // mergeAllShards merges all shards into a single tdigest for querying.
 func (t *shardedTDigest) mergeAllShards() *tdigest {
 	// Create a new temporary shard
-	merged := &tdigest{
-		compression:              t.shards[0].compression,
-		compressionTriggerFactor: t.shards[0].compressionTriggerFactor,
-		quantiles:                t.quantiles,
+	// Reuse from pool if possible, but merged result is usually returned so we can't easily put it back unless caller does.
+	// Reuse from pool if possible
+	var merged *tdigest
+	if v := tdigestPool.Get(); v != nil {
+		merged = v.(*tdigest)
+		merged.Reset()
+	} else {
+		// Allocate new with default capacity if pool is empty
+		merged = &tdigest{
+			buffer:     make([]float64, 0, defaultBufferCapacity),
+			backBuffer: make([]float64, 0, defaultBufferCapacity),
+		}
 	}
+
+	merged.compression = t.shards[0].compression
+	merged.compressionTriggerFactor = t.shards[0].compressionTriggerFactor
+	merged.quantiles = t.quantiles
 
 	// Lock all shards and collect centroids
 	for _, shard := range t.shards {
@@ -228,6 +259,8 @@ func (t *tdigest) flush() {
 		return
 	}
 
+	startEpoch := t.epoch
+
 	// Double buffering: swap buffer with backBuffer to sort outside the lock
 	processing := t.buffer
 	if cap(t.backBuffer) >= defaultBufferCapacity {
@@ -246,6 +279,10 @@ func (t *tdigest) flush() {
 
 	// Re-lock to merge
 	t.mu.Lock()
+
+	if t.epoch != startEpoch {
+		return
+	}
 
 	// Convert buffer to centroids using scratch
 	if cap(t.scratch) < len(processing) {
