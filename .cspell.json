@@ -1108,7 +1108,11 @@
     "zeebo",
     "zerolog",
     "zoneinfo",
-    "zstd"
+    "zstd",
+    "tikv",
+    "tikvpb",
+    "errorpb",
+    "kvrpcpb"
   ],
   "ignoreWordsMap": {
     ".all-contributorsrc": [
