@@ -18,6 +18,7 @@ package metrics
 
 import (
 	"encoding/json"
+	"math"
 	"slices"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -394,17 +395,24 @@ func (t *tdigest) mergeCentroids(incoming []centroid) {
 
 // shardIndexForValue returns a shard index for the given value.
 func (t *shardedTDigest) shardIndexForValue(val float64) int {
-	return shardIndex(computeHash(val), len(t.shards))
+	return shardIndex(computeHash1(val), len(t.shards))
 }
 
 // Add adds a value to the t-digest.
 func (t *shardedTDigest) Add(value float64) {
+	if math.IsNaN(value) || math.IsInf(value, 0) {
+		return
+	}
 	idx := t.shardIndexForValue(value)
 	t.shards[idx].Add(value)
 }
 
 // Add adds a value to the t-digest shard.
 func (t *tdigest) Add(value float64) {
+	if math.IsNaN(value) || math.IsInf(value, 0) {
+		return
+	}
+
 	t.mu.Lock()
 	defer t.mu.Unlock()
 

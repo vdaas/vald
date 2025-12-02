@@ -21,11 +21,17 @@ import (
 
 // slot holds the metrics for a single window in a scale.
 // It is an implementation of the Slot interface.
+// paddedCounter is a padded atomic counter to prevent false sharing.
+type paddedCounter struct {
+	val atomic.Uint64
+	_   [paddingSize]byte
+}
+
 type slot struct {
 	Latency     Histogram
 	QueueWait   Histogram
 	Exemplars   Exemplar
-	Counters    []atomic.Uint64
+	Counters    []paddedCounter
 	id          uint64
 	WindowStart uint64
 	Total       atomic.Uint64
@@ -42,7 +48,7 @@ func newSlot(numCounters int, latencies, queueWaits Histogram, exemplars Exempla
 		id:        collectorIDCounter.Add(1),
 		Latency:   latencies,
 		QueueWait: queueWaits,
-		Counters:  make([]atomic.Uint64, numCounters),
+		Counters:  make([]paddedCounter, numCounters),
 		Exemplars: exemplars,
 	}
 }
@@ -70,7 +76,7 @@ func (s *slot) reset() {
 		s.Exemplars.Reset()
 	}
 	for i := range s.Counters {
-		s.Counters[i].Store(0)
+		s.Counters[i].val.Store(0)
 	}
 }
 
@@ -147,9 +153,9 @@ func (s *slot) Clone() Slot {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	counters := make([]atomic.Uint64, len(s.Counters))
+	counters := make([]paddedCounter, len(s.Counters))
 	for k := range s.Counters {
-		counters[k].Store(s.Counters[k].Load())
+		counters[k].val.Store(s.Counters[k].val.Load())
 	}
 	var l, q Histogram
 	var e Exemplar
@@ -235,7 +241,7 @@ func (s *slot) Snapshot() *SlotSnapshot {
 
 	counters := make([]uint64, len(s.Counters))
 	for j := range counters {
-		counters[j] = s.Counters[j].Load()
+		counters[j] = s.Counters[j].val.Load()
 	}
 	var latSnap, qwSnap *HistogramSnapshot
 	var exSnap []*ExemplarItem

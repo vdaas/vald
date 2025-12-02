@@ -21,6 +21,8 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/zeebo/xxh3"
 )
 
@@ -129,6 +131,13 @@ func computeHash(vals ...float64) uint64 {
 	return xxh3.Hash(data)
 }
 
+// computeHash1 computes a xxh3 checksum for a single float64 value.
+func computeHash1(val float64) uint64 {
+	// Reinterpret the float64 as a byte slice to avoid allocation using unsafe.Slice.
+	data := unsafe.Slice((*byte)(unsafe.Pointer(&val)), sizeOfFloat64) //nolint:gosec // using unsafe for zero-copy slice conversion for performance
+	return xxh3.Hash(data)
+}
+
 // shardIndex calculates the shard index for a given hash and number of shards.
 func shardIndex(hash uint64, n int) int {
 	if n <= 1 {
@@ -141,4 +150,112 @@ func shardIndex(hash uint64, n int) int {
 	}
 	// Fix G115: hash % uint64(n) will be in [0, n-1]. Since n is int and n > 0, the result fits in int.
 	return int(hash % uint64(n)) //nolint:gosec // hash modulo length is always within int bounds
+}
+
+// shardedErrorCounts is a sharded map for error counts to reduce lock contention.
+type shardedErrorCounts struct {
+	shards []*errorCountShard
+}
+
+type errorCountShard struct {
+	counts map[string]*atomic.Uint64
+	mu     sync.RWMutex
+}
+
+func newShardedErrorCounts(numShards int) *shardedErrorCounts {
+	if numShards <= 0 {
+		numShards = 16
+	}
+	s := &shardedErrorCounts{
+		shards: make([]*errorCountShard, numShards),
+	}
+	for i := range s.shards {
+		s.shards[i] = &errorCountShard{
+			counts: make(map[string]*atomic.Uint64),
+		}
+	}
+	return s
+}
+
+func (s *shardedErrorCounts) shardIndex(key string) int {
+	return shardIndex(xxh3.HashString(key), len(s.shards))
+}
+
+func (s *shardedErrorCounts) Add(key string, val uint64) {
+	idx := s.shardIndex(key)
+	shard := s.shards[idx]
+
+	shard.mu.RLock()
+	c, ok := shard.counts[key]
+	shard.mu.RUnlock()
+
+	if ok {
+		c.Add(val)
+		return
+	}
+
+	shard.mu.Lock()
+	c, ok = shard.counts[key]
+	if !ok {
+		c = new(atomic.Uint64)
+		shard.counts[key] = c
+	}
+	shard.mu.Unlock()
+	c.Add(val)
+}
+
+func (s *shardedErrorCounts) Reset() {
+	for _, shard := range s.shards {
+		shard.mu.Lock()
+		clear(shard.counts)
+		shard.mu.Unlock()
+	}
+}
+
+func (s *shardedErrorCounts) Snapshot() map[string]uint64 {
+	res := make(map[string]uint64)
+	for _, shard := range s.shards {
+		shard.mu.RLock()
+		for k, v := range shard.counts {
+			if val := v.Load(); val > 0 {
+				res[k] += val
+			}
+		}
+		shard.mu.RUnlock()
+	}
+	return res
+}
+
+func (s *shardedErrorCounts) Merge(other *shardedErrorCounts) {
+	if other == nil {
+		return
+	}
+	// Iterate over other's shards and merge into this
+	// Since keys might hash to different shards if shard count differs (though unlikely here if default used),
+	// we should iterate conceptually.
+	// Assuming shard count matches or we just use Add which handles routing.
+	for _, shard := range other.shards {
+		shard.mu.RLock()
+		for k, v := range shard.counts {
+			s.Add(k, v.Load())
+		}
+		shard.mu.RUnlock()
+	}
+}
+
+func (s *shardedErrorCounts) Clone() *shardedErrorCounts {
+	newS := newShardedErrorCounts(len(s.shards))
+	for i, shard := range s.shards {
+		targetShard := newS.shards[i]
+		shard.mu.RLock()
+		targetShard.mu.Lock() // Should be safe on new object
+		for k, v := range shard.counts {
+			nv := new(atomic.Uint64)
+			nv.Store(v.Load())
+			targetShard.counts[k] = nv
+		}
+		targetShard.mu.Unlock()
+		shard.mu.RUnlock()
+	}
+	return newS
 }

@@ -136,7 +136,7 @@ type collector struct {
 	exemplars             Exemplar
 	latencies             Histogram
 	counters              map[string]*CounterHandle
-	errorCounts           map[string]*atomic.Uint64
+	errorCounts           *shardedErrorCounts
 	scales                []Scale
 	codes                 [MaxGRPCCodes]atomic.Uint64
 	lastUpdated           atomic.Int64
@@ -158,7 +158,7 @@ func NewCollector(opts ...Option) (Collector, error) {
 	c := &collector{
 		id:          collectorIDCounter.Add(1),
 		counters:    make(map[string]*CounterHandle),
-		errorCounts: make(map[string]*atomic.Uint64),
+		errorCounts: newShardedErrorCounts(defaultNumShards),
 	}
 
 	// Prepend default options and apply all options.
@@ -197,8 +197,8 @@ func (c *collector) Reset() {
 	for _, h := range c.counters {
 		h.value.Store(0)
 	}
-	for _, ec := range c.errorCounts {
-		ec.Store(0)
+	if c.errorCounts != nil {
+		c.errorCounts.Reset()
 	}
 	for i := range c.codes {
 		c.codes[i].Store(0)
@@ -340,13 +340,8 @@ func (c *collector) mergeCounters(other *collector) {
 }
 
 func (c *collector) mergeErrorCounts(other *collector) {
-	for msg, ec := range c.errorCounts {
-		if oe, ok := other.errorCounts[msg]; ok {
-			oe.Add(ec.Load())
-		} else {
-			other.errorCounts[msg] = new(atomic.Uint64)
-			other.errorCounts[msg].Store(ec.Load())
-		}
+	if c.errorCounts != nil && other.errorCounts != nil {
+		c.errorCounts.Merge(other.errorCounts)
 	}
 }
 
@@ -403,23 +398,7 @@ func (c *collector) Record(ctx context.Context, key uint64, rr *RequestResult) {
 		c.errors.Add(1)
 		// Only track detailed errors if enabled
 		if c.detailedErrorsEnabled {
-			msg := rr.Err.Error()
-			c.mu.RLock()
-			ec, ok := c.errorCounts[msg]
-			c.mu.RUnlock()
-			if ok {
-				ec.Add(1)
-			} else {
-				c.mu.Lock()
-				// Double check
-				ec, ok = c.errorCounts[msg]
-				if !ok {
-					ec = new(atomic.Uint64)
-					c.errorCounts[msg] = ec
-				}
-				c.mu.Unlock()
-				ec.Add(1)
-			}
+			c.errorCounts.Add(rr.Err.Error(), 1)
 		}
 	}
 
@@ -498,7 +477,6 @@ func (c *collector) Clone() (Collector, error) {
 	newC := &collector{
 		id:                    collectorIDCounter.Add(1),
 		counters:              make(map[string]*CounterHandle),
-		errorCounts:           make(map[string]*atomic.Uint64),
 		detailedErrorsEnabled: c.detailedErrorsEnabled,
 	}
 
@@ -534,9 +512,8 @@ func (c *collector) Clone() (Collector, error) {
 	}
 
 	// Copy error counts
-	for msg, ec := range c.errorCounts {
-		newC.errorCounts[msg] = new(atomic.Uint64)
-		newC.errorCounts[msg].Store(ec.Load())
+	if c.errorCounts != nil {
+		newC.errorCounts = c.errorCounts.Clone()
 	}
 
 	// Copy codes
@@ -568,11 +545,11 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 			codesMap[codes.Code(i)] = v //nolint:gosec // i is index of small array (size 20), fits in uint32
 		}
 	}
-	errorDetails := make(map[string]uint64)
-	for msg, ec := range c.errorCounts {
-		if v := ec.Load(); v > 0 {
-			errorDetails[msg] = v
-		}
+	var errorDetails map[string]uint64
+	if c.errorCounts != nil {
+		errorDetails = c.errorCounts.Snapshot()
+	} else {
+		errorDetails = make(map[string]uint64)
 	}
 
 	var latSnap, qwSnap *HistogramSnapshot
