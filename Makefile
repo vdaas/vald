@@ -590,7 +590,7 @@ format/go: \
 	        echo "Formatting Go file {}" && \
 		$(GOBIN)/strictgoimports -w {} && \
 		$(GOBIN)/crlfmt -w -diff=false {} && \
-		$(GOBIN)/golangci-lint fmt {}'
+		$(BINDIR)/golangci-lint fmt {}'
 	@echo "Go formatting complete."
 
 .PHONY: format/go/test
@@ -605,7 +605,7 @@ format/go/test: \
 	        echo "Formatting Go Test file {}" && \
 		$(GOBIN)/strictgoimports -w {} && \
 		$(GOBIN)/crlfmt -w -diff=false {} && \
-		$(GOBIN)/golangci-lint fmt {}'
+		$(BINDIR)/golangci-lint fmt {}'
 	@echo "Go test file formatting complete."
 
 .PHONY: format/go/diff
@@ -620,7 +620,7 @@ format/go/diff: \
 	        echo "Formatting Go file {}" && \
 		$(GOBIN)/strictgoimports -w {} && \
 		$(GOBIN)/crlfmt -w -diff=false {} && \
-		$(GOBIN)/golangci-lint fmt {}'
+		$(BINDIR)/golangci-lint fmt {}'
 	@echo "Go file formatting complete."
 
 .PHONY: format/yaml
