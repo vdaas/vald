@@ -232,7 +232,7 @@ pub struct Filter {
 /// Nested message and enum types in `Filter`.
 pub mod filter {
     /// Represent the target filter server.
-    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+    #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct Target {
         /// The target hostname.
         #[prost(string, tag="1")]
@@ -402,7 +402,7 @@ const NAME: &'static str = "MultiObjectRequest";
 const PACKAGE: &'static str = "payload.v1";
 fn full_name() -> ::prost::alloc::string::String { "payload.v1.Update.MultiObjectRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Update.MultiObjectRequest".into() }}
     /// Represent a vector meta data.
-    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+    #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct TimestampRequest {
         /// The vector ID.
         #[prost(string, tag="1")]
@@ -536,7 +536,7 @@ pub struct Remove {
 /// Nested message and enum types in `Remove`.
 pub mod remove {
     /// Represent the remove request.
-    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+    #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct Request {
         /// The object ID to be removed.
         #[prost(message, optional, tag="1")]
@@ -730,7 +730,7 @@ const NAME: &'static str = "StreamDistance";
 const PACKAGE: &'static str = "payload.v1";
 fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.StreamDistance".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.StreamDistance".into() }}
     /// Represent the vector ID.
-    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+    #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct Id {
         #[prost(string, tag="1")]
         pub id: ::prost::alloc::string::String,
@@ -740,7 +740,7 @@ const NAME: &'static str = "ID";
 const PACKAGE: &'static str = "payload.v1";
 fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.ID".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.ID".into() }}
     /// Represent multiple vector IDs.
-    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+    #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct IDs {
         #[prost(string, repeated, tag="1")]
         pub ids: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
@@ -767,7 +767,7 @@ const NAME: &'static str = "Vector";
 const PACKAGE: &'static str = "payload.v1";
 fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.Vector".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.Vector".into() }}
     /// Represent a request to fetch vector meta data.
-    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+    #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct TimestampRequest {
         /// The vector ID to be fetched.
         #[prost(message, optional, tag="1")]
@@ -778,7 +778,7 @@ const NAME: &'static str = "TimestampRequest";
 const PACKAGE: &'static str = "payload.v1";
 fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.TimestampRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.TimestampRequest".into() }}
     /// Represent a vector meta data.
-    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+    #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct Timestamp {
         /// The vector ID.
         #[prost(string, tag="1")]
@@ -824,7 +824,7 @@ const NAME: &'static str = "StreamVector";
 const PACKAGE: &'static str = "payload.v1";
 fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.StreamVector".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.StreamVector".into() }}
     /// Represent reshape vector.
-    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+    #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct ReshapeVector {
         /// The binary object.
         #[prost(bytes="vec", tag="1")]
@@ -838,7 +838,7 @@ const NAME: &'static str = "ReshapeVector";
 const PACKAGE: &'static str = "payload.v1";
 fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.ReshapeVector".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.ReshapeVector".into() }}
     /// Represent the binary object.
-    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+    #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct Blob {
         /// The object ID.
         #[prost(string, tag="1")]
@@ -874,7 +874,7 @@ const NAME: &'static str = "StreamBlob";
 const PACKAGE: &'static str = "payload.v1";
 fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.StreamBlob".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.StreamBlob".into() }}
     /// Represent the vector location.
-    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+    #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct Location {
         /// The name of the location.
         #[prost(string, tag="1")]
@@ -995,7 +995,7 @@ pub struct Discoverer {
 /// Nested message and enum types in `Discoverer`.
 pub mod discoverer {
     /// Represent the dicoverer request.
-    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+    #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct Request {
         /// The agent name to be discovered.
         #[prost(string, tag="1")]
@@ -1072,7 +1072,7 @@ fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Index.Detail
         /// Nested message and enum types in `UUID`.
         pub mod uuid {
             /// The committed UUID.
-            #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+            #[derive(Clone, PartialEq, ::prost::Message)]
             pub struct Committed {
                 #[prost(string, tag="1")]
                 pub uuid: ::prost::alloc::string::String,
@@ -1082,7 +1082,7 @@ const NAME: &'static str = "Committed";
 const PACKAGE: &'static str = "payload.v1";
 fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Index.UUID.Committed".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.Index.UUID.Committed".into() }}
             /// The uncommitted UUID.
-            #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+            #[derive(Clone, PartialEq, ::prost::Message)]
             pub struct Uncommitted {
                 #[prost(string, tag="1")]
                 pub uuid: ::prost::alloc::string::String,
@@ -1390,7 +1390,7 @@ const NAME: &'static str = "Service";
 const PACKAGE: &'static str = "payload.v1";
 fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Service".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.Service".into() }}
     /// Represets the service port information message.
-    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+    #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct ServicePort {
         /// The name of the port.
         #[prost(string, tag="1")]
@@ -1491,7 +1491,7 @@ const NAME: &'static str = "Services";
 const PACKAGE: &'static str = "payload.v1";
 fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Services".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.Services".into() }}
     /// Represent the multiple IP message.
-    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+    #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct IPs {
         #[prost(string, repeated, tag="1")]
         pub ip: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
@@ -1512,7 +1512,7 @@ pub struct Mirror {
 /// Nested message and enum types in `Mirror`.
 pub mod mirror {
     /// Represent server information.
-    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+    #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct Target {
         /// The target hostname.
         #[prost(string, tag="1")]
@@ -1546,7 +1546,7 @@ pub struct Meta {
 }
 /// Nested message and enum types in `Meta`.
 pub mod meta {
-    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+    #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct Key {
         #[prost(string, tag="1")]
         pub key: ::prost::alloc::string::String,
@@ -1555,7 +1555,7 @@ impl ::prost::Name for Key {
 const NAME: &'static str = "Key";
 const PACKAGE: &'static str = "payload.v1";
 fn full_name() -> ::prost::alloc::string::String { "payload.v1.Meta.Key".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Meta.Key".into() }}
-    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+    #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct Value {
         #[prost(message, optional, tag="1")]
         pub value: ::core::option::Option<::prost_types::Any>,
@@ -1564,7 +1564,7 @@ impl ::prost::Name for Value {
 const NAME: &'static str = "Value";
 const PACKAGE: &'static str = "payload.v1";
 fn full_name() -> ::prost::alloc::string::String { "payload.v1.Meta.Value".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Meta.Value".into() }}
-    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+    #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct KeyValue {
         #[prost(message, optional, tag="1")]
         pub key: ::core::option::Option<Key>,
