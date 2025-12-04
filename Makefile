@@ -340,7 +340,6 @@ BUILDKIT_INLINE_CACHE ?= 1
 DISTROLESS_IMAGE      ?= gcr.io/distroless/static
 DISTROLESS_IMAGE_TAG  ?= nonroot
 UPX_OPTIONS           ?= -9
-GOLINES_MAX_WIDTH     ?= 200
 
 K8S_SLEEP_DURATION_FOR_WAIT_COMMAND ?= 5
 
@@ -583,57 +582,45 @@ remove/empty/file: \
 ## run golines, gofumpt, goimports for all go files
 format/go: \
 	crlfmt/install \
-	golines/install \
-	gofumpt/install \
 	strictgoimports/install \
-	goimports/install \
+	golangci-lint/install \
 	files
 	@echo "Formatting Go files..."
 	@cat $(ROOTDIR)/.gitfiles | grep -e "\.go$$" | grep -v "_test\.go$$" | xargs -I {} -P$(CORES) bash -c '\
 	        echo "Formatting Go file {}" && \
-		$(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH) {} && \
-		$(GOBIN)/goimports -w {} && \
 		$(GOBIN)/strictgoimports -w {} && \
 		$(GOBIN)/crlfmt -w -diff=false {} && \
-		$(GOBIN)/gofumpt -w {}'
+		$(BINDIR)/golangci-lint fmt {}'
 	@echo "Go formatting complete."
 
 .PHONY: format/go/test
 ## run golines, gofumpt, goimports for go test files
 format/go/test: \
 	crlfmt/install \
-	golines/install \
-	gofumpt/install \
 	strictgoimports/install \
-	goimports/install \
+	golangci-lint/install \
 	files
 	@echo "Formatting Go Test files..."
 	@cat $(ROOTDIR)/.gitfiles | grep -e "_test\.go$$" | xargs -I {} -P$(CORES) bash -c '\
 	        echo "Formatting Go Test file {}" && \
-		$(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH) {} && \
-		$(GOBIN)/goimports -w {} && \
 		$(GOBIN)/strictgoimports -w {} && \
 		$(GOBIN)/crlfmt -w -diff=false {} && \
-		$(GOBIN)/gofumpt -w {}'
+		$(BINDIR)/golangci-lint fmt {}'
 	@echo "Go test file formatting complete."
 
 .PHONY: format/go/diff
 ## run golines, gofumpt, goimports for go diff files
 format/go/diff: \
 	crlfmt/install \
-	golines/install \
-	gofumpt/install \
 	strictgoimports/install \
-	goimports/install \
+	golangci-lint/install \
 	files
 	@echo "Formatting Go Test files..."
 	@git diff --name-only --diff-filter=ACM HEAD | grep -e ".go$$" | xargs -I {} -P$(CORES) bash -c '\
 	        echo "Formatting Go file {}" && \
-		$(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH) {} && \
 		$(GOBIN)/strictgoimports -w {} && \
-		$(GOBIN)/goimports -w {} && \
 		$(GOBIN)/crlfmt -w -diff=false {} && \
-		$(GOBIN)/gofumpt -w {}'
+		$(BINDIR)/golangci-lint fmt {}'
 	@echo "Go file formatting complete."
 
 .PHONY: format/yaml
