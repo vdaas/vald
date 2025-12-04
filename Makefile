@@ -73,16 +73,16 @@ $(LIB_PATH):
 	mkdir -p $(LIB_PATH)
 
 BUN_INSTALL ?= $(USR_LOCAL)
-BUN_GLOBAL_BIN := $(eval BUN_GLOBAL_BIN := $(shell bun pm bin -g))$(BUN_GLOBAL_BIN)
+BUN_GLOBAL_BIN ?= $(eval BUN_GLOBAL_BIN := $(shell bun pm bin -g))$(BUN_GLOBAL_BIN)
 
-GOPRIVATE = $(GOPKG),$(GOPKG)/apis,$(GOPKG)-client-go
-GOPROXY = "https://proxy.golang.org,direct"
-GOPATH := $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
-GOARCH := $(eval GOARCH := $(shell go env GOARCH))$(GOARCH)
-GOBIN := $(eval GOBIN := $(or $(shell go env GOBIN),$(GOPATH)/bin))$(GOBIN)
-GOCACHE := $(eval GOCACHE := $(shell go env GOCACHE))$(GOCACHE)
-GOOS := $(eval GOOS := $(shell go env GOOS))$(GOOS)
-GOEXPERIMENT = "greenteagc,cgocheck2,newinliner,synchashtriemap,jsonv2"
+GOPRIVATE := $(GOPKG),$(GOPKG)/apis,$(GOPKG)-client-go
+GOPROXY := "https://proxy.golang.org,direct"
+GOPATH ?= $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
+GOARCH ?= $(eval GOARCH := $(shell go env GOARCH))$(GOARCH)
+GOBIN ?= $(eval GOBIN := $(or $(shell go env GOBIN),$(GOPATH)/bin))$(GOBIN)
+GOCACHE ?= $(eval GOCACHE := $(shell go env GOCACHE))$(GOCACHE)
+GOOS ?= $(eval GOOS := $(shell go env GOOS))$(GOOS)
+GOEXPERIMENT := "greenteagc,cgocheck2,newinliner,synchashtriemap,jsonv2"
 GO_CLEAN_DEPS := true
 GOTEST_TIMEOUT = 30m
 CGO_ENABLED = 1
