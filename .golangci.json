@@ -2,8 +2,14 @@
   "formatters": {
     "enable": [
       "gofumpt",
-      "goimports"
+      "goimports",
+      "golines"
     ],
+    "settings": {
+      "golines": {
+        "max-len": 200
+      }
+    },
     "exclusions": {
       "generated": "lax",
       "paths": [
