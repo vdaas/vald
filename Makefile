@@ -73,7 +73,7 @@ $(LIB_PATH):
 	mkdir -p $(LIB_PATH)
 
 BUN_INSTALL ?= $(USR_LOCAL)
-BUN_GLOBAL_BIN := $(eval BUN_GLOBAL_BIN := $(shell bun pm bin -g))$(BUN_GLOBAL_BIN)
+BUN_GLOBAL_BIN ?= $(eval BUN_GLOBAL_BIN := $(shell bun pm bin -g))$(BUN_GLOBAL_BIN)
 
 GOPRIVATE = $(GOPKG),$(GOPKG)/apis,$(GOPKG)-client-go
 GOPROXY = "https://proxy.golang.org,direct"
