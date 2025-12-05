@@ -58,6 +58,8 @@ jobs:
     permissions:
       contents: read
     runs-on: ubuntu-slim
+    container:
+      image: ghcr.io/vdaas/vald/vald-dev-container:nightly
     if: >-
       ${{
         (github.event_name == 'pull_request' &&
@@ -143,6 +145,8 @@ jobs:
       matrix:
         include: ${{ fromJson(needs.prepare.outputs.matrix) }}
     runs-on: ${{ matrix.runs-on }}
+    container:
+      image: ghcr.io/vdaas/vald/vald-dev-container:nightly
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
