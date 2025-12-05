@@ -344,6 +344,10 @@ docker/build/dev-container:
 docker/name/helm-operator:
 	@echo "$(ORG)/$(HELM_OPERATOR_IMAGE)"
 
+.PHONY: docker/build/helm-operator
+## build helm-operator image
+docker/build/helm-operator: docker/build/operator/helm
+
 .PHONY: docker/build/operator/helm
 ## build helm-operator image
 docker/build/operator/helm:
