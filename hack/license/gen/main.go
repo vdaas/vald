@@ -121,6 +121,9 @@ var (
 
 	slushEscape = "//"
 	sharpEscape = "#"
+	skipDir     = []string{
+		"apis/proto/v1/tikv",
+	}
 )
 
 type Data struct {
@@ -153,6 +156,11 @@ func main() {
 }
 
 func dirwalk(dir string) []string {
+	for _, sd := range skipDir {
+		if strings.Contains(dir, sd) {
+			return []string{}
+		}
+	}
 	files, err := file.ReadDir(dir)
 	if err != nil {
 		panic(err)

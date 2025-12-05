@@ -1,0 +1,636 @@
+syntax = "proto3";
+package tikv;
+
+import "v1/tikv/errorpb.proto";
+
+option go_package = "github.com/vdaas/vald/apis/grpc/v1/tikv";
+
+// Raw commands.
+
+message RawGetRequest {
+  Context context = 1;
+  bytes key = 2;
+  string cf = 3;
+}
+
+message RawGetResponse {
+  tikv.Error region_error = 1;
+  string error = 2;
+  bytes value = 3;
+  bool not_found = 4;
+}
+
+message RawBatchGetRequest {
+  Context context = 1;
+  repeated bytes keys = 2;
+  string cf = 3;
+}
+
+message RawBatchGetResponse {
+  tikv.Error region_error = 1;
+  repeated KvPair pairs = 2;
+}
+
+message RawPutRequest {
+  Context context = 1;
+  bytes key = 2;
+  bytes value = 3;
+  string cf = 4;
+  uint64 ttl = 5;
+  bool for_cas = 6;
+}
+
+message RawPutResponse {
+  tikv.Error region_error = 1;
+  string error = 2;
+}
+
+message RawBatchPutRequest {
+  Context context = 1;
+  repeated KvPair pairs = 2;
+  string cf = 3;
+  uint64 ttl = 4 [deprecated = true];
+  bool for_cas = 5;
+
+  // The time-to-live for each keys in seconds, and if the length of `ttls`
+  // is exactly one, the ttl will be applied to all keys. Otherwise, the length
+  // mismatch between `ttls` and `pairs` will return an error.
+  repeated uint64 ttls = 6;
+}
+
+message RawBatchPutResponse {
+  tikv.Error region_error = 1;
+  string error = 2;
+}
+
+message RawDeleteRequest {
+  Context context = 1;
+  bytes key = 2;
+  string cf = 3;
+  bool for_cas = 4;
+}
+
+message RawDeleteResponse {
+  tikv.Error region_error = 1;
+  string error = 2;
+}
+
+message RawBatchDeleteRequest {
+  Context context = 1;
+  repeated bytes keys = 2;
+  string cf = 3;
+  bool for_cas = 4;
+}
+
+message RawBatchDeleteResponse {
+  tikv.Error region_error = 1;
+  string error = 2;
+}
+
+// Helper messages.
+
+// Miscellaneous metadata attached to most requests.
+message Context {
+  reserved 4;
+  reserved "read_quorum";
+  uint64 region_id = 1;
+  // metapb.RegionEpoch region_epoch = 2;
+  // metapb.Peer peer = 3;
+  uint64 term = 5;
+  CommandPri priority = 6;
+  IsolationLevel isolation_level = 7;
+  bool not_fill_cache = 8;
+  bool sync_log = 9;
+
+  // True means execution time statistics should be recorded and returned.
+  bool record_time_stat = 10;
+  // True means RocksDB scan statistics should be recorded and returned.
+  bool record_scan_stat = 11;
+
+  bool replica_read = 12;
+  // Read requests can ignore locks belonging to these transactions because either
+  // these transactions are rolled back or theirs commit_ts > read request's start_ts.
+  repeated uint64 resolved_locks = 13;
+  uint64 max_execution_duration_ms = 14;
+
+  // After a region applies to `applied_index`, we can get a
+  // snapshot for the region even if the peer is a follower.
+  uint64 applied_index = 15;
+  // A hint for TiKV to schedule tasks more fairly. Query with same task ID
+  // may share same priority and resource quota.
+  uint64 task_id = 16;
+
+  // Not required to read the most up-to-date data, replicas with `safe_ts` >= `start_ts`
+  // can handle read request directly
+  bool stale_read = 17;
+
+  // Any additional serialized information about the request.
+  bytes resource_group_tag = 18;
+
+  // Used to tell TiKV whether operations are allowed or not on different disk usages.
+  DiskFullOpt disk_full_opt = 19;
+
+  // Indicates the request is a retry request and the same request may have been sent before.
+  bool is_retry_request = 20;
+
+  // API version implies the encode of the key and value.
+  APIVersion api_version = 21;
+
+  // Read request should read through locks belonging to these transactions because these
+  // transactions are committed and theirs commit_ts <= read request's start_ts.
+  repeated uint64 committed_locks = 22;
+
+  // // The informantion to trace a request sent to TiKV.
+  // tracepb.TraceContext trace_context = 23;
+
+  // The source of the request, will be used as the tag of the metrics reporting.
+  // This field can be set for any requests that require to report metrics with any extra labels.
+  string request_source = 24;
+
+  // The source of the current transaction.
+  uint64 txn_source = 25;
+
+  reserved 26; // Used for resource_group_name, now it's moved into ResourceControlContext.
+
+  // If `busy_threshold_ms` is given, TiKV can reject the request and return a `ServerIsBusy`
+  // error before processing if the estimated waiting duration exceeds the threshold.
+  uint32 busy_threshold_ms = 27;
+
+  // Some information used for resource control.
+  ResourceControlContext resource_control_context = 28;
+
+  // The keyspace that the request is sent to.
+  // NOTE: This field is only meaningful while the api_version is V2.
+  string keyspace_name = 31;
+
+  // The keyspace that the request is sent to.
+  // NOTE: This field is only meaningful while the api_version is V2.
+  uint32 keyspace_id = 32;
+
+  // The buckets version that the request is sent to.
+  // NOTE: This field is only meaningful while enable buckets.
+  uint64 buckets_version = 33;
+
+  // It tells us where the request comes from in TiDB. If it isn't from TiDB, leave it blank.
+  // This is for tests only and thus can be safely changed/removed without affecting compatibility.
+  SourceStmt source_stmt = 34;
+
+  // The cluster id of the request
+  uint64 cluster_id = 35;
+
+  // The trace id of the request, will be used for tracing the request's execution's inner steps.
+  bytes trace_id = 36;
+
+  // Control flags for trace logging behavior.
+  // Bit 0: immediate_log - Force immediate logging without buffering
+  // Bit 1: category_req_resp - Enable request/response tracing
+  // Bit 2: category_write_details - Enable detailed write tracing
+  // Bit 3: category_read_details - Enable detailed read tracing
+  // Bits 4-63: Reserved for future use
+  // This field is set by client-go based on an extractor function provided by TiDB.
+  uint64 trace_control_flags = 37;
+}
+
+message ResourceControlContext {
+  // It's used to identify which resource group the request belongs to.
+  string resource_group_name = 1;
+
+  // // The resource consumption of the resource group that have completed at all TiKVs between the previous request to this TiKV and current request.
+  // // It's used as penalty to make the local resource scheduling on one TiKV takes the gloabl resource consumption into consideration.
+  // resource_manager.Consumption penalty = 2;
+
+  // This priority would override the original priority of the resource group for the request.
+  // Used to deprioritize the runaway queries.
+  uint64 override_priority = 3;
+}
+
+// The API version the server and the client is using.
+// See more details in https://github.com/tikv/rfcs/blob/master/text/0069-api-v2.md.
+enum APIVersion {
+  // `V1` is mainly for TiDB & TxnKV, and is not safe to use RawKV along with the others.
+  // V1 server only accepts V1 requests. V1 raw requests with TTL will be rejected.
+  V1 = 0;
+  //
+  // `V1TTL` is only available to RawKV, and 8 bytes representing the unix timestamp in
+  // seconds for expiring time will be append to the value of all RawKV entries. For example:
+  // ------------------------------------------------------------
+  // | User value     | Expire Ts                               |
+  // ------------------------------------------------------------
+  // | 0x12 0x34 0x56 | 0x00 0x00 0x00 0x00 0x00 0x00 0xff 0xff |
+  // ------------------------------------------------------------
+  // V1TTL server only accepts V1 raw requests.
+  // V1 client should not use `V1TTL` in request. V1 client should always send `V1`.
+  V1TTL = 1;
+  //
+  // `V2` use new encoding for RawKV & TxnKV to support more features.
+  //
+  // Key Encoding:
+  //  TiDB: start with `m` or `t`, the same as `V1`.
+  //  TxnKV: prefix with `x`, encoded as `MCE( x{keyspace id} + {user key} ) + timestamp`.
+  //  RawKV: prefix with `r`, encoded as `MCE( r{keyspace id} + {user key} ) + timestamp`.
+  //  Where the `{keyspace id}` is fixed-length of 3 bytes in network byte order.
+  //  Besides, RawKV entires must be in `default` CF.
+  //
+  // Value Encoding:
+  //  TiDB & TxnKV: the same as `V1`.
+  //  RawKV: `{user value} + {optional fields} + {meta flag}`. The last byte in the
+  //  raw value must be meta flags. For example:
+  //  --------------------------------------
+  //  | User value     | Meta flags        |
+  //  --------------------------------------
+  //  | 0x12 0x34 0x56 | 0x00 (0b00000000) |
+  //  --------------------------------------
+  //  Bit 0 of meta flags is for TTL. If set, the value contains 8 bytes expiring time as
+  //  unix timestamp in seconds at the very left to the meta flags.
+  //  --------------------------------------------------------------------------------
+  //  | User value     | Expiring time                           | Meta flags        |
+  //  --------------------------------------------------------------------------------
+  //  | 0x12 0x34 0x56 | 0x00 0x00 0x00 0x00 0x00 0x00 0xff 0xff | 0x01 (0b00000001) |
+  //  --------------------------------------------------------------------------------
+  //  Bit 1 is for deletion. If set, the entry is logical deleted.
+  //  ---------------------
+  //  | Meta flags        |
+  //  ---------------------
+  //  | 0x02 (0b00000010) |
+  //  ---------------------
+  //
+  // V2 server accpets V2 requests and V1 transactional requests that statrts with TiDB key
+  // prefix (`m` and `t`).
+  V2 = 2;
+}
+
+message SourceStmt {
+  uint64 start_ts = 1;
+  uint64 connection_id = 2;
+  uint64 stmt_id = 3;
+  // session alias set by user
+  string session_alias = 4;
+}
+
+message LockInfo {
+  bytes primary_lock = 1;
+  uint64 lock_version = 2;
+  bytes key = 3;
+  uint64 lock_ttl = 4;
+  // How many keys this transaction involves in this region.
+  uint64 txn_size = 5;
+  Op lock_type = 6;
+  uint64 lock_for_update_ts = 7;
+  // Fields for transactions that are using Async Commit.
+  bool use_async_commit = 8;
+  uint64 min_commit_ts = 9;
+  repeated bytes secondaries = 10;
+  // The time elapsed since last update of lock wait info when waiting.
+  // It's used in timeout errors. 0 means unknown or not applicable.
+  // It can be used to help the client decide whether to try resolving the lock.
+  uint64 duration_to_last_update_ms = 11;
+
+  // Reserved for file based transaction.
+  bool is_txn_file = 100;
+}
+
+message KeyError {
+  LockInfo locked = 1; // Client should backoff or cleanup the lock then retry.
+  string retryable = 2; // Client may restart the txn. e.g write conflict.
+  string abort = 3; // Client should abort the txn.
+  WriteConflict conflict = 4; // Write conflict is moved from retryable to here.
+  AlreadyExist already_exist = 5; // Key already exists
+  // Deadlock deadlock = 6; // Deadlock is used in pessimistic transaction for single statement rollback.
+  CommitTsExpired commit_ts_expired = 7; // Commit ts is earlier than min commit ts of a transaction.
+  TxnNotFound txn_not_found = 8; // Txn not found when checking txn status.
+  CommitTsTooLarge commit_ts_too_large = 9; // Calculated commit TS exceeds the limit given by the user.
+  AssertionFailed assertion_failed = 10; // Assertion of a `Mutation` is evaluated as a failure.
+  PrimaryMismatch primary_mismatch = 11; // CheckTxnStatus is sent to a lock that's not the primary.
+  TxnLockNotFound txn_lock_not_found = 12; // TxnLockNotFound indicates the txn lock is not found.
+
+  // Extra information for error debugging
+  DebugInfo debug_info = 100;
+}
+
+message WriteConflict {
+  enum Reason {
+    Unknown = 0;
+    Optimistic = 1; // in optimistic transactions.
+    PessimisticRetry = 2; // a lock acquisition request waits for a lock and awakes, or meets a newer version of data, let TiDB retry.
+    SelfRolledBack = 3; // the transaction itself has been rolled back when it tries to prewrite.
+    RcCheckTs = 4; // RcCheckTs failure by meeting a newer version, let TiDB retry.
+    LazyUniquenessCheck = 5; // write conflict found when deferring constraint checks in pessimistic transactions. Deprecated in next-gen (cloud-storage-engine).
+    NotLockedKeyConflict = 6; // write conflict found on keys that do not acquire pessimistic locks in pessimistic transactions.
+  }
+
+  uint64 start_ts = 1;
+  uint64 conflict_ts = 2;
+  bytes key = 3;
+  bytes primary = 4;
+  uint64 conflict_commit_ts = 5;
+  Reason reason = 6;
+}
+
+message AlreadyExist {
+  bytes key = 1;
+}
+
+message CommitTsExpired {
+  uint64 start_ts = 1;
+  uint64 attempted_commit_ts = 2;
+  bytes key = 3;
+  uint64 min_commit_ts = 4;
+}
+
+message TxnNotFound {
+  uint64 start_ts = 1;
+  bytes primary_key = 2;
+}
+
+message CommitTsTooLarge {
+  uint64 commit_ts = 1; // The calculated commit TS.
+}
+
+message AssertionFailed {
+  uint64 start_ts = 1;
+  bytes key = 2;
+  Assertion assertion = 3;
+  uint64 existing_start_ts = 4;
+  uint64 existing_commit_ts = 5;
+}
+
+message PrimaryMismatch {
+  LockInfo lock_info = 1;
+}
+
+message TxnLockNotFound {
+  bytes key = 1;
+}
+
+message MvccDebugInfo {
+  bytes key = 1;
+  MvccInfo mvcc = 2;
+}
+
+message DebugInfo {
+  repeated MvccDebugInfo mvcc_info = 1;
+}
+
+enum CommandPri {
+  Normal = 0; // Normal is the default value.
+  Low = 1;
+  High = 2;
+}
+
+enum IsolationLevel {
+  SI = 0; // SI = snapshot isolation
+  RC = 1; // RC = read committed
+  RCCheckTS = 2; // RC read and it's needed to check if there exists more recent versions.
+}
+
+// Operation allowed info during each TiKV storage threshold.
+enum DiskFullOpt {
+  NotAllowedOnFull = 0; // The default value, means operations are not allowed either under almost full or already full.
+  AllowedOnAlmostFull = 1; // Means operations will be allowed when disk is almost full.
+  AllowedOnAlreadyFull = 2; // Means operations will be allowed when disk is already full.
+}
+
+message TimeDetail {
+  // Off-cpu wall time elapsed in TiKV side. Usually this includes queue waiting time and
+  // other kind of waitings in series. (Wait time in the raftstore is not included.)
+  uint64 wait_wall_time_ms = 1;
+  // Off-cpu and on-cpu wall time elapsed to actually process the request payload. It does not
+  // include `wait_wall_time`.
+  // This field is very close to the CPU time in most cases. Some wait time spend in RocksDB
+  // cannot be excluded for now, like Mutex wait time, which is included in this field, so that
+  // this field is called wall time instead of CPU time.
+  uint64 process_wall_time_ms = 2;
+  // KV read wall Time means the time used in key/value scan and get.
+  uint64 kv_read_wall_time_ms = 3;
+  // Total wall clock time spent on this RPC in TiKV .
+  uint64 total_rpc_wall_time_ns = 4;
+}
+
+message TimeDetailV2 {
+  // Off-cpu wall time elapsed in TiKV side. Usually this includes queue waiting time and
+  // other kind of waitings in series. (Wait time in the raftstore is not included.)
+  uint64 wait_wall_time_ns = 1;
+  // Off-cpu and on-cpu wall time elapsed to actually process the request payload. It does not
+  // include `wait_wall_time` and `suspend_wall_time`.
+  // This field is very close to the CPU time in most cases. Some wait time spend in RocksDB
+  // cannot be excluded for now, like Mutex wait time, which is included in this field, so that
+  // this field is called wall time instead of CPU time.
+  uint64 process_wall_time_ns = 2;
+  // Cpu wall time elapsed that task is waiting in queue.
+  uint64 process_suspend_wall_time_ns = 3;
+  // KV read wall Time means the time used in key/value scan and get.
+  uint64 kv_read_wall_time_ns = 4;
+  // Total wall clock time spent on this RPC in TiKV .
+  uint64 total_rpc_wall_time_ns = 5;
+  // Time spent on the gRPC layer.
+  uint64 kv_grpc_process_time_ns = 6;
+  // Time spent on waiting for run again in grpc pool from other executor pool.
+  uint64 kv_grpc_wait_time_ns = 7;
+}
+
+message ScanInfo {
+  int64 total = 1;
+  int64 processed = 2;
+  int64 read_bytes = 3;
+}
+
+// Only reserved for compatibility.
+message ScanDetail {
+  ScanInfo write = 1;
+  ScanInfo lock = 2;
+  ScanInfo data = 3;
+}
+
+message ScanDetailV2 {
+  // Number of user keys scanned from the storage.
+  // It does not include deleted version or RocksDB tombstone keys.
+  // For Coprocessor requests, it includes keys that has been filtered out by
+  // Selection.
+  uint64 processed_versions = 1;
+
+  // Number of bytes of user key-value pairs scanned from the storage, i.e.
+  // total size of data returned from MVCC layer.
+  uint64 processed_versions_size = 8;
+
+  // Approximate number of MVCC keys meet during scanning. It includes
+  // deleted versions, but does not include RocksDB tombstone keys.
+  //
+  // When this field is notably larger than `processed_versions`, it means
+  // there are a lot of deleted MVCC keys.
+  uint64 total_versions = 2;
+
+  // Total number of deletes and single deletes skipped over during
+  // iteration, i.e. how many RocksDB tombstones are skipped.
+  uint64 rocksdb_delete_skipped_count = 3;
+
+  // Total number of internal keys skipped over during iteration.
+  // See https://github.com/facebook/rocksdb/blob/9f1c84ca471d8b1ad7be9f3eebfc2c7e07dfd7a7/include/rocksdb/perf_context.h#L84 for details.
+  uint64 rocksdb_key_skipped_count = 4;
+
+  // Total number of RocksDB block cache hits.
+  uint64 rocksdb_block_cache_hit_count = 5;
+
+  // Total number of block reads (with IO).
+  uint64 rocksdb_block_read_count = 6;
+
+  // Total number of bytes from block reads.
+  uint64 rocksdb_block_read_byte = 7;
+
+  // Total time used for block reads.
+  uint64 rocksdb_block_read_nanos = 9;
+
+  // Time used for getting a raftstore snapshot (including proposing read index, leader confirmation and getting the RocksDB snapshot).
+  uint64 get_snapshot_nanos = 10;
+
+  // Time used for proposing read index from read pool to store pool, equals 0 when performing lease read.
+  uint64 read_index_propose_wait_nanos = 11;
+
+  // Time used for leader confirmation, equals 0 when performing lease read.
+  uint64 read_index_confirm_wait_nanos = 12;
+
+  // Time used for read pool scheduling.
+  uint64 read_pool_schedule_wait_nanos = 13;
+}
+
+message ExecDetails {
+  // Available when ctx.record_time_stat = true or meet slow query.
+  TimeDetail time_detail = 1;
+
+  // Available when ctx.record_scan_stat = true or meet slow query.
+  ScanDetail scan_detail = 2;
+
+  // See https://github.com/pingcap/kvproto/pull/689
+  reserved 3;
+  reserved 4;
+}
+
+message ExecDetailsV2 {
+  // Available when ctx.record_time_stat = true or meet slow query.
+  // deprecated. Should use `time_detail_v2` instead.
+  TimeDetail time_detail = 1;
+
+  // Available when ctx.record_scan_stat = true or meet slow query.
+  ScanDetailV2 scan_detail_v2 = 2;
+
+  // Raftstore writing durations of the request. Only available for some write requests.
+  WriteDetail write_detail = 3;
+  // Available when ctx.record_time_stat = true or meet slow query.
+  TimeDetailV2 time_detail_v2 = 4;
+}
+
+message WriteDetail {
+  // Wait duration in the store loop.
+  uint64 store_batch_wait_nanos = 1;
+
+  // Wait duration before sending proposal to peers.
+  uint64 propose_send_wait_nanos = 2;
+
+  // Total time spent on persisting the log.
+  uint64 persist_log_nanos = 3;
+
+  // Wait time until the Raft log write leader begins to write.
+  uint64 raft_db_write_leader_wait_nanos = 4;
+
+  // Time spent on synchronizing the Raft log to the disk.
+  uint64 raft_db_sync_log_nanos = 5;
+
+  // Time spent on writing the Raft log to the Raft memtable.
+  uint64 raft_db_write_memtable_nanos = 6;
+
+  // Time waiting for peers to confirm the proposal (counting from the instant when the leader sends the proposal message).
+  uint64 commit_log_nanos = 7;
+
+  // Wait duration in the apply loop.
+  uint64 apply_batch_wait_nanos = 8;
+
+  // Total time spend to applying the log.
+  uint64 apply_log_nanos = 9;
+
+  // Wait time until the KV RocksDB lock is acquired.
+  uint64 apply_mutex_lock_nanos = 10;
+
+  // Wait time until becoming the KV RocksDB write leader.
+  uint64 apply_write_leader_wait_nanos = 11;
+
+  // Time spent on writing the KV DB WAL to the disk.
+  uint64 apply_write_wal_nanos = 12;
+
+  // Time spent on writing to the memtable of the KV RocksDB.
+  uint64 apply_write_memtable_nanos = 13;
+
+  // Time spent on waiting in the latch.
+  uint64 latch_wait_nanos = 14;
+
+  // Processing time in the transaction layer.
+  uint64 process_nanos = 15;
+
+  // Wait time because of the scheduler flow control or quota limiter throttling.
+  uint64 throttle_nanos = 16;
+
+  // Wait time in the waiter manager for pessimistic locking.
+  uint64 pessimistic_lock_wait_nanos = 17;
+}
+
+message KvPair {
+  KeyError error = 1;
+  bytes key = 2;
+  bytes value = 3;
+  // The commit timestamp of the key.
+  // If it is zero, it means the commit timestamp is unknown.
+  uint64 commit_ts = 4;
+}
+
+enum Op {
+  Put = 0;
+  Del = 1;
+  Lock = 2;
+  Rollback = 3;
+  // insert operation has a constraint that key should not exist before.
+  Insert = 4;
+  PessimisticLock = 5;
+  CheckNotExists = 6;
+}
+
+enum Assertion {
+  None = 0;
+  Exist = 1;
+  NotExist = 2;
+}
+
+message MvccWrite {
+  Op type = 1;
+  uint64 start_ts = 2;
+  uint64 commit_ts = 3;
+  bytes short_value = 4;
+  bool has_overlapped_rollback = 5;
+  bool has_gc_fence = 6;
+  uint64 gc_fence = 7;
+  uint64 last_change_ts = 8;
+  uint64 versions_to_last_change = 9;
+}
+
+message MvccValue {
+  uint64 start_ts = 1;
+  bytes value = 2;
+}
+
+message MvccLock {
+  Op type = 1;
+  uint64 start_ts = 2;
+  bytes primary = 3;
+  bytes short_value = 4;
+  uint64 ttl = 5;
+  uint64 for_update_ts = 6;
+  uint64 txn_size = 7;
+  bool use_async_commit = 8;
+  repeated bytes secondaries = 9;
+  repeated uint64 rollback_ts = 10;
+  uint64 last_change_ts = 11;
+  uint64 versions_to_last_change = 12;
+}
+
+message MvccInfo {
+  MvccLock lock = 1;
+  repeated MvccWrite writes = 2;
+  repeated MvccValue values = 3;
+}
