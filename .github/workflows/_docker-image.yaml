@@ -90,6 +90,17 @@ jobs:
         with:
           persist-credentials: false
           ref: ${{ steps.ref.outputs.ref }}
+      - name: Install bun
+        run: |
+          if ! command -v curl >/dev/null 2>&1; then
+            if [ -x "$(command -v sudo)" ]; then
+              sudo apt-get update && sudo apt-get install -y curl unzip
+            else
+              apt-get update && apt-get install -y curl unzip
+            fi
+          fi
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> $GITHUB_PATH
       - name: Determine build target architecture
         id: determine_build_target_arch
         run: |
@@ -148,6 +159,10 @@ jobs:
         with:
           persist-credentials: false
           ref: ${{ needs.prepare.outputs.ref }}
+      - name: Install bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> $GITHUB_PATH
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
