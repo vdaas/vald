@@ -45,6 +45,11 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: Install bun
+      shell: bash
+      run: |
+        curl -fsSL https://bun.sh/install | bash
+        echo "$HOME/.bun/bin" >> $GITHUB_PATH
     - name: Determine build platform
       shell: bash
       id: determine_build_platform
