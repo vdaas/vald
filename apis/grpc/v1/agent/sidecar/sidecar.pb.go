@@ -46,16 +46,14 @@ const file_v1_agent_sidecar_sidecar_proto_rawDesc = "" +
 	"\aSidecarBk\n" +
 	"#org.vdaas.vald.api.v1.agent.sidecarB\x10ValdAgentSidecarP\x01Z0github.com/vdaas/vald/apis/grpc/v1/agent/sidecarb\x06proto3"
 
-var (
-	file_v1_agent_sidecar_sidecar_proto_goTypes = []any{}
-	file_v1_agent_sidecar_sidecar_proto_depIdxs = []int32{
-		0, // [0:0] is the sub-list for method output_type
-		0, // [0:0] is the sub-list for method input_type
-		0, // [0:0] is the sub-list for extension type_name
-		0, // [0:0] is the sub-list for extension extendee
-		0, // [0:0] is the sub-list for field type_name
-	}
-)
+var file_v1_agent_sidecar_sidecar_proto_goTypes = []any{}
+var file_v1_agent_sidecar_sidecar_proto_depIdxs = []int32{
+	0, // [0:0] is the sub-list for method output_type
+	0, // [0:0] is the sub-list for method input_type
+	0, // [0:0] is the sub-list for extension type_name
+	0, // [0:0] is the sub-list for extension extendee
+	0, // [0:0] is the sub-list for field type_name
+}
 
 func init() { file_v1_agent_sidecar_sidecar_proto_init() }
 func file_v1_agent_sidecar_sidecar_proto_init() {
