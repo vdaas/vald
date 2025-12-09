@@ -2109,10 +2109,10 @@ pub mod meta {
             "/payload.v1.Meta.Key".into()
         }
     }
-    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+    #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct Value {
         #[prost(message, optional, tag = "1")]
-        pub value: ::core::option::Option<::prost_types::Any>,
+        pub value: ::core::option::Option<::pbjson_types::Any>,
     }
     impl ::prost::Name for Value {
         const NAME: &'static str = "Value";
@@ -2124,7 +2124,7 @@ pub mod meta {
             "/payload.v1.Meta.Value".into()
         }
     }
-    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+    #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct KeyValue {
         #[prost(message, optional, tag = "1")]
         pub key: ::core::option::Option<Key>,

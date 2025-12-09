@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, PartialEq, ::prost::Message, serde::Serialize, serde::Deserialize)]
 pub struct Status {
     /// The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
     #[prost(int32, tag = "1")]
@@ -26,5 +26,5 @@ pub struct Status {
     /// A list of messages that carry the error details.  There is a common set of
     /// message types for APIs to use.
     #[prost(message, repeated, tag = "3")]
-    pub details: ::prost::alloc::vec::Vec<::prost_types::Any>,
+    pub details: ::prost::alloc::vec::Vec<::pbjson_types::Any>,
 }

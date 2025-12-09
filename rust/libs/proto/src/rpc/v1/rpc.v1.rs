@@ -65,11 +65,11 @@ impl ::prost::Name for ErrorInfo {
 /// the delay between retries based on `retry_delay`, until either a maximum
 /// number of retries have been reached or a maximum retry delay cap has been
 /// reached.
-#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct RetryInfo {
     /// Clients should wait at least this long between retrying the same request.
     #[prost(message, optional, tag = "1")]
-    pub retry_delay: ::core::option::Option<::prost_types::Duration>,
+    pub retry_delay: ::core::option::Option<::pbjson_types::Duration>,
 }
 impl ::prost::Name for RetryInfo {
     const NAME: &'static str = "RetryInfo";
@@ -233,6 +233,7 @@ pub mod bad_request {
         ///
         /// Consider the following:
         ///
+        /// ```protobuf
         ///      message CreateContactRequest {
         ///        message EmailAddress {
         ///          enum Type {
@@ -248,6 +249,7 @@ pub mod bad_request {
         ///        string full_name = 1;
         ///        repeated EmailAddress email_addresses = 2;
         ///      }
+        /// ```
         ///
         /// In this example, in proto `field` could take one of the following values:
         ///
