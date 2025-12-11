@@ -69,7 +69,7 @@ impl ::prost::Name for ErrorInfo {
 pub struct RetryInfo {
     /// Clients should wait at least this long between retrying the same request.
     #[prost(message, optional, tag = "1")]
-    pub retry_delay: ::core::option::Option<::pbjson_types::Duration>,
+    pub retry_delay: ::core::option::Option<::prost_types::Duration>,
 }
 impl ::prost::Name for RetryInfo {
     const NAME: &'static str = "RetryInfo";

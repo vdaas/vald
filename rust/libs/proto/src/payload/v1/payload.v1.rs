@@ -2112,7 +2112,7 @@ pub mod meta {
     #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct Value {
         #[prost(message, optional, tag = "1")]
-        pub value: ::core::option::Option<::pbjson_types::Any>,
+        pub value: ::core::option::Option<::prost_types::Any>,
     }
     impl ::prost::Name for Value {
         const NAME: &'static str = "Value";

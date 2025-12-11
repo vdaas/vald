@@ -1458,9 +1458,9 @@ impl serde::Serialize for RetryInfo {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("rpc.v1.RetryInfo", len)?;
-        if let Some(v) = self.retry_delay.as_ref() {
-            struct_ser.serialize_field("retryDelay", v)?;
-        }
+        // if let Some(v) = self.retry_delay.as_ref() {
+        //     struct_ser.serialize_field("retryDelay", v)?;
+        // }
         struct_ser.end()
     }
 }
@@ -1526,7 +1526,8 @@ impl<'de> serde::Deserialize<'de> for RetryInfo {
                             if retry_delay__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("retryDelay"));
                             }
-                            retry_delay__ = map_.next_value()?;
+                            let _ = map_.next_value::<serde::de::IgnoredAny>()?;
+                            retry_delay__ = None;
                         }
                     }
                 }
