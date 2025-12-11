@@ -1459,7 +1459,13 @@ impl serde::Serialize for RetryInfo {
         }
         let mut struct_ser = serializer.serialize_struct("rpc.v1.RetryInfo", len)?;
         if let Some(v) = self.retry_delay.as_ref() {
-            struct_ser.serialize_field("retryDelay", v)?;
+            struct_ser.serialize_field(
+                "retryDelay",
+                &pbjson_types::Duration {
+                    seconds: v.seconds,
+                    nanos: v.nanos,
+                },
+            )?;
         }
         struct_ser.end()
     }
@@ -1526,7 +1532,12 @@ impl<'de> serde::Deserialize<'de> for RetryInfo {
                             if retry_delay__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("retryDelay"));
                             }
-                            retry_delay__ = map_.next_value()?;
+                            retry_delay__ = map_
+                                .next_value::<Option<pbjson_types::Duration>>()?
+                                .map(|v| prost_types::Duration {
+                                    seconds: v.seconds,
+                                    nanos: v.nanos,
+                                });
                         }
                     }
                 }

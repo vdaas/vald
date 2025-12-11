@@ -65,7 +65,7 @@ impl ::prost::Name for ErrorInfo {
 /// the delay between retries based on `retry_delay`, until either a maximum
 /// number of retries have been reached or a maximum retry delay cap has been
 /// reached.
-#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct RetryInfo {
     /// Clients should wait at least this long between retrying the same request.
     #[prost(message, optional, tag = "1")]
