@@ -57,7 +57,6 @@ var file_v1_meta_meta_proto_goTypes = []any{
 	(*payload.Meta_Value)(nil),    // 2: payload.v1.Meta.Value
 	(*payload.Empty)(nil),         // 3: payload.v1.Empty
 }
-
 var file_v1_meta_meta_proto_depIdxs = []int32{
 	0, // 0: meta.v1.Meta.Get:input_type -> payload.v1.Meta.Key
 	1, // 1: meta.v1.Meta.Set:input_type -> payload.v1.Meta.KeyValue
