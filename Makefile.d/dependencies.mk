@@ -96,8 +96,10 @@ go/example/deps:
 	$(ROOTDIR)/example/client/vendor \
 	$(ROOTDIR)/example/client/go.mod \
 	$(ROOTDIR)/example/client/go.sum 2>/dev/null
-	sed -i "3s/go [0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?/go $(GO_VERSION)/g" $(ROOTDIR)/example/client/go.mod.default
 	cp $(ROOTDIR)/example/client/go.mod.default $(ROOTDIR)/example/client/go.mod
+	sed -i "3s/go [0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?/go $(GO_VERSION)/g" $(ROOTDIR)/example/client/go.mod
+	sed -i "/upgrade/d" $(ROOTDIR)/example/client/go.mod
+	if [ ! -f $(ROOTDIR)/example/client/go.mod ]; then echo "Missing go.mod in example/client"; exit 1; fi
 	cd $(ROOTDIR)/example/client && GOPRIVATE=$(GOPRIVATE) go mod tidy && cd -
 
 .PHONY: rust/deps
