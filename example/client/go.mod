@@ -2,20 +2,12 @@ module github.com/vdaas/vald/example/client
 
 go 1.25.5
 
-replace (
-	github.com/kpango/fuid => github.com/kpango/fuid v0.0.0-20221203053508-503b5ad89aa1
-	github.com/kpango/glg => github.com/kpango/glg v1.6.15
-	github.com/vdaas/vald-client-go => github.com/vdaas/vald-client-go v1.7.17
-	gonum.org/v1/hdf5 => gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
-	google.golang.org/grpc => google.golang.org/grpc v1.77.0
-)
-
 require (
-	github.com/kpango/fuid v0.0.0-00010101000000-000000000000
-	github.com/kpango/glg v1.6.14
-	github.com/vdaas/vald-client-go v0.0.0-00010101000000-000000000000
-	gonum.org/v1/hdf5 v0.0.0-00010101000000-000000000000
-	google.golang.org/grpc v1.71.0
+	github.com/kpango/fuid v0.0.0-20221203053508-503b5ad89aa1
+	github.com/kpango/glg v1.6.15
+	github.com/vdaas/vald-client-go v1.7.17
+	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
+	google.golang.org/grpc v1.77.0
 )
 
 require (
