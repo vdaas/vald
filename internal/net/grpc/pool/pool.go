@@ -76,12 +76,12 @@ type poolConn struct {
 // Close gracefully closes the connection with the specified delay.
 // It periodically checks the connection state until either the connection is closed or the delay elapses.
 func (pc *poolConn) Close(ctx context.Context, delay time.Duration) error {
-	// Determine the ticker interval (at least 5ms, at most 5s).
-	interval := delay / 10
-	if interval < 5*time.Millisecond {
-		interval = 5 * time.Millisecond
+	// Determine the ticker interval.
+	interval := delay / 2
+	if interval < 200*time.Millisecond {
+		interval = 200 * time.Millisecond
 	} else if interval > time.Minute {
-		interval = 5 * time.Second
+		interval = time.Minute
 	}
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
@@ -163,7 +163,7 @@ var metrics sync.Map[string, uint64]
 func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 	p := &pool{
 		dialTimeout:       time.Second,
-		oldConnCloseDelay: 2 * time.Minute,
+		oldConnCloseDelay: 20 * time.Second,
 		enableDNSLookup:   false,
 	}
 	// Apply default and user-specified options.
@@ -200,7 +200,7 @@ func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 			}
 		}
 		// If port is still zero, attempt port scanning.
-		if p.port == 0 {
+		if p.port == 0 && !p.isIPAddr && p.enableDNSLookup {
 			var port uint16
 			if port, err = p.scanGRPCPort(ctx); err != nil {
 				return nil, err
@@ -214,22 +214,24 @@ func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 	conn, err := p.dial(ctx, 0, p.addr)
 	if err != nil {
 		log.Warnf("Initial dial check to %s failed: %v", p.addr, err)
-		var port uint16
-		if port, err = p.scanGRPCPort(ctx); err != nil {
-			return nil, err
-		}
-		p.port = port
-		p.addr = net.JoinHostPort(p.host, p.port)
-		log.Debugf("Fallback target: %s, host: %s, port: %d, isIP: %t", p.addr, p.host, p.port, p.isIPAddr)
-		conn, err = p.dial(ctx, 0, p.addr)
-		if err != nil {
-			if conn != nil {
-				cerr := conn.Close()
-				if cerr != nil {
-					return nil, errors.Join(err, cerr)
-				}
+		if !p.isIPAddr && p.enableDNSLookup {
+			var port uint16
+			if port, err = p.scanGRPCPort(ctx); err != nil {
+				return nil, err
 			}
-			return nil, err
+			p.port = port
+			p.addr = net.JoinHostPort(p.host, p.port)
+			log.Debugf("Fallback target: %s, host: %s, port: %d, isIP: %t", p.addr, p.host, p.port, p.isIPAddr)
+			conn, err = p.dial(ctx, 0, p.addr)
+			if err != nil {
+				if conn != nil {
+					cerr := conn.Close()
+					if cerr != nil {
+						return nil, errors.Join(err, cerr)
+					}
+				}
+				return nil, err
+			}
 		}
 	}
 	if conn != nil {
@@ -378,42 +380,47 @@ func (p *pool) refreshConn(ctx context.Context, idx uint64, pc *poolConn, addr s
 	} else {
 		log.Debugf("connection pool %d/%d len %d is empty, establish new pool member connection to %s", idx+1, p.Size(), p.Len(), addr)
 	}
-	newConn, err := p.dial(ctx, idx, addr)
-	if err != nil {
-		if pc != nil {
-			state, healthy := p.isHealthy(idx, pc.conn)
-			if healthy {
-				return nil
-			}
-			log.Debugf("re-dialed connection for %s pool %d/%d len %d is still unhealthy (state: %s) going to close connection for %s",
-				pc.addr, idx+1, p.Size(), p.Len(), state.String(), addr)
-
-			if pc.conn != nil {
-				p.errGroup.Go(func() error {
-					log.Debugf("closing unhealthy connection pool %d/%d len %d for addr: %s", idx+1, p.Size(), p.Len(), pc.addr)
-					err := pc.Close(ctx, p.oldConnCloseDelay)
-					if err != nil {
-						log.Errorf("failed to close connection pool %d/%d addr = %s\terror = %v", idx+1, p.Size(), pc.addr, err)
-					}
+	// Async dial to avoid blocking
+	p.errGroup.Go(func() error {
+		newConn, err := p.dial(ctx, idx, addr)
+		if err != nil {
+			if pc != nil {
+				state, healthy := p.isHealthy(idx, pc.conn)
+				if healthy {
 					return nil
-				})
+				}
+				log.Debugf("re-dialed connection for %s pool %d/%d len %d is still unhealthy (state: %s) going to close connection for %s",
+					pc.addr, idx+1, p.Size(), p.Len(), state.String(), addr)
+
+				if pc.conn != nil {
+					p.errGroup.Go(func() error {
+						log.Debugf("closing unhealthy connection pool %d/%d len %d for addr: %s", idx+1, p.Size(), p.Len(), pc.addr)
+						err := pc.Close(ctx, p.oldConnCloseDelay)
+						if err != nil {
+							log.Errorf("failed to close connection pool %d/%d addr = %s\terror = %v", idx+1, p.Size(), pc.addr, err)
+						}
+						return nil
+					})
+				}
 			}
+			log.Warnf("failed to refresh connection for pool %d/%d addr: %s: %v", idx+1, p.Size(), addr, err)
+			return nil // do not propagate dial error in async
 		}
-		return errors.Join(err, errors.ErrInvalidGRPCClientConn(addr))
-	}
 
-	p.store(idx, &poolConn{conn: newConn, addr: addr})
+		p.store(idx, &poolConn{conn: newConn, addr: addr})
 
-	if pc != nil && pc.conn != nil {
-		p.errGroup.Go(func() error {
-			log.Debugf("closing unhealthy connection pool %d/%d len %d for addr: %s", idx+1, p.Size(), p.Len(), pc.addr)
-			err := pc.Close(ctx, p.oldConnCloseDelay)
-			if err != nil {
-				log.Errorf("failed to close connection pool %d/%d addr = %s\terror = %v", idx+1, p.Size(), pc.addr, err)
-			}
-			return nil
-		})
-	}
+		if pc != nil && pc.conn != nil {
+			p.errGroup.Go(func() error {
+				log.Debugf("closing unhealthy connection pool %d/%d len %d for addr: %s", idx+1, p.Size(), p.Len(), pc.addr)
+				err := pc.Close(ctx, p.oldConnCloseDelay)
+				if err != nil {
+					log.Errorf("failed to close connection pool %d/%d addr = %s\terror = %v", idx+1, p.Size(), pc.addr, err)
+				}
+				return nil
+			})
+		}
+		return nil
+	})
 	return nil
 }
 
@@ -562,10 +569,16 @@ func (p *pool) Disconnect(ctx context.Context) (err error) {
 func (p *pool) dial(ctx context.Context, idx uint64, addr string) (*ClientConn, error) {
 	dialFunc := func() (*ClientConn, error) {
 		log.Debugf("Dialing pool connection %d/%d to %s", idx+1, p.Size(), addr)
-		conn, err := grpc.NewClient(addr, p.dialOpts...)
+		ctx, cancel := context.WithTimeout(ctx, p.dialTimeout)
+		defer cancel()
+
+		conn, err := grpc.DialContext(ctx, addr, append(p.dialOpts, grpc.WithBlock())...)
 		if err != nil {
 			if conn != nil {
 				return nil, errors.Join(err, conn.Close())
+			}
+			if errors.Is(err, context.DeadlineExceeded) {
+				log.Warnf("dial timeout to %s: %v", addr, err)
 			}
 			return nil, err
 		}
@@ -668,42 +681,20 @@ func (p *pool) IsHealthy(ctx context.Context) bool {
 			state, healthy := p.isHealthy(idx, pc.conn)
 			if healthy {
 				healthyCount++
-				cnt, ok := metrics.Load(pc.addr)
-				if ok {
-					metrics.Store(pc.addr, cnt+1)
-				} else {
-					metrics.Store(pc.addr, 1)
-				}
 			} else {
 				log.Debugf("unhealthy connection detected for %s pool %d/%d len %d is unhealthy (state: %s)",
 					pc.addr, idx+1, p.Size(), p.Len(), state.String())
 			}
 		} else {
-			newConn, err := p.dial(ctx, idx, p.addr)
-			if err == nil && newConn != nil {
-				state, healthy := p.isHealthy(idx, newConn)
-				addr := newConn.Target()
-				if healthy {
-					healthyCount++
-					pc = &poolConn{conn: newConn, addr: addr}
-					p.store(idx, pc)
-					cnt, ok := metrics.Load(pc.addr)
-					if ok {
-						metrics.Store(pc.addr, cnt+1)
-					} else {
-						metrics.Store(pc.addr, 1)
-					}
-				} else {
-					log.Debugf("unhealthy nil connection target %s detected for pool %d/%d len %d is unhealthy (state: %s)",
-						addr, idx+1, p.Size(), p.Len(), state.String())
-				}
-			} else {
-				log.Debugf("nil pool connection detected for %s pool %d/%d len %d is unhealthy", p.addr, idx+1, p.Size(), p.Len())
-			}
+			// Do not block health check with dial
+			p.refreshConn(ctx, idx, pc, p.addr)
+			// Assume unhealthy if nil for now
+			log.Debugf("nil pool connection detected for %s pool %d/%d len %d is unhealthy", p.addr, idx+1, p.Size(), p.Len())
 		}
 		return true
 	})
-	metrics.Store(p.addr, healthyCount)
+	// Metrics update is expensive, disabled for now as per instruction
+	// metrics.Store(p.addr, healthyCount)
 	if err != nil {
 		log.Debugf("health check loop for addr=%s returned error: %v", p.addr, err)
 	}

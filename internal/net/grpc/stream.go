@@ -52,12 +52,14 @@ type (
 	}
 )
 
+const apiName = "vald/internal/net/grpc"
+
 // BidirectionalStream represents gRPC bidirectional stream server handler.
 // It receives messages from the stream, calls the function with the received message, and sends the returned message to the stream.
 // It limits the number of concurrent calls to the function with the concurrency integer.
 // It records errors and returns them as a single error.
-func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
-	ctx context.Context, stream S, concurrency int, handle func(context.Context, Q) (R, error),
+func BidirectionalStream[Q, R any](
+	ctx context.Context, stream ServerStream, concurrency int, handle func(context.Context, *Q) (*R, error),
 ) (err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/BidirectionalStream")
 	defer func() {
@@ -65,7 +67,7 @@ func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 			span.End()
 		}
 	}()
-	if any(stream) == nil {
+	if stream == nil {
 		return errors.ErrGRPCServerStreamNotFound
 	}
 	eg, ctx := errgroup.New(ctx)
@@ -105,7 +107,8 @@ func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 		case <-ctx.Done():
 			return finalize()
 		default:
-			data, err := stream.Recv()
+			data := new(Q)
+			err = stream.RecvMsg(data)
 			if err != nil {
 				if err != io.EOF && !errors.Is(err, io.EOF) {
 					err = errors.Wrap(err, "BidirectionalStream Recv returned error")
@@ -145,7 +148,7 @@ func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 					}
 				}
 				mu.Lock()
-				err = stream.Send(res)
+				err = stream.SendMsg(res)
 				mu.Unlock()
 				if err != nil {
 					runtime.Gosched()
@@ -172,10 +175,10 @@ func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 }
 
 // BidirectionalStreamClient is gRPC client stream.
-func BidirectionalStreamClient[Q, R proto.Message, S TypedClientStream[Q, R]](
-	stream S, concurrency int, sendDataProvider func() (Q, bool), callBack func(R, error) bool,
+func BidirectionalStreamClient[Q, R any](
+	stream ClientStream, concurrency int, sendDataProvider func() (*Q, bool), callBack func(*R, error) bool,
 ) (err error) {
-	if any(stream) == nil {
+	if stream == nil {
 		return errors.ErrGRPCClientStreamNotFound
 	}
 	ctx, cancel := context.WithCancel(stream.Context())
@@ -193,7 +196,8 @@ func BidirectionalStreamClient[Q, R proto.Message, S TypedClientStream[Q, R]](
 				}
 				return nil
 			default:
-				res, err := stream.Recv()
+				res := new(R)
+				err = stream.RecvMsg(res)
 				if errors.IsAny(err, io.EOF, context.Canceled, context.DeadlineExceeded) {
 					cancel()
 					return nil
@@ -245,7 +249,7 @@ func BidirectionalStreamClient[Q, R proto.Message, S TypedClientStream[Q, R]](
 				}
 				eg.Go(safety.RecoverFunc(func() (err error) {
 					mu.Lock()
-					err = stream.Send(data)
+					err = stream.SendMsg(data)
 					mu.Unlock()
 					if err != nil {
 						select {
