@@ -127,6 +127,7 @@ type pool struct {
 	addr            string // Complete address (host:port).
 	isIPAddr        bool   // True if the target is an IP address.
 	enableDNSLookup bool   // Whether to perform DNS resolution.
+	enableMetrics   bool   // Whether to enable metrics collection.
 
 	// Pool management fields.
 	poolSize     atomic.Uint64 // Configured pool size.
@@ -673,11 +674,13 @@ func (p *pool) IsHealthy(ctx context.Context) bool {
 			state, healthy := p.isHealthy(idx, pc.conn)
 			if healthy {
 				healthyCount++
-				cnt, ok := metrics.Load(pc.addr)
-				if ok {
-					metrics.Store(pc.addr, cnt+1)
-				} else {
-					metrics.Store(pc.addr, 1)
+				if p.enableMetrics {
+					cnt, ok := metrics.Load(pc.addr)
+					if ok {
+						metrics.Store(pc.addr, cnt+1)
+					} else {
+						metrics.Store(pc.addr, 1)
+					}
 				}
 			} else {
 				log.Debugf("unhealthy connection detected for %s pool %d/%d len %d is unhealthy (state: %s)",
@@ -691,7 +694,9 @@ func (p *pool) IsHealthy(ctx context.Context) bool {
 		}
 		return true
 	})
-	metrics.Store(p.addr, healthyCount)
+	if p.enableMetrics {
+		metrics.Store(p.addr, healthyCount)
+	}
 	if err != nil {
 		log.Debugf("health check loop for addr=%s returned error: %v", p.addr, err)
 	}
