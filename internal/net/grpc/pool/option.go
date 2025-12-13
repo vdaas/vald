@@ -33,7 +33,7 @@ var defaultOptions = []Option{
 	WithEndPort(65535),
 	WithErrGroup(errgroup.Get()),
 	WithDialTimeout("1s"),
-	WithOldConnCloseDelay("1s"),
+	WithOldConnCloseDelay("10s"),
 	WithResolveDNS(false),
 	WithEnableMetrics(false),
 }
