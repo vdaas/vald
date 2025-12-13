@@ -655,15 +655,6 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 				log.Debugf("after re-connection for %s pool %d/%d len %d is still unhealthy (state: %s) going to close connection for %s",
 					pc.addr, idx+1, p.Size(), p.Len(), state.String(), p.addr)
 			}
-		} else {
-			// Add a small backoff if refreshConn fails repeatedly
-			// Use simple exponential backoff strategy (up to a limit) to avoid tight loops
-			delay := time.Duration(10 * (1 << (idx % 5))) * time.Millisecond
-			select {
-			case <-ctx.Done():
-				return nil, false
-			case <-time.After(delay):
-			}
 		}
 	}
 	return nil, false

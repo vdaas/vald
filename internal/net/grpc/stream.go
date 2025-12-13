@@ -59,7 +59,7 @@ type (
 func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 	ctx context.Context, stream S, concurrency int, handle func(context.Context, Q) (R, error),
 ) (err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/internal/net/grpc/BidirectionalStream")
+	ctx, span := trace.StartSpan(ctx, apiName+"/BidirectionalStream")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -118,7 +118,7 @@ func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 			}
 			eg.Go(safety.RecoverWithoutPanicFunc(func() (err error) {
 				id := atomic.AddUint64(&cnt, 1)
-				ctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s/BidirectionalStream/stream-%020d", "vald/internal/net/grpc", id))
+				ctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s/BidirectionalStream/stream-%020d", apiName, id))
 				defer func() {
 					if sspan != nil {
 						sspan.End()
@@ -155,7 +155,7 @@ func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 					emu.Unlock()
 					st, msg, err := status.ParseError(err, codes.Internal, fmt.Sprintf("failed to parse BidirectionalStream.SendMsg id= %020d gRPC error response", id),
 						&errdetails.RequestInfo{
-							RequestId:   fmt.Sprintf("%s/BidirectionalStream/stream-%020d/SendMsg", "vald/internal/net/grpc", id),
+							RequestId:   fmt.Sprintf("%s/BidirectionalStream/stream-%020d/SendMsg", apiName, id),
 							ServingData: errdetails.Serialize(res),
 						})
 					if sspan != nil {
