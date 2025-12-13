@@ -33,9 +33,8 @@ var defaultOptions = []Option{
 	WithEndPort(65535),
 	WithErrGroup(errgroup.Get()),
 	WithDialTimeout("1s"),
-	WithOldConnCloseDelay("1s"),
-	WithResolveDNS(false),
-	WithEnableMetrics(false),
+	WithOldConnCloseDelay("2m"),
+	WithResolveDNS(true),
 }
 
 // WithAddr sets the target address. It also extracts the host and port.
@@ -154,11 +153,5 @@ func WithErrGroup(eg errgroup.Group) Option {
 		if eg != nil {
 			p.errGroup = eg
 		}
-	}
-}
-// WithEnableMetrics enables or disables metrics collection.
-func WithEnableMetrics(enable bool) Option {
-	return func(p *pool) {
-		p.enableMetrics = enable
 	}
 }
