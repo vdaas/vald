@@ -58,7 +58,6 @@ var file_v1_vald_upsert_proto_goTypes = []any{
 	(*payload.Object_StreamLocation)(nil), // 3: payload.v1.Object.StreamLocation
 	(*payload.Object_Locations)(nil),      // 4: payload.v1.Object.Locations
 }
-
 var file_v1_vald_upsert_proto_depIdxs = []int32{
 	0, // 0: vald.v1.Upsert.Upsert:input_type -> payload.v1.Upsert.Request
 	0, // 1: vald.v1.Upsert.StreamUpsert:input_type -> payload.v1.Upsert.Request

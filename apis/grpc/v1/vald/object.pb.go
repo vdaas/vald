@@ -63,7 +63,6 @@ var file_v1_vald_object_proto_goTypes = []any{
 	(*payload.Object_List_Response)(nil),    // 6: payload.v1.Object.List.Response
 	(*payload.Object_Timestamp)(nil),        // 7: payload.v1.Object.Timestamp
 }
-
 var file_v1_vald_object_proto_depIdxs = []int32{
 	0, // 0: vald.v1.Object.Exists:input_type -> payload.v1.Object.ID
 	1, // 1: vald.v1.Object.GetObject:input_type -> payload.v1.Object.VectorRequest

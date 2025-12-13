@@ -53,7 +53,6 @@ var file_v1_rpc_stats_stats_proto_goTypes = []any{
 	(*payload.Empty)(nil),              // 0: payload.v1.Empty
 	(*payload.Info_ResourceStats)(nil), // 1: payload.v1.Info.ResourceStats
 }
-
 var file_v1_rpc_stats_stats_proto_depIdxs = []int32{
 	0, // 0: rpc.v1.Stats.ResourceStats:input_type -> payload.v1.Empty
 	1, // 1: rpc.v1.Stats.ResourceStats:output_type -> payload.v1.Info.ResourceStats

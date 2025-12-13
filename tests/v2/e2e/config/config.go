@@ -26,6 +26,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
+	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/config"
@@ -40,6 +41,7 @@ import (
 	"github.com/vdaas/vald/internal/timeutil"
 	"github.com/vdaas/vald/internal/timeutil/rate"
 	"github.com/vdaas/vald/tests/v2/e2e/kubernetes"
+	"github.com/vdaas/vald/tests/v2/e2e/metrics"
 	"sigs.k8s.io/yaml"
 )
 
@@ -55,33 +57,91 @@ type Data struct {
 	Strategies          []*Strategy        `json:"strategies,omitempty"      yaml:"strategies,omitempty"`
 	Dataset             *Dataset           `json:"dataset,omitempty"         yaml:"dataset,omitempty"`
 	Kubernetes          *Kubernetes        `json:"kubernetes,omitempty"      yaml:"kubernetes,omitempty"`
+	Metrics             *Metrics           `json:"metrics,omitempty"         yaml:"metrics,omitempty"`
 	Metadata            map[string]string  `json:"metadata,omitempty"        yaml:"metadata,omitempty"`
 	MetaString          string             `json:"metadata_string,omitempty" yaml:"metadata_string,omitempty"`
 	FilePath            string             `json:"-"                         yaml:"-"`
+	Collector           metrics.Collector  `json:"-"                         yaml:"-"`
+}
+
+// Metrics represents the configuration for the metrics collector.
+type Metrics struct {
+	Enabled               bool          `json:"enabled"                        yaml:"enabled"`
+	Histogram             *Histogram    `json:"histogram,omitempty"            yaml:"histogram,omitempty"`
+	LatencyHistogram      *Histogram    `json:"latency_histogram,omitempty"    yaml:"latency_histogram,omitempty"`
+	QueueWaitHistogram    *Histogram    `json:"queue_wait_histogram,omitempty" yaml:"queue_wait_histogram,omitempty"`
+	TDigest               *TDigest      `json:"tdigest,omitempty"              yaml:"tdigest,omitempty"`
+	LatencyTDigest        *TDigest      `json:"latency_tdigest,omitempty"      yaml:"latency_tdigest,omitempty"`
+	QueueWaitTDigest      *TDigest      `json:"queue_wait_tdigest,omitempty"   yaml:"queue_wait_tdigest,omitempty"`
+	Exemplar              *Exemplar     `json:"exemplar,omitempty"             yaml:"exemplar,omitempty"`
+	RangeScales           []*RangeScale `json:"range_scales,omitempty"         yaml:"range_scales,omitempty"`
+	TimeScales            []*TimeScale  `json:"time_scales,omitempty"          yaml:"time_scales,omitempty"`
+	CustomCounters        []string      `json:"custom_counters,omitempty"      yaml:"custom_counters,omitempty"`
+	DetailedErrorTracking bool          `json:"detailed_error_tracking"        yaml:"detailed_error_tracking"`
+}
+
+// RangeScale represents the configuration for a range scale.
+type RangeScale struct {
+	Name     string `json:"name,omitempty"     yaml:"name,omitempty"`
+	Width    uint64 `json:"width,omitempty"    yaml:"width,omitempty"`
+	Capacity uint64 `json:"capacity,omitempty" yaml:"capacity,omitempty"`
+}
+
+// TimeScale represents the configuration for a time scale.
+type TimeScale struct {
+	Name     string `json:"name,omitempty"     yaml:"name,omitempty"`
+	Width    uint64 `json:"width,omitempty"    yaml:"width,omitempty"`
+	Capacity uint64 `json:"capacity,omitempty" yaml:"capacity,omitempty"`
+}
+
+// Histogram represents the configuration for a histogram.
+type Histogram struct {
+	NumShards int `json:"num_shards,omitempty" yaml:"num_shards,omitempty"`
+}
+
+// TDigest represents the configuration for a TDigest.
+type TDigest struct {
+	Compression              float64   `json:"compression,omitempty"                yaml:"compression,omitempty"`
+	CompressionTriggerFactor float64   `json:"compression_trigger_factor,omitempty" yaml:"compression_trigger_factor,omitempty"`
+	Quantiles                []float64 `json:"quantiles,omitempty"                  yaml:"quantiles,omitempty"`
+	NumShards                int       `json:"num_shards,omitempty"                 yaml:"num_shards,omitempty"`
+}
+
+// Exemplar represents the configuration for an exemplar.
+type Exemplar struct {
+	Capacity     int `json:"capacity,omitempty"      yaml:"capacity,omitempty"`
+	NumShards    int `json:"num_shards,omitempty"    yaml:"num_shards,omitempty"`
+	SamplingRate int `json:"sampling_rate,omitempty" yaml:"sampling_rate,omitempty"`
 }
 
 // Strategy represents a test strategy.
 type Strategy struct {
-	TimeConfig  `             yaml:",inline"              json:",inline"`
-	Name        string       `yaml:"name"                 json:"name,omitempty"`
-	Repeats     *Repeats     `yaml:"repeats"              json:"repeats,omitempty"`
-	Concurrency uint64       `yaml:"concurrency"          json:"concurrency,omitempty"`
-	Operations  []*Operation `yaml:"operations,omitempty" json:"operations,omitempty"`
+	TimeConfig  `yaml:",inline" json:",inline"`
+	Name        string            `yaml:"name"                 json:"name,omitempty"`
+	Repeats     *Repeats          `yaml:"repeats"              json:"repeats,omitempty"`
+	Concurrency uint64            `yaml:"concurrency"          json:"concurrency,omitempty"`
+	Operations  []*Operation      `yaml:"operations,omitempty" json:"operations,omitempty"`
+	Metrics     *Metrics          `yaml:"metrics,omitempty"    json:"metrics,omitempty"`
+	Collector   metrics.Collector `yaml:"-"                    json:"-"`
 }
 
 // Operation represents an individual operation configuration.
 type Operation struct {
-	TimeConfig `             yaml:",inline"              json:",inline"`
-	Name       string       `yaml:"name,omitempty"       json:"name,omitempty"`
-	Repeats    *Repeats     `yaml:"repeats"              json:"repeats,omitempty"`
-	Executions []*Execution `yaml:"executions,omitempty" json:"executions,omitempty"`
+	TimeConfig `yaml:",inline" json:",inline"`
+	Name       string            `yaml:"name,omitempty"       json:"name,omitempty"`
+	Repeats    *Repeats          `yaml:"repeats"              json:"repeats,omitempty"`
+	Executions []*Execution      `yaml:"executions,omitempty" json:"executions,omitempty"`
+	Metrics    *Metrics          `yaml:"metrics,omitempty"    json:"metrics,omitempty"`
+	Collector  metrics.Collector `yaml:"-"                    json:"-"`
 }
 
 // Execution represents the execution details for a given operation.
 type Execution struct {
-	*BaseConfig  `                    yaml:",inline,omitempty"      json:",inline,omitempty"`
-	TimeConfig   `                    yaml:",inline"                json:",inline"`
+	*BaseConfig  `yaml:",inline,omitempty" json:",inline,omitempty"`
+	TimeConfig   `yaml:",inline" json:",inline"`
 	Name         string              `yaml:"name"                   json:"name,omitempty"`
+	Strategy     string              `yaml:"-"                      json:"-"`
+	Operation    string              `yaml:"-"                      json:"-"`
 	Repeats      *Repeats            `yaml:"repeats"                json:"repeats,omitempty"`
 	Type         OperationType       `yaml:"type"                   json:"type,omitempty"`
 	Mode         OperationMode       `yaml:"mode"                   json:"mode,omitempty"`
@@ -90,6 +150,8 @@ type Execution struct {
 	Kubernetes   *KubernetesConfig   `yaml:"kubernetes,omitempty"   json:"kubernetes,omitempty"`
 	Modification *ModificationConfig `yaml:"modification,omitempty" json:"modification,omitempty"`
 	Expect       []Expect            `yaml:"expect,omitempty"       json:"expect,omitempty"`
+	Collector    metrics.Collector   `yaml:"-"                      json:"-"`
+	Metrics      *Metrics            `yaml:"metrics,omitempty"      json:"metrics,omitempty"`
 }
 
 // TimeConfig holds time-related configuration values.
@@ -201,16 +263,16 @@ func (d *Data) Bind() (bound *Data, err error) {
 	if d.Target != nil {
 		d.Target.Bind()
 	}
-	// Bind each Strategy.
-	var cnt int
-	for _, strategy := range d.Strategies {
-		if strategy != nil {
-			var bs *Strategy
-			if bs, err = strategy.Bind(); err != nil {
-				return nil, errors.Wrapf(err, "failed to bind strategy: %s", strategy.Name)
-			} else if bs != nil {
-				d.Strategies[cnt] = bs
-				cnt++
+	// Bind Metrics.
+	if d.Metrics != nil {
+		if m, err := d.Metrics.Bind(); err != nil {
+			return nil, errors.Wrap(err, "failed to bind Metrics configuration")
+		} else if m != nil {
+			d.Metrics = m
+		}
+		if d.Metrics.Enabled {
+			if d.Collector, err = metrics.NewCollector(d.Metrics.Opts()...); err != nil {
+				return nil, errors.Wrap(err, "failed to create metrics collector")
 			}
 		}
 	}
@@ -240,21 +302,52 @@ func (d *Data) Bind() (bound *Data, err error) {
 			d.Metadata[config.GetActualValue(key)] = config.GetActualValue(val)
 		}
 	}
+
+	// Bind each Strategy.
+	var cnt int
+	for _, strategy := range d.Strategies {
+		if strategy != nil {
+			var bs *Strategy
+			if bs, err = strategy.Bind(d.Metrics); err != nil {
+				return nil, errors.Wrapf(err, "failed to bind strategy: %s", strategy.Name)
+			} else if bs != nil {
+				d.Strategies[cnt] = bs
+				cnt++
+			}
+		}
+	}
+	d.Strategies = d.Strategies[:cnt]
 	return d, nil
 }
 
 // Bind binds and validates the Strategy configuration.
-func (s *Strategy) Bind() (bound *Strategy, err error) {
+func (s *Strategy) Bind(parentMetrics *Metrics) (bound *Strategy, err error) {
 	if s == nil || s.Operations == nil || len(s.Operations) == 0 {
 		return nil, errors.Wrapf(errors.ErrInvalidConfig, "missing required fields on Strategy %s", s.Name)
 	}
 	s.Name = config.GetActualValue(s.Name)
 	s.TimeConfig.Bind()
+
+	// Bind Metrics.
+	if s.Metrics != nil {
+		if m, err := parentMetrics.Merge(s.Metrics).Bind(); err != nil {
+			return nil, errors.Wrap(err, "failed to bind Metrics configuration")
+		} else if m != nil {
+			s.Metrics = m
+		}
+	} else {
+		s.Metrics = parentMetrics
+	}
+	if s.Metrics != nil && s.Metrics.Enabled {
+		if s.Collector, err = metrics.NewCollector(s.Metrics.Opts()...); err != nil {
+			return nil, errors.Wrap(err, "failed to create metrics collector")
+		}
+	}
 	var cnt int
 	for _, op := range s.Operations {
 		if op != nil {
 			var bo *Operation
-			if bo, err = op.Bind(); err != nil {
+			if bo, err = op.Bind(s.Name, s.Metrics); err != nil {
 				return nil, errors.Wrapf(err, "failed to bind operation: %s", op.Name)
 			} else if bo != nil {
 				s.Operations[cnt] = bo
@@ -266,16 +359,33 @@ func (s *Strategy) Bind() (bound *Strategy, err error) {
 }
 
 // Bind binds and validates the Operation configuration.
-func (o *Operation) Bind() (bound *Operation, err error) {
+func (o *Operation) Bind(strategy string, parentMetrics *Metrics) (bound *Operation, err error) {
 	if o == nil || o.Executions == nil || len(o.Executions) == 0 {
 		return nil, errors.Wrapf(errors.ErrInvalidConfig, "missing required fields on Operation %s", o.Name)
 	}
 	o.Name = config.GetActualValue(o.Name)
 	o.TimeConfig.Bind()
+	// Bind Metrics.
+	if o.Metrics != nil {
+		if m, err := parentMetrics.Merge(o.Metrics).Bind(); err != nil {
+			return nil, errors.Wrap(err, "failed to bind Metrics configuration")
+		} else if m != nil {
+			o.Metrics = m
+		}
+	} else {
+		o.Metrics = parentMetrics
+	}
+	if o.Metrics != nil && o.Metrics.Enabled {
+		if o.Collector, err = metrics.NewCollector(o.Metrics.Opts()...); err != nil {
+			return nil, errors.Wrap(err, "failed to create metrics collector")
+		}
+	}
 	var cnt int
 	for _, exec := range o.Executions {
+		exec.Strategy = strategy
+		exec.Operation = o.Name
 		var be *Execution
-		if be, err = exec.Bind(); err != nil {
+		if be, err = exec.Bind(o.Metrics); err != nil {
 			return nil, errors.Wrapf(err, "failed to bind execution: %s", exec.Name)
 		} else if be != nil {
 			o.Executions[cnt] = be
@@ -286,10 +396,27 @@ func (o *Operation) Bind() (bound *Operation, err error) {
 }
 
 // Bind binds and validates the Execution configuration.
-func (e *Execution) Bind() (bound *Execution, err error) {
+func (e *Execution) Bind(parentMetrics *Metrics) (bound *Execution, err error) {
 	if e == nil {
 		return nil, errors.Wrap(errors.ErrInvalidConfig, "missing required fields on Execution")
 	}
+
+	// Bind Metrics.
+	if e.Metrics != nil {
+		if m, err := parentMetrics.Merge(e.Metrics).Bind(); err != nil {
+			return nil, errors.Wrap(err, "failed to bind Metrics configuration")
+		} else if m != nil {
+			e.Metrics = m
+		}
+	} else {
+		e.Metrics = parentMetrics
+	}
+	if e.Metrics != nil && e.Metrics.Enabled {
+		if e.Collector, err = metrics.NewCollector(e.Metrics.Opts()...); err != nil {
+			return nil, errors.Wrap(err, "failed to create metrics collector")
+		}
+	}
+
 	// Bind OperationType and OperationMode.
 	if e.Type, err = e.Type.Bind(); err != nil {
 		return nil, errors.Wrapf(err, "failed to bind OperationType: %s on Execution %s", e.Type, e.Name)
@@ -749,9 +876,272 @@ func (d *Dataset) Bind() (bound *Dataset, err error) {
 	return d, nil
 }
 
+// Bind binds and validates the Metrics configuration.
+func (m *Metrics) Bind() (bound *Metrics, err error) {
+	if m == nil || !m.Enabled {
+		return nil, nil
+	}
+	if m.Histogram != nil {
+		if h, err := m.Histogram.Bind(); err != nil {
+			return nil, errors.Wrap(err, "failed to bind Histogram configuration")
+		} else if h != nil {
+			m.Histogram = h
+		}
+	}
+	if m.LatencyHistogram != nil {
+		if h, err := m.LatencyHistogram.Bind(); err != nil {
+			return nil, errors.Wrap(err, "failed to bind LatencyHistogram configuration")
+		} else if h != nil {
+			m.LatencyHistogram = h
+		}
+	} else if m.Histogram != nil {
+		m.LatencyHistogram = m.Histogram
+	}
+	if m.QueueWaitHistogram != nil {
+		if h, err := m.QueueWaitHistogram.Bind(); err != nil {
+			return nil, errors.Wrap(err, "failed to bind QueueWaitHistogram configuration")
+		} else if h != nil {
+			m.QueueWaitHistogram = h
+		}
+	} else if m.Histogram != nil {
+		m.QueueWaitHistogram = m.Histogram
+	}
+	if m.TDigest != nil {
+		if t, err := m.TDigest.Bind(); err != nil {
+			return nil, errors.Wrap(err, "failed to bind TDigest configuration")
+		} else if t != nil {
+			m.TDigest = t
+		}
+	}
+	if m.LatencyTDigest != nil {
+		if t, err := m.LatencyTDigest.Bind(); err != nil {
+			return nil, errors.Wrap(err, "failed to bind LatencyTDigest configuration")
+		} else if t != nil {
+			m.LatencyTDigest = t
+		}
+	} else if m.TDigest != nil {
+		m.LatencyTDigest = m.TDigest
+	}
+	if m.QueueWaitTDigest != nil {
+		if t, err := m.QueueWaitTDigest.Bind(); err != nil {
+			return nil, errors.Wrap(err, "failed to bind QueueWaitTDigest configuration")
+		} else if t != nil {
+			m.QueueWaitTDigest = t
+		}
+	} else if m.TDigest != nil {
+		m.QueueWaitTDigest = m.TDigest
+	}
+	if m.Exemplar != nil {
+		if e, err := m.Exemplar.Bind(); err != nil {
+			return nil, errors.Wrap(err, "failed to bind Exemplar configuration")
+		} else if e != nil {
+			m.Exemplar = e
+		}
+	}
+	if m.RangeScales != nil {
+		for i, rs := range m.RangeScales {
+			if r, err := rs.Bind(); err != nil {
+				return nil, errors.Wrapf(err, "failed to bind RangeScale configuration for %s", rs.Name)
+			} else if r != nil {
+				m.RangeScales[i] = r
+			}
+		}
+	}
+	if m.TimeScales != nil {
+		for i, ts := range m.TimeScales {
+			if t, err := ts.Bind(); err != nil {
+				return nil, errors.Wrapf(err, "failed to bind TimeScale configuration for %s", ts.Name)
+			} else if t != nil {
+				m.TimeScales[i] = t
+			}
+		}
+	}
+	return m, nil
+}
+
+func (m *Metrics) Opts() (opts []metrics.Option) {
+	if m == nil {
+		return nil
+	}
+	opts = make([]metrics.Option, 0, len(m.RangeScales)+len(m.TimeScales)+6)
+	if m.CustomCounters != nil {
+		opts = append(opts, metrics.WithCustomCounters(m.CustomCounters...))
+	}
+	if m.LatencyHistogram != nil {
+		hopts := make([]metrics.HistogramOption, 0, 4)
+		if m.LatencyHistogram.NumShards > 0 {
+			hopts = append(hopts, metrics.WithHistogramNumShards(m.LatencyHistogram.NumShards))
+		}
+		opts = append(opts, metrics.WithLatencyHistogram(hopts...))
+	}
+	if m.QueueWaitHistogram != nil {
+		hopts := make([]metrics.HistogramOption, 0, 4)
+		if m.QueueWaitHistogram.NumShards > 0 {
+			hopts = append(hopts, metrics.WithHistogramNumShards(m.QueueWaitHistogram.NumShards))
+		}
+		opts = append(opts, metrics.WithQueueWaitHistogram(hopts...))
+	}
+	if m.LatencyTDigest != nil {
+		opts = append(opts, metrics.WithLatencyTDigest(
+			metrics.WithTDigestCompression(m.LatencyTDigest.Compression),
+			metrics.WithTDigestCompressionTriggerFactor(m.LatencyTDigest.CompressionTriggerFactor),
+			metrics.WithTDigestQuantiles(m.LatencyTDigest.Quantiles...),
+			metrics.WithTDigestNumShards(m.LatencyTDigest.NumShards),
+		))
+	}
+	if m.QueueWaitTDigest != nil {
+		opts = append(opts, metrics.WithQueueWaitTDigest(
+			metrics.WithTDigestCompression(m.QueueWaitTDigest.Compression),
+			metrics.WithTDigestCompressionTriggerFactor(m.QueueWaitTDigest.CompressionTriggerFactor),
+			metrics.WithTDigestQuantiles(m.QueueWaitTDigest.Quantiles...),
+			metrics.WithTDigestNumShards(m.QueueWaitTDigest.NumShards),
+		))
+	}
+	if m.Exemplar != nil {
+		opts = append(opts, metrics.WithExemplar(
+			metrics.WithExemplarCapacity(m.Exemplar.Capacity),
+			metrics.WithExemplarNumShards(m.Exemplar.NumShards),
+			metrics.WithExemplarSamplingRate(m.Exemplar.SamplingRate),
+		))
+	}
+	opts = append(opts, metrics.WithDetailedErrorTracking(m.DetailedErrorTracking))
+	if m.RangeScales != nil {
+		for _, rs := range m.RangeScales {
+			opts = append(opts, metrics.WithRangeScale(rs.Name, rs.Width, rs.Capacity))
+		}
+	}
+	if m.TimeScales != nil {
+		for _, ts := range m.TimeScales {
+			opts = append(opts, metrics.WithTimeScale(ts.Name, time.Duration(ts.Width), ts.Capacity))
+		}
+	}
+	return opts
+}
+
+// Bind binds and validates the Histogram configuration.
+func (h *Histogram) Bind() (bound *Histogram, err error) {
+	if h == nil {
+		return nil, nil
+	}
+	return h, nil
+}
+
+// Bind binds and validates the TDigest configuration.
+func (t *TDigest) Bind() (bound *TDigest, err error) {
+	if t == nil {
+		return nil, nil
+	}
+	return t, nil
+}
+
+// Bind binds and validates the Exemplar configuration.
+func (e *Exemplar) Bind() (bound *Exemplar, err error) {
+	if e == nil {
+		return nil, nil
+	}
+	return e, nil
+}
+
+// Bind binds and validates the RangeScale configuration.
+func (rs *RangeScale) Bind() (bound *RangeScale, err error) {
+	if rs == nil {
+		return nil, nil
+	}
+	rs.Name = config.GetActualValue(rs.Name)
+	return rs, nil
+}
+
+// Bind binds and validates the TimeScale configuration.
+func (ts *TimeScale) Bind() (bound *TimeScale, err error) {
+	if ts == nil {
+		return nil, nil
+	}
+	ts.Name = config.GetActualValue(ts.Name)
+	return ts, nil
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Func Section
 ////////////////////////////////////////////////////////////////////////////////
+
+// Merge merges two Metrics configurations.
+// The fields of `child` will override the fields of `parent` if they are set.
+func (parent *Metrics) Merge(child *Metrics) (merged *Metrics) {
+	if parent == nil && child == nil {
+		return nil
+	}
+	if parent == nil {
+		return child
+	}
+	if child == nil {
+		return parent
+	}
+
+	merged = new(Metrics)
+
+	if parent.Enabled ||
+		(!parent.Enabled && child.Enabled) {
+		merged.Enabled = true
+	}
+
+	if child.Histogram != nil {
+		merged.Histogram = child.Histogram
+	} else {
+		merged.Histogram = parent.Histogram
+	}
+	if child.LatencyHistogram != nil {
+		merged.LatencyHistogram = child.LatencyHistogram
+	} else {
+		merged.LatencyHistogram = parent.LatencyHistogram
+	}
+	if child.QueueWaitHistogram != nil {
+		merged.QueueWaitHistogram = child.QueueWaitHistogram
+	} else {
+		merged.QueueWaitHistogram = parent.QueueWaitHistogram
+	}
+	if child.TDigest != nil {
+		merged.TDigest = child.TDigest
+	} else {
+		merged.TDigest = parent.TDigest
+	}
+	if child.LatencyTDigest != nil {
+		merged.LatencyTDigest = child.LatencyTDigest
+	} else {
+		merged.LatencyTDigest = parent.LatencyTDigest
+	}
+	if child.QueueWaitTDigest != nil {
+		merged.QueueWaitTDigest = child.QueueWaitTDigest
+	} else {
+		merged.QueueWaitTDigest = parent.QueueWaitTDigest
+	}
+	if child.Exemplar != nil {
+		merged.Exemplar = child.Exemplar
+	} else {
+		merged.Exemplar = parent.Exemplar
+	}
+	if child.RangeScales != nil {
+		merged.RangeScales = child.RangeScales
+	} else {
+		merged.RangeScales = parent.RangeScales
+	}
+	if child.TimeScales != nil {
+		merged.TimeScales = child.TimeScales
+	} else {
+		merged.TimeScales = parent.TimeScales
+	}
+	if child.CustomCounters != nil {
+		merged.CustomCounters = child.CustomCounters
+	} else {
+		merged.CustomCounters = parent.CustomCounters
+	}
+
+	if parent.DetailedErrorTracking ||
+		(!parent.DetailedErrorTracking && child.DetailedErrorTracking) {
+		merged.DetailedErrorTracking = true
+	}
+
+	return merged
+}
 
 // Timing interface provides access to time configuration values.
 type Timing interface {
@@ -1001,7 +1391,7 @@ func Load(path string) (cfg *Data, err error) {
 	if err = read(path, cfg); err != nil {
 		return nil, errors.Wrapf(err, "failed to read configuration from %s", path)
 	}
-	if cfg == nil {
+	if cfg == nil || len(cfg.Strategies) == 0 || cfg.Dataset == nil {
 		return nil, errors.Errorf("failed to load configuration from %s", path)
 	}
 	if cfg, err = cfg.Bind(); err != nil {

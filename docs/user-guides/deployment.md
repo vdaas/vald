@@ -3,7 +3,6 @@
 There are two major ways for the deployment of the Vald cluster ways: Using the Helm command with `values.yaml` or without Helm command using operator called `vald-helm-operator`.
 
 - Using Helm command with `values.yaml`
-
   - Easy to deploy
   - Allow editing Vald configuration values when the user executes Helm command with inlining.
   - Need Helm command when applying configuration

@@ -52,7 +52,6 @@ var file_v1_vald_flush_proto_goTypes = []any{
 	(*payload.Flush_Request)(nil),    // 0: payload.v1.Flush.Request
 	(*payload.Info_Index_Count)(nil), // 1: payload.v1.Info.Index.Count
 }
-
 var file_v1_vald_flush_proto_depIdxs = []int32{
 	0, // 0: vald.v1.Flush.Flush:input_type -> payload.v1.Flush.Request
 	1, // 1: vald.v1.Flush.Flush:output_type -> payload.v1.Info.Index.Count

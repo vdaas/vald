@@ -17,8 +17,8 @@ $(BENCH_DATASETS): $(BENCH_DATASET_MD5S) $(BENCH_DATASET_HDF5_DIR)
 	@$(call green, "downloading datasets for benchmark...")
 	curl -fsSL -o $@ https://ann-benchmarks.com/$(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,%.hdf5,$@)
 	(cd $(BENCH_DATASET_BASE_DIR); \
-	    md5sum -c $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_MD5_DIR_NAME)/%.md5,$@) || \
-	    (rm -f $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_HDF5_DIR_NAME)/%.hdf5,$@) && exit 1))
+	md5sum -c $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_MD5_DIR_NAME)/%.md5,$@) || \
+	(rm -f $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_HDF5_DIR_NAME)/%.hdf5,$@) && exit 1))
 
 $(BENCH_DATASET_HDF5_DIR):
 	$(call mkdir, $@)
@@ -28,13 +28,23 @@ $(BENCH_DATASET_HDF5_DIR):
 	@test -f $* || mkdir -p $*
 
 $(SIFT1B_BASE_FILE) $(SIFT1B_LEARN_FILE) $(SIFT1B_QUERY_FILE): | $(SIFT1B_ROOT_DIR).large_dataset_dir
-	test -f $@ || curl -fsSL $(SIFT1B_BASE_URL)$(subst $(SIFT1B_ROOT_DIR)/,,$@).gz | gunzip -d > $@
+	test -f $@ || \
+	curl -fsSL $(SIFT1B_BASE_URL)$(subst $(SIFT1B_ROOT_DIR)/,,$@).gz | \
+	gunzip -d > $@
 
 $(SIFT1B_GROUNDTRUTH_DIR): | $(SIFT1B_ROOT_DIR).large_dataset_dir
-	test -f $@ || curl -fsSL $(SIFT1B_BASE_URL)bigann_gnd.tar.gz | tar -C $(SIFT1B_ROOT_DIR) -zx
+	test -f $@ || \
+	curl -fsSL $(SIFT1B_BASE_URL)bigann_gnd.tar.gz | \
+	tar -C $(SIFT1B_ROOT_DIR) -zx
 
 $(DEEP1B_GROUNDTRUTH_FILE) $(DEEP1B_QUERY_FILE) $(DEEP1B_BASE_CHUNK_FILES) $(DEEP1B_LEARN_CHUNK_FILES): | $(DEEP1B_ROOT_DIR).large_dataset_dir
-	test -f $@ || curl -fsSL "$(shell curl -fsSL "$(DEEP1B_API_URL)$(subst $(DEEP1B_ROOT_DIR),,$@)" | sed -e 's/^{\(.*\)}$$/\1/' | tr ',' '\n' | grep href | cut -d ':' -f 2- | tr -d '"')" -o $@
+	test -f $@ || \
+	curl -fsSL "$(shell curl -fsSL "$(DEEP1B_API_URL)$(subst $(DEEP1B_ROOT_DIR),,$@)" | \
+	sed -e 's/^{\(.*\)}$$/\1/' | \
+	tr ',' '\n' | \
+	grep href | \
+	cut -d ':' -f 2- | \
+	tr -d '"')" -o $@
 
 $(DEEP1B_BASE_FILE): | $(DEEP1B_BASE_DIR).large_dataset_dir $(DEEP1B_BASE_CHUNK_FILES)
 	cat $(DEEP1B_BASE_CHUNK_FILES) > $@
@@ -91,18 +101,18 @@ bench/datasets/large/deep1b: \
 pprof/%.cpu.svg: \
 	pprof/%.bin
 	go tool pprof \
-	    --svg \
-	    $< \
-	    $(patsubst %.svg,%.out,$@) \
-	    > $@
+	--svg \
+	$< \
+	$(patsubst %.svg,%.out,$@) \
+	> $@
 
 pprof/%.mem.svg: \
 	pprof/%.bin
 	go tool pprof \
-	    --svg \
-	    $< \
-	    $(patsubst %.svg,%.out,$@) \
-	    > $@
+	--svg \
+	$< \
+	$(patsubst %.svg,%.out,$@) \
+	> $@
 
 .PHONY: bench
 ## run all benchmarks
@@ -114,7 +124,7 @@ bench: \
 .PHONY: bench/core
 ## run benchmarks for core
 bench/core: \
-	bench/core/ngt \
+	bench/core/ngt
 
 .PHONY: bench/core/ngt
 ## run benchmark for NGT core
@@ -127,6 +137,9 @@ bench/core/ngt: \
 bench/core/ngt/sequential: \
 	pprof/core/ngt/sequential.cpu.svg \
 	pprof/core/ngt/sequential.mem.svg
+
+.PHONY: pprof/core/ngt/sequential.bin
+## run pprof of benchmark for NGT core sequential methods
 pprof/core/ngt/sequential.bin: \
 	hack/benchmark/core/ngt/ngt_bench_test.go
 	mkdir -p $(dir $@)
@@ -135,23 +148,26 @@ pprof/core/ngt/sequential.bin: \
 	GOOS=$(GOOS) \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
-	    -mod=readonly \
-	    -count=1 \
-	    -timeout=1h \
-	    -bench=NGTSequential \
-	    -benchmem \
-	    -o $@ \
-	    -cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
-	    -memprofile $(patsubst %.bin,%.mem.out,$@) \
-	    -trace $(patsubst %.bin,%.trace.out,$@) \
-	    $< \
-	    -dataset=$(DATASET_ARGS)
+	-mod=readonly \
+	-count=1 \
+	-timeout=1h \
+	-bench=NGTSequential \
+	-benchmem \
+	-o $@ \
+	-cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
+	-memprofile $(patsubst %.bin,%.mem.out,$@) \
+	-trace $(patsubst %.bin,%.trace.out,$@) \
+	$< \
+	-dataset=$(DATASET_ARGS)
 
 .PHONY: bench/core/ngt/parallel
 ## run benchmark for NGT core parallel methods
 bench/core/ngt/parallel: \
 	pprof/core/ngt/parallel.cpu.svg \
 	pprof/core/ngt/parallel.mem.svg
+
+.PHONY: pprof/core/ngt/parallel.bin
+## run pprof of benchmark for NGT core parallel methods
 pprof/core/ngt/parallel.bin: \
 	hack/benchmark/core/ngt/ngt_bench_test.go
 	mkdir -p $(dir $@)
@@ -160,17 +176,17 @@ pprof/core/ngt/parallel.bin: \
 	GOOS=$(GOOS) \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
-	    -mod=readonly \
-	    -count=1 \
-	    -timeout=1h \
-	    -bench=NGTParallel \
-	    -benchmem \
-	    -o $@ \
-	    -cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
-	    -memprofile $(patsubst %.bin,%.mem.out,$@) \
-	    -trace $(patsubst %.bin,%.trace.out,$@) \
-	    $< \
-	    -dataset=$(DATASET_ARGS)
+	-mod=readonly \
+	-count=1 \
+	-timeout=1h \
+	-bench=NGTParallel \
+	-benchmem \
+	-o $@ \
+	-cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
+	-memprofile $(patsubst %.bin,%.mem.out,$@) \
+	-trace $(patsubst %.bin,%.trace.out,$@) \
+	$< \
+	-dataset=$(DATASET_ARGS)
 
 .PHONY: bench/agent
 ## run benchmarks for vald agent
@@ -183,6 +199,9 @@ bench/agent: \
 bench/agent/stream: \
 	pprof/agent/stream.cpu.svg \
 	pprof/agent/stream.mem.svg
+
+.PHONY: pprof/agent/stream.bin
+## run pprof of benchmark for agent stream methods
 pprof/agent/stream.bin: \
 	hack/benchmark/e2e/agent/core/ngt/ngt_bench_test.go \
 	ngt/install
@@ -192,23 +211,24 @@ pprof/agent/stream.bin: \
 	GOOS=$(GOOS) \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
-	    -mod=readonly \
-	    -count=1 \
-	    -timeout=1h \
-	    -bench=gRPC_Stream \
-	    -benchmem \
-	    -o $@ \
-	    -cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
-	    -memprofile $(patsubst %.bin,%.mem.out,$@) \
-	    -trace $(patsubst %.bin,%.trace.out,$@) \
-	    $< \
-	    -dataset=$(DATASET_ARGS)
+	-mod=readonly \
+	-count=1 \
+	-timeout=1h \
+	-bench=gRPC_Stream \
+	-benchmem \
+	-o $@ \
+	-cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
+	-memprofile $(patsubst %.bin,%.mem.out,$@) \
+	-trace $(patsubst %.bin,%.trace.out,$@) \
+	$< \
+	-dataset=$(DATASET_ARGS)
 
 .PHONY: bench/agent/sequential/grpc
 ## run benchmark for agent gRPC sequential
 bench/agent/sequential/grpc: \
 	pprof/agent/sequential/grpc.cpu.svg \
 	pprof/agent/sequential/grpc.mem.svg
+
 pprof/agent/sequential/grpc.bin: \
 	hack/benchmark/e2e/agent/core/ngt/ngt_bench_test.go \
 	ngt/install
@@ -218,17 +238,17 @@ pprof/agent/sequential/grpc.bin: \
 	GOOS=$(GOOS) \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
-	    -mod=readonly \
-	    -count=1 \
-	    -timeout=1h \
-	    -bench=gRPC_Sequential \
-	    -benchmem \
-	    -o $@ \
-	    -cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
-	    -memprofile $(patsubst %.bin,%.mem.out,$@) \
-	    -trace $(patsubst %.bin,%.trace.out,$@) \
-	    $< \
-	    -dataset=$(DATASET_ARGS)
+	-mod=readonly \
+	-count=1 \
+	-timeout=1h \
+	-bench=gRPC_Sequential \
+	-benchmem \
+	-o $@ \
+	-cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
+	-memprofile $(patsubst %.bin,%.mem.out,$@) \
+	-trace $(patsubst %.bin,%.trace.out,$@) \
+	$< \
+	-dataset=$(DATASET_ARGS)
 
 .PHONY: bench/gateway
 ## run benchmarks for gateway
@@ -249,17 +269,17 @@ pprof/gateway/sequential.bin: \
 	GOOS=$(GOOS) \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
-	    -mod=readonly \
-	    -count=1 \
-	    -timeout=1h \
-	    -bench=Sequential \
-	    -benchmem \
-	    -o $@ \
-	    -cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
-	    -memprofile $(patsubst %.bin,%.mem.out,$@) \
-	    -trace $(patsubst %.bin,%.trace.out,$@) \
-	    $< \
-	    -dataset=$(DATASET_ARGS)
+	-mod=readonly \
+	-count=1 \
+	-timeout=1h \
+	-bench=Sequential \
+	-benchmem \
+	-o $@ \
+	-cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
+	-memprofile $(patsubst %.bin,%.mem.out,$@) \
+	-trace $(patsubst %.bin,%.trace.out,$@) \
+	$< \
+	-dataset=$(DATASET_ARGS)
 
 .PHONY: profile
 ## execute profile
@@ -268,7 +288,7 @@ profile: \
 	deps \
 	bench \
 	profile/agent/stream \
-	profile/agent/sequential/grpc \
+	profile/agent/sequential/grpc
 
 .PHONY: profile/agent/stream
 profile/agent/stream:
@@ -297,7 +317,11 @@ $(ROOTDIR)/metrics.gob:
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test -mod=readonly -v --timeout=1h $(ROOTDIR)/hack/benchmark/e2e/agent/core/ngt/... -output=$(ROOTDIR)/metrics.gob
+	go test \
+	-mod=readonly \
+	-v --timeout=1h \
+	$(ROOTDIR)/hack/benchmark/e2e/agent/core/ngt/... \
+	-output=$(ROOTDIR)/metrics.gob
 
 .PHONY: metrics/chart
 ## create metrics chart
@@ -307,17 +331,24 @@ $(ROOTDIR)/assets/image/metrics.svg: $(ROOTDIR)/metrics.gob
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	go run $(ROOTDIR)/hack/tools/metrics/main.go -title "Recall-QPS" -x Recall -y QPS -width 960 -height 720 -input=$(ROOTDIR)/metrics.gob -output=$(ROOTDIR)/assets/image/metrics.svg
+	go run \
+	$(ROOTDIR)/hack/tools/metrics/main.go \
+	-title "Recall-QPS" \
+	-x Recall -y QPS \
+	-width 960 \
+	-height 720 \
+	-input=$(ROOTDIR)/metrics.gob \
+	-output=$(ROOTDIR)/assets/image/metrics.svg
 
 .PHONY: bench/kill
 ## kill all benchmark processes
 bench/kill:
-	ps aux  \
-		| grep go  \
-		| grep -v nvim \
-		| grep -v tmux \
-		| grep -v gopls \
-		| grep -v "rg go" \
-		| grep -v "grep go" \
-		| awk '{print $1}' \
-		| xargs -P$(CORES) kill -9
+	ps aux \
+	| grep go \
+	| grep -v nvim \
+	| grep -v tmux \
+	| grep -v gopls \
+	| grep -v "rg go" \
+	| grep -v "grep go" \
+	| awk '{print $1}' \
+	| xargs -P$(CORES) kill -9

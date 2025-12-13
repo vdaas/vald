@@ -425,7 +425,6 @@ func (v *valdStdAggr) Start(ctx context.Context) {
 		case 0:
 			v.result = append(v.result, dist)
 		case 1:
-
 			if distance.Cmp(big.NewFloat(float64(v.result[0].GetDistance()))) >= 0 {
 				v.result = append(v.result, dist)
 			} else {
@@ -492,13 +491,13 @@ func (v *valdStdAggr) Send(ctx context.Context, data *payload.Search_Response) {
 				return
 			}
 			if _, already := v.visited.LoadOrStore(dist.GetId(), struct{}{}); !already {
-				if v.closed.Load() {
-					return
-				}
-				select {
-				case <-ctx.Done():
-					return
-				case v.dch <- DistPayload{raw: dist, distance: fdist}:
+				if !v.closed.Load() {
+					select {
+					case <-ctx.Done():
+						v.visited.Delete(dist.GetId())
+						return
+					case v.dch <- DistPayload{raw: dist, distance: fdist}:
+					}
 				}
 			}
 		}
@@ -506,6 +505,7 @@ func (v *valdStdAggr) Send(ctx context.Context, data *payload.Search_Response) {
 }
 
 func (v *valdStdAggr) Result() *payload.Search_Response {
+	v.closed.Store(true)
 	v.cancel()
 	v.wg.Wait()
 	if len(v.result) > v.num {
