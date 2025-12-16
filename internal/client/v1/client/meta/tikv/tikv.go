@@ -53,7 +53,7 @@ func New(opts ...Option) (Client, error) {
 		if len(c.addrs) == 0 {
 			return nil, errors.ErrGRPCTargetAddrNotFound
 		}
-		c.c = grpc.New("Gateway Client", grpc.WithAddrs(c.addrs...))
+		c.c = grpc.New("TiKV Client", grpc.WithAddrs(c.addrs...))
 	}
 	return c, nil
 }
