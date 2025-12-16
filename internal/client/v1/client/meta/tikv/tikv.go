@@ -19,7 +19,6 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/apis/grpc/v1/mirror"
-	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/tikv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
