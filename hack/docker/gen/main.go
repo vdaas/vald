@@ -52,7 +52,7 @@ const (
 	buildbase           = "buildbase"
 	buildkit            = "buildkit"
 	buildkitSyftScanner = buildkit + "-syft-scanner"
-	aioContainer        = "aio"
+	aioContainer        = "aio-container"
 	ciContainer         = "ci-container"
 	devContainer        = "dev-container"
 	exampleContainer    = "example-client"
