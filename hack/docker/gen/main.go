@@ -52,6 +52,7 @@ const (
 	buildbase           = "buildbase"
 	buildkit            = "buildkit"
 	buildkitSyftScanner = buildkit + "-syft-scanner"
+	aioContainer        = "aio"
 	ciContainer         = "ci-container"
 	devContainer        = "dev-container"
 	exampleContainer    = "example-client"
@@ -799,6 +800,24 @@ func main() {
 				helmOperatorChartsDir + "/" + vald + "-helm-operator",
 			},
 			Entrypoints: []string{"{{$.BinDir}}/{{.AppName}}", "run", "--watches-file=" + helmOperatorWatchFile},
+		},
+		vald + "-" + aioContainer: {
+			AppName:       aioContainer,
+			BuilderImage:  "mcr.microsoft.com/devcontainers/base",
+			BuilderTag:    "ubuntu" + ubuntuVersion,
+			BuildUser:     defaultBuildUser,
+			RuntimeUser:   defaultBuildUser,
+			ContainerType: DevContainer,
+			PackageDir:    "aio",
+			ExtraPackages: append([]string{"sudo"}, append(clangBuildDeps,
+				append(ngtBuildDeps,
+					append(rustBuildDeps,
+						devContainerDeps...)...)...)...),
+			Preprocess: append(devContainerPreprocess,
+				append(ciContainerPreprocess,
+					ngtPreprocess,
+					faissPreprocess,
+					usearchPreprocess)...),
 		},
 		vald + "-" + ciContainer: {
 			AppName:       ciContainer,
