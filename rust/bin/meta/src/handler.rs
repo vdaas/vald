@@ -15,8 +15,8 @@
 //
 mod meta;
 
-use std::sync::Arc;
 use kv::*;
+use std::sync::Arc;
 
 pub struct Meta {
     store: Arc<Store>,
@@ -32,6 +32,3 @@ impl Meta {
         Ok(Meta { store, bucket })
     }
 }
-
-
-
