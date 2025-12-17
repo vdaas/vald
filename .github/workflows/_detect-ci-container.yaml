@@ -21,7 +21,7 @@ on:
         description: "The docker image tag name"
         value: ${{ jobs.detect.outputs.TAG }}
 env:
-  TARGET_IMAGE: vdaas/vald-ci-container
+  TARGET_IMAGE: vdaas/vald-aio-container
 jobs:
   detect:
     timeout-minutes: 30
