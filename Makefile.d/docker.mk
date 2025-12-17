@@ -27,6 +27,7 @@ docker/build: \
 	docker/build/buildbase \
 	docker/build/buildkit \
 	docker/build/buildkit-syft-scanner \
+	docker/build/aio-container \
 	docker/build/ci-container \
 	docker/build/dev-container \
 	docker/build/discoverer-k8s \
@@ -312,6 +313,19 @@ docker/build/buildkit-syft-scanner:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/buildkit/syft/scanner/Dockerfile" \
 	IMAGE=$(BUILDKIT_SYFT_SCANNER_IMAGE) \
 	DEFAULT_BUILDKIT_SYFT_SCANNER_IMAGE="docker/buildkit-syft-scanner:edge" \
+	docker/build/image
+
+.PHONY: docker/name/aio-container
+## print aio-container image name
+docker/name/aio-container:
+	@echo "$(ORG)/$(AIO_CONTAINER_IMAGE)"
+
+.PHONY: docker/build/aio-container
+## build aio-container image
+docker/build/aio-container:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/aio/Dockerfile" \
+	IMAGE=$(AIO_CONTAINER_IMAGE) \
+	EXTRA_ARGS="--add-host=registry.npmjs.org:104.16.20.35 $(EXTRA_ARGS)" \
 	docker/build/image
 
 .PHONY: docker/name/ci-container
