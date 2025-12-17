@@ -53,7 +53,11 @@ impl ObservabilityImpl {
             // If we want flexibility and customization, use SdkMeterProvider::builder.
             let exporter = MetricExporter::builder()
                 .with_tonic()
-                .with_endpoint(Url::parse(obj.config.endpoint.as_str())?.join("/v1/metrics")?.as_str())
+                .with_endpoint(
+                    Url::parse(obj.config.endpoint.as_str())?
+                        .join("/v1/metrics")?
+                        .as_str(),
+                )
                 .with_timeout(obj.config.meter.export_timeout_duration)
                 .build()?;
             let reader = PeriodicReader::builder(exporter, runtime::Tokio)
@@ -70,7 +74,11 @@ impl ObservabilityImpl {
         if obj.config.tracer.enabled {
             let exporter = SpanExporter::builder()
                 .with_tonic()
-                .with_endpoint(Url::parse(obj.config.endpoint.as_str())?.join("/v1/traces")?.as_str())
+                .with_endpoint(
+                    Url::parse(obj.config.endpoint.as_str())?
+                        .join("/v1/traces")?
+                        .as_str(),
+                )
                 .build()?;
             let provider = TracerProvider::builder()
                 .with_batch_exporter(exporter, runtime::Tokio)
