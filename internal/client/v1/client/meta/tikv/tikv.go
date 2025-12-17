@@ -16,7 +16,6 @@ package tikv
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/v1/mirror"
 	"github.com/vdaas/vald/apis/grpc/v1/tikv"
 	"github.com/vdaas/vald/internal/client/v1/client/meta"
 	"github.com/vdaas/vald/internal/errors"
@@ -71,7 +70,7 @@ func (c *client) GRPCClient() grpc.Client {
 func (c *client) RawGet(
 	ctx context.Context, in *tikv.RawGetRequest, opts ...grpc.CallOption,
 ) (res *tikv.RawGetResponse, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+mirror.RegisterRPCName), apiName+"/"+mirror.RegisterRPCName)
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/RawGet"), apiName+"/RawGet")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -90,7 +89,7 @@ func (c *client) RawGet(
 func (c *client) RawBatchGet(
 	ctx context.Context, in *tikv.RawBatchGetRequest, opts ...grpc.CallOption,
 ) (res *tikv.RawBatchGetResponse, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+mirror.RegisterRPCName), apiName+"/"+mirror.RegisterRPCName)
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/RawBatchGet"), apiName+"/RawBatchGet")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -109,7 +108,7 @@ func (c *client) RawBatchGet(
 func (c *client) RawPut(
 	ctx context.Context, in *tikv.RawPutRequest, opts ...grpc.CallOption,
 ) (res *tikv.RawPutResponse, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+mirror.RegisterRPCName), apiName+"/"+mirror.RegisterRPCName)
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/RawPut"), apiName+"/RawPut")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -128,7 +127,7 @@ func (c *client) RawPut(
 func (c *client) RawBatchPut(
 	ctx context.Context, in *tikv.RawBatchPutRequest, opts ...grpc.CallOption,
 ) (res *tikv.RawBatchPutResponse, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+mirror.RegisterRPCName), apiName+"/"+mirror.RegisterRPCName)
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/RawBatchPut"), apiName+"/RawBatchPut")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -147,7 +146,7 @@ func (c *client) RawBatchPut(
 func (c *client) RawDelete(
 	ctx context.Context, in *tikv.RawDeleteRequest, opts ...grpc.CallOption,
 ) (res *tikv.RawDeleteResponse, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+mirror.RegisterRPCName), apiName+"/"+mirror.RegisterRPCName)
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/RawDelete"), apiName+"/RawDelete")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -166,7 +165,7 @@ func (c *client) RawDelete(
 func (c *client) RawBatchDelete(
 	ctx context.Context, in *tikv.RawBatchDeleteRequest, opts ...grpc.CallOption,
 ) (res *tikv.RawBatchDeleteResponse, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+mirror.RegisterRPCName), apiName+"/"+mirror.RegisterRPCName)
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/RawBatchDelete"), apiName+"/RawBatchDelete")
 	defer func() {
 		if span != nil {
 			span.End()
