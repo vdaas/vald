@@ -17,8 +17,8 @@ use algorithm::Error;
 use log::{info, warn};
 use prost::Message;
 use proto::{payload::v1::object, vald::v1::object_server};
-use tokio::sync::RwLock;
 use std::sync::Arc;
+use tokio::sync::RwLock;
 use tonic::{Code, Status};
 use tonic_types::StatusExt;
 
@@ -30,7 +30,7 @@ async fn get_object(
     api_name: &str,
     name: &str,
     ip: &str,
-    request: &object::VectorRequest
+    request: &object::VectorRequest,
 ) -> Result<object::Vector, Status> {
     let id = match request.id.clone() {
         Some(id) => id,
@@ -45,7 +45,15 @@ async fn get_object(
             let err = Error::InvalidUUID { uuid: uuid.clone() };
             let resource_type = format!("{}/qbg.GetObject", resource_type);
             let resource_name = format!("{}: {}({})", api_name, name, ip);
-            let err_details = build_error_details(err, domain, &uuid, request.encode_to_vec(), &resource_type, &resource_name, Some("uuid"));
+            let err_details = build_error_details(
+                err,
+                domain,
+                &uuid,
+                request.encode_to_vec(),
+                &resource_type,
+                &resource_name,
+                Some("uuid"),
+            );
             let status = Status::with_error_details(
                 Code::InvalidArgument,
                 format!(
@@ -104,7 +112,10 @@ impl object_server::Object for super::Agent {
         &self,
         request: tonic::Request<tonic::Streaming<object::VectorRequest>>,
     ) -> std::result::Result<tonic::Response<Self::StreamGetObjectStream>, tonic::Status> {
-        info!("Received stream get object request from {:?}", request.remote_addr());
+        info!(
+            "Received stream get object request from {:?}",
+            request.remote_addr()
+        );
 
         let s = self.s.clone();
         let resource_type = self.resource_type.clone() + "/qbg.StreamGetObject";
@@ -120,11 +131,9 @@ impl object_server::Object for super::Agent {
             let api_name = api_name.clone();
             async move {
                 match get_object(s, &resource_type, &api_name, &name, &ip, &req).await {
-                    Ok(vector) => {
-                        Ok(object::StreamVector {
-                            payload: Some(object::stream_vector::Payload::Vector(vector)),
-                        })
-                    }
+                    Ok(vector) => Ok(object::StreamVector {
+                        payload: Some(object::stream_vector::Payload::Vector(vector)),
+                    }),
                     Err(status) => Err(status),
                 }
             }

@@ -53,7 +53,7 @@ jobs:
         env:
           TIME_WINDOW: ${{ github.event.inputs.time_window }}
       - name: Run issue-metrics tool
-        uses: github/issue-metrics@45a6cb314ddaa4c12eed570eb2739435d712d480 # v3.24.0
+        uses: github/issue-metrics@6fa9041b3ea7b6a9dafbdc388d25d86d06b2b6af # v3.23.1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SEARCH_QUERY: "repo:vdaas/vald is:pr created:${{ env.last_month }}"

@@ -4,7 +4,6 @@ about: Suggest an idea for this project
 title: ""
 labels: "type/feature, priority/low, team/core"
 assignees: ""
-
 ---
 
 ### Is your feature request related to a problem? Please describe.:

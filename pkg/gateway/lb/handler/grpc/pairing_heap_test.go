@@ -16,11 +16,11 @@ package grpc
 import (
 	"fmt"
 	"math/big"
+	"math/rand/v2"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/test/data/strings"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
