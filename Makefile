@@ -33,6 +33,7 @@ BINFMT_IMAGE = $(NAME)-binfmt
 BUILDBASE_IMAGE = $(NAME)-buildbase
 BUILDKIT_IMAGE = $(NAME)-buildkit
 BUILDKIT_SYFT_SCANNER_IMAGE = $(BUILDKIT_IMAGE)-syft-scanner
+AIO_CONTAINER_IMAGE = $(NAME)-aio-container
 CI_CONTAINER_IMAGE = $(NAME)-ci-container
 DEV_CONTAINER_IMAGE = $(NAME)-dev-container
 DISCOVERER_IMAGE = $(NAME)-discoverer-k8s
