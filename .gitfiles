@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+.github/workflows/dockers-aio-container-image.yaml
 .all-contributorsrc
 .commit_template
 .cspell.json
@@ -84,6 +85,7 @@
 .github/workflows/dockers-agent-image.yaml
 .github/workflows/dockers-agent-ngt-image.yaml
 .github/workflows/dockers-agent-sidecar-image.yaml
+.github/workflows/dockers-aio-image.yaml
 .github/workflows/dockers-benchmark-job-image.yaml
 .github/workflows/dockers-benchmark-operator-image.yaml
 .github/workflows/dockers-binfmt-image.yaml
@@ -615,6 +617,8 @@ dockers/agent/core/ngt/Dockerfile
 dockers/agent/core/ngt/README.md
 dockers/agent/sidecar/Dockerfile
 dockers/agent/sidecar/README.md
+dockers/aio/Dockerfile
+dockers/aio/README.md
 dockers/binfmt/Dockerfile
 dockers/buildbase/Dockerfile
 dockers/buildkit/Dockerfile
