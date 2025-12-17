@@ -68,7 +68,7 @@ jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml
     with:
-      target: aio
+      target: aio-container
     secrets:
       DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
       DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
