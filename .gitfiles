@@ -889,6 +889,13 @@ internal/client/v1/client/filter/ingress/client_test.go
 internal/client/v1/client/filter/ingress/doc.go
 internal/client/v1/client/filter/ingress/option.go
 internal/client/v1/client/filter/ingress/option_test.go
+internal/client/v1/client/meta/client.go
+internal/client/v1/client/meta/doc.go
+internal/client/v1/client/meta/tikv/doc.go
+internal/client/v1/client/meta/tikv/option.go
+internal/client/v1/client/meta/tikv/option_test.go
+internal/client/v1/client/meta/tikv/tikv.go
+internal/client/v1/client/meta/tikv/tikv_test.go
 internal/client/v1/client/mirror/doc.go
 internal/client/v1/client/mirror/mirror.go
 internal/client/v1/client/mirror/mirror_test.go

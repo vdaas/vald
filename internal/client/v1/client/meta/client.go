@@ -16,9 +16,7 @@
 
 package meta
 
-import (
-	"github.com/vdaas/vald/apis/grpc/v1/tikv"
-)
+import "github.com/vdaas/vald/apis/grpc/v1/tikv"
 
 type KeyValuePair struct {
 	Key   []byte
