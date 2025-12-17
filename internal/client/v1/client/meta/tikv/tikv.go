@@ -70,13 +70,6 @@ func (c *client) GRPCClient() grpc.Client {
 	return c.c
 }
 
-	// RawGet(ctx context.Context, in *tikv.RawGetRequest, opts ...grpc.CallOption) (*RawGetResponse, error)
-	// RawBatchGet(ctx context.Context, in *tikv.RawBatchGetRequest, opts ...grpc.CallOption) (*RawBatchGetResponse, error)
-	// RawPut(ctx context.Context, in *tikv.RawPutRequest, opts ...grpc.CallOption) (*RawPutResponse, error)
-	// RawBatchPut(ctx context.Context, in *tikv.RawBatchPutRequest, opts ...grpc.CallOption) (*RawBatchPutResponse, error)
-	// RawDelete(ctx context.Context, in *tikv.RawDeleteRequest, opts ...grpc.CallOption) (*RawDeleteResponse, error)
-	// RawBatchDelete(ctx context.Context, in *tikv.RawBatchDeleteRequest, opts ...grpc.CallOption) (*RawBatchDeleteResponse, error)
-
 func (c *client) RawGet(ctx context.Context, in *tikv.RawGetRequest, opts ...grpc.CallOption) (res *tikv.RawGetResponse, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+mirror.RegisterRPCName), apiName+"/"+mirror.RegisterRPCName)
 	defer func() {
