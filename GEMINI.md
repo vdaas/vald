@@ -20,9 +20,42 @@ This document serves as a guide for AI agents (and human developers) working on 
 
 ---
 
-## 2. Build System & Make Targets
+## 2. Tooling (MCP Servers) & Routing
+
+**Registered servers (keys):**
+
+*   **Code & multi-file edits:** `serena`
+*   **Kubernetes (API-native):** `k8s-native`
+*   **Kubernetes CLI / Helm / port-forward:** `k8s-cli`
+*   **Long-term memory/notes:** `cipher`
+*   **GitHub:** `github`
+*   **Slack:** `slack`
+*   **Web UI/E2E browser (only if needed):** `playwright`
+*   **Language servers:** `lsp-go`, `lsp-rust`, `lsp-python`, `lsp-ts`, `lsp-cpp`, `lsp-zig`, `lsp-nim`
+
+**Routing rules (decision tree):**
+
+1.  **Symbol facts / quick nav / diagnostics / rename** → `lsp-<lang>`
+2.  **Cross-file refactors / semantic search / bulk edits** → `serena`
+3.  **Kubernetes state/actions** → `k8s-native` (and `k8s-cli` for Helm, `kubectl`, port-forward)
+4.  **Repository & PRs** → `github`
+5.  **Team comms/updates** → `slack`
+6.  **Persistent notes & decisions** → `cipher`
+7.  **Browser E2E flows** → `playwright` (rare; ask first)
+
+---
+
+## 3. Build System & Make Targets
 
 Vald uses a comprehensive `Makefile` system. **Always check `make help`** for the most up-to-date targets.
+
+### Common Options
+You can override default variables by passing them as arguments to `make`.
+*   `VERSION`: Target Vald version (e.g., `make k8s/vald/deploy VERSION=pr-1234`).
+*   `HELM_VALUES`: Path to a custom values file (e.g., `make k8s/vald/deploy HELM_VALUES=my-values.yaml`).
+*   `E2E_TIMEOUT`: Timeout for E2E tests (e.g., `make e2e/v2 E2E_TIMEOUT=2h`).
+*   `E2E_CONFIG`: Path to E2E configuration file (e.g., `make e2e/v2 E2E_CONFIG=tests/v2/e2e/assets/multi_crud.yaml`).
+*   `GOTEST_TIMEOUT`: Timeout for Go unit tests (default `30m`).
 
 ### Testing
 *   **Unit Tests (Go)**:
@@ -51,7 +84,7 @@ Vald uses a comprehensive `Makefile` system. **Always check `make help`** for th
 
 ---
 
-## 3. Project Structure
+## 4. Project Structure
 
 *   `cmd/`: Main applications (Agent, Gateway, Discoverer, etc.).
 *   `pkg/`: Public library code.
@@ -65,7 +98,7 @@ Vald uses a comprehensive `Makefile` system. **Always check `make help`** for th
 
 ---
 
-## 4. Coding Standards
+## 5. Coding Standards
 
 ### Go
 *   **Formatting**: Strictly enforced. **Always run `make format/go`** before verifying/submitting.
@@ -85,7 +118,7 @@ Vald uses a comprehensive `Makefile` system. **Always check `make help`** for th
 
 ---
 
-## 5. E2E Testing Workflow (V2)
+## 6. E2E Testing Workflow (V2)
 
 The V2 E2E suite (`tests/v2/e2e`) is the modern way to verify system behavior.
 
@@ -103,7 +136,7 @@ The V2 E2E suite (`tests/v2/e2e`) is the modern way to verify system behavior.
 
 ---
 
-## 6. Contribution Guidelines
+## 7. Contribution Guidelines
 
 *   **Branch Naming**: `[type]/[area]/[description]`
     *   Types: `feature`, `bug`, `refactoring`, `test`, `ci`, `doc`.
@@ -115,7 +148,7 @@ The V2 E2E suite (`tests/v2/e2e`) is the modern way to verify system behavior.
 
 ---
 
-## 7. Troubleshooting
+## 8. Troubleshooting
 
 *   **"Command not found"**: Ensure you are running commands via `run_in_bash_session`. The environment should have `go`, `make`, `kubectl`, `helm` pre-installed or accessible.
 *   **Lint Failures**: Read the output of `make lint` carefully. `golangci-lint` often gives specific instructions.
