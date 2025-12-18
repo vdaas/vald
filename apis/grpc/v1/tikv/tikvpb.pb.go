@@ -58,6 +58,7 @@ var file_v1_tikv_tikvpb_proto_goTypes = []any{
 	(*RawDeleteResponse)(nil),      // 10: kvrpcpb.RawDeleteResponse
 	(*RawBatchDeleteResponse)(nil), // 11: kvrpcpb.RawBatchDeleteResponse
 }
+
 var file_v1_tikv_tikvpb_proto_depIdxs = []int32{
 	0,  // 0: tikvpb.Tikv.RawGet:input_type -> kvrpcpb.RawGetRequest
 	1,  // 1: tikvpb.Tikv.RawBatchGet:input_type -> kvrpcpb.RawBatchGetRequest

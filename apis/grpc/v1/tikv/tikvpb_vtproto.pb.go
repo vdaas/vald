@@ -137,30 +137,34 @@ type TikvServer interface {
 }
 
 // UnimplementedTikvServer must be embedded to have forward compatible implementations.
-type UnimplementedTikvServer struct {
-}
+type UnimplementedTikvServer struct{}
 
 func (UnimplementedTikvServer) RawGet(context.Context, *RawGetRequest) (*RawGetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RawGet not implemented")
 }
+
 func (UnimplementedTikvServer) RawBatchGet(
 	context.Context, *RawBatchGetRequest,
 ) (*RawBatchGetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RawBatchGet not implemented")
 }
+
 func (UnimplementedTikvServer) RawPut(context.Context, *RawPutRequest) (*RawPutResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RawPut not implemented")
 }
+
 func (UnimplementedTikvServer) RawBatchPut(
 	context.Context, *RawBatchPutRequest,
 ) (*RawBatchPutResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RawBatchPut not implemented")
 }
+
 func (UnimplementedTikvServer) RawDelete(
 	context.Context, *RawDeleteRequest,
 ) (*RawDeleteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RawDelete not implemented")
 }
+
 func (UnimplementedTikvServer) RawBatchDelete(
 	context.Context, *RawBatchDeleteRequest,
 ) (*RawBatchDeleteResponse, error) {

@@ -1,30 +1,28 @@
-//
 // Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 package tikv
 
 import (
-    "context"
-    "encoding/binary"
-    "os"
-    "strings"
-    "testing"
+	"context"
+	"encoding/binary"
+	"os"
+	"strings"
+	"testing"
 
-    tikvpb "github.com/vdaas/vald/apis/grpc/v1/tikv"
-    "github.com/vdaas/vald/internal/test/goleak"
-		"github.com/vdaas/vald/internal/net/grpc"
+	tikvpb "github.com/vdaas/vald/apis/grpc/v1/tikv"
+	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 // envStoreAddrs is the environment variable which should contain a comma
@@ -32,84 +30,84 @@ import (
 const envStoreAddrs = "TIKV_STORE_ADDRS"
 
 func getAddrs() []string {
-    addrs := strings.Split(os.Getenv(envStoreAddrs), ",")
-    if len(addrs) == 1 && addrs[0] == "" {
-        return nil
-    }
-    return addrs
+	addrs := strings.Split(os.Getenv(envStoreAddrs), ",")
+	if len(addrs) == 1 && addrs[0] == "" {
+		return nil
+	}
+	return addrs
 }
 
 func createClient(b *testing.B) Client {
-    addrs := getAddrs()
-    if len(addrs) == 0 {
-        b.Skipf("environment variable %s not set; skipping TiKV benchmarks", envStoreAddrs)
-    }
+	addrs := getAddrs()
+	if len(addrs) == 0 {
+		b.Skipf("environment variable %s not set; skipping TiKV benchmarks", envStoreAddrs)
+	}
 
-    cli, err := New(
-    	WithAddrs(addrs...),
-    	WithClient(
-    		grpc.New(
-    			"TiKV Client",
-					grpc.WithAddrs(addrs...),
-					grpc.WithInsecure(true),
-    		),
-    	),
-    )
-    if err != nil {
-        b.Fatalf("failed to create tikv client: %v", err)
-    }
-    cli.Start(context.Background())
+	cli, err := New(
+		WithAddrs(addrs...),
+		WithClient(
+			grpc.New(
+				"TiKV Client",
+				grpc.WithAddrs(addrs...),
+				grpc.WithInsecure(true),
+			),
+		),
+	)
+	if err != nil {
+		b.Fatalf("failed to create tikv client: %v", err)
+	}
+	cli.Start(context.Background())
 
-    // basic connectivity probe (RawGet for non-existing key)
-    _, err = cli.RawGet(context.Background(), &tikvpb.RawGetRequest{Key: []byte("vald_bench_probe")})
-    if err != nil {
-        // Depending on cluster state RawGet may return region not found etc.
-        // We treat only network/connection errors as fatal.
-        b.Logf("tiKV connectivity probe returned error: %v (continuing)", err)
-    }
-    return cli
+	// basic connectivity probe (RawGet for non-existing key)
+	_, err = cli.RawGet(context.Background(), &tikvpb.RawGetRequest{Key: []byte("vald_bench_probe")})
+	if err != nil {
+		// Depending on cluster state RawGet may return region not found etc.
+		// We treat only network/connection errors as fatal.
+		b.Logf("tiKV connectivity probe returned error: %v (continuing)", err)
+	}
+	return cli
 }
 
 func BenchmarkRawPut(b *testing.B) {
-    cli := createClient(b)
-    defer cli.Stop(context.Background())
+	cli := createClient(b)
+	defer cli.Stop(context.Background())
 
-    ctx := context.Background()
-    val := []byte("vald_bench_val")
+	ctx := context.Background()
+	val := []byte("vald_bench_val")
 
-    b.ReportAllocs()
-    b.ResetTimer()
-    for i := range b.N {
-        var key [8]byte
-        binary.LittleEndian.PutUint64(key[:], uint64(i))
-        if _, err := cli.RawPut(ctx, &tikvpb.RawPutRequest{Key: key[:], Value: val}); err != nil {
-            b.Fatalf("RawPut error: %v", err)
-        }
-    }
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := range b.N {
+		var key [8]byte
+		binary.LittleEndian.PutUint64(key[:], uint64(i))
+		if _, err := cli.RawPut(ctx, &tikvpb.RawPutRequest{Key: key[:], Value: val}); err != nil {
+			b.Fatalf("RawPut error: %v", err)
+		}
+	}
 }
 
 func BenchmarkRawGet(b *testing.B) {
-    cli := createClient(b)
-    defer cli.Stop(context.Background())
+	cli := createClient(b)
+	defer cli.Stop(context.Background())
 
-    ctx := context.Background()
+	ctx := context.Background()
 
-    // insert a single key to fetch repeatedly
-    const baseKey = "vald_bench_get_key"
-    if _, err := cli.RawPut(ctx, &tikvpb.RawPutRequest{Key: []byte(baseKey), Value: []byte("v")}); err != nil {
-        b.Fatalf("setup RawPut failed: %v", err)
-    }
+	// insert a single key to fetch repeatedly
+	const baseKey = "vald_bench_get_key"
+	if _, err := cli.RawPut(ctx, &tikvpb.RawPutRequest{Key: []byte(baseKey), Value: []byte("v")}); err != nil {
+		b.Fatalf("setup RawPut failed: %v", err)
+	}
 
-    b.ReportAllocs()
-    b.ResetTimer()
-    for b.Loop() {
-        if _, err := cli.RawGet(ctx, &tikvpb.RawGetRequest{Key: []byte(baseKey)}); err != nil {
-            b.Fatalf("RawGet error: %v", err)
-        }
-    }
+	b.ReportAllocs()
+	b.ResetTimer()
+	for b.Loop() {
+		if _, err := cli.RawGet(ctx, &tikvpb.RawGetRequest{Key: []byte(baseKey)}); err != nil {
+			b.Fatalf("RawGet error: %v", err)
+		}
+	}
 }
 
 // Ensure that no goroutines leak from the benchmarks.
 func TestMain(m *testing.M) {
-    goleak.VerifyTestMain(m, goleak.IgnoreCurrent())
+	goleak.VerifyTestMain(m, goleak.IgnoreCurrent())
 }
