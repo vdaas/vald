@@ -19,6 +19,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+clap = { version = "4.5.50", features = ["derive"] }
 kv = "0.24.0"
 opentelemetry = "0.27.1"
 prost-types = "0.13.4"

@@ -16,13 +16,23 @@
 
 mod handler;
 
+use clap::Parser;
 use observability::{
-    config::{Config, Tracer}, observability::{Observability, ObservabilityImpl, SERVICE_NAME}
+    config::{Config, Tracer},
+    observability::{Observability, ObservabilityImpl, SERVICE_NAME},
 };
 use opentelemetry::global;
 use opentelemetry::propagation::Extractor;
 use tonic::transport::Server;
 use tonic::Request;
+
+#[derive(Parser, Debug)]
+#[command(name = "meta")]
+struct Args {
+    /// Path to the database
+    #[arg(short, long, default_value = "/tmp/meta/database")]
+    database_path: String,
+}
 
 struct MetadataMap<'a>(&'a tonic::metadata::MetadataMap);
 
@@ -51,6 +61,8 @@ fn intercept(mut req: Request<()>) -> Result<Request<()>, tonic::Status> {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let args = Args::parse();
+
     // TODO: yaml is given from outside
     // let config_yaml = r#"enabled: false
     // endpoint: ""
@@ -81,8 +93,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut observability = ObservabilityImpl::new(observability_cfg)?;
 
     let addr = "[::1]:8095".parse()?;
-    let cfg_path = "/tmp/meta/database"; // TODO: set the appropriate path
-    let meta = handler::Meta::new(cfg_path)?;
+    let meta = handler::Meta::new(&args.database_path)?;
 
     // the interceptor given here is implicitly executed for each request
     Server::builder()
@@ -95,4 +106,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     observability.shutdown()?;
     Ok(())
 }
-
