@@ -3,19 +3,9 @@ module github.com/vdaas/vald/example/client
 go 1.25.5
 
 replace (
-	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate latest
-	github.com/goccy/go-json => github.com/goccy/go-json latest
-	github.com/golang/protobuf => github.com/golang/protobuf latest
-	github.com/kpango/glg => github.com/kpango/glg latest
-	github.com/pkg/sftp => github.com/pkg/sftp latest
-	golang.org/x/crypto => golang.org/x/crypto latest
-	golang.org/x/net => golang.org/x/net latest
-	golang.org/x/text => golang.org/x/text latest
-	google.golang.org/genproto => google.golang.org/genproto latest
-	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api latest
-	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc latest
-	google.golang.org/grpc => google.golang.org/grpc latest
-	google.golang.org/protobuf => google.golang.org/protobuf latest
-	sigs.k8s.io/yaml => sigs.k8s.io/yaml latest
-	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 latest
+	github.com/kpango/fuid => github.com/kpango/fuid upgrade
+	github.com/kpango/glg => github.com/kpango/glg upgrade
+	github.com/vdaas/vald-client-go => github.com/vdaas/vald-client-go upgrade
+	gonum.org/v1/hdf5 => gonum.org/v1/hdf5 upgrade
+	google.golang.org/grpc => google.golang.org/grpc upgrade
 )
