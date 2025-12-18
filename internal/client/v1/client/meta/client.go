@@ -16,13 +16,15 @@
 
 package meta
 
-import "github.com/vdaas/vald/apis/grpc/v1/tikv"
-
-type KeyValuePair struct {
-	Key   []byte
-	Value []byte
-}
+import (
+	"context"
+)
 
 type MetadataClient interface {
-	tikv.TikvClient
+	Get(context.Context, []byte) ([]byte, error)
+	BatchGet(context.Context, [][]byte) ([][]byte, error)
+	Put(context.Context, []byte, []byte) error
+	BatchPut(context.Context, [][]byte, [][]byte) error
+	Delete(context.Context, []byte) error
+	BatchDelete(context.Context, [][]byte) error
 }

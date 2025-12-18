@@ -44,6 +44,8 @@ type client struct {
 	c     grpc.Client
 }
 
+var errNotFound = errors.New("tikv: key not found")
+
 func New(opts ...Option) (Client, error) {
 	c := new(client)
 	for _, opt := range append(defaultOptions, opts...) {
@@ -72,9 +74,9 @@ func (c *client) GRPCClient() grpc.Client {
 	return c.c
 }
 
-func (c *client) RawGet(
-	ctx context.Context, in *tikv.RawGetRequest, opts ...grpc.CallOption,
-) (res *tikv.RawGetResponse, err error) {
+func (c *client) Get(
+	ctx context.Context, key []byte,
+) (val []byte, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/RawGet"), apiName+"/RawGet")
 	defer func() {
 		if span != nil {
@@ -82,18 +84,28 @@ func (c *client) RawGet(
 		}
 	}()
 
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawGetResponse, error) {
-		return tikv.NewTikvClient(conn).RawGet(ctx, in, append(copts, opts...)...)
+	res, err := grpc.RoundRobin(ctx, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawGetResponse, error) {
+		return tikv.NewTikvClient(conn).RawGet(ctx, &tikv.RawGetRequest{
+			Key: key,
+		}, copts...)
 	})
 	if err != nil {
 		return nil, err
 	}
-	return res, nil
+	// TODO
+	// if res.RegionError != nil {
+	if res.Error != "" {
+		return nil, errors.New(res.Error)
+	}
+	if res.NotFound {
+		return nil, errNotFound
+	}
+	return res.Value, nil
 }
 
-func (c *client) RawBatchGet(
-	ctx context.Context, in *tikv.RawBatchGetRequest, opts ...grpc.CallOption,
-) (res *tikv.RawBatchGetResponse, err error) {
+func (c *client) BatchGet(
+	ctx context.Context, keys [][]byte,
+) (kv [][]byte, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/RawBatchGet"), apiName+"/RawBatchGet")
 	defer func() {
 		if span != nil {
@@ -101,18 +113,29 @@ func (c *client) RawBatchGet(
 		}
 	}()
 
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawBatchGetResponse, error) {
-		return tikv.NewTikvClient(conn).RawBatchGet(ctx, in, append(copts, opts...)...)
+	res, err := grpc.RoundRobin(ctx, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawBatchGetResponse, error) {
+		return tikv.NewTikvClient(conn).RawBatchGet(ctx, &tikv.RawBatchGetRequest{
+			Keys: keys,
+		}, copts...)
 	})
 	if err != nil {
 		return nil, err
 	}
-	return res, nil
+	// TODO
+	// if res.RegionError != nil {
+	kv = make([][]byte, len(res.Pairs))
+	for i, pair := range res.Pairs {
+		if pair.Error != nil {
+			return nil, errors.Errorf("KeyError happened %+v", pair.Error)
+		}
+		kv[i] = pair.Value
+	}
+	return kv, nil
 }
 
-func (c *client) RawPut(
-	ctx context.Context, in *tikv.RawPutRequest, opts ...grpc.CallOption,
-) (res *tikv.RawPutResponse, err error) {
+func (c *client) Put(
+	ctx context.Context, key, val []byte,
+) (err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/RawPut"), apiName+"/RawPut")
 	defer func() {
 		if span != nil {
@@ -120,18 +143,27 @@ func (c *client) RawPut(
 		}
 	}()
 
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawPutResponse, error) {
-		return tikv.NewTikvClient(conn).RawPut(ctx, in, append(copts, opts...)...)
+	res, err := grpc.RoundRobin(ctx, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawPutResponse, error) {
+		return tikv.NewTikvClient(conn).RawPut(ctx, &tikv.RawPutRequest{
+			Key:	 key,
+			Value: val,
+		}, copts...)
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return res, nil
+	// TODO
+	// if res.RegionError != nil {
+	_ = res.RegionError
+	if res.Error != "" {
+		return errors.New(res.Error)
+	}
+	return nil
 }
 
-func (c *client) RawBatchPut(
-	ctx context.Context, in *tikv.RawBatchPutRequest, opts ...grpc.CallOption,
-) (res *tikv.RawBatchPutResponse, err error) {
+func (c *client) BatchPut(
+	ctx context.Context, keys [][]byte, vals [][]byte,
+) (err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/RawBatchPut"), apiName+"/RawBatchPut")
 	defer func() {
 		if span != nil {
@@ -139,18 +171,33 @@ func (c *client) RawBatchPut(
 		}
 	}()
 
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawBatchPutResponse, error) {
-		return tikv.NewTikvClient(conn).RawBatchPut(ctx, in, append(copts, opts...)...)
+	pairs := make([]*tikv.KvPair, len(keys))
+	for i := range keys {
+		pairs[i] = &tikv.KvPair{
+			Key:   keys[i],
+			Value: vals[i],
+		}
+	}
+	res, err := grpc.RoundRobin(ctx, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawBatchPutResponse, error) {
+		return tikv.NewTikvClient(conn).RawBatchPut(ctx, &tikv.RawBatchPutRequest{
+			Pairs: pairs,
+		}, copts...)
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return res, nil
+	// TODO
+	// if res.RegionError != nil {
+	_ = res.RegionError
+	if res.Error != "" {
+		return errors.New(res.Error)
+	}
+	return nil
 }
 
-func (c *client) RawDelete(
-	ctx context.Context, in *tikv.RawDeleteRequest, opts ...grpc.CallOption,
-) (res *tikv.RawDeleteResponse, err error) {
+func (c *client) Delete(
+	ctx context.Context, key []byte,
+) (err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/RawDelete"), apiName+"/RawDelete")
 	defer func() {
 		if span != nil {
@@ -158,18 +205,26 @@ func (c *client) RawDelete(
 		}
 	}()
 
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawDeleteResponse, error) {
-		return tikv.NewTikvClient(conn).RawDelete(ctx, in, append(copts, opts...)...)
+	res, err := grpc.RoundRobin(ctx, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawDeleteResponse, error) {
+		return tikv.NewTikvClient(conn).RawDelete(ctx, &tikv.RawDeleteRequest{
+			Key: key,
+		}, copts...)
 	})
 	if err != nil {
-		return nil, err
+		return nil
 	}
-	return res, nil
+	// TODO
+	// if res.RegionError != nil {
+	_ = res.RegionError
+	if res.Error != "" {
+		return errors.New(res.Error)
+	}
+	return nil
 }
 
-func (c *client) RawBatchDelete(
-	ctx context.Context, in *tikv.RawBatchDeleteRequest, opts ...grpc.CallOption,
-) (res *tikv.RawBatchDeleteResponse, err error) {
+func (c *client) BatchDelete(
+	ctx context.Context, keys [][]byte,
+) (err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/RawBatchDelete"), apiName+"/RawBatchDelete")
 	defer func() {
 		if span != nil {
@@ -177,11 +232,19 @@ func (c *client) RawBatchDelete(
 		}
 	}()
 
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawBatchDeleteResponse, error) {
-		return tikv.NewTikvClient(conn).RawBatchDelete(ctx, in, append(copts, opts...)...)
+	res, err := grpc.RoundRobin(ctx, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawBatchDeleteResponse, error) {
+		return tikv.NewTikvClient(conn).RawBatchDelete(ctx, &tikv.RawBatchDeleteRequest{
+			Keys: keys,
+		}, copts...)
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return res, nil
+	// TODO
+	// if res.RegionError != nil {
+	_ = res.RegionError
+	if res.Error != "" {
+		return errors.New(res.Error)
+	}
+	return nil
 }
