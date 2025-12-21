@@ -34,7 +34,6 @@ import (
 	"github.com/vdaas/vald/tests/v2/e2e/config"
 	k8s "github.com/vdaas/vald/tests/v2/e2e/kubernetes"
 	"github.com/vdaas/vald/tests/v2/e2e/kubernetes/portforward"
-	"github.com/vdaas/vald/tests/v2/e2e/metrics"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -127,33 +126,20 @@ func TestE2EStrategy(t *testing.T) {
 		if err := executeWithTimings(tt, ctx, cfg, cfg.FilePath, "e2e", func(ttt *testing.T, ctx context.Context) error {
 			ttt.Helper()
 			for i, st := range cfg.Strategies {
-				col := r.processStrategy(ttt, ctx, i, st)
-				if cfg.Metrics != nil && cfg.Metrics.Enabled && cfg.Collector != nil && col != nil {
-					cfg.Strategies[i].Collector = col
-					if err := col.MergeInto(cfg.Collector); err != nil {
-						ttt.Errorf("failed to merge strategy collector: %v", err)
-					}
-				}
+				r.processStrategy(ttt, ctx, i, st)
 			}
 			return nil
 		}); err != nil {
 			tt.Errorf("failed to process operations: %v", err)
 		}
-		if cfg.Metrics != nil && cfg.Metrics.Enabled && cfg.Collector != nil {
-			snapshot := cfg.Collector.GlobalSnapshot()
-			log.Infof("Global Metrics for %s:\n%s", cfg.FilePath, snapshot)
-		}
 	})
 }
 
-func (r *runner) processStrategy(
-	t *testing.T, ctx context.Context, idx int, st *config.Strategy,
-) (col metrics.Collector) {
+func (r *runner) processStrategy(t *testing.T, ctx context.Context, idx int, st *config.Strategy) {
 	t.Helper()
 	if r == nil || st == nil {
-		return nil
+		return
 	}
-	col = st.Collector
 	t.Run(fmt.Sprintf("#%d: strategy=%s", idx, st.Name), func(tt *testing.T) {
 		if err := executeWithTimings(tt, ctx, st, st.Name, "strategy", func(ttt *testing.T, ctx context.Context) error {
 			ttt.Helper()
@@ -168,13 +154,7 @@ func (r *runner) processStrategy(
 				if op != nil {
 					i, op := i, op
 					eg.Go(func() error {
-						c := r.processOperation(ttt, egctx, st.Name, i, op)
-						if st.Metrics != nil && st.Metrics.Enabled && col != nil && c != nil {
-							st.Operations[i].Collector = c
-							if err := c.MergeInto(col); err != nil {
-								ttt.Logf("failed to merge operation for collector: %v and %v error: %v", col, c, err)
-							}
-						}
+						r.processOperation(ttt, egctx, i, op)
 						return nil
 					})
 				}
@@ -183,52 +163,34 @@ func (r *runner) processStrategy(
 		}); err != nil {
 			tt.Errorf("failed to process operations: %v", err)
 		}
-		if st.Metrics != nil && st.Metrics.Enabled && col != nil {
-			snapshot := col.GlobalSnapshot()
-			log.Infof("Strategy Metrics for %s:\n%s", st.Name, snapshot)
-		}
 	})
-	return col
 }
 
 func (r *runner) processOperation(
-	t *testing.T, ctx context.Context, strategyName string, idx int, op *config.Operation,
-) (col metrics.Collector) {
+	t *testing.T, ctx context.Context, idx int, op *config.Operation,
+) {
 	t.Helper()
 	if r == nil || op == nil {
-		return nil
+		return
 	}
-	col = op.Collector
+
 	t.Run(fmt.Sprintf("#%d: operation=%s", idx, op.Name), func(tt *testing.T) {
 		if err := executeWithTimings(tt, ctx, op, op.Name, "operation", func(ttt *testing.T, ctx context.Context) error {
 			ttt.Helper()
 			for i, e := range op.Executions {
-				c := r.processExecution(ttt, ctx, strategyName, op.Name, i, e)
-				if op.Metrics != nil && op.Metrics.Enabled && col != nil && c != nil {
-					op.Executions[i].Collector = c
-					if err := c.MergeInto(col); err != nil {
-						ttt.Errorf("failed to merge execution collector: %v", err)
-					}
-				}
+				r.processExecution(ttt, ctx, i, e)
 			}
 			return nil
 		}); err != nil {
 			tt.Errorf("failed to process operation: %v", err)
 		}
-		if op.Metrics != nil && op.Metrics.Enabled && col != nil {
-			snapshot := col.GlobalSnapshot()
-			log.Infof("Operation Metrics for %s/%s:\n%s", strategyName, op.Name, snapshot)
-		}
 	})
-	return col
 }
 
-func (r *runner) processExecution(
-	t *testing.T, ctx context.Context, strategyName, opName string, idx int, e *config.Execution,
-) (col metrics.Collector) {
+func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e *config.Execution) {
 	t.Helper()
 	if r == nil || e == nil {
-		return nil
+		return
 	}
 
 	t.Run(fmt.Sprintf("#%d: execution=%s type=%s mode=%s", idx, e.Name, e.Type, e.Mode), func(tt *testing.T) {
@@ -323,12 +285,7 @@ func (r *runner) processExecution(
 		}); err != nil {
 			tt.Errorf("failed to process execution: %v", err)
 		}
-		if e.Metrics != nil && e.Metrics.Enabled && e.Collector != nil {
-			snapshot := e.Collector.GlobalSnapshot()
-			log.Infof("Execution Metrics for %s/%s/%s:\n%s", strategyName, opName, e.Name, snapshot)
-		}
 	})
-	return e.Collector
 }
 
 func executeWithTimings[T interface {
@@ -443,12 +400,14 @@ func executeWithRepeats(
 			ierr := fn(t, ctx)
 			if ierr != nil {
 				if repeats.ExitCondition == config.Success {
+					if ierr == nil {
+						log.Infof("successfully finished %s, exiting repeat loop", task)
+						break
+					}
 					if errors.IsNot(ierr, context.Canceled, context.DeadlineExceeded) {
 						log.Warnf("failed to finish %s, error: %v, will retry", task, ierr)
 						continue
 					}
-					log.Infof("successfully finished %s, exiting repeat loop", task)
-					return err
 				}
 				if errors.IsNot(ierr, context.Canceled, context.DeadlineExceeded) {
 					err = errors.Join(err, ierr)

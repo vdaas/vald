@@ -31,7 +31,7 @@ kubernetes:
 target:
   addrs:
     - 127.0.0.1:8082
-  health_check_duration: 1s
+  health_check_duration: "1s"
   connection_pool:
     enable_dns_resolver: true
     enable_rebalance: true
@@ -46,6 +46,12 @@ target:
     jitter_limit: 100ms
     maximum_duration: 5s
     retry_count: 100
+  #  circuit_breaker:
+  #    closed_error_rate: 0.7
+  #    closed_refresh_timeout: 10s
+  #    half_open_error_rate: 0.5
+  #    min_samples: 1000
+  #    open_timeout: 1s
   call_option:
     content_subtype: ""
     max_recv_msg_size: 0
@@ -113,33 +119,62 @@ metadata:
   key2: sample metadata value2
   key3: sample metadata value3
 metadata_string: key4=value4,key5=value5
-metrics:
-  enabled: true
-  latency_histogram:
-    num_shards: 10
-  queue_wait_histogram:
-    num_shards: 10
-  latency_tdigest:
-    compression: 100
-    compression_trigger_factor: 1.2
-    num_shards: 16
-  queue_wait_tdigest:
-    compression: 100
-    compression_trigger_factor: 1.2
-    num_shards: 16
-  exemplar:
-    capacity: 10
-  range_scales:
-    - name: 0-100
-      width: 10
-      capacity: 10
-  time_scales:
-    - name: 0-10s
-      width: 1
-      capacity: 10
-  custom_counters:
-    - custom_counter_1
 strategies:
+  # - name: Schema
+  #   concurrency: 1
+  #   delay: ""
+  #   wait: ""
+  #   timeout: ""
+  #   operations:
+  #     - name: Schema
+  #       delay: ""
+  #       wait: ""
+  #       timeout: ""
+  #       executions:
+  #         - name: Schema
+  #           type: index_property
+  #           mode: unary
+  #           parallelism: 0
+  #           num: 0
+  #           offset: 0
+  #           bulk_size: 0
+  #           # for timing setting
+  #           delay: ""
+  #           wait: ""
+  #           timeout: ""
+  #           # for search configurations
+  #           search:
+  #             - k: 10
+  #               radius: -1
+  #               epsilon: 0.05
+  #               algorithm: cq
+  #               min_num: 2
+  #               ration: 0
+  #               nprobe: 0
+  #               timeout: 30s
+  #             - k: 20
+  #               radius: -1
+  #               epsilon: 0.05
+  #               algorithm: ph
+  #               min_num: 2
+  #               ration: 0
+  #               nprobe: 0
+  #               timeout: 6s
+  #           # for modification like (Insert, Update, Upsert, Remove, RemoveByTimestamp)
+  #           modification:
+  #             skip_strict_exist_check: false
+  #             timestamp: 0
+  #           # expected patterns of test status codes
+  #           expect:
+  #             - status_code: ok
+  #             - status_code: already_exists
+  #             - status_code: not_found
+  #           # for kubernetes configurations
+  #           kubernetes:
+  #             kind: "statefulset"
+  #             namespace: "default"
+  #             name: "vald-agent"
+  #             action: rollout
   - concurrency: 1
     name: Insert -> Check rotate job
     operations:
@@ -158,7 +193,7 @@ strategies:
             kubernetes:
               kind: job
               namespace: default
-              label_selector: app=vald-readreplica-rotate
+              label_selector: "app=vald-readreplica-rotate"
               status: completed
               action: wait
             wait: 1m

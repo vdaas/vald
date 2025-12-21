@@ -6,7 +6,6 @@
 *.dylib
 *.bin
 *.tgz
-*.tmp
 
 # Test binary, built with `go test -c`
 *.test
@@ -56,9 +55,6 @@ hack/go.mod.default3
 
 # for vscode
 .vscode/
-
-# for gitfiles generation
-.gitfiles.tmp
 
 telepresence.log
 

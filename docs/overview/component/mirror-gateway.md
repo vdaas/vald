@@ -55,23 +55,27 @@ Here's an overview of how the Mirror Gateway handles failures for each type of r
 For more information about status code, please refer to [Mirror Gateway Troubleshooting](../../troubleshooting/mirror-gateway.md).
 
 - Insert Request
+
   - If the target host returns a status code of `ALREADY_EXISTS`, the Update request is sent to this host.
   - If the target host returns a status code other than `OK`, `ALREADY_EXISTS`, the Mirror Gateway returns that status code without continuous processing.
   - If all target hosts return a status code `ALREADY_EXISTS`, the Mirror Gateway returns `ALREADY_EXISTS`.
   - If all target hosts return a status code `OK` or `ALREADY_EXISTS`, the Mirror Gateway returns `OK`.
 
 - Update Request
+
   - If the target host returns a status code `NOT_FOUND`, the Insert request is sent to this host.
   - If the target host returns a status code other than `OK`, `ALREADY_EXISTS`, the Mirror Gateway returns that status code without continuous processing.
   - If all target hosts return a status code `ALREADY_EXISTS`, the Mirror Gateway returns `ALREADY_EXISTS`.
   - If all target hosts return a status code `OK` or `ALREADY_EXISTS`, the Mirror Gateway returns `OK`.
 
 - Upsert Request
+
   - If all target hosts return a status code `ALREADY_EXISTS`, the Mirror Gateway returns `ALREADY_EXISTS`.
   - If the target host returns a status code other than `OK` or `ALREADY_EXISTS`, the Mirror Gateway returns that status code without continuous processing.
   - If all target hosts return a status code `OK` or `ALREADY_EXISTS`, the Mirror Gateway returns `OK`.
 
 - Remove/RemoveByTimestamp Request
+
   - If all target hosts return a status code `NOT_FOUND`, the Mirror Gateway returns `NOT_FOUND`.
   - If the target host returns a status code other than `OK` or `NOT_FOUND`, the Mirror Gateway returns that status code without continuous processing.
   - If all target hosts return a status code `OK` or `NOT_FOUND`, the Mirror Gateway returns `OK`.

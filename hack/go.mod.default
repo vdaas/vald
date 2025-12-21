@@ -1,6 +1,6 @@
 module github.com/vdaas/vald
 
-go 1.25.5
+go 1.25.3
 
 tool (
 	github.com/bufbuild/buf/cmd/buf
@@ -19,8 +19,8 @@ tool (
 	github.com/segmentio/golines
 	github.com/stern/stern
 	github.com/suzuki-shunsuke/ghalint/cmd/ghalint
-	github.com/suzuki-shunsuke/ghatm/cmd/ghatm
 	github.com/suzuki-shunsuke/pinact/cmd/pinact
+	github.com/suzuki-shunsuke/ghatm/cmd/ghatm
 	golang.org/x/tools/cmd/goimports
 	honnef.co/go/tools/cmd/staticcheck
 	mvdan.cc/gofumpt
@@ -97,8 +97,6 @@ replace (
 	github.com/cespare/xxhash/v2 => github.com/cespare/xxhash/v2 upgrade
 	github.com/chzyer/logex => github.com/chzyer/logex upgrade
 	github.com/chzyer/readline => github.com/chzyer/readline upgrade
-	github.com/quic-go/quic-go => github.com/quic-go/quic-go upgrade
-	github.com/quic-go/qpack => github.com/quic-go/qpack upgrade
 	github.com/chzyer/test => github.com/chzyer/test upgrade
 	github.com/cncf/udpa/go => github.com/cncf/udpa/go upgrade
 	github.com/cncf/xds/go => github.com/cncf/xds/go upgrade
@@ -355,14 +353,10 @@ replace (
 	go.uber.org/goleak => go.uber.org/goleak upgrade
 	go.uber.org/multierr => go.uber.org/multierr upgrade
 	go.uber.org/zap => go.uber.org/zap upgrade
-	helm.sh/helm/v4 => helm.sh/helm/v4 upgrade
 	honnef.co/go/tools => honnef.co/go/tools upgrade
-	k8s.io/apiserver => k8s.io/apiserver upgrade
-	k8s.io/cli-runtime => k8s.io/cli-runtime upgrade
-	k8s.io/kubectl => k8s.io/kubectl upgrade
 	nhooyr.io/websocket => nhooyr.io/websocket upgrade
 	rsc.io/pdf => rsc.io/pdf upgrade
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.22.4
+	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.22.3
 	sigs.k8s.io/json => sigs.k8s.io/json upgrade
 	sigs.k8s.io/kustomize => sigs.k8s.io/kustomize upgrade
 )

@@ -14,8 +14,9 @@
 package strings
 
 import (
-	"math/rand/v2"
 	"unsafe"
+
+	"github.com/vdaas/vald/internal/rand"
 )
 
 const (

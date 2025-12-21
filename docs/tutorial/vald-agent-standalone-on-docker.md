@@ -131,6 +131,7 @@ This chapter will use NGT for the core engine of Vald Agent.
 
    To deploy Vald agent on docker with `config.yaml`, you can run the below command.
    Note:
+
    - Please check whether there is `config.yaml` file and `backup` directory in your current directory.
 
    ```bash

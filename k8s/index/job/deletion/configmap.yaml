@@ -203,9 +203,7 @@ data:
         ca: /path/to/ca
         cert: /path/to/cert
         client_auth: None
-        crl: /path/to/crl
         enabled: false
-        hot_reload: false
         insecure_skip_verify: false
         key: /path/to/key
         server_name: ""
@@ -326,9 +324,7 @@ data:
                 ca: /path/to/ca
                 cert: /path/to/cert
                 client_auth: None
-                crl: /path/to/crl
                 enabled: false
-                hot_reload: false
                 insecure_skip_verify: false
                 key: /path/to/key
                 server_name: ""
@@ -341,9 +337,7 @@ data:
             ca: /path/to/ca
             cert: /path/to/cert
             client_auth: None
-            crl: /path/to/crl
             enabled: false
-            hot_reload: false
             insecure_skip_verify: false
             key: /path/to/key
             server_name: ""
@@ -404,9 +398,7 @@ data:
                 ca: /path/to/ca
                 cert: /path/to/cert
                 client_auth: None
-                crl: /path/to/crl
                 enabled: false
-                hot_reload: false
                 insecure_skip_verify: false
                 key: /path/to/key
                 server_name: ""
@@ -428,9 +420,7 @@ data:
             ca: /path/to/ca
             cert: /path/to/cert
             client_auth: None
-            crl: /path/to/crl
             enabled: false
-            hot_reload: false
             insecure_skip_verify: false
             key: /path/to/key
             server_name: ""

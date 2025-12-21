@@ -20,7 +20,6 @@ import (
 	"context"
 	"maps"
 	"math"
-	stdrand "math/rand/v2"
 	"strconv"
 	"time"
 
@@ -28,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
 )
@@ -224,10 +224,7 @@ func (b *backoff) Do(
 
 func (b *backoff) addJitter(dur float64) float64 {
 	hd := math.Min(dur/10, b.jitterLimit)
-	if hd < 1 {
-		return dur
-	}
-	return dur + stdrand.Float64()*hd*2 - hd
+	return dur + float64(rand.LimitedUint32(uint64(hd))) - hd
 }
 
 // Close wait for the backoff process to complete.

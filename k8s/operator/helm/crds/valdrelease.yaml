@@ -336,8 +336,6 @@ spec:
                           type: boolean
                         enable_statistics:
                           type: boolean
-                        epsilon_for_creation:
-                          type: number
                         error_buffer_limit:
                           minimum: 1
                           type: integer

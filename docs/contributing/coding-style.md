@@ -804,6 +804,7 @@ tests := map[string]func(t *testing.T) test {
 
    Test case names should be readable, meaningful, and understandable easily.
    If you create a new test, the test name should be named based on the below-naming templates
+
    - Success cases:
      - Start with `success` or `{verb} success` or `success {verb}`
      - End with the condition `when {condition}` or `with {condition}
@@ -976,6 +977,7 @@ Still, in some cases, you may need to change the generated code to meet your req
 1. goleak usage
 
    There are two methods for valid goroutine leak:
+
    1. Use `goleak.VerifyNone()` to validate it on each test cases.
    1. Use `goleak.VerifyTestMain()` to validate it on each package.
 
@@ -1122,6 +1124,7 @@ Still, in some cases, you may need to change the generated code to meet your req
 
    By default, when testing the function of the struct, the target struct initialization is implemented by setting the data from the `fields` defined in the test case.
    This initialization method has a few disadvantages:
+
    1. When there are many fields in the struct, it is hard to set them all.
    1. The default value is the zero value of the type, not the struct default value from the struct initialization function.
 

@@ -113,7 +113,6 @@ func TryGo(f func() error) bool {
 func (g *group) SetLimit(limit int) {
 	g.limit.Store(int64(limit))
 	if limit < 0 {
-		g.sem = nil
 		return
 	}
 	// For concurrent execution, initialize or resize the semaphore.

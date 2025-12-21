@@ -1,6 +1,10 @@
 {
   "formatters": {
-    "enable": ["gofumpt", "goimports", "golines"],
+    "enable": [
+      "gofumpt",
+      "goimports",
+      "golines"
+    ],
     "settings": {
       "golines": {
         "max-len": 200
@@ -8,7 +12,11 @@
     },
     "exclusions": {
       "generated": "lax",
-      "paths": ["third_party$", "builtin$", "examples$"]
+      "paths": [
+        "third_party$",
+        "builtin$",
+        "examples$"
+      ]
     }
   },
   "linters": {
@@ -72,7 +80,11 @@
     ],
     "exclusions": {
       "generated": "lax",
-      "paths": ["third_party$", "builtin$", "examples$"],
+      "paths": [
+        "third_party$",
+        "builtin$",
+        "examples$"
+      ],
       "rules": [
         {
           "linters": [
@@ -85,36 +97,53 @@
           "path": "_test\\.go"
         },
         {
-          "linters": ["govet"],
+          "linters": [
+            "govet"
+          ],
           "path": "_test\\.go",
           "text": "copylocks:"
         },
         {
-          "linters": ["gochecknoglobals", "mnd"],
+          "linters": [
+            "gochecknoglobals",
+            "mnd"
+          ],
           "path": "options?\\.go"
         },
         {
-          "linters": ["gochecknoglobals"],
+          "linters": [
+            "gochecknoglobals"
+          ],
           "path": "main\\.go"
         },
         {
-          "linters": ["depguard"],
+          "linters": [
+            "depguard"
+          ],
           "path": "internal/errors/errors\\.go"
         },
         {
-          "linters": ["depguard"],
+          "linters": [
+            "depguard"
+          ],
           "path": "internal/errors/errors_benchmark_test\\.go"
         },
         {
-          "linters": ["depguard"],
+          "linters": [
+            "depguard"
+          ],
           "path": "internal/test/comparator/standard\\.go"
         },
         {
-          "linters": ["depguard"],
+          "linters": [
+            "depguard"
+          ],
           "path": "internal/sync/alias\\.go"
         },
         {
-          "linters": ["depguard"],
+          "linters": [
+            "depguard"
+          ],
           "path": "hack/benchmark/src/singleflight/singleflight_bench_test\\.go"
         }
       ]
@@ -169,7 +198,9 @@
         }
       },
       "gocritic": {
-        "enabled-checks": ["ruleguard"],
+        "enabled-checks": [
+          "ruleguard"
+        ],
         "settings": {
           "ruleguard": {
             "rules": "./hack/gorules/rules.go"

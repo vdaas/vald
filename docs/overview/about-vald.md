@@ -21,31 +21,39 @@ Vald is easy to use, feature-rich and highly customizable as you needed.
 <!-- copied from README.md-->
 
 - Asynchronous Auto Indexing
+
   - Usually the graph requires locking during indexing, which causes stop-the-world. But Vald uses distributed index graphs so it continues to work during indexing.
 
 - Customizable Ingress/Egress Filtering
+
   - Vald implements it's own highly customizable Ingress/Egress filter.
   - Which can be configured to fit the gRPC interface.
     - Ingress Filter: Ability to Vectorize through filter on request.
     - Egress Filter: rerank or filter the searching result with your own algorithm.
 
 - Cloud-native based vector searching engine
+
   - Horizontal scalable on memory and CPU for your demand.
 
 - Auto Backup for Index data
+
   - Vald supports to backup Vald Agent index data using Object Storage or Persistent Volume.
 
 - Distributed Indexing
+
   - Vald distributes vector index to multiple agents, and each agent stores different index.
 
 - Index Replication
+
   - Vald stores each index in multiple agents which enables index replicas.
   - Automatically rebalancing the replica when some Vald agent goes down.
 
 - Easy to use
+
   - Vald can be easily installed in a few steps.
 
 - Highly customizable
+
   - You can configure the number of vector dimensions, the number of replica and etc.
 
 - Multi language supported
