@@ -28,7 +28,13 @@ use tonic::Request;
 #[command(author, version, about, long_about = None)]
 struct Args {
     #[arg(short, long)]
-    config: String,
+    config: Option<String>,
+
+    #[arg(short, long)]
+    database_path: Option<String>,
+
+    #[arg(short, long)]
+    server_addr: Option<String>,
 }
 
 struct MetadataMap<'a>(&'a tonic::metadata::MetadataMap);
@@ -59,7 +65,18 @@ fn intercept(mut req: Request<()>) -> Result<Request<()>, tonic::Status> {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
-    let cfg = config::Config::load(&args.config)?;
+    let mut cfg = if let Some(config_path) = args.config {
+        config::Config::load(&config_path)?
+    } else {
+        config::Config::default()
+    };
+
+    if let Some(db_path) = args.database_path {
+        cfg.database_path = db_path;
+    }
+    if let Some(addr) = args.server_addr {
+        cfg.server_addr = addr;
+    }
 
     let observability_cfg = cfg.observability.to_observability_config();
     let mut observability = ObservabilityImpl::new(observability_cfg)?;

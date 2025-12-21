@@ -73,6 +73,16 @@ fn default_database_path() -> String {
     "/tmp/meta/database".to_string()
 }
 
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            observability: ObservabilityConfig::default(),
+            server_addr: default_server_addr(),
+            database_path: default_database_path(),
+        }
+    }
+}
+
 impl Config {
     pub fn load(path: &str) -> Result<Self, Box<dyn std::error::Error>> {
         let f = std::fs::File::open(path)?;
