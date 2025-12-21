@@ -22,9 +22,7 @@
   "appPort": "3000:3000",
 
   // define named volume to store zsh history file
-  "mounts": [
-    "source=zshhistory-named-volume,target=/commandhistory,type=volume"
-  ],
+  "mounts": ["source=zshhistory-named-volume,target=/commandhistory,type=volume"],
 
   "postAttachCommand": ["/bin/bash", ".devcontainer/postAttachCommand.sh"]
 }

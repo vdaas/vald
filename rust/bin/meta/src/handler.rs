@@ -15,8 +15,8 @@
 //
 mod meta;
 
-use kv::*;
 use std::sync::Arc;
+use kv::*;
 
 pub struct Meta {
     store: Arc<Store>,

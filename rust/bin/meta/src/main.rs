@@ -14,13 +14,11 @@
 // limitations under the License.
 //
 
+mod config;
 mod handler;
 
 use clap::Parser;
-use observability::{
-    config::{Config, Tracer},
-    observability::{Observability, ObservabilityImpl, SERVICE_NAME},
-};
+use observability::observability::{Observability, ObservabilityImpl};
 use opentelemetry::global;
 use opentelemetry::propagation::Extractor;
 use tonic::transport::Server;
@@ -29,9 +27,9 @@ use tonic::Request;
 #[derive(Parser, Debug)]
 #[command(name = "meta")]
 struct Args {
-    /// Path to the database
-    #[arg(short, long, default_value = "/tmp/meta/database")]
-    database_path: String,
+    /// Path to the configuration file
+    #[arg(short, long)]
+    config: String,
 }
 
 struct MetadataMap<'a>(&'a tonic::metadata::MetadataMap);
@@ -62,38 +60,13 @@ fn intercept(mut req: Request<()>) -> Result<Request<()>, tonic::Status> {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
+    let cfg = config::Config::load(&args.config)?;
 
-    // TODO: yaml is given from outside
-    // let config_yaml = r#"enabled: false
-    // endpoint: ""
-    // attributes: []
-    // tracer:
-    //     enabled: false
-    // meter:
-    //     enabled: false
-    //     export_duration:
-    //         secs: 60
-    //         nanos: 0
-    //     export_timeout_duration:
-    //         secs: 30
-    //         nanos: 0
-    // "#;
-    //
-    // decode config yaml
-    // let observability_cfg = serde_yaml::from_str(config_yaml).unwrap();
-    let observability_cfg = Config::new()
-        .enabled(true)
-        .attribute(SERVICE_NAME, "vald-lb-gateway")
-        .attribute("target_pod", "target_pod")
-        .attribute("target_node", "target_node")
-        .attribute("exported_kubernetes_namaspace", "default")
-        .attribute("kubernetes_name", "vald-lb-gateway")
-        .endpoint("http://127.0.0.1:4318")
-        .tracer(Tracer::new().enabled(true));
+    let observability_cfg = cfg.observability.to_observability_config();
     let mut observability = ObservabilityImpl::new(observability_cfg)?;
 
-    let addr = "[::1]:8095".parse()?;
-    let meta = handler::Meta::new(&args.database_path)?;
+    let addr = cfg.server_addr.parse()?;
+    let meta = handler::Meta::new(&cfg.database_path)?;
 
     // the interceptor given here is implicitly executed for each request
     Server::builder()

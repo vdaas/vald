@@ -121,6 +121,7 @@ on:
       - internal/observability/trace/*.go
       - internal/os/*.go
       - internal/params/*.go
+      - internal/rand/*.go
       - internal/runner/*.go
       - internal/safety/*.go
       - internal/servers/*.go
@@ -241,6 +242,7 @@ on:
       - internal/observability/trace/*.go
       - internal/os/*.go
       - internal/params/*.go
+      - internal/rand/*.go
       - internal/runner/*.go
       - internal/safety/*.go
       - internal/servers/*.go

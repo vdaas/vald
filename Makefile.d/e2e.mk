@@ -114,7 +114,7 @@ e2e/actions/run/stream/crud: \
 	kubectl wait -n kube-system --for=condition=Ready pod -l k8s-app=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	kubectl wait -n kube-system --for=condition=ContainersReady pod -l k8s-app=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	$(MAKE) k8s/vald/deploy \
-	HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-lb.yaml
+		HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-lb.yaml
 	sleep 3
 	kubectl wait --for=condition=Ready pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	kubectl wait --for=condition=ContainersReady pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
@@ -135,7 +135,7 @@ e2e/actions/run/job: \
 	kubectl wait -n kube-system --for=condition=Ready pod -l k8s-app=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	kubectl wait -n kube-system --for=condition=ContainersReady pod -l k8s-app=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	$(MAKE) k8s/vald/deploy \
-	HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-correction.yaml
+		HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-correction.yaml
 	sleep 3
 	kubectl wait --for=condition=Ready pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	kubectl wait --for=condition=ContainersReady pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
@@ -157,8 +157,8 @@ e2e/actions/run/readreplica: \
 	kubectl wait -n kube-system --for=condition=ContainersReady pod -l app.kubernetes.io/name=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 
 	$(MAKE) k8s/vald-readreplica/deploy \
-	VERSION=$(VERSION) \
-	HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-readreplica.yaml
+		VERSION=$(VERSION) \
+		HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-readreplica.yaml
 	sleep 3
 	kubectl wait --for=condition=Ready pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	kubectl wait --for=condition=ContainersReady pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
@@ -180,7 +180,7 @@ e2e/actions/run/stream/crud/skip: \
 	kubectl wait -n kube-system --for=condition=Ready pod -l k8s-app=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	kubectl wait -n kube-system --for=condition=ContainersReady pod -l k8s-app=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	$(MAKE) k8s/vald/deploy \
-	HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-lb.yaml
+		HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-lb.yaml
 	sleep 3
 	kubectl wait --for=condition=Ready pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	kubectl wait --for=condition=ContainersReady pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
@@ -191,31 +191,3 @@ e2e/actions/run/stream/crud/skip: \
 	$(MAKE) k8s/vald/delete
 	$(MAKE) k3d/delete
 
-.PHONY: e2e/v2/actions/run/unary/crud
-## run GitHub Actions E2E/V2 test (Unary CRUD)
-e2e/v2/actions/run/unary/crud: \
-	hack/benchmark/assets/dataset/$(E2E_DATASET_NAME) \
-	k3d/restart
-	kubectl wait -n kube-system --for=condition=Available deployment/metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	sleep 2
-	kubectl wait -n kube-system --for=condition=Ready pod -l app.kubernetes.io/name=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	kubectl wait -n kube-system --for=condition=ContainersReady pod -l app.kubernetes.io/name=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	$(MAKE) k8s/vald/deploy \
-	VERSION=$(VERSION) \
-	HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-lb.yaml
-	sleep 3
-	kubectl wait --for=condition=Ready pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	kubectl wait --for=condition=ContainersReady pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	kubectl get pods
-	$(MAKE) E2E_CONFIG="$(E2E_CONFIG_DIR)/unary_crud.yaml" \
-		E2E_TIMEOUT=30m \
-		E2E_PARALLELISM="4" \
-		E2E_INSERT_COUNT="10000" \
-		E2E_EXPECTED_INDEX="30000" \
-		E2E_QPS="30" \
-		E2E_SEARCH_COUNT="10" \
-		E2E_UPDATE_COUNT="100" \
-		E2E_BULK_SIZE="10" \
-		e2e/v2
-	$(MAKE) k8s/vald/delete
-	$(MAKE) k3d/delete

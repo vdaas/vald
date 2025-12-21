@@ -1794,15 +1794,7 @@
                     "RequireAndVerify"
                   ]
                 },
-                "crl": {
-                  "type": "string",
-                  "description": "TLS certificate revocation list (CRL) path"
-                },
                 "enabled": { "type": "boolean", "description": "TLS enabled" },
-                "hot_reload": {
-                  "type": "boolean",
-                  "description": "enable dynamically reload certificate on each handshake"
-                },
                 "insecure_skip_verify": {
                   "type": "boolean",
                   "description": "enable/disable skip SSL certificate verification"
@@ -2094,17 +2086,9 @@
                                 "RequireAndVerify"
                               ]
                             },
-                            "crl": {
-                              "type": "string",
-                              "description": "TLS certificate revocation list (CRL) path"
-                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
-                            },
-                            "hot_reload": {
-                              "type": "boolean",
-                              "description": "enable dynamically reload certificate on each handshake"
                             },
                             "insecure_skip_verify": {
                               "type": "boolean",
@@ -3533,17 +3517,9 @@
                         "RequireAndVerify"
                       ]
                     },
-                    "crl": {
-                      "type": "string",
-                      "description": "TLS certificate revocation list (CRL) path"
-                    },
                     "enabled": {
                       "type": "boolean",
                       "description": "TLS enabled"
-                    },
-                    "hot_reload": {
-                      "type": "boolean",
-                      "description": "enable dynamically reload certificate on each handshake"
                     },
                     "insecure_skip_verify": {
                       "type": "boolean",
@@ -3923,17 +3899,9 @@
                                 "RequireAndVerify"
                               ]
                             },
-                            "crl": {
-                              "type": "string",
-                              "description": "TLS certificate revocation list (CRL) path"
-                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
-                            },
-                            "hot_reload": {
-                              "type": "boolean",
-                              "description": "enable dynamically reload certificate on each handshake"
                             },
                             "insecure_skip_verify": {
                               "type": "boolean",
@@ -4000,17 +3968,9 @@
                         "RequireAndVerify"
                       ]
                     },
-                    "crl": {
-                      "type": "string",
-                      "description": "TLS certificate revocation list (CRL) path"
-                    },
                     "enabled": {
                       "type": "boolean",
                       "description": "TLS enabled"
-                    },
-                    "hot_reload": {
-                      "type": "boolean",
-                      "description": "enable dynamically reload certificate on each handshake"
                     },
                     "insecure_skip_verify": {
                       "type": "boolean",
@@ -5263,15 +5223,7 @@
                     "RequireAndVerify"
                   ]
                 },
-                "crl": {
-                  "type": "string",
-                  "description": "TLS certificate revocation list (CRL) path"
-                },
                 "enabled": { "type": "boolean", "description": "TLS enabled" },
-                "hot_reload": {
-                  "type": "boolean",
-                  "description": "enable dynamically reload certificate on each handshake"
-                },
                 "insecure_skip_verify": {
                   "type": "boolean",
                   "description": "enable/disable skip SSL certificate verification"
@@ -5488,17 +5440,9 @@
                         "RequireAndVerify"
                       ]
                     },
-                    "crl": {
-                      "type": "string",
-                      "description": "TLS certificate revocation list (CRL) path"
-                    },
                     "enabled": {
                       "type": "boolean",
                       "description": "TLS enabled"
-                    },
-                    "hot_reload": {
-                      "type": "boolean",
-                      "description": "enable dynamically reload certificate on each handshake"
                     },
                     "insecure_skip_verify": {
                       "type": "boolean",
@@ -6922,15 +6866,7 @@
                     "RequireAndVerify"
                   ]
                 },
-                "crl": {
-                  "type": "string",
-                  "description": "TLS certificate revocation list (CRL) path"
-                },
                 "enabled": { "type": "boolean", "description": "TLS enabled" },
-                "hot_reload": {
-                  "type": "boolean",
-                  "description": "enable dynamically reload certificate on each handshake"
-                },
                 "insecure_skip_verify": {
                   "type": "boolean",
                   "description": "enable/disable skip SSL certificate verification"
@@ -7370,17 +7306,9 @@
                                         "RequireAndVerify"
                                       ]
                                     },
-                                    "crl": {
-                                      "type": "string",
-                                      "description": "TLS certificate revocation list (CRL) path"
-                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
-                                    },
-                                    "hot_reload": {
-                                      "type": "boolean",
-                                      "description": "enable dynamically reload certificate on each handshake"
                                     },
                                     "insecure_skip_verify": {
                                       "type": "boolean",
@@ -7450,17 +7378,9 @@
                                 "RequireAndVerify"
                               ]
                             },
-                            "crl": {
-                              "type": "string",
-                              "description": "TLS certificate revocation list (CRL) path"
-                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
-                            },
-                            "hot_reload": {
-                              "type": "boolean",
-                              "description": "enable dynamically reload certificate on each handshake"
                             },
                             "insecure_skip_verify": {
                               "type": "boolean",
@@ -7778,17 +7698,9 @@
                                     "RequireAndVerify"
                                   ]
                                 },
-                                "crl": {
-                                  "type": "string",
-                                  "description": "TLS certificate revocation list (CRL) path"
-                                },
                                 "enabled": {
                                   "type": "boolean",
                                   "description": "TLS enabled"
-                                },
-                                "hot_reload": {
-                                  "type": "boolean",
-                                  "description": "enable dynamically reload certificate on each handshake"
                                 },
                                 "insecure_skip_verify": {
                                   "type": "boolean",
@@ -7858,17 +7770,9 @@
                             "RequireAndVerify"
                           ]
                         },
-                        "crl": {
-                          "type": "string",
-                          "description": "TLS certificate revocation list (CRL) path"
-                        },
                         "enabled": {
                           "type": "boolean",
                           "description": "TLS enabled"
-                        },
-                        "hot_reload": {
-                          "type": "boolean",
-                          "description": "enable dynamically reload certificate on each handshake"
                         },
                         "insecure_skip_verify": {
                           "type": "boolean",
@@ -8181,17 +8085,9 @@
                                         "RequireAndVerify"
                                       ]
                                     },
-                                    "crl": {
-                                      "type": "string",
-                                      "description": "TLS certificate revocation list (CRL) path"
-                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
-                                    },
-                                    "hot_reload": {
-                                      "type": "boolean",
-                                      "description": "enable dynamically reload certificate on each handshake"
                                     },
                                     "insecure_skip_verify": {
                                       "type": "boolean",
@@ -8261,17 +8157,9 @@
                                 "RequireAndVerify"
                               ]
                             },
-                            "crl": {
-                              "type": "string",
-                              "description": "TLS certificate revocation list (CRL) path"
-                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
-                            },
-                            "hot_reload": {
-                              "type": "boolean",
-                              "description": "enable dynamically reload certificate on each handshake"
                             },
                             "insecure_skip_verify": {
                               "type": "boolean",
@@ -9688,17 +9576,9 @@
                         "RequireAndVerify"
                       ]
                     },
-                    "crl": {
-                      "type": "string",
-                      "description": "TLS certificate revocation list (CRL) path"
-                    },
                     "enabled": {
                       "type": "boolean",
                       "description": "TLS enabled"
-                    },
-                    "hot_reload": {
-                      "type": "boolean",
-                      "description": "enable dynamically reload certificate on each handshake"
                     },
                     "insecure_skip_verify": {
                       "type": "boolean",
@@ -10139,17 +10019,9 @@
                                         "RequireAndVerify"
                                       ]
                                     },
-                                    "crl": {
-                                      "type": "string",
-                                      "description": "TLS certificate revocation list (CRL) path"
-                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
-                                    },
-                                    "hot_reload": {
-                                      "type": "boolean",
-                                      "description": "enable dynamically reload certificate on each handshake"
                                     },
                                     "insecure_skip_verify": {
                                       "type": "boolean",
@@ -10219,17 +10091,9 @@
                                 "RequireAndVerify"
                               ]
                             },
-                            "crl": {
-                              "type": "string",
-                              "description": "TLS certificate revocation list (CRL) path"
-                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
-                            },
-                            "hot_reload": {
-                              "type": "boolean",
-                              "description": "enable dynamically reload certificate on each handshake"
                             },
                             "insecure_skip_verify": {
                               "type": "boolean",
@@ -10538,17 +10402,9 @@
                                         "RequireAndVerify"
                                       ]
                                     },
-                                    "crl": {
-                                      "type": "string",
-                                      "description": "TLS certificate revocation list (CRL) path"
-                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
-                                    },
-                                    "hot_reload": {
-                                      "type": "boolean",
-                                      "description": "enable dynamically reload certificate on each handshake"
                                     },
                                     "insecure_skip_verify": {
                                       "type": "boolean",
@@ -10618,17 +10474,9 @@
                                 "RequireAndVerify"
                               ]
                             },
-                            "crl": {
-                              "type": "string",
-                              "description": "TLS certificate revocation list (CRL) path"
-                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
-                            },
-                            "hot_reload": {
-                              "type": "boolean",
-                              "description": "enable dynamically reload certificate on each handshake"
                             },
                             "insecure_skip_verify": {
                               "type": "boolean",
@@ -10938,17 +10786,9 @@
                                         "RequireAndVerify"
                                       ]
                                     },
-                                    "crl": {
-                                      "type": "string",
-                                      "description": "TLS certificate revocation list (CRL) path"
-                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
-                                    },
-                                    "hot_reload": {
-                                      "type": "boolean",
-                                      "description": "enable dynamically reload certificate on each handshake"
                                     },
                                     "insecure_skip_verify": {
                                       "type": "boolean",
@@ -11018,17 +10858,9 @@
                                 "RequireAndVerify"
                               ]
                             },
-                            "crl": {
-                              "type": "string",
-                              "description": "TLS certificate revocation list (CRL) path"
-                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
-                            },
-                            "hot_reload": {
-                              "type": "boolean",
-                              "description": "enable dynamically reload certificate on each handshake"
                             },
                             "insecure_skip_verify": {
                               "type": "boolean",
@@ -12432,17 +12264,9 @@
                         "RequireAndVerify"
                       ]
                     },
-                    "crl": {
-                      "type": "string",
-                      "description": "TLS certificate revocation list (CRL) path"
-                    },
                     "enabled": {
                       "type": "boolean",
                       "description": "TLS enabled"
-                    },
-                    "hot_reload": {
-                      "type": "boolean",
-                      "description": "enable dynamically reload certificate on each handshake"
                     },
                     "insecure_skip_verify": {
                       "type": "boolean",
@@ -12899,17 +12723,9 @@
                                     "RequireAndVerify"
                                   ]
                                 },
-                                "crl": {
-                                  "type": "string",
-                                  "description": "TLS certificate revocation list (CRL) path"
-                                },
                                 "enabled": {
                                   "type": "boolean",
                                   "description": "TLS enabled"
-                                },
-                                "hot_reload": {
-                                  "type": "boolean",
-                                  "description": "enable dynamically reload certificate on each handshake"
                                 },
                                 "insecure_skip_verify": {
                                   "type": "boolean",
@@ -12979,17 +12795,9 @@
                             "RequireAndVerify"
                           ]
                         },
-                        "crl": {
-                          "type": "string",
-                          "description": "TLS certificate revocation list (CRL) path"
-                        },
                         "enabled": {
                           "type": "boolean",
                           "description": "TLS enabled"
-                        },
-                        "hot_reload": {
-                          "type": "boolean",
-                          "description": "enable dynamically reload certificate on each handshake"
                         },
                         "insecure_skip_verify": {
                           "type": "boolean",
@@ -13134,17 +12942,9 @@
                             "RequireAndVerify"
                           ]
                         },
-                        "crl": {
-                          "type": "string",
-                          "description": "TLS certificate revocation list (CRL) path"
-                        },
                         "enabled": {
                           "type": "boolean",
                           "description": "TLS enabled"
-                        },
-                        "hot_reload": {
-                          "type": "boolean",
-                          "description": "enable dynamically reload certificate on each handshake"
                         },
                         "insecure_skip_verify": {
                           "type": "boolean",
@@ -14542,17 +14342,9 @@
                         "RequireAndVerify"
                       ]
                     },
-                    "crl": {
-                      "type": "string",
-                      "description": "TLS certificate revocation list (CRL) path"
-                    },
                     "enabled": {
                       "type": "boolean",
                       "description": "TLS enabled"
-                    },
-                    "hot_reload": {
-                      "type": "boolean",
-                      "description": "enable dynamically reload certificate on each handshake"
                     },
                     "insecure_skip_verify": {
                       "type": "boolean",
@@ -15043,17 +14835,9 @@
                                         "RequireAndVerify"
                                       ]
                                     },
-                                    "crl": {
-                                      "type": "string",
-                                      "description": "TLS certificate revocation list (CRL) path"
-                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
-                                    },
-                                    "hot_reload": {
-                                      "type": "boolean",
-                                      "description": "enable dynamically reload certificate on each handshake"
                                     },
                                     "insecure_skip_verify": {
                                       "type": "boolean",
@@ -15123,17 +14907,9 @@
                                 "RequireAndVerify"
                               ]
                             },
-                            "crl": {
-                              "type": "string",
-                              "description": "TLS certificate revocation list (CRL) path"
-                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
-                            },
-                            "hot_reload": {
-                              "type": "boolean",
-                              "description": "enable dynamically reload certificate on each handshake"
                             },
                             "insecure_skip_verify": {
                               "type": "boolean",
@@ -15442,17 +15218,9 @@
                                         "RequireAndVerify"
                                       ]
                                     },
-                                    "crl": {
-                                      "type": "string",
-                                      "description": "TLS certificate revocation list (CRL) path"
-                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
-                                    },
-                                    "hot_reload": {
-                                      "type": "boolean",
-                                      "description": "enable dynamically reload certificate on each handshake"
                                     },
                                     "insecure_skip_verify": {
                                       "type": "boolean",
@@ -15522,17 +15290,9 @@
                                 "RequireAndVerify"
                               ]
                             },
-                            "crl": {
-                              "type": "string",
-                              "description": "TLS certificate revocation list (CRL) path"
-                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
-                            },
-                            "hot_reload": {
-                              "type": "boolean",
-                              "description": "enable dynamically reload certificate on each handshake"
                             },
                             "insecure_skip_verify": {
                               "type": "boolean",
@@ -15853,17 +15613,9 @@
                                     "RequireAndVerify"
                                   ]
                                 },
-                                "crl": {
-                                  "type": "string",
-                                  "description": "TLS certificate revocation list (CRL) path"
-                                },
                                 "enabled": {
                                   "type": "boolean",
                                   "description": "TLS enabled"
-                                },
-                                "hot_reload": {
-                                  "type": "boolean",
-                                  "description": "enable dynamically reload certificate on each handshake"
                                 },
                                 "insecure_skip_verify": {
                                   "type": "boolean",
@@ -15933,17 +15685,9 @@
                             "RequireAndVerify"
                           ]
                         },
-                        "crl": {
-                          "type": "string",
-                          "description": "TLS certificate revocation list (CRL) path"
-                        },
                         "enabled": {
                           "type": "boolean",
                           "description": "TLS enabled"
-                        },
-                        "hot_reload": {
-                          "type": "boolean",
-                          "description": "enable dynamically reload certificate on each handshake"
                         },
                         "insecure_skip_verify": {
                           "type": "boolean",
@@ -17202,17 +16946,9 @@
                             "RequireAndVerify"
                           ]
                         },
-                        "crl": {
-                          "type": "string",
-                          "description": "TLS certificate revocation list (CRL) path"
-                        },
                         "enabled": {
                           "type": "boolean",
                           "description": "TLS enabled"
-                        },
-                        "hot_reload": {
-                          "type": "boolean",
-                          "description": "enable dynamically reload certificate on each handshake"
                         },
                         "insecure_skip_verify": {
                           "type": "boolean",
@@ -17624,17 +17360,9 @@
                                         "RequireAndVerify"
                                       ]
                                     },
-                                    "crl": {
-                                      "type": "string",
-                                      "description": "TLS certificate revocation list (CRL) path"
-                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
-                                    },
-                                    "hot_reload": {
-                                      "type": "boolean",
-                                      "description": "enable dynamically reload certificate on each handshake"
                                     },
                                     "insecure_skip_verify": {
                                       "type": "boolean",
@@ -17704,17 +17432,9 @@
                                 "RequireAndVerify"
                               ]
                             },
-                            "crl": {
-                              "type": "string",
-                              "description": "TLS certificate revocation list (CRL) path"
-                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
-                            },
-                            "hot_reload": {
-                              "type": "boolean",
-                              "description": "enable dynamically reload certificate on each handshake"
                             },
                             "insecure_skip_verify": {
                               "type": "boolean",
@@ -18023,17 +17743,9 @@
                                         "RequireAndVerify"
                                       ]
                                     },
-                                    "crl": {
-                                      "type": "string",
-                                      "description": "TLS certificate revocation list (CRL) path"
-                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
-                                    },
-                                    "hot_reload": {
-                                      "type": "boolean",
-                                      "description": "enable dynamically reload certificate on each handshake"
                                     },
                                     "insecure_skip_verify": {
                                       "type": "boolean",
@@ -18103,17 +17815,9 @@
                                 "RequireAndVerify"
                               ]
                             },
-                            "crl": {
-                              "type": "string",
-                              "description": "TLS certificate revocation list (CRL) path"
-                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
-                            },
-                            "hot_reload": {
-                              "type": "boolean",
-                              "description": "enable dynamically reload certificate on each handshake"
                             },
                             "insecure_skip_verify": {
                               "type": "boolean",
@@ -19379,17 +19083,9 @@
                             "RequireAndVerify"
                           ]
                         },
-                        "crl": {
-                          "type": "string",
-                          "description": "TLS certificate revocation list (CRL) path"
-                        },
                         "enabled": {
                           "type": "boolean",
                           "description": "TLS enabled"
-                        },
-                        "hot_reload": {
-                          "type": "boolean",
-                          "description": "enable dynamically reload certificate on each handshake"
                         },
                         "insecure_skip_verify": {
                           "type": "boolean",
@@ -19797,17 +19493,9 @@
                                         "RequireAndVerify"
                                       ]
                                     },
-                                    "crl": {
-                                      "type": "string",
-                                      "description": "TLS certificate revocation list (CRL) path"
-                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
-                                    },
-                                    "hot_reload": {
-                                      "type": "boolean",
-                                      "description": "enable dynamically reload certificate on each handshake"
                                     },
                                     "insecure_skip_verify": {
                                       "type": "boolean",
@@ -19877,17 +19565,9 @@
                                 "RequireAndVerify"
                               ]
                             },
-                            "crl": {
-                              "type": "string",
-                              "description": "TLS certificate revocation list (CRL) path"
-                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
-                            },
-                            "hot_reload": {
-                              "type": "boolean",
-                              "description": "enable dynamically reload certificate on each handshake"
                             },
                             "insecure_skip_verify": {
                               "type": "boolean",
@@ -20196,17 +19876,9 @@
                                         "RequireAndVerify"
                                       ]
                                     },
-                                    "crl": {
-                                      "type": "string",
-                                      "description": "TLS certificate revocation list (CRL) path"
-                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
-                                    },
-                                    "hot_reload": {
-                                      "type": "boolean",
-                                      "description": "enable dynamically reload certificate on each handshake"
                                     },
                                     "insecure_skip_verify": {
                                       "type": "boolean",
@@ -20276,17 +19948,9 @@
                                 "RequireAndVerify"
                               ]
                             },
-                            "crl": {
-                              "type": "string",
-                              "description": "TLS certificate revocation list (CRL) path"
-                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
-                            },
-                            "hot_reload": {
-                              "type": "boolean",
-                              "description": "enable dynamically reload certificate on each handshake"
                             },
                             "insecure_skip_verify": {
                               "type": "boolean",
@@ -21556,17 +21220,9 @@
                             "RequireAndVerify"
                           ]
                         },
-                        "crl": {
-                          "type": "string",
-                          "description": "TLS certificate revocation list (CRL) path"
-                        },
                         "enabled": {
                           "type": "boolean",
                           "description": "TLS enabled"
-                        },
-                        "hot_reload": {
-                          "type": "boolean",
-                          "description": "enable dynamically reload certificate on each handshake"
                         },
                         "insecure_skip_verify": {
                           "type": "boolean",
@@ -21974,17 +21630,9 @@
                                         "RequireAndVerify"
                                       ]
                                     },
-                                    "crl": {
-                                      "type": "string",
-                                      "description": "TLS certificate revocation list (CRL) path"
-                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
-                                    },
-                                    "hot_reload": {
-                                      "type": "boolean",
-                                      "description": "enable dynamically reload certificate on each handshake"
                                     },
                                     "insecure_skip_verify": {
                                       "type": "boolean",
@@ -22054,17 +21702,9 @@
                                 "RequireAndVerify"
                               ]
                             },
-                            "crl": {
-                              "type": "string",
-                              "description": "TLS certificate revocation list (CRL) path"
-                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
-                            },
-                            "hot_reload": {
-                              "type": "boolean",
-                              "description": "enable dynamically reload certificate on each handshake"
                             },
                             "insecure_skip_verify": {
                               "type": "boolean",
@@ -22373,17 +22013,9 @@
                                         "RequireAndVerify"
                                       ]
                                     },
-                                    "crl": {
-                                      "type": "string",
-                                      "description": "TLS certificate revocation list (CRL) path"
-                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
-                                    },
-                                    "hot_reload": {
-                                      "type": "boolean",
-                                      "description": "enable dynamically reload certificate on each handshake"
                                     },
                                     "insecure_skip_verify": {
                                       "type": "boolean",
@@ -22453,17 +22085,9 @@
                                 "RequireAndVerify"
                               ]
                             },
-                            "crl": {
-                              "type": "string",
-                              "description": "TLS certificate revocation list (CRL) path"
-                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
-                            },
-                            "hot_reload": {
-                              "type": "boolean",
-                              "description": "enable dynamically reload certificate on each handshake"
                             },
                             "insecure_skip_verify": {
                               "type": "boolean",
@@ -24067,17 +23691,9 @@
                             "RequireAndVerify"
                           ]
                         },
-                        "crl": {
-                          "type": "string",
-                          "description": "TLS certificate revocation list (CRL) path"
-                        },
                         "enabled": {
                           "type": "boolean",
                           "description": "TLS enabled"
-                        },
-                        "hot_reload": {
-                          "type": "boolean",
-                          "description": "enable dynamically reload certificate on each handshake"
                         },
                         "insecure_skip_verify": {
                           "type": "boolean",
@@ -25427,17 +25043,9 @@
                                 "RequireAndVerify"
                               ]
                             },
-                            "crl": {
-                              "type": "string",
-                              "description": "TLS certificate revocation list (CRL) path"
-                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
-                            },
-                            "hot_reload": {
-                              "type": "boolean",
-                              "description": "enable dynamically reload certificate on each handshake"
                             },
                             "insecure_skip_verify": {
                               "type": "boolean",
@@ -25864,17 +25472,9 @@
                                         "RequireAndVerify"
                                       ]
                                     },
-                                    "crl": {
-                                      "type": "string",
-                                      "description": "TLS certificate revocation list (CRL) path"
-                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
-                                    },
-                                    "hot_reload": {
-                                      "type": "boolean",
-                                      "description": "enable dynamically reload certificate on each handshake"
                                     },
                                     "insecure_skip_verify": {
                                       "type": "boolean",
@@ -25944,17 +25544,9 @@
                                 "RequireAndVerify"
                               ]
                             },
-                            "crl": {
-                              "type": "string",
-                              "description": "TLS certificate revocation list (CRL) path"
-                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
-                            },
-                            "hot_reload": {
-                              "type": "boolean",
-                              "description": "enable dynamically reload certificate on each handshake"
                             },
                             "insecure_skip_verify": {
                               "type": "boolean",
@@ -26263,17 +25855,9 @@
                                         "RequireAndVerify"
                                       ]
                                     },
-                                    "crl": {
-                                      "type": "string",
-                                      "description": "TLS certificate revocation list (CRL) path"
-                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
-                                    },
-                                    "hot_reload": {
-                                      "type": "boolean",
-                                      "description": "enable dynamically reload certificate on each handshake"
                                     },
                                     "insecure_skip_verify": {
                                       "type": "boolean",
@@ -26343,17 +25927,9 @@
                                 "RequireAndVerify"
                               ]
                             },
-                            "crl": {
-                              "type": "string",
-                              "description": "TLS certificate revocation list (CRL) path"
-                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
-                            },
-                            "hot_reload": {
-                              "type": "boolean",
-                              "description": "enable dynamically reload certificate on each handshake"
                             },
                             "insecure_skip_verify": {
                               "type": "boolean",
@@ -27619,17 +27195,9 @@
                             "RequireAndVerify"
                           ]
                         },
-                        "crl": {
-                          "type": "string",
-                          "description": "TLS certificate revocation list (CRL) path"
-                        },
                         "enabled": {
                           "type": "boolean",
                           "description": "TLS enabled"
-                        },
-                        "hot_reload": {
-                          "type": "boolean",
-                          "description": "enable dynamically reload certificate on each handshake"
                         },
                         "insecure_skip_verify": {
                           "type": "boolean",
@@ -28761,17 +28329,9 @@
                         "RequireAndVerify"
                       ]
                     },
-                    "crl": {
-                      "type": "string",
-                      "description": "TLS certificate revocation list (CRL) path"
-                    },
                     "enabled": {
                       "type": "boolean",
                       "description": "TLS enabled"
-                    },
-                    "hot_reload": {
-                      "type": "boolean",
-                      "description": "enable dynamically reload certificate on each handshake"
                     },
                     "insecure_skip_verify": {
                       "type": "boolean",

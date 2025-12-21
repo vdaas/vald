@@ -145,12 +145,7 @@ func main() {
 		// skipcq: RVV-A0003
 		log.Fatal(errors.New("invalid argument"))
 	}
-	paths, err := dirwalk(os.Args[1])
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	for _, path := range paths {
+	for _, path := range dirwalk(os.Args[1]) {
 		fmt.Println(path)
 		err := readAndRewrite(path)
 		if err != nil {
@@ -160,15 +155,15 @@ func main() {
 	}
 }
 
-func dirwalk(dir string) ([]string, error) {
+func dirwalk(dir string) []string {
 	for _, sd := range skipDir {
 		if strings.Contains(dir, sd) {
-			return []string{}, nil
+			return []string{}
 		}
 	}
 	files, err := file.ReadDir(dir)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 	var paths []string
 	for _, f := range files {
@@ -178,11 +173,7 @@ func dirwalk(dir string) ([]string, error) {
 				!strings.Contains(f.Name(), ".git") &&
 				!strings.Contains(f.Name(), "target") ||
 				strings.HasPrefix(f.Name(), ".github") {
-				dirs, err := dirwalk(file.Join(dir, f.Name()))
-				if err != nil {
-					return paths, err
-				}
-				paths = append(paths, dirs...)
+				paths = append(paths, dirwalk(file.Join(dir, f.Name()))...)
 			}
 			continue
 		}
@@ -198,7 +189,6 @@ func dirwalk(dir string) ([]string, error) {
 			".gitignore",
 			".gitkeep",
 			".gitmodules",
-			".golden",
 			".gotmpl",
 			".hdf5",
 			".helmignore",
@@ -220,12 +210,13 @@ func dirwalk(dir string) ([]string, error) {
 			".tpl",
 			".txt",
 			".webp",
-			".whitesource":
+			".whitesource",
+			"LICENSE",
+			"Pipefile":
 		default:
 			switch f.Name() {
 			case
 				"AUTHORS",
-				"LICENSE",
 				"CONTRIBUTORS",
 				"FAISS_VERSION",
 				"GO_VERSION",
@@ -245,7 +236,7 @@ func dirwalk(dir string) ([]string, error) {
 			}
 		}
 	}
-	return paths, nil
+	return paths
 }
 
 func isSymlink(path string) (bool, error) {

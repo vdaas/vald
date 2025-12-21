@@ -31,7 +31,7 @@ kubernetes:
 target:
   addrs:
     - 127.0.0.1:8082
-  health_check_duration: 1s
+  health_check_duration: "1s"
   connection_pool:
     enable_dns_resolver: true
     enable_rebalance: true
@@ -115,32 +115,6 @@ metadata:
   key2: sample metadata value2
   key3: sample metadata value3
 metadata_string: key4=value4,key5=value5
-metrics:
-  enabled: true
-  latency_histogram:
-    num_shards: 10
-  queue_wait_histogram:
-    num_shards: 10
-  latency_tdigest:
-    compression: 100
-    compression_trigger_factor: 1.2
-    num_shards: 16
-  queue_wait_tdigest:
-    compression: 100
-    compression_trigger_factor: 1.2
-    num_shards: 16
-  exemplar:
-    capacity: 10
-  range_scales:
-    - name: 0-100
-      width: 10
-      capacity: 10
-  time_scales:
-    - name: 0-10s
-      width: 1
-      capacity: 10
-  custom_counters:
-    - custom_counter_1
 strategies:
   - concurrency: 1
     name: check Index Property
@@ -199,6 +173,7 @@ strategies:
             offset: 0
             wait: 2m
             timeout: ""
+            # for search configurations
             search:
               k: 10
               radius: -1
@@ -215,19 +190,19 @@ strategies:
           - name: RolloutRestart
             type: kubernetes
             mode: other
-            delay: 40s
+            delay: "40s"
             kubernetes:
-              kind: statefulset
-              namespace: default
-              name: vald-agent
+              kind: "statefulset"
+              namespace: "default"
+              name: "vald-agent"
               action: rollout
           - name: WaitForAgentReady
             type: kubernetes
             mode: other
             kubernetes:
-              kind: statefulset
-              namespace: default
-              name: vald-agent
+              kind: "statefulset"
+              namespace: "default"
+              name: "vald-agent"
               action: wait
               status: available
   - name: RemoveVectors
@@ -244,10 +219,12 @@ strategies:
             num: _E2E_INSERT_COUNT_
             offset: 0
             bulk_size: _E2E_BULK_SIZE_
-            wait: 2m
+            wait: "2m"
+            # for modification like (Insert, Update, Upsert, Remove, RemoveByTimestamp)
             modification:
               skip_strict_exist_check: false
               timestamp: 0
             expect:
+              # expected patterns of test status codes
               - status_code: ok
               - status_code: not_found

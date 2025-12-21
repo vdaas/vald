@@ -42,8 +42,6 @@ plugins:
   - remote: buf.build/community/neoeinstein-prost
     out: rust/libs/proto/src
     opt: enable_type_names
-  - remote: buf.build/community/neoeinstein-prost-serde
-    out: rust/libs/proto/src
   - remote: buf.build/community/neoeinstein-tonic
     out: rust/libs/proto/src
     opt: no_include
