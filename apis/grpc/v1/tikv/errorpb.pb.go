@@ -1465,6 +1465,7 @@ var (
 		(*Error)(nil),                 // 21: kvrpcpb.Error
 	}
 )
+
 var file_v1_tikv_errorpb_proto_depIdxs = []int32{
 	0,  // 0: kvrpcpb.Error.not_leader:type_name -> kvrpcpb.NotLeader
 	5,  // 1: kvrpcpb.Error.region_not_found:type_name -> kvrpcpb.RegionNotFound

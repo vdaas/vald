@@ -250,6 +250,8 @@ apis/proto/v1/tikv/LICENSE
 apis/proto/v1/tikv/README.md
 apis/proto/v1/tikv/errorpb.proto
 apis/proto/v1/tikv/kvrpcpb.proto
+apis/proto/v1/tikv/metapb.proto
+apis/proto/v1/tikv/pdpb.proto
 apis/proto/v1/tikv/tikvpb.proto
 apis/proto/v1/vald/filter.proto
 apis/proto/v1/vald/flush.proto

@@ -74,9 +74,7 @@ func (c *client) GRPCClient() grpc.Client {
 	return c.c
 }
 
-func (c *client) Get(
-	ctx context.Context, key []byte,
-) (val []byte, err error) {
+func (c *client) Get(ctx context.Context, key []byte) (val []byte, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/RawGet"), apiName+"/RawGet")
 	defer func() {
 		if span != nil {
@@ -103,9 +101,7 @@ func (c *client) Get(
 	return res.Value, nil
 }
 
-func (c *client) BatchGet(
-	ctx context.Context, keys [][]byte,
-) (kv [][]byte, err error) {
+func (c *client) BatchGet(ctx context.Context, keys [][]byte) (kv [][]byte, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/RawBatchGet"), apiName+"/RawBatchGet")
 	defer func() {
 		if span != nil {
@@ -133,9 +129,7 @@ func (c *client) BatchGet(
 	return kv, nil
 }
 
-func (c *client) Put(
-	ctx context.Context, key, val []byte,
-) (err error) {
+func (c *client) Put(ctx context.Context, key, val []byte) (err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/RawPut"), apiName+"/RawPut")
 	defer func() {
 		if span != nil {
@@ -145,7 +139,7 @@ func (c *client) Put(
 
 	res, err := grpc.RoundRobin(ctx, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawPutResponse, error) {
 		return tikv.NewTikvClient(conn).RawPut(ctx, &tikv.RawPutRequest{
-			Key:	 key,
+			Key:   key,
 			Value: val,
 		}, copts...)
 	})
@@ -161,9 +155,7 @@ func (c *client) Put(
 	return nil
 }
 
-func (c *client) BatchPut(
-	ctx context.Context, keys [][]byte, vals [][]byte,
-) (err error) {
+func (c *client) BatchPut(ctx context.Context, keys [][]byte, vals [][]byte) (err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/RawBatchPut"), apiName+"/RawBatchPut")
 	defer func() {
 		if span != nil {
@@ -195,9 +187,7 @@ func (c *client) BatchPut(
 	return nil
 }
 
-func (c *client) Delete(
-	ctx context.Context, key []byte,
-) (err error) {
+func (c *client) Delete(ctx context.Context, key []byte) (err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/RawDelete"), apiName+"/RawDelete")
 	defer func() {
 		if span != nil {
@@ -222,9 +212,7 @@ func (c *client) Delete(
 	return nil
 }
 
-func (c *client) BatchDelete(
-	ctx context.Context, keys [][]byte,
-) (err error) {
+func (c *client) BatchDelete(ctx context.Context, keys [][]byte) (err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/RawBatchDelete"), apiName+"/RawBatchDelete")
 	defer func() {
 		if span != nil {

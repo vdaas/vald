@@ -16,9 +16,7 @@
 
 package meta
 
-import (
-	"context"
-)
+import "context"
 
 type MetadataClient interface {
 	Get(context.Context, []byte) ([]byte, error)
