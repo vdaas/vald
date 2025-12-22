@@ -201,7 +201,7 @@ func (c *client) Delete(ctx context.Context, key []byte) (err error) {
 		}, copts...)
 	})
 	if err != nil {
-		return nil
+		return err
 	}
 	// TODO
 	// if res.RegionError != nil {
