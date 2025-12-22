@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package pdpb;
+
+import "v1/tikv/metapb.proto";
+
+option go_package = "github.com/vdaas/vald/apis/grpc/v1/tikv";
+
+service PD {
+  rpc GetAllStores(GetAllStoresRequest) returns (GetAllStoresResponse) {}
+  rpc BatchScanRegions(BatchScanRegionsRequest) returns (BatchScanRegionsResponse) {}
+}
+
+enum ErrorType {
+  OK = 0;
+  UNKNOWN = 1;
+  NOT_BOOTSTRAPPED = 2;
+  STORE_TOMBSTONE = 3;
+  ALREADY_BOOTSTRAPPED = 4;
+  INCOMPATIBLE_VERSION = 5;
+  REGION_NOT_FOUND = 6;
+  GLOBAL_CONFIG_NOT_FOUND = 7;
+  DUPLICATED_ENTRY = 8;
+  ENTRY_NOT_FOUND = 9;
+  INVALID_VALUE = 10;
+  // required watch revision is smaller than current compact/min revision.
+  DATA_COMPACTED = 11;
+  REGIONS_NOT_CONTAIN_ALL_KEY_RANGE = 12;
+}
+
+message Error {
+  ErrorType type = 1;
+  string message = 2;
+}
+
+message GetAllStoresRequest {
+  // RequestHeader header = 1;
+  // Do NOT return tombstone stores if set to true.
+  bool exclude_tombstone_stores = 2;
+}
+
+message GetAllStoresResponse {
+  // ResponseHeader header = 1;
+
+  repeated metapb.Store stores = 2;
+}
+
+message Region {
+  metapb.Region region = 1;
+  metapb.Peer leader = 2;
+  // Leader considers that these peers are down.
+  // repeated PeerStats down_peers = 3;
+  // Pending peers are the peers that the leader can't consider as
+  // working followers.
+  repeated metapb.Peer pending_peers = 4;
+  // buckets isn't nil only when need_buckets is true.
+  // metapb.Buckets buckets = 5;
+}
+
+message KeyRange {
+  bytes start_key = 1;
+  bytes end_key = 2; // end_key is +inf when it is empty.
+}
+
+message BatchScanRegionsRequest {
+  // RequestHeader header = 1;
+  bool need_buckets = 2;
+
+  repeated KeyRange ranges = 3; // the given ranges must be in order.
+  int32 limit = 4; // limit the total number of regions to scan.
+  // If contain_all_key_range is true, the output must contain all
+  // key ranges in the request.
+  // If the output does not contain all key ranges, the request is considered
+  // failed and returns an error(REGIONS_NOT_CONTAIN_ALL_KEY_RANGE).
+  bool contain_all_key_range = 5;
+}
+
+message BatchScanRegionsResponse {
+  // ResponseHeader header = 1;
+
+  // the returned regions are flattened into a list, because the given ranges can located in the same range, we do not return duplicated regions then.
+  repeated Region regions = 2;
+}

@@ -1,6 +1,8 @@
 syntax = "proto3";
 package tikv;
 
+import "v1/tikv/metapb.proto";
+
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/tikv";
 
 // NotLeader is the error variant that tells a request be handle by raft leader
@@ -8,8 +10,8 @@ option go_package = "github.com/vdaas/vald/apis/grpc/v1/tikv";
 message NotLeader {
   // The requested region ID
   uint64 region_id = 1;
-  // // Region leader of the requested region
-  // metapb.Peer leader = 2;
+  // Region leader of the requested region
+  metapb.Peer leader = 2;
 }
 
 // IsWitness is the error variant that tells a request be handle by witness
