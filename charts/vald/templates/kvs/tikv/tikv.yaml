@@ -127,5 +127,7 @@ spec:
   updateStrategy:
     type: RollingUpdate
     rollingUpdate:
-      partition: 3
+      # Set partition equal to replicas to prevent the default Kubernetes controller 
+      # from triggering an automatic rollout.
+      partition: {{ $tc.tikv.replicas }}
 {{- end }}
