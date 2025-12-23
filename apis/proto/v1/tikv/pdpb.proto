@@ -11,28 +11,6 @@ service PD {
   rpc BatchScanRegions(BatchScanRegionsRequest) returns (BatchScanRegionsResponse) {}
 }
 
-enum ErrorType {
-  OK = 0;
-  UNKNOWN = 1;
-  NOT_BOOTSTRAPPED = 2;
-  STORE_TOMBSTONE = 3;
-  ALREADY_BOOTSTRAPPED = 4;
-  INCOMPATIBLE_VERSION = 5;
-  REGION_NOT_FOUND = 6;
-  GLOBAL_CONFIG_NOT_FOUND = 7;
-  DUPLICATED_ENTRY = 8;
-  ENTRY_NOT_FOUND = 9;
-  INVALID_VALUE = 10;
-  // required watch revision is smaller than current compact/min revision.
-  DATA_COMPACTED = 11;
-  REGIONS_NOT_CONTAIN_ALL_KEY_RANGE = 12;
-}
-
-message Error {
-  ErrorType type = 1;
-  string message = 2;
-}
-
 message GetAllStoresRequest {
   // RequestHeader header = 1;
   // Do NOT return tombstone stores if set to true.
@@ -46,7 +24,7 @@ message GetAllStoresResponse {
 }
 
 message Region {
-  metapb.Region region = 1;
+  metapb.Region2 region = 1;
   metapb.Peer leader = 2;
   // Leader considers that these peers are down.
   // repeated PeerStats down_peers = 3;

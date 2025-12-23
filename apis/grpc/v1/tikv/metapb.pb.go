@@ -275,7 +275,7 @@ func (x *Store) GetPhysicallyDestroyed() bool {
 	return false
 }
 
-type Region struct {
+type Region2 struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	Id    uint64                 `                   protobuf:"varint,1,opt,name=id,proto3"                                       json:"id,omitempty"`
 	// Region key range [start_key, end_key).
@@ -297,20 +297,20 @@ type Region struct {
 	sizeCache        protoimpl.SizeCache
 }
 
-func (x *Region) Reset() {
-	*x = Region{}
+func (x *Region2) Reset() {
+	*x = Region2{}
 	mi := &file_v1_tikv_metapb_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Region) String() string {
+func (x *Region2) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Region) ProtoMessage() {}
+func (*Region2) ProtoMessage() {}
 
-func (x *Region) ProtoReflect() protoreflect.Message {
+func (x *Region2) ProtoReflect() protoreflect.Message {
 	mi := &file_v1_tikv_metapb_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -322,47 +322,47 @@ func (x *Region) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Region.ProtoReflect.Descriptor instead.
-func (*Region) Descriptor() ([]byte, []int) {
+// Deprecated: Use Region2.ProtoReflect.Descriptor instead.
+func (*Region2) Descriptor() ([]byte, []int) {
 	return file_v1_tikv_metapb_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *Region) GetId() uint64 {
+func (x *Region2) GetId() uint64 {
 	if x != nil {
 		return x.Id
 	}
 	return 0
 }
 
-func (x *Region) GetStartKey() []byte {
+func (x *Region2) GetStartKey() []byte {
 	if x != nil {
 		return x.StartKey
 	}
 	return nil
 }
 
-func (x *Region) GetEndKey() []byte {
+func (x *Region2) GetEndKey() []byte {
 	if x != nil {
 		return x.EndKey
 	}
 	return nil
 }
 
-func (x *Region) GetPeers() []*Peer {
+func (x *Region2) GetPeers() []*Peer {
 	if x != nil {
 		return x.Peers
 	}
 	return nil
 }
 
-func (x *Region) GetIsInFlashback() bool {
+func (x *Region2) GetIsInFlashback() bool {
 	if x != nil {
 		return x.IsInFlashback
 	}
 	return false
 }
 
-func (x *Region) GetFlashbackStartTs() uint64 {
+func (x *Region2) GetFlashbackStartTs() uint64 {
 	if x != nil {
 		return x.FlashbackStartTs
 	}
@@ -392,8 +392,8 @@ const file_v1_tikv_metapb_proto_rawDesc = "" +
 	" \x01(\tR\n" +
 	"deployPath\x12%\n" +
 	"\x0elast_heartbeat\x18\v \x01(\x03R\rlastHeartbeat\x121\n" +
-	"\x14physically_destroyed\x18\f \x01(\bR\x13physicallyDestroyed\"\xc8\x01\n" +
-	"\x06Region\x12\x0e\n" +
+	"\x14physically_destroyed\x18\f \x01(\bR\x13physicallyDestroyed\"\xc9\x01\n" +
+	"\aRegion2\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x1b\n" +
 	"\tstart_key\x18\x02 \x01(\fR\bstartKey\x12\x17\n" +
 	"\aend_key\x18\x03 \x01(\fR\x06endKey\x12\"\n" +
@@ -425,12 +425,12 @@ var (
 		(StoreState)(0), // 0: metapb.StoreState
 		(*Peer)(nil),    // 1: metapb.Peer
 		(*Store)(nil),   // 2: metapb.Store
-		(*Region)(nil),  // 3: metapb.Region
+		(*Region2)(nil), // 3: metapb.Region2
 	}
 )
 var file_v1_tikv_metapb_proto_depIdxs = []int32{
 	0, // 0: metapb.Store.state:type_name -> metapb.StoreState
-	1, // 1: metapb.Region.peers:type_name -> metapb.Peer
+	1, // 1: metapb.Region2.peers:type_name -> metapb.Peer
 	2, // [2:2] is the sub-list for method output_type
 	2, // [2:2] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name

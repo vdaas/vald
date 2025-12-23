@@ -32,138 +32,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type ErrorType int32
-
-const (
-	ErrorType_OK                      ErrorType = 0
-	ErrorType_UNKNOWN                 ErrorType = 1
-	ErrorType_NOT_BOOTSTRAPPED        ErrorType = 2
-	ErrorType_STORE_TOMBSTONE         ErrorType = 3
-	ErrorType_ALREADY_BOOTSTRAPPED    ErrorType = 4
-	ErrorType_INCOMPATIBLE_VERSION    ErrorType = 5
-	ErrorType_REGION_NOT_FOUND        ErrorType = 6
-	ErrorType_GLOBAL_CONFIG_NOT_FOUND ErrorType = 7
-	ErrorType_DUPLICATED_ENTRY        ErrorType = 8
-	ErrorType_ENTRY_NOT_FOUND         ErrorType = 9
-	ErrorType_INVALID_VALUE           ErrorType = 10
-	// required watch revision is smaller than current compact/min revision.
-	ErrorType_DATA_COMPACTED                    ErrorType = 11
-	ErrorType_REGIONS_NOT_CONTAIN_ALL_KEY_RANGE ErrorType = 12
-)
-
-// Enum value maps for ErrorType.
-var (
-	ErrorType_name = map[int32]string{
-		0:  "OK",
-		1:  "UNKNOWN",
-		2:  "NOT_BOOTSTRAPPED",
-		3:  "STORE_TOMBSTONE",
-		4:  "ALREADY_BOOTSTRAPPED",
-		5:  "INCOMPATIBLE_VERSION",
-		6:  "REGION_NOT_FOUND",
-		7:  "GLOBAL_CONFIG_NOT_FOUND",
-		8:  "DUPLICATED_ENTRY",
-		9:  "ENTRY_NOT_FOUND",
-		10: "INVALID_VALUE",
-		11: "DATA_COMPACTED",
-		12: "REGIONS_NOT_CONTAIN_ALL_KEY_RANGE",
-	}
-	ErrorType_value = map[string]int32{
-		"OK":                                0,
-		"UNKNOWN":                           1,
-		"NOT_BOOTSTRAPPED":                  2,
-		"STORE_TOMBSTONE":                   3,
-		"ALREADY_BOOTSTRAPPED":              4,
-		"INCOMPATIBLE_VERSION":              5,
-		"REGION_NOT_FOUND":                  6,
-		"GLOBAL_CONFIG_NOT_FOUND":           7,
-		"DUPLICATED_ENTRY":                  8,
-		"ENTRY_NOT_FOUND":                   9,
-		"INVALID_VALUE":                     10,
-		"DATA_COMPACTED":                    11,
-		"REGIONS_NOT_CONTAIN_ALL_KEY_RANGE": 12,
-	}
-)
-
-func (x ErrorType) Enum() *ErrorType {
-	p := new(ErrorType)
-	*p = x
-	return p
-}
-
-func (x ErrorType) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (ErrorType) Descriptor() protoreflect.EnumDescriptor {
-	return file_v1_tikv_pdpb_proto_enumTypes[0].Descriptor()
-}
-
-func (ErrorType) Type() protoreflect.EnumType {
-	return &file_v1_tikv_pdpb_proto_enumTypes[0]
-}
-
-func (x ErrorType) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use ErrorType.Descriptor instead.
-func (ErrorType) EnumDescriptor() ([]byte, []int) {
-	return file_v1_tikv_pdpb_proto_rawDescGZIP(), []int{0}
-}
-
-type Error struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Type          ErrorType              `                   protobuf:"varint,1,opt,name=type,proto3,enum=pdpb.ErrorType" json:"type,omitempty"`
-	Message       string                 `                   protobuf:"bytes,2,opt,name=message,proto3"                   json:"message,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Error) Reset() {
-	*x = Error{}
-	mi := &file_v1_tikv_pdpb_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Error) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Error) ProtoMessage() {}
-
-func (x *Error) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_tikv_pdpb_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Error.ProtoReflect.Descriptor instead.
-func (*Error) Descriptor() ([]byte, []int) {
-	return file_v1_tikv_pdpb_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *Error) GetType() ErrorType {
-	if x != nil {
-		return x.Type
-	}
-	return ErrorType_OK
-}
-
-func (x *Error) GetMessage() string {
-	if x != nil {
-		return x.Message
-	}
-	return ""
-}
-
 type GetAllStoresRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// RequestHeader header = 1;
@@ -175,7 +43,7 @@ type GetAllStoresRequest struct {
 
 func (x *GetAllStoresRequest) Reset() {
 	*x = GetAllStoresRequest{}
-	mi := &file_v1_tikv_pdpb_proto_msgTypes[1]
+	mi := &file_v1_tikv_pdpb_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -187,7 +55,7 @@ func (x *GetAllStoresRequest) String() string {
 func (*GetAllStoresRequest) ProtoMessage() {}
 
 func (x *GetAllStoresRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_tikv_pdpb_proto_msgTypes[1]
+	mi := &file_v1_tikv_pdpb_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -200,7 +68,7 @@ func (x *GetAllStoresRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAllStoresRequest.ProtoReflect.Descriptor instead.
 func (*GetAllStoresRequest) Descriptor() ([]byte, []int) {
-	return file_v1_tikv_pdpb_proto_rawDescGZIP(), []int{1}
+	return file_v1_tikv_pdpb_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *GetAllStoresRequest) GetExcludeTombstoneStores() bool {
@@ -219,7 +87,7 @@ type GetAllStoresResponse struct {
 
 func (x *GetAllStoresResponse) Reset() {
 	*x = GetAllStoresResponse{}
-	mi := &file_v1_tikv_pdpb_proto_msgTypes[2]
+	mi := &file_v1_tikv_pdpb_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -231,7 +99,7 @@ func (x *GetAllStoresResponse) String() string {
 func (*GetAllStoresResponse) ProtoMessage() {}
 
 func (x *GetAllStoresResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_tikv_pdpb_proto_msgTypes[2]
+	mi := &file_v1_tikv_pdpb_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -244,7 +112,7 @@ func (x *GetAllStoresResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAllStoresResponse.ProtoReflect.Descriptor instead.
 func (*GetAllStoresResponse) Descriptor() ([]byte, []int) {
-	return file_v1_tikv_pdpb_proto_rawDescGZIP(), []int{2}
+	return file_v1_tikv_pdpb_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *GetAllStoresResponse) GetStores() []*Store {
@@ -256,7 +124,7 @@ func (x *GetAllStoresResponse) GetStores() []*Store {
 
 type Region struct {
 	state  protoimpl.MessageState `protogen:"open.v1"`
-	Region *Region                `                   protobuf:"bytes,1,opt,name=region,proto3"                          json:"region,omitempty"`
+	Region *Region2               `                   protobuf:"bytes,1,opt,name=region,proto3"                          json:"region,omitempty"`
 	Leader *Peer                  `                   protobuf:"bytes,2,opt,name=leader,proto3"                          json:"leader,omitempty"`
 	// Leader considers that these peers are down.
 	// repeated PeerStats down_peers = 3;
@@ -269,7 +137,7 @@ type Region struct {
 
 func (x *Region) Reset() {
 	*x = Region{}
-	mi := &file_v1_tikv_pdpb_proto_msgTypes[3]
+	mi := &file_v1_tikv_pdpb_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -281,7 +149,7 @@ func (x *Region) String() string {
 func (*Region) ProtoMessage() {}
 
 func (x *Region) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_tikv_pdpb_proto_msgTypes[3]
+	mi := &file_v1_tikv_pdpb_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -294,10 +162,10 @@ func (x *Region) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Region.ProtoReflect.Descriptor instead.
 func (*Region) Descriptor() ([]byte, []int) {
-	return file_v1_tikv_pdpb_proto_rawDescGZIP(), []int{3}
+	return file_v1_tikv_pdpb_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *Region) GetRegion() *Region {
+func (x *Region) GetRegion() *Region2 {
 	if x != nil {
 		return x.Region
 	}
@@ -328,7 +196,7 @@ type KeyRange struct {
 
 func (x *KeyRange) Reset() {
 	*x = KeyRange{}
-	mi := &file_v1_tikv_pdpb_proto_msgTypes[4]
+	mi := &file_v1_tikv_pdpb_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -340,7 +208,7 @@ func (x *KeyRange) String() string {
 func (*KeyRange) ProtoMessage() {}
 
 func (x *KeyRange) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_tikv_pdpb_proto_msgTypes[4]
+	mi := &file_v1_tikv_pdpb_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -353,7 +221,7 @@ func (x *KeyRange) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use KeyRange.ProtoReflect.Descriptor instead.
 func (*KeyRange) Descriptor() ([]byte, []int) {
-	return file_v1_tikv_pdpb_proto_rawDescGZIP(), []int{4}
+	return file_v1_tikv_pdpb_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *KeyRange) GetStartKey() []byte {
@@ -387,7 +255,7 @@ type BatchScanRegionsRequest struct {
 
 func (x *BatchScanRegionsRequest) Reset() {
 	*x = BatchScanRegionsRequest{}
-	mi := &file_v1_tikv_pdpb_proto_msgTypes[5]
+	mi := &file_v1_tikv_pdpb_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -399,7 +267,7 @@ func (x *BatchScanRegionsRequest) String() string {
 func (*BatchScanRegionsRequest) ProtoMessage() {}
 
 func (x *BatchScanRegionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_tikv_pdpb_proto_msgTypes[5]
+	mi := &file_v1_tikv_pdpb_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -412,7 +280,7 @@ func (x *BatchScanRegionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchScanRegionsRequest.ProtoReflect.Descriptor instead.
 func (*BatchScanRegionsRequest) Descriptor() ([]byte, []int) {
-	return file_v1_tikv_pdpb_proto_rawDescGZIP(), []int{5}
+	return file_v1_tikv_pdpb_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *BatchScanRegionsRequest) GetNeedBuckets() bool {
@@ -453,7 +321,7 @@ type BatchScanRegionsResponse struct {
 
 func (x *BatchScanRegionsResponse) Reset() {
 	*x = BatchScanRegionsResponse{}
-	mi := &file_v1_tikv_pdpb_proto_msgTypes[6]
+	mi := &file_v1_tikv_pdpb_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -465,7 +333,7 @@ func (x *BatchScanRegionsResponse) String() string {
 func (*BatchScanRegionsResponse) ProtoMessage() {}
 
 func (x *BatchScanRegionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_tikv_pdpb_proto_msgTypes[6]
+	mi := &file_v1_tikv_pdpb_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -478,7 +346,7 @@ func (x *BatchScanRegionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchScanRegionsResponse.ProtoReflect.Descriptor instead.
 func (*BatchScanRegionsResponse) Descriptor() ([]byte, []int) {
-	return file_v1_tikv_pdpb_proto_rawDescGZIP(), []int{6}
+	return file_v1_tikv_pdpb_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *BatchScanRegionsResponse) GetRegions() []*Region {
@@ -492,16 +360,13 @@ var File_v1_tikv_pdpb_proto protoreflect.FileDescriptor
 
 const file_v1_tikv_pdpb_proto_rawDesc = "" +
 	"\n" +
-	"\x12v1/tikv/pdpb.proto\x12\x04pdpb\x1a\x14v1/tikv/metapb.proto\"F\n" +
-	"\x05Error\x12#\n" +
-	"\x04type\x18\x01 \x01(\x0e2\x0f.pdpb.ErrorTypeR\x04type\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\"O\n" +
+	"\x12v1/tikv/pdpb.proto\x12\x04pdpb\x1a\x14v1/tikv/metapb.proto\"O\n" +
 	"\x13GetAllStoresRequest\x128\n" +
 	"\x18exclude_tombstone_stores\x18\x02 \x01(\bR\x16excludeTombstoneStores\"=\n" +
 	"\x14GetAllStoresResponse\x12%\n" +
-	"\x06stores\x18\x02 \x03(\v2\r.metapb.StoreR\x06stores\"\x89\x01\n" +
-	"\x06Region\x12&\n" +
-	"\x06region\x18\x01 \x01(\v2\x0e.metapb.RegionR\x06region\x12$\n" +
+	"\x06stores\x18\x02 \x03(\v2\r.metapb.StoreR\x06stores\"\x8a\x01\n" +
+	"\x06Region\x12'\n" +
+	"\x06region\x18\x01 \x01(\v2\x0f.metapb.Region2R\x06region\x12$\n" +
 	"\x06leader\x18\x02 \x01(\v2\f.metapb.PeerR\x06leader\x121\n" +
 	"\rpending_peers\x18\x04 \x03(\v2\f.metapb.PeerR\fpendingPeers\"@\n" +
 	"\bKeyRange\x12\x1b\n" +
@@ -513,22 +378,7 @@ const file_v1_tikv_pdpb_proto_rawDesc = "" +
 	"\x05limit\x18\x04 \x01(\x05R\x05limit\x121\n" +
 	"\x15contain_all_key_range\x18\x05 \x01(\bR\x12containAllKeyRange\"B\n" +
 	"\x18BatchScanRegionsResponse\x12&\n" +
-	"\aregions\x18\x02 \x03(\v2\f.pdpb.RegionR\aregions*\xab\x02\n" +
-	"\tErrorType\x12\x06\n" +
-	"\x02OK\x10\x00\x12\v\n" +
-	"\aUNKNOWN\x10\x01\x12\x14\n" +
-	"\x10NOT_BOOTSTRAPPED\x10\x02\x12\x13\n" +
-	"\x0fSTORE_TOMBSTONE\x10\x03\x12\x18\n" +
-	"\x14ALREADY_BOOTSTRAPPED\x10\x04\x12\x18\n" +
-	"\x14INCOMPATIBLE_VERSION\x10\x05\x12\x14\n" +
-	"\x10REGION_NOT_FOUND\x10\x06\x12\x1b\n" +
-	"\x17GLOBAL_CONFIG_NOT_FOUND\x10\a\x12\x14\n" +
-	"\x10DUPLICATED_ENTRY\x10\b\x12\x13\n" +
-	"\x0fENTRY_NOT_FOUND\x10\t\x12\x11\n" +
-	"\rINVALID_VALUE\x10\n" +
-	"\x12\x12\n" +
-	"\x0eDATA_COMPACTED\x10\v\x12%\n" +
-	"!REGIONS_NOT_CONTAIN_ALL_KEY_RANGE\x10\f2\xa2\x01\n" +
+	"\aregions\x18\x02 \x03(\v2\f.pdpb.RegionR\aregions2\xa2\x01\n" +
 	"\x02PD\x12G\n" +
 	"\fGetAllStores\x12\x19.pdpb.GetAllStoresRequest\x1a\x1a.pdpb.GetAllStoresResponse\"\x00\x12S\n" +
 	"\x10BatchScanRegions\x12\x1d.pdpb.BatchScanRegionsRequest\x1a\x1e.pdpb.BatchScanRegionsResponse\"\x00B)Z'github.com/vdaas/vald/apis/grpc/v1/tikvb\x06proto3"
@@ -546,39 +396,35 @@ func file_v1_tikv_pdpb_proto_rawDescGZIP() []byte {
 }
 
 var (
-	file_v1_tikv_pdpb_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-	file_v1_tikv_pdpb_proto_msgTypes  = make([]protoimpl.MessageInfo, 7)
-	file_v1_tikv_pdpb_proto_goTypes   = []any{
-		(ErrorType)(0),                   // 0: pdpb.ErrorType
-		(*Error)(nil),                    // 1: pdpb.Error
-		(*GetAllStoresRequest)(nil),      // 2: pdpb.GetAllStoresRequest
-		(*GetAllStoresResponse)(nil),     // 3: pdpb.GetAllStoresResponse
-		(*Region)(nil),                   // 4: pdpb.Region
-		(*KeyRange)(nil),                 // 5: pdpb.KeyRange
-		(*BatchScanRegionsRequest)(nil),  // 6: pdpb.BatchScanRegionsRequest
-		(*BatchScanRegionsResponse)(nil), // 7: pdpb.BatchScanRegionsResponse
-		(*Store)(nil),                    // 8: metapb.Store
-		(*Region)(nil),                   // 9: metapb.Region
-		(*Peer)(nil),                     // 10: metapb.Peer
+	file_v1_tikv_pdpb_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+	file_v1_tikv_pdpb_proto_goTypes  = []any{
+		(*GetAllStoresRequest)(nil),      // 0: pdpb.GetAllStoresRequest
+		(*GetAllStoresResponse)(nil),     // 1: pdpb.GetAllStoresResponse
+		(*Region)(nil),                   // 2: pdpb.Region
+		(*KeyRange)(nil),                 // 3: pdpb.KeyRange
+		(*BatchScanRegionsRequest)(nil),  // 4: pdpb.BatchScanRegionsRequest
+		(*BatchScanRegionsResponse)(nil), // 5: pdpb.BatchScanRegionsResponse
+		(*Store)(nil),                    // 6: metapb.Store
+		(*Region2)(nil),                  // 7: metapb.Region2
+		(*Peer)(nil),                     // 8: metapb.Peer
 	}
 )
 var file_v1_tikv_pdpb_proto_depIdxs = []int32{
-	0,  // 0: pdpb.Error.type:type_name -> pdpb.ErrorType
-	8,  // 1: pdpb.GetAllStoresResponse.stores:type_name -> metapb.Store
-	9,  // 2: pdpb.Region.region:type_name -> metapb.Region
-	10, // 3: pdpb.Region.leader:type_name -> metapb.Peer
-	10, // 4: pdpb.Region.pending_peers:type_name -> metapb.Peer
-	5,  // 5: pdpb.BatchScanRegionsRequest.ranges:type_name -> pdpb.KeyRange
-	4,  // 6: pdpb.BatchScanRegionsResponse.regions:type_name -> pdpb.Region
-	2,  // 7: pdpb.PD.GetAllStores:input_type -> pdpb.GetAllStoresRequest
-	6,  // 8: pdpb.PD.BatchScanRegions:input_type -> pdpb.BatchScanRegionsRequest
-	3,  // 9: pdpb.PD.GetAllStores:output_type -> pdpb.GetAllStoresResponse
-	7,  // 10: pdpb.PD.BatchScanRegions:output_type -> pdpb.BatchScanRegionsResponse
-	9,  // [9:11] is the sub-list for method output_type
-	7,  // [7:9] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	6, // 0: pdpb.GetAllStoresResponse.stores:type_name -> metapb.Store
+	7, // 1: pdpb.Region.region:type_name -> metapb.Region2
+	8, // 2: pdpb.Region.leader:type_name -> metapb.Peer
+	8, // 3: pdpb.Region.pending_peers:type_name -> metapb.Peer
+	3, // 4: pdpb.BatchScanRegionsRequest.ranges:type_name -> pdpb.KeyRange
+	2, // 5: pdpb.BatchScanRegionsResponse.regions:type_name -> pdpb.Region
+	0, // 6: pdpb.PD.GetAllStores:input_type -> pdpb.GetAllStoresRequest
+	4, // 7: pdpb.PD.BatchScanRegions:input_type -> pdpb.BatchScanRegionsRequest
+	1, // 8: pdpb.PD.GetAllStores:output_type -> pdpb.GetAllStoresResponse
+	5, // 9: pdpb.PD.BatchScanRegions:output_type -> pdpb.BatchScanRegionsResponse
+	8, // [8:10] is the sub-list for method output_type
+	6, // [6:8] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_v1_tikv_pdpb_proto_init() }
@@ -592,14 +438,13 @@ func file_v1_tikv_pdpb_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_v1_tikv_pdpb_proto_rawDesc), len(file_v1_tikv_pdpb_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   7,
+			NumEnums:      0,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_v1_tikv_pdpb_proto_goTypes,
 		DependencyIndexes: file_v1_tikv_pdpb_proto_depIdxs,
-		EnumInfos:         file_v1_tikv_pdpb_proto_enumTypes,
 		MessageInfos:      file_v1_tikv_pdpb_proto_msgTypes,
 	}.Build()
 	File_v1_tikv_pdpb_proto = out.File

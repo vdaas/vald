@@ -39,11 +39,11 @@ func (msg *Store) UnmarshalJSON(b []byte) error {
 }
 
 // MarshalJSON implements json.Marshaler
-func (msg *Region) MarshalJSON() ([]byte, error) {
+func (msg *Region2) MarshalJSON() ([]byte, error) {
 	return protojson.MarshalOptions{}.Marshal(msg)
 }
 
 // UnmarshalJSON implements json.Unmarshaler
-func (msg *Region) UnmarshalJSON(b []byte) error {
+func (msg *Region2) UnmarshalJSON(b []byte) error {
 	return protojson.UnmarshalOptions{}.Unmarshal(b, msg)
 }

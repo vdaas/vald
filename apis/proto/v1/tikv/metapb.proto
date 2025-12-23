@@ -42,7 +42,7 @@ enum StoreState {
   Tombstone = 2;
 }
 
-message Region {
+message Region2 {
   uint64 id = 1;
   // Region key range [start_key, end_key).
   bytes start_key = 2;

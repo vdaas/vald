@@ -27,6 +27,24 @@
       "default": "Unknown",
       "description": " - Optimistic: in optimistic transactions.\n - PessimisticRetry: a lock acquisition request waits for a lock and awakes, or meets a newer version of data, let TiDB retry.\n - SelfRolledBack: the transaction itself has been rolled back when it tries to prewrite.\n - RcCheckTs: RcCheckTs failure by meeting a newer version, let TiDB retry.\n - LazyUniquenessCheck: write conflict found when deferring constraint checks in pessimistic transactions. Deprecated in next-gen (cloud-storage-engine).\n - NotLockedKeyConflict: write conflict found on keys that do not acquire pessimistic locks in pessimistic transactions."
     },
+    "metapbPeer": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "storeId": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "isWitness": {
+          "type": "boolean",
+          "title": "PeerRole role = 3;"
+        }
+      },
+      "title": "Copied from metapb.proto"
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -803,8 +821,11 @@
         "regionId": {
           "type": "string",
           "format": "uint64",
-          "description": "// Region leader of the requested region\n metapb.Peer leader = 2;",
           "title": "The requested region ID"
+        },
+        "leader": {
+          "$ref": "#/definitions/metapbPeer",
+          "title": "Region leader of the requested region"
         }
       },
       "description": "NotLeader is the error variant that tells a request be handle by raft leader\nis sent to raft follower or learner."

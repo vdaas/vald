@@ -280,6 +280,8 @@ apis/swagger/v1/rpc/errdetails/error_details.swagger.json
 apis/swagger/v1/rpc/stats/stats.swagger.json
 apis/swagger/v1/tikv/errorpb.swagger.json
 apis/swagger/v1/tikv/kvrpcpb.swagger.json
+apis/swagger/v1/tikv/metapb.swagger.json
+apis/swagger/v1/tikv/pdpb.swagger.json
 apis/swagger/v1/tikv/tikvpb.swagger.json
 apis/swagger/v1/vald/filter.swagger.json
 apis/swagger/v1/vald/flush.swagger.json

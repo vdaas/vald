@@ -19,16 +19,6 @@ package tikv
 import "google.golang.org/protobuf/encoding/protojson"
 
 // MarshalJSON implements json.Marshaler
-func (msg *Error) MarshalJSON() ([]byte, error) {
-	return protojson.MarshalOptions{}.Marshal(msg)
-}
-
-// UnmarshalJSON implements json.Unmarshaler
-func (msg *Error) UnmarshalJSON(b []byte) error {
-	return protojson.UnmarshalOptions{}.Unmarshal(b, msg)
-}
-
-// MarshalJSON implements json.Marshaler
 func (msg *GetAllStoresRequest) MarshalJSON() ([]byte, error) {
 	return protojson.MarshalOptions{}.Marshal(msg)
 }

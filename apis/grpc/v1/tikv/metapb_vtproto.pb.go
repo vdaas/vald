@@ -79,11 +79,11 @@ func (m *Store) CloneMessageVT() proto.Message {
 	return m.CloneVT()
 }
 
-func (m *Region) CloneVT() *Region {
+func (m *Region2) CloneVT() *Region2 {
 	if m == nil {
-		return (*Region)(nil)
+		return (*Region2)(nil)
 	}
-	r := new(Region)
+	r := new(Region2)
 	r.Id = m.Id
 	r.IsInFlashback = m.IsInFlashback
 	r.FlashbackStartTs = m.FlashbackStartTs
@@ -111,7 +111,7 @@ func (m *Region) CloneVT() *Region {
 	return r
 }
 
-func (m *Region) CloneMessageVT() proto.Message {
+func (m *Region2) CloneMessageVT() proto.Message {
 	return m.CloneVT()
 }
 
@@ -191,7 +191,7 @@ func (this *Store) EqualMessageVT(thatMsg proto.Message) bool {
 	return this.EqualVT(that)
 }
 
-func (this *Region) EqualVT(that *Region) bool {
+func (this *Region2) EqualVT(that *Region2) bool {
 	if this == that {
 		return true
 	} else if this == nil || that == nil {
@@ -232,8 +232,8 @@ func (this *Region) EqualVT(that *Region) bool {
 	return string(this.unknownFields) == string(that.unknownFields)
 }
 
-func (this *Region) EqualMessageVT(thatMsg proto.Message) bool {
-	that, ok := thatMsg.(*Region)
+func (this *Region2) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Region2)
 	if !ok {
 		return false
 	}
@@ -398,7 +398,7 @@ func (m *Store) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *Region) MarshalVT() (dAtA []byte, err error) {
+func (m *Region2) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -411,12 +411,12 @@ func (m *Region) MarshalVT() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *Region) MarshalToVT(dAtA []byte) (int, error) {
+func (m *Region2) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
 }
 
-func (m *Region) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+func (m *Region2) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -635,7 +635,7 @@ func (m *Store) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *Region) MarshalVTStrict() (dAtA []byte, err error) {
+func (m *Region2) MarshalVTStrict() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -648,12 +648,12 @@ func (m *Region) MarshalVTStrict() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *Region) MarshalToVTStrict(dAtA []byte) (int, error) {
+func (m *Region2) MarshalToVTStrict(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVTStrict(dAtA[:size])
 }
 
-func (m *Region) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
+func (m *Region2) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -782,7 +782,7 @@ func (m *Store) SizeVT() (n int) {
 	return n
 }
 
-func (m *Region) SizeVT() (n int) {
+func (m *Region2) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1265,7 +1265,7 @@ func (m *Store) UnmarshalVT(dAtA []byte) error {
 	return nil
 }
 
-func (m *Region) UnmarshalVT(dAtA []byte) error {
+func (m *Region2) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1288,10 +1288,10 @@ func (m *Region) UnmarshalVT(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: Region: wiretype end group for non-group")
+			return fmt.Errorf("proto: Region2: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Region: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: Region2: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1951,7 +1951,7 @@ func (m *Store) UnmarshalVTUnsafe(dAtA []byte) error {
 	return nil
 }
 
-func (m *Region) UnmarshalVTUnsafe(dAtA []byte) error {
+func (m *Region2) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1974,10 +1974,10 @@ func (m *Region) UnmarshalVTUnsafe(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: Region: wiretype end group for non-group")
+			return fmt.Errorf("proto: Region2: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Region: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: Region2: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
