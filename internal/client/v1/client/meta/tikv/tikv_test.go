@@ -113,7 +113,6 @@ func TestNew(t *testing.T) {
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -220,7 +219,6 @@ func Test_client_Start(t *testing.T) {
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -323,7 +321,6 @@ func Test_client_Stop(t *testing.T) {
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -416,7 +413,6 @@ func Test_client_GRPCClient(t *testing.T) {
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -526,7 +522,6 @@ func Test_client_Get(t *testing.T) {
 			if err := checkFunc(test.want, gotVal, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -636,7 +631,6 @@ func Test_client_BatchGet(t *testing.T) {
 			if err := checkFunc(test.want, gotKv, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -745,7 +739,6 @@ func Test_client_Put(t *testing.T) {
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -854,7 +847,6 @@ func Test_client_BatchPut(t *testing.T) {
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -960,7 +952,6 @@ func Test_client_Delete(t *testing.T) {
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
@@ -1066,7 +1057,6 @@ func Test_client_BatchDelete(t *testing.T) {
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
-
 		})
 	}
 }
