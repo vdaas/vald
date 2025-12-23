@@ -1,16 +1,21 @@
+//
 // Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//	https://www.apache.org/licenses/LICENSE-2.0
+//    https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+
+// $ tiup playground --mode tikv-slim
+// $ TIKV_STORE_ADDRS=127.0.0.1:20160 go test ./internal/client/v1/client/meta/tikv/ -run=^$ -bench=. -benchmem
 package tikv
 
 import (
@@ -18,7 +23,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/apis/grpc/v1/tikv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/test/goleak"
@@ -109,6 +113,7 @@ func TestNew(t *testing.T) {
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -215,6 +220,7 @@ func Test_client_Start(t *testing.T) {
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -317,6 +323,7 @@ func Test_client_Stop(t *testing.T) {
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
@@ -409,22 +416,22 @@ func Test_client_GRPCClient(t *testing.T) {
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
-func Test_client_RawGet(t *testing.T) {
+func Test_client_Get(t *testing.T) {
 	type args struct {
-		ctx  context.Context
-		in   *tikv.RawGetRequest
-		opts []grpc.CallOption
+		ctx context.Context
+		key []byte
 	}
 	type fields struct {
 		addrs []string
 		c     grpc.Client
 	}
 	type want struct {
-		wantRes *tikv.RawGetResponse
+		wantVal []byte
 		err     error
 	}
 	type test struct {
@@ -432,16 +439,16 @@ func Test_client_RawGet(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *tikv.RawGetResponse, error) error
+		checkFunc  func(want, []byte, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
 	}
-	defaultCheckFunc := func(w want, gotRes *tikv.RawGetResponse, err error) error {
+	defaultCheckFunc := func(w want, gotVal []byte, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		if !reflect.DeepEqual(gotVal, w.wantVal) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotVal, w.wantVal)
 		}
 		return nil
 	}
@@ -452,8 +459,7 @@ func Test_client_RawGet(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx:nil,
-		           in:nil,
-		           opts:nil,
+		           key:nil,
 		       },
 		       fields: fields {
 		           addrs:nil,
@@ -477,8 +483,7 @@ func Test_client_RawGet(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx:nil,
-		           in:nil,
-		           opts:nil,
+		           key:nil,
 		           },
 		           fields: fields {
 		           addrs:nil,
@@ -517,43 +522,43 @@ func Test_client_RawGet(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.RawGet(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotVal, err := c.Get(test.args.ctx, test.args.key)
+			if err := checkFunc(test.want, gotVal, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
-func Test_client_RawBatchGet(t *testing.T) {
+func Test_client_BatchGet(t *testing.T) {
 	type args struct {
 		ctx  context.Context
-		in   *tikv.RawBatchGetRequest
-		opts []grpc.CallOption
+		keys [][]byte
 	}
 	type fields struct {
 		addrs []string
 		c     grpc.Client
 	}
 	type want struct {
-		wantRes *tikv.RawBatchGetResponse
-		err     error
+		wantKv [][]byte
+		err    error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *tikv.RawBatchGetResponse, error) error
+		checkFunc  func(want, [][]byte, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
 	}
-	defaultCheckFunc := func(w want, gotRes *tikv.RawBatchGetResponse, err error) error {
+	defaultCheckFunc := func(w want, gotKv [][]byte, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		if !reflect.DeepEqual(gotKv, w.wantKv) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotKv, w.wantKv)
 		}
 		return nil
 	}
@@ -564,8 +569,7 @@ func Test_client_RawBatchGet(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx:nil,
-		           in:nil,
-		           opts:nil,
+		           keys:nil,
 		       },
 		       fields: fields {
 		           addrs:nil,
@@ -589,8 +593,7 @@ func Test_client_RawBatchGet(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx:nil,
-		           in:nil,
-		           opts:nil,
+		           keys:nil,
 		           },
 		           fields: fields {
 		           addrs:nil,
@@ -629,43 +632,40 @@ func Test_client_RawBatchGet(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.RawBatchGet(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			gotKv, err := c.BatchGet(test.args.ctx, test.args.keys)
+			if err := checkFunc(test.want, gotKv, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
-func Test_client_RawPut(t *testing.T) {
+func Test_client_Put(t *testing.T) {
 	type args struct {
-		ctx  context.Context
-		in   *tikv.RawPutRequest
-		opts []grpc.CallOption
+		ctx context.Context
+		key []byte
+		val []byte
 	}
 	type fields struct {
 		addrs []string
 		c     grpc.Client
 	}
 	type want struct {
-		wantRes *tikv.RawPutResponse
-		err     error
+		err error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *tikv.RawPutResponse, error) error
+		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
 	}
-	defaultCheckFunc := func(w want, gotRes *tikv.RawPutResponse, err error) error {
+	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -676,8 +676,8 @@ func Test_client_RawPut(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx:nil,
-		           in:nil,
-		           opts:nil,
+		           key:nil,
+		           val:nil,
 		       },
 		       fields: fields {
 		           addrs:nil,
@@ -701,8 +701,8 @@ func Test_client_RawPut(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx:nil,
-		           in:nil,
-		           opts:nil,
+		           key:nil,
+		           val:nil,
 		           },
 		           fields: fields {
 		           addrs:nil,
@@ -741,43 +741,40 @@ func Test_client_RawPut(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.RawPut(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			err := c.Put(test.args.ctx, test.args.key, test.args.val)
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
-func Test_client_RawBatchPut(t *testing.T) {
+func Test_client_BatchPut(t *testing.T) {
 	type args struct {
 		ctx  context.Context
-		in   *tikv.RawBatchPutRequest
-		opts []grpc.CallOption
+		keys [][]byte
+		vals [][]byte
 	}
 	type fields struct {
 		addrs []string
 		c     grpc.Client
 	}
 	type want struct {
-		wantRes *tikv.RawBatchPutResponse
-		err     error
+		err error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *tikv.RawBatchPutResponse, error) error
+		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
 	}
-	defaultCheckFunc := func(w want, gotRes *tikv.RawBatchPutResponse, err error) error {
+	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -788,8 +785,8 @@ func Test_client_RawBatchPut(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx:nil,
-		           in:nil,
-		           opts:nil,
+		           keys:nil,
+		           vals:nil,
 		       },
 		       fields: fields {
 		           addrs:nil,
@@ -813,8 +810,8 @@ func Test_client_RawBatchPut(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx:nil,
-		           in:nil,
-		           opts:nil,
+		           keys:nil,
+		           vals:nil,
 		           },
 		           fields: fields {
 		           addrs:nil,
@@ -853,43 +850,39 @@ func Test_client_RawBatchPut(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.RawBatchPut(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			err := c.BatchPut(test.args.ctx, test.args.keys, test.args.vals)
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
-func Test_client_RawDelete(t *testing.T) {
+func Test_client_Delete(t *testing.T) {
 	type args struct {
-		ctx  context.Context
-		in   *tikv.RawDeleteRequest
-		opts []grpc.CallOption
+		ctx context.Context
+		key []byte
 	}
 	type fields struct {
 		addrs []string
 		c     grpc.Client
 	}
 	type want struct {
-		wantRes *tikv.RawDeleteResponse
-		err     error
+		err error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *tikv.RawDeleteResponse, error) error
+		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
 	}
-	defaultCheckFunc := func(w want, gotRes *tikv.RawDeleteResponse, err error) error {
+	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -900,8 +893,7 @@ func Test_client_RawDelete(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx:nil,
-		           in:nil,
-		           opts:nil,
+		           key:nil,
 		       },
 		       fields: fields {
 		           addrs:nil,
@@ -925,8 +917,7 @@ func Test_client_RawDelete(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx:nil,
-		           in:nil,
-		           opts:nil,
+		           key:nil,
 		           },
 		           fields: fields {
 		           addrs:nil,
@@ -965,43 +956,39 @@ func Test_client_RawDelete(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.RawDelete(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			err := c.Delete(test.args.ctx, test.args.key)
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }
 
-func Test_client_RawBatchDelete(t *testing.T) {
+func Test_client_BatchDelete(t *testing.T) {
 	type args struct {
 		ctx  context.Context
-		in   *tikv.RawBatchDeleteRequest
-		opts []grpc.CallOption
+		keys [][]byte
 	}
 	type fields struct {
 		addrs []string
 		c     grpc.Client
 	}
 	type want struct {
-		wantRes *tikv.RawBatchDeleteResponse
-		err     error
+		err error
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *tikv.RawBatchDeleteResponse, error) error
+		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
 	}
-	defaultCheckFunc := func(w want, gotRes *tikv.RawBatchDeleteResponse, err error) error {
+	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
 		return nil
 	}
@@ -1012,8 +999,7 @@ func Test_client_RawBatchDelete(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx:nil,
-		           in:nil,
-		           opts:nil,
+		           keys:nil,
 		       },
 		       fields: fields {
 		           addrs:nil,
@@ -1037,8 +1023,7 @@ func Test_client_RawBatchDelete(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx:nil,
-		           in:nil,
-		           opts:nil,
+		           keys:nil,
 		           },
 		           fields: fields {
 		           addrs:nil,
@@ -1077,10 +1062,11 @@ func Test_client_RawBatchDelete(t *testing.T) {
 				c:     test.fields.c,
 			}
 
-			gotRes, err := c.RawBatchDelete(test.args.ctx, test.args.in, test.args.opts...)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
+			err := c.BatchDelete(test.args.ctx, test.args.keys)
+			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+
 		})
 	}
 }

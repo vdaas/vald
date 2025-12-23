@@ -20,7 +20,6 @@ import (
 	"strings"
 	"testing"
 
-	tikvpb "github.com/vdaas/vald/apis/grpc/v1/tikv"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
@@ -59,7 +58,7 @@ func createClient(b *testing.B) Client {
 	cli.Start(context.Background())
 
 	// basic connectivity probe (RawGet for non-existing key)
-	_, err = cli.RawGet(context.Background(), &tikvpb.RawGetRequest{Key: []byte("vald_bench_probe")})
+	_, err = cli.Get(context.Background(), []byte("vald_bench_probe"))
 	if err != nil {
 		// Depending on cluster state RawGet may return region not found etc.
 		// We treat only network/connection errors as fatal.
@@ -80,7 +79,7 @@ func BenchmarkRawPut(b *testing.B) {
 	for i := range b.N {
 		var key [8]byte
 		binary.LittleEndian.PutUint64(key[:], uint64(i))
-		if _, err := cli.RawPut(ctx, &tikvpb.RawPutRequest{Key: key[:], Value: val}); err != nil {
+		if err := cli.Put(ctx, key[:], val); err != nil {
 			b.Fatalf("RawPut error: %v", err)
 		}
 	}
@@ -94,14 +93,14 @@ func BenchmarkRawGet(b *testing.B) {
 
 	// insert a single key to fetch repeatedly
 	const baseKey = "vald_bench_get_key"
-	if _, err := cli.RawPut(ctx, &tikvpb.RawPutRequest{Key: []byte(baseKey), Value: []byte("v")}); err != nil {
+	if err := cli.Put(ctx, []byte(baseKey), []byte("v")); err != nil {
 		b.Fatalf("setup RawPut failed: %v", err)
 	}
 
 	b.ReportAllocs()
 	b.ResetTimer()
 	for b.Loop() {
-		if _, err := cli.RawGet(ctx, &tikvpb.RawGetRequest{Key: []byte(baseKey)}); err != nil {
+		if _, err := cli.Get(ctx, []byte(baseKey)); err != nil {
 			b.Fatalf("RawGet error: %v", err)
 		}
 	}
