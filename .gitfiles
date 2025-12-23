@@ -13,6 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+apis/grpc/v1/tikv/metapb.pb.go
+apis/grpc/v1/tikv/metapb.pb.json.go
+apis/grpc/v1/tikv/metapb_vtproto.pb.go
+apis/grpc/v1/tikv/pdpb.pb.go
+apis/grpc/v1/tikv/pdpb.pb.json.go
+apis/grpc/v1/tikv/pdpb_vtproto.pb.go
+apis/swagger/v1/tikv/metapb.swagger.json
+apis/swagger/v1/tikv/pdpb.swagger.json
+rust/libs/proto/src/core/v1/core.v1.rs
+rust/libs/proto/src/discoverer/v1/discoverer.v1.rs
+rust/libs/proto/src/filter/egress/v1/filter.egress.v1.rs
+rust/libs/proto/src/filter/ingress/v1/filter.ingress.v1.rs
+rust/libs/proto/src/meta/v1/meta.v1.rs
+rust/libs/proto/src/metapb/metapb.rs
+rust/libs/proto/src/metapb/metapb.serde.rs
+rust/libs/proto/src/mirror/v1/mirror.v1.rs
+rust/libs/proto/src/pdpb/pdpb.rs
+rust/libs/proto/src/pdpb/pdpb.serde.rs
+rust/libs/proto/src/pdpb/pdpb.tonic.rs
+rust/libs/proto/src/sidecar/v1/sidecar.v1.rs
+rust/libs/proto/src/vald/v1/vald.v1.rs
 .all-contributorsrc
 .commit_template
 .cspell.json

@@ -1,6 +1,6 @@
 // @generated
 /// Generated client implementations.
-pub mod meta_client {
+pub mod pd_client {
     #![allow(
         unused_variables,
         dead_code,
@@ -11,10 +11,10 @@ pub mod meta_client {
     use tonic::codegen::*;
     use tonic::codegen::http::Uri;
     #[derive(Debug, Clone)]
-    pub struct MetaClient<T> {
+    pub struct PdClient<T> {
         inner: tonic::client::Grpc<T>,
     }
-    impl MetaClient<tonic::transport::Channel> {
+    impl PdClient<tonic::transport::Channel> {
         /// Attempt to create a new client by connecting to a given endpoint.
         pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
         where
@@ -25,7 +25,7 @@ pub mod meta_client {
             Ok(Self::new(conn))
         }
     }
-    impl<T> MetaClient<T>
+    impl<T> PdClient<T>
     where
         T: tonic::client::GrpcService<tonic::body::Body>,
         T::Error: Into<StdError>,
@@ -43,7 +43,7 @@ pub mod meta_client {
         pub fn with_interceptor<F>(
             inner: T,
             interceptor: F,
-        ) -> MetaClient<InterceptedService<T, F>>
+        ) -> PdClient<InterceptedService<T, F>>
         where
             F: tonic::service::Interceptor,
             T::ResponseBody: Default,
@@ -57,7 +57,7 @@ pub mod meta_client {
                 http::Request<tonic::body::Body>,
             >>::Error: Into<StdError> + std::marker::Send + std::marker::Sync,
         {
-            MetaClient::new(InterceptedService::new(inner, interceptor))
+            PdClient::new(InterceptedService::new(inner, interceptor))
         }
         /// Compress requests with the given encoding.
         ///
@@ -90,11 +90,11 @@ pub mod meta_client {
             self.inner = self.inner.max_encoding_message_size(limit);
             self
         }
-        pub async fn get(
+        pub async fn get_all_stores(
             &mut self,
-            request: impl tonic::IntoRequest<super::super::super::payload::v1::meta::Key>,
+            request: impl tonic::IntoRequest<super::GetAllStoresRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::super::super::payload::v1::meta::Value>,
+            tonic::Response<super::GetAllStoresResponse>,
             tonic::Status,
         > {
             self.inner
@@ -106,19 +106,16 @@ pub mod meta_client {
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static("/meta.v1.Meta/Get");
+            let path = http::uri::PathAndQuery::from_static("/pdpb.PD/GetAllStores");
             let mut req = request.into_request();
-            req.extensions_mut().insert(GrpcMethod::new("meta.v1.Meta", "Get"));
+            req.extensions_mut().insert(GrpcMethod::new("pdpb.PD", "GetAllStores"));
             self.inner.unary(req, path, codec).await
         }
-        ///
-        pub async fn set(
+        pub async fn batch_scan_regions(
             &mut self,
-            request: impl tonic::IntoRequest<
-                super::super::super::payload::v1::meta::KeyValue,
-            >,
+            request: impl tonic::IntoRequest<super::BatchScanRegionsRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::super::super::payload::v1::Empty>,
+            tonic::Response<super::BatchScanRegionsResponse>,
             tonic::Status,
         > {
             self.inner
@@ -130,37 +127,15 @@ pub mod meta_client {
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static("/meta.v1.Meta/Set");
+            let path = http::uri::PathAndQuery::from_static("/pdpb.PD/BatchScanRegions");
             let mut req = request.into_request();
-            req.extensions_mut().insert(GrpcMethod::new("meta.v1.Meta", "Set"));
-            self.inner.unary(req, path, codec).await
-        }
-        ///
-        pub async fn delete(
-            &mut self,
-            request: impl tonic::IntoRequest<super::super::super::payload::v1::meta::Key>,
-        ) -> std::result::Result<
-            tonic::Response<super::super::super::payload::v1::Empty>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
-            let codec = tonic_prost::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static("/meta.v1.Meta/Delete");
-            let mut req = request.into_request();
-            req.extensions_mut().insert(GrpcMethod::new("meta.v1.Meta", "Delete"));
+            req.extensions_mut().insert(GrpcMethod::new("pdpb.PD", "BatchScanRegions"));
             self.inner.unary(req, path, codec).await
         }
     }
 }
 /// Generated server implementations.
-pub mod meta_server {
+pub mod pd_server {
     #![allow(
         unused_variables,
         dead_code,
@@ -169,42 +144,33 @@ pub mod meta_server {
         clippy::let_unit_value,
     )]
     use tonic::codegen::*;
-    /// Generated trait containing gRPC methods that should be implemented for use with MetaServer.
+    /// Generated trait containing gRPC methods that should be implemented for use with PdServer.
     #[async_trait]
-    pub trait Meta: std::marker::Send + std::marker::Sync + 'static {
-        async fn get(
+    pub trait Pd: std::marker::Send + std::marker::Sync + 'static {
+        async fn get_all_stores(
             &self,
-            request: tonic::Request<super::super::super::payload::v1::meta::Key>,
+            request: tonic::Request<super::GetAllStoresRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::super::super::payload::v1::meta::Value>,
+            tonic::Response<super::GetAllStoresResponse>,
             tonic::Status,
         >;
-        ///
-        async fn set(
+        async fn batch_scan_regions(
             &self,
-            request: tonic::Request<super::super::super::payload::v1::meta::KeyValue>,
+            request: tonic::Request<super::BatchScanRegionsRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::super::super::payload::v1::Empty>,
-            tonic::Status,
-        >;
-        ///
-        async fn delete(
-            &self,
-            request: tonic::Request<super::super::super::payload::v1::meta::Key>,
-        ) -> std::result::Result<
-            tonic::Response<super::super::super::payload::v1::Empty>,
+            tonic::Response<super::BatchScanRegionsResponse>,
             tonic::Status,
         >;
     }
     #[derive(Debug)]
-    pub struct MetaServer<T> {
+    pub struct PdServer<T> {
         inner: Arc<T>,
         accept_compression_encodings: EnabledCompressionEncodings,
         send_compression_encodings: EnabledCompressionEncodings,
         max_decoding_message_size: Option<usize>,
         max_encoding_message_size: Option<usize>,
     }
-    impl<T> MetaServer<T> {
+    impl<T> PdServer<T> {
         pub fn new(inner: T) -> Self {
             Self::from_arc(Arc::new(inner))
         }
@@ -255,9 +221,9 @@ pub mod meta_server {
             self
         }
     }
-    impl<T, B> tonic::codegen::Service<http::Request<B>> for MetaServer<T>
+    impl<T, B> tonic::codegen::Service<http::Request<B>> for PdServer<T>
     where
-        T: Meta,
+        T: Pd,
         B: Body + std::marker::Send + 'static,
         B::Error: Into<StdError> + std::marker::Send + 'static,
     {
@@ -272,28 +238,23 @@ pub mod meta_server {
         }
         fn call(&mut self, req: http::Request<B>) -> Self::Future {
             match req.uri().path() {
-                "/meta.v1.Meta/Get" => {
+                "/pdpb.PD/GetAllStores" => {
                     #[allow(non_camel_case_types)]
-                    struct GetSvc<T: Meta>(pub Arc<T>);
-                    impl<
-                        T: Meta,
-                    > tonic::server::UnaryService<
-                        super::super::super::payload::v1::meta::Key,
-                    > for GetSvc<T> {
-                        type Response = super::super::super::payload::v1::meta::Value;
+                    struct GetAllStoresSvc<T: Pd>(pub Arc<T>);
+                    impl<T: Pd> tonic::server::UnaryService<super::GetAllStoresRequest>
+                    for GetAllStoresSvc<T> {
+                        type Response = super::GetAllStoresResponse;
                         type Future = BoxFuture<
                             tonic::Response<Self::Response>,
                             tonic::Status,
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<
-                                super::super::super::payload::v1::meta::Key,
-                            >,
+                            request: tonic::Request<super::GetAllStoresRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as Meta>::get(&inner, request).await
+                                <T as Pd>::get_all_stores(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -304,7 +265,7 @@ pub mod meta_server {
                     let max_encoding_message_size = self.max_encoding_message_size;
                     let inner = self.inner.clone();
                     let fut = async move {
-                        let method = GetSvc(inner);
+                        let method = GetAllStoresSvc(inner);
                         let codec = tonic_prost::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
@@ -320,28 +281,25 @@ pub mod meta_server {
                     };
                     Box::pin(fut)
                 }
-                "/meta.v1.Meta/Set" => {
+                "/pdpb.PD/BatchScanRegions" => {
                     #[allow(non_camel_case_types)]
-                    struct SetSvc<T: Meta>(pub Arc<T>);
+                    struct BatchScanRegionsSvc<T: Pd>(pub Arc<T>);
                     impl<
-                        T: Meta,
-                    > tonic::server::UnaryService<
-                        super::super::super::payload::v1::meta::KeyValue,
-                    > for SetSvc<T> {
-                        type Response = super::super::super::payload::v1::Empty;
+                        T: Pd,
+                    > tonic::server::UnaryService<super::BatchScanRegionsRequest>
+                    for BatchScanRegionsSvc<T> {
+                        type Response = super::BatchScanRegionsResponse;
                         type Future = BoxFuture<
                             tonic::Response<Self::Response>,
                             tonic::Status,
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<
-                                super::super::super::payload::v1::meta::KeyValue,
-                            >,
+                            request: tonic::Request<super::BatchScanRegionsRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as Meta>::set(&inner, request).await
+                                <T as Pd>::batch_scan_regions(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -352,55 +310,7 @@ pub mod meta_server {
                     let max_encoding_message_size = self.max_encoding_message_size;
                     let inner = self.inner.clone();
                     let fut = async move {
-                        let method = SetSvc(inner);
-                        let codec = tonic_prost::ProstCodec::default();
-                        let mut grpc = tonic::server::Grpc::new(codec)
-                            .apply_compression_config(
-                                accept_compression_encodings,
-                                send_compression_encodings,
-                            )
-                            .apply_max_message_size_config(
-                                max_decoding_message_size,
-                                max_encoding_message_size,
-                            );
-                        let res = grpc.unary(method, req).await;
-                        Ok(res)
-                    };
-                    Box::pin(fut)
-                }
-                "/meta.v1.Meta/Delete" => {
-                    #[allow(non_camel_case_types)]
-                    struct DeleteSvc<T: Meta>(pub Arc<T>);
-                    impl<
-                        T: Meta,
-                    > tonic::server::UnaryService<
-                        super::super::super::payload::v1::meta::Key,
-                    > for DeleteSvc<T> {
-                        type Response = super::super::super::payload::v1::Empty;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
-                        fn call(
-                            &mut self,
-                            request: tonic::Request<
-                                super::super::super::payload::v1::meta::Key,
-                            >,
-                        ) -> Self::Future {
-                            let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Meta>::delete(&inner, request).await
-                            };
-                            Box::pin(fut)
-                        }
-                    }
-                    let accept_compression_encodings = self.accept_compression_encodings;
-                    let send_compression_encodings = self.send_compression_encodings;
-                    let max_decoding_message_size = self.max_decoding_message_size;
-                    let max_encoding_message_size = self.max_encoding_message_size;
-                    let inner = self.inner.clone();
-                    let fut = async move {
-                        let method = DeleteSvc(inner);
+                        let method = BatchScanRegionsSvc(inner);
                         let codec = tonic_prost::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
@@ -438,7 +348,7 @@ pub mod meta_server {
             }
         }
     }
-    impl<T> Clone for MetaServer<T> {
+    impl<T> Clone for PdServer<T> {
         fn clone(&self) -> Self {
             let inner = self.inner.clone();
             Self {
@@ -451,8 +361,8 @@ pub mod meta_server {
         }
     }
     /// Generated gRPC service name
-    pub const SERVICE_NAME: &str = "meta.v1.Meta";
-    impl<T> tonic::server::NamedService for MetaServer<T> {
+    pub const SERVICE_NAME: &str = "pdpb.PD";
+    impl<T> tonic::server::NamedService for PdServer<T> {
         const NAME: &'static str = SERVICE_NAME;
     }
 }
