@@ -62,8 +62,8 @@ message Region2 {
 }
 
 message RegionEpoch {
-    // Conf change version, auto increment when add or remove peer
-    uint64 conf_ver = 1;
-    // Region version, auto increment when split or merge
-    uint64 version = 2;
+  // Conf change version, auto increment when add or remove peer
+  uint64 conf_ver = 1;
+  // Region version, auto increment when split or merge
+  uint64 version = 2;
 }

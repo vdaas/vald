@@ -9,8 +9,12 @@
       "name": "PD"
     }
   ],
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {},
   "definitions": {
     "metapbPeer": {
@@ -47,13 +51,15 @@
           "type": "string",
           "format": "byte"
         },
+        "regionEpoch": {
+          "$ref": "#/definitions/metapbRegionEpoch"
+        },
         "peers": {
           "type": "array",
           "items": {
             "type": "object",
             "$ref": "#/definitions/metapbPeer"
-          },
-          "title": "RegionEpoch region_epoch = 4;"
+          }
         },
         "isInFlashback": {
           "type": "boolean",
@@ -63,6 +69,21 @@
           "type": "string",
           "format": "uint64",
           "description": "The start_ts that the current flashback progress is using."
+        }
+      }
+    },
+    "metapbRegionEpoch": {
+      "type": "object",
+      "properties": {
+        "confVer": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Conf change version, auto increment when add or remove peer"
+        },
+        "version": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Region version, auto increment when split or merge"
         }
       }
     },
@@ -116,7 +137,11 @@
     },
     "metapbStoreState": {
       "type": "string",
-      "enum": ["Up", "Offline", "Tombstone"],
+      "enum": [
+        "Up",
+        "Offline",
+        "Tombstone"
+      ],
       "default": "Up"
     },
     "pdpbBatchScanRegionsResponse": {
