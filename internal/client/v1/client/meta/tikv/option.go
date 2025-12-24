@@ -16,31 +16,62 @@
 
 package tikv
 
-import "github.com/vdaas/vald/internal/net/grpc"
+import (
+    "github.com/vdaas/vald/internal/net/grpc"
+)
 
 type Option func(*client) error
 
-var defaultOptions = []Option{}
+var defaultOptions = []Option{WithRegionErrorRetryLimit(3)}
 
+// WithAddrs sets the TiKV store addresses (fallback RoundRobin list).
 func WithAddrs(addrs ...string) Option {
-	return func(c *client) error {
-		if addrs == nil {
-			return nil
-		}
-		if c.addrs != nil {
-			c.addrs = append(c.addrs, addrs...)
-		} else {
-			c.addrs = addrs
-		}
-		return nil
-	}
+    return func(c *client) error {
+        if len(addrs) == 0 {
+            return nil
+        }
+        c.addrs = append(c.addrs, addrs...)
+        return nil
+    }
 }
 
+// WithClient sets a prepared grpc.Client.
 func WithClient(cl grpc.Client) Option {
-	return func(c *client) error {
-		if cl != nil {
-			c.c = cl
+    return func(c *client) error {
+        if cl != nil {
+            c.c = cl
+        }
+        return nil
+    }
+}
+
+// WithPDClient injects existing PD client.
+func WithPDClient(pc grpc.Client) Option {
+    return func(c *client) error {
+        if pc != nil {
+            c.pd.c = pc
+        }
+        return nil
+    }
+}
+
+// WithPDAddrs creates PD client internally from addresses.
+func WithPDAddrs(addrs ...string) Option {
+    return func(c *client) error {
+        if len(addrs) == 0 {
+            return nil
+        }
+        c.addrs = append(c.addrs, addrs...)
+        return nil
+    }
+}
+
+// WithRegionErrorRetryLimit sets the retry limit for region errors.
+func WithRegionErrorRetryLimit(limit int) Option {
+		return func(c *client) error {
+				if limit > 0 {
+						c.regionErrorRetryLimit = limit
+				}
+				return nil
 		}
-		return nil
-	}
 }

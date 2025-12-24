@@ -11,6 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+// $ tiup playground --mode tikv-slim
+// $ TIKV_STORE_ADDRS=127.0.0.1:20160 go test ./internal/client/v1/client/meta/tikv/ -run=^$ -bench=. -benchmem
 package tikv
 
 import (
