@@ -51,6 +51,8 @@ type client struct {
 
 	regionErrorRetryLimit int
 
+	clusterId uint64
+
 	// range cache
 	rmu     sync.RWMutex
 	ranges  []*rangeEntry
@@ -105,11 +107,24 @@ func (c *client) lookupAddrs(ctx context.Context, keys [][]byte) (map[string][][
 }
 
 func (c *client) refresh(ctx context.Context, keys [][]byte) error {
+	if c.clusterId == 0 {
+		res, err := c.pd.GetClusterInfo(ctx, &tikv.GetClusterInfoRequest{
+			Header: &tikv.ResponseHeader{},
+		})
+		if err != nil {
+			return err
+		}
+		if res.Header.Error != nil {
+			return errors.New(res.Header.Error.Message)
+		}
+		c.clusterId = res.Header.ClusterId
+	}
 	storeIdToAddr := make(map[uint64]string)
 	var regions []*tikv.Region
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error {
 		res, err := c.pd.GetAllStores(ctx, &tikv.GetAllStoresRequest{
+			Header: &tikv.RequestHeader{ClusterId: c.clusterId},
 			ExcludeTombstoneStores: true,
 		})
 		if err != nil {
@@ -129,6 +144,7 @@ func (c *client) refresh(ctx context.Context, keys [][]byte) error {
 			}
 		}
 		res, err := c.pd.BatchScanRegions(ctx, &tikv.BatchScanRegionsRequest{
+			Header: &tikv.RequestHeader{ClusterId: c.clusterId},
 			Ranges: req,
 		})
 		if err != nil {
@@ -267,6 +283,7 @@ func (c *client) Get(ctx context.Context, key []byte) (val []byte, err error) {
 	}
 	for range c.regionErrorRetryLimit {
 		for addr := range addrs {
+			c.c.Connect(ctx, addr)
 			res, err := grpc.Do(ctx, addr, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawGetResponse, error) {
 				return tikv.NewTikvClient(conn).RawGet(ctx, &tikv.RawGetRequest{
 					Key: key,
@@ -308,6 +325,7 @@ func (c *client) BatchGet(ctx context.Context, keys [][]byte) ([][]byte, error) 
 	for addr, keys := range addrs {
 		g.Go(func() error {
 			for range c.regionErrorRetryLimit {
+				c.c.Connect(ctx, addr)
 				res, err := grpc.Do(ctx, addr, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawBatchGetResponse, error) {
 					return tikv.NewTikvClient(conn).RawBatchGet(ctx, &tikv.RawBatchGetRequest{
 						Keys: keys,
@@ -356,6 +374,7 @@ func (c *client) Put(ctx context.Context, key, val []byte) (err error) {
 	}
 	for addr := range addrs {
 		for range c.regionErrorRetryLimit {
+			c.c.Connect(ctx, addr)
 			res, err := grpc.Do(ctx, addr, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawBatchPutResponse, error) {
 				return tikv.NewTikvClient(conn).RawBatchPut(ctx, &tikv.RawBatchPutRequest{
 					Pairs: []*tikv.KvPair{{
@@ -407,6 +426,7 @@ func (c *client) BatchPut(ctx context.Context, keys, vals [][]byte) (err error) 
 				}
 			}
 			for range c.regionErrorRetryLimit {
+				c.c.Connect(ctx, addr)
 				res, err := grpc.Do(ctx, addr, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawBatchPutResponse, error) {
 					return tikv.NewTikvClient(conn).RawBatchPut(ctx, &tikv.RawBatchPutRequest{
 						Pairs: pairs,
@@ -446,6 +466,7 @@ func (c *client) Delete(ctx context.Context, key []byte) (err error) {
 	}
 	for addr := range addrs {
 		for range c.regionErrorRetryLimit {
+			c.c.Connect(ctx, addr)
 			res, err := grpc.Do(ctx, addr, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawBatchDeleteResponse, error) {
 				return tikv.NewTikvClient(conn).RawBatchDelete(ctx, &tikv.RawBatchDeleteRequest{
 					Keys: [][]byte{key},
@@ -483,6 +504,7 @@ func (c *client) BatchDelete(ctx context.Context, keys [][]byte) (err error) {
 	for addr, keys := range addrs {
 		g.Go(func() error {
 			for range c.regionErrorRetryLimit {
+				c.c.Connect(ctx, addr)
 				res, err := grpc.Do(ctx, addr, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawBatchDeleteResponse, error) {
 					return tikv.NewTikvClient(conn).RawBatchDelete(ctx, &tikv.RawBatchDeleteRequest{
 						Keys: keys,

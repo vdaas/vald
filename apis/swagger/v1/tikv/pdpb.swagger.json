@@ -9,8 +9,12 @@
       "name": "PD"
     }
   ],
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {},
   "definitions": {
     "metapbPeer": {
@@ -133,7 +137,11 @@
     },
     "metapbStoreState": {
       "type": "string",
-      "enum": ["Up", "Offline", "Tombstone"],
+      "enum": [
+        "Up",
+        "Offline",
+        "Tombstone"
+      ],
       "default": "Up"
     },
     "pdpbBatchScanRegionsResponse": {
@@ -150,9 +158,21 @@
       },
       "title": "ResponseHeader header = 1;"
     },
+    "pdpbError2": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "title": "ErrorType type = 1;"
+        }
+      }
+    },
     "pdpbGetAllStoresResponse": {
       "type": "object",
       "properties": {
+        "header": {
+          "$ref": "#/definitions/pdpbResponseHeader"
+        },
         "stores": {
           "type": "array",
           "items": {
@@ -160,8 +180,15 @@
             "$ref": "#/definitions/metapbStore"
           }
         }
-      },
-      "title": "ResponseHeader header = 1;"
+      }
+    },
+    "pdpbGetClusterInfoResponse": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "$ref": "#/definitions/pdpbResponseHeader"
+        }
+      }
     },
     "pdpbKeyRange": {
       "type": "object",
@@ -193,6 +220,42 @@
             "$ref": "#/definitions/metapbPeer"
           },
           "description": "Leader considers that these peers are down.\nrepeated PeerStats down_peers = 3;\nPending peers are the peers that the leader can't consider as\nworking followers.\n\nbuckets isn't nil only when need_buckets is true.\n metapb.Buckets buckets = 5;"
+        }
+      }
+    },
+    "pdpbRequestHeader": {
+      "type": "object",
+      "properties": {
+        "clusterId": {
+          "type": "string",
+          "format": "uint64",
+          "description": "cluster_id is the ID of the cluster which be sent to."
+        },
+        "senderId": {
+          "type": "string",
+          "format": "uint64",
+          "description": "sender_id is the ID of the sender server, also member ID or etcd ID.\nsender_id is used in PD internal communication."
+        },
+        "callerId": {
+          "type": "string",
+          "description": "caller_id is the ID of the client which sends the request, such as tikv,\ntidb, cdc, etc."
+        },
+        "callerComponent": {
+          "type": "string",
+          "description": "caller_component is the component of the client which sends the request,\nsuch as ddl, optimizer, etc."
+        }
+      }
+    },
+    "pdpbResponseHeader": {
+      "type": "object",
+      "properties": {
+        "clusterId": {
+          "type": "string",
+          "format": "uint64",
+          "description": "cluster_id is the ID of the cluster which sent the response."
+        },
+        "error": {
+          "$ref": "#/definitions/pdpbError2"
         }
       }
     },

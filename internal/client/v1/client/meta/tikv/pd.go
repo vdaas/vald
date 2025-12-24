@@ -42,10 +42,29 @@ func (c *pdClient) GRPCClient() grpc.Client {
 	return c.c
 }
 
+func (c *pdClient) GetClusterInfo(
+	ctx context.Context, in *tikv.GetClusterInfoRequest,
+) (res *tikv.GetClusterInfoResponse, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/pd/GetClusterInfo"), pdApiName+"/GetClusterInfo")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.GetClusterInfoResponse, error) {
+		return tikv.NewPDClient(conn).GetClusterInfo(ctx, in, copts...)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 func (c *pdClient) GetAllStores(
 	ctx context.Context, in *tikv.GetAllStoresRequest,
 ) (res *tikv.GetAllStoresResponse, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/GetAllStores"), pdApiName+"/GetAllStores")
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/pd/GetAllStores"), pdApiName+"/GetAllStores")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -64,7 +83,7 @@ func (c *pdClient) GetAllStores(
 func (c *pdClient) BatchScanRegions(
 	ctx context.Context, in *tikv.BatchScanRegionsRequest,
 ) (res *tikv.BatchScanRegionsResponse, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/BatchScanRegions"), pdApiName+"/BatchScanRegions")
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/pd/BatchScanRegions"), pdApiName+"/BatchScanRegions")
 	defer func() {
 		if span != nil {
 			span.End()
