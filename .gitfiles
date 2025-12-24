@@ -904,6 +904,7 @@ internal/client/v1/client/meta/doc.go
 internal/client/v1/client/meta/tikv/doc.go
 internal/client/v1/client/meta/tikv/option.go
 internal/client/v1/client/meta/tikv/option_test.go
+internal/client/v1/client/meta/tikv/pd.go
 internal/client/v1/client/meta/tikv/tikv.go
 internal/client/v1/client/meta/tikv/tikv_benchmark_test.go
 internal/client/v1/client/meta/tikv/tikv_test.go
@@ -2350,11 +2351,8 @@ rust/libs/proto/src/google/rpc/mod.rs
 rust/libs/proto/src/google/rpc/status.rs
 rust/libs/proto/src/lib.rs
 rust/libs/proto/src/meta/mod.rs
-rust/libs/proto/src/meta/v1/meta.v1.rs
 rust/libs/proto/src/meta/v1/meta.v1.tonic.rs
 rust/libs/proto/src/meta/v1/mod.rs
-rust/libs/proto/src/metapb/metapb.rs
-rust/libs/proto/src/metapb/metapb.serde.rs
 rust/libs/proto/src/mirror/mod.rs
 rust/libs/proto/src/mirror/v1/mirror.v1.tonic.rs
 rust/libs/proto/src/mirror/v1/mod.rs
@@ -2362,9 +2360,6 @@ rust/libs/proto/src/payload/mod.rs
 rust/libs/proto/src/payload/v1/mod.rs
 rust/libs/proto/src/payload/v1/payload.v1.rs
 rust/libs/proto/src/payload/v1/payload.v1.serde.rs
-rust/libs/proto/src/pdpb/pdpb.rs
-rust/libs/proto/src/pdpb/pdpb.serde.rs
-rust/libs/proto/src/pdpb/pdpb.tonic.rs
 rust/libs/proto/src/rpc/mod.rs
 rust/libs/proto/src/rpc/v1/mod.rs
 rust/libs/proto/src/rpc/v1/rpc.v1.rs

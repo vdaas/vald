@@ -1,11 +1,10 @@
-//
 // Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,19 +14,19 @@
 package tikv
 
 import (
-    "bytes"
-    "context"
-    "encoding/hex"
-    "sort"
+	"bytes"
+	"context"
+	"encoding/hex"
+	"sort"
 
-    "github.com/vdaas/vald/apis/grpc/v1/tikv"
+	"github.com/vdaas/vald/apis/grpc/v1/tikv"
+	"github.com/vdaas/vald/internal/client/v1/client/meta"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-    "github.com/vdaas/vald/internal/client/v1/client/meta"
-    "github.com/vdaas/vald/internal/errors"
-    "github.com/vdaas/vald/internal/net/grpc"
-    "github.com/vdaas/vald/internal/observability/trace"
-	"github.com/vdaas/vald/internal/sync/errgroup"
+	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 const (
@@ -42,64 +41,64 @@ type Client interface {
 }
 
 type client struct {
-    addrs []string
-    c     grpc.Client
+	addrs []string
+	c     grpc.Client
 
-    pd *pdClient
+	pd *pdClient
 
-    regionErrorRetryLimit int
+	regionErrorRetryLimit int
 
-    // range cache
-    rmu     sync.RWMutex
-    ranges  []*rangeEntry
-    regions map[uint64]*rangeEntry
+	// range cache
+	rmu     sync.RWMutex
+	ranges  []*rangeEntry
+	regions map[uint64]*rangeEntry
 }
 
 // rangeEntry maps [start,end) to addr.
 type rangeEntry struct {
-    start []byte
-    end   []byte // nil or empty means +Inf
-    addr  string
-    ver   uint64
+	start []byte
+	end   []byte // nil or empty means +Inf
+	addr  string
+	ver   uint64
 }
 
 func (c *client) lookupAddr(key []byte) string {
-  idx := sort.Search(len(c.ranges), func(i int) bool {
-      return bytes.Compare(c.ranges[i].start, key) > 0
-  }) - 1
-  if idx >= 0 {
-      re := c.ranges[idx]
-      if len(re.end) == 0 || bytes.Compare(key, re.end) < 0 {
-        return re.addr
-      }
-  }
-  return ""
+	idx := sort.Search(len(c.ranges), func(i int) bool {
+		return bytes.Compare(c.ranges[i].start, key) > 0
+	}) - 1
+	if idx >= 0 {
+		re := c.ranges[idx]
+		if len(re.end) == 0 || bytes.Compare(key, re.end) < 0 {
+			return re.addr
+		}
+	}
+	return ""
 }
 
 func (c *client) lookupAddrs(ctx context.Context, keys [][]byte) (map[string][][]byte, error) {
 	unknownKeys := make([][]byte, 0, len(keys))
 	res := make(map[string][][]byte)
-  c.rmu.RLock()
-  for _, key := range keys {
-  	addr := c.lookupAddr(key)
-  	if addr == "" {
-    	unknownKeys = append(unknownKeys, key)
-    }
-    res[addr] = append(res[addr], key)
-  }
-  c.rmu.RUnlock()
-  err := c.refresh(ctx, unknownKeys)
-  if err != nil {
-  	return nil, err
-  }
-  for _, key := range unknownKeys {
-  	addr := c.lookupAddr(key)
-  	if addr == "" {
-  		return nil, errors.Errorf("address not found for key: %s", hex.EncodeToString(key))
-  	}
-  	res[addr] = append(res[addr], key)
-  }
-  return res, nil
+	c.rmu.RLock()
+	for _, key := range keys {
+		addr := c.lookupAddr(key)
+		if addr == "" {
+			unknownKeys = append(unknownKeys, key)
+		}
+		res[addr] = append(res[addr], key)
+	}
+	c.rmu.RUnlock()
+	err := c.refresh(ctx, unknownKeys)
+	if err != nil {
+		return nil, err
+	}
+	for _, key := range unknownKeys {
+		addr := c.lookupAddr(key)
+		if addr == "" {
+			return nil, errors.Errorf("address not found for key: %s", hex.EncodeToString(key))
+		}
+		res[addr] = append(res[addr], key)
+	}
+	return res, nil
 }
 
 func (c *client) refresh(ctx context.Context, keys [][]byte) error {
@@ -148,12 +147,12 @@ func (c *client) refresh(ctx context.Context, keys [][]byte) error {
 			return errors.Errorf("store id %d not found", r.Leader.StoreId)
 		}
 		start := append([]byte(nil), r.Region.StartKey...)
-		end   := append([]byte(nil), r.Region.EndKey...)
+		end := append([]byte(nil), r.Region.EndKey...)
 		re := &rangeEntry{
-			start:   start,
-			end:     end,
-			addr:    storeIdToAddr[r.Leader.StoreId],
-			ver:     r.Region.RegionEpoch.Version,
+			start: start,
+			end:   end,
+			addr:  storeIdToAddr[r.Leader.StoreId],
+			ver:   r.Region.RegionEpoch.Version,
 		}
 		c.regions[r.Region.Id] = re
 		c.ranges = mergeByNewerVersion(c.ranges, re)
@@ -161,10 +160,7 @@ func (c *client) refresh(ctx context.Context, keys [][]byte) error {
 	return nil
 }
 
-func mergeByNewerVersion(
-	old []*rangeEntry,
-	newE *rangeEntry,
-) []*rangeEntry {
+func mergeByNewerVersion(old []*rangeEntry, newE *rangeEntry) []*rangeEntry {
 	out := make([]*rangeEntry, 0, len(old)+1)
 	inserted := false
 

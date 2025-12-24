@@ -855,7 +855,6 @@ func Do[R any](
 	return data, errors.UnexpectedProtoMessageType(data, res)
 }
 
-
 // Do executes a function f on a specific connection address.
 func (g *gRPCClient) Do(
 	ctx context.Context,
