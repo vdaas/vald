@@ -17,6 +17,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/hex"
+	"slices"
 	"sort"
 
 	"github.com/vdaas/vald/apis/grpc/v1/tikv"
@@ -30,14 +31,16 @@ import (
 )
 
 const (
-	apiName = "vald/internal/client/v1/client/meta/tikv"
+	apiName = "vald/internal/client/meta/v1/client/meta/tikv"
 )
 
 type Client interface {
 	meta.MetadataClient
 	GRPCClient() grpc.Client
 	Start(context.Context) (<-chan error, error)
+	StartPD(context.Context) (<-chan error, error)
 	Stop(context.Context) error
+	StopPD(context.Context) error
 }
 
 type client struct {
@@ -146,8 +149,8 @@ func (c *client) refresh(ctx context.Context, keys [][]byte) error {
 		if _, ok := storeIdToAddr[r.Leader.StoreId]; !ok {
 			return errors.Errorf("store id %d not found", r.Leader.StoreId)
 		}
-		start := append([]byte(nil), r.Region.StartKey...)
-		end := append([]byte(nil), r.Region.EndKey...)
+		start := slices.Clone(r.Region.StartKey)
+		end := slices.Clone(r.Region.EndKey)
 		re := &rangeEntry{
 			start: start,
 			end:   end,
@@ -215,10 +218,7 @@ func New(opts ...Option) (Client, error) {
 	c.regions = make(map[uint64]*rangeEntry)
 
 	if c.c == nil {
-		if len(c.addrs) == 0 {
-			return nil, errors.ErrGRPCTargetAddrNotFound
-		}
-		c.c = grpc.New("TiKV Client", grpc.WithAddrs(c.addrs...))
+		c.c = grpc.New("TiKV Client")
 	}
 	if c.pd.c == nil {
 		if len(c.pd.addrs) == 0 {
@@ -254,7 +254,7 @@ func (c *client) GRPCClientPD() grpc.Client {
 }
 
 func (c *client) Get(ctx context.Context, key []byte) (val []byte, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/RawGet"), apiName+"/RawGet")
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/meta/Get"), apiName+"/Get")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -292,7 +292,7 @@ func (c *client) Get(ctx context.Context, key []byte) (val []byte, err error) {
 }
 
 func (c *client) BatchGet(ctx context.Context, keys [][]byte) ([][]byte, error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/RawBatchGet"), apiName+"/RawBatchGet")
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/meta/BatchGet"), apiName+"/BatchGet")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -344,33 +344,45 @@ func (c *client) BatchGet(ctx context.Context, keys [][]byte) ([][]byte, error) 
 }
 
 func (c *client) Put(ctx context.Context, key, val []byte) (err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/RawPut"), apiName+"/RawPut")
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/meta/Put"), apiName+"/Put")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-
-	res, err := grpc.RoundRobin(ctx, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawPutResponse, error) {
-		return tikv.NewTikvClient(conn).RawPut(ctx, &tikv.RawPutRequest{
-			Key:   key,
-			Value: val,
-		}, copts...)
-	})
+	addrs, err := c.lookupAddrs(ctx, [][]byte{key})
 	if err != nil {
 		return err
 	}
-	// TODO
-	// if res.RegionError != nil {
-	_ = res.RegionError
-	if res.Error != "" {
-		return errors.New(res.Error)
+	for addr := range addrs {
+		for range c.regionErrorRetryLimit {
+			res, err := grpc.Do(ctx, addr, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawBatchPutResponse, error) {
+				return tikv.NewTikvClient(conn).RawBatchPut(ctx, &tikv.RawBatchPutRequest{
+					Pairs: []*tikv.KvPair{{
+						Key:   key,
+						Value: val,
+					}},
+				}, copts...)
+			})
+			if err != nil {
+				return err
+			}
+			if res.Error != "" {
+				return errors.New(res.Error)
+			}
+			if res.RegionError != nil {
+				log.Errorf("region error: %+v", res.RegionError)
+				continue
+			}
+			return nil
+		}
+		return errors.Errorf("exceeded region error retry limit for address: %s", addr)
 	}
 	return nil
 }
 
-func (c *client) BatchPut(ctx context.Context, keys [][]byte, vals [][]byte) (err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/RawBatchPut"), apiName+"/RawBatchPut")
+func (c *client) BatchPut(ctx context.Context, keys, vals [][]byte) (err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/meta/BatchPut"), apiName+"/BatchPut")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -422,32 +434,42 @@ func (c *client) BatchPut(ctx context.Context, keys [][]byte, vals [][]byte) (er
 }
 
 func (c *client) Delete(ctx context.Context, key []byte) (err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/RawDelete"), apiName+"/RawDelete")
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/meta/Delete"), apiName+"/Delete")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-
-	res, err := grpc.RoundRobin(ctx, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawDeleteResponse, error) {
-		return tikv.NewTikvClient(conn).RawDelete(ctx, &tikv.RawDeleteRequest{
-			Key: key,
-		}, copts...)
-	})
+	addrs, err := c.lookupAddrs(ctx, [][]byte{key})
 	if err != nil {
 		return err
 	}
-	// TODO
-	// if res.RegionError != nil {
-	_ = res.RegionError
-	if res.Error != "" {
-		return errors.New(res.Error)
+	for addr := range addrs {
+		for range c.regionErrorRetryLimit {
+			res, err := grpc.Do(ctx, addr, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawBatchDeleteResponse, error) {
+				return tikv.NewTikvClient(conn).RawBatchDelete(ctx, &tikv.RawBatchDeleteRequest{
+					Keys: [][]byte{key},
+				}, copts...)
+			})
+			if err != nil {
+				return err
+			}
+			if res.Error != "" {
+				return errors.New(res.Error)
+			}
+			if res.RegionError != nil {
+				log.Errorf("region error: %+v", res.RegionError)
+				continue
+			}
+			return nil
+		}
+		return errors.Errorf("exceeded region error retry limit for address: %s", addr)
 	}
 	return nil
 }
 
 func (c *client) BatchDelete(ctx context.Context, keys [][]byte) (err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/RawBatchDelete"), apiName+"/RawBatchDelete")
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/meta/BatchDelete"), apiName+"/BatchDelete")
 	defer func() {
 		if span != nil {
 			span.End()

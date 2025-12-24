@@ -29,30 +29,35 @@ import (
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
-// envStoreAddrs is the environment variable which should contain a comma
-// separated list of TiKV store addresses (e.g. "127.0.0.1:20160,127.0.0.1:20161").
-const envStoreAddrs = "TIKV_STORE_ADDRS"
+const (
+	// separated list of TiKV PD addresses (e.g. "127.0.0.1:2379").
+	envPDAddrs = "TIKV_PD_ADDRS"
+)
 
 func getAddrs() []string {
-	addrs := strings.Split(os.Getenv(envStoreAddrs), ",")
-	if len(addrs) == 1 && addrs[0] == "" {
-		return nil
+	pdAddrs := strings.Split(os.Getenv(envPDAddrs), ",")
+	if len(pdAddrs) == 1 && pdAddrs[0] == "" {
+		pdAddrs = nil
 	}
-	return addrs
+	return pdAddrs
 }
 
 func createClient(b *testing.B) Client {
-	addrs := getAddrs()
-	if len(addrs) == 0 {
-		b.Skipf("environment variable %s not set; skipping TiKV benchmarks", envStoreAddrs)
+	pdAddrs := getAddrs()
+	if len(pdAddrs) == 0 {
+		b.Errorf("environment variable %s not set; skipping TiKV benchmarks", envPDAddrs)
 	}
-
 	cli, err := New(
-		WithAddrs(addrs...),
 		WithClient(
 			grpc.New(
 				"TiKV Client",
-				grpc.WithAddrs(addrs...),
+				grpc.WithInsecure(true),
+			),
+		),
+		WithPDClient(
+			grpc.New(
+				"PD Client",
+				grpc.WithAddrs(pdAddrs...),
 				grpc.WithInsecure(true),
 			),
 		),
@@ -61,6 +66,7 @@ func createClient(b *testing.B) Client {
 		b.Fatalf("failed to create tikv client: %v", err)
 	}
 	cli.Start(context.Background())
+	cli.StartPD(context.Background())
 
 	// basic connectivity probe (RawGet for non-existing key)
 	_, err = cli.Get(context.Background(), []byte("vald_bench_probe"))

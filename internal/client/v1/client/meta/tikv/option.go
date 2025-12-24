@@ -22,17 +22,6 @@ type Option func(*client) error
 
 var defaultOptions = []Option{WithRegionErrorRetryLimit(3)}
 
-// WithAddrs sets the TiKV store addresses (fallback RoundRobin list).
-func WithAddrs(addrs ...string) Option {
-	return func(c *client) error {
-		if len(addrs) == 0 {
-			return nil
-		}
-		c.addrs = append(c.addrs, addrs...)
-		return nil
-	}
-}
-
 // WithClient sets a prepared grpc.Client.
 func WithClient(cl grpc.Client) Option {
 	return func(c *client) error {
