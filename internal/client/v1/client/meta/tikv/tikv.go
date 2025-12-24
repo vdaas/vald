@@ -124,7 +124,7 @@ func (c *client) refresh(ctx context.Context, keys [][]byte) error {
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error {
 		res, err := c.pd.GetAllStores(ctx, &tikv.GetAllStoresRequest{
-			Header: &tikv.RequestHeader{ClusterId: c.clusterId},
+			Header:                 &tikv.RequestHeader{ClusterId: c.clusterId},
 			ExcludeTombstoneStores: true,
 		})
 		if err != nil {
