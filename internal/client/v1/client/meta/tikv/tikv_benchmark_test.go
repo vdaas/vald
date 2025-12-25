@@ -20,15 +20,14 @@ package tikv
 
 import (
 	"context"
-	"crypto/rand"
 	"encoding/binary"
 	"os"
 	"slices"
 	"strings"
 	"testing"
 
-	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -84,12 +83,6 @@ func createClient(b *testing.B) Client {
 	return cli
 }
 
-func generateKey(length int) ([]byte, error) {
-	key := make([]byte, length)
-	_, err := rand.Read(key)
-	return key, err
-}
-
 func Benchmark(b *testing.B) {
 	cli := createClient(b)
 	defer cli.Stop(b.Context())
@@ -100,6 +93,7 @@ func Benchmark(b *testing.B) {
 
 	b.ReportAllocs()
 	b.ResetTimer()
+	b.StartTimer()
 	for i := range b.N {
 		var key [8]byte
 		binary.LittleEndian.PutUint64(key[:], uint64(i))
@@ -109,6 +103,7 @@ func Benchmark(b *testing.B) {
 	}
 	b.ReportAllocs()
 	b.ResetTimer()
+	b.StartTimer()
 	for i := range b.N {
 		var key [8]byte
 		binary.LittleEndian.PutUint64(key[:], uint64(i))
@@ -122,6 +117,7 @@ func Benchmark(b *testing.B) {
 	}
 	b.ReportAllocs()
 	b.ResetTimer()
+	b.StartTimer()
 	for i := range b.N {
 		var key [8]byte
 		binary.LittleEndian.PutUint64(key[:], uint64(i))
@@ -131,6 +127,7 @@ func Benchmark(b *testing.B) {
 	}
 	b.ReportAllocs()
 	b.ResetTimer()
+	b.StartTimer()
 	for i := range b.N {
 		var key [8]byte
 		binary.LittleEndian.PutUint64(key[:], uint64(i))
@@ -149,8 +146,6 @@ func BenchmarkBatch(b *testing.B) {
 	ctx := b.Context()
 	length := 300
 
-	b.ReportAllocs()
-	b.ResetTimer()
 	keys := make([][]byte, length)
 	for i := range length {
 		var key [8]byte
@@ -159,6 +154,9 @@ func BenchmarkBatch(b *testing.B) {
 	}
 	val := []byte("vald_bench_val")
 	vals := slices.Repeat([][]byte{val}, length)
+	b.ReportAllocs()
+	b.ResetTimer()
+	b.StartTimer()
 	for b.Loop() {
 		if err := cli.BatchPut(ctx, keys, vals); err != nil {
 			b.Fatalf("BatchPut error: %v", err)
@@ -166,6 +164,7 @@ func BenchmarkBatch(b *testing.B) {
 	}
 	b.ReportAllocs()
 	b.ResetTimer()
+	b.StartTimer()
 	for b.Loop() {
 		res, err := cli.BatchGet(ctx, keys)
 		if err != nil {
@@ -179,6 +178,7 @@ func BenchmarkBatch(b *testing.B) {
 	}
 	b.ReportAllocs()
 	b.ResetTimer()
+	b.StartTimer()
 	for b.Loop() {
 		if err := cli.BatchDelete(ctx, keys); err != nil {
 			b.Fatalf("BatchDelete error: %v", err)
