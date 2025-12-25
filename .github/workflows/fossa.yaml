@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [dump-contexts-to-log, detect-ci-container]
     container:
-      image: ghcr.io/vdaas/vald/vald-aio-container:${{ needs.detect-ci-container.outputs.TAG }}
+      image: ghcr.io/vdaas/vald/vald-dev-container:${{ needs.detect-ci-container.outputs.TAG }}
       credentials:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}

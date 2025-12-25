@@ -72,6 +72,7 @@ RUN --mount=type=bind,target=.,rw \
     tzdata \
     locales \
     git \
+    sudo \
     cmake \
     g++ \
     gcc \

@@ -52,8 +52,6 @@ const (
 	buildbase           = "buildbase"
 	buildkit            = "buildkit"
 	buildkitSyftScanner = buildkit + "-syft-scanner"
-	aioContainer        = "aio-container"
-	ciContainer         = "ci-container"
 	devContainer        = "dev-container"
 	exampleContainer    = "example-client"
 	discovererK8s       = "discoverer-k8s"
@@ -228,7 +226,7 @@ ARG {{$key}}={{$value}}
 FROM {{$image}}
 {{- end}}
 # skipcq: DOK-DL3026,DOK-DL3007
-FROM {{.BuilderImage}}:{{.BuilderTag}}{{if and (not (eq (ContainerName .ContainerType) "%s")) (not (eq (ContainerName .ContainerType) "%s"))}} AS {{.BuildStageName}} {{- end}}
+FROM {{.BuilderImage}}:{{.BuilderTag}}{{if not (eq (ContainerName .ContainerType) "%s")}} AS {{.BuildStageName}} {{- end}}
 LABEL maintainer="{{.Maintainer}}"
 # skipcq: DOK-DL3002
 USER {{.BuildUser}}
@@ -275,7 +273,7 @@ RUN {{RunMounts .RunMounts}} \
     && apt-get autoclean -y \
     && apt-get autoremove -y \
     && {{RunCommands .RunCommands}}
-{{- if and (not (eq (ContainerName .ContainerType) "%s")) (not (eq (ContainerName .ContainerType) "%s"))}}
+{{- if not (eq (ContainerName .ContainerType) "%s")}}
 # skipcq: DOK-DL3026,DOK-DL3007
 FROM {{.RuntimeImage}}:{{.RuntimeTag}}
 LABEL maintainer="{{.Maintainer}}"
@@ -291,13 +289,13 @@ COPY --from=builder {{$file}} {{$file}}
 USER {{.RuntimeUser}}
 {{- if .Entrypoints}}
 ENTRYPOINT [{{Entrypoint .Entrypoints}}]
-{{- else if and (not (eq (ContainerName .ContainerType) "%s")) (not (eq (ContainerName .ContainerType) "%s"))}}
+{{- else if not (eq (ContainerName .ContainerType) "%s")}}
 ENTRYPOINT ["{{.BinDir}}/{{.AppName}}"]
 {{- end}}
-{{- end}}`, header, DevContainer.String(), CIContainer.String(),
+{{- end}}`, header, DevContainer.String(),
 	DevContainer.String(),
-	DevContainer.String(), CIContainer.String(),
-	DevContainer.String(), CIContainer.String())))
+	DevContainer.String(),
+	DevContainer.String())))
 
 type (
 	Workflow struct {
@@ -386,7 +384,6 @@ const (
 	Rust
 	DevContainer
 	HelmOperator
-	CIContainer
 	Other
 )
 
@@ -400,7 +397,6 @@ var (
 		Rust:         "Rust",
 		DevContainer: "DevContainer",
 		HelmOperator: "HelmOperator",
-		CIContainer:  "CIContainer",
 		Other:        "Other",
 	}
 
@@ -498,7 +494,9 @@ var (
 		"zip",
 	}
 
-	ciContainerPreprocess = []string{
+	devContainerPreprocess = []string{
+		"make gopls/install",
+		"update-ca-certificates",
 		"make bun/install",
 		"make GOARCH=${TARGETARCH} GOOS=${TARGETOS} deps GO_CLEAN_DEPS=false",
 		"make GOARCH=${TARGETARCH} GOOS=${TARGETOS} golangci-lint/install",
@@ -516,11 +514,6 @@ var (
 		"make telepresence/install",
 		"make yq/install",
 		"make docker-cli/install",
-	}
-
-	devContainerPreprocess = []string{
-		"make gopls/install",
-		"update-ca-certificates",
 	}
 )
 
@@ -789,36 +782,6 @@ func main() {
 			},
 			Entrypoints: []string{"{{$.BinDir}}/{{.AppName}}", "run", "--watches-file=" + helmOperatorWatchFile},
 		},
-		vald + "-" + aioContainer: {
-			AppName:       aioContainer,
-			BuilderImage:  "mcr.microsoft.com/devcontainers/base",
-			BuilderTag:    "ubuntu" + ubuntuVersion,
-			BuildUser:     defaultBuildUser,
-			RuntimeUser:   defaultBuildUser,
-			ContainerType: DevContainer,
-			PackageDir:    "aio",
-			ExtraPackages: append([]string{"sudo"}, append(clangBuildDeps,
-				append(ngtBuildDeps,
-					append(rustBuildDeps,
-						devContainerDeps...)...)...)...),
-			Preprocess: append(devContainerPreprocess,
-				append(ciContainerPreprocess,
-					ngtPreprocess,
-					faissPreprocess,
-					usearchPreprocess)...),
-		},
-		vald + "-" + ciContainer: {
-			AppName:       ciContainer,
-			ContainerType: CIContainer,
-			PackageDir:    "ci/base",
-			RuntimeUser:   defaultBuildUser,
-			ExtraPackages: append([]string{"sudo"}, append(clangBuildDeps,
-				append(ngtBuildDeps,
-					append(rustBuildDeps,
-						devContainerDeps...)...)...)...),
-			Preprocess:  append(ciContainerPreprocess, ngtPreprocess, faissPreprocess, usearchPreprocess),
-			Entrypoints: []string{"/bin/bash"},
-		},
 		vald + "-" + devContainer: {
 			AppName:       devContainer,
 			BuilderImage:  "mcr.microsoft.com/devcontainers/base",
@@ -827,15 +790,14 @@ func main() {
 			RuntimeUser:   defaultBuildUser,
 			ContainerType: DevContainer,
 			PackageDir:    "dev",
-			ExtraPackages: append(clangBuildDeps,
+			ExtraPackages: append([]string{"sudo"}, append(clangBuildDeps,
 				append(ngtBuildDeps,
 					append(rustBuildDeps,
-						devContainerDeps...)...)...),
+						devContainerDeps...)...)...)...),
 			Preprocess: append(devContainerPreprocess,
-				append(ciContainerPreprocess,
-					ngtPreprocess,
-					faissPreprocess,
-					usearchPreprocess)...),
+				ngtPreprocess,
+				faissPreprocess,
+				usearchPreprocess),
 		},
 		vald + "-" + exampleContainer: {
 			AppName:       "client",
@@ -899,7 +861,7 @@ func main() {
 					helmOperatorTemplatesPath,
 					operatorSDKVersionPath,
 				)
-			case DevContainer, CIContainer:
+			case DevContainer:
 				data.PullRequestPaths = append(data.PullRequestPaths,
 					apisProtoPath,
 					hackPath,
@@ -975,9 +937,6 @@ func main() {
 
 			if data.AliasImage {
 				data.BuildPlatforms = multiPlatforms
-			}
-			if data.ContainerType == CIContainer {
-				data.BuildPlatforms = amd64Platform
 			}
 
 			data.Year = time.Now().Year()
@@ -1147,7 +1106,7 @@ jobs:
 				commands = append(commands, rustBuildCommands...)
 				data.RunCommands = commands
 				data.RunMounts = defaultMounts
-			case DevContainer, CIContainer:
+			case DevContainer:
 				data.Environments = appendM(data.Environments, goDefaultEnvironments, rustDefaultEnvironments, clangDefaultEnvironments)
 				data.RootDir = goWorkdir
 				commands := make([]string, 0, len(goInstallCommands)+len(rustInstallCommands)+len(data.Preprocess)+1)
