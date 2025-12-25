@@ -1,0 +1,133 @@
+#
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+{{- $tc := .Values.tidbCluster -}}
+{{- if and $tc.enabled $tc.pd }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app.kubernetes.io/component: pd
+    app.kubernetes.io/instance: {{ $tc.name }}
+    #app.kubernetes.io/managed-by: tidb-operator
+    app.kubernetes.io/name: tidb-cluster
+  name: {{ $tc.name }}-pd
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ $tc.pd.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: pd
+      app.kubernetes.io/instance: {{ $tc.name }}
+      #app.kubernetes.io/managed-by: tidb-operator
+      app.kubernetes.io/name: tidb-cluster
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app.kubernetes.io/component: pd
+        app.kubernetes.io/instance: {{ $tc.name }}
+        #app.kubernetes.io/managed-by: tidb-operator
+        app.kubernetes.io/name: tidb-cluster
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "2379"
+        prometheus.io/scrape: "true"
+    spec:
+      volumes:
+        - name: annotations
+          downwardAPI:
+            items:
+              - path: annotations
+                fieldRef:
+                  fieldPath: metadata.annotations
+        - name: config
+          configMap:
+            name: {{ $tc.name }}-pd
+            items:
+              - key: config-file
+                path: pd.toml
+        - name: startup-script
+          configMap:
+            name: {{ $tc.name }}-pd
+            items:
+              - key: startup-script
+                path: pd_start_script.sh
+      containers:
+        - name: pd
+          image: "{{ $tc.pd.baseImage }}:{{ $tc.version }}"
+          command:
+            - /bin/sh
+            - /usr/local/bin/pd_start_script.sh
+          ports:
+            - name: server
+              containerPort: 2380
+              protocol: TCP
+            - name: client
+              containerPort: 2379
+              protocol: TCP
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: PEER_SERVICE_NAME
+              value: {{ $tc.name }}-pd-peer
+            - name: SERVICE_NAME
+              value: {{ $tc.name }}-pd
+            - name: SET_NAME
+              value: {{ $tc.name }}-pd
+            - name: TZ
+              value: {{ $tc.timezone | default "UTC" }}
+          resources:
+            requests:
+              cpu: {{ $tc.pd.requests.cpu }}
+              memory: {{ $tc.pd.requests.memory }}
+            limits:
+              cpu: {{ $tc.pd.limits.cpu }}
+              memory: {{ $tc.pd.limits.memory }}
+          volumeMounts:
+            - name: annotations
+              readOnly: true
+              mountPath: /etc/podinfo
+            - name: config
+              readOnly: true
+              mountPath: /etc/pd
+            - name: startup-script
+              readOnly: true
+              mountPath: /usr/local/bin
+            - name: pd
+              mountPath: /var/lib/pd
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      dnsPolicy: ClusterFirst
+  volumeClaimTemplates:
+    - metadata:
+        name: pd
+        creationTimestamp: null
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: {{ $tc.pd.requests.storage }}
+      status: {}
+  serviceName: {{ $tc.name }}-pd-peer
+  podManagementPolicy: Parallel
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      partition: 3
+{{- end }}
