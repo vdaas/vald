@@ -23,12 +23,12 @@ import (
 	"crypto/rand"
 	"encoding/binary"
 	"os"
-	"strings"
 	"slices"
+	"strings"
 	"testing"
 
-	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -161,7 +161,7 @@ func BenchmarkBatch(b *testing.B) {
 	vals := slices.Repeat([][]byte{val}, length)
 	for b.Loop() {
 		if err := cli.BatchPut(ctx, keys, vals); err != nil {
-			b.Fatalf("Put error: %v", err)
+			b.Fatalf("BatchPut error: %v", err)
 		}
 	}
 	b.ReportAllocs()
@@ -169,7 +169,7 @@ func BenchmarkBatch(b *testing.B) {
 	for b.Loop() {
 		res, err := cli.BatchGet(ctx, keys)
 		if err != nil {
-			b.Fatalf("Get error: %v", err)
+			b.Fatalf("BatchGet error: %v", err)
 		}
 		for i := range res {
 			if !slices.Equal(res[i], val) {
@@ -181,7 +181,7 @@ func BenchmarkBatch(b *testing.B) {
 	b.ResetTimer()
 	for b.Loop() {
 		if err := cli.BatchDelete(ctx, keys); err != nil {
-			b.Fatalf("Delete error: %v", err)
+			b.Fatalf("BatchDelete error: %v", err)
 		}
 	}
 }
