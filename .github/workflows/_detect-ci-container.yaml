@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-name: "Detect CI container image tag"
+name: "Detect Dev container image tag"
 on:
   workflow_call:
     outputs:
@@ -21,7 +21,7 @@ on:
         description: "The docker image tag name"
         value: ${{ jobs.detect.outputs.TAG }}
 env:
-  TARGET_IMAGE: vdaas/vald-aio-container
+  TARGET_IMAGE: vdaas/vald-dev-container
 jobs:
   detect:
     timeout-minutes: 30

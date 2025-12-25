@@ -52,7 +52,7 @@ runs:
           ["vdaas/vald-index-save"]="manager.index.saver.image.tag"
           ["vdaas/vald-readreplica-rotate"]="manager.index.readreplica.rotator.image.tag"
           ["vdaas/vald-helm-operator"]="image.tag"
-          ["vdaas/vald-aio-container"]=""
+          ["vdaas/vald-dev-container"]=""
           ["vdaas/vald-index-operator"]="manager.index.operator.image.tag"
         )
 

@@ -123,7 +123,7 @@ jobs:
       matrix: ${{ fromJson(needs.build-matrix.outputs.result) }}
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/vdaas/vald/vald-aio-container:${{ needs.detect-ci-container.outputs.TAG }}
+      image: ghcr.io/vdaas/vald/vald-dev-container:${{ needs.detect-ci-container.outputs.TAG }}
       credentials:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
