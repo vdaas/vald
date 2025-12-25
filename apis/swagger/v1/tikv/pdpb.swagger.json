@@ -9,8 +9,12 @@
       "name": "PD"
     }
   ],
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {},
   "definitions": {
     "metapbPeer": {
@@ -133,7 +137,11 @@
     },
     "metapbStoreState": {
       "type": "string",
-      "enum": ["Up", "Offline", "Tombstone"],
+      "enum": [
+        "Up",
+        "Offline",
+        "Tombstone"
+      ],
       "default": "Up"
     },
     "pdpbBatchScanRegionsResponse": {
