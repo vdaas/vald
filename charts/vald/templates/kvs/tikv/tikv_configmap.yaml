@@ -1,0 +1,45 @@
+#
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+{{- $tc := .Values.tidbCluster -}}
+{{- if and $tc.enabled $tc.tikv }}
+apiVersion: v1
+data:
+  config-file: ""
+  startup-script: "#!/bin/sh\n\n# This script is used to start tikv containers in\
+    \ kubernetes cluster\n\n# Use DownwardAPIVolumeFiles to store informations of the\
+    \ cluster:\n# https://kubernetes.io/docs/tasks/inject-data-application/downward-api-volume-expose-pod-information/#the-downward-api\n#\n#\
+    \ \t runmode=\"normal/debug\"\n#\n\nset -uo pipefail\n\nANNOTATIONS=\"/etc/podinfo/annotations\"\n\nif\
+    \ [[ ! -f \"${ANNOTATIONS}\" ]]\nthen\n\techo \"${ANNOTATIONS} does't exist, exiting.\"\n\
+    \t exit 1\nfi\nsource ${ANNOTATIONS} 2>/dev/null\n\nrunmode=${runmode:-normal}\nif\
+    \ [[ X${runmode} == Xdebug ]]\nthen\n\techo \"entering debug mode.\"\n\ttail -f\
+    \ /dev/null\nfi\n\n# Use HOSTNAME if POD_NAME is unset for backward compatibility.\n\
+    POD_NAME=${POD_NAME:-$HOSTNAME}\nARGS=\"--pd=http://${CLUSTER_NAME}-pd:2379 \\\n\
+    --advertise-addr=${POD_NAME}.${HEADLESS_SERVICE_NAME}.${NAMESPACE}.svc:20160 \\\n\
+    --addr=0.0.0.0:20160 \\\n--status-addr=0.0.0.0:20180 \\\n--data-dir=/var/lib/tikv\
+    \ \\\n--capacity=${CAPACITY} \\\n--config=/etc/tikv/tikv.toml\n\"\n\nif [ ! -z\
+    \ \"${STORE_LABELS:-}\" ]; then\n\tLABELS=\" --labels ${STORE_LABELS} \"\n\tARGS=\"${ARGS}${LABELS}\"\nfi\n\n\
+    echo \"starting tikv-server ...\"\necho \"/tikv-server ${ARGS}\"\nexec /tikv-server\
+    \ ${ARGS}\n"
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/component: tikv
+    app.kubernetes.io/instance: {{ $tc.name }}
+    app.kubernetes.io/managed-by: tidb-operator
+    app.kubernetes.io/name: tidb-cluster
+  name: {{ $tc.name }}-tikv
+  namespace: {{ .Release.Namespace }}
+{{- end }}
