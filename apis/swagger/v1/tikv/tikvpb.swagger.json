@@ -9,8 +9,12 @@
       "name": "Tikv"
     }
   ],
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {},
   "definitions": {
     "WriteConflictReason": {
@@ -26,6 +30,76 @@
       ],
       "default": "Unknown",
       "description": " - Optimistic: in optimistic transactions.\n - PessimisticRetry: a lock acquisition request waits for a lock and awakes, or meets a newer version of data, let TiDB retry.\n - SelfRolledBack: the transaction itself has been rolled back when it tries to prewrite.\n - RcCheckTs: RcCheckTs failure by meeting a newer version, let TiDB retry.\n - LazyUniquenessCheck: write conflict found when deferring constraint checks in pessimistic transactions. Deprecated in next-gen (cloud-storage-engine).\n - NotLockedKeyConflict: write conflict found on keys that do not acquire pessimistic locks in pessimistic transactions."
+    },
+    "metapbPeer": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "storeId": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "isWitness": {
+          "type": "boolean",
+          "title": "PeerRole role = 3;"
+        }
+      },
+      "title": "Copied from metapb.proto"
+    },
+    "metapbRegion2": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "startKey": {
+          "type": "string",
+          "format": "byte",
+          "description": "Region key range [start_key, end_key)."
+        },
+        "endKey": {
+          "type": "string",
+          "format": "byte"
+        },
+        "regionEpoch": {
+          "$ref": "#/definitions/metapbRegionEpoch"
+        },
+        "peers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/metapbPeer"
+          }
+        },
+        "isInFlashback": {
+          "type": "boolean",
+          "description": "Encryption metadata for start_key and end_key. encryption_meta.iv is IV for start_key.\nIV for end_key is calculated from (encryption_meta.iv + len(start_key)).\nThe field is only used by PD and should be ignored otherwise.\nIf encryption_meta is empty (i.e. nil), it means start_key and end_key are unencrypted.\nencryptionpb.EncryptionMeta encryption_meta = 6;\nThe flashback state indicates whether this region is in the flashback state.\nTODO: only check by `flashback_start_ts` in the future. Keep for compatibility now."
+        },
+        "flashbackStartTs": {
+          "type": "string",
+          "format": "uint64",
+          "description": "The start_ts that the current flashback progress is using."
+        }
+      }
+    },
+    "metapbRegionEpoch": {
+      "type": "object",
+      "properties": {
+        "confVer": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Conf change version, auto increment when add or remove peer"
+        },
+        "version": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Region version, auto increment when split or merge"
+        }
+      }
     },
     "protobufAny": {
       "type": "object",
@@ -63,7 +137,11 @@
     },
     "tikvAPIVersion": {
       "type": "string",
-      "enum": ["V1", "V1TTL", "V2"],
+      "enum": [
+        "V1",
+        "V1TTL",
+        "V2"
+      ],
       "default": "V1",
       "description": "The API version the server and the client is using.\nSee more details in https://github.com/tikv/rfcs/blob/master/text/0069-api-v2.md.\n\n - V1: `V1` is mainly for TiDB \u0026 TxnKV, and is not safe to use RawKV along with the others.\nV1 server only accepts V1 requests. V1 raw requests with TTL will be rejected.\n - V1TTL: `V1TTL` is only available to RawKV, and 8 bytes representing the unix timestamp in\nseconds for expiring time will be append to the value of all RawKV entries. For example:\n------------------------------------------------------------\n| User value     | Expire Ts                               |\n------------------------------------------------------------\n| 0x12 0x34 0x56 | 0x00 0x00 0x00 0x00 0x00 0x00 0xff 0xff |\n------------------------------------------------------------\nV1TTL server only accepts V1 raw requests.\nV1 client should not use `V1TTL` in request. V1 client should always send `V1`.\n - V2: `V2` use new encoding for RawKV \u0026 TxnKV to support more features.\n\nKey Encoding:\n TiDB: start with `m` or `t`, the same as `V1`.\n TxnKV: prefix with `x`, encoded as `MCE( x{keyspace id} + {user key} ) + timestamp`.\n RawKV: prefix with `r`, encoded as `MCE( r{keyspace id} + {user key} ) + timestamp`.\n Where the `{keyspace id}` is fixed-length of 3 bytes in network byte order.\n Besides, RawKV entires must be in `default` CF.\n\nValue Encoding:\n TiDB \u0026 TxnKV: the same as `V1`.\n RawKV: `{user value} + {optional fields} + {meta flag}`. The last byte in the\n raw value must be meta flags. For example:\n --------------------------------------\n | User value     | Meta flags        |\n --------------------------------------\n | 0x12 0x34 0x56 | 0x00 (0b00000000) |\n --------------------------------------\n Bit 0 of meta flags is for TTL. If set, the value contains 8 bytes expiring time as\n unix timestamp in seconds at the very left to the meta flags.\n --------------------------------------------------------------------------------\n | User value     | Expiring time                           | Meta flags        |\n --------------------------------------------------------------------------------\n | 0x12 0x34 0x56 | 0x00 0x00 0x00 0x00 0x00 0x00 0xff 0xff | 0x01 (0b00000001) |\n --------------------------------------------------------------------------------\n Bit 1 is for deletion. If set, the entry is logical deleted.\n ---------------------\n | Meta flags        |\n ---------------------\n | 0x02 (0b00000010) |\n ---------------------\n\nV2 server accpets V2 requests and V1 transactional requests that statrts with TiDB key\nprefix (`m` and `t`)."
     },
@@ -78,7 +156,11 @@
     },
     "tikvAssertion": {
       "type": "string",
-      "enum": ["None", "Exist", "NotExist"],
+      "enum": [
+        "None",
+        "Exist",
+        "NotExist"
+      ],
       "default": "None"
     },
     "tikvAssertionFailed": {
@@ -124,7 +206,11 @@
     },
     "tikvCommandPri": {
       "type": "string",
-      "enum": ["Normal", "Low", "High"],
+      "enum": [
+        "Normal",
+        "Low",
+        "High"
+      ],
       "default": "Normal",
       "description": " - Normal: Normal is the default value."
     },
@@ -166,10 +252,15 @@
           "type": "string",
           "format": "uint64"
         },
+        "regionEpoch": {
+          "$ref": "#/definitions/metapbRegionEpoch"
+        },
+        "peer": {
+          "$ref": "#/definitions/metapbPeer"
+        },
         "term": {
           "type": "string",
-          "format": "uint64",
-          "title": "metapb.RegionEpoch region_epoch = 2;\nmetapb.Peer peer = 3;"
+          "format": "uint64"
         },
         "priority": {
           "$ref": "#/definitions/tikvCommandPri"
@@ -358,7 +449,17 @@
     },
     "tikvEpochNotMatch": {
       "type": "object",
-      "description": "EpochNotMatch is the error variant that tells a region has been updated.\n(e.g. by splitting / merging, or raft Confchange.)\nHence, a command is based on a stale version of a region.\n\n// Available regions that may be siblings of the requested one.\n repeated metapb.Region current_regions = 1;"
+      "properties": {
+        "currentRegions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/metapbRegion2"
+          },
+          "description": "Available regions that may be siblings of the requested one."
+        }
+      },
+      "description": "EpochNotMatch is the error variant that tells a region has been updated.\n(e.g. by splitting / merging, or raft Confchange.)\nHence, a command is based on a stale version of a region."
     },
     "tikvError": {
       "type": "object",
@@ -476,7 +577,11 @@
     },
     "tikvIsolationLevel": {
       "type": "string",
-      "enum": ["SI", "RC", "RCCheckTS"],
+      "enum": [
+        "SI",
+        "RC",
+        "RCCheckTS"
+      ],
       "default": "SI",
       "description": " - SI: SI = snapshot isolation\n - RC: RC = read committed\n - RCCheckTS: RC read and it's needed to check if there exists more recent versions."
     },
@@ -803,8 +908,11 @@
         "regionId": {
           "type": "string",
           "format": "uint64",
-          "description": "// Region leader of the requested region\n metapb.Peer leader = 2;",
           "title": "The requested region ID"
+        },
+        "leader": {
+          "$ref": "#/definitions/metapbPeer",
+          "title": "Region leader of the requested region"
         }
       },
       "description": "NotLeader is the error variant that tells a request be handle by raft leader\nis sent to raft follower or learner."
