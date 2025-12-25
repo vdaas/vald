@@ -4235,3 +4235,128 @@ manager:
       # @schema {"name": "manager.index.operator.rotation_job_concurrency", "type": "integer", "minimum": 1}
       # manager.index.operator.rotation_job_concurrency -- maximum concurrent rotator job run.
       rotation_job_concurrency: 2
+# @schema {"name": "tidbCluster", "type": "object"}
+tidbCluster:
+  # @schema {"name": "tidbCluster.enabled", "type": "boolean"}
+  # tidbCluster.enabled -- Enable or disable the TiDB Cluster deployment.
+  enabled: false
+  # @schema {"name": "tidbCluster.name", "type": "string"}
+  # tidbCluster.name -- The name of the TiDB Cluster instance.
+  name: "tikv"
+  # @schema {"name": "tidbCluster.version", "type": "string"}
+  # tidbCluster.version -- TiDB Cluster version tag.
+  version: "v8.5.2"
+  # @schema {"name": "tidbCluster.timezone", "type": "string"}
+  # tidbCluster.timezone -- Timezone for the cluster components.
+  timezone: UTC
+  # @schema {"name": "tidbCluster.pd", "type": "object"}
+  pd:
+    # @schema {"name": "tidbCluster.pd.baseImage", "type": "string"}
+    # tidbCluster.pd.baseImage -- Docker image for Placement Driver (PD).
+    baseImage: pingcap/pd
+    # @schema {"name": "tidbCluster.pd.replicas", "type": "integer"}
+    # tidbCluster.pd.replicas -- Number of PD replicas.
+    replicas: 3
+    # @schema {"name": "tidbCluster.pd.requests", "type": "object"}
+    requests:
+      # @schema {"name": "tidbCluster.pd.requests.storage", "type": "string"}
+      # tidbCluster.pd.requests.storage -- PD requested storage size.
+      storage: "10Gi"
+      # @schema {"name": "tidbCluster.pd.requests.cpu", "type": "string"}
+      # tidbCluster.pd.requests.cpu -- PD requested CPU.
+      cpu: "100m"
+      # @schema {"name": "tidbCluster.pd.requests.memory", "type": "string"}
+      # tidbCluster.pd.requests.memory -- PD requested memory.
+      memory: "1Gi"
+    # @schema {"name": "tidbCluster.pd.limits", "type": "object"}
+    limits:
+      # @schema {"name": "tidbCluster.pd.limits.cpu", "type": "string"}
+      # tidbCluster.pd.limits.cpu -- PD CPU limit.
+      cpu: "1"
+      # @schema {"name": "tidbCluster.pd.limits.memory", "type": "string"}
+      # tidbCluster.pd.limits.memory -- PD memory limit.
+      memory: "2Gi"
+    # @schema {"name": "tidbCluster.pd.config", "type": "object"}
+    # tidbCluster.pd.config -- PD configuration.
+    config: {}
+  # @schema {"name": "tidbCluster.tikv", "type": "object"}
+  tikv:
+    # @schema {"name": "tidbCluster.tikv.baseImage", "type": "string"}
+    # tidbCluster.tikv.baseImage -- Docker image for TiKV storage nodes.
+    baseImage: pingcap/tikv
+    # @schema {"name": "tidbCluster.tikv.replicas", "type": "integer"}
+    # tidbCluster.tikv.replicas -- Number of TiKV replicas.
+    replicas: 3
+    # @schema {"name": "tidbCluster.tikv.requests", "type": "object"}
+    requests:
+      # @schema {"name": "tidbCluster.tikv.requests.storage", "type": "string"}
+      # tidbCluster.tikv.requests.storage -- TiKV requested storage size.
+      storage: "100Gi"
+      # @schema {"name": "tidbCluster.tikv.requests.cpu", "type": "string"}
+      # tidbCluster.tikv.requests.cpu -- TiKV requested CPU.
+      cpu: "200m"
+      # @schema {"name": "tidbCluster.tikv.requests.memory", "type": "string"}
+      # tidbCluster.tikv.requests.memory -- TiKV requested memory.
+      memory: "4Gi"
+    # @schema {"name": "tidbCluster.tikv.limits", "type": "object"}
+    limits:
+      # @schema {"name": "tidbCluster.tikv.limits.cpu", "type": "string"}
+      # tidbCluster.tikv.limits.cpu -- TiKV CPU limit.
+      cpu: "2"
+      # @schema {"name": "tidbCluster.tikv.limits.memory", "type": "string"}
+      # tidbCluster.tikv.limits.memory -- TiKV memory limit.
+      memory: "8Gi"
+    # @schema {"name": "tidbCluster.tikv.config", "type": "object"}
+    # tidbCluster.tikv.config -- TiKV configuration.
+    config: {}
+  # @schema {"name": "tidbCluster.tidb", "type": "object"}
+  tidb:
+    # @schema {"name": "tidbCluster.tidb.baseImage", "type": "string"}
+    # tidbCluster.tidb.baseImage -- Docker image for TiDB SQL layer nodes.
+    baseImage: pingcap/tidb
+    # @schema {"name": "tidbCluster.tidb.replicas", "type": "integer"}
+    # tidbCluster.tidb.replicas -- Number of TiDB SQL nodes.
+    replicas: 0
+    # @schema {"name": "tidbCluster.tidb.requests", "type": "object"}
+    requests:
+      # @schema {"name": "tidbCluster.tidb.requests.cpu", "type": "string"}
+      # tidbCluster.tidb.requests.cpu -- TiDB requested CPU.
+      cpu: "200m"
+      # @schema {"name": "tidbCluster.tidb.requests.memory", "type": "string"}
+      # tidbCluster.tidb.requests.memory -- TiDB requested memory.
+      memory: "2Gi"
+    # @schema {"name": "tidbCluster.tidb.limits", "type": "object"}
+    limits:
+      # @schema {"name": "tidbCluster.tidb.limits.cpu", "type": "string"}
+      # tidbCluster.tidb.limits.cpu -- TiDB CPU limit.
+      cpu: "2"
+      # @schema {"name": "tidbCluster.tidb.limits.memory", "type": "string"}
+      # tidbCluster.tidb.limits.memory -- TiDB memory limit.
+      memory: "4Gi"
+  # @schema {"name": "tidbCluster.discovery", "type": "object"}
+  discovery:
+    # @schema {"name": "tidbCluster.discovery.baseImage", "type": "string"}
+    # tidbCluster.discovery.baseImage -- Docker image for tidb-discovery.
+    baseImage: pingcap/tidb-operator
+    # @schema {"name": "tidbCluster.discovery.version", "type": "string"}
+    # tidbCluster.discovery.version -- Version tag for tidb-discovery.
+    version: "v1.6.3"
+    # @schema {"name": "tidbCluster.discovery.replicas", "type": "integer"}
+    # tidbCluster.discovery.replicas -- Number of discovery replicas.
+    replicas: 1
+    # @schema {"name": "tidbCluster.discovery.requests", "type": "object"}
+    requests:
+      # @schema {"name": "tidbCluster.discovery.requests.cpu", "type": "string"}
+      # tidbCluster.discovery.requests.cpu -- Discovery requested CPU.
+      cpu: "50m"
+      # @schema {"name": "tidbCluster.discovery.requests.memory", "type": "string"}
+      # tidbCluster.discovery.requests.memory -- Discovery requested memory.
+      memory: "100Mi"
+    # @schema {"name": "tidbCluster.discovery.limits", "type": "object"}
+    limits:
+      # @schema {"name": "tidbCluster.discovery.limits.cpu", "type": "string"}
+      # tidbCluster.discovery.limits.cpu -- Discovery CPU limit.
+      cpu: "100m"
+      # @schema {"name": "tidbCluster.discovery.limits.memory", "type": "string"}
+      # tidbCluster.discovery.limits.memory -- Discovery memory limit.
+      memory: "200Mi"

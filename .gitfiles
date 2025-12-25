@@ -414,6 +414,7 @@ charts/vald/.helmignore
 charts/vald/Chart.yaml
 charts/vald/README.md
 charts/vald/README.md.gotmpl
+charts/vald/crds/tidbcluster.yaml
 charts/vald/crds/valdmirrortarget.yaml
 charts/vald/schemas/mirror-target-values.yaml
 charts/vald/templates/NOTES.txt
@@ -501,6 +502,19 @@ charts/vald/templates/index/operator/configmap.yaml
 charts/vald/templates/index/operator/deployment.yaml
 charts/vald/templates/index/operator/priorityclass.yaml
 charts/vald/templates/index/operator/serviceaccount.yaml
+charts/vald/templates/kvs/tikv/pd.yaml
+charts/vald/templates/kvs/tikv/pd_configmap.yaml
+charts/vald/templates/kvs/tikv/tidbcluster.yaml
+charts/vald/templates/kvs/tikv/tikv.yaml
+charts/vald/templates/kvs/tikv/tikv_configmap.yaml
+charts/vald/templates/kvs/tikv/tikv_discovery.yaml
+charts/vald/templates/kvs/tikv/tikv_discovery_role.yaml
+charts/vald/templates/kvs/tikv/tikv_discovery_rolebinding.yaml
+charts/vald/templates/kvs/tikv/tikv_discovery_sa.yaml
+charts/vald/templates/kvs/tikv/tikv_discovery_svc.yaml
+charts/vald/templates/kvs/tikv/tikv_pd_peer_svc.yaml
+charts/vald/templates/kvs/tikv/tikv_pd_svc.yaml
+charts/vald/templates/kvs/tikv/tikv_tikv_peer_svc.yaml
 charts/vald/templates/manager/index/configmap.yaml
 charts/vald/templates/manager/index/daemonset.yaml
 charts/vald/templates/manager/index/deployment.yaml
