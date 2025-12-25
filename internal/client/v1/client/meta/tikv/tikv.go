@@ -64,32 +64,45 @@ type rangeEntry struct {
 	start []byte
 	end   []byte // nil or empty means +Inf
 	addr  string
-	ver   uint64
+	ctx   *tikv.Context
 }
 
-func (c *client) lookupAddr(key []byte) string {
+func (c *client) lookupRange(key []byte) *rangeEntry {
 	idx := sort.Search(len(c.ranges), func(i int) bool {
 		return bytes.Compare(c.ranges[i].start, key) > 0
 	}) - 1
 	if idx >= 0 {
 		re := c.ranges[idx]
 		if len(re.end) == 0 || bytes.Compare(key, re.end) < 0 {
-			return re.addr
+			return re
 		}
 	}
-	return ""
+	return nil
 }
 
-func (c *client) lookupAddrs(ctx context.Context, keys [][]byte) (map[string][][]byte, error) {
+type lookupResult struct {
+	keys [][]byte
+	re *rangeEntry
+}
+
+func (c *client) lookupAddrs(ctx context.Context, keys [][]byte) (map[string]*lookupResult, error) {
 	unknownKeys := make([][]byte, 0, len(keys))
-	res := make(map[string][][]byte)
+	res := make(map[string]*lookupResult)
 	c.rmu.RLock()
 	for _, key := range keys {
-		addr := c.lookupAddr(key)
-		if addr == "" {
+		re := c.lookupRange(key)
+		if re == nil {
 			unknownKeys = append(unknownKeys, key)
+			continue
 		}
-		res[addr] = append(res[addr], key)
+		if res[re.addr] == nil {
+			res[re.addr] = &lookupResult{
+				keys: [][]byte{key},
+				re: re,
+			}
+			continue
+		}
+		res[re.addr].keys = append(res[re.addr].keys, key)
 	}
 	c.rmu.RUnlock()
 	err := c.refresh(ctx, unknownKeys)
@@ -97,11 +110,18 @@ func (c *client) lookupAddrs(ctx context.Context, keys [][]byte) (map[string][][
 		return nil, err
 	}
 	for _, key := range unknownKeys {
-		addr := c.lookupAddr(key)
-		if addr == "" {
+		re := c.lookupRange(key)
+		if re.addr == "" {
 			return nil, errors.Errorf("address not found for key: %s", hex.EncodeToString(key))
 		}
-		res[addr] = append(res[addr], key)
+		if res[re.addr] == nil {
+			res[re.addr] = &lookupResult{
+				keys: [][]byte{key},
+				re: re,
+			}
+			continue
+		}
+		res[re.addr].keys = append(res[re.addr].keys, key)
 	}
 	return res, nil
 }
@@ -171,7 +191,17 @@ func (c *client) refresh(ctx context.Context, keys [][]byte) error {
 			start: start,
 			end:   end,
 			addr:  storeIdToAddr[r.Leader.StoreId],
-			ver:   r.Region.RegionEpoch.Version,
+			ctx: &tikv.Context{
+				RegionId: r.Region.Id,
+				RegionEpoch: &tikv.RegionEpoch{
+					Version: r.Region.RegionEpoch.Version,
+					ConfVer: r.Region.RegionEpoch.ConfVer,
+				},
+				Peer:     &tikv.Peer{
+					Id:		   r.Leader.Id,
+					StoreId: r.Leader.StoreId,
+				},
+			},
 		}
 		c.regions[r.Region.Id] = re
 		c.ranges = mergeByNewerVersion(c.ranges, re)
@@ -189,9 +219,9 @@ func mergeByNewerVersion(old []*rangeEntry, newE *rangeEntry) []*rangeEntry {
 			continue
 		}
 		switch {
-		case newE.ver > e.ver:
+		case newE.ctx.RegionEpoch.Version > e.ctx.RegionEpoch.Version:
 			continue
-		case newE.ver == e.ver:
+		case newE.ctx.RegionEpoch.Version == e.ctx.RegionEpoch.Version:
 			// Only addr is updated for the same version
 			e.addr = newE.addr
 			out = append(out, e)
@@ -269,24 +299,25 @@ func (c *client) GRPCClientPD() grpc.Client {
 	return c.pd.c
 }
 
-func (c *client) Get(ctx context.Context, key []byte) (val []byte, err error) {
+func (c *client) Get(ctx context.Context, key []byte) ([]byte, error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/meta/Get"), apiName+"/Get")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-
 	addrs, err := c.lookupAddrs(ctx, [][]byte{key})
 	if err != nil {
 		return nil, err
 	}
 	for range c.regionErrorRetryLimit {
-		for addr := range addrs {
+		for addr, lookup := range addrs {
 			c.c.Connect(ctx, addr)
 			res, err := grpc.Do(ctx, addr, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawGetResponse, error) {
 				return tikv.NewTikvClient(conn).RawGet(ctx, &tikv.RawGetRequest{
+					Context: lookup.re.ctx,
 					Key: key,
+					Cf:  "default",
 				}, copts...)
 			})
 			if err != nil {
@@ -300,9 +331,12 @@ func (c *client) Get(ctx context.Context, key []byte) (val []byte, err error) {
 			}
 			if res.RegionError != nil {
 				log.Errorf("region error: %+v", res.RegionError)
-				continue
+				if err := c.refresh(ctx, [][]byte{key}); err != nil {
+					return nil, err
+				}
+				break
 			}
-			return val, nil
+			return res.Value, nil
 		}
 	}
 	return nil, errors.Errorf("exceeded region error retry limit for key: %s", hex.EncodeToString(key))
@@ -322,13 +356,17 @@ func (c *client) BatchGet(ctx context.Context, keys [][]byte) ([][]byte, error) 
 	g, ctx := errgroup.WithContext(ctx)
 	var mu sync.Mutex
 	kv := make(map[string][]byte, len(keys))
-	for addr, keys := range addrs {
+	for addr, lookup := range addrs {
+		addr := addr
+    lookup := lookup
 		g.Go(func() error {
 			for range c.regionErrorRetryLimit {
 				c.c.Connect(ctx, addr)
 				res, err := grpc.Do(ctx, addr, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawBatchGetResponse, error) {
 					return tikv.NewTikvClient(conn).RawBatchGet(ctx, &tikv.RawBatchGetRequest{
-						Keys: keys,
+						Context: lookup.re.ctx,
+						Keys: lookup.keys,
+						Cf:  "default",
 					}, copts...)
 				})
 				if err != nil {
@@ -336,7 +374,10 @@ func (c *client) BatchGet(ctx context.Context, keys [][]byte) ([][]byte, error) 
 				}
 				if res.RegionError != nil {
 					log.Errorf("region error: %+v", res.RegionError)
-					continue
+					if err := c.refresh(ctx, keys); err != nil {
+						return err
+					}
+					break
 				}
 				for _, pair := range res.Pairs {
 					if pair.Error != nil {
@@ -372,15 +413,15 @@ func (c *client) Put(ctx context.Context, key, val []byte) (err error) {
 	if err != nil {
 		return err
 	}
-	for addr := range addrs {
+	for addr, lookup := range addrs {
 		for range c.regionErrorRetryLimit {
 			c.c.Connect(ctx, addr)
-			res, err := grpc.Do(ctx, addr, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawBatchPutResponse, error) {
-				return tikv.NewTikvClient(conn).RawBatchPut(ctx, &tikv.RawBatchPutRequest{
-					Pairs: []*tikv.KvPair{{
-						Key:   key,
-						Value: val,
-					}},
+			res, err := grpc.Do(ctx, addr, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawPutResponse, error) {
+				return tikv.NewTikvClient(conn).RawPut(ctx, &tikv.RawPutRequest{
+					Context: lookup.re.ctx,
+					Key:   key,
+					Value: val,
+					Cf:    "default",
 				}, copts...)
 			})
 			if err != nil {
@@ -391,7 +432,10 @@ func (c *client) Put(ctx context.Context, key, val []byte) (err error) {
 			}
 			if res.RegionError != nil {
 				log.Errorf("region error: %+v", res.RegionError)
-				continue
+				if err := c.refresh(ctx, [][]byte{key}); err != nil {
+					return err
+				}
+				break
 			}
 			return nil
 		}
@@ -416,20 +460,24 @@ func (c *client) BatchPut(ctx context.Context, keys, vals [][]byte) (err error) 
 		return err
 	}
 	g, ctx := errgroup.WithContext(ctx)
-	for addr, keys := range addrs {
+	for addr, lookup := range addrs {
+		addr := addr
+    lookup := lookup
 		g.Go(func() error {
-			pairs := make([]*tikv.KvPair, len(keys))
-			for i := range keys {
+			pairs := make([]*tikv.KvPair, len(lookup.keys))
+			for i, k := range lookup.keys {
 				pairs[i] = &tikv.KvPair{
-					Key:   keys[i],
-					Value: kv[hex.EncodeToString(keys[i])],
+					Key:   k,
+					Value: kv[hex.EncodeToString(k)],
 				}
 			}
 			for range c.regionErrorRetryLimit {
 				c.c.Connect(ctx, addr)
 				res, err := grpc.Do(ctx, addr, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawBatchPutResponse, error) {
 					return tikv.NewTikvClient(conn).RawBatchPut(ctx, &tikv.RawBatchPutRequest{
+						Context: lookup.re.ctx,
 						Pairs: pairs,
+						Cf:    "default",
 					}, copts...)
 				})
 				if err != nil {
@@ -440,7 +488,10 @@ func (c *client) BatchPut(ctx context.Context, keys, vals [][]byte) (err error) 
 				}
 				if res.RegionError != nil {
 					log.Errorf("region error: %+v", res.RegionError)
-					continue
+					if err := c.refresh(ctx, keys); err != nil {
+						return err
+					}
+					break
 				}
 				return nil
 			}
@@ -464,12 +515,14 @@ func (c *client) Delete(ctx context.Context, key []byte) (err error) {
 	if err != nil {
 		return err
 	}
-	for addr := range addrs {
+	for addr, lookup := range addrs {
 		for range c.regionErrorRetryLimit {
 			c.c.Connect(ctx, addr)
-			res, err := grpc.Do(ctx, addr, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawBatchDeleteResponse, error) {
-				return tikv.NewTikvClient(conn).RawBatchDelete(ctx, &tikv.RawBatchDeleteRequest{
-					Keys: [][]byte{key},
+			res, err := grpc.Do(ctx, addr, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawDeleteResponse, error) {
+				return tikv.NewTikvClient(conn).RawDelete(ctx, &tikv.RawDeleteRequest{
+					Context: lookup.re.ctx,
+					Key: key,
+					Cf:  "default",
 				}, copts...)
 			})
 			if err != nil {
@@ -480,7 +533,10 @@ func (c *client) Delete(ctx context.Context, key []byte) (err error) {
 			}
 			if res.RegionError != nil {
 				log.Errorf("region error: %+v", res.RegionError)
-				continue
+				if err := c.refresh(ctx, [][]byte{key}); err != nil {
+					return err
+				}
+				break
 			}
 			return nil
 		}
@@ -501,13 +557,17 @@ func (c *client) BatchDelete(ctx context.Context, keys [][]byte) (err error) {
 		return err
 	}
 	g, ctx := errgroup.WithContext(ctx)
-	for addr, keys := range addrs {
+	for addr, lookup := range addrs {
+		addr := addr
+    lookup := lookup
 		g.Go(func() error {
 			for range c.regionErrorRetryLimit {
 				c.c.Connect(ctx, addr)
 				res, err := grpc.Do(ctx, addr, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawBatchDeleteResponse, error) {
 					return tikv.NewTikvClient(conn).RawBatchDelete(ctx, &tikv.RawBatchDeleteRequest{
-						Keys: keys,
+						Context: lookup.re.ctx,
+						Keys: lookup.keys,
+						Cf:  "default",
 					}, copts...)
 				})
 				if err != nil {
@@ -518,6 +578,7 @@ func (c *client) BatchDelete(ctx context.Context, keys [][]byte) (err error) {
 				}
 				if res.RegionError != nil {
 					log.Errorf("region error: %+v", res.RegionError)
+					c.refresh(ctx, keys)
 					continue
 				}
 				return nil

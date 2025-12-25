@@ -20,12 +20,15 @@ package tikv
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/binary"
 	"os"
 	"strings"
+	"slices"
 	"testing"
 
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -33,6 +36,8 @@ const (
 	// separated list of TiKV PD addresses (e.g. "127.0.0.1:2379").
 	envPDAddrs = "TIKV_PD_ADDRS"
 )
+
+var cli Client
 
 func getAddrs() []string {
 	pdAddrs := strings.Split(os.Getenv(envPDAddrs), ",")
@@ -47,7 +52,8 @@ func createClient(b *testing.B) Client {
 	if len(pdAddrs) == 0 {
 		b.Errorf("environment variable %s not set; skipping TiKV benchmarks", envPDAddrs)
 	}
-	cli, err := New(
+	var err error
+	cli, err = New(
 		WithClient(
 			grpc.New(
 				"TiKV Client",
@@ -65,24 +71,31 @@ func createClient(b *testing.B) Client {
 	if err != nil {
 		b.Fatalf("failed to create tikv client: %v", err)
 	}
-	cli.Start(context.Background())
-	cli.StartPD(context.Background())
+	cli.Start(b.Context())
+	cli.StartPD(b.Context())
 
-	// basic connectivity probe (RawGet for non-existing key)
+	// basic connectivity probe (Get for non-existing key)
 	_, err = cli.Get(context.Background(), []byte("vald_bench_probe"))
 	if err != nil {
-		// Depending on cluster state RawGet may return region not found etc.
+		// Depending on cluster state Get may return region not found etc.
 		// We treat only network/connection errors as fatal.
 		b.Logf("tiKV connectivity probe returned error: %v (continuing)", err)
 	}
 	return cli
 }
 
-func BenchmarkRawPut(b *testing.B) {
-	cli := createClient(b)
-	defer cli.Stop(context.Background())
+func generateKey(length int) ([]byte, error) {
+	key := make([]byte, length)
+	_, err := rand.Read(key)
+	return key, err
+}
 
-	ctx := context.Background()
+func Benchmark(b *testing.B) {
+	cli := createClient(b)
+	defer cli.Stop(b.Context())
+	defer cli.StopPD(b.Context())
+
+	ctx := b.Context()
 	val := []byte("vald_bench_val")
 
 	b.ReportAllocs()
@@ -91,28 +104,84 @@ func BenchmarkRawPut(b *testing.B) {
 		var key [8]byte
 		binary.LittleEndian.PutUint64(key[:], uint64(i))
 		if err := cli.Put(ctx, key[:], val); err != nil {
-			b.Fatalf("RawPut error: %v", err)
+			b.Fatalf("Put error: %v", err)
+		}
+	}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := range b.N {
+		var key [8]byte
+		binary.LittleEndian.PutUint64(key[:], uint64(i))
+		res, err := cli.Get(ctx, key[:])
+		if err != nil {
+			b.Fatalf("Get error: %v", err)
+		}
+		if !slices.Equal(res, val) {
+			b.Errorf("i=%d: expected value %v, but got %v", i, val, res)
+		}
+	}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := range b.N {
+		var key [8]byte
+		binary.LittleEndian.PutUint64(key[:], uint64(i))
+		if err := cli.Delete(ctx, key[:]); err != nil {
+			b.Fatalf("i=%d: Delete error: %v", i, err)
+		}
+	}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := range b.N {
+		var key [8]byte
+		binary.LittleEndian.PutUint64(key[:], uint64(i))
+		_, err := cli.Get(ctx, key[:])
+		if !errors.Is(err, errNotFound) {
+			b.Fatalf("i=%d: expected not found error, but got: %v", i, err)
 		}
 	}
 }
 
-func BenchmarkRawGet(b *testing.B) {
+func BenchmarkBatch(b *testing.B) {
 	cli := createClient(b)
-	defer cli.Stop(context.Background())
+	defer cli.Stop(b.Context())
+	defer cli.StopPD(b.Context())
 
-	ctx := context.Background()
-
-	// insert a single key to fetch repeatedly
-	const baseKey = "vald_bench_get_key"
-	if err := cli.Put(ctx, []byte(baseKey), []byte("v")); err != nil {
-		b.Fatalf("setup RawPut failed: %v", err)
-	}
+	ctx := b.Context()
+	length := 300
 
 	b.ReportAllocs()
 	b.ResetTimer()
+	keys := make([][]byte, length)
+	for i := range length {
+		var key [8]byte
+		binary.LittleEndian.PutUint64(key[:], uint64(i))
+		keys[i] = key[:]
+	}
+	val := []byte("vald_bench_val")
+	vals := slices.Repeat([][]byte{val}, length)
 	for b.Loop() {
-		if _, err := cli.Get(ctx, []byte(baseKey)); err != nil {
-			b.Fatalf("RawGet error: %v", err)
+		if err := cli.BatchPut(ctx, keys, vals); err != nil {
+			b.Fatalf("Put error: %v", err)
+		}
+	}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for b.Loop() {
+		res, err := cli.BatchGet(ctx, keys)
+		if err != nil {
+			b.Fatalf("Get error: %v", err)
+		}
+		for i := range res {
+			if !slices.Equal(res[i], val) {
+				b.Fatalf("expected value %v, but got %v", val, res[i])
+			}
+		}
+	}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for b.Loop() {
+		if err := cli.BatchDelete(ctx, keys); err != nil {
+			b.Fatalf("Delete error: %v", err)
 		}
 	}
 }
