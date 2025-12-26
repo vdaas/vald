@@ -73,7 +73,11 @@ func (s *server) Insert(
 		return nil, err
 	}
 
-	err = s.ngt.InsertWithTime(vec.GetId(), vec.GetVector(), req.GetConfig().GetTimestamp())
+	ts := vec.GetTimestamp()
+	if ts == 0 {
+		ts = req.GetConfig().GetTimestamp()
+	}
+	err = s.ngt.InsertWithTime(vec.GetId(), vec.GetVector(), ts)
 	if err != nil {
 		var attrs []attribute.KeyValue
 		if errors.Is(err, errors.ErrFlushingIsInProgress) {
@@ -205,8 +209,15 @@ func (s *server) MultiInsert(
 	}()
 	uuids := make([]string, 0, len(reqs.GetRequests()))
 	vmap := make(map[string][]float32, len(reqs.GetRequests()))
-	for _, req := range reqs.GetRequests() {
+	var ts int64
+	for i, req := range reqs.GetRequests() {
 		vec := req.GetVector()
+		if i == 0 {
+			ts = vec.GetTimestamp()
+			if ts == 0 {
+				ts = req.GetConfig().GetTimestamp()
+			}
+		}
 		if len(vec.GetVector()) != s.ngt.GetDimensionSize() {
 			err = errors.ErrIncompatibleDimensionSize(len(vec.GetVector()), int(s.ngt.GetDimensionSize()))
 			err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
@@ -238,7 +249,11 @@ func (s *server) MultiInsert(
 		vmap[vec.GetId()] = vec.GetVector()
 		uuids = append(uuids, vec.GetId())
 	}
-	err = s.ngt.InsertMultiple(vmap)
+	if ts != 0 {
+		err = s.ngt.InsertMultipleWithTime(vmap, ts)
+	} else {
+		err = s.ngt.InsertMultiple(vmap)
+	}
 	if err != nil {
 		var attrs []attribute.KeyValue
 		if errors.Is(err, errors.ErrFlushingIsInProgress) {
