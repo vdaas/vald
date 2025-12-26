@@ -645,7 +645,7 @@ format/go/diff: \
 .PHONY: format/rust
 ## format rust codes
 format/rust: \
-	rust-fmt/install \
+	rustfmt/install \
 	files
 	@echo "Formatting Rust files..."
 	@cd $(ROOTDIR)/rust && $(CARGO_HOME)/bin/cargo fmt
