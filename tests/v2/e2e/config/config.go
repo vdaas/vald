@@ -53,15 +53,16 @@ import (
 type Data struct {
 	config.GlobalConfig `json:",inline" yaml:",inline"`
 	TimeConfig          `json:",inline" yaml:",inline"`
-	Target              *config.GRPCClient `json:"target,omitempty"          yaml:"target,omitempty"`
-	Strategies          []*Strategy        `json:"strategies,omitempty"      yaml:"strategies,omitempty"`
-	Dataset             *Dataset           `json:"dataset,omitempty"         yaml:"dataset,omitempty"`
-	Kubernetes          *Kubernetes        `json:"kubernetes,omitempty"      yaml:"kubernetes,omitempty"`
-	Metrics             *Metrics           `json:"metrics,omitempty"         yaml:"metrics,omitempty"`
-	Metadata            map[string]string  `json:"metadata,omitempty"        yaml:"metadata,omitempty"`
-	MetaString          string             `json:"metadata_string,omitempty" yaml:"metadata_string,omitempty"`
-	FilePath            string             `json:"-"                         yaml:"-"`
-	Collector           metrics.Collector  `json:"-"                         yaml:"-"`
+	Target              *config.GRPCClient    `json:"target,omitempty"          yaml:"target,omitempty"`
+	Observability       *config.Observability `json:"observability,omitempty"   yaml:"observability,omitempty"`
+	Strategies          []*Strategy           `json:"strategies,omitempty"      yaml:"strategies,omitempty"`
+	Dataset             *Dataset              `json:"dataset,omitempty"         yaml:"dataset,omitempty"`
+	Kubernetes          *Kubernetes           `json:"kubernetes,omitempty"      yaml:"kubernetes,omitempty"`
+	Metrics             *Metrics              `json:"metrics,omitempty"         yaml:"metrics,omitempty"`
+	Metadata            map[string]string     `json:"metadata,omitempty"        yaml:"metadata,omitempty"`
+	MetaString          string                `json:"metadata_string,omitempty" yaml:"metadata_string,omitempty"`
+	FilePath            string                `json:"-"                         yaml:"-"`
+	Collector           metrics.Collector     `json:"-"                         yaml:"-"`
 }
 
 // Metrics represents the configuration for the metrics collector.
@@ -262,6 +263,10 @@ func (d *Data) Bind() (bound *Data, err error) {
 	// Bind gRPC Target configuration if provided.
 	if d.Target != nil {
 		d.Target.Bind()
+	}
+	// Bind Observability configuration if provided.
+	if d.Observability != nil {
+		d.Observability.Bind()
 	}
 	// Bind Metrics.
 	if d.Metrics != nil {

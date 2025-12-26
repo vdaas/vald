@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/tests/v2/e2e/config"
 	k8s "github.com/vdaas/vald/tests/v2/e2e/kubernetes"
@@ -124,6 +125,20 @@ func TestE2EStrategy(t *testing.T) {
 	}()
 	t.Logf("connected addrs: %v", r.client.GRPCClient().ConnectedAddrs(ctx))
 	t.Run("Run E2E V2 Scenarios", func(tt *testing.T) {
+		if cfg.Observability != nil && cfg.Observability.Enabled {
+			obs, err := observability.NewWithConfig(
+				cfg.Observability,
+				metrics.NewOTELMetrics(cfg.Collector),
+			)
+			if err != nil {
+				tt.Fatalf("failed to create observability: %v", err)
+			}
+			if err := obs.PreStart(ctx); err != nil {
+				tt.Fatalf("failed to pre-start observability: %v", err)
+			}
+			defer obs.Stop(ctx)
+		}
+
 		if err := executeWithTimings(tt, ctx, cfg, cfg.FilePath, "e2e", func(ttt *testing.T, ctx context.Context) error {
 			ttt.Helper()
 			for i, st := range cfg.Strategies {
