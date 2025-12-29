@@ -73,6 +73,8 @@ RUN --mount=type=bind,target=.,rw \
     libopenblas-dev \
     gfortran \
     pkg-config \
+    protobuf-compiler \
+    libprotobuf-dev \
     && ldconfig \
     && echo "${LANG} UTF-8" > /etc/locale.gen \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \

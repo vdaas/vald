@@ -32,7 +32,7 @@ func TestWorkflowPermissionsAndSecretsGenerated(t *testing.T) {
 
 	main()
 
-	wfPath := filepath.Join(td, ".github", "workflows", "dockers-ci-container-image.yaml")
+	wfPath := filepath.Join(td, ".github", "workflows", "dockers-dev-container-image.yaml")
 	b, err := os.ReadFile(wfPath)
 	if err != nil {
 		t.Fatalf("failed to read generated workflow %s: %v", wfPath, err)

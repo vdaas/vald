@@ -37,7 +37,7 @@ runs:
       run: |
         if command -v helm &> /dev/null; then
           echo "helm_installed=true" >> $GITHUB_OUTPUT
-          echo "installed_version=$(helm version --short --client | awk '{print $2}' | sed 's/^v//')" >> $GITHUB_OUTPUT
+          echo "installed_version=$(helm version --short | awk '{print $2}' | sed 's/^v//')" >> $GITHUB_OUTPUT
         else
           echo "helm_installed=false" >> $GITHUB_OUTPUT
         fi
@@ -49,4 +49,4 @@ runs:
     - name: Verify Helm version
       shell: bash
       run: |
-        helm version --short --client
+        helm version --short
