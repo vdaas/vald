@@ -83,6 +83,8 @@ RUN --mount=type=bind,target=.,rw \
     libopenblas-dev \
     gfortran \
     pkg-config \
+    protobuf-compiler \
+    libprotobuf-dev \
     file \
     gawk \
     git-lfs \

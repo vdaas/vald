@@ -483,6 +483,8 @@ var (
 	}
 	rustBuildDeps = []string{
 		"pkg-config",
+		"protobuf-compiler",
+		"libprotobuf-dev",
 	}
 	devContainerDeps = []string{
 		"file",
