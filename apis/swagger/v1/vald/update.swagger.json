@@ -9,12 +9,8 @@
       "name": "Update"
     }
   ],
-  "consumes": [
-    "application/json"
-  ],
-  "produces": [
-    "application/json"
-  ],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
   "paths": {
     "/update": {
       "post": {
@@ -46,9 +42,7 @@
             }
           }
         ],
-        "tags": [
-          "Update"
-        ]
+        "tags": ["Update"]
       }
     },
     "/update/multiple": {
@@ -81,9 +75,7 @@
             }
           }
         ],
-        "tags": [
-          "Update"
-        ]
+        "tags": ["Update"]
       }
     },
     "/update/timestamp": {
@@ -115,9 +107,7 @@
             }
           }
         ],
-        "tags": [
-          "Update"
-        ]
+        "tags": ["Update"]
       }
     }
   },
