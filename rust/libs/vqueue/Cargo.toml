@@ -25,7 +25,7 @@ futures = "0.3"
 async-trait = "0.1"
 sled = "0.34"
 serde = { version = "1.0", features = ["derive"] }
-bincode = "2.0.1"
+bincode = "2.0"
 thiserror = "2.0"
 moka = { version = "0.12", features = ["future"] }
 

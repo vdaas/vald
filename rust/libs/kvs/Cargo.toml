@@ -25,6 +25,6 @@ sled = "0.34"
 parking_lot = "0.12"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "2.0"
-tokio = { version = "1.46", features = ["full"] }
+tokio = { version = "1.48", features = ["full"] }
 tokio-stream = "0.1"
 tracing = "0.1"

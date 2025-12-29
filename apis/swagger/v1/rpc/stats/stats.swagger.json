@@ -9,8 +9,12 @@
       "name": "Stats"
     }
   ],
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/resource/stats": {
       "get": {
@@ -30,7 +34,9 @@
             }
           }
         },
-        "tags": ["Stats"]
+        "tags": [
+          "Stats"
+        ]
       }
     }
   },
