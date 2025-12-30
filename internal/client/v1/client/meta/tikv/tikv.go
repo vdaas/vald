@@ -20,6 +20,7 @@ import (
 	"slices"
 	"sort"
 	"sync"
+	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/tikv"
 	"github.com/vdaas/vald/internal/client/v1/client/meta"
@@ -32,6 +33,7 @@ import (
 
 const (
 	apiName = "vald/internal/client/meta/v1/client/meta/tikv"
+	waitInterval = time.Second * 2
 )
 
 type Client interface {
@@ -57,6 +59,7 @@ type client struct {
 	rmu     sync.RWMutex
 	ranges  []*rangeEntry
 	regions map[uint64]*rangeEntry
+	storeIdToAddr map[uint64]string
 }
 
 // rangeEntry maps [start,end) to addr.
@@ -143,7 +146,7 @@ func (c *client) refresh(ctx context.Context, keys [][]byte) error {
 		}
 		c.clusterId = res.Header.ClusterId
 	}
-	storeIdToAddr := make(map[uint64]string)
+	c.storeIdToAddr = make(map[uint64]string)
 	var regions []*tikv.Region
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error {
@@ -155,7 +158,7 @@ func (c *client) refresh(ctx context.Context, keys [][]byte) error {
 			return errors.Errorf("PD GetAllStores failed, err: %w", err)
 		}
 		for _, store := range res.Stores {
-			storeIdToAddr[store.Id] = store.Address
+			c.storeIdToAddr[store.Id] = store.Address
 		}
 		return nil
 	})
@@ -190,7 +193,7 @@ func (c *client) refresh(ctx context.Context, keys [][]byte) error {
 		if r == nil || r.Region == nil || r.Leader == nil {
 			continue
 		}
-		if _, ok := storeIdToAddr[r.Leader.StoreId]; !ok {
+		if _, ok := c.storeIdToAddr[r.Leader.StoreId]; !ok {
 			return errors.Errorf("store id %d not found", r.Leader.StoreId)
 		}
 		start := slices.Clone(r.Region.StartKey)
@@ -198,7 +201,7 @@ func (c *client) refresh(ctx context.Context, keys [][]byte) error {
 		re := &rangeEntry{
 			start: start,
 			end:   end,
-			addr:  storeIdToAddr[r.Leader.StoreId],
+			addr:  c.storeIdToAddr[r.Leader.StoreId],
 			ctx: &tikv.Context{
 				RegionId: r.Region.Id,
 				RegionEpoch: &tikv.RegionEpoch{
@@ -327,6 +330,62 @@ func (c *client) GRPCClientPD() grpc.Client {
 	return c.pd.c
 }
 
+func (c *client) handleRegionError(ctx context.Context, regionErr *tikv.Error, keys [][]byte, refresh bool) error {
+	log.Errorf("region error: %+v", regionErr)
+	c.rmu.Lock()
+	if err := regionErr.ServerIsBusy; err != nil {
+		c.rmu.Unlock()
+		time.Sleep(waitInterval)
+		return nil
+	}
+	if err := regionErr.NotLeader; regionErr.NotLeader != nil {
+		if err.Leader == nil {
+			// sleep while electing new leader
+			c.rmu.Unlock()
+			time.Sleep(waitInterval)
+			return nil
+		}
+		if _, ok := c.regions[err.RegionId]; ok {
+			c.regions[err.RegionId].addr = c.storeIdToAddr[err.Leader.StoreId]
+			c.regions[err.RegionId].ctx.Peer.Id = err.Leader.Id
+			c.regions[err.RegionId].ctx.Peer.StoreId = err.Leader.StoreId
+			c.rmu.Unlock()
+			return nil
+		}
+	}
+	if err := regionErr.EpochNotMatch; err != nil {
+		for _, r := range err.CurrentRegions {
+			re := &rangeEntry{
+				start: slices.Clone(r.StartKey),
+				end:   slices.Clone(r.EndKey),
+				addr:  c.storeIdToAddr[r.Peers[0].StoreId],
+				ctx: &tikv.Context{
+					RegionId: r.Id,
+					RegionEpoch: &tikv.RegionEpoch{
+						Version: r.RegionEpoch.Version,
+						ConfVer: r.RegionEpoch.ConfVer,
+					},
+					Peer: &tikv.Peer{
+						Id:      r.Peers[0].Id,
+						StoreId: r.Peers[0].StoreId,
+					},
+				},
+			}
+			c.ranges = mergeByNewerVersion(c.ranges, re)
+		}
+		c.rmu.Unlock()
+		return nil
+	}
+	c.rmu.Unlock()
+	if !refresh {
+		return nil
+	}
+	if err := c.refresh(ctx, keys); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (c *client) Get(ctx context.Context, key []byte) ([]byte, error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/meta/Get"), apiName+"/Get")
 	defer func() {
@@ -358,8 +417,7 @@ func (c *client) Get(ctx context.Context, key []byte) ([]byte, error) {
 				return nil, errNotFound
 			}
 			if res.RegionError != nil {
-				log.Errorf("region error: %+v", res.RegionError)
-				if err := c.refresh(ctx, [][]byte{key}); err != nil {
+				if err = c.handleRegionError(ctx, res.RegionError, [][]byte{key}, true); err != nil {
 					return nil, err
 				}
 				// After refresh, retry with updated region info.
@@ -418,7 +476,9 @@ func (c *client) BatchGet(ctx context.Context, keys [][]byte) ([][]byte, error) 
 					return errors.Errorf("BatchGet failed: %w", err)
 				}
 				if res.RegionError != nil {
-					log.Errorf("region error: %+v", res.RegionError)
+					if err = c.handleRegionError(gctx, res.RegionError, keys, false); err != nil {
+						return err
+					}
 					fkMu.Lock()
 					failedKeys = append(failedKeys, keys...)
 					fkMu.Unlock()
@@ -494,8 +554,7 @@ func (c *client) Put(ctx context.Context, key, val []byte) error {
 				return errors.Errorf("Put failed, message: %s", res.Error)
 			}
 			if res.RegionError != nil {
-				log.Errorf("region error: %+v", res.RegionError)
-				if err := c.refresh(ctx, [][]byte{key}); err != nil {
+				if err = c.handleRegionError(ctx, res.RegionError, [][]byte{key}, true); err != nil {
 					return err
 				}
 				// retry with refreshed region info
@@ -563,7 +622,9 @@ func (c *client) BatchPut(ctx context.Context, keys, vals [][]byte) error {
 					return errors.Errorf("BatchPut failed, message: %s", res.Error)
 				}
 				if res.RegionError != nil {
-					log.Errorf("region error: %+v", res.RegionError)
+					if err = c.handleRegionError(gctx, res.RegionError, lookup.keys, false); err != nil {
+						return err
+					}
 					fkMu.Lock()
 					failedKeys = append(failedKeys, lookup.keys...)
 					fkMu.Unlock()
@@ -623,8 +684,7 @@ func (c *client) Delete(ctx context.Context, key []byte) error {
 				return errors.Errorf("Delete failed, message: %s", res.Error)
 			}
 			if res.RegionError != nil {
-				log.Errorf("region error: %+v", res.RegionError)
-				if err := c.refresh(ctx, [][]byte{key}); err != nil {
+				if err = c.handleRegionError(ctx, res.RegionError, [][]byte{key}, true); err != nil {
 					return err
 				}
 				// retry
@@ -678,7 +738,9 @@ func (c *client) BatchDelete(ctx context.Context, keys [][]byte) error {
 					return errors.Errorf("BatchDelete failed, message: %s", res.Error)
 				}
 				if res.RegionError != nil {
-					log.Errorf("region error: %+v", res.RegionError)
+					if err = c.handleRegionError(gctx, res.RegionError, lookup.keys, false); err != nil {
+						return err
+					}
 					fkMu.Lock()
 					failedKeys = append(failedKeys, lookup.keys...)
 					fkMu.Unlock()
