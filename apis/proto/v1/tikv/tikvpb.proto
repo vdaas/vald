@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package tikv;
+package tikvpb;
 
 import "v1/tikv/kvrpcpb.proto";
 
