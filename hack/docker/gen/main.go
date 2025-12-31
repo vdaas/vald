@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -92,6 +92,8 @@ const (
 	maintainerKey         = "MAINTAINER"
 	minimumArgumentLength = 2
 	ubuntuVersion         = "24.04"
+
+	yearKey = "YEAR"
 
 	goWorkdir   = "${GOPATH}/src/github.com"
 	rustWorkdir = "${HOME}/rust/src/github.com"
@@ -658,7 +660,17 @@ func main() {
 	if maintainer == "" {
 		maintainer = defaultMaintainer
 	}
-	year := time.Now().Year()
+	var year int
+	if yearString := os.Getenv(yearKey); yearString == "" {
+		year = time.Now().Year()
+	} else {
+		y, err := time.Parse("2006", yearString)
+		if err != nil {
+			// skipcq: RVV-A0003
+			log.Fatal(err)
+		}
+		year = y.Year()
+	}
 	eg, egctx := errgroup.New(ctx)
 	for n, d := range map[string]Data{
 		vald + "-" + agentNGT: {
@@ -961,7 +973,7 @@ func main() {
 				data.BuildPlatforms = amd64Platform
 			}
 
-			data.Year = time.Now().Year()
+			data.Year = year
 			if maintainer := os.Getenv(maintainerKey); maintainer != "" {
 				data.Maintainer = maintainer
 			} else {
