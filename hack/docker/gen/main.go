@@ -93,7 +93,7 @@ const (
 	minimumArgumentLength = 2
 	ubuntuVersion         = "24.04"
 
-	yearKey               = "YEAR"
+	yearKey = "YEAR"
 
 	goWorkdir   = "${GOPATH}/src/github.com"
 	rustWorkdir = "${HOME}/rust/src/github.com"
