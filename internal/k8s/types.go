@@ -46,6 +46,12 @@ type (
 	VolumeSnapshot            = snapshotv1.VolumeSnapshot
 	VolumeSnapshotList        = snapshotv1.VolumeSnapshotList
 	Pod                       = corev1.Pod
+	PodList                   = corev1.PodList
+	Node                      = corev1.Node
+	NodeList                  = corev1.NodeList
+	Service                   = corev1.Service
+	ServiceList               = corev1.ServiceList
+	ServicePort               = corev1.ServicePort
 	Deployment                = appsv1.Deployment
 	DeploymentList            = appsv1.DeploymentList
 	ObjectMeta                = metav1.ObjectMeta
@@ -69,4 +75,9 @@ const (
 	SelectionOpEquals           = selection.Equals
 	SelectionOpExists           = selection.Exists
 	PodIndexLabel               = appsv1.PodIndexLabel
+	PodRunning                  = corev1.PodRunning
+	NodeInternalIP              = corev1.NodeInternalIP
+	NodeInternalDNS             = corev1.NodeInternalDNS
+	NodeExternalIP              = corev1.NodeExternalIP
+	NodeExternalDNS             = corev1.NodeExternalDNS
 )
