@@ -19,15 +19,18 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+clap = { version = "4.5.23", features = ["derive"] }
+defer = "0.2.1"
 kv = "0.24.0"
+observability = { path = "../../libs/observability" }
 opentelemetry = "0.27.1"
 prost-types = "0.13.4"
 proto = { version = "0.1.0", path = "../../libs/proto" }
+serde = { version = "1.0.216", features = ["derive"] }
+serde_yaml = "0.9.34"
 sled = "0.34.7"
 tokio = { version = "1.43.0", features = ["full"] }
 tonic = "0.12.3"
-observability = { path = "../../libs/observability" } 
-defer = "0.2.1"
 
 [[bin]]
 name = "test_client"
