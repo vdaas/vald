@@ -31,10 +31,12 @@ impl<'de> serde::Deserialize<'de> for Control {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[];
+        const FIELDS: &[&str] = &[
+        ];
 
         #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {}
+        enum GeneratedField {
+        }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
             where
@@ -45,10 +47,7 @@ impl<'de> serde::Deserialize<'de> for Control {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -57,7 +56,7 @@ impl<'de> serde::Deserialize<'de> for Control {
                     where
                         E: serde::de::Error,
                     {
-                        Err(serde::de::Error::unknown_field(value, FIELDS))
+                            Err(serde::de::Error::unknown_field(value, FIELDS))
                     }
                 }
                 deserializer.deserialize_identifier(GeneratedVisitor)
@@ -72,13 +71,14 @@ impl<'de> serde::Deserialize<'de> for Control {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<Control, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 while map_.next_key::<GeneratedField>()?.is_some() {
                     let _ = map_.next_value::<serde::de::IgnoredAny>()?;
                 }
-                Ok(Control {})
+                Ok(Control {
+                })
             }
         }
         deserializer.deserialize_struct("payload.v1.Control", FIELDS, GeneratedVisitor)
@@ -95,8 +95,7 @@ impl serde::Serialize for control::CreateIndexRequest {
         if self.pool_size != 0 {
             len += 1;
         }
-        let mut struct_ser =
-            serializer.serialize_struct("payload.v1.Control.CreateIndexRequest", len)?;
+        let mut struct_ser = serializer.serialize_struct("payload.v1.Control.CreateIndexRequest", len)?;
         if self.pool_size != 0 {
             struct_ser.serialize_field("poolSize", &self.pool_size)?;
         }
@@ -109,7 +108,10 @@ impl<'de> serde::Deserialize<'de> for control::CreateIndexRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["pool_size", "poolSize"];
+        const FIELDS: &[&str] = &[
+            "pool_size",
+            "poolSize",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -125,10 +127,7 @@ impl<'de> serde::Deserialize<'de> for control::CreateIndexRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -154,12 +153,9 @@ impl<'de> serde::Deserialize<'de> for control::CreateIndexRequest {
                 formatter.write_str("struct payload.v1.Control.CreateIndexRequest")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<control::CreateIndexRequest, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<control::CreateIndexRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut pool_size__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -168,10 +164,9 @@ impl<'de> serde::Deserialize<'de> for control::CreateIndexRequest {
                             if pool_size__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("poolSize"));
                             }
-                            pool_size__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            pool_size__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                     }
                 }
@@ -180,11 +175,7 @@ impl<'de> serde::Deserialize<'de> for control::CreateIndexRequest {
                 })
             }
         }
-        deserializer.deserialize_struct(
-            "payload.v1.Control.CreateIndexRequest",
-            FIELDS,
-            GeneratedVisitor,
-        )
+        deserializer.deserialize_struct("payload.v1.Control.CreateIndexRequest", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for Discoverer {
@@ -205,10 +196,12 @@ impl<'de> serde::Deserialize<'de> for Discoverer {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[];
+        const FIELDS: &[&str] = &[
+        ];
 
         #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {}
+        enum GeneratedField {
+        }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
             where
@@ -219,10 +212,7 @@ impl<'de> serde::Deserialize<'de> for Discoverer {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -231,7 +221,7 @@ impl<'de> serde::Deserialize<'de> for Discoverer {
                     where
                         E: serde::de::Error,
                     {
-                        Err(serde::de::Error::unknown_field(value, FIELDS))
+                            Err(serde::de::Error::unknown_field(value, FIELDS))
                     }
                 }
                 deserializer.deserialize_identifier(GeneratedVisitor)
@@ -246,13 +236,14 @@ impl<'de> serde::Deserialize<'de> for Discoverer {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<Discoverer, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 while map_.next_key::<GeneratedField>()?.is_some() {
                     let _ = map_.next_value::<serde::de::IgnoredAny>()?;
                 }
-                Ok(Discoverer {})
+                Ok(Discoverer {
+                })
             }
         }
         deserializer.deserialize_struct("payload.v1.Discoverer", FIELDS, GeneratedVisitor)
@@ -294,7 +285,11 @@ impl<'de> serde::Deserialize<'de> for discoverer::Request {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["name", "namespace", "node"];
+        const FIELDS: &[&str] = &[
+            "name",
+            "namespace",
+            "node",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -312,10 +307,7 @@ impl<'de> serde::Deserialize<'de> for discoverer::Request {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -344,8 +336,8 @@ impl<'de> serde::Deserialize<'de> for discoverer::Request {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<discoverer::Request, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut name__ = None;
                 let mut namespace__ = None;
@@ -400,10 +392,12 @@ impl<'de> serde::Deserialize<'de> for Empty {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[];
+        const FIELDS: &[&str] = &[
+        ];
 
         #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {}
+        enum GeneratedField {
+        }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
             where
@@ -414,10 +408,7 @@ impl<'de> serde::Deserialize<'de> for Empty {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -426,7 +417,7 @@ impl<'de> serde::Deserialize<'de> for Empty {
                     where
                         E: serde::de::Error,
                     {
-                        Err(serde::de::Error::unknown_field(value, FIELDS))
+                            Err(serde::de::Error::unknown_field(value, FIELDS))
                     }
                 }
                 deserializer.deserialize_identifier(GeneratedVisitor)
@@ -441,13 +432,14 @@ impl<'de> serde::Deserialize<'de> for Empty {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<Empty, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 while map_.next_key::<GeneratedField>()?.is_some() {
                     let _ = map_.next_value::<serde::de::IgnoredAny>()?;
                 }
-                Ok(Empty {})
+                Ok(Empty {
+                })
             }
         }
         deserializer.deserialize_struct("payload.v1.Empty", FIELDS, GeneratedVisitor)
@@ -471,10 +463,12 @@ impl<'de> serde::Deserialize<'de> for Filter {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[];
+        const FIELDS: &[&str] = &[
+        ];
 
         #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {}
+        enum GeneratedField {
+        }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
             where
@@ -485,10 +479,7 @@ impl<'de> serde::Deserialize<'de> for Filter {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -497,7 +488,7 @@ impl<'de> serde::Deserialize<'de> for Filter {
                     where
                         E: serde::de::Error,
                     {
-                        Err(serde::de::Error::unknown_field(value, FIELDS))
+                            Err(serde::de::Error::unknown_field(value, FIELDS))
                     }
                 }
                 deserializer.deserialize_identifier(GeneratedVisitor)
@@ -512,13 +503,14 @@ impl<'de> serde::Deserialize<'de> for Filter {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<Filter, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 while map_.next_key::<GeneratedField>()?.is_some() {
                     let _ = map_.next_value::<serde::de::IgnoredAny>()?;
                 }
-                Ok(Filter {})
+                Ok(Filter {
+                })
             }
         }
         deserializer.deserialize_struct("payload.v1.Filter", FIELDS, GeneratedVisitor)
@@ -548,7 +540,9 @@ impl<'de> serde::Deserialize<'de> for filter::Config {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["targets"];
+        const FIELDS: &[&str] = &[
+            "targets",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -564,10 +558,7 @@ impl<'de> serde::Deserialize<'de> for filter::Config {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -594,8 +585,8 @@ impl<'de> serde::Deserialize<'de> for filter::Config {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<filter::Config, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut targets__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -646,7 +637,10 @@ impl<'de> serde::Deserialize<'de> for filter::Target {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["host", "port"];
+        const FIELDS: &[&str] = &[
+            "host",
+            "port",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -663,10 +657,7 @@ impl<'de> serde::Deserialize<'de> for filter::Target {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -694,8 +685,8 @@ impl<'de> serde::Deserialize<'de> for filter::Target {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<filter::Target, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut host__ = None;
                 let mut port__ = None;
@@ -711,10 +702,9 @@ impl<'de> serde::Deserialize<'de> for filter::Target {
                             if port__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("port"));
                             }
-                            port__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            port__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                     }
                 }
@@ -745,10 +735,12 @@ impl<'de> serde::Deserialize<'de> for Flush {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[];
+        const FIELDS: &[&str] = &[
+        ];
 
         #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {}
+        enum GeneratedField {
+        }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
             where
@@ -759,10 +751,7 @@ impl<'de> serde::Deserialize<'de> for Flush {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -771,7 +760,7 @@ impl<'de> serde::Deserialize<'de> for Flush {
                     where
                         E: serde::de::Error,
                     {
-                        Err(serde::de::Error::unknown_field(value, FIELDS))
+                            Err(serde::de::Error::unknown_field(value, FIELDS))
                     }
                 }
                 deserializer.deserialize_identifier(GeneratedVisitor)
@@ -786,13 +775,14 @@ impl<'de> serde::Deserialize<'de> for Flush {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<Flush, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 while map_.next_key::<GeneratedField>()?.is_some() {
                     let _ = map_.next_value::<serde::de::IgnoredAny>()?;
                 }
-                Ok(Flush {})
+                Ok(Flush {
+                })
             }
         }
         deserializer.deserialize_struct("payload.v1.Flush", FIELDS, GeneratedVisitor)
@@ -816,10 +806,12 @@ impl<'de> serde::Deserialize<'de> for flush::Request {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[];
+        const FIELDS: &[&str] = &[
+        ];
 
         #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {}
+        enum GeneratedField {
+        }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
             where
@@ -830,10 +822,7 @@ impl<'de> serde::Deserialize<'de> for flush::Request {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -842,7 +831,7 @@ impl<'de> serde::Deserialize<'de> for flush::Request {
                     where
                         E: serde::de::Error,
                     {
-                        Err(serde::de::Error::unknown_field(value, FIELDS))
+                            Err(serde::de::Error::unknown_field(value, FIELDS))
                     }
                 }
                 deserializer.deserialize_identifier(GeneratedVisitor)
@@ -857,13 +846,14 @@ impl<'de> serde::Deserialize<'de> for flush::Request {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<flush::Request, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 while map_.next_key::<GeneratedField>()?.is_some() {
                     let _ = map_.next_value::<serde::de::IgnoredAny>()?;
                 }
-                Ok(flush::Request {})
+                Ok(flush::Request {
+                })
             }
         }
         deserializer.deserialize_struct("payload.v1.Flush.Request", FIELDS, GeneratedVisitor)
@@ -887,10 +877,12 @@ impl<'de> serde::Deserialize<'de> for Info {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[];
+        const FIELDS: &[&str] = &[
+        ];
 
         #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {}
+        enum GeneratedField {
+        }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
             where
@@ -901,10 +893,7 @@ impl<'de> serde::Deserialize<'de> for Info {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -913,7 +902,7 @@ impl<'de> serde::Deserialize<'de> for Info {
                     where
                         E: serde::de::Error,
                     {
-                        Err(serde::de::Error::unknown_field(value, FIELDS))
+                            Err(serde::de::Error::unknown_field(value, FIELDS))
                     }
                 }
                 deserializer.deserialize_identifier(GeneratedVisitor)
@@ -928,13 +917,14 @@ impl<'de> serde::Deserialize<'de> for Info {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<Info, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 while map_.next_key::<GeneratedField>()?.is_some() {
                     let _ = map_.next_value::<serde::de::IgnoredAny>()?;
                 }
-                Ok(Info {})
+                Ok(Info {
+                })
             }
         }
         deserializer.deserialize_struct("payload.v1.Info", FIELDS, GeneratedVisitor)
@@ -964,7 +954,9 @@ impl<'de> serde::Deserialize<'de> for info::Annotations {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["annotations"];
+        const FIELDS: &[&str] = &[
+            "annotations",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -980,10 +972,7 @@ impl<'de> serde::Deserialize<'de> for info::Annotations {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -1010,8 +999,8 @@ impl<'de> serde::Deserialize<'de> for info::Annotations {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::Annotations, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut annotations__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -1020,8 +1009,9 @@ impl<'de> serde::Deserialize<'de> for info::Annotations {
                             if annotations__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("annotations"));
                             }
-                            annotations__ =
-                                Some(map_.next_value::<std::collections::HashMap<_, _>>()?);
+                            annotations__ = Some(
+                                map_.next_value::<std::collections::HashMap<_, _>>()?
+                            );
                         }
                     }
                 }
@@ -1069,7 +1059,11 @@ impl<'de> serde::Deserialize<'de> for info::Cpu {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["limit", "request", "usage"];
+        const FIELDS: &[&str] = &[
+            "limit",
+            "request",
+            "usage",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -1087,10 +1081,7 @@ impl<'de> serde::Deserialize<'de> for info::Cpu {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -1119,8 +1110,8 @@ impl<'de> serde::Deserialize<'de> for info::Cpu {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::Cpu, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut limit__ = None;
                 let mut request__ = None;
@@ -1131,28 +1122,25 @@ impl<'de> serde::Deserialize<'de> for info::Cpu {
                             if limit__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("limit"));
                             }
-                            limit__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            limit__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::Request => {
                             if request__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("request"));
                             }
-                            request__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            request__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::Usage => {
                             if usage__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("usage"));
                             }
-                            usage__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            usage__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                     }
                 }
@@ -1164,185 +1152,6 @@ impl<'de> serde::Deserialize<'de> for info::Cpu {
             }
         }
         deserializer.deserialize_struct("payload.v1.Info.CPU", FIELDS, GeneratedVisitor)
-    }
-}
-impl serde::Serialize for info::CgroupStats {
-    #[allow(deprecated)]
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use serde::ser::SerializeStruct;
-        let mut len = 0;
-        if self.cpu_limit_cores != 0. {
-            len += 1;
-        }
-        if self.cpu_usage_cores != 0. {
-            len += 1;
-        }
-        if self.memory_limit_bytes != 0 {
-            len += 1;
-        }
-        if self.memory_usage_bytes != 0 {
-            len += 1;
-        }
-        let mut struct_ser = serializer.serialize_struct("payload.v1.Info.CgroupStats", len)?;
-        if self.cpu_limit_cores != 0. {
-            struct_ser.serialize_field("cpuLimitCores", &self.cpu_limit_cores)?;
-        }
-        if self.cpu_usage_cores != 0. {
-            struct_ser.serialize_field("cpuUsageCores", &self.cpu_usage_cores)?;
-        }
-        if self.memory_limit_bytes != 0 {
-            #[allow(clippy::needless_borrow)]
-            #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field(
-                "memoryLimitBytes",
-                ToString::to_string(&self.memory_limit_bytes).as_str(),
-            )?;
-        }
-        if self.memory_usage_bytes != 0 {
-            #[allow(clippy::needless_borrow)]
-            #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field(
-                "memoryUsageBytes",
-                ToString::to_string(&self.memory_usage_bytes).as_str(),
-            )?;
-        }
-        struct_ser.end()
-    }
-}
-impl<'de> serde::Deserialize<'de> for info::CgroupStats {
-    #[allow(deprecated)]
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &[&str] = &[
-            "cpu_limit_cores",
-            "cpuLimitCores",
-            "cpu_usage_cores",
-            "cpuUsageCores",
-            "memory_limit_bytes",
-            "memoryLimitBytes",
-            "memory_usage_bytes",
-            "memoryUsageBytes",
-        ];
-
-        #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {
-            CpuLimitCores,
-            CpuUsageCores,
-            MemoryLimitBytes,
-            MemoryUsageBytes,
-        }
-        impl<'de> serde::Deserialize<'de> for GeneratedField {
-            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
-            where
-                D: serde::Deserializer<'de>,
-            {
-                struct GeneratedVisitor;
-
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-                    type Value = GeneratedField;
-
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
-                    }
-
-                    #[allow(unused_variables)]
-                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
-                    where
-                        E: serde::de::Error,
-                    {
-                        match value {
-                            "cpuLimitCores" | "cpu_limit_cores" => {
-                                Ok(GeneratedField::CpuLimitCores)
-                            }
-                            "cpuUsageCores" | "cpu_usage_cores" => {
-                                Ok(GeneratedField::CpuUsageCores)
-                            }
-                            "memoryLimitBytes" | "memory_limit_bytes" => {
-                                Ok(GeneratedField::MemoryLimitBytes)
-                            }
-                            "memoryUsageBytes" | "memory_usage_bytes" => {
-                                Ok(GeneratedField::MemoryUsageBytes)
-                            }
-                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
-                        }
-                    }
-                }
-                deserializer.deserialize_identifier(GeneratedVisitor)
-            }
-        }
-        struct GeneratedVisitor;
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = info::CgroupStats;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct payload.v1.Info.CgroupStats")
-            }
-
-            fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::CgroupStats, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
-            {
-                let mut cpu_limit_cores__ = None;
-                let mut cpu_usage_cores__ = None;
-                let mut memory_limit_bytes__ = None;
-                let mut memory_usage_bytes__ = None;
-                while let Some(k) = map_.next_key()? {
-                    match k {
-                        GeneratedField::CpuLimitCores => {
-                            if cpu_limit_cores__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("cpuLimitCores"));
-                            }
-                            cpu_limit_cores__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
-                        }
-                        GeneratedField::CpuUsageCores => {
-                            if cpu_usage_cores__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("cpuUsageCores"));
-                            }
-                            cpu_usage_cores__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
-                        }
-                        GeneratedField::MemoryLimitBytes => {
-                            if memory_limit_bytes__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("memoryLimitBytes"));
-                            }
-                            memory_limit_bytes__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
-                        }
-                        GeneratedField::MemoryUsageBytes => {
-                            if memory_usage_bytes__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("memoryUsageBytes"));
-                            }
-                            memory_usage_bytes__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
-                        }
-                    }
-                }
-                Ok(info::CgroupStats {
-                    cpu_limit_cores: cpu_limit_cores__.unwrap_or_default(),
-                    cpu_usage_cores: cpu_usage_cores__.unwrap_or_default(),
-                    memory_limit_bytes: memory_limit_bytes__.unwrap_or_default(),
-                    memory_usage_bytes: memory_usage_bytes__.unwrap_or_default(),
-                })
-            }
-        }
-        deserializer.deserialize_struct("payload.v1.Info.CgroupStats", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for info::IPs {
@@ -1369,7 +1178,9 @@ impl<'de> serde::Deserialize<'de> for info::IPs {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["ip"];
+        const FIELDS: &[&str] = &[
+            "ip",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -1385,10 +1196,7 @@ impl<'de> serde::Deserialize<'de> for info::IPs {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -1415,8 +1223,8 @@ impl<'de> serde::Deserialize<'de> for info::IPs {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::IPs, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut ip__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -1455,10 +1263,12 @@ impl<'de> serde::Deserialize<'de> for info::Index {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[];
+        const FIELDS: &[&str] = &[
+        ];
 
         #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {}
+        enum GeneratedField {
+        }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
             where
@@ -1469,10 +1279,7 @@ impl<'de> serde::Deserialize<'de> for info::Index {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -1481,7 +1288,7 @@ impl<'de> serde::Deserialize<'de> for info::Index {
                     where
                         E: serde::de::Error,
                     {
-                        Err(serde::de::Error::unknown_field(value, FIELDS))
+                            Err(serde::de::Error::unknown_field(value, FIELDS))
                     }
                 }
                 deserializer.deserialize_identifier(GeneratedVisitor)
@@ -1496,13 +1303,14 @@ impl<'de> serde::Deserialize<'de> for info::Index {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::Index, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 while map_.next_key::<GeneratedField>()?.is_some() {
                     let _ = map_.next_value::<serde::de::IgnoredAny>()?;
                 }
-                Ok(info::Index {})
+                Ok(info::Index {
+                })
             }
         }
         deserializer.deserialize_struct("payload.v1.Info.Index", FIELDS, GeneratedVisitor)
@@ -1550,7 +1358,12 @@ impl<'de> serde::Deserialize<'de> for info::index::Count {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["stored", "uncommitted", "indexing", "saving"];
+        const FIELDS: &[&str] = &[
+            "stored",
+            "uncommitted",
+            "indexing",
+            "saving",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -1569,10 +1382,7 @@ impl<'de> serde::Deserialize<'de> for info::index::Count {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -1602,8 +1412,8 @@ impl<'de> serde::Deserialize<'de> for info::index::Count {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::index::Count, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut stored__ = None;
                 let mut uncommitted__ = None;
@@ -1615,19 +1425,17 @@ impl<'de> serde::Deserialize<'de> for info::index::Count {
                             if stored__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("stored"));
                             }
-                            stored__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            stored__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::Uncommitted => {
                             if uncommitted__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("uncommitted"));
                             }
-                            uncommitted__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            uncommitted__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::Indexing => {
                             if indexing__.is_some() {
@@ -1690,7 +1498,12 @@ impl<'de> serde::Deserialize<'de> for info::index::Detail {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["counts", "replica", "live_agents", "liveAgents"];
+        const FIELDS: &[&str] = &[
+            "counts",
+            "replica",
+            "live_agents",
+            "liveAgents",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -1708,10 +1521,7 @@ impl<'de> serde::Deserialize<'de> for info::index::Detail {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -1740,8 +1550,8 @@ impl<'de> serde::Deserialize<'de> for info::index::Detail {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::index::Detail, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut counts__ = None;
                 let mut replica__ = None;
@@ -1752,25 +1562,25 @@ impl<'de> serde::Deserialize<'de> for info::index::Detail {
                             if counts__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("counts"));
                             }
-                            counts__ = Some(map_.next_value::<std::collections::HashMap<_, _>>()?);
+                            counts__ = Some(
+                                map_.next_value::<std::collections::HashMap<_, _>>()?
+                            );
                         }
                         GeneratedField::Replica => {
                             if replica__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("replica"));
                             }
-                            replica__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            replica__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::LiveAgents => {
                             if live_agents__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("liveAgents"));
                             }
-                            live_agents__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            live_agents__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                     }
                 }
@@ -1929,8 +1739,7 @@ impl serde::Serialize for info::index::Property {
             struct_ser.serialize_field("treeSharedMemorySize", &self.tree_shared_memory_size)?;
         }
         if self.object_shared_memory_size != 0 {
-            struct_ser
-                .serialize_field("objectSharedMemorySize", &self.object_shared_memory_size)?;
+            struct_ser.serialize_field("objectSharedMemorySize", &self.object_shared_memory_size)?;
         }
         if self.prefetch_offset != 0 {
             struct_ser.serialize_field("prefetchOffset", &self.prefetch_offset)?;
@@ -1948,16 +1757,10 @@ impl serde::Serialize for info::index::Property {
             struct_ser.serialize_field("maxMagnitude", &self.max_magnitude)?;
         }
         if self.n_of_neighbors_for_insertion_order != 0 {
-            struct_ser.serialize_field(
-                "nOfNeighborsForInsertionOrder",
-                &self.n_of_neighbors_for_insertion_order,
-            )?;
+            struct_ser.serialize_field("nOfNeighborsForInsertionOrder", &self.n_of_neighbors_for_insertion_order)?;
         }
         if self.epsilon_for_insertion_order != 0. {
-            struct_ser.serialize_field(
-                "epsilonForInsertionOrder",
-                &self.epsilon_for_insertion_order,
-            )?;
+            struct_ser.serialize_field("epsilonForInsertionOrder", &self.epsilon_for_insertion_order)?;
         }
         if !self.refinement_object_type.is_empty() {
             struct_ser.serialize_field("refinementObjectType", &self.refinement_object_type)?;
@@ -1972,16 +1775,10 @@ impl serde::Serialize for info::index::Property {
             struct_ser.serialize_field("edgeSizeForSearch", &self.edge_size_for_search)?;
         }
         if self.edge_size_limit_for_creation != 0 {
-            struct_ser.serialize_field(
-                "edgeSizeLimitForCreation",
-                &self.edge_size_limit_for_creation,
-            )?;
+            struct_ser.serialize_field("edgeSizeLimitForCreation", &self.edge_size_limit_for_creation)?;
         }
         if self.insertion_radius_coefficient != 0. {
-            struct_ser.serialize_field(
-                "insertionRadiusCoefficient",
-                &self.insertion_radius_coefficient,
-            )?;
+            struct_ser.serialize_field("insertionRadiusCoefficient", &self.insertion_radius_coefficient)?;
         }
         if self.seed_size != 0 {
             struct_ser.serialize_field("seedSize", &self.seed_size)?;
@@ -1990,10 +1787,7 @@ impl serde::Serialize for info::index::Property {
             struct_ser.serialize_field("seedType", &self.seed_type)?;
         }
         if self.truncation_thread_pool_size != 0 {
-            struct_ser.serialize_field(
-                "truncationThreadPoolSize",
-                &self.truncation_thread_pool_size,
-            )?;
+            struct_ser.serialize_field("truncationThreadPoolSize", &self.truncation_thread_pool_size)?;
         }
         if self.batch_size_for_creation != 0 {
             struct_ser.serialize_field("batchSizeForCreation", &self.batch_size_for_creation)?;
@@ -2148,10 +1942,7 @@ impl<'de> serde::Deserialize<'de> for info::index::Property {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -2162,83 +1953,40 @@ impl<'de> serde::Deserialize<'de> for info::index::Property {
                     {
                         match value {
                             "dimension" => Ok(GeneratedField::Dimension),
-                            "threadPoolSize" | "thread_pool_size" => {
-                                Ok(GeneratedField::ThreadPoolSize)
-                            }
+                            "threadPoolSize" | "thread_pool_size" => Ok(GeneratedField::ThreadPoolSize),
                             "objectType" | "object_type" => Ok(GeneratedField::ObjectType),
                             "distanceType" | "distance_type" => Ok(GeneratedField::DistanceType),
                             "indexType" | "index_type" => Ok(GeneratedField::IndexType),
                             "databaseType" | "database_type" => Ok(GeneratedField::DatabaseType),
-                            "objectAlignment" | "object_alignment" => {
-                                Ok(GeneratedField::ObjectAlignment)
-                            }
-                            "pathAdjustmentInterval" | "path_adjustment_interval" => {
-                                Ok(GeneratedField::PathAdjustmentInterval)
-                            }
-                            "graphSharedMemorySize" | "graph_shared_memory_size" => {
-                                Ok(GeneratedField::GraphSharedMemorySize)
-                            }
-                            "treeSharedMemorySize" | "tree_shared_memory_size" => {
-                                Ok(GeneratedField::TreeSharedMemorySize)
-                            }
-                            "objectSharedMemorySize" | "object_shared_memory_size" => {
-                                Ok(GeneratedField::ObjectSharedMemorySize)
-                            }
-                            "prefetchOffset" | "prefetch_offset" => {
-                                Ok(GeneratedField::PrefetchOffset)
-                            }
+                            "objectAlignment" | "object_alignment" => Ok(GeneratedField::ObjectAlignment),
+                            "pathAdjustmentInterval" | "path_adjustment_interval" => Ok(GeneratedField::PathAdjustmentInterval),
+                            "graphSharedMemorySize" | "graph_shared_memory_size" => Ok(GeneratedField::GraphSharedMemorySize),
+                            "treeSharedMemorySize" | "tree_shared_memory_size" => Ok(GeneratedField::TreeSharedMemorySize),
+                            "objectSharedMemorySize" | "object_shared_memory_size" => Ok(GeneratedField::ObjectSharedMemorySize),
+                            "prefetchOffset" | "prefetch_offset" => Ok(GeneratedField::PrefetchOffset),
                             "prefetchSize" | "prefetch_size" => Ok(GeneratedField::PrefetchSize),
                             "accuracyTable" | "accuracy_table" => Ok(GeneratedField::AccuracyTable),
                             "searchType" | "search_type" => Ok(GeneratedField::SearchType),
                             "maxMagnitude" | "max_magnitude" => Ok(GeneratedField::MaxMagnitude),
-                            "nOfNeighborsForInsertionOrder"
-                            | "n_of_neighbors_for_insertion_order" => {
-                                Ok(GeneratedField::NOfNeighborsForInsertionOrder)
-                            }
-                            "epsilonForInsertionOrder" | "epsilon_for_insertion_order" => {
-                                Ok(GeneratedField::EpsilonForInsertionOrder)
-                            }
-                            "refinementObjectType" | "refinement_object_type" => {
-                                Ok(GeneratedField::RefinementObjectType)
-                            }
-                            "truncationThreshold" | "truncation_threshold" => {
-                                Ok(GeneratedField::TruncationThreshold)
-                            }
-                            "edgeSizeForCreation" | "edge_size_for_creation" => {
-                                Ok(GeneratedField::EdgeSizeForCreation)
-                            }
-                            "edgeSizeForSearch" | "edge_size_for_search" => {
-                                Ok(GeneratedField::EdgeSizeForSearch)
-                            }
-                            "edgeSizeLimitForCreation" | "edge_size_limit_for_creation" => {
-                                Ok(GeneratedField::EdgeSizeLimitForCreation)
-                            }
-                            "insertionRadiusCoefficient" | "insertion_radius_coefficient" => {
-                                Ok(GeneratedField::InsertionRadiusCoefficient)
-                            }
+                            "nOfNeighborsForInsertionOrder" | "n_of_neighbors_for_insertion_order" => Ok(GeneratedField::NOfNeighborsForInsertionOrder),
+                            "epsilonForInsertionOrder" | "epsilon_for_insertion_order" => Ok(GeneratedField::EpsilonForInsertionOrder),
+                            "refinementObjectType" | "refinement_object_type" => Ok(GeneratedField::RefinementObjectType),
+                            "truncationThreshold" | "truncation_threshold" => Ok(GeneratedField::TruncationThreshold),
+                            "edgeSizeForCreation" | "edge_size_for_creation" => Ok(GeneratedField::EdgeSizeForCreation),
+                            "edgeSizeForSearch" | "edge_size_for_search" => Ok(GeneratedField::EdgeSizeForSearch),
+                            "edgeSizeLimitForCreation" | "edge_size_limit_for_creation" => Ok(GeneratedField::EdgeSizeLimitForCreation),
+                            "insertionRadiusCoefficient" | "insertion_radius_coefficient" => Ok(GeneratedField::InsertionRadiusCoefficient),
                             "seedSize" | "seed_size" => Ok(GeneratedField::SeedSize),
                             "seedType" | "seed_type" => Ok(GeneratedField::SeedType),
-                            "truncationThreadPoolSize" | "truncation_thread_pool_size" => {
-                                Ok(GeneratedField::TruncationThreadPoolSize)
-                            }
-                            "batchSizeForCreation" | "batch_size_for_creation" => {
-                                Ok(GeneratedField::BatchSizeForCreation)
-                            }
+                            "truncationThreadPoolSize" | "truncation_thread_pool_size" => Ok(GeneratedField::TruncationThreadPoolSize),
+                            "batchSizeForCreation" | "batch_size_for_creation" => Ok(GeneratedField::BatchSizeForCreation),
                             "graphType" | "graph_type" => Ok(GeneratedField::GraphType),
-                            "dynamicEdgeSizeBase" | "dynamic_edge_size_base" => {
-                                Ok(GeneratedField::DynamicEdgeSizeBase)
-                            }
-                            "dynamicEdgeSizeRate" | "dynamic_edge_size_rate" => {
-                                Ok(GeneratedField::DynamicEdgeSizeRate)
-                            }
-                            "buildTimeLimit" | "build_time_limit" => {
-                                Ok(GeneratedField::BuildTimeLimit)
-                            }
+                            "dynamicEdgeSizeBase" | "dynamic_edge_size_base" => Ok(GeneratedField::DynamicEdgeSizeBase),
+                            "dynamicEdgeSizeRate" | "dynamic_edge_size_rate" => Ok(GeneratedField::DynamicEdgeSizeRate),
+                            "buildTimeLimit" | "build_time_limit" => Ok(GeneratedField::BuildTimeLimit),
                             "outgoingEdge" | "outgoing_edge" => Ok(GeneratedField::OutgoingEdge),
                             "incomingEdge" | "incoming_edge" => Ok(GeneratedField::IncomingEdge),
-                            "epsilonForCreation" | "epsilon_for_creation" => {
-                                Ok(GeneratedField::EpsilonForCreation)
-                            }
+                            "epsilonForCreation" | "epsilon_for_creation" => Ok(GeneratedField::EpsilonForCreation),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -2254,12 +2002,9 @@ impl<'de> serde::Deserialize<'de> for info::index::Property {
                 formatter.write_str("struct payload.v1.Info.Index.Property")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<info::index::Property, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::index::Property, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut dimension__ = None;
                 let mut thread_pool_size__ = None;
@@ -2302,19 +2047,17 @@ impl<'de> serde::Deserialize<'de> for info::index::Property {
                             if dimension__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("dimension"));
                             }
-                            dimension__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            dimension__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::ThreadPoolSize => {
                             if thread_pool_size__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("threadPoolSize"));
                             }
-                            thread_pool_size__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            thread_pool_size__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::ObjectType => {
                             if object_type__.is_some() {
@@ -2348,65 +2091,51 @@ impl<'de> serde::Deserialize<'de> for info::index::Property {
                         }
                         GeneratedField::PathAdjustmentInterval => {
                             if path_adjustment_interval__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "pathAdjustmentInterval",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("pathAdjustmentInterval"));
                             }
-                            path_adjustment_interval__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            path_adjustment_interval__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::GraphSharedMemorySize => {
                             if graph_shared_memory_size__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "graphSharedMemorySize",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("graphSharedMemorySize"));
                             }
-                            graph_shared_memory_size__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            graph_shared_memory_size__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::TreeSharedMemorySize => {
                             if tree_shared_memory_size__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "treeSharedMemorySize",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("treeSharedMemorySize"));
                             }
-                            tree_shared_memory_size__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            tree_shared_memory_size__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::ObjectSharedMemorySize => {
                             if object_shared_memory_size__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "objectSharedMemorySize",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("objectSharedMemorySize"));
                             }
-                            object_shared_memory_size__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            object_shared_memory_size__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::PrefetchOffset => {
                             if prefetch_offset__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("prefetchOffset"));
                             }
-                            prefetch_offset__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            prefetch_offset__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::PrefetchSize => {
                             if prefetch_size__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("prefetchSize"));
                             }
-                            prefetch_size__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            prefetch_size__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::AccuracyTable => {
                             if accuracy_table__.is_some() {
@@ -2424,102 +2153,79 @@ impl<'de> serde::Deserialize<'de> for info::index::Property {
                             if max_magnitude__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("maxMagnitude"));
                             }
-                            max_magnitude__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            max_magnitude__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::NOfNeighborsForInsertionOrder => {
                             if n_of_neighbors_for_insertion_order__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "nOfNeighborsForInsertionOrder",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("nOfNeighborsForInsertionOrder"));
                             }
-                            n_of_neighbors_for_insertion_order__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            n_of_neighbors_for_insertion_order__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::EpsilonForInsertionOrder => {
                             if epsilon_for_insertion_order__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "epsilonForInsertionOrder",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("epsilonForInsertionOrder"));
                             }
-                            epsilon_for_insertion_order__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            epsilon_for_insertion_order__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::RefinementObjectType => {
                             if refinement_object_type__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "refinementObjectType",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("refinementObjectType"));
                             }
                             refinement_object_type__ = Some(map_.next_value()?);
                         }
                         GeneratedField::TruncationThreshold => {
                             if truncation_threshold__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "truncationThreshold",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("truncationThreshold"));
                             }
-                            truncation_threshold__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            truncation_threshold__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::EdgeSizeForCreation => {
                             if edge_size_for_creation__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "edgeSizeForCreation",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("edgeSizeForCreation"));
                             }
-                            edge_size_for_creation__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            edge_size_for_creation__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::EdgeSizeForSearch => {
                             if edge_size_for_search__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("edgeSizeForSearch"));
                             }
-                            edge_size_for_search__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            edge_size_for_search__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::EdgeSizeLimitForCreation => {
                             if edge_size_limit_for_creation__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "edgeSizeLimitForCreation",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("edgeSizeLimitForCreation"));
                             }
-                            edge_size_limit_for_creation__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            edge_size_limit_for_creation__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::InsertionRadiusCoefficient => {
                             if insertion_radius_coefficient__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "insertionRadiusCoefficient",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("insertionRadiusCoefficient"));
                             }
-                            insertion_radius_coefficient__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            insertion_radius_coefficient__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::SeedSize => {
                             if seed_size__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("seedSize"));
                             }
-                            seed_size__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            seed_size__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::SeedType => {
                             if seed_type__.is_some() {
@@ -2529,25 +2235,19 @@ impl<'de> serde::Deserialize<'de> for info::index::Property {
                         }
                         GeneratedField::TruncationThreadPoolSize => {
                             if truncation_thread_pool_size__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "truncationThreadPoolSize",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("truncationThreadPoolSize"));
                             }
-                            truncation_thread_pool_size__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            truncation_thread_pool_size__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::BatchSizeForCreation => {
                             if batch_size_for_creation__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "batchSizeForCreation",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("batchSizeForCreation"));
                             }
-                            batch_size_for_creation__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            batch_size_for_creation__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::GraphType => {
                             if graph_type__.is_some() {
@@ -2557,63 +2257,51 @@ impl<'de> serde::Deserialize<'de> for info::index::Property {
                         }
                         GeneratedField::DynamicEdgeSizeBase => {
                             if dynamic_edge_size_base__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "dynamicEdgeSizeBase",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("dynamicEdgeSizeBase"));
                             }
-                            dynamic_edge_size_base__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            dynamic_edge_size_base__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::DynamicEdgeSizeRate => {
                             if dynamic_edge_size_rate__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "dynamicEdgeSizeRate",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("dynamicEdgeSizeRate"));
                             }
-                            dynamic_edge_size_rate__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            dynamic_edge_size_rate__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::BuildTimeLimit => {
                             if build_time_limit__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("buildTimeLimit"));
                             }
-                            build_time_limit__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            build_time_limit__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::OutgoingEdge => {
                             if outgoing_edge__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("outgoingEdge"));
                             }
-                            outgoing_edge__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            outgoing_edge__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::IncomingEdge => {
                             if incoming_edge__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("incomingEdge"));
                             }
-                            incoming_edge__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            incoming_edge__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::EpsilonForCreation => {
                             if epsilon_for_creation__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "epsilonForCreation",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("epsilonForCreation"));
                             }
-                            epsilon_for_creation__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            epsilon_for_creation__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                     }
                 }
@@ -2634,17 +2322,14 @@ impl<'de> serde::Deserialize<'de> for info::index::Property {
                     accuracy_table: accuracy_table__.unwrap_or_default(),
                     search_type: search_type__.unwrap_or_default(),
                     max_magnitude: max_magnitude__.unwrap_or_default(),
-                    n_of_neighbors_for_insertion_order: n_of_neighbors_for_insertion_order__
-                        .unwrap_or_default(),
+                    n_of_neighbors_for_insertion_order: n_of_neighbors_for_insertion_order__.unwrap_or_default(),
                     epsilon_for_insertion_order: epsilon_for_insertion_order__.unwrap_or_default(),
                     refinement_object_type: refinement_object_type__.unwrap_or_default(),
                     truncation_threshold: truncation_threshold__.unwrap_or_default(),
                     edge_size_for_creation: edge_size_for_creation__.unwrap_or_default(),
                     edge_size_for_search: edge_size_for_search__.unwrap_or_default(),
-                    edge_size_limit_for_creation: edge_size_limit_for_creation__
-                        .unwrap_or_default(),
-                    insertion_radius_coefficient: insertion_radius_coefficient__
-                        .unwrap_or_default(),
+                    edge_size_limit_for_creation: edge_size_limit_for_creation__.unwrap_or_default(),
+                    insertion_radius_coefficient: insertion_radius_coefficient__.unwrap_or_default(),
                     seed_size: seed_size__.unwrap_or_default(),
                     seed_type: seed_type__.unwrap_or_default(),
                     truncation_thread_pool_size: truncation_thread_pool_size__.unwrap_or_default(),
@@ -2673,8 +2358,7 @@ impl serde::Serialize for info::index::PropertyDetail {
         if !self.details.is_empty() {
             len += 1;
         }
-        let mut struct_ser =
-            serializer.serialize_struct("payload.v1.Info.Index.PropertyDetail", len)?;
+        let mut struct_ser = serializer.serialize_struct("payload.v1.Info.Index.PropertyDetail", len)?;
         if !self.details.is_empty() {
             struct_ser.serialize_field("details", &self.details)?;
         }
@@ -2687,7 +2371,9 @@ impl<'de> serde::Deserialize<'de> for info::index::PropertyDetail {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["details"];
+        const FIELDS: &[&str] = &[
+            "details",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -2703,10 +2389,7 @@ impl<'de> serde::Deserialize<'de> for info::index::PropertyDetail {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -2732,12 +2415,9 @@ impl<'de> serde::Deserialize<'de> for info::index::PropertyDetail {
                 formatter.write_str("struct payload.v1.Info.Index.PropertyDetail")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<info::index::PropertyDetail, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::index::PropertyDetail, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut details__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -2746,7 +2426,9 @@ impl<'de> serde::Deserialize<'de> for info::index::PropertyDetail {
                             if details__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("details"));
                             }
-                            details__ = Some(map_.next_value::<std::collections::HashMap<_, _>>()?);
+                            details__ = Some(
+                                map_.next_value::<std::collections::HashMap<_, _>>()?
+                            );
                         }
                     }
                 }
@@ -2755,11 +2437,7 @@ impl<'de> serde::Deserialize<'de> for info::index::PropertyDetail {
                 })
             }
         }
-        deserializer.deserialize_struct(
-            "payload.v1.Info.Index.PropertyDetail",
-            FIELDS,
-            GeneratedVisitor,
-        )
+        deserializer.deserialize_struct("payload.v1.Info.Index.PropertyDetail", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for info::index::Statistics {
@@ -2869,8 +2547,7 @@ impl serde::Serialize for info::index::Statistics {
         if !self.indegree_histogram.is_empty() {
             len += 1;
         }
-        let mut struct_ser =
-            serializer.serialize_struct("payload.v1.Info.Index.Statistics", len)?;
+        let mut struct_ser = serializer.serialize_struct("payload.v1.Info.Index.Statistics", len)?;
         if self.valid {
             struct_ser.serialize_field("valid", &self.valid)?;
         }
@@ -2883,138 +2560,87 @@ impl serde::Serialize for info::index::Statistics {
         if self.max_number_of_indegree != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field(
-                "maxNumberOfIndegree",
-                ToString::to_string(&self.max_number_of_indegree).as_str(),
-            )?;
+            struct_ser.serialize_field("maxNumberOfIndegree", ToString::to_string(&self.max_number_of_indegree).as_str())?;
         }
         if self.max_number_of_outdegree != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field(
-                "maxNumberOfOutdegree",
-                ToString::to_string(&self.max_number_of_outdegree).as_str(),
-            )?;
+            struct_ser.serialize_field("maxNumberOfOutdegree", ToString::to_string(&self.max_number_of_outdegree).as_str())?;
         }
         if self.min_number_of_indegree != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field(
-                "minNumberOfIndegree",
-                ToString::to_string(&self.min_number_of_indegree).as_str(),
-            )?;
+            struct_ser.serialize_field("minNumberOfIndegree", ToString::to_string(&self.min_number_of_indegree).as_str())?;
         }
         if self.min_number_of_outdegree != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field(
-                "minNumberOfOutdegree",
-                ToString::to_string(&self.min_number_of_outdegree).as_str(),
-            )?;
+            struct_ser.serialize_field("minNumberOfOutdegree", ToString::to_string(&self.min_number_of_outdegree).as_str())?;
         }
         if self.mode_indegree != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field(
-                "modeIndegree",
-                ToString::to_string(&self.mode_indegree).as_str(),
-            )?;
+            struct_ser.serialize_field("modeIndegree", ToString::to_string(&self.mode_indegree).as_str())?;
         }
         if self.mode_outdegree != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field(
-                "modeOutdegree",
-                ToString::to_string(&self.mode_outdegree).as_str(),
-            )?;
+            struct_ser.serialize_field("modeOutdegree", ToString::to_string(&self.mode_outdegree).as_str())?;
         }
         if self.nodes_skipped_for_10_edges != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field(
-                "nodesSkippedFor10Edges",
-                ToString::to_string(&self.nodes_skipped_for_10_edges).as_str(),
-            )?;
+            struct_ser.serialize_field("nodesSkippedFor10Edges", ToString::to_string(&self.nodes_skipped_for_10_edges).as_str())?;
         }
         if self.nodes_skipped_for_indegree_distance != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field(
-                "nodesSkippedForIndegreeDistance",
-                ToString::to_string(&self.nodes_skipped_for_indegree_distance).as_str(),
-            )?;
+            struct_ser.serialize_field("nodesSkippedForIndegreeDistance", ToString::to_string(&self.nodes_skipped_for_indegree_distance).as_str())?;
         }
         if self.number_of_edges != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field(
-                "numberOfEdges",
-                ToString::to_string(&self.number_of_edges).as_str(),
-            )?;
+            struct_ser.serialize_field("numberOfEdges", ToString::to_string(&self.number_of_edges).as_str())?;
         }
         if self.number_of_indexed_objects != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field(
-                "numberOfIndexedObjects",
-                ToString::to_string(&self.number_of_indexed_objects).as_str(),
-            )?;
+            struct_ser.serialize_field("numberOfIndexedObjects", ToString::to_string(&self.number_of_indexed_objects).as_str())?;
         }
         if self.number_of_nodes != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field(
-                "numberOfNodes",
-                ToString::to_string(&self.number_of_nodes).as_str(),
-            )?;
+            struct_ser.serialize_field("numberOfNodes", ToString::to_string(&self.number_of_nodes).as_str())?;
         }
         if self.number_of_nodes_without_edges != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field(
-                "numberOfNodesWithoutEdges",
-                ToString::to_string(&self.number_of_nodes_without_edges).as_str(),
-            )?;
+            struct_ser.serialize_field("numberOfNodesWithoutEdges", ToString::to_string(&self.number_of_nodes_without_edges).as_str())?;
         }
         if self.number_of_nodes_without_indegree != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field(
-                "numberOfNodesWithoutIndegree",
-                ToString::to_string(&self.number_of_nodes_without_indegree).as_str(),
-            )?;
+            struct_ser.serialize_field("numberOfNodesWithoutIndegree", ToString::to_string(&self.number_of_nodes_without_indegree).as_str())?;
         }
         if self.number_of_objects != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field(
-                "numberOfObjects",
-                ToString::to_string(&self.number_of_objects).as_str(),
-            )?;
+            struct_ser.serialize_field("numberOfObjects", ToString::to_string(&self.number_of_objects).as_str())?;
         }
         if self.number_of_removed_objects != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field(
-                "numberOfRemovedObjects",
-                ToString::to_string(&self.number_of_removed_objects).as_str(),
-            )?;
+            struct_ser.serialize_field("numberOfRemovedObjects", ToString::to_string(&self.number_of_removed_objects).as_str())?;
         }
         if self.size_of_object_repository != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field(
-                "sizeOfObjectRepository",
-                ToString::to_string(&self.size_of_object_repository).as_str(),
-            )?;
+            struct_ser.serialize_field("sizeOfObjectRepository", ToString::to_string(&self.size_of_object_repository).as_str())?;
         }
         if self.size_of_refinement_object_repository != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field(
-                "sizeOfRefinementObjectRepository",
-                ToString::to_string(&self.size_of_refinement_object_repository).as_str(),
-            )?;
+            struct_ser.serialize_field("sizeOfRefinementObjectRepository", ToString::to_string(&self.size_of_refinement_object_repository).as_str())?;
         }
         if self.variance_of_indegree != 0. {
             struct_ser.serialize_field("varianceOfIndegree", &self.variance_of_indegree)?;
@@ -3026,22 +2652,13 @@ impl serde::Serialize for info::index::Statistics {
             struct_ser.serialize_field("meanEdgeLength", &self.mean_edge_length)?;
         }
         if self.mean_edge_length_for_10_edges != 0. {
-            struct_ser.serialize_field(
-                "meanEdgeLengthFor10Edges",
-                &self.mean_edge_length_for_10_edges,
-            )?;
+            struct_ser.serialize_field("meanEdgeLengthFor10Edges", &self.mean_edge_length_for_10_edges)?;
         }
         if self.mean_indegree_distance_for_10_edges != 0. {
-            struct_ser.serialize_field(
-                "meanIndegreeDistanceFor10Edges",
-                &self.mean_indegree_distance_for_10_edges,
-            )?;
+            struct_ser.serialize_field("meanIndegreeDistanceFor10Edges", &self.mean_indegree_distance_for_10_edges)?;
         }
         if self.mean_number_of_edges_per_node != 0. {
-            struct_ser.serialize_field(
-                "meanNumberOfEdgesPerNode",
-                &self.mean_number_of_edges_per_node,
-            )?;
+            struct_ser.serialize_field("meanNumberOfEdgesPerNode", &self.mean_number_of_edges_per_node)?;
         }
         if self.c1_indegree != 0. {
             struct_ser.serialize_field("c1Indegree", &self.c1_indegree)?;
@@ -3056,34 +2673,13 @@ impl serde::Serialize for info::index::Statistics {
             struct_ser.serialize_field("c99Outdegree", &self.c99_outdegree)?;
         }
         if !self.indegree_count.is_empty() {
-            struct_ser.serialize_field(
-                "indegreeCount",
-                &self
-                    .indegree_count
-                    .iter()
-                    .map(ToString::to_string)
-                    .collect::<Vec<_>>(),
-            )?;
+            struct_ser.serialize_field("indegreeCount", &self.indegree_count.iter().map(ToString::to_string).collect::<Vec<_>>())?;
         }
         if !self.outdegree_histogram.is_empty() {
-            struct_ser.serialize_field(
-                "outdegreeHistogram",
-                &self
-                    .outdegree_histogram
-                    .iter()
-                    .map(ToString::to_string)
-                    .collect::<Vec<_>>(),
-            )?;
+            struct_ser.serialize_field("outdegreeHistogram", &self.outdegree_histogram.iter().map(ToString::to_string).collect::<Vec<_>>())?;
         }
         if !self.indegree_histogram.is_empty() {
-            struct_ser.serialize_field(
-                "indegreeHistogram",
-                &self
-                    .indegree_histogram
-                    .iter()
-                    .map(ToString::to_string)
-                    .collect::<Vec<_>>(),
-            )?;
+            struct_ser.serialize_field("indegreeHistogram", &self.indegree_histogram.iter().map(ToString::to_string).collect::<Vec<_>>())?;
         }
         struct_ser.end()
     }
@@ -3208,10 +2804,7 @@ impl<'de> serde::Deserialize<'de> for info::index::Statistics {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -3222,91 +2815,38 @@ impl<'de> serde::Deserialize<'de> for info::index::Statistics {
                     {
                         match value {
                             "valid" => Ok(GeneratedField::Valid),
-                            "medianIndegree" | "median_indegree" => {
-                                Ok(GeneratedField::MedianIndegree)
-                            }
-                            "medianOutdegree" | "median_outdegree" => {
-                                Ok(GeneratedField::MedianOutdegree)
-                            }
-                            "maxNumberOfIndegree" | "max_number_of_indegree" => {
-                                Ok(GeneratedField::MaxNumberOfIndegree)
-                            }
-                            "maxNumberOfOutdegree" | "max_number_of_outdegree" => {
-                                Ok(GeneratedField::MaxNumberOfOutdegree)
-                            }
-                            "minNumberOfIndegree" | "min_number_of_indegree" => {
-                                Ok(GeneratedField::MinNumberOfIndegree)
-                            }
-                            "minNumberOfOutdegree" | "min_number_of_outdegree" => {
-                                Ok(GeneratedField::MinNumberOfOutdegree)
-                            }
+                            "medianIndegree" | "median_indegree" => Ok(GeneratedField::MedianIndegree),
+                            "medianOutdegree" | "median_outdegree" => Ok(GeneratedField::MedianOutdegree),
+                            "maxNumberOfIndegree" | "max_number_of_indegree" => Ok(GeneratedField::MaxNumberOfIndegree),
+                            "maxNumberOfOutdegree" | "max_number_of_outdegree" => Ok(GeneratedField::MaxNumberOfOutdegree),
+                            "minNumberOfIndegree" | "min_number_of_indegree" => Ok(GeneratedField::MinNumberOfIndegree),
+                            "minNumberOfOutdegree" | "min_number_of_outdegree" => Ok(GeneratedField::MinNumberOfOutdegree),
                             "modeIndegree" | "mode_indegree" => Ok(GeneratedField::ModeIndegree),
                             "modeOutdegree" | "mode_outdegree" => Ok(GeneratedField::ModeOutdegree),
-                            "nodesSkippedFor10Edges" | "nodes_skipped_for_10_edges" => {
-                                Ok(GeneratedField::NodesSkippedFor10Edges)
-                            }
-                            "nodesSkippedForIndegreeDistance"
-                            | "nodes_skipped_for_indegree_distance" => {
-                                Ok(GeneratedField::NodesSkippedForIndegreeDistance)
-                            }
-                            "numberOfEdges" | "number_of_edges" => {
-                                Ok(GeneratedField::NumberOfEdges)
-                            }
-                            "numberOfIndexedObjects" | "number_of_indexed_objects" => {
-                                Ok(GeneratedField::NumberOfIndexedObjects)
-                            }
-                            "numberOfNodes" | "number_of_nodes" => {
-                                Ok(GeneratedField::NumberOfNodes)
-                            }
-                            "numberOfNodesWithoutEdges" | "number_of_nodes_without_edges" => {
-                                Ok(GeneratedField::NumberOfNodesWithoutEdges)
-                            }
-                            "numberOfNodesWithoutIndegree" | "number_of_nodes_without_indegree" => {
-                                Ok(GeneratedField::NumberOfNodesWithoutIndegree)
-                            }
-                            "numberOfObjects" | "number_of_objects" => {
-                                Ok(GeneratedField::NumberOfObjects)
-                            }
-                            "numberOfRemovedObjects" | "number_of_removed_objects" => {
-                                Ok(GeneratedField::NumberOfRemovedObjects)
-                            }
-                            "sizeOfObjectRepository" | "size_of_object_repository" => {
-                                Ok(GeneratedField::SizeOfObjectRepository)
-                            }
-                            "sizeOfRefinementObjectRepository"
-                            | "size_of_refinement_object_repository" => {
-                                Ok(GeneratedField::SizeOfRefinementObjectRepository)
-                            }
-                            "varianceOfIndegree" | "variance_of_indegree" => {
-                                Ok(GeneratedField::VarianceOfIndegree)
-                            }
-                            "varianceOfOutdegree" | "variance_of_outdegree" => {
-                                Ok(GeneratedField::VarianceOfOutdegree)
-                            }
-                            "meanEdgeLength" | "mean_edge_length" => {
-                                Ok(GeneratedField::MeanEdgeLength)
-                            }
-                            "meanEdgeLengthFor10Edges" | "mean_edge_length_for_10_edges" => {
-                                Ok(GeneratedField::MeanEdgeLengthFor10Edges)
-                            }
-                            "meanIndegreeDistanceFor10Edges"
-                            | "mean_indegree_distance_for_10_edges" => {
-                                Ok(GeneratedField::MeanIndegreeDistanceFor10Edges)
-                            }
-                            "meanNumberOfEdgesPerNode" | "mean_number_of_edges_per_node" => {
-                                Ok(GeneratedField::MeanNumberOfEdgesPerNode)
-                            }
+                            "nodesSkippedFor10Edges" | "nodes_skipped_for_10_edges" => Ok(GeneratedField::NodesSkippedFor10Edges),
+                            "nodesSkippedForIndegreeDistance" | "nodes_skipped_for_indegree_distance" => Ok(GeneratedField::NodesSkippedForIndegreeDistance),
+                            "numberOfEdges" | "number_of_edges" => Ok(GeneratedField::NumberOfEdges),
+                            "numberOfIndexedObjects" | "number_of_indexed_objects" => Ok(GeneratedField::NumberOfIndexedObjects),
+                            "numberOfNodes" | "number_of_nodes" => Ok(GeneratedField::NumberOfNodes),
+                            "numberOfNodesWithoutEdges" | "number_of_nodes_without_edges" => Ok(GeneratedField::NumberOfNodesWithoutEdges),
+                            "numberOfNodesWithoutIndegree" | "number_of_nodes_without_indegree" => Ok(GeneratedField::NumberOfNodesWithoutIndegree),
+                            "numberOfObjects" | "number_of_objects" => Ok(GeneratedField::NumberOfObjects),
+                            "numberOfRemovedObjects" | "number_of_removed_objects" => Ok(GeneratedField::NumberOfRemovedObjects),
+                            "sizeOfObjectRepository" | "size_of_object_repository" => Ok(GeneratedField::SizeOfObjectRepository),
+                            "sizeOfRefinementObjectRepository" | "size_of_refinement_object_repository" => Ok(GeneratedField::SizeOfRefinementObjectRepository),
+                            "varianceOfIndegree" | "variance_of_indegree" => Ok(GeneratedField::VarianceOfIndegree),
+                            "varianceOfOutdegree" | "variance_of_outdegree" => Ok(GeneratedField::VarianceOfOutdegree),
+                            "meanEdgeLength" | "mean_edge_length" => Ok(GeneratedField::MeanEdgeLength),
+                            "meanEdgeLengthFor10Edges" | "mean_edge_length_for_10_edges" => Ok(GeneratedField::MeanEdgeLengthFor10Edges),
+                            "meanIndegreeDistanceFor10Edges" | "mean_indegree_distance_for_10_edges" => Ok(GeneratedField::MeanIndegreeDistanceFor10Edges),
+                            "meanNumberOfEdgesPerNode" | "mean_number_of_edges_per_node" => Ok(GeneratedField::MeanNumberOfEdgesPerNode),
                             "c1Indegree" | "c1_indegree" => Ok(GeneratedField::C1Indegree),
                             "c5Indegree" | "c5_indegree" => Ok(GeneratedField::C5Indegree),
                             "c95Outdegree" | "c95_outdegree" => Ok(GeneratedField::C95Outdegree),
                             "c99Outdegree" | "c99_outdegree" => Ok(GeneratedField::C99Outdegree),
                             "indegreeCount" | "indegree_count" => Ok(GeneratedField::IndegreeCount),
-                            "outdegreeHistogram" | "outdegree_histogram" => {
-                                Ok(GeneratedField::OutdegreeHistogram)
-                            }
-                            "indegreeHistogram" | "indegree_histogram" => {
-                                Ok(GeneratedField::IndegreeHistogram)
-                            }
+                            "outdegreeHistogram" | "outdegree_histogram" => Ok(GeneratedField::OutdegreeHistogram),
+                            "indegreeHistogram" | "indegree_histogram" => Ok(GeneratedField::IndegreeHistogram),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -3322,12 +2862,9 @@ impl<'de> serde::Deserialize<'de> for info::index::Statistics {
                 formatter.write_str("struct payload.v1.Info.Index.Statistics")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<info::index::Statistics, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::index::Statistics, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut valid__ = None;
                 let mut median_indegree__ = None;
@@ -3374,331 +2911,260 @@ impl<'de> serde::Deserialize<'de> for info::index::Statistics {
                             if median_indegree__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("medianIndegree"));
                             }
-                            median_indegree__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            median_indegree__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::MedianOutdegree => {
                             if median_outdegree__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("medianOutdegree"));
                             }
-                            median_outdegree__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            median_outdegree__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::MaxNumberOfIndegree => {
                             if max_number_of_indegree__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "maxNumberOfIndegree",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("maxNumberOfIndegree"));
                             }
-                            max_number_of_indegree__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            max_number_of_indegree__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::MaxNumberOfOutdegree => {
                             if max_number_of_outdegree__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "maxNumberOfOutdegree",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("maxNumberOfOutdegree"));
                             }
-                            max_number_of_outdegree__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            max_number_of_outdegree__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::MinNumberOfIndegree => {
                             if min_number_of_indegree__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "minNumberOfIndegree",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("minNumberOfIndegree"));
                             }
-                            min_number_of_indegree__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            min_number_of_indegree__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::MinNumberOfOutdegree => {
                             if min_number_of_outdegree__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "minNumberOfOutdegree",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("minNumberOfOutdegree"));
                             }
-                            min_number_of_outdegree__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            min_number_of_outdegree__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::ModeIndegree => {
                             if mode_indegree__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("modeIndegree"));
                             }
-                            mode_indegree__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            mode_indegree__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::ModeOutdegree => {
                             if mode_outdegree__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("modeOutdegree"));
                             }
-                            mode_outdegree__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            mode_outdegree__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::NodesSkippedFor10Edges => {
                             if nodes_skipped_for_10_edges__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "nodesSkippedFor10Edges",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("nodesSkippedFor10Edges"));
                             }
-                            nodes_skipped_for_10_edges__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            nodes_skipped_for_10_edges__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::NodesSkippedForIndegreeDistance => {
                             if nodes_skipped_for_indegree_distance__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "nodesSkippedForIndegreeDistance",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("nodesSkippedForIndegreeDistance"));
                             }
-                            nodes_skipped_for_indegree_distance__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            nodes_skipped_for_indegree_distance__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::NumberOfEdges => {
                             if number_of_edges__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("numberOfEdges"));
                             }
-                            number_of_edges__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            number_of_edges__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::NumberOfIndexedObjects => {
                             if number_of_indexed_objects__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "numberOfIndexedObjects",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("numberOfIndexedObjects"));
                             }
-                            number_of_indexed_objects__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            number_of_indexed_objects__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::NumberOfNodes => {
                             if number_of_nodes__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("numberOfNodes"));
                             }
-                            number_of_nodes__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            number_of_nodes__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::NumberOfNodesWithoutEdges => {
                             if number_of_nodes_without_edges__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "numberOfNodesWithoutEdges",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("numberOfNodesWithoutEdges"));
                             }
-                            number_of_nodes_without_edges__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            number_of_nodes_without_edges__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::NumberOfNodesWithoutIndegree => {
                             if number_of_nodes_without_indegree__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "numberOfNodesWithoutIndegree",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("numberOfNodesWithoutIndegree"));
                             }
-                            number_of_nodes_without_indegree__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            number_of_nodes_without_indegree__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::NumberOfObjects => {
                             if number_of_objects__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("numberOfObjects"));
                             }
-                            number_of_objects__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            number_of_objects__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::NumberOfRemovedObjects => {
                             if number_of_removed_objects__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "numberOfRemovedObjects",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("numberOfRemovedObjects"));
                             }
-                            number_of_removed_objects__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            number_of_removed_objects__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::SizeOfObjectRepository => {
                             if size_of_object_repository__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "sizeOfObjectRepository",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("sizeOfObjectRepository"));
                             }
-                            size_of_object_repository__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            size_of_object_repository__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::SizeOfRefinementObjectRepository => {
                             if size_of_refinement_object_repository__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "sizeOfRefinementObjectRepository",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("sizeOfRefinementObjectRepository"));
                             }
-                            size_of_refinement_object_repository__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            size_of_refinement_object_repository__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::VarianceOfIndegree => {
                             if variance_of_indegree__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "varianceOfIndegree",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("varianceOfIndegree"));
                             }
-                            variance_of_indegree__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            variance_of_indegree__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::VarianceOfOutdegree => {
                             if variance_of_outdegree__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "varianceOfOutdegree",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("varianceOfOutdegree"));
                             }
-                            variance_of_outdegree__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            variance_of_outdegree__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::MeanEdgeLength => {
                             if mean_edge_length__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("meanEdgeLength"));
                             }
-                            mean_edge_length__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            mean_edge_length__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::MeanEdgeLengthFor10Edges => {
                             if mean_edge_length_for_10_edges__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "meanEdgeLengthFor10Edges",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("meanEdgeLengthFor10Edges"));
                             }
-                            mean_edge_length_for_10_edges__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            mean_edge_length_for_10_edges__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::MeanIndegreeDistanceFor10Edges => {
                             if mean_indegree_distance_for_10_edges__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "meanIndegreeDistanceFor10Edges",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("meanIndegreeDistanceFor10Edges"));
                             }
-                            mean_indegree_distance_for_10_edges__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            mean_indegree_distance_for_10_edges__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::MeanNumberOfEdgesPerNode => {
                             if mean_number_of_edges_per_node__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "meanNumberOfEdgesPerNode",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("meanNumberOfEdgesPerNode"));
                             }
-                            mean_number_of_edges_per_node__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            mean_number_of_edges_per_node__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::C1Indegree => {
                             if c1_indegree__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("c1Indegree"));
                             }
-                            c1_indegree__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            c1_indegree__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::C5Indegree => {
                             if c5_indegree__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("c5Indegree"));
                             }
-                            c5_indegree__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            c5_indegree__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::C95Outdegree => {
                             if c95_outdegree__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("c95Outdegree"));
                             }
-                            c95_outdegree__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            c95_outdegree__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::C99Outdegree => {
                             if c99_outdegree__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("c99Outdegree"));
                             }
-                            c99_outdegree__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            c99_outdegree__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::IndegreeCount => {
                             if indegree_count__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("indegreeCount"));
                             }
-                            indegree_count__ = Some(
-                                map_.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
-                                    .into_iter()
-                                    .map(|x| x.0)
-                                    .collect(),
-                            );
+                            indegree_count__ = 
+                                Some(map_.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
+                                    .into_iter().map(|x| x.0).collect())
+                            ;
                         }
                         GeneratedField::OutdegreeHistogram => {
                             if outdegree_histogram__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "outdegreeHistogram",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("outdegreeHistogram"));
                             }
-                            outdegree_histogram__ = Some(
-                                map_.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
-                                    .into_iter()
-                                    .map(|x| x.0)
-                                    .collect(),
-                            );
+                            outdegree_histogram__ = 
+                                Some(map_.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
+                                    .into_iter().map(|x| x.0).collect())
+                            ;
                         }
                         GeneratedField::IndegreeHistogram => {
                             if indegree_histogram__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("indegreeHistogram"));
                             }
-                            indegree_histogram__ = Some(
-                                map_.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
-                                    .into_iter()
-                                    .map(|x| x.0)
-                                    .collect(),
-                            );
+                            indegree_histogram__ = 
+                                Some(map_.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
+                                    .into_iter().map(|x| x.0).collect())
+                            ;
                         }
                     }
                 }
@@ -3713,29 +3179,22 @@ impl<'de> serde::Deserialize<'de> for info::index::Statistics {
                     mode_indegree: mode_indegree__.unwrap_or_default(),
                     mode_outdegree: mode_outdegree__.unwrap_or_default(),
                     nodes_skipped_for_10_edges: nodes_skipped_for_10_edges__.unwrap_or_default(),
-                    nodes_skipped_for_indegree_distance: nodes_skipped_for_indegree_distance__
-                        .unwrap_or_default(),
+                    nodes_skipped_for_indegree_distance: nodes_skipped_for_indegree_distance__.unwrap_or_default(),
                     number_of_edges: number_of_edges__.unwrap_or_default(),
                     number_of_indexed_objects: number_of_indexed_objects__.unwrap_or_default(),
                     number_of_nodes: number_of_nodes__.unwrap_or_default(),
-                    number_of_nodes_without_edges: number_of_nodes_without_edges__
-                        .unwrap_or_default(),
-                    number_of_nodes_without_indegree: number_of_nodes_without_indegree__
-                        .unwrap_or_default(),
+                    number_of_nodes_without_edges: number_of_nodes_without_edges__.unwrap_or_default(),
+                    number_of_nodes_without_indegree: number_of_nodes_without_indegree__.unwrap_or_default(),
                     number_of_objects: number_of_objects__.unwrap_or_default(),
                     number_of_removed_objects: number_of_removed_objects__.unwrap_or_default(),
                     size_of_object_repository: size_of_object_repository__.unwrap_or_default(),
-                    size_of_refinement_object_repository: size_of_refinement_object_repository__
-                        .unwrap_or_default(),
+                    size_of_refinement_object_repository: size_of_refinement_object_repository__.unwrap_or_default(),
                     variance_of_indegree: variance_of_indegree__.unwrap_or_default(),
                     variance_of_outdegree: variance_of_outdegree__.unwrap_or_default(),
                     mean_edge_length: mean_edge_length__.unwrap_or_default(),
-                    mean_edge_length_for_10_edges: mean_edge_length_for_10_edges__
-                        .unwrap_or_default(),
-                    mean_indegree_distance_for_10_edges: mean_indegree_distance_for_10_edges__
-                        .unwrap_or_default(),
-                    mean_number_of_edges_per_node: mean_number_of_edges_per_node__
-                        .unwrap_or_default(),
+                    mean_edge_length_for_10_edges: mean_edge_length_for_10_edges__.unwrap_or_default(),
+                    mean_indegree_distance_for_10_edges: mean_indegree_distance_for_10_edges__.unwrap_or_default(),
+                    mean_number_of_edges_per_node: mean_number_of_edges_per_node__.unwrap_or_default(),
                     c1_indegree: c1_indegree__.unwrap_or_default(),
                     c5_indegree: c5_indegree__.unwrap_or_default(),
                     c95_outdegree: c95_outdegree__.unwrap_or_default(),
@@ -3746,11 +3205,7 @@ impl<'de> serde::Deserialize<'de> for info::index::Statistics {
                 })
             }
         }
-        deserializer.deserialize_struct(
-            "payload.v1.Info.Index.Statistics",
-            FIELDS,
-            GeneratedVisitor,
-        )
+        deserializer.deserialize_struct("payload.v1.Info.Index.Statistics", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for info::index::StatisticsDetail {
@@ -3764,8 +3219,7 @@ impl serde::Serialize for info::index::StatisticsDetail {
         if !self.details.is_empty() {
             len += 1;
         }
-        let mut struct_ser =
-            serializer.serialize_struct("payload.v1.Info.Index.StatisticsDetail", len)?;
+        let mut struct_ser = serializer.serialize_struct("payload.v1.Info.Index.StatisticsDetail", len)?;
         if !self.details.is_empty() {
             struct_ser.serialize_field("details", &self.details)?;
         }
@@ -3778,7 +3232,9 @@ impl<'de> serde::Deserialize<'de> for info::index::StatisticsDetail {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["details"];
+        const FIELDS: &[&str] = &[
+            "details",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -3794,10 +3250,7 @@ impl<'de> serde::Deserialize<'de> for info::index::StatisticsDetail {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -3823,12 +3276,9 @@ impl<'de> serde::Deserialize<'de> for info::index::StatisticsDetail {
                 formatter.write_str("struct payload.v1.Info.Index.StatisticsDetail")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<info::index::StatisticsDetail, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::index::StatisticsDetail, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut details__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -3837,7 +3287,9 @@ impl<'de> serde::Deserialize<'de> for info::index::StatisticsDetail {
                             if details__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("details"));
                             }
-                            details__ = Some(map_.next_value::<std::collections::HashMap<_, _>>()?);
+                            details__ = Some(
+                                map_.next_value::<std::collections::HashMap<_, _>>()?
+                            );
                         }
                     }
                 }
@@ -3846,11 +3298,7 @@ impl<'de> serde::Deserialize<'de> for info::index::StatisticsDetail {
                 })
             }
         }
-        deserializer.deserialize_struct(
-            "payload.v1.Info.Index.StatisticsDetail",
-            FIELDS,
-            GeneratedVisitor,
-        )
+        deserializer.deserialize_struct("payload.v1.Info.Index.StatisticsDetail", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for info::index::Uuid {
@@ -3871,10 +3319,12 @@ impl<'de> serde::Deserialize<'de> for info::index::Uuid {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[];
+        const FIELDS: &[&str] = &[
+        ];
 
         #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {}
+        enum GeneratedField {
+        }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
             where
@@ -3885,10 +3335,7 @@ impl<'de> serde::Deserialize<'de> for info::index::Uuid {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -3897,7 +3344,7 @@ impl<'de> serde::Deserialize<'de> for info::index::Uuid {
                     where
                         E: serde::de::Error,
                     {
-                        Err(serde::de::Error::unknown_field(value, FIELDS))
+                            Err(serde::de::Error::unknown_field(value, FIELDS))
                     }
                 }
                 deserializer.deserialize_identifier(GeneratedVisitor)
@@ -3912,13 +3359,14 @@ impl<'de> serde::Deserialize<'de> for info::index::Uuid {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::index::Uuid, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 while map_.next_key::<GeneratedField>()?.is_some() {
                     let _ = map_.next_value::<serde::de::IgnoredAny>()?;
                 }
-                Ok(info::index::Uuid {})
+                Ok(info::index::Uuid {
+                })
             }
         }
         deserializer.deserialize_struct("payload.v1.Info.Index.UUID", FIELDS, GeneratedVisitor)
@@ -3935,8 +3383,7 @@ impl serde::Serialize for info::index::uuid::Committed {
         if !self.uuid.is_empty() {
             len += 1;
         }
-        let mut struct_ser =
-            serializer.serialize_struct("payload.v1.Info.Index.UUID.Committed", len)?;
+        let mut struct_ser = serializer.serialize_struct("payload.v1.Info.Index.UUID.Committed", len)?;
         if !self.uuid.is_empty() {
             struct_ser.serialize_field("uuid", &self.uuid)?;
         }
@@ -3949,7 +3396,9 @@ impl<'de> serde::Deserialize<'de> for info::index::uuid::Committed {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["uuid"];
+        const FIELDS: &[&str] = &[
+            "uuid",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -3965,10 +3414,7 @@ impl<'de> serde::Deserialize<'de> for info::index::uuid::Committed {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -3994,12 +3440,9 @@ impl<'de> serde::Deserialize<'de> for info::index::uuid::Committed {
                 formatter.write_str("struct payload.v1.Info.Index.UUID.Committed")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<info::index::uuid::Committed, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::index::uuid::Committed, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut uuid__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -4017,11 +3460,7 @@ impl<'de> serde::Deserialize<'de> for info::index::uuid::Committed {
                 })
             }
         }
-        deserializer.deserialize_struct(
-            "payload.v1.Info.Index.UUID.Committed",
-            FIELDS,
-            GeneratedVisitor,
-        )
+        deserializer.deserialize_struct("payload.v1.Info.Index.UUID.Committed", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for info::index::uuid::Uncommitted {
@@ -4035,8 +3474,7 @@ impl serde::Serialize for info::index::uuid::Uncommitted {
         if !self.uuid.is_empty() {
             len += 1;
         }
-        let mut struct_ser =
-            serializer.serialize_struct("payload.v1.Info.Index.UUID.Uncommitted", len)?;
+        let mut struct_ser = serializer.serialize_struct("payload.v1.Info.Index.UUID.Uncommitted", len)?;
         if !self.uuid.is_empty() {
             struct_ser.serialize_field("uuid", &self.uuid)?;
         }
@@ -4049,7 +3487,9 @@ impl<'de> serde::Deserialize<'de> for info::index::uuid::Uncommitted {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["uuid"];
+        const FIELDS: &[&str] = &[
+            "uuid",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -4065,10 +3505,7 @@ impl<'de> serde::Deserialize<'de> for info::index::uuid::Uncommitted {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -4094,12 +3531,9 @@ impl<'de> serde::Deserialize<'de> for info::index::uuid::Uncommitted {
                 formatter.write_str("struct payload.v1.Info.Index.UUID.Uncommitted")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<info::index::uuid::Uncommitted, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::index::uuid::Uncommitted, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut uuid__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -4117,11 +3551,7 @@ impl<'de> serde::Deserialize<'de> for info::index::uuid::Uncommitted {
                 })
             }
         }
-        deserializer.deserialize_struct(
-            "payload.v1.Info.Index.UUID.Uncommitted",
-            FIELDS,
-            GeneratedVisitor,
-        )
+        deserializer.deserialize_struct("payload.v1.Info.Index.UUID.Uncommitted", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for info::Labels {
@@ -4148,7 +3578,9 @@ impl<'de> serde::Deserialize<'de> for info::Labels {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["labels"];
+        const FIELDS: &[&str] = &[
+            "labels",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -4164,10 +3596,7 @@ impl<'de> serde::Deserialize<'de> for info::Labels {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -4194,8 +3623,8 @@ impl<'de> serde::Deserialize<'de> for info::Labels {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::Labels, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut labels__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -4204,7 +3633,9 @@ impl<'de> serde::Deserialize<'de> for info::Labels {
                             if labels__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("labels"));
                             }
-                            labels__ = Some(map_.next_value::<std::collections::HashMap<_, _>>()?);
+                            labels__ = Some(
+                                map_.next_value::<std::collections::HashMap<_, _>>()?
+                            );
                         }
                     }
                 }
@@ -4252,7 +3683,11 @@ impl<'de> serde::Deserialize<'de> for info::Memory {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["limit", "request", "usage"];
+        const FIELDS: &[&str] = &[
+            "limit",
+            "request",
+            "usage",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -4270,10 +3705,7 @@ impl<'de> serde::Deserialize<'de> for info::Memory {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -4302,8 +3734,8 @@ impl<'de> serde::Deserialize<'de> for info::Memory {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::Memory, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut limit__ = None;
                 let mut request__ = None;
@@ -4314,28 +3746,25 @@ impl<'de> serde::Deserialize<'de> for info::Memory {
                             if limit__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("limit"));
                             }
-                            limit__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            limit__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::Request => {
                             if request__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("request"));
                             }
-                            request__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            request__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::Usage => {
                             if usage__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("usage"));
                             }
-                            usage__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            usage__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                     }
                 }
@@ -4433,10 +3862,7 @@ impl<'de> serde::Deserialize<'de> for info::Node {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -4468,8 +3894,8 @@ impl<'de> serde::Deserialize<'de> for info::Node {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::Node, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut name__ = None;
                 let mut internal_addr__ = None;
@@ -4554,7 +3980,9 @@ impl<'de> serde::Deserialize<'de> for info::Nodes {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["nodes"];
+        const FIELDS: &[&str] = &[
+            "nodes",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -4570,10 +3998,7 @@ impl<'de> serde::Deserialize<'de> for info::Nodes {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -4600,8 +4025,8 @@ impl<'de> serde::Deserialize<'de> for info::Nodes {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::Nodes, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut nodes__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -4713,10 +4138,7 @@ impl<'de> serde::Deserialize<'de> for info::Pod {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -4749,8 +4171,8 @@ impl<'de> serde::Deserialize<'de> for info::Pod {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::Pod, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut app_name__ = None;
                 let mut name__ = None;
@@ -4843,7 +4265,9 @@ impl<'de> serde::Deserialize<'de> for info::Pods {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["pods"];
+        const FIELDS: &[&str] = &[
+            "pods",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -4859,10 +4283,7 @@ impl<'de> serde::Deserialize<'de> for info::Pods {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -4889,8 +4310,8 @@ impl<'de> serde::Deserialize<'de> for info::Pods {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::Pods, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut pods__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -4909,130 +4330,6 @@ impl<'de> serde::Deserialize<'de> for info::Pods {
             }
         }
         deserializer.deserialize_struct("payload.v1.Info.Pods", FIELDS, GeneratedVisitor)
-    }
-}
-impl serde::Serialize for info::ResourceStats {
-    #[allow(deprecated)]
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use serde::ser::SerializeStruct;
-        let mut len = 0;
-        if !self.name.is_empty() {
-            len += 1;
-        }
-        if !self.ip.is_empty() {
-            len += 1;
-        }
-        if self.cgroup_stats.is_some() {
-            len += 1;
-        }
-        let mut struct_ser = serializer.serialize_struct("payload.v1.Info.ResourceStats", len)?;
-        if !self.name.is_empty() {
-            struct_ser.serialize_field("name", &self.name)?;
-        }
-        if !self.ip.is_empty() {
-            struct_ser.serialize_field("ip", &self.ip)?;
-        }
-        if let Some(v) = self.cgroup_stats.as_ref() {
-            struct_ser.serialize_field("cgroupStats", v)?;
-        }
-        struct_ser.end()
-    }
-}
-impl<'de> serde::Deserialize<'de> for info::ResourceStats {
-    #[allow(deprecated)]
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &[&str] = &["name", "ip", "cgroup_stats", "cgroupStats"];
-
-        #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {
-            Name,
-            Ip,
-            CgroupStats,
-        }
-        impl<'de> serde::Deserialize<'de> for GeneratedField {
-            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
-            where
-                D: serde::Deserializer<'de>,
-            {
-                struct GeneratedVisitor;
-
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-                    type Value = GeneratedField;
-
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
-                    }
-
-                    #[allow(unused_variables)]
-                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
-                    where
-                        E: serde::de::Error,
-                    {
-                        match value {
-                            "name" => Ok(GeneratedField::Name),
-                            "ip" => Ok(GeneratedField::Ip),
-                            "cgroupStats" | "cgroup_stats" => Ok(GeneratedField::CgroupStats),
-                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
-                        }
-                    }
-                }
-                deserializer.deserialize_identifier(GeneratedVisitor)
-            }
-        }
-        struct GeneratedVisitor;
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = info::ResourceStats;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct payload.v1.Info.ResourceStats")
-            }
-
-            fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::ResourceStats, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
-            {
-                let mut name__ = None;
-                let mut ip__ = None;
-                let mut cgroup_stats__ = None;
-                while let Some(k) = map_.next_key()? {
-                    match k {
-                        GeneratedField::Name => {
-                            if name__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("name"));
-                            }
-                            name__ = Some(map_.next_value()?);
-                        }
-                        GeneratedField::Ip => {
-                            if ip__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("ip"));
-                            }
-                            ip__ = Some(map_.next_value()?);
-                        }
-                        GeneratedField::CgroupStats => {
-                            if cgroup_stats__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("cgroupStats"));
-                            }
-                            cgroup_stats__ = map_.next_value()?;
-                        }
-                    }
-                }
-                Ok(info::ResourceStats {
-                    name: name__.unwrap_or_default(),
-                    ip: ip__.unwrap_or_default(),
-                    cgroup_stats: cgroup_stats__,
-                })
-            }
-        }
-        deserializer.deserialize_struct("payload.v1.Info.ResourceStats", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for info::Service {
@@ -5119,10 +4416,7 @@ impl<'de> serde::Deserialize<'de> for info::Service {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -5154,8 +4448,8 @@ impl<'de> serde::Deserialize<'de> for info::Service {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::Service, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut name__ = None;
                 let mut cluster_ip__ = None;
@@ -5246,7 +4540,10 @@ impl<'de> serde::Deserialize<'de> for info::ServicePort {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["name", "port"];
+        const FIELDS: &[&str] = &[
+            "name",
+            "port",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -5263,10 +4560,7 @@ impl<'de> serde::Deserialize<'de> for info::ServicePort {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -5294,8 +4588,8 @@ impl<'de> serde::Deserialize<'de> for info::ServicePort {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::ServicePort, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut name__ = None;
                 let mut port__ = None;
@@ -5311,10 +4605,9 @@ impl<'de> serde::Deserialize<'de> for info::ServicePort {
                             if port__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("port"));
                             }
-                            port__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            port__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                     }
                 }
@@ -5351,7 +4644,9 @@ impl<'de> serde::Deserialize<'de> for info::Services {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["services"];
+        const FIELDS: &[&str] = &[
+            "services",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -5367,10 +4662,7 @@ impl<'de> serde::Deserialize<'de> for info::Services {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -5397,8 +4689,8 @@ impl<'de> serde::Deserialize<'de> for info::Services {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::Services, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut services__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -5419,6 +4711,454 @@ impl<'de> serde::Deserialize<'de> for info::Services {
         deserializer.deserialize_struct("payload.v1.Info.Services", FIELDS, GeneratedVisitor)
     }
 }
+impl serde::Serialize for info::Stats {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let len = 0;
+        let struct_ser = serializer.serialize_struct("payload.v1.Info.Stats", len)?;
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for info::Stats {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                            Err(serde::de::Error::unknown_field(value, FIELDS))
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = info::Stats;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct payload.v1.Info.Stats")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::Stats, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                while map_.next_key::<GeneratedField>()?.is_some() {
+                    let _ = map_.next_value::<serde::de::IgnoredAny>()?;
+                }
+                Ok(info::Stats {
+                })
+            }
+        }
+        deserializer.deserialize_struct("payload.v1.Info.Stats", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for info::stats::CgroupStats {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.cpu_limit_cores != 0. {
+            len += 1;
+        }
+        if self.cpu_usage_cores != 0. {
+            len += 1;
+        }
+        if self.memory_limit_bytes != 0 {
+            len += 1;
+        }
+        if self.memory_usage_bytes != 0 {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("payload.v1.Info.Stats.CgroupStats", len)?;
+        if self.cpu_limit_cores != 0. {
+            struct_ser.serialize_field("cpuLimitCores", &self.cpu_limit_cores)?;
+        }
+        if self.cpu_usage_cores != 0. {
+            struct_ser.serialize_field("cpuUsageCores", &self.cpu_usage_cores)?;
+        }
+        if self.memory_limit_bytes != 0 {
+            #[allow(clippy::needless_borrow)]
+            #[allow(clippy::needless_borrows_for_generic_args)]
+            struct_ser.serialize_field("memoryLimitBytes", ToString::to_string(&self.memory_limit_bytes).as_str())?;
+        }
+        if self.memory_usage_bytes != 0 {
+            #[allow(clippy::needless_borrow)]
+            #[allow(clippy::needless_borrows_for_generic_args)]
+            struct_ser.serialize_field("memoryUsageBytes", ToString::to_string(&self.memory_usage_bytes).as_str())?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for info::stats::CgroupStats {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "cpu_limit_cores",
+            "cpuLimitCores",
+            "cpu_usage_cores",
+            "cpuUsageCores",
+            "memory_limit_bytes",
+            "memoryLimitBytes",
+            "memory_usage_bytes",
+            "memoryUsageBytes",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            CpuLimitCores,
+            CpuUsageCores,
+            MemoryLimitBytes,
+            MemoryUsageBytes,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "cpuLimitCores" | "cpu_limit_cores" => Ok(GeneratedField::CpuLimitCores),
+                            "cpuUsageCores" | "cpu_usage_cores" => Ok(GeneratedField::CpuUsageCores),
+                            "memoryLimitBytes" | "memory_limit_bytes" => Ok(GeneratedField::MemoryLimitBytes),
+                            "memoryUsageBytes" | "memory_usage_bytes" => Ok(GeneratedField::MemoryUsageBytes),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = info::stats::CgroupStats;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct payload.v1.Info.Stats.CgroupStats")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::stats::CgroupStats, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut cpu_limit_cores__ = None;
+                let mut cpu_usage_cores__ = None;
+                let mut memory_limit_bytes__ = None;
+                let mut memory_usage_bytes__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::CpuLimitCores => {
+                            if cpu_limit_cores__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("cpuLimitCores"));
+                            }
+                            cpu_limit_cores__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::CpuUsageCores => {
+                            if cpu_usage_cores__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("cpuUsageCores"));
+                            }
+                            cpu_usage_cores__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::MemoryLimitBytes => {
+                            if memory_limit_bytes__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("memoryLimitBytes"));
+                            }
+                            memory_limit_bytes__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::MemoryUsageBytes => {
+                            if memory_usage_bytes__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("memoryUsageBytes"));
+                            }
+                            memory_usage_bytes__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                    }
+                }
+                Ok(info::stats::CgroupStats {
+                    cpu_limit_cores: cpu_limit_cores__.unwrap_or_default(),
+                    cpu_usage_cores: cpu_usage_cores__.unwrap_or_default(),
+                    memory_limit_bytes: memory_limit_bytes__.unwrap_or_default(),
+                    memory_usage_bytes: memory_usage_bytes__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("payload.v1.Info.Stats.CgroupStats", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for info::stats::ResourceStats {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.name.is_empty() {
+            len += 1;
+        }
+        if !self.ip.is_empty() {
+            len += 1;
+        }
+        if self.cgroup_stats.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("payload.v1.Info.Stats.ResourceStats", len)?;
+        if !self.name.is_empty() {
+            struct_ser.serialize_field("name", &self.name)?;
+        }
+        if !self.ip.is_empty() {
+            struct_ser.serialize_field("ip", &self.ip)?;
+        }
+        if let Some(v) = self.cgroup_stats.as_ref() {
+            struct_ser.serialize_field("cgroupStats", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for info::stats::ResourceStats {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "name",
+            "ip",
+            "cgroup_stats",
+            "cgroupStats",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Name,
+            Ip,
+            CgroupStats,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "name" => Ok(GeneratedField::Name),
+                            "ip" => Ok(GeneratedField::Ip),
+                            "cgroupStats" | "cgroup_stats" => Ok(GeneratedField::CgroupStats),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = info::stats::ResourceStats;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct payload.v1.Info.Stats.ResourceStats")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::stats::ResourceStats, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut name__ = None;
+                let mut ip__ = None;
+                let mut cgroup_stats__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::Name => {
+                            if name__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("name"));
+                            }
+                            name__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::Ip => {
+                            if ip__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("ip"));
+                            }
+                            ip__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::CgroupStats => {
+                            if cgroup_stats__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("cgroupStats"));
+                            }
+                            cgroup_stats__ = map_.next_value()?;
+                        }
+                    }
+                }
+                Ok(info::stats::ResourceStats {
+                    name: name__.unwrap_or_default(),
+                    ip: ip__.unwrap_or_default(),
+                    cgroup_stats: cgroup_stats__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("payload.v1.Info.Stats.ResourceStats", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for info::stats::ResourceStatsDetail {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.details.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("payload.v1.Info.Stats.ResourceStatsDetail", len)?;
+        if !self.details.is_empty() {
+            struct_ser.serialize_field("details", &self.details)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for info::stats::ResourceStatsDetail {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "details",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Details,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "details" => Ok(GeneratedField::Details),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = info::stats::ResourceStatsDetail;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct payload.v1.Info.Stats.ResourceStatsDetail")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::stats::ResourceStatsDetail, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut details__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::Details => {
+                            if details__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("details"));
+                            }
+                            details__ = Some(
+                                map_.next_value::<std::collections::HashMap<_, _>>()?
+                            );
+                        }
+                    }
+                }
+                Ok(info::stats::ResourceStatsDetail {
+                    details: details__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("payload.v1.Info.Stats.ResourceStatsDetail", FIELDS, GeneratedVisitor)
+    }
+}
 impl serde::Serialize for Insert {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -5437,10 +5177,12 @@ impl<'de> serde::Deserialize<'de> for Insert {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[];
+        const FIELDS: &[&str] = &[
+        ];
 
         #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {}
+        enum GeneratedField {
+        }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
             where
@@ -5451,10 +5193,7 @@ impl<'de> serde::Deserialize<'de> for Insert {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -5463,7 +5202,7 @@ impl<'de> serde::Deserialize<'de> for Insert {
                     where
                         E: serde::de::Error,
                     {
-                        Err(serde::de::Error::unknown_field(value, FIELDS))
+                            Err(serde::de::Error::unknown_field(value, FIELDS))
                     }
                 }
                 deserializer.deserialize_identifier(GeneratedVisitor)
@@ -5478,13 +5217,14 @@ impl<'de> serde::Deserialize<'de> for Insert {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<Insert, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 while map_.next_key::<GeneratedField>()?.is_some() {
                     let _ = map_.next_value::<serde::de::IgnoredAny>()?;
                 }
-                Ok(Insert {})
+                Ok(Insert {
+                })
             }
         }
         deserializer.deserialize_struct("payload.v1.Insert", FIELDS, GeneratedVisitor)
@@ -5517,8 +5257,7 @@ impl serde::Serialize for insert::Config {
         if self.timestamp != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser
-                .serialize_field("timestamp", ToString::to_string(&self.timestamp).as_str())?;
+            struct_ser.serialize_field("timestamp", ToString::to_string(&self.timestamp).as_str())?;
         }
         struct_ser.end()
     }
@@ -5552,10 +5291,7 @@ impl<'de> serde::Deserialize<'de> for insert::Config {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -5565,9 +5301,7 @@ impl<'de> serde::Deserialize<'de> for insert::Config {
                         E: serde::de::Error,
                     {
                         match value {
-                            "skipStrictExistCheck" | "skip_strict_exist_check" => {
-                                Ok(GeneratedField::SkipStrictExistCheck)
-                            }
+                            "skipStrictExistCheck" | "skip_strict_exist_check" => Ok(GeneratedField::SkipStrictExistCheck),
                             "filters" => Ok(GeneratedField::Filters),
                             "timestamp" => Ok(GeneratedField::Timestamp),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
@@ -5586,8 +5320,8 @@ impl<'de> serde::Deserialize<'de> for insert::Config {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<insert::Config, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut skip_strict_exist_check__ = None;
                 let mut filters__ = None;
@@ -5596,9 +5330,7 @@ impl<'de> serde::Deserialize<'de> for insert::Config {
                     match k {
                         GeneratedField::SkipStrictExistCheck => {
                             if skip_strict_exist_check__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "skipStrictExistCheck",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("skipStrictExistCheck"));
                             }
                             skip_strict_exist_check__ = Some(map_.next_value()?);
                         }
@@ -5612,10 +5344,9 @@ impl<'de> serde::Deserialize<'de> for insert::Config {
                             if timestamp__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("timestamp"));
                             }
-                            timestamp__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            timestamp__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                     }
                 }
@@ -5640,8 +5371,7 @@ impl serde::Serialize for insert::MultiObjectRequest {
         if !self.requests.is_empty() {
             len += 1;
         }
-        let mut struct_ser =
-            serializer.serialize_struct("payload.v1.Insert.MultiObjectRequest", len)?;
+        let mut struct_ser = serializer.serialize_struct("payload.v1.Insert.MultiObjectRequest", len)?;
         if !self.requests.is_empty() {
             struct_ser.serialize_field("requests", &self.requests)?;
         }
@@ -5654,7 +5384,9 @@ impl<'de> serde::Deserialize<'de> for insert::MultiObjectRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["requests"];
+        const FIELDS: &[&str] = &[
+            "requests",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -5670,10 +5402,7 @@ impl<'de> serde::Deserialize<'de> for insert::MultiObjectRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -5699,12 +5428,9 @@ impl<'de> serde::Deserialize<'de> for insert::MultiObjectRequest {
                 formatter.write_str("struct payload.v1.Insert.MultiObjectRequest")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<insert::MultiObjectRequest, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<insert::MultiObjectRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut requests__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -5722,11 +5448,7 @@ impl<'de> serde::Deserialize<'de> for insert::MultiObjectRequest {
                 })
             }
         }
-        deserializer.deserialize_struct(
-            "payload.v1.Insert.MultiObjectRequest",
-            FIELDS,
-            GeneratedVisitor,
-        )
+        deserializer.deserialize_struct("payload.v1.Insert.MultiObjectRequest", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for insert::MultiRequest {
@@ -5753,7 +5475,9 @@ impl<'de> serde::Deserialize<'de> for insert::MultiRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["requests"];
+        const FIELDS: &[&str] = &[
+            "requests",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -5769,10 +5493,7 @@ impl<'de> serde::Deserialize<'de> for insert::MultiRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -5798,12 +5519,9 @@ impl<'de> serde::Deserialize<'de> for insert::MultiRequest {
                 formatter.write_str("struct payload.v1.Insert.MultiRequest")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<insert::MultiRequest, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<insert::MultiRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut requests__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -5860,7 +5578,11 @@ impl<'de> serde::Deserialize<'de> for insert::ObjectRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["object", "config", "vectorizer"];
+        const FIELDS: &[&str] = &[
+            "object",
+            "config",
+            "vectorizer",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -5878,10 +5600,7 @@ impl<'de> serde::Deserialize<'de> for insert::ObjectRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -5909,12 +5628,9 @@ impl<'de> serde::Deserialize<'de> for insert::ObjectRequest {
                 formatter.write_str("struct payload.v1.Insert.ObjectRequest")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<insert::ObjectRequest, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<insert::ObjectRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut object__ = None;
                 let mut config__ = None;
@@ -5981,7 +5697,10 @@ impl<'de> serde::Deserialize<'de> for insert::Request {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["vector", "config"];
+        const FIELDS: &[&str] = &[
+            "vector",
+            "config",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -5998,10 +5717,7 @@ impl<'de> serde::Deserialize<'de> for insert::Request {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -6029,8 +5745,8 @@ impl<'de> serde::Deserialize<'de> for insert::Request {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<insert::Request, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut vector__ = None;
                 let mut config__ = None;
@@ -6077,10 +5793,12 @@ impl<'de> serde::Deserialize<'de> for Meta {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[];
+        const FIELDS: &[&str] = &[
+        ];
 
         #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {}
+        enum GeneratedField {
+        }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
             where
@@ -6091,10 +5809,7 @@ impl<'de> serde::Deserialize<'de> for Meta {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -6103,7 +5818,7 @@ impl<'de> serde::Deserialize<'de> for Meta {
                     where
                         E: serde::de::Error,
                     {
-                        Err(serde::de::Error::unknown_field(value, FIELDS))
+                            Err(serde::de::Error::unknown_field(value, FIELDS))
                     }
                 }
                 deserializer.deserialize_identifier(GeneratedVisitor)
@@ -6118,13 +5833,14 @@ impl<'de> serde::Deserialize<'de> for Meta {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<Meta, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 while map_.next_key::<GeneratedField>()?.is_some() {
                     let _ = map_.next_value::<serde::de::IgnoredAny>()?;
                 }
-                Ok(Meta {})
+                Ok(Meta {
+                })
             }
         }
         deserializer.deserialize_struct("payload.v1.Meta", FIELDS, GeneratedVisitor)
@@ -6154,7 +5870,9 @@ impl<'de> serde::Deserialize<'de> for meta::Key {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["key"];
+        const FIELDS: &[&str] = &[
+            "key",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -6170,10 +5888,7 @@ impl<'de> serde::Deserialize<'de> for meta::Key {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -6200,8 +5915,8 @@ impl<'de> serde::Deserialize<'de> for meta::Key {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<meta::Key, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut key__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -6252,7 +5967,10 @@ impl<'de> serde::Deserialize<'de> for meta::KeyValue {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["key", "value"];
+        const FIELDS: &[&str] = &[
+            "key",
+            "value",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -6269,10 +5987,7 @@ impl<'de> serde::Deserialize<'de> for meta::KeyValue {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -6300,8 +6015,8 @@ impl<'de> serde::Deserialize<'de> for meta::KeyValue {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<meta::KeyValue, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut key__ = None;
                 let mut value__ = None;
@@ -6343,13 +6058,7 @@ impl serde::Serialize for meta::Value {
         }
         let mut struct_ser = serializer.serialize_struct("payload.v1.Meta.Value", len)?;
         if let Some(v) = self.value.as_ref() {
-            struct_ser.serialize_field(
-                "value",
-                &pbjson_types::Any {
-                    type_url: v.type_url.clone(),
-                    value: v.value.clone().into(),
-                },
-            )?;
+            struct_ser.serialize_field("value", v)?;
         }
         struct_ser.end()
     }
@@ -6360,7 +6069,9 @@ impl<'de> serde::Deserialize<'de> for meta::Value {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["value"];
+        const FIELDS: &[&str] = &[
+            "value",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -6376,10 +6087,7 @@ impl<'de> serde::Deserialize<'de> for meta::Value {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -6406,8 +6114,8 @@ impl<'de> serde::Deserialize<'de> for meta::Value {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<meta::Value, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut value__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -6416,16 +6124,13 @@ impl<'de> serde::Deserialize<'de> for meta::Value {
                             if value__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("value"));
                             }
-                            value__ = map_.next_value::<Option<pbjson_types::Any>>()?.map(|v| {
-                                prost_types::Any {
-                                    type_url: v.type_url,
-                                    value: v.value.to_vec(),
-                                }
-                            });
+                            value__ = map_.next_value()?;
                         }
                     }
                 }
-                Ok(meta::Value { value: value__ })
+                Ok(meta::Value {
+                    value: value__,
+                })
             }
         }
         deserializer.deserialize_struct("payload.v1.Meta.Value", FIELDS, GeneratedVisitor)
@@ -6449,10 +6154,12 @@ impl<'de> serde::Deserialize<'de> for Mirror {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[];
+        const FIELDS: &[&str] = &[
+        ];
 
         #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {}
+        enum GeneratedField {
+        }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
             where
@@ -6463,10 +6170,7 @@ impl<'de> serde::Deserialize<'de> for Mirror {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -6475,7 +6179,7 @@ impl<'de> serde::Deserialize<'de> for Mirror {
                     where
                         E: serde::de::Error,
                     {
-                        Err(serde::de::Error::unknown_field(value, FIELDS))
+                            Err(serde::de::Error::unknown_field(value, FIELDS))
                     }
                 }
                 deserializer.deserialize_identifier(GeneratedVisitor)
@@ -6490,13 +6194,14 @@ impl<'de> serde::Deserialize<'de> for Mirror {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<Mirror, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 while map_.next_key::<GeneratedField>()?.is_some() {
                     let _ = map_.next_value::<serde::de::IgnoredAny>()?;
                 }
-                Ok(Mirror {})
+                Ok(Mirror {
+                })
             }
         }
         deserializer.deserialize_struct("payload.v1.Mirror", FIELDS, GeneratedVisitor)
@@ -6532,7 +6237,10 @@ impl<'de> serde::Deserialize<'de> for mirror::Target {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["host", "port"];
+        const FIELDS: &[&str] = &[
+            "host",
+            "port",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -6549,10 +6257,7 @@ impl<'de> serde::Deserialize<'de> for mirror::Target {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -6580,8 +6285,8 @@ impl<'de> serde::Deserialize<'de> for mirror::Target {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<mirror::Target, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut host__ = None;
                 let mut port__ = None;
@@ -6597,10 +6302,9 @@ impl<'de> serde::Deserialize<'de> for mirror::Target {
                             if port__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("port"));
                             }
-                            port__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            port__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                     }
                 }
@@ -6637,7 +6341,9 @@ impl<'de> serde::Deserialize<'de> for mirror::Targets {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["targets"];
+        const FIELDS: &[&str] = &[
+            "targets",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -6653,10 +6359,7 @@ impl<'de> serde::Deserialize<'de> for mirror::Targets {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -6683,8 +6386,8 @@ impl<'de> serde::Deserialize<'de> for mirror::Targets {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<mirror::Targets, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut targets__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -6723,10 +6426,12 @@ impl<'de> serde::Deserialize<'de> for Object {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[];
+        const FIELDS: &[&str] = &[
+        ];
 
         #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {}
+        enum GeneratedField {
+        }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
             where
@@ -6737,10 +6442,7 @@ impl<'de> serde::Deserialize<'de> for Object {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -6749,7 +6451,7 @@ impl<'de> serde::Deserialize<'de> for Object {
                     where
                         E: serde::de::Error,
                     {
-                        Err(serde::de::Error::unknown_field(value, FIELDS))
+                            Err(serde::de::Error::unknown_field(value, FIELDS))
                     }
                 }
                 deserializer.deserialize_identifier(GeneratedVisitor)
@@ -6764,13 +6466,14 @@ impl<'de> serde::Deserialize<'de> for Object {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<Object, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 while map_.next_key::<GeneratedField>()?.is_some() {
                     let _ = map_.next_value::<serde::de::IgnoredAny>()?;
                 }
-                Ok(Object {})
+                Ok(Object {
+                })
             }
         }
         deserializer.deserialize_struct("payload.v1.Object", FIELDS, GeneratedVisitor)
@@ -6797,10 +6500,7 @@ impl serde::Serialize for object::Blob {
         if !self.object.is_empty() {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field(
-                "object",
-                pbjson::private::base64::encode(&self.object).as_str(),
-            )?;
+            struct_ser.serialize_field("object", pbjson::private::base64::encode(&self.object).as_str())?;
         }
         struct_ser.end()
     }
@@ -6811,7 +6511,10 @@ impl<'de> serde::Deserialize<'de> for object::Blob {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["id", "object"];
+        const FIELDS: &[&str] = &[
+            "id",
+            "object",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -6828,10 +6531,7 @@ impl<'de> serde::Deserialize<'de> for object::Blob {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -6859,8 +6559,8 @@ impl<'de> serde::Deserialize<'de> for object::Blob {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<object::Blob, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut id__ = None;
                 let mut object__ = None;
@@ -6876,10 +6576,9 @@ impl<'de> serde::Deserialize<'de> for object::Blob {
                             if object__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("object"));
                             }
-                            object__ = Some(
-                                map_.next_value::<::pbjson::private::BytesDeserialize<_>>()?
-                                    .0,
-                            );
+                            object__ = 
+                                Some(map_.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
+                            ;
                         }
                     }
                 }
@@ -6922,7 +6621,10 @@ impl<'de> serde::Deserialize<'de> for object::Distance {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["id", "distance"];
+        const FIELDS: &[&str] = &[
+            "id",
+            "distance",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -6939,10 +6641,7 @@ impl<'de> serde::Deserialize<'de> for object::Distance {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -6970,8 +6669,8 @@ impl<'de> serde::Deserialize<'de> for object::Distance {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<object::Distance, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut id__ = None;
                 let mut distance__ = None;
@@ -6987,10 +6686,9 @@ impl<'de> serde::Deserialize<'de> for object::Distance {
                             if distance__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("distance"));
                             }
-                            distance__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            distance__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                     }
                 }
@@ -7027,7 +6725,9 @@ impl<'de> serde::Deserialize<'de> for object::Id {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["id"];
+        const FIELDS: &[&str] = &[
+            "id",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -7043,10 +6743,7 @@ impl<'de> serde::Deserialize<'de> for object::Id {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -7073,8 +6770,8 @@ impl<'de> serde::Deserialize<'de> for object::Id {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<object::Id, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut id__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -7119,7 +6816,9 @@ impl<'de> serde::Deserialize<'de> for object::IDs {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["ids"];
+        const FIELDS: &[&str] = &[
+            "ids",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -7135,10 +6834,7 @@ impl<'de> serde::Deserialize<'de> for object::IDs {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -7165,8 +6861,8 @@ impl<'de> serde::Deserialize<'de> for object::IDs {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<object::IDs, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut ids__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -7205,10 +6901,12 @@ impl<'de> serde::Deserialize<'de> for object::List {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[];
+        const FIELDS: &[&str] = &[
+        ];
 
         #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {}
+        enum GeneratedField {
+        }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
             where
@@ -7219,10 +6917,7 @@ impl<'de> serde::Deserialize<'de> for object::List {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -7231,7 +6926,7 @@ impl<'de> serde::Deserialize<'de> for object::List {
                     where
                         E: serde::de::Error,
                     {
-                        Err(serde::de::Error::unknown_field(value, FIELDS))
+                            Err(serde::de::Error::unknown_field(value, FIELDS))
                     }
                 }
                 deserializer.deserialize_identifier(GeneratedVisitor)
@@ -7246,13 +6941,14 @@ impl<'de> serde::Deserialize<'de> for object::List {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<object::List, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 while map_.next_key::<GeneratedField>()?.is_some() {
                     let _ = map_.next_value::<serde::de::IgnoredAny>()?;
                 }
-                Ok(object::List {})
+                Ok(object::List {
+                })
             }
         }
         deserializer.deserialize_struct("payload.v1.Object.List", FIELDS, GeneratedVisitor)
@@ -7276,10 +6972,12 @@ impl<'de> serde::Deserialize<'de> for object::list::Request {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[];
+        const FIELDS: &[&str] = &[
+        ];
 
         #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {}
+        enum GeneratedField {
+        }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
             where
@@ -7290,10 +6988,7 @@ impl<'de> serde::Deserialize<'de> for object::list::Request {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -7302,7 +6997,7 @@ impl<'de> serde::Deserialize<'de> for object::list::Request {
                     where
                         E: serde::de::Error,
                     {
-                        Err(serde::de::Error::unknown_field(value, FIELDS))
+                            Err(serde::de::Error::unknown_field(value, FIELDS))
                     }
                 }
                 deserializer.deserialize_identifier(GeneratedVisitor)
@@ -7316,17 +7011,15 @@ impl<'de> serde::Deserialize<'de> for object::list::Request {
                 formatter.write_str("struct payload.v1.Object.List.Request")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<object::list::Request, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<object::list::Request, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 while map_.next_key::<GeneratedField>()?.is_some() {
                     let _ = map_.next_value::<serde::de::IgnoredAny>()?;
                 }
-                Ok(object::list::Request {})
+                Ok(object::list::Request {
+                })
             }
         }
         deserializer.deserialize_struct("payload.v1.Object.List.Request", FIELDS, GeneratedVisitor)
@@ -7363,7 +7056,10 @@ impl<'de> serde::Deserialize<'de> for object::list::Response {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["vector", "status"];
+        const FIELDS: &[&str] = &[
+            "vector",
+            "status",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -7380,10 +7076,7 @@ impl<'de> serde::Deserialize<'de> for object::list::Response {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -7410,12 +7103,9 @@ impl<'de> serde::Deserialize<'de> for object::list::Response {
                 formatter.write_str("struct payload.v1.Object.List.Response")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<object::list::Response, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<object::list::Response, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut payload__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -7424,21 +7114,21 @@ impl<'de> serde::Deserialize<'de> for object::list::Response {
                             if payload__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("vector"));
                             }
-                            payload__ = map_
-                                .next_value::<::std::option::Option<_>>()?
-                                .map(object::list::response::Payload::Vector);
+                            payload__ = map_.next_value::<::std::option::Option<_>>()?.map(object::list::response::Payload::Vector)
+;
                         }
                         GeneratedField::Status => {
                             if payload__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("status"));
                             }
-                            payload__ = map_
-                                .next_value::<::std::option::Option<_>>()?
-                                .map(object::list::response::Payload::Status);
+                            payload__ = map_.next_value::<::std::option::Option<_>>()?.map(object::list::response::Payload::Status)
+;
                         }
                     }
                 }
-                Ok(object::list::Response { payload: payload__ })
+                Ok(object::list::Response {
+                    payload: payload__,
+                })
             }
         }
         deserializer.deserialize_struct("payload.v1.Object.List.Response", FIELDS, GeneratedVisitor)
@@ -7480,7 +7170,11 @@ impl<'de> serde::Deserialize<'de> for object::Location {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["name", "uuid", "ips"];
+        const FIELDS: &[&str] = &[
+            "name",
+            "uuid",
+            "ips",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -7498,10 +7192,7 @@ impl<'de> serde::Deserialize<'de> for object::Location {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -7530,8 +7221,8 @@ impl<'de> serde::Deserialize<'de> for object::Location {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<object::Location, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut name__ = None;
                 let mut uuid__ = None;
@@ -7592,7 +7283,9 @@ impl<'de> serde::Deserialize<'de> for object::Locations {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["locations"];
+        const FIELDS: &[&str] = &[
+            "locations",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -7608,10 +7301,7 @@ impl<'de> serde::Deserialize<'de> for object::Locations {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -7638,8 +7328,8 @@ impl<'de> serde::Deserialize<'de> for object::Locations {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<object::Locations, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut locations__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -7678,10 +7368,7 @@ impl serde::Serialize for object::ReshapeVector {
         if !self.object.is_empty() {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field(
-                "object",
-                pbjson::private::base64::encode(&self.object).as_str(),
-            )?;
+            struct_ser.serialize_field("object", pbjson::private::base64::encode(&self.object).as_str())?;
         }
         if !self.shape.is_empty() {
             struct_ser.serialize_field("shape", &self.shape)?;
@@ -7695,7 +7382,10 @@ impl<'de> serde::Deserialize<'de> for object::ReshapeVector {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["object", "shape"];
+        const FIELDS: &[&str] = &[
+            "object",
+            "shape",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -7712,10 +7402,7 @@ impl<'de> serde::Deserialize<'de> for object::ReshapeVector {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -7742,12 +7429,9 @@ impl<'de> serde::Deserialize<'de> for object::ReshapeVector {
                 formatter.write_str("struct payload.v1.Object.ReshapeVector")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<object::ReshapeVector, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<object::ReshapeVector, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut object__ = None;
                 let mut shape__ = None;
@@ -7757,21 +7441,18 @@ impl<'de> serde::Deserialize<'de> for object::ReshapeVector {
                             if object__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("object"));
                             }
-                            object__ = Some(
-                                map_.next_value::<::pbjson::private::BytesDeserialize<_>>()?
-                                    .0,
-                            );
+                            object__ = 
+                                Some(map_.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::Shape => {
                             if shape__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("shape"));
                             }
-                            shape__ = Some(
-                                map_.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
-                                    .into_iter()
-                                    .map(|x| x.0)
-                                    .collect(),
-                            );
+                            shape__ = 
+                                Some(map_.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
+                                    .into_iter().map(|x| x.0).collect())
+                            ;
                         }
                     }
                 }
@@ -7815,7 +7496,10 @@ impl<'de> serde::Deserialize<'de> for object::StreamBlob {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["blob", "status"];
+        const FIELDS: &[&str] = &[
+            "blob",
+            "status",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -7832,10 +7516,7 @@ impl<'de> serde::Deserialize<'de> for object::StreamBlob {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -7863,8 +7544,8 @@ impl<'de> serde::Deserialize<'de> for object::StreamBlob {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<object::StreamBlob, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut payload__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -7873,21 +7554,21 @@ impl<'de> serde::Deserialize<'de> for object::StreamBlob {
                             if payload__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("blob"));
                             }
-                            payload__ = map_
-                                .next_value::<::std::option::Option<_>>()?
-                                .map(object::stream_blob::Payload::Blob);
+                            payload__ = map_.next_value::<::std::option::Option<_>>()?.map(object::stream_blob::Payload::Blob)
+;
                         }
                         GeneratedField::Status => {
                             if payload__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("status"));
                             }
-                            payload__ = map_
-                                .next_value::<::std::option::Option<_>>()?
-                                .map(object::stream_blob::Payload::Status);
+                            payload__ = map_.next_value::<::std::option::Option<_>>()?.map(object::stream_blob::Payload::Status)
+;
                         }
                     }
                 }
-                Ok(object::StreamBlob { payload: payload__ })
+                Ok(object::StreamBlob {
+                    payload: payload__,
+                })
             }
         }
         deserializer.deserialize_struct("payload.v1.Object.StreamBlob", FIELDS, GeneratedVisitor)
@@ -7904,8 +7585,7 @@ impl serde::Serialize for object::StreamDistance {
         if self.payload.is_some() {
             len += 1;
         }
-        let mut struct_ser =
-            serializer.serialize_struct("payload.v1.Object.StreamDistance", len)?;
+        let mut struct_ser = serializer.serialize_struct("payload.v1.Object.StreamDistance", len)?;
         if let Some(v) = self.payload.as_ref() {
             match v {
                 object::stream_distance::Payload::Distance(v) => {
@@ -7925,7 +7605,10 @@ impl<'de> serde::Deserialize<'de> for object::StreamDistance {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["distance", "status"];
+        const FIELDS: &[&str] = &[
+            "distance",
+            "status",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -7942,10 +7625,7 @@ impl<'de> serde::Deserialize<'de> for object::StreamDistance {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -7972,12 +7652,9 @@ impl<'de> serde::Deserialize<'de> for object::StreamDistance {
                 formatter.write_str("struct payload.v1.Object.StreamDistance")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<object::StreamDistance, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<object::StreamDistance, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut payload__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -7986,28 +7663,24 @@ impl<'de> serde::Deserialize<'de> for object::StreamDistance {
                             if payload__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("distance"));
                             }
-                            payload__ = map_
-                                .next_value::<::std::option::Option<_>>()?
-                                .map(object::stream_distance::Payload::Distance);
+                            payload__ = map_.next_value::<::std::option::Option<_>>()?.map(object::stream_distance::Payload::Distance)
+;
                         }
                         GeneratedField::Status => {
                             if payload__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("status"));
                             }
-                            payload__ = map_
-                                .next_value::<::std::option::Option<_>>()?
-                                .map(object::stream_distance::Payload::Status);
+                            payload__ = map_.next_value::<::std::option::Option<_>>()?.map(object::stream_distance::Payload::Status)
+;
                         }
                     }
                 }
-                Ok(object::StreamDistance { payload: payload__ })
+                Ok(object::StreamDistance {
+                    payload: payload__,
+                })
             }
         }
-        deserializer.deserialize_struct(
-            "payload.v1.Object.StreamDistance",
-            FIELDS,
-            GeneratedVisitor,
-        )
+        deserializer.deserialize_struct("payload.v1.Object.StreamDistance", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for object::StreamLocation {
@@ -8021,8 +7694,7 @@ impl serde::Serialize for object::StreamLocation {
         if self.payload.is_some() {
             len += 1;
         }
-        let mut struct_ser =
-            serializer.serialize_struct("payload.v1.Object.StreamLocation", len)?;
+        let mut struct_ser = serializer.serialize_struct("payload.v1.Object.StreamLocation", len)?;
         if let Some(v) = self.payload.as_ref() {
             match v {
                 object::stream_location::Payload::Location(v) => {
@@ -8042,7 +7714,10 @@ impl<'de> serde::Deserialize<'de> for object::StreamLocation {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["location", "status"];
+        const FIELDS: &[&str] = &[
+            "location",
+            "status",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -8059,10 +7734,7 @@ impl<'de> serde::Deserialize<'de> for object::StreamLocation {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -8089,12 +7761,9 @@ impl<'de> serde::Deserialize<'de> for object::StreamLocation {
                 formatter.write_str("struct payload.v1.Object.StreamLocation")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<object::StreamLocation, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<object::StreamLocation, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut payload__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -8103,28 +7772,24 @@ impl<'de> serde::Deserialize<'de> for object::StreamLocation {
                             if payload__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("location"));
                             }
-                            payload__ = map_
-                                .next_value::<::std::option::Option<_>>()?
-                                .map(object::stream_location::Payload::Location);
+                            payload__ = map_.next_value::<::std::option::Option<_>>()?.map(object::stream_location::Payload::Location)
+;
                         }
                         GeneratedField::Status => {
                             if payload__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("status"));
                             }
-                            payload__ = map_
-                                .next_value::<::std::option::Option<_>>()?
-                                .map(object::stream_location::Payload::Status);
+                            payload__ = map_.next_value::<::std::option::Option<_>>()?.map(object::stream_location::Payload::Status)
+;
                         }
                     }
                 }
-                Ok(object::StreamLocation { payload: payload__ })
+                Ok(object::StreamLocation {
+                    payload: payload__,
+                })
             }
         }
-        deserializer.deserialize_struct(
-            "payload.v1.Object.StreamLocation",
-            FIELDS,
-            GeneratedVisitor,
-        )
+        deserializer.deserialize_struct("payload.v1.Object.StreamLocation", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for object::StreamVector {
@@ -8158,7 +7823,10 @@ impl<'de> serde::Deserialize<'de> for object::StreamVector {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["vector", "status"];
+        const FIELDS: &[&str] = &[
+            "vector",
+            "status",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -8175,10 +7843,7 @@ impl<'de> serde::Deserialize<'de> for object::StreamVector {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -8205,12 +7870,9 @@ impl<'de> serde::Deserialize<'de> for object::StreamVector {
                 formatter.write_str("struct payload.v1.Object.StreamVector")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<object::StreamVector, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<object::StreamVector, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut payload__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -8219,21 +7881,21 @@ impl<'de> serde::Deserialize<'de> for object::StreamVector {
                             if payload__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("vector"));
                             }
-                            payload__ = map_
-                                .next_value::<::std::option::Option<_>>()?
-                                .map(object::stream_vector::Payload::Vector);
+                            payload__ = map_.next_value::<::std::option::Option<_>>()?.map(object::stream_vector::Payload::Vector)
+;
                         }
                         GeneratedField::Status => {
                             if payload__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("status"));
                             }
-                            payload__ = map_
-                                .next_value::<::std::option::Option<_>>()?
-                                .map(object::stream_vector::Payload::Status);
+                            payload__ = map_.next_value::<::std::option::Option<_>>()?.map(object::stream_vector::Payload::Status)
+;
                         }
                     }
                 }
-                Ok(object::StreamVector { payload: payload__ })
+                Ok(object::StreamVector {
+                    payload: payload__,
+                })
             }
         }
         deserializer.deserialize_struct("payload.v1.Object.StreamVector", FIELDS, GeneratedVisitor)
@@ -8260,8 +7922,7 @@ impl serde::Serialize for object::Timestamp {
         if self.timestamp != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser
-                .serialize_field("timestamp", ToString::to_string(&self.timestamp).as_str())?;
+            struct_ser.serialize_field("timestamp", ToString::to_string(&self.timestamp).as_str())?;
         }
         struct_ser.end()
     }
@@ -8272,7 +7933,10 @@ impl<'de> serde::Deserialize<'de> for object::Timestamp {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["id", "timestamp"];
+        const FIELDS: &[&str] = &[
+            "id",
+            "timestamp",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -8289,10 +7953,7 @@ impl<'de> serde::Deserialize<'de> for object::Timestamp {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -8320,8 +7981,8 @@ impl<'de> serde::Deserialize<'de> for object::Timestamp {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<object::Timestamp, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut id__ = None;
                 let mut timestamp__ = None;
@@ -8337,10 +7998,9 @@ impl<'de> serde::Deserialize<'de> for object::Timestamp {
                             if timestamp__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("timestamp"));
                             }
-                            timestamp__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            timestamp__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                     }
                 }
@@ -8364,8 +8024,7 @@ impl serde::Serialize for object::TimestampRequest {
         if self.id.is_some() {
             len += 1;
         }
-        let mut struct_ser =
-            serializer.serialize_struct("payload.v1.Object.TimestampRequest", len)?;
+        let mut struct_ser = serializer.serialize_struct("payload.v1.Object.TimestampRequest", len)?;
         if let Some(v) = self.id.as_ref() {
             struct_ser.serialize_field("id", v)?;
         }
@@ -8378,7 +8037,9 @@ impl<'de> serde::Deserialize<'de> for object::TimestampRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["id"];
+        const FIELDS: &[&str] = &[
+            "id",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -8394,10 +8055,7 @@ impl<'de> serde::Deserialize<'de> for object::TimestampRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -8423,12 +8081,9 @@ impl<'de> serde::Deserialize<'de> for object::TimestampRequest {
                 formatter.write_str("struct payload.v1.Object.TimestampRequest")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<object::TimestampRequest, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<object::TimestampRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut id__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -8441,14 +8096,12 @@ impl<'de> serde::Deserialize<'de> for object::TimestampRequest {
                         }
                     }
                 }
-                Ok(object::TimestampRequest { id: id__ })
+                Ok(object::TimestampRequest {
+                    id: id__,
+                })
             }
         }
-        deserializer.deserialize_struct(
-            "payload.v1.Object.TimestampRequest",
-            FIELDS,
-            GeneratedVisitor,
-        )
+        deserializer.deserialize_struct("payload.v1.Object.TimestampRequest", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for object::Vector {
@@ -8478,8 +8131,7 @@ impl serde::Serialize for object::Vector {
         if self.timestamp != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser
-                .serialize_field("timestamp", ToString::to_string(&self.timestamp).as_str())?;
+            struct_ser.serialize_field("timestamp", ToString::to_string(&self.timestamp).as_str())?;
         }
         struct_ser.end()
     }
@@ -8490,7 +8142,11 @@ impl<'de> serde::Deserialize<'de> for object::Vector {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["id", "vector", "timestamp"];
+        const FIELDS: &[&str] = &[
+            "id",
+            "vector",
+            "timestamp",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -8508,10 +8164,7 @@ impl<'de> serde::Deserialize<'de> for object::Vector {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -8540,8 +8193,8 @@ impl<'de> serde::Deserialize<'de> for object::Vector {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<object::Vector, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut id__ = None;
                 let mut vector__ = None;
@@ -8558,21 +8211,18 @@ impl<'de> serde::Deserialize<'de> for object::Vector {
                             if vector__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("vector"));
                             }
-                            vector__ = Some(
-                                map_.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
-                                    .into_iter()
-                                    .map(|x| x.0)
-                                    .collect(),
-                            );
+                            vector__ = 
+                                Some(map_.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
+                                    .into_iter().map(|x| x.0).collect())
+                            ;
                         }
                         GeneratedField::Timestamp => {
                             if timestamp__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("timestamp"));
                             }
-                            timestamp__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            timestamp__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                     }
                 }
@@ -8616,7 +8266,10 @@ impl<'de> serde::Deserialize<'de> for object::VectorRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["id", "filters"];
+        const FIELDS: &[&str] = &[
+            "id",
+            "filters",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -8633,10 +8286,7 @@ impl<'de> serde::Deserialize<'de> for object::VectorRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -8663,12 +8313,9 @@ impl<'de> serde::Deserialize<'de> for object::VectorRequest {
                 formatter.write_str("struct payload.v1.Object.VectorRequest")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<object::VectorRequest, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<object::VectorRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut id__ = None;
                 let mut filters__ = None;
@@ -8721,7 +8368,9 @@ impl<'de> serde::Deserialize<'de> for object::Vectors {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["vectors"];
+        const FIELDS: &[&str] = &[
+            "vectors",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -8737,10 +8386,7 @@ impl<'de> serde::Deserialize<'de> for object::Vectors {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -8767,8 +8413,8 @@ impl<'de> serde::Deserialize<'de> for object::Vectors {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<object::Vectors, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut vectors__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -8807,10 +8453,12 @@ impl<'de> serde::Deserialize<'de> for Remove {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[];
+        const FIELDS: &[&str] = &[
+        ];
 
         #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {}
+        enum GeneratedField {
+        }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
             where
@@ -8821,10 +8469,7 @@ impl<'de> serde::Deserialize<'de> for Remove {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -8833,7 +8478,7 @@ impl<'de> serde::Deserialize<'de> for Remove {
                     where
                         E: serde::de::Error,
                     {
-                        Err(serde::de::Error::unknown_field(value, FIELDS))
+                            Err(serde::de::Error::unknown_field(value, FIELDS))
                     }
                 }
                 deserializer.deserialize_identifier(GeneratedVisitor)
@@ -8848,13 +8493,14 @@ impl<'de> serde::Deserialize<'de> for Remove {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<Remove, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 while map_.next_key::<GeneratedField>()?.is_some() {
                     let _ = map_.next_value::<serde::de::IgnoredAny>()?;
                 }
-                Ok(Remove {})
+                Ok(Remove {
+                })
             }
         }
         deserializer.deserialize_struct("payload.v1.Remove", FIELDS, GeneratedVisitor)
@@ -8881,8 +8527,7 @@ impl serde::Serialize for remove::Config {
         if self.timestamp != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser
-                .serialize_field("timestamp", ToString::to_string(&self.timestamp).as_str())?;
+            struct_ser.serialize_field("timestamp", ToString::to_string(&self.timestamp).as_str())?;
         }
         struct_ser.end()
     }
@@ -8914,10 +8559,7 @@ impl<'de> serde::Deserialize<'de> for remove::Config {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -8927,9 +8569,7 @@ impl<'de> serde::Deserialize<'de> for remove::Config {
                         E: serde::de::Error,
                     {
                         match value {
-                            "skipStrictExistCheck" | "skip_strict_exist_check" => {
-                                Ok(GeneratedField::SkipStrictExistCheck)
-                            }
+                            "skipStrictExistCheck" | "skip_strict_exist_check" => Ok(GeneratedField::SkipStrictExistCheck),
                             "timestamp" => Ok(GeneratedField::Timestamp),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
@@ -8947,8 +8587,8 @@ impl<'de> serde::Deserialize<'de> for remove::Config {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<remove::Config, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut skip_strict_exist_check__ = None;
                 let mut timestamp__ = None;
@@ -8956,9 +8596,7 @@ impl<'de> serde::Deserialize<'de> for remove::Config {
                     match k {
                         GeneratedField::SkipStrictExistCheck => {
                             if skip_strict_exist_check__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "skipStrictExistCheck",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("skipStrictExistCheck"));
                             }
                             skip_strict_exist_check__ = Some(map_.next_value()?);
                         }
@@ -8966,10 +8604,9 @@ impl<'de> serde::Deserialize<'de> for remove::Config {
                             if timestamp__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("timestamp"));
                             }
-                            timestamp__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            timestamp__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                     }
                 }
@@ -9006,7 +8643,9 @@ impl<'de> serde::Deserialize<'de> for remove::MultiRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["requests"];
+        const FIELDS: &[&str] = &[
+            "requests",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -9022,10 +8661,7 @@ impl<'de> serde::Deserialize<'de> for remove::MultiRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -9051,12 +8687,9 @@ impl<'de> serde::Deserialize<'de> for remove::MultiRequest {
                 formatter.write_str("struct payload.v1.Remove.MultiRequest")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<remove::MultiRequest, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<remove::MultiRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut requests__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -9107,7 +8740,10 @@ impl<'de> serde::Deserialize<'de> for remove::Request {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["id", "config"];
+        const FIELDS: &[&str] = &[
+            "id",
+            "config",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -9124,10 +8760,7 @@ impl<'de> serde::Deserialize<'de> for remove::Request {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -9155,8 +8788,8 @@ impl<'de> serde::Deserialize<'de> for remove::Request {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<remove::Request, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut id__ = None;
                 let mut config__ = None;
@@ -9203,13 +8836,11 @@ impl serde::Serialize for remove::Timestamp {
         if self.timestamp != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser
-                .serialize_field("timestamp", ToString::to_string(&self.timestamp).as_str())?;
+            struct_ser.serialize_field("timestamp", ToString::to_string(&self.timestamp).as_str())?;
         }
         if self.operator != 0 {
-            let v = remove::timestamp::Operator::try_from(self.operator).map_err(|_| {
-                serde::ser::Error::custom(format!("Invalid variant {}", self.operator))
-            })?;
+            let v = remove::timestamp::Operator::try_from(self.operator)
+                .map_err(|_| serde::ser::Error::custom(format!("Invalid variant {}", self.operator)))?;
             struct_ser.serialize_field("operator", &v)?;
         }
         struct_ser.end()
@@ -9221,7 +8852,10 @@ impl<'de> serde::Deserialize<'de> for remove::Timestamp {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["timestamp", "operator"];
+        const FIELDS: &[&str] = &[
+            "timestamp",
+            "operator",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -9238,10 +8872,7 @@ impl<'de> serde::Deserialize<'de> for remove::Timestamp {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -9269,8 +8900,8 @@ impl<'de> serde::Deserialize<'de> for remove::Timestamp {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<remove::Timestamp, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut timestamp__ = None;
                 let mut operator__ = None;
@@ -9280,17 +8911,15 @@ impl<'de> serde::Deserialize<'de> for remove::Timestamp {
                             if timestamp__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("timestamp"));
                             }
-                            timestamp__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            timestamp__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::Operator => {
                             if operator__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("operator"));
                             }
-                            operator__ =
-                                Some(map_.next_value::<remove::timestamp::Operator>()? as i32);
+                            operator__ = Some(map_.next_value::<remove::timestamp::Operator>()? as i32);
                         }
                     }
                 }
@@ -9326,7 +8955,14 @@ impl<'de> serde::Deserialize<'de> for remove::timestamp::Operator {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["Eq", "Ne", "Ge", "Gt", "Le", "Lt"];
+        const FIELDS: &[&str] = &[
+            "Eq",
+            "Ne",
+            "Ge",
+            "Gt",
+            "Le",
+            "Lt",
+        ];
 
         struct GeneratedVisitor;
 
@@ -9390,8 +9026,7 @@ impl serde::Serialize for remove::TimestampRequest {
         if !self.timestamps.is_empty() {
             len += 1;
         }
-        let mut struct_ser =
-            serializer.serialize_struct("payload.v1.Remove.TimestampRequest", len)?;
+        let mut struct_ser = serializer.serialize_struct("payload.v1.Remove.TimestampRequest", len)?;
         if !self.timestamps.is_empty() {
             struct_ser.serialize_field("timestamps", &self.timestamps)?;
         }
@@ -9404,7 +9039,9 @@ impl<'de> serde::Deserialize<'de> for remove::TimestampRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["timestamps"];
+        const FIELDS: &[&str] = &[
+            "timestamps",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -9420,10 +9057,7 @@ impl<'de> serde::Deserialize<'de> for remove::TimestampRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -9449,12 +9083,9 @@ impl<'de> serde::Deserialize<'de> for remove::TimestampRequest {
                 formatter.write_str("struct payload.v1.Remove.TimestampRequest")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<remove::TimestampRequest, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<remove::TimestampRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut timestamps__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -9472,11 +9103,7 @@ impl<'de> serde::Deserialize<'de> for remove::TimestampRequest {
                 })
             }
         }
-        deserializer.deserialize_struct(
-            "payload.v1.Remove.TimestampRequest",
-            FIELDS,
-            GeneratedVisitor,
-        )
+        deserializer.deserialize_struct("payload.v1.Remove.TimestampRequest", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for Search {
@@ -9497,10 +9124,12 @@ impl<'de> serde::Deserialize<'de> for Search {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[];
+        const FIELDS: &[&str] = &[
+        ];
 
         #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {}
+        enum GeneratedField {
+        }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
             where
@@ -9511,10 +9140,7 @@ impl<'de> serde::Deserialize<'de> for Search {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -9523,7 +9149,7 @@ impl<'de> serde::Deserialize<'de> for Search {
                     where
                         E: serde::de::Error,
                     {
-                        Err(serde::de::Error::unknown_field(value, FIELDS))
+                            Err(serde::de::Error::unknown_field(value, FIELDS))
                     }
                 }
                 deserializer.deserialize_identifier(GeneratedVisitor)
@@ -9538,13 +9164,14 @@ impl<'de> serde::Deserialize<'de> for Search {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<Search, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 while map_.next_key::<GeneratedField>()?.is_some() {
                     let _ = map_.next_value::<serde::de::IgnoredAny>()?;
                 }
-                Ok(Search {})
+                Ok(Search {
+                })
             }
         }
         deserializer.deserialize_struct("payload.v1.Search", FIELDS, GeneratedVisitor)
@@ -9699,14 +9326,8 @@ impl serde::Serialize for search::Config {
             struct_ser.serialize_field("minNum", &self.min_num)?;
         }
         if self.aggregation_algorithm != 0 {
-            let v = search::AggregationAlgorithm::try_from(self.aggregation_algorithm).map_err(
-                |_| {
-                    serde::ser::Error::custom(format!(
-                        "Invalid variant {}",
-                        self.aggregation_algorithm
-                    ))
-                },
-            )?;
+            let v = search::AggregationAlgorithm::try_from(self.aggregation_algorithm)
+                .map_err(|_| serde::ser::Error::custom(format!("Invalid variant {}", self.aggregation_algorithm)))?;
             struct_ser.serialize_field("aggregationAlgorithm", &v)?;
         }
         if let Some(v) = self.ratio.as_ref() {
@@ -9767,10 +9388,7 @@ impl<'de> serde::Deserialize<'de> for search::Config {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -9785,14 +9403,10 @@ impl<'de> serde::Deserialize<'de> for search::Config {
                             "radius" => Ok(GeneratedField::Radius),
                             "epsilon" => Ok(GeneratedField::Epsilon),
                             "timeout" => Ok(GeneratedField::Timeout),
-                            "ingressFilters" | "ingress_filters" => {
-                                Ok(GeneratedField::IngressFilters)
-                            }
+                            "ingressFilters" | "ingress_filters" => Ok(GeneratedField::IngressFilters),
                             "egressFilters" | "egress_filters" => Ok(GeneratedField::EgressFilters),
                             "minNum" | "min_num" => Ok(GeneratedField::MinNum),
-                            "aggregationAlgorithm" | "aggregation_algorithm" => {
-                                Ok(GeneratedField::AggregationAlgorithm)
-                            }
+                            "aggregationAlgorithm" | "aggregation_algorithm" => Ok(GeneratedField::AggregationAlgorithm),
                             "ratio" => Ok(GeneratedField::Ratio),
                             "nprobe" => Ok(GeneratedField::Nprobe),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
@@ -9811,8 +9425,8 @@ impl<'de> serde::Deserialize<'de> for search::Config {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<search::Config, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut request_id__ = None;
                 let mut num__ = None;
@@ -9837,37 +9451,33 @@ impl<'de> serde::Deserialize<'de> for search::Config {
                             if num__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("num"));
                             }
-                            num__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            num__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::Radius => {
                             if radius__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("radius"));
                             }
-                            radius__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            radius__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::Epsilon => {
                             if epsilon__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("epsilon"));
                             }
-                            epsilon__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            epsilon__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::Timeout => {
                             if timeout__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("timeout"));
                             }
-                            timeout__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            timeout__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::IngressFilters => {
                             if ingress_filters__.is_some() {
@@ -9885,19 +9495,15 @@ impl<'de> serde::Deserialize<'de> for search::Config {
                             if min_num__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("minNum"));
                             }
-                            min_num__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            min_num__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::AggregationAlgorithm => {
                             if aggregation_algorithm__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "aggregationAlgorithm",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("aggregationAlgorithm"));
                             }
-                            aggregation_algorithm__ =
-                                Some(map_.next_value::<search::AggregationAlgorithm>()? as i32);
+                            aggregation_algorithm__ = Some(map_.next_value::<search::AggregationAlgorithm>()? as i32);
                         }
                         GeneratedField::Ratio => {
                             if ratio__.is_some() {
@@ -9909,10 +9515,9 @@ impl<'de> serde::Deserialize<'de> for search::Config {
                             if nprobe__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("nprobe"));
                             }
-                            nprobe__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            nprobe__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                     }
                 }
@@ -9964,7 +9569,10 @@ impl<'de> serde::Deserialize<'de> for search::IdRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["id", "config"];
+        const FIELDS: &[&str] = &[
+            "id",
+            "config",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -9981,10 +9589,7 @@ impl<'de> serde::Deserialize<'de> for search::IdRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -10012,8 +9617,8 @@ impl<'de> serde::Deserialize<'de> for search::IdRequest {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<search::IdRequest, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut id__ = None;
                 let mut config__ = None;
@@ -10053,8 +9658,7 @@ impl serde::Serialize for search::MultiIdRequest {
         if !self.requests.is_empty() {
             len += 1;
         }
-        let mut struct_ser =
-            serializer.serialize_struct("payload.v1.Search.MultiIDRequest", len)?;
+        let mut struct_ser = serializer.serialize_struct("payload.v1.Search.MultiIDRequest", len)?;
         if !self.requests.is_empty() {
             struct_ser.serialize_field("requests", &self.requests)?;
         }
@@ -10067,7 +9671,9 @@ impl<'de> serde::Deserialize<'de> for search::MultiIdRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["requests"];
+        const FIELDS: &[&str] = &[
+            "requests",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -10083,10 +9689,7 @@ impl<'de> serde::Deserialize<'de> for search::MultiIdRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -10112,12 +9715,9 @@ impl<'de> serde::Deserialize<'de> for search::MultiIdRequest {
                 formatter.write_str("struct payload.v1.Search.MultiIDRequest")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<search::MultiIdRequest, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<search::MultiIdRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut requests__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -10135,11 +9735,7 @@ impl<'de> serde::Deserialize<'de> for search::MultiIdRequest {
                 })
             }
         }
-        deserializer.deserialize_struct(
-            "payload.v1.Search.MultiIDRequest",
-            FIELDS,
-            GeneratedVisitor,
-        )
+        deserializer.deserialize_struct("payload.v1.Search.MultiIDRequest", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for search::MultiObjectRequest {
@@ -10153,8 +9749,7 @@ impl serde::Serialize for search::MultiObjectRequest {
         if !self.requests.is_empty() {
             len += 1;
         }
-        let mut struct_ser =
-            serializer.serialize_struct("payload.v1.Search.MultiObjectRequest", len)?;
+        let mut struct_ser = serializer.serialize_struct("payload.v1.Search.MultiObjectRequest", len)?;
         if !self.requests.is_empty() {
             struct_ser.serialize_field("requests", &self.requests)?;
         }
@@ -10167,7 +9762,9 @@ impl<'de> serde::Deserialize<'de> for search::MultiObjectRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["requests"];
+        const FIELDS: &[&str] = &[
+            "requests",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -10183,10 +9780,7 @@ impl<'de> serde::Deserialize<'de> for search::MultiObjectRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -10212,12 +9806,9 @@ impl<'de> serde::Deserialize<'de> for search::MultiObjectRequest {
                 formatter.write_str("struct payload.v1.Search.MultiObjectRequest")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<search::MultiObjectRequest, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<search::MultiObjectRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut requests__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -10235,11 +9826,7 @@ impl<'de> serde::Deserialize<'de> for search::MultiObjectRequest {
                 })
             }
         }
-        deserializer.deserialize_struct(
-            "payload.v1.Search.MultiObjectRequest",
-            FIELDS,
-            GeneratedVisitor,
-        )
+        deserializer.deserialize_struct("payload.v1.Search.MultiObjectRequest", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for search::MultiRequest {
@@ -10266,7 +9853,9 @@ impl<'de> serde::Deserialize<'de> for search::MultiRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["requests"];
+        const FIELDS: &[&str] = &[
+            "requests",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -10282,10 +9871,7 @@ impl<'de> serde::Deserialize<'de> for search::MultiRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -10311,12 +9897,9 @@ impl<'de> serde::Deserialize<'de> for search::MultiRequest {
                 formatter.write_str("struct payload.v1.Search.MultiRequest")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<search::MultiRequest, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<search::MultiRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut requests__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -10358,10 +9941,7 @@ impl serde::Serialize for search::ObjectRequest {
         if !self.object.is_empty() {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field(
-                "object",
-                pbjson::private::base64::encode(&self.object).as_str(),
-            )?;
+            struct_ser.serialize_field("object", pbjson::private::base64::encode(&self.object).as_str())?;
         }
         if let Some(v) = self.config.as_ref() {
             struct_ser.serialize_field("config", v)?;
@@ -10378,7 +9958,11 @@ impl<'de> serde::Deserialize<'de> for search::ObjectRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["object", "config", "vectorizer"];
+        const FIELDS: &[&str] = &[
+            "object",
+            "config",
+            "vectorizer",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -10396,10 +9980,7 @@ impl<'de> serde::Deserialize<'de> for search::ObjectRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -10427,12 +10008,9 @@ impl<'de> serde::Deserialize<'de> for search::ObjectRequest {
                 formatter.write_str("struct payload.v1.Search.ObjectRequest")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<search::ObjectRequest, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<search::ObjectRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut object__ = None;
                 let mut config__ = None;
@@ -10443,10 +10021,9 @@ impl<'de> serde::Deserialize<'de> for search::ObjectRequest {
                             if object__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("object"));
                             }
-                            object__ = Some(
-                                map_.next_value::<::pbjson::private::BytesDeserialize<_>>()?
-                                    .0,
-                            );
+                            object__ = 
+                                Some(map_.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::Config => {
                             if config__.is_some() {
@@ -10502,7 +10079,10 @@ impl<'de> serde::Deserialize<'de> for search::Request {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["vector", "config"];
+        const FIELDS: &[&str] = &[
+            "vector",
+            "config",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -10519,10 +10099,7 @@ impl<'de> serde::Deserialize<'de> for search::Request {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -10550,8 +10127,8 @@ impl<'de> serde::Deserialize<'de> for search::Request {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<search::Request, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut vector__ = None;
                 let mut config__ = None;
@@ -10561,12 +10138,10 @@ impl<'de> serde::Deserialize<'de> for search::Request {
                             if vector__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("vector"));
                             }
-                            vector__ = Some(
-                                map_.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
-                                    .into_iter()
-                                    .map(|x| x.0)
-                                    .collect(),
-                            );
+                            vector__ = 
+                                Some(map_.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
+                                    .into_iter().map(|x| x.0).collect())
+                            ;
                         }
                         GeneratedField::Config => {
                             if config__.is_some() {
@@ -10615,7 +10190,11 @@ impl<'de> serde::Deserialize<'de> for search::Response {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["request_id", "requestId", "results"];
+        const FIELDS: &[&str] = &[
+            "request_id",
+            "requestId",
+            "results",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -10632,10 +10211,7 @@ impl<'de> serde::Deserialize<'de> for search::Response {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -10663,8 +10239,8 @@ impl<'de> serde::Deserialize<'de> for search::Response {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<search::Response, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut request_id__ = None;
                 let mut results__ = None;
@@ -10717,7 +10293,9 @@ impl<'de> serde::Deserialize<'de> for search::Responses {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["responses"];
+        const FIELDS: &[&str] = &[
+            "responses",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -10733,10 +10311,7 @@ impl<'de> serde::Deserialize<'de> for search::Responses {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -10763,8 +10338,8 @@ impl<'de> serde::Deserialize<'de> for search::Responses {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<search::Responses, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut responses__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -10796,8 +10371,7 @@ impl serde::Serialize for search::StreamResponse {
         if self.payload.is_some() {
             len += 1;
         }
-        let mut struct_ser =
-            serializer.serialize_struct("payload.v1.Search.StreamResponse", len)?;
+        let mut struct_ser = serializer.serialize_struct("payload.v1.Search.StreamResponse", len)?;
         if let Some(v) = self.payload.as_ref() {
             match v {
                 search::stream_response::Payload::Response(v) => {
@@ -10817,7 +10391,10 @@ impl<'de> serde::Deserialize<'de> for search::StreamResponse {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["response", "status"];
+        const FIELDS: &[&str] = &[
+            "response",
+            "status",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -10834,10 +10411,7 @@ impl<'de> serde::Deserialize<'de> for search::StreamResponse {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -10864,12 +10438,9 @@ impl<'de> serde::Deserialize<'de> for search::StreamResponse {
                 formatter.write_str("struct payload.v1.Search.StreamResponse")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<search::StreamResponse, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<search::StreamResponse, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut payload__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -10878,28 +10449,24 @@ impl<'de> serde::Deserialize<'de> for search::StreamResponse {
                             if payload__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("response"));
                             }
-                            payload__ = map_
-                                .next_value::<::std::option::Option<_>>()?
-                                .map(search::stream_response::Payload::Response);
+                            payload__ = map_.next_value::<::std::option::Option<_>>()?.map(search::stream_response::Payload::Response)
+;
                         }
                         GeneratedField::Status => {
                             if payload__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("status"));
                             }
-                            payload__ = map_
-                                .next_value::<::std::option::Option<_>>()?
-                                .map(search::stream_response::Payload::Status);
+                            payload__ = map_.next_value::<::std::option::Option<_>>()?.map(search::stream_response::Payload::Status)
+;
                         }
                     }
                 }
-                Ok(search::StreamResponse { payload: payload__ })
+                Ok(search::StreamResponse {
+                    payload: payload__,
+                })
             }
         }
-        deserializer.deserialize_struct(
-            "payload.v1.Search.StreamResponse",
-            FIELDS,
-            GeneratedVisitor,
-        )
+        deserializer.deserialize_struct("payload.v1.Search.StreamResponse", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for Update {
@@ -10920,10 +10487,12 @@ impl<'de> serde::Deserialize<'de> for Update {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[];
+        const FIELDS: &[&str] = &[
+        ];
 
         #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {}
+        enum GeneratedField {
+        }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
             where
@@ -10934,10 +10503,7 @@ impl<'de> serde::Deserialize<'de> for Update {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -10946,7 +10512,7 @@ impl<'de> serde::Deserialize<'de> for Update {
                     where
                         E: serde::de::Error,
                     {
-                        Err(serde::de::Error::unknown_field(value, FIELDS))
+                            Err(serde::de::Error::unknown_field(value, FIELDS))
                     }
                 }
                 deserializer.deserialize_identifier(GeneratedVisitor)
@@ -10961,13 +10527,14 @@ impl<'de> serde::Deserialize<'de> for Update {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<Update, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 while map_.next_key::<GeneratedField>()?.is_some() {
                     let _ = map_.next_value::<serde::de::IgnoredAny>()?;
                 }
-                Ok(Update {})
+                Ok(Update {
+                })
             }
         }
         deserializer.deserialize_struct("payload.v1.Update", FIELDS, GeneratedVisitor)
@@ -11003,8 +10570,7 @@ impl serde::Serialize for update::Config {
         if self.timestamp != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser
-                .serialize_field("timestamp", ToString::to_string(&self.timestamp).as_str())?;
+            struct_ser.serialize_field("timestamp", ToString::to_string(&self.timestamp).as_str())?;
         }
         if self.disable_balanced_update {
             struct_ser.serialize_field("disableBalancedUpdate", &self.disable_balanced_update)?;
@@ -11044,10 +10610,7 @@ impl<'de> serde::Deserialize<'de> for update::Config {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -11057,14 +10620,10 @@ impl<'de> serde::Deserialize<'de> for update::Config {
                         E: serde::de::Error,
                     {
                         match value {
-                            "skipStrictExistCheck" | "skip_strict_exist_check" => {
-                                Ok(GeneratedField::SkipStrictExistCheck)
-                            }
+                            "skipStrictExistCheck" | "skip_strict_exist_check" => Ok(GeneratedField::SkipStrictExistCheck),
                             "filters" => Ok(GeneratedField::Filters),
                             "timestamp" => Ok(GeneratedField::Timestamp),
-                            "disableBalancedUpdate" | "disable_balanced_update" => {
-                                Ok(GeneratedField::DisableBalancedUpdate)
-                            }
+                            "disableBalancedUpdate" | "disable_balanced_update" => Ok(GeneratedField::DisableBalancedUpdate),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -11081,8 +10640,8 @@ impl<'de> serde::Deserialize<'de> for update::Config {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<update::Config, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut skip_strict_exist_check__ = None;
                 let mut filters__ = None;
@@ -11092,9 +10651,7 @@ impl<'de> serde::Deserialize<'de> for update::Config {
                     match k {
                         GeneratedField::SkipStrictExistCheck => {
                             if skip_strict_exist_check__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "skipStrictExistCheck",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("skipStrictExistCheck"));
                             }
                             skip_strict_exist_check__ = Some(map_.next_value()?);
                         }
@@ -11108,16 +10665,13 @@ impl<'de> serde::Deserialize<'de> for update::Config {
                             if timestamp__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("timestamp"));
                             }
-                            timestamp__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            timestamp__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::DisableBalancedUpdate => {
                             if disable_balanced_update__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "disableBalancedUpdate",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("disableBalancedUpdate"));
                             }
                             disable_balanced_update__ = Some(map_.next_value()?);
                         }
@@ -11145,8 +10699,7 @@ impl serde::Serialize for update::MultiObjectRequest {
         if !self.requests.is_empty() {
             len += 1;
         }
-        let mut struct_ser =
-            serializer.serialize_struct("payload.v1.Update.MultiObjectRequest", len)?;
+        let mut struct_ser = serializer.serialize_struct("payload.v1.Update.MultiObjectRequest", len)?;
         if !self.requests.is_empty() {
             struct_ser.serialize_field("requests", &self.requests)?;
         }
@@ -11159,7 +10712,9 @@ impl<'de> serde::Deserialize<'de> for update::MultiObjectRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["requests"];
+        const FIELDS: &[&str] = &[
+            "requests",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -11175,10 +10730,7 @@ impl<'de> serde::Deserialize<'de> for update::MultiObjectRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -11204,12 +10756,9 @@ impl<'de> serde::Deserialize<'de> for update::MultiObjectRequest {
                 formatter.write_str("struct payload.v1.Update.MultiObjectRequest")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<update::MultiObjectRequest, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<update::MultiObjectRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut requests__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -11227,11 +10776,7 @@ impl<'de> serde::Deserialize<'de> for update::MultiObjectRequest {
                 })
             }
         }
-        deserializer.deserialize_struct(
-            "payload.v1.Update.MultiObjectRequest",
-            FIELDS,
-            GeneratedVisitor,
-        )
+        deserializer.deserialize_struct("payload.v1.Update.MultiObjectRequest", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for update::MultiRequest {
@@ -11258,7 +10803,9 @@ impl<'de> serde::Deserialize<'de> for update::MultiRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["requests"];
+        const FIELDS: &[&str] = &[
+            "requests",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -11274,10 +10821,7 @@ impl<'de> serde::Deserialize<'de> for update::MultiRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -11303,12 +10847,9 @@ impl<'de> serde::Deserialize<'de> for update::MultiRequest {
                 formatter.write_str("struct payload.v1.Update.MultiRequest")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<update::MultiRequest, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<update::MultiRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut requests__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -11365,7 +10906,11 @@ impl<'de> serde::Deserialize<'de> for update::ObjectRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["object", "config", "vectorizer"];
+        const FIELDS: &[&str] = &[
+            "object",
+            "config",
+            "vectorizer",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -11383,10 +10928,7 @@ impl<'de> serde::Deserialize<'de> for update::ObjectRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -11414,12 +10956,9 @@ impl<'de> serde::Deserialize<'de> for update::ObjectRequest {
                 formatter.write_str("struct payload.v1.Update.ObjectRequest")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<update::ObjectRequest, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<update::ObjectRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut object__ = None;
                 let mut config__ = None;
@@ -11486,7 +11025,10 @@ impl<'de> serde::Deserialize<'de> for update::Request {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["vector", "config"];
+        const FIELDS: &[&str] = &[
+            "vector",
+            "config",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -11503,10 +11045,7 @@ impl<'de> serde::Deserialize<'de> for update::Request {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -11534,8 +11073,8 @@ impl<'de> serde::Deserialize<'de> for update::Request {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<update::Request, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut vector__ = None;
                 let mut config__ = None;
@@ -11581,16 +11120,14 @@ impl serde::Serialize for update::TimestampRequest {
         if self.force {
             len += 1;
         }
-        let mut struct_ser =
-            serializer.serialize_struct("payload.v1.Update.TimestampRequest", len)?;
+        let mut struct_ser = serializer.serialize_struct("payload.v1.Update.TimestampRequest", len)?;
         if !self.id.is_empty() {
             struct_ser.serialize_field("id", &self.id)?;
         }
         if self.timestamp != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser
-                .serialize_field("timestamp", ToString::to_string(&self.timestamp).as_str())?;
+            struct_ser.serialize_field("timestamp", ToString::to_string(&self.timestamp).as_str())?;
         }
         if self.force {
             struct_ser.serialize_field("force", &self.force)?;
@@ -11604,7 +11141,11 @@ impl<'de> serde::Deserialize<'de> for update::TimestampRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["id", "timestamp", "force"];
+        const FIELDS: &[&str] = &[
+            "id",
+            "timestamp",
+            "force",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -11622,10 +11163,7 @@ impl<'de> serde::Deserialize<'de> for update::TimestampRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -11653,12 +11191,9 @@ impl<'de> serde::Deserialize<'de> for update::TimestampRequest {
                 formatter.write_str("struct payload.v1.Update.TimestampRequest")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<update::TimestampRequest, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<update::TimestampRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut id__ = None;
                 let mut timestamp__ = None;
@@ -11675,10 +11210,9 @@ impl<'de> serde::Deserialize<'de> for update::TimestampRequest {
                             if timestamp__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("timestamp"));
                             }
-                            timestamp__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            timestamp__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::Force => {
                             if force__.is_some() {
@@ -11695,11 +11229,7 @@ impl<'de> serde::Deserialize<'de> for update::TimestampRequest {
                 })
             }
         }
-        deserializer.deserialize_struct(
-            "payload.v1.Update.TimestampRequest",
-            FIELDS,
-            GeneratedVisitor,
-        )
+        deserializer.deserialize_struct("payload.v1.Update.TimestampRequest", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for Upsert {
@@ -11720,10 +11250,12 @@ impl<'de> serde::Deserialize<'de> for Upsert {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[];
+        const FIELDS: &[&str] = &[
+        ];
 
         #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {}
+        enum GeneratedField {
+        }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
             where
@@ -11734,10 +11266,7 @@ impl<'de> serde::Deserialize<'de> for Upsert {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -11746,7 +11275,7 @@ impl<'de> serde::Deserialize<'de> for Upsert {
                     where
                         E: serde::de::Error,
                     {
-                        Err(serde::de::Error::unknown_field(value, FIELDS))
+                            Err(serde::de::Error::unknown_field(value, FIELDS))
                     }
                 }
                 deserializer.deserialize_identifier(GeneratedVisitor)
@@ -11761,13 +11290,14 @@ impl<'de> serde::Deserialize<'de> for Upsert {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<Upsert, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 while map_.next_key::<GeneratedField>()?.is_some() {
                     let _ = map_.next_value::<serde::de::IgnoredAny>()?;
                 }
-                Ok(Upsert {})
+                Ok(Upsert {
+                })
             }
         }
         deserializer.deserialize_struct("payload.v1.Upsert", FIELDS, GeneratedVisitor)
@@ -11803,8 +11333,7 @@ impl serde::Serialize for upsert::Config {
         if self.timestamp != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser
-                .serialize_field("timestamp", ToString::to_string(&self.timestamp).as_str())?;
+            struct_ser.serialize_field("timestamp", ToString::to_string(&self.timestamp).as_str())?;
         }
         if self.disable_balanced_update {
             struct_ser.serialize_field("disableBalancedUpdate", &self.disable_balanced_update)?;
@@ -11844,10 +11373,7 @@ impl<'de> serde::Deserialize<'de> for upsert::Config {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -11857,14 +11383,10 @@ impl<'de> serde::Deserialize<'de> for upsert::Config {
                         E: serde::de::Error,
                     {
                         match value {
-                            "skipStrictExistCheck" | "skip_strict_exist_check" => {
-                                Ok(GeneratedField::SkipStrictExistCheck)
-                            }
+                            "skipStrictExistCheck" | "skip_strict_exist_check" => Ok(GeneratedField::SkipStrictExistCheck),
                             "filters" => Ok(GeneratedField::Filters),
                             "timestamp" => Ok(GeneratedField::Timestamp),
-                            "disableBalancedUpdate" | "disable_balanced_update" => {
-                                Ok(GeneratedField::DisableBalancedUpdate)
-                            }
+                            "disableBalancedUpdate" | "disable_balanced_update" => Ok(GeneratedField::DisableBalancedUpdate),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -11881,8 +11403,8 @@ impl<'de> serde::Deserialize<'de> for upsert::Config {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<upsert::Config, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut skip_strict_exist_check__ = None;
                 let mut filters__ = None;
@@ -11892,9 +11414,7 @@ impl<'de> serde::Deserialize<'de> for upsert::Config {
                     match k {
                         GeneratedField::SkipStrictExistCheck => {
                             if skip_strict_exist_check__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "skipStrictExistCheck",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("skipStrictExistCheck"));
                             }
                             skip_strict_exist_check__ = Some(map_.next_value()?);
                         }
@@ -11908,16 +11428,13 @@ impl<'de> serde::Deserialize<'de> for upsert::Config {
                             if timestamp__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("timestamp"));
                             }
-                            timestamp__ = Some(
-                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
-                                    .0,
-                            );
+                            timestamp__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
                         }
                         GeneratedField::DisableBalancedUpdate => {
                             if disable_balanced_update__.is_some() {
-                                return Err(serde::de::Error::duplicate_field(
-                                    "disableBalancedUpdate",
-                                ));
+                                return Err(serde::de::Error::duplicate_field("disableBalancedUpdate"));
                             }
                             disable_balanced_update__ = Some(map_.next_value()?);
                         }
@@ -11945,8 +11462,7 @@ impl serde::Serialize for upsert::MultiObjectRequest {
         if !self.requests.is_empty() {
             len += 1;
         }
-        let mut struct_ser =
-            serializer.serialize_struct("payload.v1.Upsert.MultiObjectRequest", len)?;
+        let mut struct_ser = serializer.serialize_struct("payload.v1.Upsert.MultiObjectRequest", len)?;
         if !self.requests.is_empty() {
             struct_ser.serialize_field("requests", &self.requests)?;
         }
@@ -11959,7 +11475,9 @@ impl<'de> serde::Deserialize<'de> for upsert::MultiObjectRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["requests"];
+        const FIELDS: &[&str] = &[
+            "requests",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -11975,10 +11493,7 @@ impl<'de> serde::Deserialize<'de> for upsert::MultiObjectRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -12004,12 +11519,9 @@ impl<'de> serde::Deserialize<'de> for upsert::MultiObjectRequest {
                 formatter.write_str("struct payload.v1.Upsert.MultiObjectRequest")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<upsert::MultiObjectRequest, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<upsert::MultiObjectRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut requests__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -12027,11 +11539,7 @@ impl<'de> serde::Deserialize<'de> for upsert::MultiObjectRequest {
                 })
             }
         }
-        deserializer.deserialize_struct(
-            "payload.v1.Upsert.MultiObjectRequest",
-            FIELDS,
-            GeneratedVisitor,
-        )
+        deserializer.deserialize_struct("payload.v1.Upsert.MultiObjectRequest", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for upsert::MultiRequest {
@@ -12058,7 +11566,9 @@ impl<'de> serde::Deserialize<'de> for upsert::MultiRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["requests"];
+        const FIELDS: &[&str] = &[
+            "requests",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -12074,10 +11584,7 @@ impl<'de> serde::Deserialize<'de> for upsert::MultiRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -12103,12 +11610,9 @@ impl<'de> serde::Deserialize<'de> for upsert::MultiRequest {
                 formatter.write_str("struct payload.v1.Upsert.MultiRequest")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<upsert::MultiRequest, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<upsert::MultiRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut requests__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -12165,7 +11669,11 @@ impl<'de> serde::Deserialize<'de> for upsert::ObjectRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["object", "config", "vectorizer"];
+        const FIELDS: &[&str] = &[
+            "object",
+            "config",
+            "vectorizer",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -12183,10 +11691,7 @@ impl<'de> serde::Deserialize<'de> for upsert::ObjectRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -12214,12 +11719,9 @@ impl<'de> serde::Deserialize<'de> for upsert::ObjectRequest {
                 formatter.write_str("struct payload.v1.Upsert.ObjectRequest")
             }
 
-            fn visit_map<V>(
-                self,
-                mut map_: V,
-            ) -> std::result::Result<upsert::ObjectRequest, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<upsert::ObjectRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut object__ = None;
                 let mut config__ = None;
@@ -12286,7 +11788,10 @@ impl<'de> serde::Deserialize<'de> for upsert::Request {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["vector", "config"];
+        const FIELDS: &[&str] = &[
+            "vector",
+            "config",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -12303,10 +11808,7 @@ impl<'de> serde::Deserialize<'de> for upsert::Request {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -12334,8 +11836,8 @@ impl<'de> serde::Deserialize<'de> for upsert::Request {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<upsert::Request, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut vector__ = None;
                 let mut config__ = None;
