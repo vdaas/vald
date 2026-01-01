@@ -16,7 +16,7 @@
 
 use opentelemetry::global;
 use opentelemetry::propagation::Injector;
-use prost_types::Any;
+use proto::google::protobuf::Any;
 use proto::meta::v1::meta_client::MetaClient;
 use proto::payload::v1::meta;
 use tonic::metadata::MetadataMap;
