@@ -347,20 +347,6 @@
       },
       "description": "Represent multiple search responses."
     },
-    "SearchStreamResponse": {
-      "type": "object",
-      "properties": {
-        "response": {
-          "$ref": "#/definitions/v1SearchResponse",
-          "description": "Represent the search response."
-        },
-        "status": {
-          "$ref": "#/definitions/rpcStatus",
-          "description": "The RPC error status."
-        }
-      },
-      "description": "Represent stream search response."
-    },
     "protobufAny": {
       "type": "object",
       "properties": {

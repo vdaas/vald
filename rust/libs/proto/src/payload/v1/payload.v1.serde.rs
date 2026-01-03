@@ -6343,13 +6343,7 @@ impl serde::Serialize for meta::Value {
         }
         let mut struct_ser = serializer.serialize_struct("payload.v1.Meta.Value", len)?;
         if let Some(v) = self.value.as_ref() {
-            struct_ser.serialize_field(
-                "value",
-                &pbjson_types::Any {
-                    type_url: v.type_url.clone(),
-                    value: v.value.clone().into(),
-                },
-            )?;
+            struct_ser.serialize_field("value", v)?;
         }
         struct_ser.end()
     }
@@ -6416,12 +6410,7 @@ impl<'de> serde::Deserialize<'de> for meta::Value {
                             if value__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("value"));
                             }
-                            value__ = map_.next_value::<Option<pbjson_types::Any>>()?.map(|v| {
-                                prost_types::Any {
-                                    type_url: v.type_url,
-                                    value: v.value.to_vec(),
-                                }
-                            });
+                            value__ = map_.next_value()?;
                         }
                     }
                 }
