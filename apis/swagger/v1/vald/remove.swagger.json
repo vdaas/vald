@@ -135,20 +135,6 @@
       },
       "description": "Represent multiple vector locations."
     },
-    "ObjectStreamLocation": {
-      "type": "object",
-      "properties": {
-        "location": {
-          "$ref": "#/definitions/v1ObjectLocation",
-          "description": "The vector location."
-        },
-        "status": {
-          "$ref": "#/definitions/rpcStatus",
-          "description": "The RPC error status."
-        }
-      },
-      "description": "Represent the stream response of the vector location."
-    },
     "TimestampOperator": {
       "type": "string",
       "enum": ["Eq", "Ne", "Ge", "Gt", "Le", "Lt"],
