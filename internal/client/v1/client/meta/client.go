@@ -20,9 +20,6 @@ import "context"
 
 type MetadataClient interface {
 	Get(context.Context, []byte) ([]byte, error)
-	BatchGet(context.Context, [][]byte) ([][]byte, error)
 	Put(context.Context, []byte, []byte) error
-	BatchPut(context.Context, [][]byte, [][]byte) error
 	Delete(context.Context, []byte) error
-	BatchDelete(context.Context, [][]byte) error
 }

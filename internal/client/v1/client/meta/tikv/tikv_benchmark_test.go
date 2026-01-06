@@ -75,7 +75,7 @@ func createClient(b *testing.B) Client {
 
 	// basic connectivity probe (Get for non-existing key)
 	_, err = cli.Get(context.Background(), []byte("vald_bench_probe"))
-	if err != nil {
+	if err != nil && !errors.Is(err, errNotFound) {
 		// Depending on cluster state Get may return region not found etc.
 		// We treat only network/connection errors as fatal.
 		b.Logf("tiKV connectivity probe returned error: %v (continuing)", err)
@@ -134,54 +134,6 @@ func Benchmark(b *testing.B) {
 		_, err := cli.Get(ctx, key[:])
 		if !errors.Is(err, errNotFound) {
 			b.Fatalf("i=%d: expected not found error, but got: %v", i, err)
-		}
-	}
-}
-
-func BenchmarkBatch(b *testing.B) {
-	cli := createClient(b)
-	defer cli.Stop(b.Context())
-	defer cli.StopPD(b.Context())
-
-	ctx := b.Context()
-	length := 300
-
-	keys := make([][]byte, length)
-	for i := range length {
-		var key [8]byte
-		binary.LittleEndian.PutUint64(key[:], uint64(i))
-		keys[i] = key[:]
-	}
-	val := []byte("vald_bench_val")
-	vals := slices.Repeat([][]byte{val}, length)
-	b.ReportAllocs()
-	b.ResetTimer()
-	b.StartTimer()
-	for b.Loop() {
-		if err := cli.BatchPut(ctx, keys, vals); err != nil {
-			b.Fatalf("BatchPut error: %v", err)
-		}
-	}
-	b.ReportAllocs()
-	b.ResetTimer()
-	b.StartTimer()
-	for b.Loop() {
-		res, err := cli.BatchGet(ctx, keys)
-		if err != nil {
-			b.Fatalf("BatchGet error: %v", err)
-		}
-		for i := range res {
-			if !slices.Equal(res[i], val) {
-				b.Fatalf("expected value %v, but got %v", val, res[i])
-			}
-		}
-	}
-	b.ReportAllocs()
-	b.ResetTimer()
-	b.StartTimer()
-	for b.Loop() {
-		if err := cli.BatchDelete(ctx, keys); err != nil {
-			b.Fatalf("BatchDelete error: %v", err)
 		}
 	}
 }
