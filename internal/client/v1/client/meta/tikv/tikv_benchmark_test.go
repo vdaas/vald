@@ -26,8 +26,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -91,52 +91,85 @@ func Benchmark(b *testing.B) {
 	ctx := b.Context()
 	val := []byte("vald_bench_val")
 
-	b.ReportAllocs()
-	b.ResetTimer()
-	b.StartTimer()
-	for i := range b.N {
+	makeKey := func(i int) [8]byte {
 		var key [8]byte
 		binary.LittleEndian.PutUint64(key[:], uint64(i))
-		if err := cli.Put(ctx, key[:], val); err != nil {
-			b.Fatalf("Put error: %v", err)
-		}
+		return key
 	}
-	b.ReportAllocs()
-	b.ResetTimer()
-	b.StartTimer()
-	for i := range b.N {
-		var key [8]byte
-		binary.LittleEndian.PutUint64(key[:], uint64(i))
-		res, err := cli.Get(ctx, key[:])
-		if err != nil {
-			b.Fatalf("Get error: %v", err)
+
+	b.Run("Put", func(b *testing.B) {
+		b.ReportAllocs()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			key := makeKey(i)
+			if err := cli.Put(ctx, key[:], val); err != nil {
+				b.Fatalf("Put error: %v", err)
+			}
 		}
-		if !slices.Equal(res, val) {
-			b.Errorf("i=%d: expected value %v, but got %v", i, val, res)
+	})
+
+	b.Run("Get", func(b *testing.B) {
+		// setup (not measured)
+		b.StopTimer()
+		for i := 0; i < b.N; i++ {
+			key := makeKey(i)
+			if err := cli.Put(ctx, key[:], val); err != nil {
+				b.Fatalf("setup Put error: %v", err)
+			}
 		}
-	}
-	b.ReportAllocs()
-	b.ResetTimer()
-	b.StartTimer()
-	for i := range b.N {
-		var key [8]byte
-		binary.LittleEndian.PutUint64(key[:], uint64(i))
-		if err := cli.Delete(ctx, key[:]); err != nil {
-			b.Fatalf("i=%d: Delete error: %v", i, err)
+		b.StartTimer()
+
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			key := makeKey(i)
+			res, err := cli.Get(ctx, key[:])
+			if err != nil {
+				b.Fatalf("Get error: %v", err)
+			}
+			if !slices.Equal(res, val) {
+				b.Fatalf("i=%d: expected %v, got %v", i, val, res)
+			}
 		}
-	}
-	b.ReportAllocs()
-	b.ResetTimer()
-	b.StartTimer()
-	for i := range b.N {
-		var key [8]byte
-		binary.LittleEndian.PutUint64(key[:], uint64(i))
-		_, err := cli.Get(ctx, key[:])
-		if !errors.Is(err, errNotFound) {
-			b.Fatalf("i=%d: expected not found error, but got: %v", i, err)
+	})
+
+	b.Run("Delete", func(b *testing.B) {
+		// setup (not measured)
+		b.StopTimer()
+		for i := 0; i < b.N; i++ {
+			key := makeKey(i)
+			if err := cli.Put(ctx, key[:], val); err != nil {
+				b.Fatalf("setup Put error: %v", err)
+			}
 		}
-	}
-}
+		b.StartTimer()
+
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			key := makeKey(i)
+			if err := cli.Delete(ctx, key[:]); err != nil {
+				b.Fatalf("i=%d: Delete error: %v", i, err)
+			}
+		}
+	})
+
+	b.Run("GetNotFound", func(b *testing.B) {
+		// setup (not measured): ensure keys do NOT exist
+		b.StopTimer()
+		for i := 0; i < b.N; i++ {
+			key := makeKey(i)
+			_ = cli.Delete(ctx, key[:]) // ignore error: best-effort cleanup
+		}
+		b.StartTimer()
+
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			key := makeKey(i)
+			_, err := cli.Get(ctx, key[:])
+			if !errors.Is(err, errNotFound) {
+				b.Fatalf("i=%d: expected not found, got: %v", i, err)
+			}
+		}
+	})}
 
 // Ensure that no goroutines leak from the benchmarks.
 func TestMain(m *testing.M) {
