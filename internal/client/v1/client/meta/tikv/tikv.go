@@ -443,6 +443,7 @@ func (c *client) Put(ctx context.Context, key, val []byte) error {
 		}
 	}()
 
+RETRY:
 	for range c.regionErrorRetryLimit {
 		lookups, err := c.lookupAddrs(ctx, [][]byte{key})
 		if err != nil {
@@ -470,11 +471,10 @@ func (c *client) Put(ctx context.Context, key, val []byte) error {
 					return err
 				}
 				// retry with refreshed region info
-				goto RETRY
+				continue RETRY
 			}
 			return nil
 		}
-	RETRY:
 	}
 	return errors.Errorf("exceeded region error retry limit for key: %s", hex.EncodeToString(key))
 }
@@ -487,6 +487,7 @@ func (c *client) Delete(ctx context.Context, key []byte) error {
 		}
 	}()
 
+RETRY:
 	for range c.regionErrorRetryLimit {
 		lookups, err := c.lookupAddrs(ctx, [][]byte{key})
 		if err != nil {
@@ -513,11 +514,10 @@ func (c *client) Delete(ctx context.Context, key []byte) error {
 					return err
 				}
 				// retry
-				goto RETRY
+				continue RETRY
 			}
 			return nil
 		}
-	RETRY:
 	}
 	return errors.Errorf("exceeded region error retry limit for key: %s", hex.EncodeToString(key))
 }
