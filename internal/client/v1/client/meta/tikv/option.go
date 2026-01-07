@@ -48,7 +48,7 @@ func WithPDAddrs(addrs ...string) Option {
 		if len(addrs) == 0 {
 			return nil
 		}
-		c.addrs = append(c.addrs, addrs...)
+		c.pd.addrs = append(c.pd.addrs, addrs...)
 		return nil
 	}
 }
