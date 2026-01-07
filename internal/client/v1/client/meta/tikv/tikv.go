@@ -46,7 +46,6 @@ type Client interface {
 }
 
 type client struct {
-	addrs []string
 	c     grpc.Client
 
 	pd *pdClient
