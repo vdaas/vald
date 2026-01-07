@@ -118,7 +118,7 @@ func (c *client) lookupAddrs(ctx context.Context, keys [][]byte) (map[uint64]*lo
 	defer c.rmu.RUnlock()
 	for _, key := range unknownKeys {
 		re := c.lookupRange(key)
-		if re.addr == "" {
+		if re == nil || re.addr == "" {
 			return nil, errors.Errorf("address not found for key: %s", hex.EncodeToString(key))
 		}
 		if res[re.ctx.RegionId] == nil {
