@@ -49,7 +49,7 @@ func getAddrs() []string {
 func createClient(b *testing.B) Client {
 	pdAddrs := getAddrs()
 	if len(pdAddrs) == 0 {
-		b.Errorf("environment variable %s not set; skipping TiKV benchmarks", envPDAddrs)
+		b.Skipf("environment variable %s not set; skipping TiKV benchmarks", envPDAddrs)
 	}
 	var err error
 	cli, err = New(
