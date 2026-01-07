@@ -18,10 +18,11 @@ package meta
 
 import (
 	context "context"
+
 	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
-	grpc "google.golang.org/grpc"
 	codes "github.com/vdaas/vald/internal/net/grpc/codes"
 	status "github.com/vdaas/vald/internal/net/grpc/status"
+	grpc "google.golang.org/grpc"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
@@ -54,7 +55,9 @@ func NewMetaClient(cc grpc.ClientConnInterface) MetaClient {
 	return &metaClient{cc}
 }
 
-func (c *metaClient) Get(ctx context.Context, in *payload.Meta_Key, opts ...grpc.CallOption) (*payload.Meta_Value, error) {
+func (c *metaClient) Get(
+	ctx context.Context, in *payload.Meta_Key, opts ...grpc.CallOption,
+) (*payload.Meta_Value, error) {
 	out := new(payload.Meta_Value)
 	err := c.cc.Invoke(ctx, "/meta.v1.Meta/Get", in, out, opts...)
 	if err != nil {
@@ -63,7 +66,9 @@ func (c *metaClient) Get(ctx context.Context, in *payload.Meta_Key, opts ...grpc
 	return out, nil
 }
 
-func (c *metaClient) Set(ctx context.Context, in *payload.Meta_KeyValue, opts ...grpc.CallOption) (*payload.Empty, error) {
+func (c *metaClient) Set(
+	ctx context.Context, in *payload.Meta_KeyValue, opts ...grpc.CallOption,
+) (*payload.Empty, error) {
 	out := new(payload.Empty)
 	err := c.cc.Invoke(ctx, "/meta.v1.Meta/Set", in, out, opts...)
 	if err != nil {
@@ -72,7 +77,9 @@ func (c *metaClient) Set(ctx context.Context, in *payload.Meta_KeyValue, opts ..
 	return out, nil
 }
 
-func (c *metaClient) Delete(ctx context.Context, in *payload.Meta_Key, opts ...grpc.CallOption) (*payload.Empty, error) {
+func (c *metaClient) Delete(
+	ctx context.Context, in *payload.Meta_Key, opts ...grpc.CallOption,
+) (*payload.Empty, error) {
 	out := new(payload.Empty)
 	err := c.cc.Invoke(ctx, "/meta.v1.Meta/Delete", in, out, opts...)
 	if err != nil {
@@ -92,15 +99,20 @@ type MetaServer interface {
 }
 
 // UnimplementedMetaServer must be embedded to have forward compatible implementations.
-type UnimplementedMetaServer struct {
-}
+type UnimplementedMetaServer struct{}
 
-func (UnimplementedMetaServer) Get(context.Context, *payload.Meta_Key) (*payload.Meta_Value, error) {
+func (UnimplementedMetaServer) Get(
+	context.Context, *payload.Meta_Key,
+) (*payload.Meta_Value, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
 }
-func (UnimplementedMetaServer) Set(context.Context, *payload.Meta_KeyValue) (*payload.Empty, error) {
+
+func (UnimplementedMetaServer) Set(
+	context.Context, *payload.Meta_KeyValue,
+) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Set not implemented")
 }
+
 func (UnimplementedMetaServer) Delete(context.Context, *payload.Meta_Key) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
@@ -117,7 +129,9 @@ func RegisterMetaServer(s grpc.ServiceRegistrar, srv MetaServer) {
 	s.RegisterService(&Meta_ServiceDesc, srv)
 }
 
-func _Meta_Get_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
+func _Meta_Get_Handler(
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
 	in := new(payload.Meta_Key)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -135,7 +149,9 @@ func _Meta_Get_Handler(srv any, ctx context.Context, dec func(any) error, interc
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Meta_Set_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
+func _Meta_Set_Handler(
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
 	in := new(payload.Meta_KeyValue)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -153,7 +169,9 @@ func _Meta_Set_Handler(srv any, ctx context.Context, dec func(any) error, interc
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Meta_Delete_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
+func _Meta_Delete_Handler(
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
 	in := new(payload.Meta_Key)
 	if err := dec(in); err != nil {
 		return nil, err

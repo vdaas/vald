@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -169,7 +169,8 @@ func Benchmark(b *testing.B) {
 				b.Fatalf("i=%d: expected not found, got: %v", i, err)
 			}
 		}
-	})}
+	})
+}
 
 // Ensure that no goroutines leak from the benchmarks.
 func TestMain(m *testing.M) {

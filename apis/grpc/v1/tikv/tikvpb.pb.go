@@ -17,10 +17,11 @@
 package tikv
 
 import (
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	unsafe "unsafe"
+
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -57,6 +58,7 @@ var file_v1_tikv_tikvpb_proto_goTypes = []any{
 	(*RawDeleteResponse)(nil),      // 10: tikv.RawDeleteResponse
 	(*RawBatchDeleteResponse)(nil), // 11: tikv.RawBatchDeleteResponse
 }
+
 var file_v1_tikv_tikvpb_proto_depIdxs = []int32{
 	0,  // 0: tikvpb.Tikv.RawGet:input_type -> tikv.RawGetRequest
 	1,  // 1: tikvpb.Tikv.RawBatchGet:input_type -> tikv.RawBatchGetRequest

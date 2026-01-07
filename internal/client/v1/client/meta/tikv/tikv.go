@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import (
 )
 
 const (
-	apiName = "vald/internal/client/meta/v1/client/meta/tikv"
+	apiName      = "vald/internal/client/meta/v1/client/meta/tikv"
 	waitInterval = time.Second * 2
 )
 
@@ -56,9 +56,9 @@ type client struct {
 	clusterId uint64
 
 	// range cache
-	rmu     sync.RWMutex
-	ranges  []*rangeEntry
-	regions map[uint64]*rangeEntry
+	rmu           sync.RWMutex
+	ranges        []*rangeEntry
+	regions       map[uint64]*rangeEntry
 	storeIdToAddr map[uint64]string
 }
 
@@ -91,7 +91,7 @@ type lookupResult struct {
 func (c *client) lookupAddrs(ctx context.Context, keys [][]byte) (map[uint64]*lookupResult, error) {
 	unknownKeys := make([][]byte, 0, len(keys))
 	res := make(map[uint64]*lookupResult)
-	func () {
+	func() {
 		c.rmu.RLock()
 		defer c.rmu.RUnlock()
 		for _, key := range keys {
@@ -165,7 +165,7 @@ func (c *client) refresh(ctx context.Context, keys [][]byte) error {
 	g.Go(func() error {
 		req := make([]*tikv.KeyRange, len(keys))
 		sort.Slice(keys, func(i, j int) bool {
-    		return bytes.Compare(keys[i], keys[j]) < 0
+			return bytes.Compare(keys[i], keys[j]) < 0
 		})
 		for i, key := range keys {
 			req[i] = &tikv.KeyRange{
@@ -174,8 +174,8 @@ func (c *client) refresh(ctx context.Context, keys [][]byte) error {
 			}
 		}
 		res, err := c.pd.BatchScanRegions(ctx, &tikv.BatchScanRegionsRequest{
-			Header: &tikv.RequestHeader{ClusterId: c.clusterId},
-			Ranges: req,
+			Header:             &tikv.RequestHeader{ClusterId: c.clusterId},
+			Ranges:             req,
 			ContainAllKeyRange: true,
 		})
 		if err != nil {
@@ -221,53 +221,57 @@ func (c *client) refresh(ctx context.Context, keys [][]byte) error {
 }
 
 func epochCmp(a, b *tikv.RegionEpoch) int {
-    // return 1 if a newer than b, 0 if equal, -1 if older
-    if a.GetConfVer() != b.GetConfVer() {
-        if a.GetConfVer() > b.GetConfVer() { return 1 }
-        return -1
-    }
-    if a.GetVersion() != b.GetVersion() {
-        if a.GetVersion() > b.GetVersion() { return 1 }
-        return -1
-    }
-    return 0
+	// return 1 if a newer than b, 0 if equal, -1 if older
+	if a.GetConfVer() != b.GetConfVer() {
+		if a.GetConfVer() > b.GetConfVer() {
+			return 1
+		}
+		return -1
+	}
+	if a.GetVersion() != b.GetVersion() {
+		if a.GetVersion() > b.GetVersion() {
+			return 1
+		}
+		return -1
+	}
+	return 0
 }
 
 func mergeByNewerVersion(old []*rangeEntry, newE *rangeEntry) []*rangeEntry {
-		// log.Errorf("merging %#v into existing ranges %#v", newE, old)
-    out := make([]*rangeEntry, 0, len(old)+1)
-    inserted := false
+	// log.Errorf("merging %#v into existing ranges %#v", newE, old)
+	out := make([]*rangeEntry, 0, len(old)+1)
+	inserted := false
 
-    for _, e := range old {
-        if !overlap(e.start, e.end, newE.start, newE.end) {
-            out = append(out, e)
-            continue
-        }
+	for _, e := range old {
+		if !overlap(e.start, e.end, newE.start, newE.end) {
+			out = append(out, e)
+			continue
+		}
 
-        cmp := epochCmp(newE.ctx.RegionEpoch, e.ctx.RegionEpoch)
-        switch {
-        case cmp > 0:
-            // new is newer: drop old overlapping entry
-            continue
-        case cmp == 0:
-            // same epoch: replace entire entry (start/end/ctx/addr)
-            out = append(out, newE)
-            inserted = true
-        default:
-            // new is older: keep old set
-            return old
-        }
-    }
+		cmp := epochCmp(newE.ctx.RegionEpoch, e.ctx.RegionEpoch)
+		switch {
+		case cmp > 0:
+			// new is newer: drop old overlapping entry
+			continue
+		case cmp == 0:
+			// same epoch: replace entire entry (start/end/ctx/addr)
+			out = append(out, newE)
+			inserted = true
+		default:
+			// new is older: keep old set
+			return old
+		}
+	}
 
-    if !inserted {
-        out = append(out, newE)
-    }
+	if !inserted {
+		out = append(out, newE)
+	}
 
-    sort.Slice(out, func(i, j int) bool {
-        return bytes.Compare(out[i].start, out[j].start) < 0
-    })
-		// log.Errorf("out: %#v", out)
-    return out
+	sort.Slice(out, func(i, j int) bool {
+		return bytes.Compare(out[i].start, out[j].start) < 0
+	})
+	// log.Errorf("out: %#v", out)
+	return out
 }
 
 func overlap(aStart, aEnd, bStart, bEnd []byte) bool {
@@ -330,7 +334,9 @@ func (c *client) GRPCClientPD() grpc.Client {
 	return c.pd.c
 }
 
-func (c *client) handleRegionError(ctx context.Context, regionErr *tikv.Error, keys [][]byte, refresh bool) error {
+func (c *client) handleRegionError(
+	ctx context.Context, regionErr *tikv.Error, keys [][]byte, refresh bool,
+) error {
 	log.Errorf("region error: %+v", regionErr)
 	c.rmu.Lock()
 	if err := regionErr.ServerIsBusy; err != nil {

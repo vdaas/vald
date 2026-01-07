@@ -18,9 +18,10 @@ package tikv
 
 import (
 	context "context"
-	grpc "google.golang.org/grpc"
+
 	codes "github.com/vdaas/vald/internal/net/grpc/codes"
 	status "github.com/vdaas/vald/internal/net/grpc/status"
+	grpc "google.golang.org/grpc"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
@@ -56,7 +57,9 @@ func NewTikvClient(cc grpc.ClientConnInterface) TikvClient {
 	return &tikvClient{cc}
 }
 
-func (c *tikvClient) RawGet(ctx context.Context, in *RawGetRequest, opts ...grpc.CallOption) (*RawGetResponse, error) {
+func (c *tikvClient) RawGet(
+	ctx context.Context, in *RawGetRequest, opts ...grpc.CallOption,
+) (*RawGetResponse, error) {
 	out := new(RawGetResponse)
 	err := c.cc.Invoke(ctx, "/tikvpb.Tikv/RawGet", in, out, opts...)
 	if err != nil {
@@ -65,7 +68,9 @@ func (c *tikvClient) RawGet(ctx context.Context, in *RawGetRequest, opts ...grpc
 	return out, nil
 }
 
-func (c *tikvClient) RawBatchGet(ctx context.Context, in *RawBatchGetRequest, opts ...grpc.CallOption) (*RawBatchGetResponse, error) {
+func (c *tikvClient) RawBatchGet(
+	ctx context.Context, in *RawBatchGetRequest, opts ...grpc.CallOption,
+) (*RawBatchGetResponse, error) {
 	out := new(RawBatchGetResponse)
 	err := c.cc.Invoke(ctx, "/tikvpb.Tikv/RawBatchGet", in, out, opts...)
 	if err != nil {
@@ -74,7 +79,9 @@ func (c *tikvClient) RawBatchGet(ctx context.Context, in *RawBatchGetRequest, op
 	return out, nil
 }
 
-func (c *tikvClient) RawPut(ctx context.Context, in *RawPutRequest, opts ...grpc.CallOption) (*RawPutResponse, error) {
+func (c *tikvClient) RawPut(
+	ctx context.Context, in *RawPutRequest, opts ...grpc.CallOption,
+) (*RawPutResponse, error) {
 	out := new(RawPutResponse)
 	err := c.cc.Invoke(ctx, "/tikvpb.Tikv/RawPut", in, out, opts...)
 	if err != nil {
@@ -83,7 +90,9 @@ func (c *tikvClient) RawPut(ctx context.Context, in *RawPutRequest, opts ...grpc
 	return out, nil
 }
 
-func (c *tikvClient) RawBatchPut(ctx context.Context, in *RawBatchPutRequest, opts ...grpc.CallOption) (*RawBatchPutResponse, error) {
+func (c *tikvClient) RawBatchPut(
+	ctx context.Context, in *RawBatchPutRequest, opts ...grpc.CallOption,
+) (*RawBatchPutResponse, error) {
 	out := new(RawBatchPutResponse)
 	err := c.cc.Invoke(ctx, "/tikvpb.Tikv/RawBatchPut", in, out, opts...)
 	if err != nil {
@@ -92,7 +101,9 @@ func (c *tikvClient) RawBatchPut(ctx context.Context, in *RawBatchPutRequest, op
 	return out, nil
 }
 
-func (c *tikvClient) RawDelete(ctx context.Context, in *RawDeleteRequest, opts ...grpc.CallOption) (*RawDeleteResponse, error) {
+func (c *tikvClient) RawDelete(
+	ctx context.Context, in *RawDeleteRequest, opts ...grpc.CallOption,
+) (*RawDeleteResponse, error) {
 	out := new(RawDeleteResponse)
 	err := c.cc.Invoke(ctx, "/tikvpb.Tikv/RawDelete", in, out, opts...)
 	if err != nil {
@@ -101,7 +112,9 @@ func (c *tikvClient) RawDelete(ctx context.Context, in *RawDeleteRequest, opts .
 	return out, nil
 }
 
-func (c *tikvClient) RawBatchDelete(ctx context.Context, in *RawBatchDeleteRequest, opts ...grpc.CallOption) (*RawBatchDeleteResponse, error) {
+func (c *tikvClient) RawBatchDelete(
+	ctx context.Context, in *RawBatchDeleteRequest, opts ...grpc.CallOption,
+) (*RawBatchDeleteResponse, error) {
 	out := new(RawBatchDeleteResponse)
 	err := c.cc.Invoke(ctx, "/tikvpb.Tikv/RawBatchDelete", in, out, opts...)
 	if err != nil {
@@ -124,25 +137,37 @@ type TikvServer interface {
 }
 
 // UnimplementedTikvServer must be embedded to have forward compatible implementations.
-type UnimplementedTikvServer struct {
-}
+type UnimplementedTikvServer struct{}
 
 func (UnimplementedTikvServer) RawGet(context.Context, *RawGetRequest) (*RawGetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RawGet not implemented")
 }
-func (UnimplementedTikvServer) RawBatchGet(context.Context, *RawBatchGetRequest) (*RawBatchGetResponse, error) {
+
+func (UnimplementedTikvServer) RawBatchGet(
+	context.Context, *RawBatchGetRequest,
+) (*RawBatchGetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RawBatchGet not implemented")
 }
+
 func (UnimplementedTikvServer) RawPut(context.Context, *RawPutRequest) (*RawPutResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RawPut not implemented")
 }
-func (UnimplementedTikvServer) RawBatchPut(context.Context, *RawBatchPutRequest) (*RawBatchPutResponse, error) {
+
+func (UnimplementedTikvServer) RawBatchPut(
+	context.Context, *RawBatchPutRequest,
+) (*RawBatchPutResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RawBatchPut not implemented")
 }
-func (UnimplementedTikvServer) RawDelete(context.Context, *RawDeleteRequest) (*RawDeleteResponse, error) {
+
+func (UnimplementedTikvServer) RawDelete(
+	context.Context, *RawDeleteRequest,
+) (*RawDeleteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RawDelete not implemented")
 }
-func (UnimplementedTikvServer) RawBatchDelete(context.Context, *RawBatchDeleteRequest) (*RawBatchDeleteResponse, error) {
+
+func (UnimplementedTikvServer) RawBatchDelete(
+	context.Context, *RawBatchDeleteRequest,
+) (*RawBatchDeleteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RawBatchDelete not implemented")
 }
 func (UnimplementedTikvServer) mustEmbedUnimplementedTikvServer() {}
@@ -158,7 +183,9 @@ func RegisterTikvServer(s grpc.ServiceRegistrar, srv TikvServer) {
 	s.RegisterService(&Tikv_ServiceDesc, srv)
 }
 
-func _Tikv_RawGet_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
+func _Tikv_RawGet_Handler(
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
 	in := new(RawGetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -176,7 +203,9 @@ func _Tikv_RawGet_Handler(srv any, ctx context.Context, dec func(any) error, int
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Tikv_RawBatchGet_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
+func _Tikv_RawBatchGet_Handler(
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
 	in := new(RawBatchGetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -194,7 +223,9 @@ func _Tikv_RawBatchGet_Handler(srv any, ctx context.Context, dec func(any) error
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Tikv_RawPut_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
+func _Tikv_RawPut_Handler(
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
 	in := new(RawPutRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -212,7 +243,9 @@ func _Tikv_RawPut_Handler(srv any, ctx context.Context, dec func(any) error, int
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Tikv_RawBatchPut_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
+func _Tikv_RawBatchPut_Handler(
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
 	in := new(RawBatchPutRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -230,7 +263,9 @@ func _Tikv_RawBatchPut_Handler(srv any, ctx context.Context, dec func(any) error
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Tikv_RawDelete_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
+func _Tikv_RawDelete_Handler(
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
 	in := new(RawDeleteRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -248,7 +283,9 @@ func _Tikv_RawDelete_Handler(srv any, ctx context.Context, dec func(any) error, 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Tikv_RawBatchDelete_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
+func _Tikv_RawBatchDelete_Handler(
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
 	in := new(RawBatchDeleteRequest)
 	if err := dec(in); err != nil {
 		return nil, err

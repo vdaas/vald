@@ -16,9 +16,7 @@
 
 package tikv
 
-import (
-	"google.golang.org/protobuf/encoding/protojson"
-)
+import "google.golang.org/protobuf/encoding/protojson"
 
 // MarshalJSON implements json.Marshaler
 func (msg *NotLeader) MarshalJSON() ([]byte, error) {
