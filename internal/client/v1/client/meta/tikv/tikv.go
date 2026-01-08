@@ -469,11 +469,10 @@ func (c *client) Put(ctx context.Context, key, val []byte) error {
 					return err
 				}
 				// retry with refreshed region info
-				goto RETRY
+				break
 			}
 			return nil
 		}
-	RETRY:
 	}
 	return errors.Errorf("exceeded region error retry limit for key: %s", hex.EncodeToString(key))
 }
@@ -512,11 +511,10 @@ func (c *client) Delete(ctx context.Context, key []byte) error {
 					return err
 				}
 				// retry
-				goto RETRY
+				break
 			}
 			return nil
 		}
-	RETRY:
 	}
 	return errors.Errorf("exceeded region error retry limit for key: %s", hex.EncodeToString(key))
 }
