@@ -360,6 +360,9 @@ func (c *client) handleRegionError(
 	}
 	if err := regionErr.EpochNotMatch; err != nil {
 		for _, r := range err.CurrentRegions {
+			if len(r.Peers) == 0 {
+				continue
+			}
 			re := &rangeEntry{
 				start: slices.Clone(r.StartKey),
 				end:   slices.Clone(r.EndKey),
