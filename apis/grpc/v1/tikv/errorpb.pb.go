@@ -1487,6 +1487,7 @@ var (
 		(*Region2)(nil),               // 23: metapb.Region2
 	}
 )
+
 var file_v1_tikv_errorpb_proto_depIdxs = []int32{
 	22, // 0: tikv.NotLeader.leader:type_name -> metapb.Peer
 	23, // 1: tikv.EpochNotMatch.current_regions:type_name -> metapb.Region2

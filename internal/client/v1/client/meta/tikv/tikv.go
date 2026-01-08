@@ -46,7 +46,7 @@ type Client interface {
 }
 
 type client struct {
-	c     grpc.Client
+	c grpc.Client
 
 	pd *pdClient
 
