@@ -15,7 +15,7 @@
 //
 
 // $ tiup playground --mode tikv-slim
-// $ TIKV_STORE_ADDRS=127.0.0.1:20160 go test ./internal/client/v1/client/meta/tikv/ -run=^$ -bench=. -benchmem
+// $ TIKV_PD_ADDRS=127.0.0.1:2379 go test ./internal/client/v1/client/meta/tikv/ -run=^$ -bench=. -benchmem
 package tikv
 
 import (
