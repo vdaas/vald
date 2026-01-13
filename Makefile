@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+<<<<<<< HEAD
 SHELL                           = bash
 ORG                             ?= vdaas
 NAME                            = vald
@@ -51,6 +52,44 @@ MIRROR_GATEWAY_IMAGE            = $(NAME)-mirror-gateway
 READREPLICA_ROTATE_IMAGE        = $(NAME)-readreplica-rotate
 E2E_IMAGE                       = $(NAME)-e2e
 MAINTAINER                      = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
+=======
+SHELL = bash
+ORG ?= vdaas
+NAME = vald
+REPO = $(ORG)/$(NAME)
+GOPKG = github.com/$(REPO)
+DATETIME = $(eval DATETIME := $(shell date -u +%Y/%m/%d_%H:%M:%S%z))$(DATETIME)
+TAG ?= latest
+CRORG ?= $(ORG)
+GHCRORG = ghcr.io/$(REPO)
+AGENT_IMAGE = $(NAME)-agent
+AGENT_FAISS_IMAGE = $(AGENT_IMAGE)-faiss
+AGENT_NGT_IMAGE = $(AGENT_IMAGE)-ngt
+AGENT_SIDECAR_IMAGE = $(AGENT_IMAGE)-sidecar
+BENCHMARK_JOB_IMAGE = $(NAME)-benchmark-job
+BENCHMARK_OPERATOR_IMAGE = $(NAME)-benchmark-operator
+BINFMT_IMAGE = $(NAME)-binfmt
+BUILDBASE_IMAGE = $(NAME)-buildbase
+BUILDKIT_IMAGE = $(NAME)-buildkit
+BUILDKIT_SYFT_SCANNER_IMAGE = $(BUILDKIT_IMAGE)-syft-scanner
+DEV_CONTAINER_IMAGE = $(NAME)-dev-container
+DISCOVERER_IMAGE = $(NAME)-discoverer-k8s
+EXAMPLE_CLIENT_IMAGE = $(NAME)-example-client
+FILTER_GATEWAY_IMAGE = $(NAME)-filter-gateway
+HELM_OPERATOR_IMAGE = $(NAME)-helm-operator
+INDEX_CORRECTION_IMAGE = $(NAME)-index-correction
+INDEX_CREATION_IMAGE = $(NAME)-index-creation
+INDEX_DELETION_IMAGE = $(NAME)-index-deletion
+INDEX_EXPORTATION_IMAGE = $(NAME)-index-exportation
+INDEX_OPERATOR_IMAGE = $(NAME)-index-operator
+INDEX_SAVE_IMAGE = $(NAME)-index-save
+LB_GATEWAY_IMAGE = $(NAME)-lb-gateway
+MANAGER_INDEX_IMAGE = $(NAME)-manager-index
+MIRROR_GATEWAY_IMAGE = $(NAME)-mirror-gateway
+READREPLICA_ROTATE_IMAGE = $(NAME)-readreplica-rotate
+E2E_IMAGE = $(NAME)-e2e
+MAINTAINER = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
+>>>>>>> 85095950a (Merge dev and ci container (#3425))
 
 DEADLINK_CHECK_PATH            ?= ""
 DEADLINK_IGNORE_PATH           ?= ""

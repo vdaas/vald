@@ -90,7 +90,6 @@
 .github/workflows/dockers-buildbase-image.yaml
 .github/workflows/dockers-buildkit-image.yaml
 .github/workflows/dockers-buildkit-syft-scanner-image.yaml
-.github/workflows/dockers-ci-container-image.yaml
 .github/workflows/dockers-dev-container-image.yaml
 .github/workflows/dockers-discoverer-k8s-image.yaml
 .github/workflows/dockers-e2e-image.yaml
@@ -619,8 +618,6 @@ dockers/binfmt/Dockerfile
 dockers/buildbase/Dockerfile
 dockers/buildkit/Dockerfile
 dockers/buildkit/syft/scanner/Dockerfile
-dockers/ci/base/Dockerfile
-dockers/ci/base/README.md
 dockers/dev/Dockerfile
 dockers/dev/README.md
 dockers/discoverer/k8s/Dockerfile

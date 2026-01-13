@@ -27,7 +27,6 @@ docker/build: \
 	docker/build/buildbase \
 	docker/build/buildkit \
 	docker/build/buildkit-syft-scanner \
-	docker/build/ci-container \
 	docker/build/dev-container \
 	docker/build/discoverer-k8s \
 	docker/build/example-client \
@@ -49,6 +48,7 @@ docker/build: \
 ## build all docker images using xpanes
 docker/xpanes/build:
 	@xpanes -s -c "make -f $(ROOTDIR)/Makefile {}" \
+<<<<<<< HEAD
 		docker/build/agent \
 		docker/build/agent-faiss \
 		docker/build/agent-ngt \
@@ -76,6 +76,34 @@ docker/xpanes/build:
 		docker/build/operator/helm \
 		docker/build/readreplica-rotate \
 		docker/build/e2e
+=======
+	docker/build/agent \
+	docker/build/agent-faiss \
+	docker/build/agent-ngt \
+	docker/build/agent-sidecar \
+	docker/build/benchmark-job \
+	docker/build/benchmark-operator \
+	docker/build/binfmt \
+	docker/build/buildbase \
+	docker/build/buildkit \
+	docker/build/buildkit-syft-scanner \
+	docker/build/dev-container \
+	docker/build/discoverer-k8s \
+	docker/build/example-client \
+	docker/build/gateway-filter \
+	docker/build/gateway-lb \
+	docker/build/gateway-mirror \
+	docker/build/index-correction \
+	docker/build/index-creation \
+	docker/build/index-deletion \
+	docker/build/index-exportation \
+	docker/build/index-operator \
+	docker/build/index-save \
+	docker/build/manager-index \
+	docker/build/operator/helm \
+	docker/build/readreplica-rotate \
+	docker/build/e2e
+>>>>>>> 85095950a (Merge dev and ci container (#3425))
 
 .PHONY: docker/name/org
 ## print docker organization name
@@ -314,6 +342,7 @@ docker/build/buildkit-syft-scanner:
 		DEFAULT_BUILDKIT_SYFT_SCANNER_IMAGE="docker/buildkit-syft-scanner:edge" \
 		docker/build/image
 
+<<<<<<< HEAD
 .PHONY: docker/name/ci-container
 ## print ci-container image name
 docker/name/ci-container:
@@ -327,6 +356,8 @@ docker/build/ci-container:
 		EXTRA_ARGS="--add-host=registry.npmjs.org:104.16.20.35 $(EXTRA_ARGS)" \
 		docker/build/image
 
+=======
+>>>>>>> 85095950a (Merge dev and ci container (#3425))
 .PHONY: docker/name/dev-container
 ## print dev-container image name
 docker/name/dev-container:
