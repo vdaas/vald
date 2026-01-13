@@ -50,7 +50,7 @@ jobs:
     needs: [detect-ci-container]
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      image: ghcr.io/vdaas/vald/vald-dev-container:${{ needs.detect-ci-container.outputs.TAG }}
       credentials:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
@@ -98,7 +98,7 @@ jobs:
     needs: [detect-ci-container]
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      image: ghcr.io/vdaas/vald/vald-dev-container:${{ needs.detect-ci-container.outputs.TAG }}
       credentials:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
@@ -169,7 +169,7 @@ jobs:
     needs: [detect-ci-container]
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      image: ghcr.io/vdaas/vald/vald-dev-container:${{ needs.detect-ci-container.outputs.TAG }}
       credentials:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
@@ -221,7 +221,7 @@ jobs:
     needs: [detect-ci-container]
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      image: ghcr.io/vdaas/vald/vald-dev-container:${{ needs.detect-ci-container.outputs.TAG }}
       credentials:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
@@ -269,7 +269,7 @@ jobs:
     needs: [detect-ci-container]
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      image: ghcr.io/vdaas/vald/vald-dev-container:${{ needs.detect-ci-container.outputs.TAG }}
       credentials:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
@@ -313,7 +313,7 @@ jobs:
     needs: [detect-ci-container]
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      image: ghcr.io/vdaas/vald/vald-dev-container:${{ needs.detect-ci-container.outputs.TAG }}
       credentials:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
@@ -354,7 +354,7 @@ jobs:
     needs: [detect-ci-container]
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      image: ghcr.io/vdaas/vald/vald-dev-container:${{ needs.detect-ci-container.outputs.TAG }}
       credentials:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
@@ -412,7 +412,7 @@ jobs:
     needs: [detect-ci-container]
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      image: ghcr.io/vdaas/vald/vald-dev-container:${{ needs.detect-ci-container.outputs.TAG }}
       credentials:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
