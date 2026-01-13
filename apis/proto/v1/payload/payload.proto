@@ -160,6 +160,8 @@ message Insert {
     Object.Vector vector = 1 [(buf.validate.field).repeated.min_items = 2];
     // The configuration of the insert request.
     Config config = 2;
+    // The metadata is related to the request vector.
+    optional bytes metadata = 3;
   }
 
   // Represent the multiple insert request.
@@ -176,6 +178,8 @@ message Insert {
     Config config = 2;
     // Filter configurations.
     Filter.Target vectorizer = 3;
+    // The metadata is related to the request vector.
+    optional bytes metadata = 4;
   }
 
   // Represent the multiple insert by binary object request.
@@ -203,6 +207,8 @@ message Update {
     Object.Vector vector = 1 [(buf.validate.field).repeated.min_items = 2];
     // The configuration of the update request.
     Config config = 2;
+    // The metadata is related to the request vector.
+    optional bytes metadata = 3;
   }
 
   // Represent the multiple update request.
@@ -219,6 +225,8 @@ message Update {
     Config config = 2;
     // Filter target.
     Filter.Target vectorizer = 3;
+    // The metadata is related to the request vector.
+    optional bytes metadata = 4;
   }
 
   // Represent the multiple update binary object request.
@@ -235,6 +243,8 @@ message Update {
     int64 timestamp = 2;
     // force represents forcefully update the timestamp.
     bool force = 3;
+    // The metadata is related to the request vector.
+    optional bytes metadata = 4;
   }
 
   // Represent the update configuration.
@@ -259,6 +269,8 @@ message Upsert {
     Object.Vector vector = 1 [(buf.validate.field).repeated.min_items = 2];
     // The configuration of the upsert request.
     Config config = 2;
+    // The metadata is related to the request vector.
+    optional bytes metadata = 3;
   }
 
   // Represent mthe ultiple upsert request.
@@ -275,6 +287,8 @@ message Upsert {
     Config config = 2;
     // Filter target.
     Filter.Target vectorizer = 3;
+    // The metadata is related to the request vector.
+    optional bytes metadata = 4;
   }
 
   // Represent the multiple upsert binary object request.
@@ -375,6 +389,8 @@ message Object {
     string id = 1;
     // The distance.
     float distance = 2;
+    // The metadata is related to the request vector.
+    optional bytes metadata = 3;
   }
 
   // Represent stream response of distances.
@@ -405,6 +421,8 @@ message Object {
     repeated float vector = 2 [(buf.validate.field).repeated.min_items = 2];
     // timestamp represents when this vector inserted.
     int64 timestamp = 3;
+    // The metadata is related to the request vector.
+    optional bytes metadata = 4;
   }
 
   // Represent a request to fetch vector meta data.
