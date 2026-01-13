@@ -1,0 +1,944 @@
+//
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// You may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+syntax = "proto3";
+
+package meta.v1;
+
+import "google/api/annotations.proto";
+import "v1/payload/payload.proto";
+
+option go_package = "github.com/vdaas/vald/apis/grpc/v1/metadata";
+option java_multiple_files = true;
+option java_outer_classname = "ValdMetadata";
+option java_package = "org.vdaas.vald.api.v1.metadata";
+
+// Overview
+// SearchWithMetadata Service is responsible for searching vectors similar to the user request vector and getting metadata from `vald-lb-gateway`.
+service SearchWithMetadata {
+  // Overview
+  // SearchWithMetadata RPC is the method to search vector(s) similar to the request vector and to get metadata(s).
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  5   | NOT_FOUND         |
+  // |  10  | ABORTED           |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  // The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                                   | how to resolve                                                                           |
+  // | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc SearchWithMetadata(payload.v1.Search.Request) returns (payload.v1.Search.Response) {
+    option (google.api.http) = {
+      post: "/search/metadata"
+      body: "*"
+    };
+  }
+
+  // Overview
+  // SearchByIDWithMetadata RPC is the method to search similar vectors using a user-defined vector ID and to get metadata.<br>
+  // The vector with the same requested ID should be indexed into the `vald-lb-gateway` before searching.
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  5   | NOT_FOUND         |
+  // |  10  | ABORTED           |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  // The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                                                    | how to resolve                                                                           |
+  // | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc SearchByIDWithMetadata(payload.v1.Search.IDRequest) returns (payload.v1.Search.Response) {
+    option (google.api.http) = {
+      post: "/search/id/metadata"
+      body: "*"
+    };
+  }
+
+  // Overview
+  // StreamSearchWithMetadata RPC is the method to search vectors and to get metadata with multi queries(vectors) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+  // Using the bidirectional streaming RPC, the search request can be communicated in any order between the client and server.
+  // Each Search request and response are independent.
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  5   | NOT_FOUND         |
+  // |  10  | ABORTED           |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  // The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                                   | how to resolve                                                                           |
+  // | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc StreamSearchWithMetadata(stream payload.v1.Search.Request) returns (stream payload.v1.Search.StreamResponse) {}
+
+  // Overview
+  // StreamSearchByIDWithMetadata RPC is the method to search vectors and to get metadata with multi queries(IDs) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+  // Using the bidirectional streaming RPC, the search request can be communicated in any order between the client and server.
+  // Each SearchByID request and response are independent.
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  5   | NOT_FOUND         |
+  // |  10  | ABORTED           |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  // The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                                                    | how to resolve                                                                           |
+  // | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc StreamSearchByIDWithMetadata(stream payload.v1.Search.IDRequest) returns (stream payload.v1.Search.StreamResponse) {}
+
+  // Overview
+  // MultiSearchWithMetadata RPC is the method to search vectors and to get metadata with multiple vectors in **1** request.
+  //
+  // <div class="notice">
+  // gRPC has a message size limitation.<br>
+  // Please be careful that the size of the request exceeds the limit.
+  // </div>
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  5   | NOT_FOUND         |
+  // |  10  | ABORTED           |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  //   The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                                   | how to resolve                                                                           |
+  // | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc MultiSearchWithMetadata(payload.v1.Search.MultiRequest) returns (payload.v1.Search.Responses) {
+    option (google.api.http) = {
+      post: "/search/multiple/metadata"
+      body: "*"
+    };
+  }
+
+  // Overview
+  // MultiSearchByIDWithMetadata RPC is the method to search vectors and to get metadata with multiple IDs in **1** request.
+  //
+  // <div class="notice">
+  // gRPC has a message size limitation.<br>
+  // Please be careful that the size of the request exceeds the limit.
+  // </div>
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  5   | NOT_FOUND         |
+  // |  10  | ABORTED           |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  // The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                                                    | how to resolve                                                                           |
+  // | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc MultiSearchByIDWithMetadata(payload.v1.Search.MultiIDRequest) returns (payload.v1.Search.Responses) {
+    option (google.api.http) = {
+      post: "/search/id/multiple/metadata"
+      body: "*"
+    };
+  }
+
+  // Overview
+  // LinearSearchWithMetadata RPC is the method to linear search vector(s) similar to the request vector and to get metadata.
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  5   | NOT_FOUND         |
+  // |  10  | ABORTED           |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  // The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                                   | how to resolve                                                                           |
+  // | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc LinearSearchWithMetadata(payload.v1.Search.Request) returns (payload.v1.Search.Response) {
+    option (google.api.http) = {
+      post: "/linearsearch/metadata"
+      body: "*"
+    };
+  }
+
+  // Overview
+  // LinearSearchByIDWithMetadata RPC is the method to linear search similar vectors using a user-defined vector ID and to get metadata.<br>
+  // The vector with the same requested ID should be indexed into the `vald-agent` before searching.
+  // You will get a `NOT_FOUND` error if the vector isn't stored.
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  5   | NOT_FOUND         |
+  // |  10  | ABORTED           |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  // The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                                                    | how to resolve                                                                           |
+  // | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc LinearSearchByIDWithMetadata(payload.v1.Search.IDRequest) returns (payload.v1.Search.Response) {
+    option (google.api.http) = {
+      post: "/linearsearch/id/metadata"
+      body: "*"
+    };
+  }
+
+  // Overview
+  // StreamLinearSearchWithMetadata RPC is the method to linear search vectors and to get metadata with multi queries(vectors) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+  // Using the bidirectional streaming RPC, the linear search request can be communicated in any order between the client and server.
+  // Each LinearSearch request and response are independent.
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  5   | NOT_FOUND         |
+  // |  10  | ABORTED           |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  // The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                                   | how to resolve                                                                           |
+  // | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc StreamLinearSearchWithMetadata(stream payload.v1.Search.Request) returns (stream payload.v1.Search.StreamResponse) {}
+
+  // Overview
+  //   StreamLinearSearchByIDWithMetadata RPC is the method to linear search vectors and to get metadata with multi queries(IDs) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+  // Using the bidirectional streaming RPC, the linear search request can be communicated in any order between the client and server.
+  // Each LinearSearchByID request and response are independent.
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  5   | NOT_FOUND         |
+  // |  10  | ABORTED           |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  // The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                                                    | how to resolve                                                                           |
+  // | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc StreamLinearSearchByIDWithMetadata(stream payload.v1.Search.IDRequest) returns (stream payload.v1.Search.StreamResponse) {}
+
+  // Overview
+  // MultiLinearSearchWithMetadata RPC is the method to linear search vectors and to get metadata with multiple vectors in **1** request.
+  //
+  // <div class="notice">
+  // gRPC has a message size limitation.<br>
+  // Please be careful that the size of the request exceeds the limit.
+  // </div>
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  5   | NOT_FOUND         |
+  // |  10  | ABORTED           |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  //   The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                                   | how to resolve                                                                           |
+  // | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc MultiLinearSearchWithMetadata(payload.v1.Search.MultiRequest) returns (payload.v1.Search.Responses) {
+    option (google.api.http) = {
+      post: "/linearsearch/multiple/metadata"
+      body: "*"
+    };
+  }
+
+  // Overview
+  // MultiLinearSearchByIDWithMetadata RPC is the method to linear search vectors and to get metadata with multiple IDs in **1** request.
+  //
+  // <div class="notice">
+  // gRPC has a message size limitation.<br>
+  // Please be careful that the size of the request exceeds the limit.
+  // </div>
+  // // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  5   | NOT_FOUND         |
+  // |  10  | ABORTED           |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  // The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                                                    | how to resolve                                                                           |
+  // | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc MultiLinearSearchByIDWithMetadata(payload.v1.Search.MultiIDRequest) returns (payload.v1.Search.Responses) {
+    option (google.api.http) = {
+      post: "/linearsearch/id/multiple/metadata"
+      body: "*"
+    };
+  }
+}
+
+
+// Overview
+// InsertWithMetadata Service is responsible for inserting new vectors into the `vald-agent` and set metadata.
+service InsertWithMetadata {
+  // Overview
+  // InsertWithMetadata RPC is the method to add a new single vector and metadata.
+  // ---
+  // Status Code
+  // | 0    | OK                |
+  // | 1    | CANCELLED         |
+  // | 3    | INVALID_ARGUMENT  |
+  // | 4    | DEADLINE_EXCEEDED |
+  // | 5    | NOT_FOUND         |
+  // | 13   | INTERNAL          |
+  // ---
+  // Troubleshooting
+  // The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                                                                       | how to resolve                                                                           |
+  // | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | ALREADY_EXISTS    | Request ID is already inserted.                                                                                                                     | Change request ID.                                                                       |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc InsertWithMetadata(payload.v1.Insert.Request) returns (payload.v1.Object.Location) {
+    option (google.api.http) = {
+      post: "/insert/metadata"
+      body: "*"
+    };
+  }
+
+  // Overview
+  // StreamInsertWithMetadata RPC is the method to add new multiple vectors and metadata using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+  // Using the bidirectional streaming RPC, the insert request can be communicated in any order between client and server.
+  // Each Insert request and response are independent.
+  // It's the recommended method to insert a large number of vectors.
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  6   | ALREADY_EXISTS    |
+  // |  10  | ABORTED           |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  // The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                                                                       | how to resolve                                                                           |
+  // | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | ALREADY_EXISTS    | Request ID is already inserted.                                                                                                                     | Change request ID.                                                                       |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc StreamInsertWithMetadata(stream payload.v1.Insert.Request) returns (stream payload.v1.Object.StreamLocation) {}
+
+  // Overview
+  // MultiInsertWithMetadata RPC is the method to add multiple new vectors and metadata in **1** request.
+  //
+  // <div class="notice">
+  // gRPC has a message size limitation.<br>
+  // Please be careful that the size of the request exceeds the limit.
+  // </div>
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  6   | ALREADY_EXISTS    |
+  // |  10  | ABORTED           |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  // The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                                                                       | how to resolve                                                                           |
+  // | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | ALREADY_EXISTS    | Request ID is already inserted.                                                                                                                     | Change request ID.                                                                       |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc MultiInsertWithMetadata(payload.v1.Insert.MultiRequest) returns (payload.v1.Object.Locations) {
+    option (google.api.http) = {
+      post: "/insert/multiple/metadata"
+      body: "*"
+    };
+  }
+}
+
+// Overview
+// ObjectWithMetadata Service is responsible for getting inserted vectors and metadata, and checking whether vectors are inserted into the `vald-agent`.
+service ObjectWithMetadata {
+  // Overview
+  // GetObjectWithMetadata RPC is the method to get the metadata of a vector inserted into the `vald-agent` and metadata.
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  5   | NOT_FOUND         |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  // The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                   | how to resolve                                                                           |
+  // | :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                         | Check request payload and fix request payload.                                           |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc GetObjectWithMetadata(payload.v1.Object.VectorRequest) returns (payload.v1.Object.Vector) {
+    option (google.api.http).get = "/object/{id.id}/metadata";
+  }
+
+  // Overview
+  // StreamGetObjectWithMetadata RPC is the method to get the metadata of multiple existing vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+  // Using the bidirectional streaming RPC, the GetObject request can be communicated in any order between client and server.
+  // Each Upsert request and response are independent.
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  5   | NOT_FOUND         |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  // The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                   | how to resolve                                                                           |
+  // | :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                         | Check request payload and fix request payload.                                           |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc StreamGetObjectWithMetadata(stream payload.v1.Object.VectorRequest) returns (stream payload.v1.Object.StreamVector) {}
+
+  // Overview
+  // A method to get all the vectors with server streaming
+  // ---
+  // Status Code
+  // TODO
+  // ---
+  // Troubleshooting
+  // TODO
+  rpc StreamListObjectWithMetadata(payload.v1.Object.List.Request) returns (stream payload.v1.Object.List.Response) {
+    option (google.api.http).get = "/object/list/metadata";
+  }
+}
+
+// Overview
+// RemoveWithMetadata Service is responsible for removing vectors indexed in the `vald-agent`.
+service RemoveWithMetadata {
+  // Overview
+  // RemoveWithMetadata RPC is the method to remove a single vector and metadata.
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  5   | NOT_FOUND         |
+  // |  10  | ABORTED           |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  // The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                   | how to resolve                                                                           |
+  // | :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                         | Check request payload and fix request payload.                                           |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc RemoveWithMetadata(payload.v1.Remove.Request) returns (payload.v1.Object.Location) {
+    option (google.api.http) = {
+      post: "/remove/metadata"
+      body: "*"
+    };
+  }
+
+  // Overview
+  // RemoveByTimestampWithMetadata RPC is the method to remove vectors and metadata based on timestamp.
+  //
+  // <div class="notice">
+  // In the TimestampRequest message, the 'timestamps' field is repeated, allowing the inclusion of multiple Timestamp.<br>
+  // When multiple Timestamps are provided, it results in an `AND` condition, enabling the realization of deletions with specified ranges.<br>
+  // This design allows for versatile deletion operations, facilitating tasks such as removing data within a specific time range.
+  // </div>
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  5   | NOT_FOUND         |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  // The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                   | how to resolve                                                                                                       |
+  // | :---------------- | :---------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.                              |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed.                             |
+  // | NOT_FOUND         | No vectors in the system match the specified timestamp conditions.                              | Check whether vectors matching the specified timestamp conditions exist in the system, and fix conditions if needed. |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.
+  rpc RemoveByTimestampWithMetadata(payload.v1.Remove.TimestampRequest) returns (payload.v1.Object.Locations) {
+    option (google.api.http) = {
+      post: "/remove/timestamp/metadata"
+      body: "*"
+    };
+  }
+
+  // Overview
+  // A method to remove multiple with metadata indexed vectors and metadata by bidirectional streaming.
+  //
+  // StreamRemoveWithMetadata RPC is the method to remove multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+  // Using the bidirectional streaming RPC, the remove request can be communicated in any order between client and server.
+  // Each Remove request and response are independent.
+  // It's the recommended method to remove a large number of vectors.
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  5   | NOT_FOUND         |
+  // |  10  | ABORTED           |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  //   The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                   | how to resolve                                                                           |
+  // | :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                         | Check request payload and fix request payload.                                           |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc StreamRemoveWithMetadata(stream payload.v1.Remove.Request) returns (stream payload.v1.Object.StreamLocation) {}
+
+  // Overview
+  // MultiRemoveWithMetadata is the method to remove multiple vectors and metadata in **1** request.
+  //
+  // <div class="notice">
+  // gRPC has a message size limitation.<br>
+  // Please be careful that the size of the request exceeds the limit.
+  // </div>
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  5   | NOT_FOUND         |
+  // |  10  | ABORTED           |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  // The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                   | how to resolve                                                                           |
+  // | :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                         | Check request payload and fix request payload.                                           |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc MultiRemoveWithMetadata(payload.v1.Remove.MultiRequest) returns (payload.v1.Object.Locations) {
+    option (google.api.http) = {
+      post: "/remove/multiple/metadata"
+      body: "*"
+    };
+  }
+}
+
+// Overview
+// UpdateWithMetadata Service updates to new vector from inserted vector in the `vald-agent` components and updates to new metadata from set metadata.
+service UpdateWithMetadata {
+  // Overview
+  // UpdateWithMetadata RPC is the method to update a single vector.
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  5   | NOT_FOUND         |
+  // |  6   | ALREADY_EXISTS    |
+  // |  10  | ABORTED           |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  // The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                                                                       | how to resolve                                                                           |
+  // | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | NOT_FOUND         | Requested ID is NOT inserted.                                                                                                                       | Send a request with an ID that is already inserted.                                      |
+  // | ALREADY_EXISTS    | Request pair of ID and vector is already inserted.                                                                                                  | Change request ID.                                                                       |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc UpdateWithMetadata(payload.v1.Update.Request) returns (payload.v1.Object.Location) {
+    option (google.api.http) = {
+      post: "/update/metadata"
+      body: "*"
+    };
+  }
+
+  // Overview
+  // StreamUpdateWithMetadata RPC is the method to update multiple vectors and metadata using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+  // Using the bidirectional streaming RPC, the update request can be communicated in any order between client and server.
+  // Each Update request and response are independent.
+  // It's the recommended method to update the large amount of vectors.
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  5   | NOT_FOUND         |
+  // |  6   | ALREADY_EXISTS    |
+  // |  10  | ABORTED           |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  // The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                                                                       | how to resolve                                                                           |
+  // | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | NOT_FOUND         | Requested ID is NOT inserted.                                                                                                                       | Send a request with an ID that is already inserted.                                      |
+  // | ALREADY_EXISTS    | Request pair of ID and vector is already inserted.                                                                                                  | Change request ID.                                                                       |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc StreamUpdateWithMetadata(stream payload.v1.Update.Request) returns (stream payload.v1.Object.StreamLocation) {}
+
+  // Overview
+  // MultiUpdateWithMetadata is the method to update multiple vectors and metadata in **1** request.
+  //
+  // <div class="notice">
+  // gRPC has a message size limitation.<br>
+  // Please be careful that the size of the request exceeds the limit.
+  // </div>
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  5   | NOT_FOUND         |
+  // |  6   | ALREADY_EXISTS    |
+  // |  10  | ABORTED           |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  // The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                                                                       | how to resolve                                                                           |
+  // | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | NOT_FOUND         | Requested ID is NOT inserted.                                                                                                                       | Send a request with an ID that is already inserted.                                      |
+  // | ALREADY_EXISTS    | Request pair of ID and vector is already inserted.                                                                                                  | Change request ID.                                                                       |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc MultiUpdateWithMetadata(payload.v1.Update.MultiRequest) returns (payload.v1.Object.Locations) {
+    option (google.api.http) = {
+      post: "/update/multiple/metadata"
+      body: "*"
+    };
+  }
+
+  // Overview
+  // A method to update timestamp an indexed vector and metadata.
+  // ---
+  // Status Code
+  // TODO
+  // ---
+  // Troubleshooting
+  // TODO
+  rpc UpdateTimestampWithMetadata(payload.v1.Update.TimestampRequest) returns (payload.v1.Object.Location) {
+    option (google.api.http) = {
+      post: "/update/timestamp/metadata"
+      body: "*"
+    };
+  }
+}
+
+// Overview
+// UpsertWithMetadata Service is responsible for updating existing vectors and metadata in the `vald-agent` or inserting new vectors into the `vald-agent` and metadata if the vector does not exist.
+service UpsertWithMetadata {
+  // Overview
+  // UpsertWithMetadata RPC is the method to update the inserted vector and metadata to a new single vector and metadata or add a new single vector and metadata if not inserted before.
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  5   | NOT_FOUND         |
+  // |  6   | ALREADY_EXISTS    |
+  // |  10  | ABORTED           |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  // The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                                                                       | how to resolve                                                                           |
+  // | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | ALREADY_EXISTS    | Requested pair of ID and vector is already inserted                                                                                                 | Change request payload or nothing to do if update is unnecessary.                        |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc UpsertWithMetadata(payload.v1.Upsert.Request) returns (payload.v1.Object.Location) {
+    option (google.api.http) = {
+      post: "/upsert/metadata"
+      body: "*"
+    };
+  }
+
+  // Overview
+  // StreamUpsertWithMetadata RPC is the method to update multiple existing vectors and metadata or add new multiple vectors and metadata using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+  // Using the bidirectional streaming RPC, the upsert request can be communicated in any order between the client and server.
+  // Each Upsert request and response are independent.
+  // It’s the recommended method to upsert a large number of vectors.
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  5   | NOT_FOUND         |
+  // |  6   | ALREADY_EXISTS    |
+  // |  10  | ABORTED           |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  // The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                                                                       | how to resolve                                                                           |
+  // | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | ALREADY_EXISTS    | Requested pair of ID and vector is already inserted                                                                                                 | Change request payload or nothing to do if update is unnecessary.                        |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc StreamUpsertWithMetadata(stream payload.v1.Upsert.Request) returns (stream payload.v1.Object.StreamLocation) {}
+
+  // Overview
+  // MultiUpsertWithMetadata is the method to update existing multiple vectors and metadata and add new multiple vectors and metadata in **1** request.
+  //
+  // <div class="notice">
+  // gRPC has a message size limitation.<br>
+  // Please be careful that the size of the request exceeds the limit.
+  // </div>
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  5   | NOT_FOUND         |
+  // |  6   | ALREADY_EXISTS    |
+  // |  10  | ABORTED           |
+  // |  13  | INTERNAL          |
+  // ---
+  // Troubleshooting
+  // The request process may not be completed when the response code is NOT `0 (OK)`.
+  //
+  // Here are some common reasons and how to resolve each error.
+  //
+  // | name              | common reason                                                                                                                                       | how to resolve                                                                           |
+  // | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+  // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
+  // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+  // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+  // | ALREADY_EXISTS    | Requested pair of ID and vector is already inserted                                                                                                 | Change request payload or nothing to do if update is unnecessary.                        |
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
+  rpc MultiUpsertWithMetadata(payload.v1.Upsert.MultiRequest) returns (payload.v1.Object.Locations) {
+    option (google.api.http) = {
+      post: "/upsert/multiple/metadata"
+      body: "*"
+    };
+  }
+}
