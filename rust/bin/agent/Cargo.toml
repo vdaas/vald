@@ -32,14 +32,14 @@ futures = "0.3.31"
 http = "1.4.0"
 log = "0.4"
 opentelemetry = { version = "0.31.0" }
-prost = "0.14.1"
-prost-types = "0.14.1"
+prost = "0.14.3"
+prost-types = "0.14.3"
 proto = { version = "0.1.0", path = "../../libs/proto" }
-tokio = { version = "1.48.0", features = ["full"] }
-tokio-stream = { version = "0.1.17", features = ["full"] }
+tokio = { version = "1.49.0", features = ["full"] }
+tokio-stream = { version = "0.1.18", features = ["full"] }
 tonic = "0.14.2"
 tonic-types = "0.14.2"
-tower = "0.5.2"
+tower = "0.5.3"
 
 [dev-dependencies]
 bytes = "1.11.0"

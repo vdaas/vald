@@ -24,10 +24,10 @@ edition = "2021"
 opentelemetry = { version = "0.31.0" }
 opentelemetry_sdk = { version = "0.31.0", features = ["rt-tokio"] }
 opentelemetry-otlp = { version = "0.31.0", features = ["http-proto", "reqwest-client", "logs", "grpc-tonic"] }
-tokio = { version = "1.48.0", features = ["full"] }
-serde_json = { version="1.0.147" }
+tokio = { version = "1.49.0", features = ["full"] }
+serde_json = { version="1.0.149" }
 opentelemetry-semantic-conventions = { version = "0.31.0"}
 scopeguard = { version = "1.2.0"}
 paste = {version = "1.0.15"}
 anyhow = { version = "1.0.100"}
-url = { version = "2.5.7"}
+url = { version = "2.5.8"}
