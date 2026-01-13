@@ -155,20 +155,6 @@
         }
       }
     },
-    "ObjectStreamVector": {
-      "type": "object",
-      "properties": {
-        "vector": {
-          "$ref": "#/definitions/ObjectVector",
-          "description": "The vector."
-        },
-        "status": {
-          "$ref": "#/definitions/rpcStatus",
-          "description": "The RPC error status."
-        }
-      },
-      "description": "Represent stream response of the vector."
-    },
     "ObjectVector": {
       "type": "object",
       "properties": {

@@ -20,10 +20,10 @@
 - Go Version: v1.25.5
 - Rust Version: v1.92.0
 - Docker Version: v29.1.3
-- Kubernetes Version: v1.34.3
+- Kubernetes Version: v1.35.0
 - Helm Version: v4.0.4
 - NGT Version: v2.5.0
-- Faiss Version: v1.13.1
+- Faiss Version: v1.13.2
 
 ### Checklist
 
