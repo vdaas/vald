@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -20,10 +20,11 @@ use std::fmt::Debug;
 use std::hash::Hash;
 
 /// A trait that defines the requirements for a key in the key-value store.
-/// 
+///
 /// This trait is a marker trait that bundles all the necessary traits for a type to be used as a key.
 /// This includes serialization, deserialization, encoding, decoding, equality, hashing, cloning, and thread safety.
-pub trait KeyType: Serialize
+pub trait KeyType:
+    Serialize
     + DeserializeOwned
     + Encode
     + Decode<()>
@@ -33,8 +34,11 @@ pub trait KeyType: Serialize
     + Send
     + Sync
     + Debug
-    + 'static {}
-impl<T: Serialize
+    + 'static
+{
+}
+impl<
+    T: Serialize
         + DeserializeOwned
         + Encode
         + Decode<()>
@@ -44,13 +48,17 @@ impl<T: Serialize
         + Send
         + Sync
         + Debug
-        + 'static> KeyType for T {}
+        + 'static,
+> KeyType for T
+{
+}
 
 /// A trait that defines the requirements for a value in the key-value store.
-/// 
+///
 /// This trait is a marker trait that bundles all the necessary traits for a type to be used as a value.
 /// This includes serialization, deserialization, encoding, decoding, equality, hashing, cloning, and thread safety.
-pub trait ValueType: Serialize
+pub trait ValueType:
+    Serialize
     + DeserializeOwned
     + Encode
     + Decode<()>
@@ -60,8 +68,11 @@ pub trait ValueType: Serialize
     + Send
     + Sync
     + Debug
-    + 'static {}
-impl<T: Serialize
+    + 'static
+{
+}
+impl<
+    T: Serialize
         + DeserializeOwned
         + Encode
         + Decode<()>
@@ -71,4 +82,7 @@ impl<T: Serialize
         + Send
         + Sync
         + Debug
-        + 'static> ValueType for T {}
+        + 'static,
+> ValueType for T
+{
+}

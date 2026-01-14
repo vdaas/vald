@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,18 +14,22 @@
 // limitations under the License.
 //
 
-use bincode::{config::standard as bincode_standard, Encode};
+use bincode::{Encode, config::standard as bincode_standard};
 use serde::Serialize;
 use sled::{
     Db, IVec, Tree,
     transaction::{ConflictableTransactionError, TransactionError},
 };
-use tracing::instrument;
-use std::{borrow::Borrow, sync::Arc};
 use std::sync::atomic::AtomicUsize;
+use std::{borrow::Borrow, sync::Arc};
+use tracing::instrument;
 
-use crate::map::{codec::Codec, error::Error, base::MapBase, types::{KeyType, ValueType}};
-
+use crate::map::{
+    base::MapBase,
+    codec::Codec,
+    error::Error,
+    types::{KeyType, ValueType},
+};
 
 const TREE_NAME: &str = "tree";
 /// A map implementation that stores key-value pairs in a single Sled tree.
@@ -48,15 +52,15 @@ impl<K: KeyType, V: ValueType, C: Codec> MapBase for UnidirectionalMap<K, V, C> 
     fn _db(&self) -> &Arc<Db> {
         &self.db
     }
-    
+
     fn _tree(&self) -> &sled::Tree {
         &self.tree
     }
-    
+
     fn _len(&self) -> &AtomicUsize {
         &self.len
     }
-    
+
     fn _codec(&self) -> &Arc<C> {
         &self.codec
     }
@@ -65,13 +69,18 @@ impl<K: KeyType, V: ValueType, C: Codec> MapBase for UnidirectionalMap<K, V, C> 
     fn get<Q>(&self, key: &Q) -> impl Future<Output = Result<(Self::V, u128), Error>> + Send
     where
         Self::K: Borrow<Q>,
-        Q: Serialize + Encode + ?Sized + Sync
+        Q: Serialize + Encode + ?Sized + Sync,
     {
         self.perform_get(key, &self.tree)
     }
 
     #[instrument(skip(self, key, value, timestamp))]
-    fn set(&self, key: Self::K, value: Self::V, timestamp: u128) -> impl Future<Output = Result<(), Error>> + Send {
+    fn set(
+        &self,
+        key: Self::K,
+        value: Self::V,
+        timestamp: u128,
+    ) -> impl Future<Output = Result<(), Error>> + Send {
         let t = self.tree.clone();
         let f = set_transaction_func(t);
         self.perform_set(key, value, timestamp, f)
@@ -81,7 +90,7 @@ impl<K: KeyType, V: ValueType, C: Codec> MapBase for UnidirectionalMap<K, V, C> 
     fn delete<Q>(&self, key: &Q) -> impl Future<Output = Result<Self::V, Error>> + Send
     where
         Self::K: Borrow<Q>,
-        Q: Serialize + Encode + ?Sized + Sync
+        Q: Serialize + Encode + ?Sized + Sync,
     {
         let t = self.tree.clone();
         let f = delete_transaction_func(t);
@@ -97,7 +106,7 @@ impl<K: KeyType, V: ValueType, C: Codec> MapBase for UnidirectionalMap<K, V, C> 
             tree: tree,
             len: AtomicUsize::new(initial_len),
             codec: Arc::new(codec),
-            _marker: std::marker::PhantomData
+            _marker: std::marker::PhantomData,
         })
     }
 }
@@ -105,23 +114,31 @@ impl<K: KeyType, V: ValueType, C: Codec> MapBase for UnidirectionalMap<K, V, C> 
 // --- Private Helper Methods ---
 
 /// function generator for set transaction
-fn set_transaction_func(t: Tree) -> impl FnOnce(Vec<u8>, Vec<u8>, u128) -> Result<bool, TransactionError<Error>> + Send + 'static {
+fn set_transaction_func(
+    t: Tree,
+) -> impl FnOnce(Vec<u8>, Vec<u8>, u128) -> Result<bool, TransactionError<Error>> + Send + 'static {
     move |key: Vec<u8>, value: Vec<u8>, timestamp: u128| -> Result<bool, TransactionError<Error>> {
-        let encoded_payload = bincode::encode_to_vec((value.clone(), timestamp), bincode_standard())
-            .map_err(|e| TransactionError::Abort(Error::Codec {
-                source: Box::new(e),
-            }))?;
+        let encoded_payload =
+            bincode::encode_to_vec((value.clone(), timestamp), bincode_standard()).map_err(
+                |e| {
+                    TransactionError::Abort(Error::Codec {
+                        source: Box::new(e),
+                    })
+                },
+            )?;
         (&t).transaction(move |tx| {
-            let is_new= !tx.get(key.as_slice())?.is_some();
+            let is_new = !tx.get(key.as_slice())?.is_some();
             tx.insert(key.as_slice(), IVec::from(encoded_payload.clone()))?;
-            
+
             Ok(is_new)
         })
     }
 }
 
 /// function generator for delete transaction
-fn delete_transaction_func(t: Tree) -> impl FnOnce(Vec<u8>) -> Result<Option<Vec<u8>>, TransactionError<Error>> + Send + 'static {
+fn delete_transaction_func(
+    t: Tree,
+) -> impl FnOnce(Vec<u8>) -> Result<Option<Vec<u8>>, TransactionError<Error>> + Send + 'static {
     move |key: Vec<u8>| -> Result<Option<Vec<u8>>, TransactionError<Error>> {
         (&t).transaction(move |tx| {
             if let Some(payload_ivec) = tx.remove(key.as_slice())? {
