@@ -41,7 +41,17 @@ plugins:
     opt: json_names_for_fields=true
   - remote: buf.build/community/neoeinstein-prost
     out: rust/libs/proto/src
+<<<<<<< HEAD
     opt: enable_type_names
+=======
+    opt:
+      - enable_type_names
+      - extern_path=.google.protobuf.Any=crate::google::protobuf::Any
+      - extern_path=.google.protobuf.Duration=crate::google::protobuf::Duration
+  - remote: buf.build/community/neoeinstein-prost-serde
+    out: rust/libs/proto/src
+>>>>>>> e41b5dc47 (update rust dependencies and migration (#3436))
   - remote: buf.build/community/neoeinstein-tonic
     out: rust/libs/proto/src
-    opt: no_include
+    opt:
+      - no_include

@@ -22,7 +22,20 @@ edition = "2021"
 
 [dependencies]
 futures-core = "0.3.31"
+<<<<<<< HEAD
 prost = "0.13.4"
 prost-types = "0.13.4"
 tonic = "0.12.3"
 tonic-types = "0.12.3"
+=======
+prost = "0.14.3"
+prost-types = "0.14.3"
+tonic = "0.14.2"
+serde = { version = "1.0", features = ["derive"] }
+pbjson = "0.9.0"
+pbjson-types = "0.9.0"
+tonic-prost = "0.14.2"
+
+[build-dependencies]
+prost-build = "0.14.3"
+>>>>>>> e41b5dc47 (update rust dependencies and migration (#3436))

@@ -62,7 +62,11 @@ fn full_name() -> ::prost::alloc::string::String { "rpc.v1.ErrorInfo".into() }fn
 pub struct RetryInfo {
     /// Clients should wait at least this long between retrying the same request.
     #[prost(message, optional, tag="1")]
+<<<<<<< HEAD
     pub retry_delay: ::core::option::Option<::prost_types::Duration>,
+=======
+    pub retry_delay: ::core::option::Option<crate::google::protobuf::Duration>,
+>>>>>>> e41b5dc47 (update rust dependencies and migration (#3436))
 }
 impl ::prost::Name for RetryInfo {
 const NAME: &'static str = "RetryInfo";
@@ -331,4 +335,8 @@ impl ::prost::Name for LocalizedMessage {
 const NAME: &'static str = "LocalizedMessage";
 const PACKAGE: &'static str = "rpc.v1";
 fn full_name() -> ::prost::alloc::string::String { "rpc.v1.LocalizedMessage".into() }fn type_url() -> ::prost::alloc::string::String { "/rpc.v1.LocalizedMessage".into() }}
+<<<<<<< HEAD
+=======
+include!("rpc.v1.serde.rs");
+>>>>>>> e41b5dc47 (update rust dependencies and migration (#3436))
 // @@protoc_insertion_point(module)

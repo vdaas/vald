@@ -2321,7 +2321,12 @@ rust/libs/observability/src/lib.rs
 rust/libs/observability/src/macros.rs
 rust/libs/observability/src/observability.rs
 rust/libs/proto/Cargo.toml
+<<<<<<< HEAD
 rust/libs/proto/src/core.v1.tonic.rs
+=======
+rust/libs/proto/build.rs
+rust/libs/proto/src/core/mod.rs
+>>>>>>> e41b5dc47 (update rust dependencies and migration (#3436))
 rust/libs/proto/src/core/v1/core.v1.tonic.rs
 rust/libs/proto/src/discoverer.v1.tonic.rs
 rust/libs/proto/src/discoverer/v1/discoverer.v1.tonic.rs
@@ -2346,6 +2351,7 @@ rust/libs/proto/src/tikv/tikv.rs
 rust/libs/proto/src/tikv/tikv.tonic.rs
 rust/libs/proto/src/vald.v1.tonic.rs
 rust/libs/proto/src/vald/v1/vald.v1.tonic.rs
+rust/libs/proto/wkt.proto
 rust/libs/vqueue/Cargo.toml
 rust/libs/vqueue/src/lib.rs
 rust/rust-toolchain.toml

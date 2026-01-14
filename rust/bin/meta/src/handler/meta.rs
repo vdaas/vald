@@ -37,7 +37,7 @@ impl meta_server::Meta for super::Meta {
             Ok(Some(value_bytes)) => {
                 ctx.span().add_event("Key found", vec![KeyValue::new("key", key.clone())]);
 
-                let any_value = prost_types::Any {
+                let any_value = proto::google::protobuf::Any {
                     type_url: "type.googleapis.com/your.package.MessageType".to_string(),
                     value: value_bytes.to_vec(),
                 };

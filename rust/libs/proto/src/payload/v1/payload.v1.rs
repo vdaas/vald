@@ -1558,7 +1558,11 @@ fn full_name() -> ::prost::alloc::string::String { "payload.v1.Meta.Key".into() 
     #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
     pub struct Value {
         #[prost(message, optional, tag="1")]
+<<<<<<< HEAD
         pub value: ::core::option::Option<::prost_types::Any>,
+=======
+        pub value: ::core::option::Option<crate::google::protobuf::Any>,
+>>>>>>> e41b5dc47 (update rust dependencies and migration (#3436))
     }
 impl ::prost::Name for Value {
 const NAME: &'static str = "Value";
@@ -1588,4 +1592,8 @@ impl ::prost::Name for Empty {
 const NAME: &'static str = "Empty";
 const PACKAGE: &'static str = "payload.v1";
 fn full_name() -> ::prost::alloc::string::String { "payload.v1.Empty".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Empty".into() }}
+<<<<<<< HEAD
+=======
+include!("payload.v1.serde.rs");
+>>>>>>> e41b5dc47 (update rust dependencies and migration (#3436))
 // @@protoc_insertion_point(module)
