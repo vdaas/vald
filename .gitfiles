@@ -13,6 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+apis/docs/v1/meta.md
+apis/grpc/v1/vald/meta.pb.go
+apis/grpc/v1/vald/meta_vtproto.pb.go
+apis/swagger/v1/vald/meta.swagger.json
+rust/libs/proto/src/core/v1/core.v1.rs
+rust/libs/proto/src/discoverer/v1/discoverer.v1.rs
+rust/libs/proto/src/filter/egress/v1/filter.egress.v1.rs
+rust/libs/proto/src/filter/ingress/v1/filter.ingress.v1.rs
+rust/libs/proto/src/meta/v1/meta.v1.rs
+rust/libs/proto/src/mirror/v1/mirror.v1.rs
+rust/libs/proto/src/sidecar/v1/sidecar.v1.rs
+rust/libs/proto/src/vald/v1/vald.v1.rs
 .all-contributorsrc
 .commit_template
 .cspell.json

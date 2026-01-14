@@ -1,0 +1,1280 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "v1/vald/meta.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "SearchWithMetadata"
+    },
+    {
+      "name": "InsertWithMetadata"
+    },
+    {
+      "name": "ObjectWithMetadata"
+    },
+    {
+      "name": "RemoveWithMetadata"
+    },
+    {
+      "name": "UpdateWithMetadata"
+    },
+    {
+      "name": "UpsertWithMetadata"
+    }
+  ],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "paths": {
+    "/insert/metadata": {
+      "post": {
+        "summary": "Overview\nInsertWithMetadata RPC is the method to add a new single vector and metadata.\n---\nStatus Code\n| 0    | OK                |\n| 1    | CANCELLED         |\n| 3    | INVALID_ARGUMENT  |\n| 4    | DEADLINE_EXCEEDED |\n| 5    | NOT_FOUND         |\n| 13   | INTERNAL          |\n---\nTroubleshooting\nThe request process may not be completed when the response code is NOT `0 (OK)`.",
+        "description": "Here are some common reasons and how to resolve each error.\n\n| name              | common reason                                                                                                                                       | how to resolve                                                                           |\n| :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |\n| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |\n| INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |\n| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |\n| ALREADY_EXISTS    | Request ID is already inserted.                                                                                                                     | Change request ID.                                                                       |\n| INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |",
+        "operationId": "InsertWithMetadata_InsertWithMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ObjectLocation"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "Represent the insert request.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1InsertRequest"
+            }
+          }
+        ],
+        "tags": ["InsertWithMetadata"]
+      }
+    },
+    "/insert/multiple/metadata": {
+      "post": {
+        "summary": "Overview\nMultiInsertWithMetadata RPC is the method to add multiple new vectors and metadata in **1** request.",
+        "description": "\u003cdiv class=\"notice\"\u003e\ngRPC has a message size limitation.\u003cbr\u003e\nPlease be careful that the size of the request exceeds the limit.\n\u003c/div\u003e\n---\nStatus Code\n|  0   | OK                |\n|  1   | CANCELLED         |\n|  3   | INVALID_ARGUMENT  |\n|  4   | DEADLINE_EXCEEDED |\n|  6   | ALREADY_EXISTS    |\n|  10  | ABORTED           |\n|  13  | INTERNAL          |\n---\nTroubleshooting\nThe request process may not be completed when the response code is NOT `0 (OK)`.\n\nHere are some common reasons and how to resolve each error.\n\n| name              | common reason                                                                                                                                       | how to resolve                                                                           |\n| :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |\n| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |\n| INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |\n| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |\n| ALREADY_EXISTS    | Request ID is already inserted.                                                                                                                     | Change request ID.                                                                       |\n| INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |",
+        "operationId": "InsertWithMetadata_MultiInsertWithMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ObjectLocations"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "Represent the multiple insert request.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1InsertMultiRequest"
+            }
+          }
+        ],
+        "tags": ["InsertWithMetadata"]
+      }
+    },
+    "/linearsearch/id/metadata": {
+      "post": {
+        "summary": "Overview\nLinearSearchByIDWithMetadata RPC is the method to linear search similar vectors using a user-defined vector ID and to get metadata.\u003cbr\u003e\nThe vector with the same requested ID should be indexed into the `vald-agent` before searching.\nYou will get a `NOT_FOUND` error if the vector isn't stored.\n---\nStatus Code\n|  0   | OK                |\n|  1   | CANCELLED         |\n|  3   | INVALID_ARGUMENT  |\n|  4   | DEADLINE_EXCEEDED |\n|  5   | NOT_FOUND         |\n|  10  | ABORTED           |\n|  13  | INTERNAL          |\n---\nTroubleshooting\nThe request process may not be completed when the response code is NOT `0 (OK)`.",
+        "description": "Here are some common reasons and how to resolve each error.\n\n| name              | common reason                                                                                                                    | how to resolve                                                                           |\n| :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |\n| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |\n| INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |\n| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |\n| NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |\n| INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |",
+        "operationId": "SearchWithMetadata_LinearSearchByIDWithMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1SearchResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "Represent a search by ID request.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SearchIDRequest"
+            }
+          }
+        ],
+        "tags": ["SearchWithMetadata"]
+      }
+    },
+    "/linearsearch/id/multiple/metadata": {
+      "post": {
+        "summary": "Overview\nMultiLinearSearchByIDWithMetadata RPC is the method to linear search vectors and to get metadata with multiple IDs in **1** request.",
+        "description": "\u003cdiv class=\"notice\"\u003e\ngRPC has a message size limitation.\u003cbr\u003e\nPlease be careful that the size of the request exceeds the limit.\n\u003c/div\u003e\n// ---\nStatus Code\n|  0   | OK                |\n|  1   | CANCELLED         |\n|  3   | INVALID_ARGUMENT  |\n|  4   | DEADLINE_EXCEEDED |\n|  5   | NOT_FOUND         |\n|  10  | ABORTED           |\n|  13  | INTERNAL          |\n---\nTroubleshooting\nThe request process may not be completed when the response code is NOT `0 (OK)`.\n\nHere are some common reasons and how to resolve each error.\n\n| name              | common reason                                                                                                                    | how to resolve                                                                           |\n| :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |\n| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |\n| INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |\n| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |\n| NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |\n| INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |",
+        "operationId": "SearchWithMetadata_MultiLinearSearchByIDWithMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/SearchResponses"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "Represent the multiple search by ID request.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SearchMultiIDRequest"
+            }
+          }
+        ],
+        "tags": ["SearchWithMetadata"]
+      }
+    },
+    "/linearsearch/metadata": {
+      "post": {
+        "summary": "Overview\nLinearSearchWithMetadata RPC is the method to linear search vector(s) similar to the request vector and to get metadata.\n---\nStatus Code\n|  0   | OK                |\n|  1   | CANCELLED         |\n|  3   | INVALID_ARGUMENT  |\n|  4   | DEADLINE_EXCEEDED |\n|  5   | NOT_FOUND         |\n|  10  | ABORTED           |\n|  13  | INTERNAL          |\n---\nTroubleshooting\nThe request process may not be completed when the response code is NOT `0 (OK)`.",
+        "description": "Here are some common reasons and how to resolve each error.\n\n| name              | common reason                                                                                                   | how to resolve                                                                           |\n| :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |\n| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |\n| INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |\n| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |\n| NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |\n| INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |",
+        "operationId": "SearchWithMetadata_LinearSearchWithMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1SearchResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "Represent a search request.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SearchRequest"
+            }
+          }
+        ],
+        "tags": ["SearchWithMetadata"]
+      }
+    },
+    "/linearsearch/multiple/metadata": {
+      "post": {
+        "summary": "Overview\nMultiLinearSearchWithMetadata RPC is the method to linear search vectors and to get metadata with multiple vectors in **1** request.",
+        "description": "\u003cdiv class=\"notice\"\u003e\ngRPC has a message size limitation.\u003cbr\u003e\nPlease be careful that the size of the request exceeds the limit.\n\u003c/div\u003e\n---\nStatus Code\n|  0   | OK                |\n|  1   | CANCELLED         |\n|  3   | INVALID_ARGUMENT  |\n|  4   | DEADLINE_EXCEEDED |\n|  5   | NOT_FOUND         |\n|  10  | ABORTED           |\n|  13  | INTERNAL          |\n---\nTroubleshooting\n  The request process may not be completed when the response code is NOT `0 (OK)`.\n\nHere are some common reasons and how to resolve each error.\n\n| name              | common reason                                                                                                   | how to resolve                                                                           |\n| :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |\n| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |\n| INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |\n| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |\n| NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |\n| INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |",
+        "operationId": "SearchWithMetadata_MultiLinearSearchWithMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/SearchResponses"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "Represent the multiple search request.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SearchMultiRequest"
+            }
+          }
+        ],
+        "tags": ["SearchWithMetadata"]
+      }
+    },
+    "/object/list/metadata": {
+      "get": {
+        "summary": "Overview\nA method to get all the vectors with server streaming\n---\nStatus Code\nTODO\n---\nTroubleshooting\nTODO",
+        "operationId": "ObjectWithMetadata_StreamListObjectWithMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/ObjectListResponse"
+                },
+                "error": {
+                  "$ref": "#/definitions/rpcStatus"
+                }
+              },
+              "title": "Stream result of ObjectListResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": ["ObjectWithMetadata"]
+      }
+    },
+    "/object/{id.id}/metadata": {
+      "get": {
+        "summary": "Overview\nGetObjectWithMetadata RPC is the method to get the metadata of a vector inserted into the `vald-agent` and metadata.\n---\nStatus Code\n|  0   | OK                |\n|  1   | CANCELLED         |\n|  3   | INVALID_ARGUMENT  |\n|  4   | DEADLINE_EXCEEDED |\n|  5   | NOT_FOUND         |\n|  13  | INTERNAL          |\n---\nTroubleshooting\nThe request process may not be completed when the response code is NOT `0 (OK)`.",
+        "description": "Here are some common reasons and how to resolve each error.\n\n| name              | common reason                                                                                   | how to resolve                                                                           |\n| :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |\n| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |\n| INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                         | Check request payload and fix request payload.                                           |\n| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |\n| NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |\n| INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |",
+        "operationId": "ObjectWithMetadata_GetObjectWithMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ObjectVector"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": ["ObjectWithMetadata"]
+      }
+    },
+    "/remove/metadata": {
+      "post": {
+        "summary": "Overview\nRemoveWithMetadata RPC is the method to remove a single vector and metadata.\n---\nStatus Code\n|  0   | OK                |\n|  1   | CANCELLED         |\n|  3   | INVALID_ARGUMENT  |\n|  4   | DEADLINE_EXCEEDED |\n|  5   | NOT_FOUND         |\n|  10  | ABORTED           |\n|  13  | INTERNAL          |\n---\nTroubleshooting\nThe request process may not be completed when the response code is NOT `0 (OK)`.",
+        "description": "Here are some common reasons and how to resolve each error.\n\n| name              | common reason                                                                                   | how to resolve                                                                           |\n| :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |\n| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |\n| INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                         | Check request payload and fix request payload.                                           |\n| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |\n| NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |\n| INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |",
+        "operationId": "RemoveWithMetadata_RemoveWithMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ObjectLocation"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "Represent the remove request.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RemoveRequest"
+            }
+          }
+        ],
+        "tags": ["RemoveWithMetadata"]
+      }
+    },
+    "/remove/multiple/metadata": {
+      "post": {
+        "summary": "Overview\nMultiRemoveWithMetadata is the method to remove multiple vectors and metadata in **1** request.",
+        "description": "\u003cdiv class=\"notice\"\u003e\ngRPC has a message size limitation.\u003cbr\u003e\nPlease be careful that the size of the request exceeds the limit.\n\u003c/div\u003e\n---\nStatus Code\n|  0   | OK                |\n|  1   | CANCELLED         |\n|  3   | INVALID_ARGUMENT  |\n|  4   | DEADLINE_EXCEEDED |\n|  5   | NOT_FOUND         |\n|  10  | ABORTED           |\n|  13  | INTERNAL          |\n---\nTroubleshooting\nThe request process may not be completed when the response code is NOT `0 (OK)`.\n\nHere are some common reasons and how to resolve each error.\n\n| name              | common reason                                                                                   | how to resolve                                                                           |\n| :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |\n| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |\n| INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                         | Check request payload and fix request payload.                                           |\n| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |\n| NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |\n| INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |",
+        "operationId": "RemoveWithMetadata_MultiRemoveWithMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ObjectLocations"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "Represent the multiple remove request.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RemoveMultiRequest"
+            }
+          }
+        ],
+        "tags": ["RemoveWithMetadata"]
+      }
+    },
+    "/remove/timestamp/metadata": {
+      "post": {
+        "summary": "Overview\nRemoveByTimestampWithMetadata RPC is the method to remove vectors and metadata based on timestamp.",
+        "description": "\u003cdiv class=\"notice\"\u003e\nIn the TimestampRequest message, the 'timestamps' field is repeated, allowing the inclusion of multiple Timestamp.\u003cbr\u003e\nWhen multiple Timestamps are provided, it results in an `AND` condition, enabling the realization of deletions with specified ranges.\u003cbr\u003e\nThis design allows for versatile deletion operations, facilitating tasks such as removing data within a specific time range.\n\u003c/div\u003e\n---\nStatus Code\n|  0   | OK                |\n|  1   | CANCELLED         |\n|  4   | DEADLINE_EXCEEDED |\n|  5   | NOT_FOUND         |\n|  13  | INTERNAL          |\n---\nTroubleshooting\nThe request process may not be completed when the response code is NOT `0 (OK)`.\n\nHere are some common reasons and how to resolve each error.\n\n| name              | common reason                                                                                   | how to resolve                                                                                                       |\n| :---------------- | :---------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------- |\n| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.                              |\n| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed.                             |\n| NOT_FOUND         | No vectors in the system match the specified timestamp conditions.                              | Check whether vectors matching the specified timestamp conditions exist in the system, and fix conditions if needed. |\n| INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.",
+        "operationId": "RemoveWithMetadata_RemoveByTimestampWithMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ObjectLocations"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "Represent the remove request based on timestamp.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RemoveTimestampRequest"
+            }
+          }
+        ],
+        "tags": ["RemoveWithMetadata"]
+      }
+    },
+    "/search/id/metadata": {
+      "post": {
+        "summary": "Overview\nSearchByIDWithMetadata RPC is the method to search similar vectors using a user-defined vector ID and to get metadata.\u003cbr\u003e\nThe vector with the same requested ID should be indexed into the `vald-lb-gateway` before searching.\n---\nStatus Code\n|  0   | OK                |\n|  1   | CANCELLED         |\n|  3   | INVALID_ARGUMENT  |\n|  4   | DEADLINE_EXCEEDED |\n|  5   | NOT_FOUND         |\n|  10  | ABORTED           |\n|  13  | INTERNAL          |\n---\nTroubleshooting\nThe request process may not be completed when the response code is NOT `0 (OK)`.",
+        "description": "Here are some common reasons and how to resolve each error.\n\n| name              | common reason                                                                                                                    | how to resolve                                                                           |\n| :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |\n| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |\n| INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |\n| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |\n| NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |\n| INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |",
+        "operationId": "SearchWithMetadata_SearchByIDWithMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1SearchResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "Represent a search by ID request.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SearchIDRequest"
+            }
+          }
+        ],
+        "tags": ["SearchWithMetadata"]
+      }
+    },
+    "/search/id/multiple/metadata": {
+      "post": {
+        "summary": "Overview\nMultiSearchByIDWithMetadata RPC is the method to search vectors and to get metadata with multiple IDs in **1** request.",
+        "description": "\u003cdiv class=\"notice\"\u003e\ngRPC has a message size limitation.\u003cbr\u003e\nPlease be careful that the size of the request exceeds the limit.\n\u003c/div\u003e\n---\nStatus Code\n|  0   | OK                |\n|  1   | CANCELLED         |\n|  3   | INVALID_ARGUMENT  |\n|  4   | DEADLINE_EXCEEDED |\n|  5   | NOT_FOUND         |\n|  10  | ABORTED           |\n|  13  | INTERNAL          |\n---\nTroubleshooting\nThe request process may not be completed when the response code is NOT `0 (OK)`.\n\nHere are some common reasons and how to resolve each error.\n\n| name              | common reason                                                                                                                    | how to resolve                                                                           |\n| :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |\n| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |\n| INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |\n| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |\n| NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |\n| INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |",
+        "operationId": "SearchWithMetadata_MultiSearchByIDWithMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/SearchResponses"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "Represent the multiple search by ID request.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SearchMultiIDRequest"
+            }
+          }
+        ],
+        "tags": ["SearchWithMetadata"]
+      }
+    },
+    "/search/metadata": {
+      "post": {
+        "summary": "Overview\nSearchWithMetadata RPC is the method to search vector(s) similar to the request vector and to get metadata(s).\n---\nStatus Code\n|  0   | OK                |\n|  1   | CANCELLED         |\n|  3   | INVALID_ARGUMENT  |\n|  4   | DEADLINE_EXCEEDED |\n|  5   | NOT_FOUND         |\n|  10  | ABORTED           |\n|  13  | INTERNAL          |\n---\nTroubleshooting\nThe request process may not be completed when the response code is NOT `0 (OK)`.",
+        "description": "Here are some common reasons and how to resolve each error.\n\n| name              | common reason                                                                                                   | how to resolve                                                                           |\n| :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |\n| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |\n| INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |\n| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |\n| NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |\n| INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |",
+        "operationId": "SearchWithMetadata_SearchWithMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1SearchResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "Represent a search request.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SearchRequest"
+            }
+          }
+        ],
+        "tags": ["SearchWithMetadata"]
+      }
+    },
+    "/search/multiple/metadata": {
+      "post": {
+        "summary": "Overview\nMultiSearchWithMetadata RPC is the method to search vectors and to get metadata with multiple vectors in **1** request.",
+        "description": "\u003cdiv class=\"notice\"\u003e\ngRPC has a message size limitation.\u003cbr\u003e\nPlease be careful that the size of the request exceeds the limit.\n\u003c/div\u003e\n---\nStatus Code\n|  0   | OK                |\n|  1   | CANCELLED         |\n|  3   | INVALID_ARGUMENT  |\n|  4   | DEADLINE_EXCEEDED |\n|  5   | NOT_FOUND         |\n|  10  | ABORTED           |\n|  13  | INTERNAL          |\n---\nTroubleshooting\n  The request process may not be completed when the response code is NOT `0 (OK)`.\n\nHere are some common reasons and how to resolve each error.\n\n| name              | common reason                                                                                                   | how to resolve                                                                           |\n| :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |\n| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |\n| INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |\n| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |\n| NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |\n| INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |",
+        "operationId": "SearchWithMetadata_MultiSearchWithMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/SearchResponses"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "Represent the multiple search request.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SearchMultiRequest"
+            }
+          }
+        ],
+        "tags": ["SearchWithMetadata"]
+      }
+    },
+    "/update/metadata": {
+      "post": {
+        "summary": "Overview\nUpdateWithMetadata RPC is the method to update a single vector.\n---\nStatus Code\n|  0   | OK                |\n|  1   | CANCELLED         |\n|  3   | INVALID_ARGUMENT  |\n|  4   | DEADLINE_EXCEEDED |\n|  5   | NOT_FOUND         |\n|  6   | ALREADY_EXISTS    |\n|  10  | ABORTED           |\n|  13  | INTERNAL          |\n---\nTroubleshooting\nThe request process may not be completed when the response code is NOT `0 (OK)`.",
+        "description": "Here are some common reasons and how to resolve each error.\n\n| name              | common reason                                                                                                                                       | how to resolve                                                                           |\n| :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |\n| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |\n| INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |\n| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |\n| NOT_FOUND         | Requested ID is NOT inserted.                                                                                                                       | Send a request with an ID that is already inserted.                                      |\n| ALREADY_EXISTS    | Request pair of ID and vector is already inserted.                                                                                                  | Change request ID.                                                                       |\n| INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |",
+        "operationId": "UpdateWithMetadata_UpdateWithMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ObjectLocation"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "Represent the update request.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateRequest"
+            }
+          }
+        ],
+        "tags": ["UpdateWithMetadata"]
+      }
+    },
+    "/update/multiple/metadata": {
+      "post": {
+        "summary": "Overview\nMultiUpdateWithMetadata is the method to update multiple vectors and metadata in **1** request.",
+        "description": "\u003cdiv class=\"notice\"\u003e\ngRPC has a message size limitation.\u003cbr\u003e\nPlease be careful that the size of the request exceeds the limit.\n\u003c/div\u003e\n---\nStatus Code\n|  0   | OK                |\n|  1   | CANCELLED         |\n|  3   | INVALID_ARGUMENT  |\n|  4   | DEADLINE_EXCEEDED |\n|  5   | NOT_FOUND         |\n|  6   | ALREADY_EXISTS    |\n|  10  | ABORTED           |\n|  13  | INTERNAL          |\n---\nTroubleshooting\nThe request process may not be completed when the response code is NOT `0 (OK)`.\n\nHere are some common reasons and how to resolve each error.\n\n| name              | common reason                                                                                                                                       | how to resolve                                                                           |\n| :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |\n| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |\n| INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |\n| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |\n| NOT_FOUND         | Requested ID is NOT inserted.                                                                                                                       | Send a request with an ID that is already inserted.                                      |\n| ALREADY_EXISTS    | Request pair of ID and vector is already inserted.                                                                                                  | Change request ID.                                                                       |\n| INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |",
+        "operationId": "UpdateWithMetadata_MultiUpdateWithMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ObjectLocations"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "Represent the multiple update request.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateMultiRequest"
+            }
+          }
+        ],
+        "tags": ["UpdateWithMetadata"]
+      }
+    },
+    "/update/timestamp/metadata": {
+      "post": {
+        "summary": "Overview\nA method to update timestamp an indexed vector and metadata.\n---\nStatus Code\nTODO\n---\nTroubleshooting\nTODO",
+        "operationId": "UpdateWithMetadata_UpdateTimestampWithMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ObjectLocation"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "Represent a vector meta data.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateTimestampRequest"
+            }
+          }
+        ],
+        "tags": ["UpdateWithMetadata"]
+      }
+    },
+    "/upsert/metadata": {
+      "post": {
+        "summary": "Overview\nUpsertWithMetadata RPC is the method to update the inserted vector and metadata to a new single vector and metadata or add a new single vector and metadata if not inserted before.\n---\nStatus Code\n|  0   | OK                |\n|  1   | CANCELLED         |\n|  3   | INVALID_ARGUMENT  |\n|  4   | DEADLINE_EXCEEDED |\n|  5   | NOT_FOUND         |\n|  6   | ALREADY_EXISTS    |\n|  10  | ABORTED           |\n|  13  | INTERNAL          |\n---\nTroubleshooting\nThe request process may not be completed when the response code is NOT `0 (OK)`.",
+        "description": "Here are some common reasons and how to resolve each error.\n\n| name              | common reason                                                                                                                                       | how to resolve                                                                           |\n| :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |\n| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |\n| INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |\n| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |\n| ALREADY_EXISTS    | Requested pair of ID and vector is already inserted                                                                                                 | Change request payload or nothing to do if update is unnecessary.                        |\n| INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |",
+        "operationId": "UpsertWithMetadata_UpsertWithMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ObjectLocation"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "Represent the upsert request.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpsertRequest"
+            }
+          }
+        ],
+        "tags": ["UpsertWithMetadata"]
+      }
+    },
+    "/upsert/multiple/metadata": {
+      "post": {
+        "summary": "Overview\nMultiUpsertWithMetadata is the method to update existing multiple vectors and metadata and add new multiple vectors and metadata in **1** request.",
+        "description": "\u003cdiv class=\"notice\"\u003e\ngRPC has a message size limitation.\u003cbr\u003e\nPlease be careful that the size of the request exceeds the limit.\n\u003c/div\u003e\n---\nStatus Code\n|  0   | OK                |\n|  1   | CANCELLED         |\n|  3   | INVALID_ARGUMENT  |\n|  4   | DEADLINE_EXCEEDED |\n|  5   | NOT_FOUND         |\n|  6   | ALREADY_EXISTS    |\n|  10  | ABORTED           |\n|  13  | INTERNAL          |\n---\nTroubleshooting\nThe request process may not be completed when the response code is NOT `0 (OK)`.\n\nHere are some common reasons and how to resolve each error.\n\n| name              | common reason                                                                                                                                       | how to resolve                                                                           |\n| :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |\n| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |\n| INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |\n| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |\n| ALREADY_EXISTS    | Requested pair of ID and vector is already inserted                                                                                                 | Change request payload or nothing to do if update is unnecessary.                        |\n| INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |",
+        "operationId": "UpsertWithMetadata_MultiUpsertWithMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ObjectLocations"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "Represent mthe ultiple upsert request.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpsertMultiRequest"
+            }
+          }
+        ],
+        "tags": ["UpsertWithMetadata"]
+      }
+    }
+  },
+  "definitions": {
+    "ObjectDistance": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The vector ID."
+        },
+        "distance": {
+          "type": "number",
+          "format": "float",
+          "description": "The distance."
+        },
+        "metadata": {
+          "type": "string",
+          "format": "byte",
+          "description": "The metadata is related to the request vector."
+        }
+      },
+      "description": "Represent the ID and distance pair."
+    },
+    "ObjectID": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      },
+      "description": "Represent the vector ID."
+    },
+    "ObjectListResponse": {
+      "type": "object",
+      "properties": {
+        "vector": {
+          "$ref": "#/definitions/ObjectVector",
+          "title": "The vector"
+        },
+        "status": {
+          "$ref": "#/definitions/rpcStatus",
+          "description": "The RPC error status."
+        }
+      }
+    },
+    "ObjectLocations": {
+      "type": "object",
+      "properties": {
+        "locations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ObjectLocation"
+          }
+        }
+      },
+      "description": "Represent multiple vector locations."
+    },
+    "ObjectVector": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The vector ID."
+        },
+        "vector": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
+          },
+          "description": "The vector."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "int64",
+          "description": "timestamp represents when this vector inserted."
+        },
+        "metadata": {
+          "type": "string",
+          "format": "byte",
+          "description": "The metadata is related to the request vector."
+        }
+      },
+      "description": "Represent a vector."
+    },
+    "SearchAggregationAlgorithm": {
+      "type": "string",
+      "enum": [
+        "Unknown",
+        "ConcurrentQueue",
+        "SortSlice",
+        "SortPoolSlice",
+        "PairingHeap"
+      ],
+      "default": "Unknown",
+      "title": "AggregationAlgorithm is enum of each aggregation algorithms"
+    },
+    "SearchIDRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The vector ID to be searched."
+        },
+        "config": {
+          "$ref": "#/definitions/v1SearchConfig",
+          "description": "The configuration of the search request."
+        }
+      },
+      "description": "Represent a search by ID request."
+    },
+    "SearchMultiIDRequest": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/SearchIDRequest"
+          },
+          "description": "Represent the multiple search by ID request content."
+        }
+      },
+      "description": "Represent the multiple search by ID request."
+    },
+    "SearchResponses": {
+      "type": "object",
+      "properties": {
+        "responses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1SearchResponse"
+          },
+          "description": "Represent the multiple search response content."
+        }
+      },
+      "description": "Represent multiple search responses."
+    },
+    "TimestampOperator": {
+      "type": "string",
+      "enum": ["Eq", "Ne", "Ge", "Gt", "Le", "Lt"],
+      "default": "Eq",
+      "description": "Operator is enum of each conditional operator.\n\n - Eq: The timestamp is equal to the specified value in the request.\n - Ne: The timestamp is not equal to the specified value in the request.\n - Ge: The timestamp is greater than or equal to the specified value in the\nrequest.\n - Gt: The timestamp is greater than the specified value in the request.\n - Le: The timestamp is less than or equal to the specified value in the\nrequest.\n - Lt: The timestamp is less than the specified value in the request."
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com. As of May 2023, there are no widely used type server\nimplementations and no plans to implement one.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
+        }
+      },
+      "additionalProperties": {},
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(\u0026foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n    // or ...\n    if (any.isSameTypeAs(Foo.getDefaultInstance())) {\n      foo = any.unpack(Foo.getDefaultInstance());\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := \u0026pb.Foo{...}\n     any, err := anypb.New(foo)\n     if err != nil {\n       ...\n     }\n     ...\n     foo := \u0026pb.Foo{}\n     if err := any.UnmarshalTo(foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": \u003cstring\u003e,\n      \"lastName\": \u003cstring\u003e\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The status code, which should be an enum value of\n[google.rpc.Code][google.rpc.Code]."
+        },
+        "message": {
+          "type": "string",
+          "description": "A developer-facing error message, which should be in English. Any\nuser-facing error message should be localized and sent in the\n[google.rpc.Status.details][google.rpc.Status.details] field, or localized\nby the client."
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          },
+          "description": "A list of messages that carry the error details.  There is a common set of\nmessage types for APIs to use."
+        }
+      },
+      "description": "The `Status` type defines a logical error model that is suitable for\ndifferent programming environments, including REST APIs and RPC APIs. It is\nused by [gRPC](https://github.com/grpc). Each `Status` message contains\nthree pieces of data: error code, error message, and error details.\n\nYou can find out more about this error model and how to work with it in the\n[API Design Guide](https://cloud.google.com/apis/design/errors)."
+    },
+    "v1FilterConfig": {
+      "type": "object",
+      "properties": {
+        "targets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1FilterTarget"
+          },
+          "description": "Represent the filter target configuration."
+        }
+      },
+      "description": "Represent filter configuration."
+    },
+    "v1FilterTarget": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "The target hostname."
+        },
+        "port": {
+          "type": "integer",
+          "format": "int64",
+          "description": "The target port."
+        }
+      },
+      "description": "Represent the target filter server."
+    },
+    "v1InsertConfig": {
+      "type": "object",
+      "properties": {
+        "skipStrictExistCheck": {
+          "type": "boolean",
+          "description": "A flag to skip exist check during insert operation."
+        },
+        "filters": {
+          "$ref": "#/definitions/v1FilterConfig",
+          "description": "Filter configurations."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "int64",
+          "description": "Insert timestamp."
+        }
+      },
+      "description": "Represent insert configurations."
+    },
+    "v1InsertMultiRequest": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1InsertRequest"
+          },
+          "description": "Represent multiple insert request content."
+        }
+      },
+      "description": "Represent the multiple insert request."
+    },
+    "v1InsertRequest": {
+      "type": "object",
+      "properties": {
+        "vector": {
+          "$ref": "#/definitions/ObjectVector",
+          "description": "The vector to be inserted."
+        },
+        "config": {
+          "$ref": "#/definitions/v1InsertConfig",
+          "description": "The configuration of the insert request."
+        },
+        "metadata": {
+          "type": "string",
+          "format": "byte",
+          "description": "The metadata is related to the request vector."
+        }
+      },
+      "description": "Represent the insert request."
+    },
+    "v1ObjectLocation": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the location."
+        },
+        "uuid": {
+          "type": "string",
+          "description": "The UUID of the vector."
+        },
+        "ips": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The IP list."
+        }
+      },
+      "description": "Represent the vector location."
+    },
+    "v1RemoveConfig": {
+      "type": "object",
+      "properties": {
+        "skipStrictExistCheck": {
+          "type": "boolean",
+          "description": "A flag to skip exist check during upsert operation."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "int64",
+          "description": "Remove timestamp."
+        }
+      },
+      "description": "Represent the remove configuration."
+    },
+    "v1RemoveMultiRequest": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RemoveRequest"
+          },
+          "description": "Represent the multiple remove request content."
+        }
+      },
+      "description": "Represent the multiple remove request."
+    },
+    "v1RemoveRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/ObjectID",
+          "description": "The object ID to be removed."
+        },
+        "config": {
+          "$ref": "#/definitions/v1RemoveConfig",
+          "description": "The configuration of the remove request."
+        }
+      },
+      "description": "Represent the remove request."
+    },
+    "v1RemoveTimestamp": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "int64",
+          "description": "The timestamp."
+        },
+        "operator": {
+          "$ref": "#/definitions/TimestampOperator",
+          "description": "The conditional operator."
+        }
+      },
+      "description": "Represent the timestamp comparison."
+    },
+    "v1RemoveTimestampRequest": {
+      "type": "object",
+      "properties": {
+        "timestamps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RemoveTimestamp"
+          },
+          "description": "The timestamp comparison list. If more than one is specified, the `AND`\nsearch is applied."
+        }
+      },
+      "description": "Represent the remove request based on timestamp."
+    },
+    "v1SearchConfig": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string",
+          "description": "Unique request ID."
+        },
+        "num": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Maximum number of result to be returned."
+        },
+        "radius": {
+          "type": "number",
+          "format": "float",
+          "description": "Search radius."
+        },
+        "epsilon": {
+          "type": "number",
+          "format": "float",
+          "description": "Search coefficient."
+        },
+        "timeout": {
+          "type": "string",
+          "format": "int64",
+          "description": "Search timeout in nanoseconds."
+        },
+        "ingressFilters": {
+          "$ref": "#/definitions/v1FilterConfig",
+          "description": "Ingress filter configurations."
+        },
+        "egressFilters": {
+          "$ref": "#/definitions/v1FilterConfig",
+          "description": "Egress filter configurations."
+        },
+        "minNum": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Minimum number of result to be returned."
+        },
+        "aggregationAlgorithm": {
+          "$ref": "#/definitions/SearchAggregationAlgorithm",
+          "title": "Aggregation Algorithm"
+        },
+        "ratio": {
+          "type": "number",
+          "format": "float",
+          "description": "Search ratio for agent return result number."
+        },
+        "nprobe": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Search nprobe."
+        }
+      },
+      "description": "Represent search configuration."
+    },
+    "v1SearchMultiRequest": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1SearchRequest"
+          },
+          "description": "Represent the multiple search request content."
+        }
+      },
+      "description": "Represent the multiple search request."
+    },
+    "v1SearchRequest": {
+      "type": "object",
+      "properties": {
+        "vector": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
+          },
+          "description": "The vector to be searched."
+        },
+        "config": {
+          "$ref": "#/definitions/v1SearchConfig",
+          "description": "The configuration of the search request."
+        }
+      },
+      "description": "Represent a search request."
+    },
+    "v1SearchResponse": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string",
+          "description": "The unique request ID."
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/ObjectDistance"
+          },
+          "description": "Search results."
+        }
+      },
+      "description": "Represent a search response."
+    },
+    "v1UpdateConfig": {
+      "type": "object",
+      "properties": {
+        "skipStrictExistCheck": {
+          "type": "boolean",
+          "description": "A flag to skip exist check during update operation."
+        },
+        "filters": {
+          "$ref": "#/definitions/v1FilterConfig",
+          "description": "Filter configuration."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "int64",
+          "description": "Update timestamp."
+        },
+        "disableBalancedUpdate": {
+          "type": "boolean",
+          "description": "A flag to disable balanced update (split remove -\u003e insert operation)\nduring update operation."
+        }
+      },
+      "description": "Represent the update configuration."
+    },
+    "v1UpdateMultiRequest": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1UpdateRequest"
+          },
+          "description": "Represent the multiple update request content."
+        }
+      },
+      "description": "Represent the multiple update request."
+    },
+    "v1UpdateRequest": {
+      "type": "object",
+      "properties": {
+        "vector": {
+          "$ref": "#/definitions/ObjectVector",
+          "description": "The vector to be updated."
+        },
+        "config": {
+          "$ref": "#/definitions/v1UpdateConfig",
+          "description": "The configuration of the update request."
+        },
+        "metadata": {
+          "type": "string",
+          "format": "byte",
+          "description": "The metadata is related to the request vector."
+        }
+      },
+      "description": "Represent the update request."
+    },
+    "v1UpdateTimestampRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The vector ID."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "int64",
+          "description": "timestamp represents when this vector inserted."
+        },
+        "force": {
+          "type": "boolean",
+          "description": "force represents forcefully update the timestamp."
+        },
+        "metadata": {
+          "type": "string",
+          "format": "byte",
+          "description": "The metadata is related to the request vector."
+        }
+      },
+      "description": "Represent a vector meta data."
+    },
+    "v1UpsertConfig": {
+      "type": "object",
+      "properties": {
+        "skipStrictExistCheck": {
+          "type": "boolean",
+          "description": "A flag to skip exist check during upsert operation."
+        },
+        "filters": {
+          "$ref": "#/definitions/v1FilterConfig",
+          "description": "Filter configuration."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "int64",
+          "description": "Upsert timestamp."
+        },
+        "disableBalancedUpdate": {
+          "type": "boolean",
+          "description": "A flag to disable balanced update (split remove -\u003e insert operation)\nduring update operation."
+        }
+      },
+      "description": "Represent the upsert configuration."
+    },
+    "v1UpsertMultiRequest": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1UpsertRequest"
+          },
+          "description": "Represent the multiple upsert request content."
+        }
+      },
+      "description": "Represent mthe ultiple upsert request."
+    },
+    "v1UpsertRequest": {
+      "type": "object",
+      "properties": {
+        "vector": {
+          "$ref": "#/definitions/ObjectVector",
+          "description": "The vector to be upserted."
+        },
+        "config": {
+          "$ref": "#/definitions/v1UpsertConfig",
+          "description": "The configuration of the upsert request."
+        },
+        "metadata": {
+          "type": "string",
+          "format": "byte",
+          "description": "The metadata is related to the request vector."
+        }
+      },
+      "description": "Represent the upsert request."
+    }
+  }
+}

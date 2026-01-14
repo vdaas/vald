@@ -26,12 +26,14 @@ Upsert RPC is the method to update the inserted vector to a new single vector or
   message Upsert.Request {
     Object.Vector vector = 1;
     Upsert.Config config = 2;
+    optional bytes metadata = 3;
   }
 
   message Object.Vector {
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 
   message Upsert.Config {
@@ -54,10 +56,11 @@ Upsert RPC is the method to update the inserted vector to a new single vector or
 
   - Upsert.Request
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    | vector | Object.Vector |       | The vector to be upserted.               |
-    | config | Upsert.Config |       | The configuration of the upsert request. |
+    |  field   | type          | label    | description                                    |
+    | :------: | :------------ | :------- | :--------------------------------------------- |
+    |  vector  | Object.Vector |          | The vector to be upserted.                     |
+    |  config  | Upsert.Config |          | The configuration of the upsert request.       |
+    | metadata | bytes         | optional | The metadata is related to the request vector. |
 
   - Object.Vector
 
@@ -66,6 +69,7 @@ Upsert RPC is the method to update the inserted vector to a new single vector or
     |    id     | string |          | The vector ID.                                  |
     |  vector   | float  | repeated | The vector.                                     |
     | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
 
   - Upsert.Config
 
@@ -156,12 +160,14 @@ It’s the recommended method to upsert a large number of vectors.
   message Upsert.Request {
     Object.Vector vector = 1;
     Upsert.Config config = 2;
+    optional bytes metadata = 3;
   }
 
   message Object.Vector {
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 
   message Upsert.Config {
@@ -184,10 +190,11 @@ It’s the recommended method to upsert a large number of vectors.
 
   - Upsert.Request
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    | vector | Object.Vector |       | The vector to be upserted.               |
-    | config | Upsert.Config |       | The configuration of the upsert request. |
+    |  field   | type          | label    | description                                    |
+    | :------: | :------------ | :------- | :--------------------------------------------- |
+    |  vector  | Object.Vector |          | The vector to be upserted.                     |
+    |  config  | Upsert.Config |          | The configuration of the upsert request.       |
+    | metadata | bytes         | optional | The metadata is related to the request vector. |
 
   - Object.Vector
 
@@ -196,6 +203,7 @@ It’s the recommended method to upsert a large number of vectors.
     |    id     | string |          | The vector ID.                                  |
     |  vector   | float  | repeated | The vector.                                     |
     | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
 
   - Upsert.Config
 
@@ -304,12 +312,14 @@ Please be careful that the size of the request exceeds the limit.
   message Upsert.Request {
     Object.Vector vector = 1;
     Upsert.Config config = 2;
+    optional bytes metadata = 3;
   }
 
   message Object.Vector {
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 
   message Upsert.Config {
@@ -338,10 +348,11 @@ Please be careful that the size of the request exceeds the limit.
 
   - Upsert.Request
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    | vector | Object.Vector |       | The vector to be upserted.               |
-    | config | Upsert.Config |       | The configuration of the upsert request. |
+    |  field   | type          | label    | description                                    |
+    | :------: | :------------ | :------- | :--------------------------------------------- |
+    |  vector  | Object.Vector |          | The vector to be upserted.                     |
+    |  config  | Upsert.Config |          | The configuration of the upsert request.       |
+    | metadata | bytes         | optional | The metadata is related to the request vector. |
 
   - Object.Vector
 
@@ -350,6 +361,7 @@ Please be careful that the size of the request exceeds the limit.
     |    id     | string |          | The vector ID.                                  |
     |  vector   | float  | repeated | The vector.                                     |
     | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
 
   - Upsert.Config
 

@@ -125,20 +125,6 @@
       },
       "description": "Represent multiple vector locations."
     },
-    "ObjectStreamLocation": {
-      "type": "object",
-      "properties": {
-        "location": {
-          "$ref": "#/definitions/v1ObjectLocation",
-          "description": "The vector location."
-        },
-        "status": {
-          "$ref": "#/definitions/rpcStatus",
-          "description": "The RPC error status."
-        }
-      },
-      "description": "Represent the stream response of the vector location."
-    },
     "ObjectVector": {
       "type": "object",
       "properties": {
@@ -158,6 +144,11 @@
           "type": "string",
           "format": "int64",
           "description": "timestamp represents when this vector inserted."
+        },
+        "metadata": {
+          "type": "string",
+          "format": "byte",
+          "description": "The metadata is related to the request vector."
         }
       },
       "description": "Represent a vector."
@@ -293,6 +284,11 @@
         "config": {
           "$ref": "#/definitions/v1UpdateConfig",
           "description": "The configuration of the update request."
+        },
+        "metadata": {
+          "type": "string",
+          "format": "byte",
+          "description": "The metadata is related to the request vector."
         }
       },
       "description": "Represent the update request."
@@ -312,6 +308,11 @@
         "force": {
           "type": "boolean",
           "description": "force represents forcefully update the timestamp."
+        },
+        "metadata": {
+          "type": "string",
+          "format": "byte",
+          "description": "The metadata is related to the request vector."
         }
       },
       "description": "Represent a vector meta data."

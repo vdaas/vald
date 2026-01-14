@@ -26,12 +26,14 @@ Insert RPC is the method to add a new single vector.
   message Insert.Request {
     Object.Vector vector = 1;
     Insert.Config config = 2;
+    optional bytes metadata = 3;
   }
 
   message Object.Vector {
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 
   message Insert.Config {
@@ -53,10 +55,11 @@ Insert RPC is the method to add a new single vector.
 
   - Insert.Request
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    | vector | Object.Vector |       | The vector to be inserted.               |
-    | config | Insert.Config |       | The configuration of the insert request. |
+    |  field   | type          | label    | description                                    |
+    | :------: | :------------ | :------- | :--------------------------------------------- |
+    |  vector  | Object.Vector |          | The vector to be inserted.                     |
+    |  config  | Insert.Config |          | The configuration of the insert request.       |
+    | metadata | bytes         | optional | The metadata is related to the request vector. |
 
   - Object.Vector
 
@@ -65,6 +68,7 @@ Insert RPC is the method to add a new single vector.
     |    id     | string |          | The vector ID.                                  |
     |  vector   | float  | repeated | The vector.                                     |
     | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
 
   - Insert.Config
 
@@ -150,12 +154,14 @@ It's the recommended method to insert a large number of vectors.
   message Insert.Request {
     Object.Vector vector = 1;
     Insert.Config config = 2;
+    optional bytes metadata = 3;
   }
 
   message Object.Vector {
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 
   message Insert.Config {
@@ -177,10 +183,11 @@ It's the recommended method to insert a large number of vectors.
 
   - Insert.Request
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    | vector | Object.Vector |       | The vector to be inserted.               |
-    | config | Insert.Config |       | The configuration of the insert request. |
+    |  field   | type          | label    | description                                    |
+    | :------: | :------------ | :------- | :--------------------------------------------- |
+    |  vector  | Object.Vector |          | The vector to be inserted.                     |
+    |  config  | Insert.Config |          | The configuration of the insert request.       |
+    | metadata | bytes         | optional | The metadata is related to the request vector. |
 
   - Object.Vector
 
@@ -189,6 +196,7 @@ It's the recommended method to insert a large number of vectors.
     |    id     | string |          | The vector ID.                                  |
     |  vector   | float  | repeated | The vector.                                     |
     | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
 
   - Insert.Config
 
@@ -293,12 +301,14 @@ Please be careful that the size of the request exceeds the limit.
   message Insert.Request {
     Object.Vector vector = 1;
     Insert.Config config = 2;
+    optional bytes metadata = 3;
   }
 
   message Object.Vector {
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 
   message Insert.Config {
@@ -326,10 +336,11 @@ Please be careful that the size of the request exceeds the limit.
 
   - Insert.Request
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    | vector | Object.Vector |       | The vector to be inserted.               |
-    | config | Insert.Config |       | The configuration of the insert request. |
+    |  field   | type          | label    | description                                    |
+    | :------: | :------------ | :------- | :--------------------------------------------- |
+    |  vector  | Object.Vector |          | The vector to be inserted.                     |
+    |  config  | Insert.Config |          | The configuration of the insert request.       |
+    | metadata | bytes         | optional | The metadata is related to the request vector. |
 
   - Object.Vector
 
@@ -338,6 +349,7 @@ Please be careful that the size of the request exceeds the limit.
     |    id     | string |          | The vector ID.                                  |
     |  vector   | float  | repeated | The vector.                                     |
     | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
 
   - Insert.Config
 

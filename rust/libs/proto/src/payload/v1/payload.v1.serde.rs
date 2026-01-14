@@ -5395,6 +5395,9 @@ impl serde::Serialize for insert::ObjectRequest {
         if self.vectorizer.is_some() {
             len += 1;
         }
+        if self.metadata.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("payload.v1.Insert.ObjectRequest", len)?;
         if let Some(v) = self.object.as_ref() {
             struct_ser.serialize_field("object", v)?;
@@ -5404,6 +5407,11 @@ impl serde::Serialize for insert::ObjectRequest {
         }
         if let Some(v) = self.vectorizer.as_ref() {
             struct_ser.serialize_field("vectorizer", v)?;
+        }
+        if let Some(v) = self.metadata.as_ref() {
+            #[allow(clippy::needless_borrow)]
+            #[allow(clippy::needless_borrows_for_generic_args)]
+            struct_ser.serialize_field("metadata", pbjson::private::base64::encode(&v).as_str())?;
         }
         struct_ser.end()
     }
@@ -5418,6 +5426,7 @@ impl<'de> serde::Deserialize<'de> for insert::ObjectRequest {
             "object",
             "config",
             "vectorizer",
+            "metadata",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -5425,6 +5434,7 @@ impl<'de> serde::Deserialize<'de> for insert::ObjectRequest {
             Object,
             Config,
             Vectorizer,
+            Metadata,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -5449,6 +5459,7 @@ impl<'de> serde::Deserialize<'de> for insert::ObjectRequest {
                             "object" => Ok(GeneratedField::Object),
                             "config" => Ok(GeneratedField::Config),
                             "vectorizer" => Ok(GeneratedField::Vectorizer),
+                            "metadata" => Ok(GeneratedField::Metadata),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -5471,6 +5482,7 @@ impl<'de> serde::Deserialize<'de> for insert::ObjectRequest {
                 let mut object__ = None;
                 let mut config__ = None;
                 let mut vectorizer__ = None;
+                let mut metadata__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Object => {
@@ -5491,12 +5503,21 @@ impl<'de> serde::Deserialize<'de> for insert::ObjectRequest {
                             }
                             vectorizer__ = map_.next_value()?;
                         }
+                        GeneratedField::Metadata => {
+                            if metadata__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("metadata"));
+                            }
+                            metadata__ = 
+                                map_.next_value::<::std::option::Option<::pbjson::private::BytesDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
                     }
                 }
                 Ok(insert::ObjectRequest {
                     object: object__,
                     config: config__,
                     vectorizer: vectorizer__,
+                    metadata: metadata__,
                 })
             }
         }
@@ -5517,12 +5538,20 @@ impl serde::Serialize for insert::Request {
         if self.config.is_some() {
             len += 1;
         }
+        if self.metadata.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("payload.v1.Insert.Request", len)?;
         if let Some(v) = self.vector.as_ref() {
             struct_ser.serialize_field("vector", v)?;
         }
         if let Some(v) = self.config.as_ref() {
             struct_ser.serialize_field("config", v)?;
+        }
+        if let Some(v) = self.metadata.as_ref() {
+            #[allow(clippy::needless_borrow)]
+            #[allow(clippy::needless_borrows_for_generic_args)]
+            struct_ser.serialize_field("metadata", pbjson::private::base64::encode(&v).as_str())?;
         }
         struct_ser.end()
     }
@@ -5536,12 +5565,14 @@ impl<'de> serde::Deserialize<'de> for insert::Request {
         const FIELDS: &[&str] = &[
             "vector",
             "config",
+            "metadata",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             Vector,
             Config,
+            Metadata,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -5565,6 +5596,7 @@ impl<'de> serde::Deserialize<'de> for insert::Request {
                         match value {
                             "vector" => Ok(GeneratedField::Vector),
                             "config" => Ok(GeneratedField::Config),
+                            "metadata" => Ok(GeneratedField::Metadata),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -5586,6 +5618,7 @@ impl<'de> serde::Deserialize<'de> for insert::Request {
             {
                 let mut vector__ = None;
                 let mut config__ = None;
+                let mut metadata__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Vector => {
@@ -5600,11 +5633,20 @@ impl<'de> serde::Deserialize<'de> for insert::Request {
                             }
                             config__ = map_.next_value()?;
                         }
+                        GeneratedField::Metadata => {
+                            if metadata__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("metadata"));
+                            }
+                            metadata__ = 
+                                map_.next_value::<::std::option::Option<::pbjson::private::BytesDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
                     }
                 }
                 Ok(insert::Request {
                     vector: vector__,
                     config: config__,
+                    metadata: metadata__,
                 })
             }
         }
@@ -6441,12 +6483,20 @@ impl serde::Serialize for object::Distance {
         if self.distance != 0. {
             len += 1;
         }
+        if self.metadata.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("payload.v1.Object.Distance", len)?;
         if !self.id.is_empty() {
             struct_ser.serialize_field("id", &self.id)?;
         }
         if self.distance != 0. {
             struct_ser.serialize_field("distance", &self.distance)?;
+        }
+        if let Some(v) = self.metadata.as_ref() {
+            #[allow(clippy::needless_borrow)]
+            #[allow(clippy::needless_borrows_for_generic_args)]
+            struct_ser.serialize_field("metadata", pbjson::private::base64::encode(&v).as_str())?;
         }
         struct_ser.end()
     }
@@ -6460,12 +6510,14 @@ impl<'de> serde::Deserialize<'de> for object::Distance {
         const FIELDS: &[&str] = &[
             "id",
             "distance",
+            "metadata",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             Id,
             Distance,
+            Metadata,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -6489,6 +6541,7 @@ impl<'de> serde::Deserialize<'de> for object::Distance {
                         match value {
                             "id" => Ok(GeneratedField::Id),
                             "distance" => Ok(GeneratedField::Distance),
+                            "metadata" => Ok(GeneratedField::Metadata),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -6510,6 +6563,7 @@ impl<'de> serde::Deserialize<'de> for object::Distance {
             {
                 let mut id__ = None;
                 let mut distance__ = None;
+                let mut metadata__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Id => {
@@ -6526,11 +6580,20 @@ impl<'de> serde::Deserialize<'de> for object::Distance {
                                 Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
+                        GeneratedField::Metadata => {
+                            if metadata__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("metadata"));
+                            }
+                            metadata__ = 
+                                map_.next_value::<::std::option::Option<::pbjson::private::BytesDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
                     }
                 }
                 Ok(object::Distance {
                     id: id__.unwrap_or_default(),
                     distance: distance__.unwrap_or_default(),
+                    metadata: metadata__,
                 })
             }
         }
@@ -7957,6 +8020,9 @@ impl serde::Serialize for object::Vector {
         if self.timestamp != 0 {
             len += 1;
         }
+        if self.metadata.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("payload.v1.Object.Vector", len)?;
         if !self.id.is_empty() {
             struct_ser.serialize_field("id", &self.id)?;
@@ -7968,6 +8034,11 @@ impl serde::Serialize for object::Vector {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
             struct_ser.serialize_field("timestamp", ToString::to_string(&self.timestamp).as_str())?;
+        }
+        if let Some(v) = self.metadata.as_ref() {
+            #[allow(clippy::needless_borrow)]
+            #[allow(clippy::needless_borrows_for_generic_args)]
+            struct_ser.serialize_field("metadata", pbjson::private::base64::encode(&v).as_str())?;
         }
         struct_ser.end()
     }
@@ -7982,6 +8053,7 @@ impl<'de> serde::Deserialize<'de> for object::Vector {
             "id",
             "vector",
             "timestamp",
+            "metadata",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -7989,6 +8061,7 @@ impl<'de> serde::Deserialize<'de> for object::Vector {
             Id,
             Vector,
             Timestamp,
+            Metadata,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -8013,6 +8086,7 @@ impl<'de> serde::Deserialize<'de> for object::Vector {
                             "id" => Ok(GeneratedField::Id),
                             "vector" => Ok(GeneratedField::Vector),
                             "timestamp" => Ok(GeneratedField::Timestamp),
+                            "metadata" => Ok(GeneratedField::Metadata),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -8035,6 +8109,7 @@ impl<'de> serde::Deserialize<'de> for object::Vector {
                 let mut id__ = None;
                 let mut vector__ = None;
                 let mut timestamp__ = None;
+                let mut metadata__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Id => {
@@ -8060,12 +8135,21 @@ impl<'de> serde::Deserialize<'de> for object::Vector {
                                 Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
+                        GeneratedField::Metadata => {
+                            if metadata__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("metadata"));
+                            }
+                            metadata__ = 
+                                map_.next_value::<::std::option::Option<::pbjson::private::BytesDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
                     }
                 }
                 Ok(object::Vector {
                     id: id__.unwrap_or_default(),
                     vector: vector__.unwrap_or_default(),
                     timestamp: timestamp__.unwrap_or_default(),
+                    metadata: metadata__,
                 })
             }
         }
@@ -10723,6 +10807,9 @@ impl serde::Serialize for update::ObjectRequest {
         if self.vectorizer.is_some() {
             len += 1;
         }
+        if self.metadata.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("payload.v1.Update.ObjectRequest", len)?;
         if let Some(v) = self.object.as_ref() {
             struct_ser.serialize_field("object", v)?;
@@ -10732,6 +10819,11 @@ impl serde::Serialize for update::ObjectRequest {
         }
         if let Some(v) = self.vectorizer.as_ref() {
             struct_ser.serialize_field("vectorizer", v)?;
+        }
+        if let Some(v) = self.metadata.as_ref() {
+            #[allow(clippy::needless_borrow)]
+            #[allow(clippy::needless_borrows_for_generic_args)]
+            struct_ser.serialize_field("metadata", pbjson::private::base64::encode(&v).as_str())?;
         }
         struct_ser.end()
     }
@@ -10746,6 +10838,7 @@ impl<'de> serde::Deserialize<'de> for update::ObjectRequest {
             "object",
             "config",
             "vectorizer",
+            "metadata",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -10753,6 +10846,7 @@ impl<'de> serde::Deserialize<'de> for update::ObjectRequest {
             Object,
             Config,
             Vectorizer,
+            Metadata,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -10777,6 +10871,7 @@ impl<'de> serde::Deserialize<'de> for update::ObjectRequest {
                             "object" => Ok(GeneratedField::Object),
                             "config" => Ok(GeneratedField::Config),
                             "vectorizer" => Ok(GeneratedField::Vectorizer),
+                            "metadata" => Ok(GeneratedField::Metadata),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -10799,6 +10894,7 @@ impl<'de> serde::Deserialize<'de> for update::ObjectRequest {
                 let mut object__ = None;
                 let mut config__ = None;
                 let mut vectorizer__ = None;
+                let mut metadata__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Object => {
@@ -10819,12 +10915,21 @@ impl<'de> serde::Deserialize<'de> for update::ObjectRequest {
                             }
                             vectorizer__ = map_.next_value()?;
                         }
+                        GeneratedField::Metadata => {
+                            if metadata__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("metadata"));
+                            }
+                            metadata__ = 
+                                map_.next_value::<::std::option::Option<::pbjson::private::BytesDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
                     }
                 }
                 Ok(update::ObjectRequest {
                     object: object__,
                     config: config__,
                     vectorizer: vectorizer__,
+                    metadata: metadata__,
                 })
             }
         }
@@ -10845,12 +10950,20 @@ impl serde::Serialize for update::Request {
         if self.config.is_some() {
             len += 1;
         }
+        if self.metadata.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("payload.v1.Update.Request", len)?;
         if let Some(v) = self.vector.as_ref() {
             struct_ser.serialize_field("vector", v)?;
         }
         if let Some(v) = self.config.as_ref() {
             struct_ser.serialize_field("config", v)?;
+        }
+        if let Some(v) = self.metadata.as_ref() {
+            #[allow(clippy::needless_borrow)]
+            #[allow(clippy::needless_borrows_for_generic_args)]
+            struct_ser.serialize_field("metadata", pbjson::private::base64::encode(&v).as_str())?;
         }
         struct_ser.end()
     }
@@ -10864,12 +10977,14 @@ impl<'de> serde::Deserialize<'de> for update::Request {
         const FIELDS: &[&str] = &[
             "vector",
             "config",
+            "metadata",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             Vector,
             Config,
+            Metadata,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -10893,6 +11008,7 @@ impl<'de> serde::Deserialize<'de> for update::Request {
                         match value {
                             "vector" => Ok(GeneratedField::Vector),
                             "config" => Ok(GeneratedField::Config),
+                            "metadata" => Ok(GeneratedField::Metadata),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -10914,6 +11030,7 @@ impl<'de> serde::Deserialize<'de> for update::Request {
             {
                 let mut vector__ = None;
                 let mut config__ = None;
+                let mut metadata__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Vector => {
@@ -10928,11 +11045,20 @@ impl<'de> serde::Deserialize<'de> for update::Request {
                             }
                             config__ = map_.next_value()?;
                         }
+                        GeneratedField::Metadata => {
+                            if metadata__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("metadata"));
+                            }
+                            metadata__ = 
+                                map_.next_value::<::std::option::Option<::pbjson::private::BytesDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
                     }
                 }
                 Ok(update::Request {
                     vector: vector__,
                     config: config__,
+                    metadata: metadata__,
                 })
             }
         }
@@ -10956,6 +11082,9 @@ impl serde::Serialize for update::TimestampRequest {
         if self.force {
             len += 1;
         }
+        if self.metadata.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("payload.v1.Update.TimestampRequest", len)?;
         if !self.id.is_empty() {
             struct_ser.serialize_field("id", &self.id)?;
@@ -10967,6 +11096,11 @@ impl serde::Serialize for update::TimestampRequest {
         }
         if self.force {
             struct_ser.serialize_field("force", &self.force)?;
+        }
+        if let Some(v) = self.metadata.as_ref() {
+            #[allow(clippy::needless_borrow)]
+            #[allow(clippy::needless_borrows_for_generic_args)]
+            struct_ser.serialize_field("metadata", pbjson::private::base64::encode(&v).as_str())?;
         }
         struct_ser.end()
     }
@@ -10981,6 +11115,7 @@ impl<'de> serde::Deserialize<'de> for update::TimestampRequest {
             "id",
             "timestamp",
             "force",
+            "metadata",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -10988,6 +11123,7 @@ impl<'de> serde::Deserialize<'de> for update::TimestampRequest {
             Id,
             Timestamp,
             Force,
+            Metadata,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -11012,6 +11148,7 @@ impl<'de> serde::Deserialize<'de> for update::TimestampRequest {
                             "id" => Ok(GeneratedField::Id),
                             "timestamp" => Ok(GeneratedField::Timestamp),
                             "force" => Ok(GeneratedField::Force),
+                            "metadata" => Ok(GeneratedField::Metadata),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -11034,6 +11171,7 @@ impl<'de> serde::Deserialize<'de> for update::TimestampRequest {
                 let mut id__ = None;
                 let mut timestamp__ = None;
                 let mut force__ = None;
+                let mut metadata__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Id => {
@@ -11056,12 +11194,21 @@ impl<'de> serde::Deserialize<'de> for update::TimestampRequest {
                             }
                             force__ = Some(map_.next_value()?);
                         }
+                        GeneratedField::Metadata => {
+                            if metadata__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("metadata"));
+                            }
+                            metadata__ = 
+                                map_.next_value::<::std::option::Option<::pbjson::private::BytesDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
                     }
                 }
                 Ok(update::TimestampRequest {
                     id: id__.unwrap_or_default(),
                     timestamp: timestamp__.unwrap_or_default(),
                     force: force__.unwrap_or_default(),
+                    metadata: metadata__,
                 })
             }
         }
@@ -11486,6 +11633,9 @@ impl serde::Serialize for upsert::ObjectRequest {
         if self.vectorizer.is_some() {
             len += 1;
         }
+        if self.metadata.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("payload.v1.Upsert.ObjectRequest", len)?;
         if let Some(v) = self.object.as_ref() {
             struct_ser.serialize_field("object", v)?;
@@ -11495,6 +11645,11 @@ impl serde::Serialize for upsert::ObjectRequest {
         }
         if let Some(v) = self.vectorizer.as_ref() {
             struct_ser.serialize_field("vectorizer", v)?;
+        }
+        if let Some(v) = self.metadata.as_ref() {
+            #[allow(clippy::needless_borrow)]
+            #[allow(clippy::needless_borrows_for_generic_args)]
+            struct_ser.serialize_field("metadata", pbjson::private::base64::encode(&v).as_str())?;
         }
         struct_ser.end()
     }
@@ -11509,6 +11664,7 @@ impl<'de> serde::Deserialize<'de> for upsert::ObjectRequest {
             "object",
             "config",
             "vectorizer",
+            "metadata",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -11516,6 +11672,7 @@ impl<'de> serde::Deserialize<'de> for upsert::ObjectRequest {
             Object,
             Config,
             Vectorizer,
+            Metadata,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -11540,6 +11697,7 @@ impl<'de> serde::Deserialize<'de> for upsert::ObjectRequest {
                             "object" => Ok(GeneratedField::Object),
                             "config" => Ok(GeneratedField::Config),
                             "vectorizer" => Ok(GeneratedField::Vectorizer),
+                            "metadata" => Ok(GeneratedField::Metadata),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -11562,6 +11720,7 @@ impl<'de> serde::Deserialize<'de> for upsert::ObjectRequest {
                 let mut object__ = None;
                 let mut config__ = None;
                 let mut vectorizer__ = None;
+                let mut metadata__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Object => {
@@ -11582,12 +11741,21 @@ impl<'de> serde::Deserialize<'de> for upsert::ObjectRequest {
                             }
                             vectorizer__ = map_.next_value()?;
                         }
+                        GeneratedField::Metadata => {
+                            if metadata__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("metadata"));
+                            }
+                            metadata__ = 
+                                map_.next_value::<::std::option::Option<::pbjson::private::BytesDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
                     }
                 }
                 Ok(upsert::ObjectRequest {
                     object: object__,
                     config: config__,
                     vectorizer: vectorizer__,
+                    metadata: metadata__,
                 })
             }
         }
@@ -11608,12 +11776,20 @@ impl serde::Serialize for upsert::Request {
         if self.config.is_some() {
             len += 1;
         }
+        if self.metadata.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("payload.v1.Upsert.Request", len)?;
         if let Some(v) = self.vector.as_ref() {
             struct_ser.serialize_field("vector", v)?;
         }
         if let Some(v) = self.config.as_ref() {
             struct_ser.serialize_field("config", v)?;
+        }
+        if let Some(v) = self.metadata.as_ref() {
+            #[allow(clippy::needless_borrow)]
+            #[allow(clippy::needless_borrows_for_generic_args)]
+            struct_ser.serialize_field("metadata", pbjson::private::base64::encode(&v).as_str())?;
         }
         struct_ser.end()
     }
@@ -11627,12 +11803,14 @@ impl<'de> serde::Deserialize<'de> for upsert::Request {
         const FIELDS: &[&str] = &[
             "vector",
             "config",
+            "metadata",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             Vector,
             Config,
+            Metadata,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -11656,6 +11834,7 @@ impl<'de> serde::Deserialize<'de> for upsert::Request {
                         match value {
                             "vector" => Ok(GeneratedField::Vector),
                             "config" => Ok(GeneratedField::Config),
+                            "metadata" => Ok(GeneratedField::Metadata),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -11677,6 +11856,7 @@ impl<'de> serde::Deserialize<'de> for upsert::Request {
             {
                 let mut vector__ = None;
                 let mut config__ = None;
+                let mut metadata__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Vector => {
@@ -11691,11 +11871,20 @@ impl<'de> serde::Deserialize<'de> for upsert::Request {
                             }
                             config__ = map_.next_value()?;
                         }
+                        GeneratedField::Metadata => {
+                            if metadata__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("metadata"));
+                            }
+                            metadata__ = 
+                                map_.next_value::<::std::option::Option<::pbjson::private::BytesDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
                     }
                 }
                 Ok(upsert::Request {
                     vector: vector__,
                     config: config__,
+                    metadata: metadata__,
                 })
             }
         }

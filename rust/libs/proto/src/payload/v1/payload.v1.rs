@@ -276,6 +276,9 @@ pub mod insert {
         /// The configuration of the insert request.
         #[prost(message, optional, tag="2")]
         pub config: ::core::option::Option<Config>,
+        /// The metadata is related to the request vector.
+        #[prost(bytes="vec", optional, tag="3")]
+        pub metadata: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
     }
 impl ::prost::Name for Request {
 const NAME: &'static str = "Request";
@@ -304,6 +307,9 @@ fn full_name() -> ::prost::alloc::string::String { "payload.v1.Insert.MultiReque
         /// Filter configurations.
         #[prost(message, optional, tag="3")]
         pub vectorizer: ::core::option::Option<super::filter::Target>,
+        /// The metadata is related to the request vector.
+        #[prost(bytes="vec", optional, tag="4")]
+        pub metadata: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
     }
 impl ::prost::Name for ObjectRequest {
 const NAME: &'static str = "ObjectRequest";
@@ -357,6 +363,9 @@ pub mod update {
         /// The configuration of the update request.
         #[prost(message, optional, tag="2")]
         pub config: ::core::option::Option<Config>,
+        /// The metadata is related to the request vector.
+        #[prost(bytes="vec", optional, tag="3")]
+        pub metadata: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
     }
 impl ::prost::Name for Request {
 const NAME: &'static str = "Request";
@@ -385,6 +394,9 @@ fn full_name() -> ::prost::alloc::string::String { "payload.v1.Update.MultiReque
         /// Filter target.
         #[prost(message, optional, tag="3")]
         pub vectorizer: ::core::option::Option<super::filter::Target>,
+        /// The metadata is related to the request vector.
+        #[prost(bytes="vec", optional, tag="4")]
+        pub metadata: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
     }
 impl ::prost::Name for ObjectRequest {
 const NAME: &'static str = "ObjectRequest";
@@ -413,6 +425,9 @@ fn full_name() -> ::prost::alloc::string::String { "payload.v1.Update.MultiObjec
         /// force represents forcefully update the timestamp.
         #[prost(bool, tag="3")]
         pub force: bool,
+        /// The metadata is related to the request vector.
+        #[prost(bytes="vec", optional, tag="4")]
+        pub metadata: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
     }
 impl ::prost::Name for TimestampRequest {
 const NAME: &'static str = "TimestampRequest";
@@ -459,6 +474,9 @@ pub mod upsert {
         /// The configuration of the upsert request.
         #[prost(message, optional, tag="2")]
         pub config: ::core::option::Option<Config>,
+        /// The metadata is related to the request vector.
+        #[prost(bytes="vec", optional, tag="3")]
+        pub metadata: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
     }
 impl ::prost::Name for Request {
 const NAME: &'static str = "Request";
@@ -487,6 +505,9 @@ fn full_name() -> ::prost::alloc::string::String { "payload.v1.Upsert.MultiReque
         /// Filter target.
         #[prost(message, optional, tag="3")]
         pub vectorizer: ::core::option::Option<super::filter::Target>,
+        /// The metadata is related to the request vector.
+        #[prost(bytes="vec", optional, tag="4")]
+        pub metadata: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
     }
 impl ::prost::Name for ObjectRequest {
 const NAME: &'static str = "ObjectRequest";
@@ -702,6 +723,9 @@ fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.VectorRequ
         /// The distance.
         #[prost(float, tag="2")]
         pub distance: f32,
+        /// The metadata is related to the request vector.
+        #[prost(bytes="vec", optional, tag="3")]
+        pub metadata: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
     }
 impl ::prost::Name for Distance {
 const NAME: &'static str = "Distance";
@@ -761,6 +785,9 @@ fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.IDs".into(
         /// timestamp represents when this vector inserted.
         #[prost(int64, tag="3")]
         pub timestamp: i64,
+        /// The metadata is related to the request vector.
+        #[prost(bytes="vec", optional, tag="4")]
+        pub metadata: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
     }
 impl ::prost::Name for Vector {
 const NAME: &'static str = "Vector";

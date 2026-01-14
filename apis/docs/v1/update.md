@@ -27,12 +27,14 @@ Update RPC is the method to update a single vector.
   message Update.Request {
     Object.Vector vector = 1;
     Update.Config config = 2;
+    optional bytes metadata = 3;
   }
 
   message Object.Vector {
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 
   message Update.Config {
@@ -55,10 +57,11 @@ Update RPC is the method to update a single vector.
 
   - Update.Request
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    | vector | Object.Vector |       | The vector to be updated.                |
-    | config | Update.Config |       | The configuration of the update request. |
+    |  field   | type          | label    | description                                    |
+    | :------: | :------------ | :------- | :--------------------------------------------- |
+    |  vector  | Object.Vector |          | The vector to be updated.                      |
+    |  config  | Update.Config |          | The configuration of the update request.       |
+    | metadata | bytes         | optional | The metadata is related to the request vector. |
 
   - Object.Vector
 
@@ -67,6 +70,7 @@ Update RPC is the method to update a single vector.
     |    id     | string |          | The vector ID.                                  |
     |  vector   | float  | repeated | The vector.                                     |
     | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
 
   - Update.Config
 
@@ -158,12 +162,14 @@ It's the recommended method to update the large amount of vectors.
   message Update.Request {
     Object.Vector vector = 1;
     Update.Config config = 2;
+    optional bytes metadata = 3;
   }
 
   message Object.Vector {
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 
   message Update.Config {
@@ -186,10 +192,11 @@ It's the recommended method to update the large amount of vectors.
 
   - Update.Request
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    | vector | Object.Vector |       | The vector to be updated.                |
-    | config | Update.Config |       | The configuration of the update request. |
+    |  field   | type          | label    | description                                    |
+    | :------: | :------------ | :------- | :--------------------------------------------- |
+    |  vector  | Object.Vector |          | The vector to be updated.                      |
+    |  config  | Update.Config |          | The configuration of the update request.       |
+    | metadata | bytes         | optional | The metadata is related to the request vector. |
 
   - Object.Vector
 
@@ -198,6 +205,7 @@ It's the recommended method to update the large amount of vectors.
     |    id     | string |          | The vector ID.                                  |
     |  vector   | float  | repeated | The vector.                                     |
     | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
 
   - Update.Config
 
@@ -307,12 +315,14 @@ Please be careful that the size of the request exceeds the limit.
   message Update.Request {
     Object.Vector vector = 1;
     Update.Config config = 2;
+    optional bytes metadata = 3;
   }
 
   message Object.Vector {
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 
   message Update.Config {
@@ -341,10 +351,11 @@ Please be careful that the size of the request exceeds the limit.
 
   - Update.Request
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    | vector | Object.Vector |       | The vector to be updated.                |
-    | config | Update.Config |       | The configuration of the update request. |
+    |  field   | type          | label    | description                                    |
+    | :------: | :------------ | :------- | :--------------------------------------------- |
+    |  vector  | Object.Vector |          | The vector to be updated.                      |
+    |  config  | Update.Config |          | The configuration of the update request.       |
+    | metadata | bytes         | optional | The metadata is related to the request vector. |
 
   - Object.Vector
 
@@ -353,6 +364,7 @@ Please be careful that the size of the request exceeds the limit.
     |    id     | string |          | The vector ID.                                  |
     |  vector   | float  | repeated | The vector.                                     |
     | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
 
   - Update.Config
 
@@ -452,17 +464,19 @@ A method to update timestamp an indexed vector.
     string id = 1;
     int64 timestamp = 2;
     bool force = 3;
+    optional bytes metadata = 4;
   }
 
   ```
 
   - Update.TimestampRequest
 
-    |   field   | type   | label | description                                       |
-    | :-------: | :----- | :---- | :------------------------------------------------ |
-    |    id     | string |       | The vector ID.                                    |
-    | timestamp | int64  |       | timestamp represents when this vector inserted.   |
-    |   force   | bool   |       | force represents forcefully update the timestamp. |
+    |   field   | type   | label    | description                                       |
+    | :-------: | :----- | :------- | :------------------------------------------------ |
+    |    id     | string |          | The vector ID.                                    |
+    | timestamp | int64  |          | timestamp represents when this vector inserted.   |
+    |   force   | bool   |          | force represents forcefully update the timestamp. |
+    | metadata  | bytes  | optional | The metadata is related to the request vector.    |
 
 ### Output
 

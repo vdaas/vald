@@ -1745,6 +1745,7 @@
     Object.Blob object = 1;
     Insert.Config config = 2;
     Filter.Target vectorizer = 3;
+    optional bytes metadata = 4;
   }
 {{- end -}}
 
@@ -1756,12 +1757,14 @@
     | object | Object.Blob |  | The binary object to be inserted. |
     | config | Insert.Config |  | The configuration of the insert request. |
     | vectorizer | Filter.Target |  | Filter configurations. |
+    | metadata | bytes | optional | The metadata is related to the request vector. |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Insert.Request" }}
   message Insert.Request {
     Object.Vector vector = 1;
     Insert.Config config = 2;
+    optional bytes metadata = 3;
   }
 {{- end -}}
 
@@ -1772,6 +1775,7 @@
     | :---: | :--- | :---- | :---------- |
     | vector | Object.Vector |  | The vector to be inserted. |
     | config | Insert.Config |  | The configuration of the insert request. |
+    | metadata | bytes | optional | The metadata is related to the request vector. |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Meta" }}
@@ -1904,6 +1908,7 @@
   message Object.Distance {
     string id = 1;
     float distance = 2;
+    optional bytes metadata = 3;
   }
 {{- end -}}
 
@@ -1914,6 +1919,7 @@
     | :---: | :--- | :---- | :---------- |
     | id | string |  | The vector ID. |
     | distance | float |  | The distance. |
+    | metadata | bytes | optional | The metadata is related to the request vector. |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Object.ID" }}
@@ -2131,6 +2137,7 @@
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 {{- end -}}
 
@@ -2142,6 +2149,7 @@
     | id | string |  | The vector ID. |
     | vector | float | repeated | The vector. |
     | timestamp | int64 |  | timestamp represents when this vector inserted. |
+    | metadata | bytes | optional | The metadata is related to the request vector. |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Object.VectorRequest" }}
@@ -2513,6 +2521,7 @@ during update operation. |
     Object.Blob object = 1;
     Update.Config config = 2;
     Filter.Target vectorizer = 3;
+    optional bytes metadata = 4;
   }
 {{- end -}}
 
@@ -2524,12 +2533,14 @@ during update operation. |
     | object | Object.Blob |  | The binary object to be updated. |
     | config | Update.Config |  | The configuration of the update request. |
     | vectorizer | Filter.Target |  | Filter target. |
+    | metadata | bytes | optional | The metadata is related to the request vector. |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Update.Request" }}
   message Update.Request {
     Object.Vector vector = 1;
     Update.Config config = 2;
+    optional bytes metadata = 3;
   }
 {{- end -}}
 
@@ -2540,6 +2551,7 @@ during update operation. |
     | :---: | :--- | :---- | :---------- |
     | vector | Object.Vector |  | The vector to be updated. |
     | config | Update.Config |  | The configuration of the update request. |
+    | metadata | bytes | optional | The metadata is related to the request vector. |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Update.TimestampRequest" }}
@@ -2547,6 +2559,7 @@ during update operation. |
     string id = 1;
     int64 timestamp = 2;
     bool force = 3;
+    optional bytes metadata = 4;
   }
 {{- end -}}
 
@@ -2558,6 +2571,7 @@ during update operation. |
     | id | string |  | The vector ID. |
     | timestamp | int64 |  | timestamp represents when this vector inserted. |
     | force | bool |  | force represents forcefully update the timestamp. |
+    | metadata | bytes | optional | The metadata is related to the request vector. |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Upsert" }}
@@ -2626,6 +2640,7 @@ during update operation. |
     Object.Blob object = 1;
     Upsert.Config config = 2;
     Filter.Target vectorizer = 3;
+    optional bytes metadata = 4;
   }
 {{- end -}}
 
@@ -2637,12 +2652,14 @@ during update operation. |
     | object | Object.Blob |  | The binary object to be upserted. |
     | config | Upsert.Config |  | The configuration of the upsert request. |
     | vectorizer | Filter.Target |  | Filter target. |
+    | metadata | bytes | optional | The metadata is related to the request vector. |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Upsert.Request" }}
   message Upsert.Request {
     Object.Vector vector = 1;
     Upsert.Config config = 2;
+    optional bytes metadata = 3;
   }
 {{- end -}}
 
@@ -2653,6 +2670,7 @@ during update operation. |
     | :---: | :--- | :---- | :---------- |
     | vector | Object.Vector |  | The vector to be upserted. |
     | config | Upsert.Config |  | The configuration of the upsert request. |
+    | metadata | bytes | optional | The metadata is related to the request vector. |
 {{- end -}}
 
 {{ define "_scheme:payload.v1.Remove.Timestamp.Operator" }}

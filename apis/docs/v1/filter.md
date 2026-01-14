@@ -123,6 +123,7 @@ SearchObject RPC is the method to search object(s) similar to request object.
   message Object.Distance {
     string id = 1;
     float distance = 2;
+    optional bytes metadata = 3;
   }
 
   ```
@@ -136,10 +137,11 @@ SearchObject RPC is the method to search object(s) similar to request object.
 
   - Object.Distance
 
-    |  field   | type   | label | description    |
-    | :------: | :----- | :---- | :------------- |
-    |    id    | string |       | The vector ID. |
-    | distance | float  |       | The distance.  |
+    |  field   | type   | label    | description                                    |
+    | :------: | :----- | :------- | :--------------------------------------------- |
+    |    id    | string |          | The vector ID.                                 |
+    | distance | float  |          | The distance.                                  |
+    | metadata | bytes  | optional | The metadata is related to the request vector. |
 
 ### Status Code
 
@@ -268,6 +270,7 @@ Each Search request and response are independent.
   message Object.Distance {
     string id = 1;
     float distance = 2;
+    optional bytes metadata = 3;
   }
 
   ```
@@ -287,10 +290,11 @@ Each Search request and response are independent.
 
   - Object.Distance
 
-    |  field   | type   | label | description    |
-    | :------: | :----- | :---- | :------------- |
-    |    id    | string |       | The vector ID. |
-    | distance | float  |       | The distance.  |
+    |  field   | type   | label    | description                                    |
+    | :------: | :----- | :------- | :--------------------------------------------- |
+    |    id    | string |          | The vector ID.                                 |
+    | distance | float  |          | The distance.                                  |
+    | metadata | bytes  | optional | The metadata is related to the request vector. |
 
 ### Status Code
 
@@ -413,6 +417,7 @@ Please be careful that the size of the request exceeds the limit.
   message Object.Distance {
     string id = 1;
     float distance = 2;
+    optional bytes metadata = 3;
   }
 
   ```
@@ -433,10 +438,11 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Distance
 
-    |  field   | type   | label | description    |
-    | :------: | :----- | :---- | :------------- |
-    |    id    | string |       | The vector ID. |
-    | distance | float  |       | The distance.  |
+    |  field   | type   | label    | description                                    |
+    | :------: | :----- | :------- | :--------------------------------------------- |
+    |    id    | string |          | The vector ID.                                 |
+    | distance | float  |          | The distance.                                  |
+    | metadata | bytes  | optional | The metadata is related to the request vector. |
 
 ### Status Code
 
@@ -464,6 +470,7 @@ InsertObject RPC is the method to insert object through Vald Filter Gateway.
     Object.Blob object = 1;
     Insert.Config config = 2;
     Filter.Target vectorizer = 3;
+    optional bytes metadata = 4;
   }
 
   message Object.Blob {
@@ -490,11 +497,12 @@ InsertObject RPC is the method to insert object through Vald Filter Gateway.
 
   - Insert.ObjectRequest
 
-    |   field    | type          | label | description                              |
-    | :--------: | :------------ | :---- | :--------------------------------------- |
-    |   object   | Object.Blob   |       | The binary object to be inserted.        |
-    |   config   | Insert.Config |       | The configuration of the insert request. |
-    | vectorizer | Filter.Target |       | Filter configurations.                   |
+    |   field    | type          | label    | description                                    |
+    | :--------: | :------------ | :------- | :--------------------------------------------- |
+    |   object   | Object.Blob   |          | The binary object to be inserted.              |
+    |   config   | Insert.Config |          | The configuration of the insert request.       |
+    | vectorizer | Filter.Target |          | Filter configurations.                         |
+    |  metadata  | bytes         | optional | The metadata is related to the request vector. |
 
   - Object.Blob
 
@@ -575,6 +583,7 @@ It's the recommended method to insert a large number of objects.
     Object.Blob object = 1;
     Insert.Config config = 2;
     Filter.Target vectorizer = 3;
+    optional bytes metadata = 4;
   }
 
   message Object.Blob {
@@ -601,11 +610,12 @@ It's the recommended method to insert a large number of objects.
 
   - Insert.ObjectRequest
 
-    |   field    | type          | label | description                              |
-    | :--------: | :------------ | :---- | :--------------------------------------- |
-    |   object   | Object.Blob   |       | The binary object to be inserted.        |
-    |   config   | Insert.Config |       | The configuration of the insert request. |
-    | vectorizer | Filter.Target |       | Filter configurations.                   |
+    |   field    | type          | label    | description                                    |
+    | :--------: | :------------ | :------- | :--------------------------------------------- |
+    |   object   | Object.Blob   |          | The binary object to be inserted.              |
+    |   config   | Insert.Config |          | The configuration of the insert request.       |
+    | vectorizer | Filter.Target |          | Filter configurations.                         |
+    |  metadata  | bytes         | optional | The metadata is related to the request vector. |
 
   - Object.Blob
 
@@ -698,6 +708,7 @@ MultiInsertObject RPC is the method to add multiple new objects in **1** request
     Object.Blob object = 1;
     Insert.Config config = 2;
     Filter.Target vectorizer = 3;
+    optional bytes metadata = 4;
   }
 
   message Object.Blob {
@@ -730,11 +741,12 @@ MultiInsertObject RPC is the method to add multiple new objects in **1** request
 
   - Insert.ObjectRequest
 
-    |   field    | type          | label | description                              |
-    | :--------: | :------------ | :---- | :--------------------------------------- |
-    |   object   | Object.Blob   |       | The binary object to be inserted.        |
-    |   config   | Insert.Config |       | The configuration of the insert request. |
-    | vectorizer | Filter.Target |       | Filter configurations.                   |
+    |   field    | type          | label    | description                                    |
+    | :--------: | :------------ | :------- | :--------------------------------------------- |
+    |   object   | Object.Blob   |          | The binary object to be inserted.              |
+    |   config   | Insert.Config |          | The configuration of the insert request.       |
+    | vectorizer | Filter.Target |          | Filter configurations.                         |
+    |  metadata  | bytes         | optional | The metadata is related to the request vector. |
 
   - Object.Blob
 
@@ -821,6 +833,7 @@ UpdateObject RPC is the method to update a single vector.
     Object.Blob object = 1;
     Update.Config config = 2;
     Filter.Target vectorizer = 3;
+    optional bytes metadata = 4;
   }
 
   message Object.Blob {
@@ -848,11 +861,12 @@ UpdateObject RPC is the method to update a single vector.
 
   - Update.ObjectRequest
 
-    |   field    | type          | label | description                              |
-    | :--------: | :------------ | :---- | :--------------------------------------- |
-    |   object   | Object.Blob   |       | The binary object to be updated.         |
-    |   config   | Update.Config |       | The configuration of the update request. |
-    | vectorizer | Filter.Target |       | Filter target.                           |
+    |   field    | type          | label    | description                                    |
+    | :--------: | :------------ | :------- | :--------------------------------------------- |
+    |   object   | Object.Blob   |          | The binary object to be updated.               |
+    |   config   | Update.Config |          | The configuration of the update request.       |
+    | vectorizer | Filter.Target |          | Filter target.                                 |
+    |  metadata  | bytes         | optional | The metadata is related to the request vector. |
 
   - Object.Blob
 
@@ -935,6 +949,7 @@ It's the recommended method to update the large amount of objects.
     Object.Blob object = 1;
     Update.Config config = 2;
     Filter.Target vectorizer = 3;
+    optional bytes metadata = 4;
   }
 
   message Object.Blob {
@@ -962,11 +977,12 @@ It's the recommended method to update the large amount of objects.
 
   - Update.ObjectRequest
 
-    |   field    | type          | label | description                              |
-    | :--------: | :------------ | :---- | :--------------------------------------- |
-    |   object   | Object.Blob   |       | The binary object to be updated.         |
-    |   config   | Update.Config |       | The configuration of the update request. |
-    | vectorizer | Filter.Target |       | Filter target.                           |
+    |   field    | type          | label    | description                                    |
+    | :--------: | :------------ | :------- | :--------------------------------------------- |
+    |   object   | Object.Blob   |          | The binary object to be updated.               |
+    |   config   | Update.Config |          | The configuration of the update request.       |
+    | vectorizer | Filter.Target |          | Filter target.                                 |
+    |  metadata  | bytes         | optional | The metadata is related to the request vector. |
 
   - Object.Blob
 
@@ -1067,6 +1083,7 @@ Please be careful that the size of the request exceed the limit.
     Object.Blob object = 1;
     Update.Config config = 2;
     Filter.Target vectorizer = 3;
+    optional bytes metadata = 4;
   }
 
   message Object.Blob {
@@ -1100,11 +1117,12 @@ Please be careful that the size of the request exceed the limit.
 
   - Update.ObjectRequest
 
-    |   field    | type          | label | description                              |
-    | :--------: | :------------ | :---- | :--------------------------------------- |
-    |   object   | Object.Blob   |       | The binary object to be updated.         |
-    |   config   | Update.Config |       | The configuration of the update request. |
-    | vectorizer | Filter.Target |       | Filter target.                           |
+    |   field    | type          | label    | description                                    |
+    | :--------: | :------------ | :------- | :--------------------------------------------- |
+    |   object   | Object.Blob   |          | The binary object to be updated.               |
+    |   config   | Update.Config |          | The configuration of the update request.       |
+    | vectorizer | Filter.Target |          | Filter target.                                 |
+    |  metadata  | bytes         | optional | The metadata is related to the request vector. |
 
   - Object.Blob
 
@@ -1194,6 +1212,7 @@ UpsertObject RPC is the method to update a single object and add a new single ob
     Object.Blob object = 1;
     Upsert.Config config = 2;
     Filter.Target vectorizer = 3;
+    optional bytes metadata = 4;
   }
 
   message Object.Blob {
@@ -1221,11 +1240,12 @@ UpsertObject RPC is the method to update a single object and add a new single ob
 
   - Upsert.ObjectRequest
 
-    |   field    | type          | label | description                              |
-    | :--------: | :------------ | :---- | :--------------------------------------- |
-    |   object   | Object.Blob   |       | The binary object to be upserted.        |
-    |   config   | Upsert.Config |       | The configuration of the upsert request. |
-    | vectorizer | Filter.Target |       | Filter target.                           |
+    |   field    | type          | label    | description                                    |
+    | :--------: | :------------ | :------- | :--------------------------------------------- |
+    |   object   | Object.Blob   |          | The binary object to be upserted.              |
+    |   config   | Upsert.Config |          | The configuration of the upsert request.       |
+    | vectorizer | Filter.Target |          | Filter target.                                 |
+    |  metadata  | bytes         | optional | The metadata is related to the request vector. |
 
   - Object.Blob
 
@@ -1305,6 +1325,7 @@ UpsertObject RPC is the method to update a single object and add a new single ob
     Object.Blob object = 1;
     Upsert.Config config = 2;
     Filter.Target vectorizer = 3;
+    optional bytes metadata = 4;
   }
 
   message Object.Blob {
@@ -1332,11 +1353,12 @@ UpsertObject RPC is the method to update a single object and add a new single ob
 
   - Upsert.ObjectRequest
 
-    |   field    | type          | label | description                              |
-    | :--------: | :------------ | :---- | :--------------------------------------- |
-    |   object   | Object.Blob   |       | The binary object to be upserted.        |
-    |   config   | Upsert.Config |       | The configuration of the upsert request. |
-    | vectorizer | Filter.Target |       | Filter target.                           |
+    |   field    | type          | label    | description                                    |
+    | :--------: | :------------ | :------- | :--------------------------------------------- |
+    |   object   | Object.Blob   |          | The binary object to be upserted.              |
+    |   config   | Upsert.Config |          | The configuration of the upsert request.       |
+    | vectorizer | Filter.Target |          | Filter target.                                 |
+    |  metadata  | bytes         | optional | The metadata is related to the request vector. |
 
   - Object.Blob
 
@@ -1437,6 +1459,7 @@ Please be careful that the size of the request exceeds the limit.
     Object.Blob object = 1;
     Upsert.Config config = 2;
     Filter.Target vectorizer = 3;
+    optional bytes metadata = 4;
   }
 
   message Object.Blob {
@@ -1470,11 +1493,12 @@ Please be careful that the size of the request exceeds the limit.
 
   - Upsert.ObjectRequest
 
-    |   field    | type          | label | description                              |
-    | :--------: | :------------ | :---- | :--------------------------------------- |
-    |   object   | Object.Blob   |       | The binary object to be upserted.        |
-    |   config   | Upsert.Config |       | The configuration of the upsert request. |
-    | vectorizer | Filter.Target |       | Filter target.                           |
+    |   field    | type          | label    | description                                    |
+    | :--------: | :------------ | :------- | :--------------------------------------------- |
+    |   object   | Object.Blob   |          | The binary object to be upserted.              |
+    |   config   | Upsert.Config |          | The configuration of the upsert request.       |
+    | vectorizer | Filter.Target |          | Filter target.                                 |
+    |  metadata  | bytes         | optional | The metadata is related to the request vector. |
 
   - Object.Blob
 
