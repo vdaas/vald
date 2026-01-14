@@ -84,7 +84,7 @@ mod tests {
     use std::vec;
 
     use anyhow::Result;
-    use rand::distributions::Standard;
+    use rand::distr::StandardUniform;
     use rand::prelude::*;
 
     use super::*;
@@ -95,7 +95,7 @@ mod tests {
 
     fn gen_random_vector(dim: i32) -> Vec<f32> {
         (0..dim)
-            .map(|_| StdRng::from_entropy().sample(Standard))
+            .map(|_| rand::rng().sample(StandardUniform))
             .collect()
     }
 
