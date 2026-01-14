@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: manager-index
       annotations:
-        checksum/configmap: 2025c1b890643e8758588297774d6a0815e738e89a2ab45714164fea48e96a9c
+        checksum/configmap: f0af80fbf3dd4dde818c0c2f349219f7adb9ec6ac2d04ea9f6548501642d155e
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-index

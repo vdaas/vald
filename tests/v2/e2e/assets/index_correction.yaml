@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ kubernetes:
 target:
   addrs:
     - 127.0.0.1:8082
-  health_check_duration: "1s"
+  health_check_duration: 1s
   connection_pool:
     enable_dns_resolver: true
     enable_rebalance: true
@@ -115,6 +115,32 @@ metadata:
   key2: sample metadata value2
   key3: sample metadata value3
 metadata_string: key4=value4,key5=value5
+metrics:
+  enabled: true
+  latency_histogram:
+    num_shards: 10
+  queue_wait_histogram:
+    num_shards: 10
+  latency_tdigest:
+    compression: 100
+    compression_trigger_factor: 1.2
+    num_shards: 16
+  queue_wait_tdigest:
+    compression: 100
+    compression_trigger_factor: 1.2
+    num_shards: 16
+  exemplar:
+    capacity: 10
+  range_scales:
+    - name: 0-100
+      width: 10
+      capacity: 10
+  time_scales:
+    - name: 0-10s
+      width: 1
+      capacity: 10
+  custom_counters:
+    - custom_counter_1
 strategies:
   - concurrency: 1
     name: check Index Property
@@ -178,7 +204,7 @@ strategies:
             kubernetes:
               kind: pod
               namespace: default
-              label_selector: "app=vald-index-correction"
+              label_selector: app=vald-index-correction
               action: wait
               status: completed
           - mode: unary
@@ -224,7 +250,7 @@ strategies:
             kubernetes:
               kind: pod
               namespace: default
-              label_selector: "app=vald-index-correction"
+              label_selector: app=vald-index-correction
               status: completed
               action: wait
           - mode: unary

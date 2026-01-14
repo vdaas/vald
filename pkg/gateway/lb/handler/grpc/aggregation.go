@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -425,7 +425,6 @@ func (v *valdStdAggr) Start(ctx context.Context) {
 		case 0:
 			v.result = append(v.result, dist)
 		case 1:
-
 			if distance.Cmp(big.NewFloat(float64(v.result[0].GetDistance()))) >= 0 {
 				v.result = append(v.result, dist)
 			} else {
@@ -488,7 +487,7 @@ func (v *valdStdAggr) Send(ctx context.Context, data *payload.Search_Response) {
 		if dist != nil {
 			fdist := big.NewFloat(float64(dist.GetDistance()))
 			bf, ok := v.maxDist.Load().(*big.Float)
-			if !ok || fdist.Cmp(bf) >= 0 {
+			if !ok || fdist.Cmp(bf) >= 0 || v.closed.Load() {
 				return
 			}
 			if _, already := v.visited.LoadOrStore(dist.GetId(), struct{}{}); !already {
@@ -497,6 +496,7 @@ func (v *valdStdAggr) Send(ctx context.Context, data *payload.Search_Response) {
 				}
 				select {
 				case <-ctx.Done():
+					v.visited.Delete(dist.GetId())
 					return
 				case v.dch <- DistPayload{raw: dist, distance: fdist}:
 				}
@@ -506,6 +506,7 @@ func (v *valdStdAggr) Send(ctx context.Context, data *payload.Search_Response) {
 }
 
 func (v *valdStdAggr) Result() *payload.Search_Response {
+	v.closed.Store(true)
 	v.cancel()
 	v.wg.Wait()
 	if len(v.result) > v.num {

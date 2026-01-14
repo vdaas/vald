@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -20,11 +20,11 @@ package noise
 import (
 	"math"
 	"math/bits"
+	"math/rand/v2"
 	"slices"
 	"time"
 
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/rand"
 )
 
 type Func func(i uint64, vec []float32) (res []float32)

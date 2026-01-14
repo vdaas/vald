@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 use opentelemetry::global;
 use opentelemetry::propagation::Injector;
-use prost_types::Any;
+use proto::google::protobuf::Any;
 use proto::meta::v1::meta_client::MetaClient;
 use proto::payload::v1::meta;
 use tonic::metadata::MetadataMap;

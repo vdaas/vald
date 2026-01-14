@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ runs:
           ["vdaas/vald-index-save"]="manager.index.saver.image.tag"
           ["vdaas/vald-readreplica-rotate"]="manager.index.readreplica.rotator.image.tag"
           ["vdaas/vald-helm-operator"]="image.tag"
-          ["vdaas/vald-ci-container"]=""
+          ["vdaas/vald-dev-container"]=""
           ["vdaas/vald-index-operator"]="manager.index.operator.image.tag"
         )
 

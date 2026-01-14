@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -113,6 +113,7 @@ func TryGo(f func() error) bool {
 func (g *group) SetLimit(limit int) {
 	g.limit.Store(int64(limit))
 	if limit < 0 {
+		g.sem = nil
 		return
 	}
 	// For concurrent execution, initialize or resize the semaphore.

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -20,11 +20,11 @@ edition = "2024"
 
 [dependencies]
 futures = "0.3"
-bincode = "2.0"
+bincode = "3.0"
 sled = "0.34"
 parking_lot = "0.12"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "2.0"
-tokio = { version = "1.46", features = ["full"] }
+tokio = { version = "1.49", features = ["full"] }
 tokio-stream = "0.1"
 tracing = "0.1"

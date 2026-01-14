@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"math/rand/v2"
 	"runtime"
 	"slices"
 	"sync/atomic"
@@ -25,7 +26,6 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/data/strings"
@@ -57,7 +57,7 @@ func TestMain(m *testing.M) {
 		go func() {
 			defer wg.Done()
 			rr := newRandomResponse()
-			delay := time.Duration(rand.LimitedUint32(uint64(time.Millisecond * 2)))
+			delay := time.Duration(rand.N(uint32(time.Millisecond * 2)))
 			mu.Lock()
 			datas = append(datas, rr)
 			delays = append(delays, delay)

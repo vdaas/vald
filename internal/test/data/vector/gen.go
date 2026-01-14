@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -15,10 +15,9 @@ package vector
 
 import (
 	"math"
-	"math/rand"
+	"math/rand/v2"
 
 	"github.com/vdaas/vald/internal/errors"
-	irand "github.com/vdaas/vald/internal/rand"
 )
 
 type (
@@ -127,7 +126,7 @@ func genUint8Slice(n, dim int, gen func() uint8) (ret [][]uint8) {
 // UniformDistributedUint8VectorGenerator returns n uint8 vectors with dim dimension and their values under Uniform distribution.
 func UniformDistributedUint8VectorGenerator(n, dim int) [][]uint8 {
 	return genUint8Slice(n, dim, func() uint8 {
-		return uint8(irand.LimitedUint32(math.MaxUint8))
+		return uint8(rand.N(uint32(math.MaxUint8)))
 	})
 }
 

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -203,7 +203,9 @@ data:
         ca: /path/to/ca
         cert: /path/to/cert
         client_auth: None
+        crl: /path/to/crl
         enabled: false
+        hot_reload: false
         insecure_skip_verify: false
         key: /path/to/key
         server_name: ""
@@ -323,7 +325,9 @@ data:
                 ca: /path/to/ca
                 cert: /path/to/cert
                 client_auth: None
+                crl: /path/to/crl
                 enabled: false
+                hot_reload: false
                 insecure_skip_verify: false
                 key: /path/to/key
                 server_name: ""
@@ -336,7 +340,9 @@ data:
             ca: /path/to/ca
             cert: /path/to/cert
             client_auth: None
+            crl: /path/to/crl
             enabled: false
+            hot_reload: false
             insecure_skip_verify: false
             key: /path/to/key
             server_name: ""
@@ -397,7 +403,9 @@ data:
                 ca: /path/to/ca
                 cert: /path/to/cert
                 client_auth: None
+                crl: /path/to/crl
                 enabled: false
+                hot_reload: false
                 insecure_skip_verify: false
                 key: /path/to/key
                 server_name: ""
@@ -419,7 +427,9 @@ data:
             ca: /path/to/ca
             cert: /path/to/cert
             client_auth: None
+            crl: /path/to/crl
             enabled: false
+            hot_reload: false
             insecure_skip_verify: false
             key: /path/to/key
             server_name: ""

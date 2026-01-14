@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,9 +14,8 @@
 package strings
 
 import (
+	"math/rand/v2"
 	"unsafe"
-
-	"github.com/vdaas/vald/internal/rand"
 )
 
 const (

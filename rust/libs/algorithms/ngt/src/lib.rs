@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -84,7 +84,7 @@ mod tests {
     use std::vec;
 
     use anyhow::Result;
-    use rand::distributions::Standard;
+    use rand::distr::StandardUniform;
     use rand::prelude::*;
 
     use super::*;
@@ -95,7 +95,7 @@ mod tests {
 
     fn gen_random_vector(dim: i32) -> Vec<f32> {
         (0..dim)
-            .map(|_| StdRng::from_entropy().sample(Standard))
+            .map(|_| rand::rng().sample(StandardUniform))
             .collect()
     }
 

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -394,6 +394,20 @@ func Test_group_SetLimit(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "set disable when limit is -1 from 1",
+			args: args{
+				limit: -1,
+			},
+			fields: fields{
+				sem: semaphore.NewWeighted(1),
+			},
+			want: want{
+				want: &group{
+					sem: nil,
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -409,7 +423,9 @@ func Test_group_SetLimit(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			g := &group{}
+			g := &group{
+				sem: test.fields.sem,
+			}
 
 			g.SetLimit(test.args.limit)
 			if err := checkFunc(test.want, g); err != nil {

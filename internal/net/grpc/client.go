@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -212,10 +212,6 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 
 	log.Debugf("gRPC %s connection monitor started for %v", g.name, addrs)
 
-	el := len(addrs)
-	if el < 2 {
-		el = 2
-	}
 	ech := make(chan error, len(addrs))
 	for _, addr := range addrs {
 		if addr != "" {

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,12 +14,12 @@
 // limitations under the License.
 //
 use anyhow::{Ok, Result};
-use opentelemetry::global::{self, shutdown_tracer_provider};
+use opentelemetry::global;
 use opentelemetry_otlp::{MetricExporter, SpanExporter, WithExportConfig};
 use opentelemetry_sdk::metrics::{PeriodicReader, SdkMeterProvider};
 use opentelemetry_sdk::propagation::TraceContextPropagator;
-use opentelemetry_sdk::trace::{self, TracerProvider};
-use opentelemetry_sdk::{runtime, Resource};
+use opentelemetry_sdk::trace::{self, SdkTracerProvider};
+use opentelemetry_sdk::Resource;
 use url::Url;
 
 use crate::config::Config;
@@ -33,7 +33,7 @@ pub trait Observability {
 pub struct ObservabilityImpl {
     config: Config,
     meter_provider: Option<SdkMeterProvider>,
-    tracer_provider: Option<TracerProvider>,
+    tracer_provider: Option<SdkTracerProvider>,
 }
 
 impl ObservabilityImpl {
@@ -53,11 +53,15 @@ impl ObservabilityImpl {
             // If we want flexibility and customization, use SdkMeterProvider::builder.
             let exporter = MetricExporter::builder()
                 .with_tonic()
-                .with_endpoint(Url::parse(obj.config.endpoint.as_str())?.join("/v1/metrics")?.as_str())
+                .with_endpoint(
+                    Url::parse(obj.config.endpoint.as_str())?
+                        .join("/v1/metrics")?
+                        .as_str(),
+                )
                 .with_timeout(obj.config.meter.export_timeout_duration)
                 .build()?;
-            let reader = PeriodicReader::builder(exporter, runtime::Tokio)
-                .with_timeout(obj.config.meter.export_duration)
+            let reader = PeriodicReader::builder(exporter)
+                .with_interval(obj.config.meter.export_duration)
                 .build();
             let provider = SdkMeterProvider::builder()
                 .with_reader(reader)
@@ -70,10 +74,14 @@ impl ObservabilityImpl {
         if obj.config.tracer.enabled {
             let exporter = SpanExporter::builder()
                 .with_tonic()
-                .with_endpoint(Url::parse(obj.config.endpoint.as_str())?.join("/v1/traces")?.as_str())
+                .with_endpoint(
+                    Url::parse(obj.config.endpoint.as_str())?
+                        .join("/v1/traces")?
+                        .as_str(),
+                )
                 .build()?;
-            let provider = TracerProvider::builder()
-                .with_batch_exporter(exporter, runtime::Tokio)
+            let provider = SdkTracerProvider::builder()
+                .with_batch_exporter(exporter)
                 .with_sampler(trace::Sampler::AlwaysOn)
                 .with_resource(Resource::from(obj.config()))
                 .with_id_generator(trace::RandomIdGenerator::default())
@@ -103,12 +111,10 @@ impl Observability for ObservabilityImpl {
             }
         }
 
-        if self.config.meter.enabled {
+        if self.config.tracer.enabled {
             if let Some(ref provider) = self.tracer_provider {
-                for result in provider.force_flush() {
-                    result?;
-                }
-                shutdown_tracer_provider();
+                provider.force_flush()?;
+                provider.shutdown()?;
             }
         }
         Ok(())

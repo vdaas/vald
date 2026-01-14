@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-name: "Detect CI container image tag"
+name: "Detect Dev container image tag"
 on:
   workflow_call:
     outputs:
@@ -21,7 +21,7 @@ on:
         description: "The docker image tag name"
         value: ${{ jobs.detect.outputs.TAG }}
 env:
-  TARGET_IMAGE: vdaas/vald-ci-container
+  TARGET_IMAGE: vdaas/vald-dev-container
 jobs:
   detect:
     timeout-minutes: 30
@@ -48,7 +48,7 @@ jobs:
     outputs:
       TAG: ${{ steps.get_tag_name.outputs.TAG }}
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
       - name: Determine Docker image tag

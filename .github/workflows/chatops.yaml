@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ jobs:
     if: ${{ !contains(fromJSON('["cloudflare-workers-and-pages", "coderabbitai", "vdaas-ci", "all-contributors"]'), github.event.comment.user.login) }}
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
       - uses: ./.github/actions/dump-context
@@ -58,7 +58,7 @@ jobs:
     name: Add labels
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-dev-container:nightly
       credentials:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
@@ -111,7 +111,7 @@ jobs:
     name: Rebase
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-dev-container:nightly
       credentials:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
@@ -152,7 +152,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           BRANCH: ${{ steps.check_comments_rebase.outputs.BRANCH_NAME }}
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           persist-credentials: false
@@ -187,7 +187,7 @@ jobs:
     name: Add tests
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-dev-container:nightly
       credentials:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
@@ -228,7 +228,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           PR_AUTHOR: ${{ github.event.issue.user.login }}
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           persist-credentials: false
@@ -297,7 +297,7 @@ jobs:
     name: Add license and run golines + gofumpt + goimports
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-dev-container:nightly
       credentials:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
@@ -337,7 +337,7 @@ jobs:
           $API_URL
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           persist-credentials: false
@@ -425,7 +425,7 @@ jobs:
     name: Approve
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-dev-container:nightly
       credentials:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}

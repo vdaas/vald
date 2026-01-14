@@ -1,7 +1,7 @@
 # syntax = docker/dockerfile:latest
 # check=error=true
 #
-# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -73,6 +73,8 @@ RUN --mount=type=bind,target=.,rw \
     libopenblas-dev \
     gfortran \
     pkg-config \
+    protobuf-compiler \
+    libprotobuf-dev \
     && ldconfig \
     && echo "${LANG} UTF-8" > /etc/locale.gen \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \

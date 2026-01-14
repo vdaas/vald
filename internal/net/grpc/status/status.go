@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -253,6 +253,22 @@ func FromError(err error) (st *Status, ok bool) {
 
 		}
 	}
+}
+
+// ToCode determines the final gRPC status code for a request.
+// It prioritizes specific error types (e.g., Canceled, DeadlineExceeded)
+// when the status code is initially OK but an error is present.
+func ToCode(code codes.Code, err error) codes.Code {
+	if code == codes.OK && err != nil {
+		if st, _ := FromError(err); st != nil {
+			return st.Code()
+		}
+		return codes.Unknown
+	}
+	if code > codes.Unauthenticated {
+		return codes.Unknown
+	}
+	return code
 }
 
 var hostname = func() (h string) {
