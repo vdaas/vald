@@ -19,9 +19,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = "1.0.95"
+anyhow = "1.0.100"
 faiss = { version = "0.1.0", path = "../algorithms/faiss" }
 ngt = { version = "0.1.0", path = "../algorithms/ngt" }
 qbg = { version = "0.1.0", path = "../algorithms/qbg" }
 proto = { version = "0.1.0", path = "../proto" }
-tonic = "0.12.3"
+tonic = "0.14.2"
