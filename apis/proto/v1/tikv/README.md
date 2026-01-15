@@ -7,3 +7,4 @@ This package is from [pingcap](https://github.com/pingcap/kvproto) repository an
 3. Remove redundant messages and services
 4. Comment out unused message fields (Avoid deletion to reduce future merge conflicts)
 5. Adjust package names and paths
+6. Change names like metapb.Region to metapb.Region2 to avoid conflicts.
