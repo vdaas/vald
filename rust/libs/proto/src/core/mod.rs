@@ -13,26 +13,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-package tikv
-
-// Option represents the functional option for TiKV.
-type Option func(*client) error
-
-var defaultOptions = []Option{
-	WithAddrs([]string{"127.0.0.1:2379"}),
-}
-
-func WithAddrs(addrs []string) Option {
-	return func(c *client) error {
-		c.addrs = addrs
-		return nil
-	}
-}
-
-func WithTxn(txn bool) Option {
-	return func(c *client) error {
-		c.txn = txn
-		return nil
-	}
-}
+pub mod v1;

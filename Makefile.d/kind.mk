@@ -75,7 +75,7 @@ kind/cluster/restart: \
 kind/vs/start:
 	sed -e 's/apiServerAddress: "127.0.0.1"/apiServerAddress: "$(shell grep host.docker.internal /etc/hosts | cut -f1)"/' $(ROOTDIR)/k8s/debug/kind/e2e.yaml | kind create cluster --name $(NAME)-vs --config -
 	# WARN for DinD user use below instead of above
-	# kind create cluster --name $(NAME)-vs --config  $(ROOTDIR)/k8s/debug/kind/e2e.yaml
+	# kind create cluster --name $(NAME)-vs --config	$(ROOTDIR)/k8s/debug/kind/e2e.yaml
 	@make kind/vs/login
 
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
@@ -85,12 +85,12 @@ kind/vs/start:
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/deploy/kubernetes/snapshot-controller/setup-snapshot-controller.yaml
 
 	mkdir -p $(TEMP_DIR)/csi-driver-hostpath \
-		&& curl -fsSL https://github.com/kubernetes-csi/csi-driver-host-path/archive/refs/tags/$(CSI_DRIVER_HOST_PATH_VERSION).tar.gz | tar zxf - -C $(TEMP_DIR)/csi-driver-hostpath --strip-components 1 \
-		&& cd $(TEMP_DIR)/csi-driver-hostpath \
-		&& deploy/kubernetes-latest/deploy.sh \
-		&& kubectl apply -f examples/csi-storageclass.yaml \
-		&& kubectl apply -f examples/csi-pvc.yaml \
-		&& rm -rf $(TEMP_DIR)/csi-driver-hostpath
+	&& curl -fsSL https://github.com/kubernetes-csi/csi-driver-host-path/archive/refs/tags/$(CSI_DRIVER_HOST_PATH_VERSION).tar.gz | tar zxf - -C $(TEMP_DIR)/csi-driver-hostpath --strip-components 1 \
+	&& cd $(TEMP_DIR)/csi-driver-hostpath \
+	&& deploy/kubernetes-latest/deploy.sh \
+	&& kubectl apply -f examples/csi-storageclass.yaml \
+	&& kubectl apply -f examples/csi-pvc.yaml \
+	&& rm -rf $(TEMP_DIR)/csi-driver-hostpath
 
 	@make k8s/metrics/metrics-server/deploy
 	helm upgrade --install --set args={--kubelet-insecure-tls} metrics-server metrics-server/metrics-server -n kube-system
@@ -102,7 +102,7 @@ kind/vs/stop:
 	kind delete cluster --name $(NAME)-vs
 
 .PHONY: kind/vs/login
-## login command for kind (kubernetes in docker)  cluster with volume snapshot
+## login command for kind (kubernetes in docker)	cluster with volume snapshot
 kind/vs/login:
 	kubectl cluster-info --context kind-$(NAME)-vs
 

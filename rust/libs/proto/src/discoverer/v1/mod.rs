@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -13,6 +13,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-// Package rand provides random number algorithms
-package rand
+include!("discoverer.v1.tonic.rs");
