@@ -27,6 +27,76 @@
       "default": "Unknown",
       "description": " - Optimistic: in optimistic transactions.\n - PessimisticRetry: a lock acquisition request waits for a lock and awakes, or meets a newer version of data, let TiDB retry.\n - SelfRolledBack: the transaction itself has been rolled back when it tries to prewrite.\n - RcCheckTs: RcCheckTs failure by meeting a newer version, let TiDB retry.\n - LazyUniquenessCheck: write conflict found when deferring constraint checks in pessimistic transactions. Deprecated in next-gen (cloud-storage-engine).\n - NotLockedKeyConflict: write conflict found on keys that do not acquire pessimistic locks in pessimistic transactions."
     },
+    "metapbPeer": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "storeId": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "isWitness": {
+          "type": "boolean",
+          "title": "PeerRole role = 3;"
+        }
+      },
+      "title": "Copied from metapb.proto"
+    },
+    "metapbRegion2": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "startKey": {
+          "type": "string",
+          "format": "byte",
+          "description": "Region key range [start_key, end_key)."
+        },
+        "endKey": {
+          "type": "string",
+          "format": "byte"
+        },
+        "regionEpoch": {
+          "$ref": "#/definitions/metapbRegionEpoch"
+        },
+        "peers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/metapbPeer"
+          }
+        },
+        "isInFlashback": {
+          "type": "boolean",
+          "description": "Encryption metadata for start_key and end_key. encryption_meta.iv is IV for start_key.\nIV for end_key is calculated from (encryption_meta.iv + len(start_key)).\nThe field is only used by PD and should be ignored otherwise.\nIf encryption_meta is empty (i.e. nil), it means start_key and end_key are unencrypted.\nencryptionpb.EncryptionMeta encryption_meta = 6;\nThe flashback state indicates whether this region is in the flashback state.\nTODO: only check by `flashback_start_ts` in the future. Keep for compatibility now."
+        },
+        "flashbackStartTs": {
+          "type": "string",
+          "format": "uint64",
+          "description": "The start_ts that the current flashback progress is using."
+        }
+      }
+    },
+    "metapbRegionEpoch": {
+      "type": "object",
+      "properties": {
+        "confVer": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Conf change version, auto increment when add or remove peer"
+        },
+        "version": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Region version, auto increment when split or merge"
+        }
+      }
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -166,10 +236,15 @@
           "type": "string",
           "format": "uint64"
         },
+        "regionEpoch": {
+          "$ref": "#/definitions/metapbRegionEpoch"
+        },
+        "peer": {
+          "$ref": "#/definitions/metapbPeer"
+        },
         "term": {
           "type": "string",
-          "format": "uint64",
-          "title": "metapb.RegionEpoch region_epoch = 2;\nmetapb.Peer peer = 3;"
+          "format": "uint64"
         },
         "priority": {
           "$ref": "#/definitions/tikvCommandPri"
@@ -358,7 +433,17 @@
     },
     "tikvEpochNotMatch": {
       "type": "object",
-      "description": "EpochNotMatch is the error variant that tells a region has been updated.\n(e.g. by splitting / merging, or raft Confchange.)\nHence, a command is based on a stale version of a region.\n\n// Available regions that may be siblings of the requested one.\n repeated metapb.Region current_regions = 1;"
+      "properties": {
+        "currentRegions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/metapbRegion2"
+          },
+          "description": "Available regions that may be siblings of the requested one."
+        }
+      },
+      "description": "EpochNotMatch is the error variant that tells a region has been updated.\n(e.g. by splitting / merging, or raft Confchange.)\nHence, a command is based on a stale version of a region."
     },
     "tikvError": {
       "type": "object",
@@ -803,8 +888,11 @@
         "regionId": {
           "type": "string",
           "format": "uint64",
-          "description": "// Region leader of the requested region\n metapb.Peer leader = 2;",
           "title": "The requested region ID"
+        },
+        "leader": {
+          "$ref": "#/definitions/metapbPeer",
+          "title": "Region leader of the requested region"
         }
       },
       "description": "NotLeader is the error variant that tells a request be handle by raft leader\nis sent to raft follower or learner."

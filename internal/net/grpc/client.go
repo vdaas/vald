@@ -833,6 +833,28 @@ func (g *gRPCClient) RoundRobin(
 	return data, err
 }
 
+// Do is a generic function that executes a function f on a specific connection address.
+func Do[R any](
+	ctx context.Context,
+	addr string,
+	c Client,
+	f func(ctx context.Context,
+		conn *grpc.ClientConn, copts ...grpc.CallOption) (R, error),
+) (data R, err error) {
+	res, err := c.Do(ctx, addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
+		return f(ctx, conn, copts...)
+	})
+	// data is zero (nil) value of R
+	if err != nil {
+		return data, err
+	}
+	var ok bool
+	if data, ok = res.(R); ok {
+		return data, nil
+	}
+	return data, errors.UnexpectedProtoMessageType(data, res)
+}
+
 // Do executes a function f on a specific connection address.
 func (g *gRPCClient) Do(
 	ctx context.Context,

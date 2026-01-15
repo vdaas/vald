@@ -214,6 +214,12 @@ apis/grpc/v1/tikv/errorpb_vtproto.pb.go
 apis/grpc/v1/tikv/kvrpcpb.pb.go
 apis/grpc/v1/tikv/kvrpcpb.pb.json.go
 apis/grpc/v1/tikv/kvrpcpb_vtproto.pb.go
+apis/grpc/v1/tikv/metapb.pb.go
+apis/grpc/v1/tikv/metapb.pb.json.go
+apis/grpc/v1/tikv/metapb_vtproto.pb.go
+apis/grpc/v1/tikv/pdpb.pb.go
+apis/grpc/v1/tikv/pdpb.pb.json.go
+apis/grpc/v1/tikv/pdpb_vtproto.pb.go
 apis/grpc/v1/tikv/tikvpb.pb.go
 apis/grpc/v1/tikv/tikvpb_vtproto.pb.go
 apis/grpc/v1/vald/filter.pb.go
@@ -249,6 +255,8 @@ apis/proto/v1/tikv/LICENSE
 apis/proto/v1/tikv/README.md
 apis/proto/v1/tikv/errorpb.proto
 apis/proto/v1/tikv/kvrpcpb.proto
+apis/proto/v1/tikv/metapb.proto
+apis/proto/v1/tikv/pdpb.proto
 apis/proto/v1/tikv/tikvpb.proto
 apis/proto/v1/vald/filter.proto
 apis/proto/v1/vald/flush.proto
@@ -271,6 +279,8 @@ apis/swagger/v1/rpc/errdetails/error_details.swagger.json
 apis/swagger/v1/rpc/stats/stats.swagger.json
 apis/swagger/v1/tikv/errorpb.swagger.json
 apis/swagger/v1/tikv/kvrpcpb.swagger.json
+apis/swagger/v1/tikv/metapb.swagger.json
+apis/swagger/v1/tikv/pdpb.swagger.json
 apis/swagger/v1/tikv/tikvpb.swagger.json
 apis/swagger/v1/vald/filter.swagger.json
 apis/swagger/v1/vald/flush.swagger.json
@@ -900,6 +910,14 @@ internal/client/v1/client/filter/ingress/client_test.go
 internal/client/v1/client/filter/ingress/doc.go
 internal/client/v1/client/filter/ingress/option.go
 internal/client/v1/client/filter/ingress/option_test.go
+internal/client/v1/client/meta/client.go
+internal/client/v1/client/meta/doc.go
+internal/client/v1/client/meta/tikv/doc.go
+internal/client/v1/client/meta/tikv/option.go
+internal/client/v1/client/meta/tikv/option_test.go
+internal/client/v1/client/meta/tikv/pd.go
+internal/client/v1/client/meta/tikv/tikv.go
+internal/client/v1/client/meta/tikv/tikv_benchmark_test.go
 internal/client/v1/client/mirror/doc.go
 internal/client/v1/client/mirror/mirror.go
 internal/client/v1/client/mirror/mirror_test.go

@@ -37,7 +37,9 @@ const (
 type NotLeader struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The requested region ID
-	RegionId      uint64 `                   protobuf:"varint,1,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
+	RegionId uint64 `                   protobuf:"varint,1,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
+	// Region leader of the requested region
+	Leader        *Peer `                   protobuf:"bytes,2,opt,name=leader,proto3"                   json:"leader,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -77,6 +79,13 @@ func (x *NotLeader) GetRegionId() uint64 {
 		return x.RegionId
 	}
 	return 0
+}
+
+func (x *NotLeader) GetLeader() *Peer {
+	if x != nil {
+		return x.Leader
+	}
+	return nil
 }
 
 // IsWitness is the error variant that tells a request be handle by witness
@@ -462,9 +471,11 @@ func (x *KeyNotInRegion) GetEndKey() []byte {
 // (e.g. by splitting / merging, or raft Confchange.)
 // Hence, a command is based on a stale version of a region.
 type EpochNotMatch struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Available regions that may be siblings of the requested one.
+	CurrentRegions []*Region2 `                   protobuf:"bytes,1,rep,name=current_regions,json=currentRegions,proto3" json:"current_regions,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *EpochNotMatch) Reset() {
@@ -495,6 +506,13 @@ func (x *EpochNotMatch) ProtoReflect() protoreflect.Message {
 // Deprecated: Use EpochNotMatch.ProtoReflect.Descriptor instead.
 func (*EpochNotMatch) Descriptor() ([]byte, []int) {
 	return file_v1_tikv_errorpb_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *EpochNotMatch) GetCurrentRegions() []*Region2 {
+	if x != nil {
+		return x.CurrentRegions
+	}
+	return nil
 }
 
 // ServerIsBusy is the error variant that tells the server is too busy to response.
@@ -1342,9 +1360,10 @@ var File_v1_tikv_errorpb_proto protoreflect.FileDescriptor
 
 const file_v1_tikv_errorpb_proto_rawDesc = "" +
 	"\n" +
-	"\x15v1/tikv/errorpb.proto\x12\x04tikv\"(\n" +
+	"\x15v1/tikv/errorpb.proto\x12\x04tikv\x1a\x14v1/tikv/metapb.proto\"N\n" +
 	"\tNotLeader\x12\x1b\n" +
-	"\tregion_id\x18\x01 \x01(\x04R\bregionId\"(\n" +
+	"\tregion_id\x18\x01 \x01(\x04R\bregionId\x12$\n" +
+	"\x06leader\x18\x02 \x01(\v2\f.metapb.PeerR\x06leader\"(\n" +
 	"\tIsWitness\x12\x1b\n" +
 	"\tregion_id\x18\x01 \x01(\x04R\bregionId\"E\n" +
 	"\x15BucketVersionNotMatch\x12\x18\n" +
@@ -1364,8 +1383,9 @@ const file_v1_tikv_errorpb_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\fR\x03key\x12\x1b\n" +
 	"\tregion_id\x18\x02 \x01(\x04R\bregionId\x12\x1b\n" +
 	"\tstart_key\x18\x03 \x01(\fR\bstartKey\x12\x17\n" +
-	"\aend_key\x18\x04 \x01(\fR\x06endKey\"\x0f\n" +
-	"\rEpochNotMatch\"\x96\x01\n" +
+	"\aend_key\x18\x04 \x01(\fR\x06endKey\"I\n" +
+	"\rEpochNotMatch\x128\n" +
+	"\x0fcurrent_regions\x18\x01 \x03(\v2\x0f.metapb.Region2R\x0ecurrentRegions\"\x96\x01\n" +
 	"\fServerIsBusy\x12\x16\n" +
 	"\x06reason\x18\x01 \x01(\tR\x06reason\x12\x1d\n" +
 	"\n" +
@@ -1463,36 +1483,40 @@ var (
 		(*MismatchPeerId)(nil),        // 19: tikv.MismatchPeerId
 		(*UndeterminedResult)(nil),    // 20: tikv.UndeterminedResult
 		(*Error)(nil),                 // 21: tikv.Error
+		(*Peer)(nil),                  // 22: metapb.Peer
+		(*Region2)(nil),               // 23: metapb.Region2
 	}
 )
 
 var file_v1_tikv_errorpb_proto_depIdxs = []int32{
-	0,  // 0: tikv.Error.not_leader:type_name -> tikv.NotLeader
-	5,  // 1: tikv.Error.region_not_found:type_name -> tikv.RegionNotFound
-	7,  // 2: tikv.Error.key_not_in_region:type_name -> tikv.KeyNotInRegion
-	8,  // 3: tikv.Error.epoch_not_match:type_name -> tikv.EpochNotMatch
-	9,  // 4: tikv.Error.server_is_busy:type_name -> tikv.ServerIsBusy
-	10, // 5: tikv.Error.stale_command:type_name -> tikv.StaleCommand
-	4,  // 6: tikv.Error.store_not_match:type_name -> tikv.StoreNotMatch
-	11, // 7: tikv.Error.raft_entry_too_large:type_name -> tikv.RaftEntryTooLarge
-	12, // 8: tikv.Error.max_timestamp_not_synced:type_name -> tikv.MaxTimestampNotSynced
-	13, // 9: tikv.Error.read_index_not_ready:type_name -> tikv.ReadIndexNotReady
-	14, // 10: tikv.Error.proposal_in_merging_mode:type_name -> tikv.ProposalInMergingMode
-	15, // 11: tikv.Error.data_is_not_ready:type_name -> tikv.DataIsNotReady
-	6,  // 12: tikv.Error.region_not_initialized:type_name -> tikv.RegionNotInitialized
-	3,  // 13: tikv.Error.disk_full:type_name -> tikv.DiskFull
-	16, // 14: tikv.Error.RecoveryInProgress:type_name -> tikv.RecoveryInProgress
-	17, // 15: tikv.Error.FlashbackInProgress:type_name -> tikv.FlashbackInProgress
-	18, // 16: tikv.Error.FlashbackNotPrepared:type_name -> tikv.FlashbackNotPrepared
-	1,  // 17: tikv.Error.is_witness:type_name -> tikv.IsWitness
-	19, // 18: tikv.Error.mismatch_peer_id:type_name -> tikv.MismatchPeerId
-	2,  // 19: tikv.Error.bucket_version_not_match:type_name -> tikv.BucketVersionNotMatch
-	20, // 20: tikv.Error.undetermined_result:type_name -> tikv.UndeterminedResult
-	21, // [21:21] is the sub-list for method output_type
-	21, // [21:21] is the sub-list for method input_type
-	21, // [21:21] is the sub-list for extension type_name
-	21, // [21:21] is the sub-list for extension extendee
-	0,  // [0:21] is the sub-list for field type_name
+	22, // 0: tikv.NotLeader.leader:type_name -> metapb.Peer
+	23, // 1: tikv.EpochNotMatch.current_regions:type_name -> metapb.Region2
+	0,  // 2: tikv.Error.not_leader:type_name -> tikv.NotLeader
+	5,  // 3: tikv.Error.region_not_found:type_name -> tikv.RegionNotFound
+	7,  // 4: tikv.Error.key_not_in_region:type_name -> tikv.KeyNotInRegion
+	8,  // 5: tikv.Error.epoch_not_match:type_name -> tikv.EpochNotMatch
+	9,  // 6: tikv.Error.server_is_busy:type_name -> tikv.ServerIsBusy
+	10, // 7: tikv.Error.stale_command:type_name -> tikv.StaleCommand
+	4,  // 8: tikv.Error.store_not_match:type_name -> tikv.StoreNotMatch
+	11, // 9: tikv.Error.raft_entry_too_large:type_name -> tikv.RaftEntryTooLarge
+	12, // 10: tikv.Error.max_timestamp_not_synced:type_name -> tikv.MaxTimestampNotSynced
+	13, // 11: tikv.Error.read_index_not_ready:type_name -> tikv.ReadIndexNotReady
+	14, // 12: tikv.Error.proposal_in_merging_mode:type_name -> tikv.ProposalInMergingMode
+	15, // 13: tikv.Error.data_is_not_ready:type_name -> tikv.DataIsNotReady
+	6,  // 14: tikv.Error.region_not_initialized:type_name -> tikv.RegionNotInitialized
+	3,  // 15: tikv.Error.disk_full:type_name -> tikv.DiskFull
+	16, // 16: tikv.Error.RecoveryInProgress:type_name -> tikv.RecoveryInProgress
+	17, // 17: tikv.Error.FlashbackInProgress:type_name -> tikv.FlashbackInProgress
+	18, // 18: tikv.Error.FlashbackNotPrepared:type_name -> tikv.FlashbackNotPrepared
+	1,  // 19: tikv.Error.is_witness:type_name -> tikv.IsWitness
+	19, // 20: tikv.Error.mismatch_peer_id:type_name -> tikv.MismatchPeerId
+	2,  // 21: tikv.Error.bucket_version_not_match:type_name -> tikv.BucketVersionNotMatch
+	20, // 22: tikv.Error.undetermined_result:type_name -> tikv.UndeterminedResult
+	23, // [23:23] is the sub-list for method output_type
+	23, // [23:23] is the sub-list for method input_type
+	23, // [23:23] is the sub-list for extension type_name
+	23, // [23:23] is the sub-list for extension extendee
+	0,  // [0:23] is the sub-list for field type_name
 }
 
 func init() { file_v1_tikv_errorpb_proto_init() }
@@ -1500,6 +1524,7 @@ func file_v1_tikv_errorpb_proto_init() {
 	if File_v1_tikv_errorpb_proto != nil {
 		return
 	}
+	file_v1_tikv_metapb_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

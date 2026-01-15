@@ -1,0 +1,102 @@
+syntax = "proto3";
+
+package pdpb;
+
+import "v1/tikv/metapb.proto";
+
+option go_package = "github.com/vdaas/vald/apis/grpc/v1/tikv";
+
+service PD {
+  // GetClusterInfo get the information of this cluster. It does not require
+  // the cluster_id in request matchs the id of this cluster.
+  rpc GetClusterInfo(GetClusterInfoRequest) returns (GetClusterInfoResponse) {}
+  rpc GetAllStores(GetAllStoresRequest) returns (GetAllStoresResponse) {}
+  rpc BatchScanRegions(BatchScanRegionsRequest) returns (BatchScanRegionsResponse) {}
+}
+
+message Error2 {
+  // ErrorType type = 1;
+  string message = 2;
+}
+
+message ResponseHeader {
+  // cluster_id is the ID of the cluster which sent the response.
+  uint64 cluster_id = 1;
+  Error2 error = 2;
+}
+
+message GetClusterInfoRequest {
+  ResponseHeader header = 1;
+}
+
+message GetClusterInfoResponse {
+  ResponseHeader header = 1;
+
+  // repeated ServiceMode serviceModes = 2;
+  // If service mode is API_SVC_MODE, this field will be set to the
+  // registered tso service addresses.
+  // repeated string tso_urls = 3;
+}
+
+message RequestHeader {
+  // cluster_id is the ID of the cluster which be sent to.
+  uint64 cluster_id = 1;
+  // sender_id is the ID of the sender server, also member ID or etcd ID.
+  // sender_id is used in PD internal communication.
+  uint64 sender_id = 2;
+  // caller_id is the ID of the client which sends the request, such as tikv,
+  // tidb, cdc, etc.
+  string caller_id = 3;
+  // caller_component is the component of the client which sends the request,
+  // such as ddl, optimizer, etc.
+  string caller_component = 4;
+}
+
+message GetAllStoresRequest {
+  RequestHeader header = 1;
+  // Do NOT return tombstone stores if set to true.
+  bool exclude_tombstone_stores = 2;
+}
+
+message GetAllStoresResponse {
+  ResponseHeader header = 1;
+
+  repeated metapb.Store stores = 2;
+}
+
+message Region {
+  metapb.Region2 region = 1;
+  metapb.Peer leader = 2;
+  // Leader considers that these peers are down.
+  // repeated PeerStats down_peers = 3;
+  // Pending peers are the peers that the leader can't consider as
+  // working followers.
+  repeated metapb.Peer pending_peers = 4;
+  // buckets isn't nil only when need_buckets is true.
+  // metapb.Buckets buckets = 5;
+}
+
+message KeyRange {
+  bytes start_key = 1;
+  bytes end_key = 2; // end_key is +inf when it is empty.
+}
+
+message BatchScanRegionsRequest {
+  RequestHeader header = 1;
+  bool need_buckets = 2;
+
+  repeated KeyRange ranges = 3; // the given ranges must be in order.
+  int32 limit = 4; // limit the total number of regions to scan.
+  // If contain_all_key_range is true, the output must contain all
+  // key ranges in the request.
+  // If the output does not contain all key ranges, the request is considered
+  // failed and returns an error(REGIONS_NOT_CONTAIN_ALL_KEY_RANGE).
+  bool contain_all_key_range = 5;
+}
+
+message BatchScanRegionsResponse {
+  // ResponseHeader header = 1;
+
+  // the returned regions are flattened into a list, because the given ranges can located in the same range, we do not return duplicated regions then.
+  repeated Region regions = 2;
+}

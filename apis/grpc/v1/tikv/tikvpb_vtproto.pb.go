@@ -61,7 +61,7 @@ func (c *tikvClient) RawGet(
 	ctx context.Context, in *RawGetRequest, opts ...grpc.CallOption,
 ) (*RawGetResponse, error) {
 	out := new(RawGetResponse)
-	err := c.cc.Invoke(ctx, "/tikv.Tikv/RawGet", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/tikvpb.Tikv/RawGet", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func (c *tikvClient) RawBatchGet(
 	ctx context.Context, in *RawBatchGetRequest, opts ...grpc.CallOption,
 ) (*RawBatchGetResponse, error) {
 	out := new(RawBatchGetResponse)
-	err := c.cc.Invoke(ctx, "/tikv.Tikv/RawBatchGet", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/tikvpb.Tikv/RawBatchGet", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func (c *tikvClient) RawPut(
 	ctx context.Context, in *RawPutRequest, opts ...grpc.CallOption,
 ) (*RawPutResponse, error) {
 	out := new(RawPutResponse)
-	err := c.cc.Invoke(ctx, "/tikv.Tikv/RawPut", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/tikvpb.Tikv/RawPut", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func (c *tikvClient) RawBatchPut(
 	ctx context.Context, in *RawBatchPutRequest, opts ...grpc.CallOption,
 ) (*RawBatchPutResponse, error) {
 	out := new(RawBatchPutResponse)
-	err := c.cc.Invoke(ctx, "/tikv.Tikv/RawBatchPut", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/tikvpb.Tikv/RawBatchPut", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +105,7 @@ func (c *tikvClient) RawDelete(
 	ctx context.Context, in *RawDeleteRequest, opts ...grpc.CallOption,
 ) (*RawDeleteResponse, error) {
 	out := new(RawDeleteResponse)
-	err := c.cc.Invoke(ctx, "/tikv.Tikv/RawDelete", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/tikvpb.Tikv/RawDelete", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +116,7 @@ func (c *tikvClient) RawBatchDelete(
 	ctx context.Context, in *RawBatchDeleteRequest, opts ...grpc.CallOption,
 ) (*RawBatchDeleteResponse, error) {
 	out := new(RawBatchDeleteResponse)
-	err := c.cc.Invoke(ctx, "/tikv.Tikv/RawBatchDelete", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/tikvpb.Tikv/RawBatchDelete", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +195,7 @@ func _Tikv_RawGet_Handler(
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/tikv.Tikv/RawGet",
+		FullMethod: "/tikvpb.Tikv/RawGet",
 	}
 	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(TikvServer).RawGet(ctx, req.(*RawGetRequest))
@@ -215,7 +215,7 @@ func _Tikv_RawBatchGet_Handler(
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/tikv.Tikv/RawBatchGet",
+		FullMethod: "/tikvpb.Tikv/RawBatchGet",
 	}
 	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(TikvServer).RawBatchGet(ctx, req.(*RawBatchGetRequest))
@@ -235,7 +235,7 @@ func _Tikv_RawPut_Handler(
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/tikv.Tikv/RawPut",
+		FullMethod: "/tikvpb.Tikv/RawPut",
 	}
 	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(TikvServer).RawPut(ctx, req.(*RawPutRequest))
@@ -255,7 +255,7 @@ func _Tikv_RawBatchPut_Handler(
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/tikv.Tikv/RawBatchPut",
+		FullMethod: "/tikvpb.Tikv/RawBatchPut",
 	}
 	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(TikvServer).RawBatchPut(ctx, req.(*RawBatchPutRequest))
@@ -275,7 +275,7 @@ func _Tikv_RawDelete_Handler(
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/tikv.Tikv/RawDelete",
+		FullMethod: "/tikvpb.Tikv/RawDelete",
 	}
 	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(TikvServer).RawDelete(ctx, req.(*RawDeleteRequest))
@@ -295,7 +295,7 @@ func _Tikv_RawBatchDelete_Handler(
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/tikv.Tikv/RawBatchDelete",
+		FullMethod: "/tikvpb.Tikv/RawBatchDelete",
 	}
 	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(TikvServer).RawBatchDelete(ctx, req.(*RawBatchDeleteRequest))
@@ -307,7 +307,7 @@ func _Tikv_RawBatchDelete_Handler(
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Tikv_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "tikv.Tikv",
+	ServiceName: "tikvpb.Tikv",
 	HandlerType: (*TikvServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

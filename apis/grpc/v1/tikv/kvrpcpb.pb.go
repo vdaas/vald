@@ -1209,15 +1209,15 @@ func (x *RawBatchDeleteResponse) GetError() string {
 
 // Miscellaneous metadata attached to most requests.
 type Context struct {
-	state    protoimpl.MessageState `protogen:"open.v1"`
-	RegionId uint64                 `                   protobuf:"varint,1,opt,name=region_id,json=regionId,proto3"                                      json:"region_id,omitempty"`
-	// metapb.RegionEpoch region_epoch = 2;
-	// metapb.Peer peer = 3;
-	Term           uint64         `                   protobuf:"varint,5,opt,name=term,proto3"                                                         json:"term,omitempty"`
-	Priority       CommandPri     `                   protobuf:"varint,6,opt,name=priority,proto3,enum=tikv.CommandPri"                                json:"priority,omitempty"`
-	IsolationLevel IsolationLevel `                   protobuf:"varint,7,opt,name=isolation_level,json=isolationLevel,proto3,enum=tikv.IsolationLevel" json:"isolation_level,omitempty"`
-	NotFillCache   bool           `                   protobuf:"varint,8,opt,name=not_fill_cache,json=notFillCache,proto3"                             json:"not_fill_cache,omitempty"`
-	SyncLog        bool           `                   protobuf:"varint,9,opt,name=sync_log,json=syncLog,proto3"                                        json:"sync_log,omitempty"`
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	RegionId       uint64                 `                   protobuf:"varint,1,opt,name=region_id,json=regionId,proto3"                                      json:"region_id,omitempty"`
+	RegionEpoch    *RegionEpoch           `                   protobuf:"bytes,2,opt,name=region_epoch,json=regionEpoch,proto3"                                 json:"region_epoch,omitempty"`
+	Peer           *Peer                  `                   protobuf:"bytes,3,opt,name=peer,proto3"                                                          json:"peer,omitempty"`
+	Term           uint64                 `                   protobuf:"varint,5,opt,name=term,proto3"                                                         json:"term,omitempty"`
+	Priority       CommandPri             `                   protobuf:"varint,6,opt,name=priority,proto3,enum=tikv.CommandPri"                                json:"priority,omitempty"`
+	IsolationLevel IsolationLevel         `                   protobuf:"varint,7,opt,name=isolation_level,json=isolationLevel,proto3,enum=tikv.IsolationLevel" json:"isolation_level,omitempty"`
+	NotFillCache   bool                   `                   protobuf:"varint,8,opt,name=not_fill_cache,json=notFillCache,proto3"                             json:"not_fill_cache,omitempty"`
+	SyncLog        bool                   `                   protobuf:"varint,9,opt,name=sync_log,json=syncLog,proto3"                                        json:"sync_log,omitempty"`
 	// True means execution time statistics should be recorded and returned.
 	RecordTimeStat bool `                   protobuf:"varint,10,opt,name=record_time_stat,json=recordTimeStat,proto3"                        json:"record_time_stat,omitempty"`
 	// True means RocksDB scan statistics should be recorded and returned.
@@ -1320,6 +1320,20 @@ func (x *Context) GetRegionId() uint64 {
 		return x.RegionId
 	}
 	return 0
+}
+
+func (x *Context) GetRegionEpoch() *RegionEpoch {
+	if x != nil {
+		return x.RegionEpoch
+	}
+	return nil
+}
+
+func (x *Context) GetPeer() *Peer {
+	if x != nil {
+		return x.Peer
+	}
+	return nil
 }
 
 func (x *Context) GetTerm() uint64 {
@@ -3680,7 +3694,7 @@ var File_v1_tikv_kvrpcpb_proto protoreflect.FileDescriptor
 
 const file_v1_tikv_kvrpcpb_proto_rawDesc = "" +
 	"\n" +
-	"\x15v1/tikv/kvrpcpb.proto\x12\x04tikv\x1a\x15v1/tikv/errorpb.proto\"Z\n" +
+	"\x15v1/tikv/kvrpcpb.proto\x12\x04tikv\x1a\x15v1/tikv/errorpb.proto\x1a\x14v1/tikv/metapb.proto\"Z\n" +
 	"\rRawGetRequest\x12'\n" +
 	"\acontext\x18\x01 \x01(\v2\r.tikv.ContextR\acontext\x12\x10\n" +
 	"\x03key\x18\x02 \x01(\fR\x03key\x12\x0e\n" +
@@ -3732,9 +3746,12 @@ const file_v1_tikv_kvrpcpb_proto_rawDesc = "" +
 	"\afor_cas\x18\x04 \x01(\bR\x06forCas\"^\n" +
 	"\x16RawBatchDeleteResponse\x12.\n" +
 	"\fregion_error\x18\x01 \x01(\v2\v.tikv.ErrorR\vregionError\x12\x14\n" +
-	"\x05error\x18\x02 \x01(\tR\x05error\"\xf8\t\n" +
+	"\x05error\x18\x02 \x01(\tR\x05error\"\xd2\n" +
+	"\n" +
 	"\aContext\x12\x1b\n" +
-	"\tregion_id\x18\x01 \x01(\x04R\bregionId\x12\x12\n" +
+	"\tregion_id\x18\x01 \x01(\x04R\bregionId\x126\n" +
+	"\fregion_epoch\x18\x02 \x01(\v2\x13.metapb.RegionEpochR\vregionEpoch\x12 \n" +
+	"\x04peer\x18\x03 \x01(\v2\f.metapb.PeerR\x04peer\x12\x12\n" +
 	"\x04term\x18\x05 \x01(\x04R\x04term\x12,\n" +
 	"\bpriority\x18\x06 \x01(\x0e2\x10.tikv.CommandPriR\bpriority\x12=\n" +
 	"\x0fisolation_level\x18\a \x01(\x0e2\x14.tikv.IsolationLevelR\x0eisolationLevel\x12$\n" +
@@ -4060,6 +4077,8 @@ var (
 		(*MvccLock)(nil),               // 45: tikv.MvccLock
 		(*MvccInfo)(nil),               // 46: tikv.MvccInfo
 		(*Error)(nil),                  // 47: tikv.Error
+		(*RegionEpoch)(nil),            // 48: metapb.RegionEpoch
+		(*Peer)(nil),                   // 49: metapb.Peer
 	}
 )
 
@@ -4078,48 +4097,50 @@ var file_v1_tikv_kvrpcpb_proto_depIdxs = []int32{
 	47, // 11: tikv.RawDeleteResponse.region_error:type_name -> tikv.Error
 	19, // 12: tikv.RawBatchDeleteRequest.context:type_name -> tikv.Context
 	47, // 13: tikv.RawBatchDeleteResponse.region_error:type_name -> tikv.Error
-	1,  // 14: tikv.Context.priority:type_name -> tikv.CommandPri
-	2,  // 15: tikv.Context.isolation_level:type_name -> tikv.IsolationLevel
-	3,  // 16: tikv.Context.disk_full_opt:type_name -> tikv.DiskFullOpt
-	0,  // 17: tikv.Context.api_version:type_name -> tikv.APIVersion
-	20, // 18: tikv.Context.resource_control_context:type_name -> tikv.ResourceControlContext
-	21, // 19: tikv.Context.source_stmt:type_name -> tikv.SourceStmt
-	4,  // 20: tikv.LockInfo.lock_type:type_name -> tikv.Op
-	22, // 21: tikv.KeyError.locked:type_name -> tikv.LockInfo
-	24, // 22: tikv.KeyError.conflict:type_name -> tikv.WriteConflict
-	25, // 23: tikv.KeyError.already_exist:type_name -> tikv.AlreadyExist
-	26, // 24: tikv.KeyError.commit_ts_expired:type_name -> tikv.CommitTsExpired
-	27, // 25: tikv.KeyError.txn_not_found:type_name -> tikv.TxnNotFound
-	28, // 26: tikv.KeyError.commit_ts_too_large:type_name -> tikv.CommitTsTooLarge
-	29, // 27: tikv.KeyError.assertion_failed:type_name -> tikv.AssertionFailed
-	30, // 28: tikv.KeyError.primary_mismatch:type_name -> tikv.PrimaryMismatch
-	31, // 29: tikv.KeyError.txn_lock_not_found:type_name -> tikv.TxnLockNotFound
-	33, // 30: tikv.KeyError.debug_info:type_name -> tikv.DebugInfo
-	6,  // 31: tikv.WriteConflict.reason:type_name -> tikv.WriteConflict.Reason
-	5,  // 32: tikv.AssertionFailed.assertion:type_name -> tikv.Assertion
-	22, // 33: tikv.PrimaryMismatch.lock_info:type_name -> tikv.LockInfo
-	46, // 34: tikv.MvccDebugInfo.mvcc:type_name -> tikv.MvccInfo
-	32, // 35: tikv.DebugInfo.mvcc_info:type_name -> tikv.MvccDebugInfo
-	36, // 36: tikv.ScanDetail.write:type_name -> tikv.ScanInfo
-	36, // 37: tikv.ScanDetail.lock:type_name -> tikv.ScanInfo
-	36, // 38: tikv.ScanDetail.data:type_name -> tikv.ScanInfo
-	34, // 39: tikv.ExecDetails.time_detail:type_name -> tikv.TimeDetail
-	37, // 40: tikv.ExecDetails.scan_detail:type_name -> tikv.ScanDetail
-	34, // 41: tikv.ExecDetailsV2.time_detail:type_name -> tikv.TimeDetail
-	38, // 42: tikv.ExecDetailsV2.scan_detail_v2:type_name -> tikv.ScanDetailV2
-	41, // 43: tikv.ExecDetailsV2.write_detail:type_name -> tikv.WriteDetail
-	35, // 44: tikv.ExecDetailsV2.time_detail_v2:type_name -> tikv.TimeDetailV2
-	23, // 45: tikv.KvPair.error:type_name -> tikv.KeyError
-	4,  // 46: tikv.MvccWrite.type:type_name -> tikv.Op
-	4,  // 47: tikv.MvccLock.type:type_name -> tikv.Op
-	45, // 48: tikv.MvccInfo.lock:type_name -> tikv.MvccLock
-	43, // 49: tikv.MvccInfo.writes:type_name -> tikv.MvccWrite
-	44, // 50: tikv.MvccInfo.values:type_name -> tikv.MvccValue
-	51, // [51:51] is the sub-list for method output_type
-	51, // [51:51] is the sub-list for method input_type
-	51, // [51:51] is the sub-list for extension type_name
-	51, // [51:51] is the sub-list for extension extendee
-	0,  // [0:51] is the sub-list for field type_name
+	48, // 14: tikv.Context.region_epoch:type_name -> metapb.RegionEpoch
+	49, // 15: tikv.Context.peer:type_name -> metapb.Peer
+	1,  // 16: tikv.Context.priority:type_name -> tikv.CommandPri
+	2,  // 17: tikv.Context.isolation_level:type_name -> tikv.IsolationLevel
+	3,  // 18: tikv.Context.disk_full_opt:type_name -> tikv.DiskFullOpt
+	0,  // 19: tikv.Context.api_version:type_name -> tikv.APIVersion
+	20, // 20: tikv.Context.resource_control_context:type_name -> tikv.ResourceControlContext
+	21, // 21: tikv.Context.source_stmt:type_name -> tikv.SourceStmt
+	4,  // 22: tikv.LockInfo.lock_type:type_name -> tikv.Op
+	22, // 23: tikv.KeyError.locked:type_name -> tikv.LockInfo
+	24, // 24: tikv.KeyError.conflict:type_name -> tikv.WriteConflict
+	25, // 25: tikv.KeyError.already_exist:type_name -> tikv.AlreadyExist
+	26, // 26: tikv.KeyError.commit_ts_expired:type_name -> tikv.CommitTsExpired
+	27, // 27: tikv.KeyError.txn_not_found:type_name -> tikv.TxnNotFound
+	28, // 28: tikv.KeyError.commit_ts_too_large:type_name -> tikv.CommitTsTooLarge
+	29, // 29: tikv.KeyError.assertion_failed:type_name -> tikv.AssertionFailed
+	30, // 30: tikv.KeyError.primary_mismatch:type_name -> tikv.PrimaryMismatch
+	31, // 31: tikv.KeyError.txn_lock_not_found:type_name -> tikv.TxnLockNotFound
+	33, // 32: tikv.KeyError.debug_info:type_name -> tikv.DebugInfo
+	6,  // 33: tikv.WriteConflict.reason:type_name -> tikv.WriteConflict.Reason
+	5,  // 34: tikv.AssertionFailed.assertion:type_name -> tikv.Assertion
+	22, // 35: tikv.PrimaryMismatch.lock_info:type_name -> tikv.LockInfo
+	46, // 36: tikv.MvccDebugInfo.mvcc:type_name -> tikv.MvccInfo
+	32, // 37: tikv.DebugInfo.mvcc_info:type_name -> tikv.MvccDebugInfo
+	36, // 38: tikv.ScanDetail.write:type_name -> tikv.ScanInfo
+	36, // 39: tikv.ScanDetail.lock:type_name -> tikv.ScanInfo
+	36, // 40: tikv.ScanDetail.data:type_name -> tikv.ScanInfo
+	34, // 41: tikv.ExecDetails.time_detail:type_name -> tikv.TimeDetail
+	37, // 42: tikv.ExecDetails.scan_detail:type_name -> tikv.ScanDetail
+	34, // 43: tikv.ExecDetailsV2.time_detail:type_name -> tikv.TimeDetail
+	38, // 44: tikv.ExecDetailsV2.scan_detail_v2:type_name -> tikv.ScanDetailV2
+	41, // 45: tikv.ExecDetailsV2.write_detail:type_name -> tikv.WriteDetail
+	35, // 46: tikv.ExecDetailsV2.time_detail_v2:type_name -> tikv.TimeDetailV2
+	23, // 47: tikv.KvPair.error:type_name -> tikv.KeyError
+	4,  // 48: tikv.MvccWrite.type:type_name -> tikv.Op
+	4,  // 49: tikv.MvccLock.type:type_name -> tikv.Op
+	45, // 50: tikv.MvccInfo.lock:type_name -> tikv.MvccLock
+	43, // 51: tikv.MvccInfo.writes:type_name -> tikv.MvccWrite
+	44, // 52: tikv.MvccInfo.values:type_name -> tikv.MvccValue
+	53, // [53:53] is the sub-list for method output_type
+	53, // [53:53] is the sub-list for method input_type
+	53, // [53:53] is the sub-list for extension type_name
+	53, // [53:53] is the sub-list for extension extendee
+	0,  // [0:53] is the sub-list for field type_name
 }
 
 func init() { file_v1_tikv_kvrpcpb_proto_init() }
@@ -4128,6 +4149,7 @@ func file_v1_tikv_kvrpcpb_proto_init() {
 		return
 	}
 	file_v1_tikv_errorpb_proto_init()
+	file_v1_tikv_metapb_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
