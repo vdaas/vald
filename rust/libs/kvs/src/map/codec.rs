@@ -22,9 +22,15 @@ use crate::map::error::Error;
 /// plug in their preferred serialization framework (e.g., Wincode, JSON, Protobuf).
 pub trait Codec: Send + Sync + 'static {
     /// Serializes a given value into a byte vector.
-    fn encode<T: serde::Serialize + wincode::SchemaWrite<Src = T> + ?Sized>(&self, v: &T) -> Result<Vec<u8>, Error>;
+    fn encode<T: serde::Serialize + wincode::SchemaWrite<Src = T> + ?Sized>(
+        &self,
+        v: &T,
+    ) -> Result<Vec<u8>, Error>;
     /// Deserializes a byte slice into a value of a specific type.
-    fn decode<T: serde::de::DeserializeOwned + for<'de> wincode::SchemaRead<'de, Dst = T>>(&self, bytes: &[u8]) -> Result<T, Error>;
+    fn decode<T: serde::de::DeserializeOwned + for<'de> wincode::SchemaRead<'de, Dst = T>>(
+        &self,
+        bytes: &[u8],
+    ) -> Result<T, Error>;
 }
 
 /// The default codec implementation using `bincode`.
@@ -32,13 +38,19 @@ pub trait Codec: Send + Sync + 'static {
 pub struct BincodeCodec;
 
 impl Codec for BincodeCodec {
-    fn encode<T: serde::Serialize + wincode::SchemaWrite<Src = T> + ?Sized>(&self, v: &T) -> Result<Vec<u8>, Error> {
+    fn encode<T: serde::Serialize + wincode::SchemaWrite<Src = T> + ?Sized>(
+        &self,
+        v: &T,
+    ) -> Result<Vec<u8>, Error> {
         wincode::serialize(v).map_err(|e| Error::Codec {
             source: Box::new(e),
         })
     }
 
-    fn decode<T: serde::de::DeserializeOwned + for<'de> wincode::SchemaRead<'de, Dst = T>>(&self, bytes: &[u8]) -> Result<T, Error> {
+    fn decode<T: serde::de::DeserializeOwned + for<'de> wincode::SchemaRead<'de, Dst = T>>(
+        &self,
+        bytes: &[u8],
+    ) -> Result<T, Error> {
         wincode::deserialize(bytes)
             .map(|decoded| decoded)
             .map_err(|e| Error::Codec {
