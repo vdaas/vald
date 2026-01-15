@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ use proto::{
     payload::v1::{object, update},
     vald::v1::update_server,
 };
-use tokio::sync::RwLock;
 use std::{collections::HashMap, sync::Arc};
+use tokio::sync::RwLock;
 use tonic::{Code, Status};
 use tonic_types::StatusExt;
 
@@ -33,7 +33,7 @@ pub(crate) async fn update(
     api_name: &str,
     name: &str,
     ip: &str,
-    request: &update::Request
+    request: &update::Request,
 ) -> Result<object::Location, Status> {
     let config = match request.config.clone() {
         Some(cfg) => cfg,
@@ -55,7 +55,15 @@ pub(crate) async fn update(
             };
             let resource_type = format!("{}/qbg.Update", resource_type);
             let resource_name = format!("{}: {}({})", api_name, name, ip);
-            let err_details = build_error_details(err, domain, &uuid, request.encode_to_vec(), &resource_type, &resource_name, Some("vector dimension size"));
+            let err_details = build_error_details(
+                err,
+                domain,
+                &uuid,
+                request.encode_to_vec(),
+                &resource_type,
+                &resource_name,
+                Some("vector dimension size"),
+            );
             let status = Status::with_error_details(
                 Code::InvalidArgument,
                 "Update API Incompatible Dimension Size detected",
@@ -68,7 +76,15 @@ pub(crate) async fn update(
             let err = Error::InvalidUUID { uuid: uuid.clone() };
             let resource_type = format!("{}/qbg.Update", resource_type);
             let resource_name = format!("{}: {}({})", api_name, name, ip);
-            let err_details = build_error_details(err, domain, &uuid, request.encode_to_vec(), &resource_type, &resource_name, Some("uuid"));
+            let err_details = build_error_details(
+                err,
+                domain,
+                &uuid,
+                request.encode_to_vec(),
+                &resource_type,
+                &resource_name,
+                Some("uuid"),
+            );
             let status = Status::with_error_details(
                 Code::InvalidArgument,
                 format!("Update API invalid argument for uuid \"{}\" detected", uuid),
@@ -85,13 +101,29 @@ pub(crate) async fn update(
                 let request_bytes = request.encode_to_vec();
                 let status = match err {
                     Error::FlushingIsInProgress {} => {
-                        let err_details = build_error_details(err, domain, &uuid, request_bytes, &resource_type, &resource_name, None);
+                        let err_details = build_error_details(
+                            err,
+                            domain,
+                            &uuid,
+                            request_bytes,
+                            &resource_type,
+                            &resource_name,
+                            None,
+                        );
                         let status = Status::with_error_details(Code::Aborted, "Update API aborted to process update request due to flushing indices is in progress", err_details);
                         warn!("{:?}", status);
                         status
                     }
                     Error::ObjectIDNotFound { uuid: _ } => {
-                        let err_details = build_error_details(err, domain, &uuid, request_bytes, &resource_type, &resource_name, None);
+                        let err_details = build_error_details(
+                            err,
+                            domain,
+                            &uuid,
+                            request_bytes,
+                            &resource_type,
+                            &resource_name,
+                            None,
+                        );
                         let status = Status::with_error_details(
                             Code::NotFound,
                             format!("Update API uuid {} not found", uuid),
@@ -101,8 +133,16 @@ pub(crate) async fn update(
                         status
                     }
                     Error::UUIDNotFound { uuid: _ } => {
-                        let err_details = build_error_details(err, domain, &uuid, request_bytes, &resource_type, &resource_name, Some("uuid or vector"));
-                        let status= Status::with_error_details(
+                        let err_details = build_error_details(
+                            err,
+                            domain,
+                            &uuid,
+                            request_bytes,
+                            &resource_type,
+                            &resource_name,
+                            Some("uuid or vector"),
+                        );
+                        let status = Status::with_error_details(
                             Code::InvalidArgument,
                             format!(
                                 "Update API invalid argument for uuid \"{}\" vec \"{:?}\" detected",
@@ -114,7 +154,15 @@ pub(crate) async fn update(
                         status
                     }
                     Error::UUIDAlreadyExists { uuid: _ } => {
-                        let err_details = build_error_details(err, domain, &uuid, request_bytes, &resource_type, &resource_name, None);
+                        let err_details = build_error_details(
+                            err,
+                            domain,
+                            &uuid,
+                            request_bytes,
+                            &resource_type,
+                            &resource_name,
+                            None,
+                        );
                         let status = Status::with_error_details(
                             Code::AlreadyExists,
                             format!("Update API uuid {}'s same data already exists", uuid),
@@ -124,7 +172,15 @@ pub(crate) async fn update(
                         status
                     }
                     _ => {
-                        let err_details = build_error_details(err, domain, &uuid, request_bytes, &resource_type, &resource_name, None);
+                        let err_details = build_error_details(
+                            err,
+                            domain,
+                            &uuid,
+                            request_bytes,
+                            &resource_type,
+                            &resource_name,
+                            None,
+                        );
                         let status = Status::with_error_details(
                             Code::Internal,
                             "Update API failed",
@@ -172,8 +228,11 @@ impl update_server::Update for super::Agent {
         &self,
         request: tonic::Request<tonic::Streaming<update::Request>>,
     ) -> std::result::Result<tonic::Response<Self::StreamUpdateStream>, tonic::Status> {
-        info!("Received stream update request from {:?}", request.remote_addr());
-    
+        info!(
+            "Received stream update request from {:?}",
+            request.remote_addr()
+        );
+
         let s = self.s.clone();
         let resource_type = self.resource_type.clone() + "/qbg.StreamUpdate";
         let name = self.name.clone();
@@ -188,11 +247,9 @@ impl update_server::Update for super::Agent {
             let api_name = api_name.clone();
             async move {
                 match update(s, &resource_type, &api_name, &name, &ip, &req).await {
-                    Ok(location) => {
-                        Ok(object::StreamLocation {
-                            payload: Some(object::stream_location::Payload::Location(location)),
-                        })
-                    }
+                    Ok(location) => Ok(object::StreamLocation {
+                        payload: Some(object::stream_location::Payload::Location(location)),
+                    }),
                     Err(status) => Err(status),
                 }
             }
@@ -226,7 +283,15 @@ impl update_server::Update for super::Agent {
                     };
                     let resource_type = self.resource_type.clone() + "/qbg.MultiUpdate";
                     let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
-                    let err_details = build_error_details(err, domain, &vec.id, mreq.encode_to_vec(), &resource_type, &resource_name, Some("vector dimension size"));
+                    let err_details = build_error_details(
+                        err,
+                        domain,
+                        &vec.id,
+                        mreq.encode_to_vec(),
+                        &resource_type,
+                        &resource_name,
+                        Some("vector dimension size"),
+                    );
                     let status = Status::with_error_details(
                         Code::InvalidArgument,
                         "MultiUpdate API Incombatible Dimension Size detedted",
@@ -246,13 +311,29 @@ impl update_server::Update for super::Agent {
                     let request_bytes = mreq.encode_to_vec();
                     let status = match err {
                         Error::FlushingIsInProgress {} => {
-                            let err_details = build_error_details(err, domain, &uuids.join(", "), request_bytes, &resource_type, &resource_name, None);
+                            let err_details = build_error_details(
+                                err,
+                                domain,
+                                &uuids.join(", "),
+                                request_bytes,
+                                &resource_type,
+                                &resource_name,
+                                None,
+                            );
                             let status = Status::with_error_details(Code::Aborted, "MultiUpdate API aborted to process update request due to flushing indices is in progress", err_details);
                             warn!("{:?}", status);
                             status
                         }
                         Error::ObjectIDNotFound { ref uuid } => {
-                            let err_details = build_error_details(&err, domain, &uuid, request_bytes, &resource_type, &resource_name, None);
+                            let err_details = build_error_details(
+                                &err,
+                                domain,
+                                &uuid,
+                                request_bytes,
+                                &resource_type,
+                                &resource_name,
+                                None,
+                            );
                             let uuids = Error::split_uuids(uuid.to_string());
                             let status = Status::with_error_details(
                                 Code::NotFound,
@@ -268,7 +349,15 @@ impl update_server::Update for super::Agent {
                             limit: _,
                         }
                         | Error::UUIDNotFound { ref uuid } => {
-                            let err_details = build_error_details(&err, domain, &uuid, request_bytes, &resource_type, &resource_name, Some("uuid or vector"));
+                            let err_details = build_error_details(
+                                &err,
+                                domain,
+                                &uuid,
+                                request_bytes,
+                                &resource_type,
+                                &resource_name,
+                                Some("uuid or vector"),
+                            );
                             let uuids = Error::split_uuids(uuid.to_string());
                             let status = Status::with_error_details(
                                 Code::InvalidArgument,
@@ -282,7 +371,15 @@ impl update_server::Update for super::Agent {
                             status
                         }
                         Error::UUIDAlreadyExists { ref uuid } => {
-                            let err_details = build_error_details(&err, domain, &uuid, request_bytes, &resource_type, &resource_name, None);
+                            let err_details = build_error_details(
+                                &err,
+                                domain,
+                                &uuid,
+                                request_bytes,
+                                &resource_type,
+                                &resource_name,
+                                None,
+                            );
                             let uuids = Error::split_uuids(uuid.to_string());
                             let status = Status::with_error_details(
                                 Code::AlreadyExists,
@@ -293,7 +390,15 @@ impl update_server::Update for super::Agent {
                             status
                         }
                         _ => {
-                            let err_details = build_error_details(err, domain, &uuids.join(", "), request_bytes, &resource_type, &resource_name, None);
+                            let err_details = build_error_details(
+                                err,
+                                domain,
+                                &uuids.join(", "),
+                                request_bytes,
+                                &resource_type,
+                                &resource_name,
+                                None,
+                            );
                             let status = Status::with_error_details(
                                 Code::Internal,
                                 "MultiUpdate API failed",

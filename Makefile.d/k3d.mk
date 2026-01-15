@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -14,15 +14,15 @@
 # limitations under the License.
 #
 
-K3D_CLUSTER_NAME  = "vald-cluster"
-K3D_COMMAND       = k3d
-K3D_NODES         = 5
-K3D_NETWORK       = bridge
-K3D_PORT          = 6550
-K3D_HOST          = localhost
-K3D_INGRESS_PORT  = 8081
+K3D_CLUSTER_NAME = "vald-cluster"
+K3D_COMMAND = k3d
+K3D_NODES = 5
+K3D_NETWORK = bridge
+K3D_PORT = 6550
+K3D_HOST = localhost
+K3D_INGRESS_PORT = 8081
 K3D_HOST_PID_MODE = true
-K3D_OPTIONS       = --port $(K3D_INGRESS_PORT):80@loadbalancer
+K3D_OPTIONS = --port $(K3D_INGRESS_PORT):80@loadbalancer
 
 .PHONY: k3d/install
 ## install K3D
@@ -37,14 +37,14 @@ $(BINDIR)/k3d: update/k3d
 ## start k3d (kubernetes in docker) cluster
 k3d/start:
 	$(K3D_COMMAND) cluster create $(K3D_CLUSTER_NAME) \
-	  --agents $(K3D_NODES) \
-	  --image docker.io/rancher/k3s:$(K3S_VERSION) \
-	  --host-pid-mode=$(K3D_HOST_PID_MODE) \
-	  --api-port $(K3D_HOST):$(K3D_PORT) \
-	  -v "/lib/modules:/lib/modules" \
-	  --k3s-arg '--kubelet-arg=eviction-hard=imagefs.available<1%,nodefs.available<1%@agent:*' \
-	  --k3s-arg '--kubelet-arg=eviction-minimum-reclaim=imagefs.available=1%,nodefs.available=1%@agent:*' \
-	  $(K3D_OPTIONS)
+	--agents $(K3D_NODES) \
+	--image docker.io/rancher/k3s:$(K3S_VERSION) \
+	--host-pid-mode=$(K3D_HOST_PID_MODE) \
+	--api-port $(K3D_HOST):$(K3D_PORT) \
+	-v "/lib/modules:/lib/modules" \
+	--k3s-arg '--kubelet-arg=eviction-hard=imagefs.available<1%,nodefs.available<1%@agent:*' \
+	--k3s-arg '--kubelet-arg=eviction-minimum-reclaim=imagefs.available=1%,nodefs.available=1%@agent:*' \
+	$(K3D_OPTIONS)
 	@make k3d/config
 
 .PHONY: k3d/vs/start
@@ -55,14 +55,13 @@ k3d/vs/start:
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/deploy/kubernetes/snapshot-controller/rbac-snapshot-controller.yaml
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/deploy/kubernetes/snapshot-controller/setup-snapshot-controller.yaml
-
 	mkdir -p $(TEMP_DIR)/csi-driver-hostpath \
-		&& curl -fsSL https://github.com/kubernetes-csi/csi-driver-host-path/archive/refs/tags/$(CSI_DRIVER_HOST_PATH_VERSION).tar.gz | tar zxf - -C $(TEMP_DIR)/csi-driver-hostpath --strip-components 1 \
-		&& cd $(TEMP_DIR)/csi-driver-hostpath \
-		&& deploy/kubernetes-latest/deploy.sh \
-		&& kubectl apply -f examples/csi-storageclass.yaml \
-		&& kubectl apply -f examples/csi-pvc.yaml \
-		&& rm -rf $(TEMP_DIR)/csi-driver-hostpath
+	&& curl -fsSL https://github.com/kubernetes-csi/csi-driver-host-path/archive/refs/tags/$(CSI_DRIVER_HOST_PATH_VERSION).tar.gz | tar zxf - -C $(TEMP_DIR)/csi-driver-hostpath --strip-components 1 \
+	&& cd $(TEMP_DIR)/csi-driver-hostpath \
+	&& deploy/kubernetes-latest/deploy.sh \
+	&& kubectl apply -f examples/csi-storageclass.yaml \
+	&& kubectl apply -f examples/csi-pvc.yaml \
+	&& rm -rf $(TEMP_DIR)/csi-driver-hostpath
 
 .PHONY: k3d/storage
 ## storage k3d (kubernetes in docker) cluster

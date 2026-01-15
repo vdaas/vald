@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -20,14 +20,14 @@ use proto::{
     payload::v1::{insert, object, update, upsert},
     vald::v1::{insert_server::Insert, update_server::Update, upsert_server},
 };
-use tokio::sync::RwLock;
 use std::sync::Arc;
+use tokio::sync::RwLock;
 use tonic::{Code, Status};
 use tonic_types::StatusExt;
 
-use super::update::update as update_fn;
-use super::insert::insert as insert_fn;
 use super::common::{bidirectional_stream, build_error_details};
+use super::insert::insert as insert_fn;
+use super::update::update as update_fn;
 
 async fn upsert(
     s: Arc<RwLock<dyn algorithm::ANN>>,
@@ -35,7 +35,7 @@ async fn upsert(
     api_name: &str,
     name: &str,
     ip: &str,
-    request: &upsert::Request
+    request: &upsert::Request,
 ) -> Result<object::Location, Status> {
     let config = match request.config.clone() {
         Some(cfg) => cfg,
@@ -57,7 +57,15 @@ async fn upsert(
             };
             let resource_type = format!("{}/qbg.Upsert", resource_type);
             let resource_name = format!("{}: {}({})", api_name, name, ip);
-            let err_details = build_error_details(err, domain, &vec.id, request.encode_to_vec(), &resource_type, &resource_name, Some("vector dimension size"));
+            let err_details = build_error_details(
+                err,
+                domain,
+                &vec.id,
+                request.encode_to_vec(),
+                &resource_type,
+                &resource_name,
+                Some("vector dimension size"),
+            );
             let status = Status::with_error_details(
                 Code::InvalidArgument,
                 "Upsert API Incompatible Dimension Size detected",
@@ -70,7 +78,15 @@ async fn upsert(
             let err = Error::InvalidUUID { uuid: uuid.clone() };
             let resource_type = format!("{}/qbg.Upsert", resource_type);
             let resource_name = format!("{}: {}({})", api_name, name, ip);
-            let err_details = build_error_details(err, domain, &uuid, request.encode_to_vec(), &resource_type, &resource_name, Some("uuid"));
+            let err_details = build_error_details(
+                err,
+                domain,
+                &uuid,
+                request.encode_to_vec(),
+                &resource_type,
+                &resource_name,
+                Some("uuid"),
+            );
             let status = Status::with_error_details(
                 Code::InvalidArgument,
                 format!("Upsert API invalid argument for uuid \"{}\" detected", uuid),
@@ -97,7 +113,9 @@ async fn upsert(
                         timestamp: config.timestamp,
                         disable_balanced_update: config.disable_balanced_update,
                     }),
-                }).await;
+                },
+            )
+            .await;
             rt_name = format!("{}{}", "/qbg.Upsert", "/qbg.Update");
         } else {
             result = insert_fn(
@@ -113,7 +131,9 @@ async fn upsert(
                         filters: config.filters,
                         timestamp: config.timestamp,
                     }),
-            }).await;
+                },
+            )
+            .await;
             rt_name = format!("{}{}", "/qbg.Upsert", "/qbg.Insert");
         }
         match result {
@@ -127,11 +147,17 @@ async fn upsert(
                     | Code::Ok
                     | Code::Unimplemented => return Err(st),
                     _ => {
-                        let resource_type =
-                            format!("{}{}", resource_type, rt_name);
-                        let resource_name =
-                            format!("{}: {}({})", api_name, name, ip);
-                        let err_details = build_error_details(st.get_details_error_info().unwrap().reason, domain, &uuid, request.encode_to_vec(), &resource_type, &resource_name, None);
+                        let resource_type = format!("{}{}", resource_type, rt_name);
+                        let resource_name = format!("{}: {}({})", api_name, name, ip);
+                        let err_details = build_error_details(
+                            st.get_details_error_info().unwrap().reason,
+                            domain,
+                            &uuid,
+                            request.encode_to_vec(),
+                            &resource_type,
+                            &resource_name,
+                            None,
+                        );
                         Status::with_error_details(st.code(), st.message(), err_details)
                     }
                 };
@@ -169,7 +195,10 @@ impl upsert_server::Upsert for super::Agent {
         &self,
         request: tonic::Request<tonic::Streaming<upsert::Request>>,
     ) -> std::result::Result<tonic::Response<Self::StreamUpsertStream>, tonic::Status> {
-        info!("Received stream upsert request from {:?}", request.remote_addr());
+        info!(
+            "Received stream upsert request from {:?}",
+            request.remote_addr()
+        );
         let s = self.s.clone();
         let resource_type = self.resource_type.clone() + "/qbg.StreamUpsert";
         let name = self.name.clone();
@@ -184,11 +213,9 @@ impl upsert_server::Upsert for super::Agent {
             let api_name = api_name.clone();
             async move {
                 match upsert(s, &resource_type, &api_name, &name, &ip, &req).await {
-                    Ok(location) => {
-                        Ok(object::StreamLocation {
-                            payload: Some(object::stream_location::Payload::Location(location)),
-                        })
-                    }
+                    Ok(location) => Ok(object::StreamLocation {
+                        payload: Some(object::stream_location::Payload::Location(location)),
+                    }),
                     Err(status) => Err(status),
                 }
             }
@@ -227,7 +254,15 @@ impl upsert_server::Upsert for super::Agent {
                     };
                     let resource_type = self.resource_type.clone() + "/qbg.MultiUpsert";
                     let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
-                    let err_details = build_error_details(err, domain, &vec.id, req.encode_to_vec(), &resource_type, &resource_name, Some("vector dimension size"));
+                    let err_details = build_error_details(
+                        err,
+                        domain,
+                        &vec.id,
+                        req.encode_to_vec(),
+                        &resource_type,
+                        &resource_name,
+                        Some("vector dimension size"),
+                    );
                     let status = Status::with_error_details(
                         Code::InvalidArgument,
                         "Upsert API Incompatible Dimension Size detected",

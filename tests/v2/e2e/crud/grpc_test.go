@@ -1,7 +1,7 @@
 //go:build e2e
 
 //
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import (
 	"strconv"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/iter"
@@ -38,6 +39,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/tests/v2/e2e/config"
+	"github.com/vdaas/vald/tests/v2/e2e/metrics"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -119,7 +121,7 @@ func handleGRPCWithStatusCode(
 ) error {
 	t.Helper()
 	if len(plan.Expect) == 0 {
-		return nil
+		return err
 	}
 
 	var protoJSON []byte
@@ -206,16 +208,21 @@ func handleGRPCWithStatusCode(
 // It compares the error's status code with the expected codes from the plan.
 // If the error is expected, it logs a message; otherwise, it logs an error.
 // If the results do not match, it logs an error.
-func handleGRPCCall(t *testing.T, err error, res proto.Message, plan *config.Execution) error {
+func handleGRPCCall(
+	t *testing.T, err error, res proto.Message, plan *config.Execution,
+) (code codes.Code, msg string, rerr error) {
 	t.Helper()
-	var code codes.Code
 	if err != nil {
 		if st, ok := status.FromError(err); ok && st != nil {
-			err = errors.Wrapf(err, "gRPC Status received: %s", st.String())
+			msg = st.String()
 			code = st.Code()
+			rerr = errors.Wrapf(err, "gRPC request received: %s", msg)
 		}
+	} else {
+		code = codes.OK
 	}
-	return handleGRPCWithStatusCode(t, err, code, res, plan)
+	rerr = handleGRPCWithStatusCode(t, err, code, res, plan)
+	return code, msg, rerr
 }
 
 func single[Q, R proto.Message](
@@ -226,18 +233,36 @@ func single[Q, R proto.Message](
 	req Q,
 	call grpcCall[Q, R],
 	callback ...callback[R],
-) error {
+) (err error) {
 	t.Helper()
+	if plan == nil {
+		return nil
+	}
+
+	queuedAt := time.Now()
 	if plan.BaseConfig != nil && plan.BaseConfig.Limiter != nil {
 		plan.BaseConfig.Limiter.Wait(ctx)
 	}
-	// Execute the modify gRPC call.
+	startedAt := time.Now()
 	res, err := call(ctx, req)
-	err = handleGRPCCall(t, err, res, plan)
-	if err != nil {
-		return err
-	}
+	endedAt := time.Now()
 
+	st, msg, rerr := handleGRPCCall(t, err, res, plan)
+	if plan.Metrics != nil && plan.Metrics.Enabled && plan.Collector != nil {
+		rr := metrics.GetRequestResult()
+		defer metrics.PutRequestResult(rr)
+		rr.RequestID = strconv.FormatUint(idx, 10)
+		rr.Status = st
+		rr.Err = err
+		rr.Msg = msg
+		rr.QueuedAt = queuedAt
+		rr.StartedAt = startedAt
+		rr.EndedAt = endedAt
+		plan.Collector.Record(ctx, idx, rr)
+	}
+	if rerr != nil && errors.IsNot(err, rerr) {
+		return rerr
+	}
 	for _, cb := range callback {
 		if cb != nil {
 			if !cb(t, idx, res, err) {
@@ -347,30 +372,64 @@ func stream[Q, R proto.Message, S grpc.TypedClientStream[Q, R]](
 		t.Error(err)
 		return
 	}
-	// qidx tracks the current index within the modify configuration slice.
-	// idx tracks the current vector index.
+	rchan := make(chan *metrics.RequestResult, int(plan.Parallelism)*2)
 	var idx atomic.Uint64
-	var sidx atomic.Uint64
 	// Use a bidirectional stream client to send requests and receive responses.
 	err = grpc.BidirectionalStreamClient(stream, int(plan.Parallelism), func() (query Q, ok bool) {
+		id := idx.Load()
+		idx.Add(1)
 		// If we have processed all vectors, return nil to close the stream.
-		if idx.Load() >= data.Len() {
+		if id >= data.Len() {
+			close(rchan)
 			return query, false
 		}
+		rr := metrics.GetRequestResult()
+		rr.RequestID = strconv.FormatUint(id, 10)
+
+		// Build the modify configuration and return the request.
+		query = newReq(t, id, strconv.FormatUint(id, 10), data.At(id), plan)
+
+		rr.QueuedAt = time.Now()
 		if plan.BaseConfig != nil && plan.BaseConfig.Limiter != nil {
 			plan.BaseConfig.Limiter.Wait(stream.Context())
 		}
-		// Build the modify configuration and return the request.
-		query = newReq(t, idx.Load(), strconv.FormatUint(idx.Load(), 10), data.At(idx.Load()), plan)
-		idx.Add(1)
+		rr.StartedAt = time.Now()
+		select {
+		case <-ctx.Done():
+		case rchan <- rr:
+		}
 		return query, true
 	}, func(res R, err error) bool {
-		// Handle the error using the centralized error handler.
-		if err = handleGRPCCall(t, err, res, plan); err != nil {
-			t.Error(err.Error())
-			return true
+		endedAt := time.Now()
+		var rr *metrics.RequestResult
+		select {
+		case <-ctx.Done():
+		case rr = <-rchan:
 		}
-		id := sidx.Add(1) - 1
+		if rr == nil {
+			rr = new(metrics.RequestResult)
+		}
+		defer metrics.PutRequestResult(rr)
+		var rerr error
+		rr.Status, rr.Msg, rerr = handleGRPCCall(t, err, res, plan)
+		if plan.Metrics != nil && plan.Metrics.Enabled && plan.Collector != nil {
+			rr.Err = err
+			rr.EndedAt = endedAt
+			id, err := strconv.ParseUint(rr.RequestID, 10, 64)
+			if err != nil {
+				id = 0
+			}
+			plan.Collector.Record(ctx, id, rr)
+		}
+		if rerr != nil && errors.IsNot(err, rerr) {
+			return false
+		}
+
+		id, err := strconv.ParseUint(rr.RequestID, 10, 0)
+		if err != nil {
+			id = 0
+		}
+
 		for _, cb := range callbacks {
 			if cb != nil {
 				if !cb(t, id, res, err) {
