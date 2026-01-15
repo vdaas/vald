@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,22 +14,22 @@
 // limitations under the License.
 //
 
-use bincode::{Decode, Encode, config::standard as bincode_standard};
 use futures::{Stream, StreamExt};
 use serde::{Serialize, de::DeserializeOwned};
-use sled::{Db, Tree, transaction::TransactionError};
+use sled::{
+    Db, Tree,
+    transaction::TransactionError,
+};
+use tracing::instrument;
+use wincode::{SchemaRead, SchemaWrite};
 use std::borrow::Borrow;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
-use tracing::instrument;
 
-use crate::map::{
-    codec::Codec,
-    error::Error,
-    types::{KeyType, ValueType},
-};
+use crate::map::{codec::Codec, error::Error, types::{KeyType, ValueType}};
+
 
 /// A trait that defines the core functionality of a key-value map.
 ///
@@ -74,7 +74,7 @@ pub trait MapBase: Sized + Sync + Send + 'static {
     fn get<Q>(&self, key: &Q) -> impl Future<Output = Result<(Self::V, u128), Error>> + Send
     where
         Self::K: Borrow<Q>,
-        Q: Serialize + Encode + ?Sized + Sync;
+        Q: Serialize + SchemaWrite<Src = Q> + ?Sized + Sync;
 
     /// Inserts or updates a key-value pair with a specified timestamp.
     ///
@@ -83,12 +83,7 @@ pub trait MapBase: Sized + Sync + Send + 'static {
     /// * `key` - The key to insert or update.
     /// * `value` - The value to associate with the key.
     /// * `timestamp` - The timestamp for the key-value pair.
-    fn set(
-        &self,
-        key: Self::K,
-        value: Self::V,
-        timestamp: u128,
-    ) -> impl Future<Output = Result<(), Error>> + Send;
+    fn set(&self, key: Self::K, value: Self::V, timestamp: u128) -> impl Future<Output = Result<(), Error>> + Send;
 
     /// Deletes a pair by its key and returns the associated value.
     ///
@@ -98,7 +93,7 @@ pub trait MapBase: Sized + Sync + Send + 'static {
     fn delete<Q>(&self, key: &Q) -> impl Future<Output = Result<Self::V, Error>> + Send
     where
         Self::K: Borrow<Q>,
-        Q: Serialize + Encode + ?Sized + Sync;
+        Q: Serialize + SchemaWrite<Src = Q> + ?Sized + Sync;
 
     /// Iterates over all key-value pairs using a callback function.
     ///
@@ -137,8 +132,8 @@ pub trait MapBase: Sized + Sync + Send + 'static {
                 let result = (|| {
                     let (k_ivec, payload_ivec) = item?;
                     let (v_b, ts): (Vec<u8>, u128) =
-                        bincode::decode_from_slice(&payload_ivec, bincode_standard())
-                            .map(|(decoded, _)| decoded)
+                        wincode::deserialize(&payload_ivec)
+                            .map(|decoded| decoded)
                             .map_err(|e| Error::Codec {
                                 source: Box::new(e),
                             })?;
@@ -175,14 +170,10 @@ pub trait MapBase: Sized + Sync + Send + 'static {
     // --- Private Helper Methods ---
 
     /// Internal helper to get a value from db given a key.
-    fn perform_get<Input, Output>(
-        &self,
-        key: &Input,
-        tree: &Tree,
-    ) -> impl Future<Output = Result<(Output, u128), Error>> + Send
+    fn perform_get<Input, Output>(&self, key: &Input, tree: &Tree) -> impl Future<Output = Result<(Output, u128), Error>> + Send
     where
-        Input: Serialize + Encode + ?Sized + Sync,
-        Output: DeserializeOwned + Decode<()> + Send + 'static,
+        Input: Serialize + SchemaWrite<Src = Input> + ?Sized + Sync,
+        Output: DeserializeOwned + for<'de> SchemaRead<'de, Dst = Output> + Send + 'static,
     {
         let tree = tree.clone();
         let codec = self._codec().clone();
@@ -193,8 +184,8 @@ pub trait MapBase: Sized + Sync + Send + 'static {
                 let payload_ivec = tree.get(encoded_input)?.ok_or(Error::NotFound)?;
 
                 let (output_bytes, ts): (Vec<u8>, u128) =
-                    bincode::decode_from_slice(&payload_ivec, bincode_standard())
-                        .map(|(decoded, _)| decoded)
+                    wincode::deserialize(&payload_ivec)
+                        .map(|decoded| decoded)
                         .map_err(|e| Error::Codec {
                             source: Box::new(e),
                         })?;
@@ -206,13 +197,7 @@ pub trait MapBase: Sized + Sync + Send + 'static {
     }
 
     /// Internal helper to set an entry to db.
-    fn perform_set<F>(
-        &self,
-        key: Self::K,
-        value: Self::V,
-        timestamp: u128,
-        f: F,
-    ) -> impl Future<Output = Result<(), Error>> + Send
+    fn perform_set<F>(&self, key: Self::K, value: Self::V, timestamp: u128, f: F) -> impl Future<Output = Result<(), Error>> + Send
     where
         F: FnOnce(Vec<u8>, Vec<u8>, u128) -> Result<bool, TransactionError<Error>> + Send + 'static,
     {
@@ -224,8 +209,10 @@ pub trait MapBase: Sized + Sync + Send + 'static {
             let was_inserted = tokio::task::spawn_blocking(move || -> Result<bool, Error> {
                 let transaction_result = f(key_bytes, val_bytes, timestamp);
 
-                transaction_result.map_err(|e: TransactionError<Error>| Error::SledTransaction {
-                    source: Box::new(e),
+                transaction_result.map_err(|e: TransactionError<Error>| {
+                    Error::SledTransaction {
+                        source: Box::new(e),
+                    }
                 })
             })
             .await??;
@@ -239,14 +226,10 @@ pub trait MapBase: Sized + Sync + Send + 'static {
     }
 
     /// Internal helper to delete an entry from db
-    fn perform_delete<Input, Output, F>(
-        &self,
-        key: &Input,
-        f: F,
-    ) -> impl Future<Output = Result<Output, Error>> + Send
+    fn perform_delete<Input, Output, F>(&self, key: &Input, f: F) -> impl Future<Output = Result<Output, Error>> + Send
     where
-        Input: Serialize + Encode + ?Sized + Sync,
-        Output: DeserializeOwned + Decode<()> + Send + 'static,
+        Input: Serialize + SchemaWrite<Src = Input> + ?Sized + Sync,
+        Output: DeserializeOwned + for<'de> SchemaRead<'de, Dst = Output> + Send + 'static,
         F: FnOnce(Vec<u8>) -> Result<Option<Vec<u8>>, TransactionError<Error>> + Send + 'static,
     {
         let codec = self._codec().clone();
@@ -255,8 +238,10 @@ pub trait MapBase: Sized + Sync + Send + 'static {
             let encoded_input = codec.encode(key)?;
             let deleted_bytes = tokio::task::spawn_blocking(move || {
                 let transaction_result = f(encoded_input);
-                transaction_result.map_err(|e: TransactionError<Error>| Error::SledTransaction {
-                    source: Box::new(e),
+                transaction_result.map_err(|e: TransactionError<Error>| {
+                    Error::SledTransaction {
+                        source: Box::new(e),
+                    }
                 })
             })
             .await??;
