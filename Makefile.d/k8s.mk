@@ -153,6 +153,7 @@ k8s/vald/deploy: k8s/vald/manifests
 	kubectl apply -f $(TEMP_DIR)/vald/templates/index/job/save || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/index/job/readreplica/rotate || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/index/operator || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/kvs/tikv || true
 	kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr " " "\n"
 
 	@echo "manifest files location: $(TEMP_DIR)"
