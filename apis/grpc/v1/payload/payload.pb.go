@@ -3893,31 +3893,27 @@ func (*Info_Index) Descriptor() ([]byte, []int) {
 	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 0}
 }
 
-// Represent the resource stats
-type Info_ResourceStats struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	Name  string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Ip    string                 `protobuf:"bytes,2,opt,name=ip,proto3" json:"ip,omitempty"`
-	// Container resource usage statistics
-	CgroupStats   *Info_CgroupStats `protobuf:"bytes,3,opt,name=cgroup_stats,json=cgroupStats,proto3" json:"cgroup_stats,omitempty"`
+// Represents the stats info messages.
+type Info_Stats struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *Info_ResourceStats) Reset() {
-	*x = Info_ResourceStats{}
+func (x *Info_Stats) Reset() {
+	*x = Info_Stats{}
 	mi := &file_v1_payload_payload_proto_msgTypes[70]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Info_ResourceStats) String() string {
+func (x *Info_Stats) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Info_ResourceStats) ProtoMessage() {}
+func (*Info_Stats) ProtoMessage() {}
 
-func (x *Info_ResourceStats) ProtoReflect() protoreflect.Message {
+func (x *Info_Stats) ProtoReflect() protoreflect.Message {
 	mi := &file_v1_payload_payload_proto_msgTypes[70]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -3929,30 +3925,9 @@ func (x *Info_ResourceStats) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Info_ResourceStats.ProtoReflect.Descriptor instead.
-func (*Info_ResourceStats) Descriptor() ([]byte, []int) {
+// Deprecated: Use Info_Stats.ProtoReflect.Descriptor instead.
+func (*Info_Stats) Descriptor() ([]byte, []int) {
 	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 1}
-}
-
-func (x *Info_ResourceStats) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *Info_ResourceStats) GetIp() string {
-	if x != nil {
-		return x.Ip
-	}
-	return ""
-}
-
-func (x *Info_ResourceStats) GetCgroupStats() *Info_CgroupStats {
-	if x != nil {
-		return x.CgroupStats
-	}
-	return nil
 }
 
 type Info_CgroupStats struct {
@@ -5738,6 +5713,185 @@ func (x *Info_Index_UUID_Uncommitted) GetUuid() string {
 	return ""
 }
 
+// Represent the resource stats
+type Info_Stats_ResourceStats struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Name  string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Ip    string                 `protobuf:"bytes,2,opt,name=ip,proto3" json:"ip,omitempty"`
+	// Container resource usage statistics
+	CgroupStats   *Info_Stats_CgroupStats `protobuf:"bytes,3,opt,name=cgroup_stats,json=cgroupStats,proto3" json:"cgroup_stats,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Info_Stats_ResourceStats) Reset() {
+	*x = Info_Stats_ResourceStats{}
+	mi := &file_v1_payload_payload_proto_msgTypes[96]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Info_Stats_ResourceStats) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Info_Stats_ResourceStats) ProtoMessage() {}
+
+func (x *Info_Stats_ResourceStats) ProtoReflect() protoreflect.Message {
+	mi := &file_v1_payload_payload_proto_msgTypes[96]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Info_Stats_ResourceStats.ProtoReflect.Descriptor instead.
+func (*Info_Stats_ResourceStats) Descriptor() ([]byte, []int) {
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 1, 0}
+}
+
+func (x *Info_Stats_ResourceStats) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Info_Stats_ResourceStats) GetIp() string {
+	if x != nil {
+		return x.Ip
+	}
+	return ""
+}
+
+func (x *Info_Stats_ResourceStats) GetCgroupStats() *Info_Stats_CgroupStats {
+	if x != nil {
+		return x.CgroupStats
+	}
+	return nil
+}
+
+// Represents the resource stats for each Agents
+type Info_Stats_ResourceStatsDetail struct {
+	state         protoimpl.MessageState               `protogen:"open.v1"`
+	Details       map[string]*Info_Stats_ResourceStats `protobuf:"bytes,1,rep,name=details,proto3" json:"details,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Info_Stats_ResourceStatsDetail) Reset() {
+	*x = Info_Stats_ResourceStatsDetail{}
+	mi := &file_v1_payload_payload_proto_msgTypes[97]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Info_Stats_ResourceStatsDetail) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Info_Stats_ResourceStatsDetail) ProtoMessage() {}
+
+func (x *Info_Stats_ResourceStatsDetail) ProtoReflect() protoreflect.Message {
+	mi := &file_v1_payload_payload_proto_msgTypes[97]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Info_Stats_ResourceStatsDetail.ProtoReflect.Descriptor instead.
+func (*Info_Stats_ResourceStatsDetail) Descriptor() ([]byte, []int) {
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 1, 1}
+}
+
+func (x *Info_Stats_ResourceStatsDetail) GetDetails() map[string]*Info_Stats_ResourceStats {
+	if x != nil {
+		return x.Details
+	}
+	return nil
+}
+
+type Info_Stats_CgroupStats struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// CPU cores available
+	CpuLimitCores float64 `protobuf:"fixed64,1,opt,name=cpu_limit_cores,json=cpuLimitCores,proto3" json:"cpu_limit_cores,omitempty"`
+	// CPU usage in cores (not percentage)
+	CpuUsageCores float64 `protobuf:"fixed64,2,opt,name=cpu_usage_cores,json=cpuUsageCores,proto3" json:"cpu_usage_cores,omitempty"`
+	// Memory limit in bytes
+	MemoryLimitBytes uint64 `protobuf:"varint,3,opt,name=memory_limit_bytes,json=memoryLimitBytes,proto3" json:"memory_limit_bytes,omitempty"`
+	// Memory usage in bytes
+	MemoryUsageBytes uint64 `protobuf:"varint,4,opt,name=memory_usage_bytes,json=memoryUsageBytes,proto3" json:"memory_usage_bytes,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *Info_Stats_CgroupStats) Reset() {
+	*x = Info_Stats_CgroupStats{}
+	mi := &file_v1_payload_payload_proto_msgTypes[98]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Info_Stats_CgroupStats) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Info_Stats_CgroupStats) ProtoMessage() {}
+
+func (x *Info_Stats_CgroupStats) ProtoReflect() protoreflect.Message {
+	mi := &file_v1_payload_payload_proto_msgTypes[98]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Info_Stats_CgroupStats.ProtoReflect.Descriptor instead.
+func (*Info_Stats_CgroupStats) Descriptor() ([]byte, []int) {
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 1, 2}
+}
+
+func (x *Info_Stats_CgroupStats) GetCpuLimitCores() float64 {
+	if x != nil {
+		return x.CpuLimitCores
+	}
+	return 0
+}
+
+func (x *Info_Stats_CgroupStats) GetCpuUsageCores() float64 {
+	if x != nil {
+		return x.CpuUsageCores
+	}
+	return 0
+}
+
+func (x *Info_Stats_CgroupStats) GetMemoryLimitBytes() uint64 {
+	if x != nil {
+		return x.MemoryLimitBytes
+	}
+	return 0
+}
+
+func (x *Info_Stats_CgroupStats) GetMemoryUsageBytes() uint64 {
+	if x != nil {
+		return x.MemoryUsageBytes
+	}
+	return 0
+}
+
 // Represent server information.
 type Mirror_Target struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -5751,7 +5905,7 @@ type Mirror_Target struct {
 
 func (x *Mirror_Target) Reset() {
 	*x = Mirror_Target{}
-	mi := &file_v1_payload_payload_proto_msgTypes[98]
+	mi := &file_v1_payload_payload_proto_msgTypes[102]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5763,7 +5917,7 @@ func (x *Mirror_Target) String() string {
 func (*Mirror_Target) ProtoMessage() {}
 
 func (x *Mirror_Target) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[98]
+	mi := &file_v1_payload_payload_proto_msgTypes[102]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5804,7 +5958,7 @@ type Mirror_Targets struct {
 
 func (x *Mirror_Targets) Reset() {
 	*x = Mirror_Targets{}
-	mi := &file_v1_payload_payload_proto_msgTypes[99]
+	mi := &file_v1_payload_payload_proto_msgTypes[103]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5816,7 +5970,7 @@ func (x *Mirror_Targets) String() string {
 func (*Mirror_Targets) ProtoMessage() {}
 
 func (x *Mirror_Targets) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[99]
+	mi := &file_v1_payload_payload_proto_msgTypes[103]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5848,7 +6002,7 @@ type Meta_Key struct {
 
 func (x *Meta_Key) Reset() {
 	*x = Meta_Key{}
-	mi := &file_v1_payload_payload_proto_msgTypes[100]
+	mi := &file_v1_payload_payload_proto_msgTypes[104]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5860,7 +6014,7 @@ func (x *Meta_Key) String() string {
 func (*Meta_Key) ProtoMessage() {}
 
 func (x *Meta_Key) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[100]
+	mi := &file_v1_payload_payload_proto_msgTypes[104]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5892,7 +6046,7 @@ type Meta_Value struct {
 
 func (x *Meta_Value) Reset() {
 	*x = Meta_Value{}
-	mi := &file_v1_payload_payload_proto_msgTypes[101]
+	mi := &file_v1_payload_payload_proto_msgTypes[105]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5904,7 +6058,7 @@ func (x *Meta_Value) String() string {
 func (*Meta_Value) ProtoMessage() {}
 
 func (x *Meta_Value) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[101]
+	mi := &file_v1_payload_payload_proto_msgTypes[105]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5937,7 +6091,7 @@ type Meta_KeyValue struct {
 
 func (x *Meta_KeyValue) Reset() {
 	*x = Meta_KeyValue{}
-	mi := &file_v1_payload_payload_proto_msgTypes[102]
+	mi := &file_v1_payload_payload_proto_msgTypes[106]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5949,7 +6103,7 @@ func (x *Meta_KeyValue) String() string {
 func (*Meta_KeyValue) ProtoMessage() {}
 
 func (x *Meta_KeyValue) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[102]
+	mi := &file_v1_payload_payload_proto_msgTypes[106]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6190,7 +6344,7 @@ const file_v1_payload_payload_proto_rawDesc = "" +
 	"\aRequest\x12\x1b\n" +
 	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12\x1c\n" +
 	"\tnamespace\x18\x02 \x01(\tR\tnamespace\x12\x12\n" +
-	"\x04node\x18\x03 \x01(\tR\x04node\"\xaf.\n" +
+	"\x04node\x18\x03 \x01(\tR\x04node\"\xc91\n" +
 	"\x04Info\x1a\xb2 \n" +
 	"\x05Index\x1au\n" +
 	"\x05Count\x12\x16\n" +
@@ -6299,11 +6453,22 @@ const file_v1_payload_payload_proto_rawDesc = "" +
 	"\adetails\x18\x01 \x03(\v22.payload.v1.Info.Index.PropertyDetail.DetailsEntryR\adetails\x1a[\n" +
 	"\fDetailsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x125\n" +
-	"\x05value\x18\x02 \x01(\v2\x1f.payload.v1.Info.Index.PropertyR\x05value:\x028\x01\x1a}\n" +
+	"\x05value\x18\x02 \x01(\v2\x1f.payload.v1.Info.Index.PropertyR\x05value:\x028\x01\x1a\x96\x04\n" +
+	"\x05Stats\x1a\x83\x01\n" +
 	"\rResourceStats\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x17\n" +
-	"\x02ip\x18\x02 \x01(\tB\a\xbaH\x04r\x02x\x01R\x02ip\x12?\n" +
-	"\fcgroup_stats\x18\x03 \x01(\v2\x1c.payload.v1.Info.CgroupStatsR\vcgroupStats\x1a\xb9\x01\n" +
+	"\x02ip\x18\x02 \x01(\tB\a\xbaH\x04r\x02x\x01R\x02ip\x12E\n" +
+	"\fcgroup_stats\x18\x03 \x01(\v2\".payload.v1.Info.Stats.CgroupStatsR\vcgroupStats\x1a\xca\x01\n" +
+	"\x13ResourceStatsDetail\x12Q\n" +
+	"\adetails\x18\x01 \x03(\v27.payload.v1.Info.Stats.ResourceStatsDetail.DetailsEntryR\adetails\x1a`\n" +
+	"\fDetailsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12:\n" +
+	"\x05value\x18\x02 \x01(\v2$.payload.v1.Info.Stats.ResourceStatsR\x05value:\x028\x01\x1a\xb9\x01\n" +
+	"\vCgroupStats\x12&\n" +
+	"\x0fcpu_limit_cores\x18\x01 \x01(\x01R\rcpuLimitCores\x12&\n" +
+	"\x0fcpu_usage_cores\x18\x02 \x01(\x01R\rcpuUsageCores\x12,\n" +
+	"\x12memory_limit_bytes\x18\x03 \x01(\x04R\x10memoryLimitBytes\x12,\n" +
+	"\x12memory_usage_bytes\x18\x04 \x01(\x04R\x10memoryUsageBytes\x1a\xb9\x01\n" +
 	"\vCgroupStats\x12&\n" +
 	"\x0fcpu_limit_cores\x18\x01 \x01(\x01R\rcpuLimitCores\x12&\n" +
 	"\x0fcpu_usage_cores\x18\x02 \x01(\x01R\rcpuUsageCores\x12,\n" +
@@ -6392,116 +6557,120 @@ func file_v1_payload_payload_proto_rawDescGZIP() []byte {
 }
 
 var file_v1_payload_payload_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_v1_payload_payload_proto_msgTypes = make([]protoimpl.MessageInfo, 103)
+var file_v1_payload_payload_proto_msgTypes = make([]protoimpl.MessageInfo, 107)
 var file_v1_payload_payload_proto_goTypes = []any{
-	(Search_AggregationAlgorithm)(0),    // 0: payload.v1.Search.AggregationAlgorithm
-	(Remove_Timestamp_Operator)(0),      // 1: payload.v1.Remove.Timestamp.Operator
-	(*Search)(nil),                      // 2: payload.v1.Search
-	(*Filter)(nil),                      // 3: payload.v1.Filter
-	(*Insert)(nil),                      // 4: payload.v1.Insert
-	(*Update)(nil),                      // 5: payload.v1.Update
-	(*Upsert)(nil),                      // 6: payload.v1.Upsert
-	(*Remove)(nil),                      // 7: payload.v1.Remove
-	(*Flush)(nil),                       // 8: payload.v1.Flush
-	(*Object)(nil),                      // 9: payload.v1.Object
-	(*Control)(nil),                     // 10: payload.v1.Control
-	(*Discoverer)(nil),                  // 11: payload.v1.Discoverer
-	(*Info)(nil),                        // 12: payload.v1.Info
-	(*Mirror)(nil),                      // 13: payload.v1.Mirror
-	(*Meta)(nil),                        // 14: payload.v1.Meta
-	(*Empty)(nil),                       // 15: payload.v1.Empty
-	(*Search_Request)(nil),              // 16: payload.v1.Search.Request
-	(*Search_MultiRequest)(nil),         // 17: payload.v1.Search.MultiRequest
-	(*Search_IDRequest)(nil),            // 18: payload.v1.Search.IDRequest
-	(*Search_MultiIDRequest)(nil),       // 19: payload.v1.Search.MultiIDRequest
-	(*Search_ObjectRequest)(nil),        // 20: payload.v1.Search.ObjectRequest
-	(*Search_MultiObjectRequest)(nil),   // 21: payload.v1.Search.MultiObjectRequest
-	(*Search_Config)(nil),               // 22: payload.v1.Search.Config
-	(*Search_Response)(nil),             // 23: payload.v1.Search.Response
-	(*Search_Responses)(nil),            // 24: payload.v1.Search.Responses
-	(*Search_StreamResponse)(nil),       // 25: payload.v1.Search.StreamResponse
-	(*Filter_Target)(nil),               // 26: payload.v1.Filter.Target
-	(*Filter_Config)(nil),               // 27: payload.v1.Filter.Config
-	(*Insert_Request)(nil),              // 28: payload.v1.Insert.Request
-	(*Insert_MultiRequest)(nil),         // 29: payload.v1.Insert.MultiRequest
-	(*Insert_ObjectRequest)(nil),        // 30: payload.v1.Insert.ObjectRequest
-	(*Insert_MultiObjectRequest)(nil),   // 31: payload.v1.Insert.MultiObjectRequest
-	(*Insert_Config)(nil),               // 32: payload.v1.Insert.Config
-	(*Update_Request)(nil),              // 33: payload.v1.Update.Request
-	(*Update_MultiRequest)(nil),         // 34: payload.v1.Update.MultiRequest
-	(*Update_ObjectRequest)(nil),        // 35: payload.v1.Update.ObjectRequest
-	(*Update_MultiObjectRequest)(nil),   // 36: payload.v1.Update.MultiObjectRequest
-	(*Update_TimestampRequest)(nil),     // 37: payload.v1.Update.TimestampRequest
-	(*Update_Config)(nil),               // 38: payload.v1.Update.Config
-	(*Upsert_Request)(nil),              // 39: payload.v1.Upsert.Request
-	(*Upsert_MultiRequest)(nil),         // 40: payload.v1.Upsert.MultiRequest
-	(*Upsert_ObjectRequest)(nil),        // 41: payload.v1.Upsert.ObjectRequest
-	(*Upsert_MultiObjectRequest)(nil),   // 42: payload.v1.Upsert.MultiObjectRequest
-	(*Upsert_Config)(nil),               // 43: payload.v1.Upsert.Config
-	(*Remove_Request)(nil),              // 44: payload.v1.Remove.Request
-	(*Remove_MultiRequest)(nil),         // 45: payload.v1.Remove.MultiRequest
-	(*Remove_TimestampRequest)(nil),     // 46: payload.v1.Remove.TimestampRequest
-	(*Remove_Timestamp)(nil),            // 47: payload.v1.Remove.Timestamp
-	(*Remove_Config)(nil),               // 48: payload.v1.Remove.Config
-	(*Flush_Request)(nil),               // 49: payload.v1.Flush.Request
-	(*Object_VectorRequest)(nil),        // 50: payload.v1.Object.VectorRequest
-	(*Object_Distance)(nil),             // 51: payload.v1.Object.Distance
-	(*Object_StreamDistance)(nil),       // 52: payload.v1.Object.StreamDistance
-	(*Object_ID)(nil),                   // 53: payload.v1.Object.ID
-	(*Object_IDs)(nil),                  // 54: payload.v1.Object.IDs
-	(*Object_Vector)(nil),               // 55: payload.v1.Object.Vector
-	(*Object_TimestampRequest)(nil),     // 56: payload.v1.Object.TimestampRequest
-	(*Object_Timestamp)(nil),            // 57: payload.v1.Object.Timestamp
-	(*Object_Vectors)(nil),              // 58: payload.v1.Object.Vectors
-	(*Object_StreamVector)(nil),         // 59: payload.v1.Object.StreamVector
-	(*Object_ReshapeVector)(nil),        // 60: payload.v1.Object.ReshapeVector
-	(*Object_Blob)(nil),                 // 61: payload.v1.Object.Blob
-	(*Object_StreamBlob)(nil),           // 62: payload.v1.Object.StreamBlob
-	(*Object_Location)(nil),             // 63: payload.v1.Object.Location
-	(*Object_StreamLocation)(nil),       // 64: payload.v1.Object.StreamLocation
-	(*Object_Locations)(nil),            // 65: payload.v1.Object.Locations
-	(*Object_List)(nil),                 // 66: payload.v1.Object.List
-	(*Object_List_Request)(nil),         // 67: payload.v1.Object.List.Request
-	(*Object_List_Response)(nil),        // 68: payload.v1.Object.List.Response
-	(*Control_CreateIndexRequest)(nil),  // 69: payload.v1.Control.CreateIndexRequest
-	(*Discoverer_Request)(nil),          // 70: payload.v1.Discoverer.Request
-	(*Info_Index)(nil),                  // 71: payload.v1.Info.Index
-	(*Info_ResourceStats)(nil),          // 72: payload.v1.Info.ResourceStats
-	(*Info_CgroupStats)(nil),            // 73: payload.v1.Info.CgroupStats
-	(*Info_Pod)(nil),                    // 74: payload.v1.Info.Pod
-	(*Info_Node)(nil),                   // 75: payload.v1.Info.Node
-	(*Info_Service)(nil),                // 76: payload.v1.Info.Service
-	(*Info_ServicePort)(nil),            // 77: payload.v1.Info.ServicePort
-	(*Info_Labels)(nil),                 // 78: payload.v1.Info.Labels
-	(*Info_Annotations)(nil),            // 79: payload.v1.Info.Annotations
-	(*Info_CPU)(nil),                    // 80: payload.v1.Info.CPU
-	(*Info_Memory)(nil),                 // 81: payload.v1.Info.Memory
-	(*Info_Pods)(nil),                   // 82: payload.v1.Info.Pods
-	(*Info_Nodes)(nil),                  // 83: payload.v1.Info.Nodes
-	(*Info_Services)(nil),               // 84: payload.v1.Info.Services
-	(*Info_IPs)(nil),                    // 85: payload.v1.Info.IPs
-	(*Info_Index_Count)(nil),            // 86: payload.v1.Info.Index.Count
-	(*Info_Index_Detail)(nil),           // 87: payload.v1.Info.Index.Detail
-	(*Info_Index_UUID)(nil),             // 88: payload.v1.Info.Index.UUID
-	(*Info_Index_Statistics)(nil),       // 89: payload.v1.Info.Index.Statistics
-	(*Info_Index_StatisticsDetail)(nil), // 90: payload.v1.Info.Index.StatisticsDetail
-	(*Info_Index_Property)(nil),         // 91: payload.v1.Info.Index.Property
-	(*Info_Index_PropertyDetail)(nil),   // 92: payload.v1.Info.Index.PropertyDetail
-	nil,                                 // 93: payload.v1.Info.Index.Detail.CountsEntry
-	(*Info_Index_UUID_Committed)(nil),   // 94: payload.v1.Info.Index.UUID.Committed
-	(*Info_Index_UUID_Uncommitted)(nil), // 95: payload.v1.Info.Index.UUID.Uncommitted
-	nil,                                 // 96: payload.v1.Info.Index.StatisticsDetail.DetailsEntry
-	nil,                                 // 97: payload.v1.Info.Index.PropertyDetail.DetailsEntry
-	nil,                                 // 98: payload.v1.Info.Labels.LabelsEntry
-	nil,                                 // 99: payload.v1.Info.Annotations.AnnotationsEntry
-	(*Mirror_Target)(nil),               // 100: payload.v1.Mirror.Target
-	(*Mirror_Targets)(nil),              // 101: payload.v1.Mirror.Targets
-	(*Meta_Key)(nil),                    // 102: payload.v1.Meta.Key
-	(*Meta_Value)(nil),                  // 103: payload.v1.Meta.Value
-	(*Meta_KeyValue)(nil),               // 104: payload.v1.Meta.KeyValue
-	(*wrapperspb.FloatValue)(nil),       // 105: google.protobuf.FloatValue
-	(*status.Status)(nil),               // 106: google.rpc.Status
-	(*anypb.Any)(nil),                   // 107: google.protobuf.Any
+	(Search_AggregationAlgorithm)(0),       // 0: payload.v1.Search.AggregationAlgorithm
+	(Remove_Timestamp_Operator)(0),         // 1: payload.v1.Remove.Timestamp.Operator
+	(*Search)(nil),                         // 2: payload.v1.Search
+	(*Filter)(nil),                         // 3: payload.v1.Filter
+	(*Insert)(nil),                         // 4: payload.v1.Insert
+	(*Update)(nil),                         // 5: payload.v1.Update
+	(*Upsert)(nil),                         // 6: payload.v1.Upsert
+	(*Remove)(nil),                         // 7: payload.v1.Remove
+	(*Flush)(nil),                          // 8: payload.v1.Flush
+	(*Object)(nil),                         // 9: payload.v1.Object
+	(*Control)(nil),                        // 10: payload.v1.Control
+	(*Discoverer)(nil),                     // 11: payload.v1.Discoverer
+	(*Info)(nil),                           // 12: payload.v1.Info
+	(*Mirror)(nil),                         // 13: payload.v1.Mirror
+	(*Meta)(nil),                           // 14: payload.v1.Meta
+	(*Empty)(nil),                          // 15: payload.v1.Empty
+	(*Search_Request)(nil),                 // 16: payload.v1.Search.Request
+	(*Search_MultiRequest)(nil),            // 17: payload.v1.Search.MultiRequest
+	(*Search_IDRequest)(nil),               // 18: payload.v1.Search.IDRequest
+	(*Search_MultiIDRequest)(nil),          // 19: payload.v1.Search.MultiIDRequest
+	(*Search_ObjectRequest)(nil),           // 20: payload.v1.Search.ObjectRequest
+	(*Search_MultiObjectRequest)(nil),      // 21: payload.v1.Search.MultiObjectRequest
+	(*Search_Config)(nil),                  // 22: payload.v1.Search.Config
+	(*Search_Response)(nil),                // 23: payload.v1.Search.Response
+	(*Search_Responses)(nil),               // 24: payload.v1.Search.Responses
+	(*Search_StreamResponse)(nil),          // 25: payload.v1.Search.StreamResponse
+	(*Filter_Target)(nil),                  // 26: payload.v1.Filter.Target
+	(*Filter_Config)(nil),                  // 27: payload.v1.Filter.Config
+	(*Insert_Request)(nil),                 // 28: payload.v1.Insert.Request
+	(*Insert_MultiRequest)(nil),            // 29: payload.v1.Insert.MultiRequest
+	(*Insert_ObjectRequest)(nil),           // 30: payload.v1.Insert.ObjectRequest
+	(*Insert_MultiObjectRequest)(nil),      // 31: payload.v1.Insert.MultiObjectRequest
+	(*Insert_Config)(nil),                  // 32: payload.v1.Insert.Config
+	(*Update_Request)(nil),                 // 33: payload.v1.Update.Request
+	(*Update_MultiRequest)(nil),            // 34: payload.v1.Update.MultiRequest
+	(*Update_ObjectRequest)(nil),           // 35: payload.v1.Update.ObjectRequest
+	(*Update_MultiObjectRequest)(nil),      // 36: payload.v1.Update.MultiObjectRequest
+	(*Update_TimestampRequest)(nil),        // 37: payload.v1.Update.TimestampRequest
+	(*Update_Config)(nil),                  // 38: payload.v1.Update.Config
+	(*Upsert_Request)(nil),                 // 39: payload.v1.Upsert.Request
+	(*Upsert_MultiRequest)(nil),            // 40: payload.v1.Upsert.MultiRequest
+	(*Upsert_ObjectRequest)(nil),           // 41: payload.v1.Upsert.ObjectRequest
+	(*Upsert_MultiObjectRequest)(nil),      // 42: payload.v1.Upsert.MultiObjectRequest
+	(*Upsert_Config)(nil),                  // 43: payload.v1.Upsert.Config
+	(*Remove_Request)(nil),                 // 44: payload.v1.Remove.Request
+	(*Remove_MultiRequest)(nil),            // 45: payload.v1.Remove.MultiRequest
+	(*Remove_TimestampRequest)(nil),        // 46: payload.v1.Remove.TimestampRequest
+	(*Remove_Timestamp)(nil),               // 47: payload.v1.Remove.Timestamp
+	(*Remove_Config)(nil),                  // 48: payload.v1.Remove.Config
+	(*Flush_Request)(nil),                  // 49: payload.v1.Flush.Request
+	(*Object_VectorRequest)(nil),           // 50: payload.v1.Object.VectorRequest
+	(*Object_Distance)(nil),                // 51: payload.v1.Object.Distance
+	(*Object_StreamDistance)(nil),          // 52: payload.v1.Object.StreamDistance
+	(*Object_ID)(nil),                      // 53: payload.v1.Object.ID
+	(*Object_IDs)(nil),                     // 54: payload.v1.Object.IDs
+	(*Object_Vector)(nil),                  // 55: payload.v1.Object.Vector
+	(*Object_TimestampRequest)(nil),        // 56: payload.v1.Object.TimestampRequest
+	(*Object_Timestamp)(nil),               // 57: payload.v1.Object.Timestamp
+	(*Object_Vectors)(nil),                 // 58: payload.v1.Object.Vectors
+	(*Object_StreamVector)(nil),            // 59: payload.v1.Object.StreamVector
+	(*Object_ReshapeVector)(nil),           // 60: payload.v1.Object.ReshapeVector
+	(*Object_Blob)(nil),                    // 61: payload.v1.Object.Blob
+	(*Object_StreamBlob)(nil),              // 62: payload.v1.Object.StreamBlob
+	(*Object_Location)(nil),                // 63: payload.v1.Object.Location
+	(*Object_StreamLocation)(nil),          // 64: payload.v1.Object.StreamLocation
+	(*Object_Locations)(nil),               // 65: payload.v1.Object.Locations
+	(*Object_List)(nil),                    // 66: payload.v1.Object.List
+	(*Object_List_Request)(nil),            // 67: payload.v1.Object.List.Request
+	(*Object_List_Response)(nil),           // 68: payload.v1.Object.List.Response
+	(*Control_CreateIndexRequest)(nil),     // 69: payload.v1.Control.CreateIndexRequest
+	(*Discoverer_Request)(nil),             // 70: payload.v1.Discoverer.Request
+	(*Info_Index)(nil),                     // 71: payload.v1.Info.Index
+	(*Info_Stats)(nil),                     // 72: payload.v1.Info.Stats
+	(*Info_CgroupStats)(nil),               // 73: payload.v1.Info.CgroupStats
+	(*Info_Pod)(nil),                       // 74: payload.v1.Info.Pod
+	(*Info_Node)(nil),                      // 75: payload.v1.Info.Node
+	(*Info_Service)(nil),                   // 76: payload.v1.Info.Service
+	(*Info_ServicePort)(nil),               // 77: payload.v1.Info.ServicePort
+	(*Info_Labels)(nil),                    // 78: payload.v1.Info.Labels
+	(*Info_Annotations)(nil),               // 79: payload.v1.Info.Annotations
+	(*Info_CPU)(nil),                       // 80: payload.v1.Info.CPU
+	(*Info_Memory)(nil),                    // 81: payload.v1.Info.Memory
+	(*Info_Pods)(nil),                      // 82: payload.v1.Info.Pods
+	(*Info_Nodes)(nil),                     // 83: payload.v1.Info.Nodes
+	(*Info_Services)(nil),                  // 84: payload.v1.Info.Services
+	(*Info_IPs)(nil),                       // 85: payload.v1.Info.IPs
+	(*Info_Index_Count)(nil),               // 86: payload.v1.Info.Index.Count
+	(*Info_Index_Detail)(nil),              // 87: payload.v1.Info.Index.Detail
+	(*Info_Index_UUID)(nil),                // 88: payload.v1.Info.Index.UUID
+	(*Info_Index_Statistics)(nil),          // 89: payload.v1.Info.Index.Statistics
+	(*Info_Index_StatisticsDetail)(nil),    // 90: payload.v1.Info.Index.StatisticsDetail
+	(*Info_Index_Property)(nil),            // 91: payload.v1.Info.Index.Property
+	(*Info_Index_PropertyDetail)(nil),      // 92: payload.v1.Info.Index.PropertyDetail
+	nil,                                    // 93: payload.v1.Info.Index.Detail.CountsEntry
+	(*Info_Index_UUID_Committed)(nil),      // 94: payload.v1.Info.Index.UUID.Committed
+	(*Info_Index_UUID_Uncommitted)(nil),    // 95: payload.v1.Info.Index.UUID.Uncommitted
+	nil,                                    // 96: payload.v1.Info.Index.StatisticsDetail.DetailsEntry
+	nil,                                    // 97: payload.v1.Info.Index.PropertyDetail.DetailsEntry
+	(*Info_Stats_ResourceStats)(nil),       // 98: payload.v1.Info.Stats.ResourceStats
+	(*Info_Stats_ResourceStatsDetail)(nil), // 99: payload.v1.Info.Stats.ResourceStatsDetail
+	(*Info_Stats_CgroupStats)(nil),         // 100: payload.v1.Info.Stats.CgroupStats
+	nil,                                    // 101: payload.v1.Info.Stats.ResourceStatsDetail.DetailsEntry
+	nil,                                    // 102: payload.v1.Info.Labels.LabelsEntry
+	nil,                                    // 103: payload.v1.Info.Annotations.AnnotationsEntry
+	(*Mirror_Target)(nil),                  // 104: payload.v1.Mirror.Target
+	(*Mirror_Targets)(nil),                 // 105: payload.v1.Mirror.Targets
+	(*Meta_Key)(nil),                       // 106: payload.v1.Meta.Key
+	(*Meta_Value)(nil),                     // 107: payload.v1.Meta.Value
+	(*Meta_KeyValue)(nil),                  // 108: payload.v1.Meta.KeyValue
+	(*wrapperspb.FloatValue)(nil),          // 109: google.protobuf.FloatValue
+	(*status.Status)(nil),                  // 110: google.rpc.Status
+	(*anypb.Any)(nil),                      // 111: google.protobuf.Any
 }
 var file_v1_payload_payload_proto_depIdxs = []int32{
 	22,  // 0: payload.v1.Search.Request.config:type_name -> payload.v1.Search.Config
@@ -6514,11 +6683,11 @@ var file_v1_payload_payload_proto_depIdxs = []int32{
 	27,  // 7: payload.v1.Search.Config.ingress_filters:type_name -> payload.v1.Filter.Config
 	27,  // 8: payload.v1.Search.Config.egress_filters:type_name -> payload.v1.Filter.Config
 	0,   // 9: payload.v1.Search.Config.aggregation_algorithm:type_name -> payload.v1.Search.AggregationAlgorithm
-	105, // 10: payload.v1.Search.Config.ratio:type_name -> google.protobuf.FloatValue
+	109, // 10: payload.v1.Search.Config.ratio:type_name -> google.protobuf.FloatValue
 	51,  // 11: payload.v1.Search.Response.results:type_name -> payload.v1.Object.Distance
 	23,  // 12: payload.v1.Search.Responses.responses:type_name -> payload.v1.Search.Response
 	23,  // 13: payload.v1.Search.StreamResponse.response:type_name -> payload.v1.Search.Response
-	106, // 14: payload.v1.Search.StreamResponse.status:type_name -> google.rpc.Status
+	110, // 14: payload.v1.Search.StreamResponse.status:type_name -> google.rpc.Status
 	26,  // 15: payload.v1.Filter.Config.targets:type_name -> payload.v1.Filter.Target
 	55,  // 16: payload.v1.Insert.Request.vector:type_name -> payload.v1.Object.Vector
 	32,  // 17: payload.v1.Insert.Request.config:type_name -> payload.v1.Insert.Config
@@ -6552,48 +6721,50 @@ var file_v1_payload_payload_proto_depIdxs = []int32{
 	53,  // 45: payload.v1.Object.VectorRequest.id:type_name -> payload.v1.Object.ID
 	27,  // 46: payload.v1.Object.VectorRequest.filters:type_name -> payload.v1.Filter.Config
 	51,  // 47: payload.v1.Object.StreamDistance.distance:type_name -> payload.v1.Object.Distance
-	106, // 48: payload.v1.Object.StreamDistance.status:type_name -> google.rpc.Status
+	110, // 48: payload.v1.Object.StreamDistance.status:type_name -> google.rpc.Status
 	53,  // 49: payload.v1.Object.TimestampRequest.id:type_name -> payload.v1.Object.ID
 	55,  // 50: payload.v1.Object.Vectors.vectors:type_name -> payload.v1.Object.Vector
 	55,  // 51: payload.v1.Object.StreamVector.vector:type_name -> payload.v1.Object.Vector
-	106, // 52: payload.v1.Object.StreamVector.status:type_name -> google.rpc.Status
+	110, // 52: payload.v1.Object.StreamVector.status:type_name -> google.rpc.Status
 	61,  // 53: payload.v1.Object.StreamBlob.blob:type_name -> payload.v1.Object.Blob
-	106, // 54: payload.v1.Object.StreamBlob.status:type_name -> google.rpc.Status
+	110, // 54: payload.v1.Object.StreamBlob.status:type_name -> google.rpc.Status
 	63,  // 55: payload.v1.Object.StreamLocation.location:type_name -> payload.v1.Object.Location
-	106, // 56: payload.v1.Object.StreamLocation.status:type_name -> google.rpc.Status
+	110, // 56: payload.v1.Object.StreamLocation.status:type_name -> google.rpc.Status
 	63,  // 57: payload.v1.Object.Locations.locations:type_name -> payload.v1.Object.Location
 	55,  // 58: payload.v1.Object.List.Response.vector:type_name -> payload.v1.Object.Vector
-	106, // 59: payload.v1.Object.List.Response.status:type_name -> google.rpc.Status
-	73,  // 60: payload.v1.Info.ResourceStats.cgroup_stats:type_name -> payload.v1.Info.CgroupStats
-	80,  // 61: payload.v1.Info.Pod.cpu:type_name -> payload.v1.Info.CPU
-	81,  // 62: payload.v1.Info.Pod.memory:type_name -> payload.v1.Info.Memory
-	75,  // 63: payload.v1.Info.Pod.node:type_name -> payload.v1.Info.Node
-	80,  // 64: payload.v1.Info.Node.cpu:type_name -> payload.v1.Info.CPU
-	81,  // 65: payload.v1.Info.Node.memory:type_name -> payload.v1.Info.Memory
-	82,  // 66: payload.v1.Info.Node.Pods:type_name -> payload.v1.Info.Pods
-	77,  // 67: payload.v1.Info.Service.ports:type_name -> payload.v1.Info.ServicePort
-	78,  // 68: payload.v1.Info.Service.labels:type_name -> payload.v1.Info.Labels
-	79,  // 69: payload.v1.Info.Service.annotations:type_name -> payload.v1.Info.Annotations
-	98,  // 70: payload.v1.Info.Labels.labels:type_name -> payload.v1.Info.Labels.LabelsEntry
-	99,  // 71: payload.v1.Info.Annotations.annotations:type_name -> payload.v1.Info.Annotations.AnnotationsEntry
-	74,  // 72: payload.v1.Info.Pods.pods:type_name -> payload.v1.Info.Pod
-	75,  // 73: payload.v1.Info.Nodes.nodes:type_name -> payload.v1.Info.Node
-	76,  // 74: payload.v1.Info.Services.services:type_name -> payload.v1.Info.Service
-	93,  // 75: payload.v1.Info.Index.Detail.counts:type_name -> payload.v1.Info.Index.Detail.CountsEntry
-	96,  // 76: payload.v1.Info.Index.StatisticsDetail.details:type_name -> payload.v1.Info.Index.StatisticsDetail.DetailsEntry
-	97,  // 77: payload.v1.Info.Index.PropertyDetail.details:type_name -> payload.v1.Info.Index.PropertyDetail.DetailsEntry
-	86,  // 78: payload.v1.Info.Index.Detail.CountsEntry.value:type_name -> payload.v1.Info.Index.Count
-	89,  // 79: payload.v1.Info.Index.StatisticsDetail.DetailsEntry.value:type_name -> payload.v1.Info.Index.Statistics
-	91,  // 80: payload.v1.Info.Index.PropertyDetail.DetailsEntry.value:type_name -> payload.v1.Info.Index.Property
-	100, // 81: payload.v1.Mirror.Targets.targets:type_name -> payload.v1.Mirror.Target
-	107, // 82: payload.v1.Meta.Value.value:type_name -> google.protobuf.Any
-	102, // 83: payload.v1.Meta.KeyValue.key:type_name -> payload.v1.Meta.Key
-	103, // 84: payload.v1.Meta.KeyValue.value:type_name -> payload.v1.Meta.Value
-	85,  // [85:85] is the sub-list for method output_type
-	85,  // [85:85] is the sub-list for method input_type
-	85,  // [85:85] is the sub-list for extension type_name
-	85,  // [85:85] is the sub-list for extension extendee
-	0,   // [0:85] is the sub-list for field type_name
+	110, // 59: payload.v1.Object.List.Response.status:type_name -> google.rpc.Status
+	80,  // 60: payload.v1.Info.Pod.cpu:type_name -> payload.v1.Info.CPU
+	81,  // 61: payload.v1.Info.Pod.memory:type_name -> payload.v1.Info.Memory
+	75,  // 62: payload.v1.Info.Pod.node:type_name -> payload.v1.Info.Node
+	80,  // 63: payload.v1.Info.Node.cpu:type_name -> payload.v1.Info.CPU
+	81,  // 64: payload.v1.Info.Node.memory:type_name -> payload.v1.Info.Memory
+	82,  // 65: payload.v1.Info.Node.Pods:type_name -> payload.v1.Info.Pods
+	77,  // 66: payload.v1.Info.Service.ports:type_name -> payload.v1.Info.ServicePort
+	78,  // 67: payload.v1.Info.Service.labels:type_name -> payload.v1.Info.Labels
+	79,  // 68: payload.v1.Info.Service.annotations:type_name -> payload.v1.Info.Annotations
+	102, // 69: payload.v1.Info.Labels.labels:type_name -> payload.v1.Info.Labels.LabelsEntry
+	103, // 70: payload.v1.Info.Annotations.annotations:type_name -> payload.v1.Info.Annotations.AnnotationsEntry
+	74,  // 71: payload.v1.Info.Pods.pods:type_name -> payload.v1.Info.Pod
+	75,  // 72: payload.v1.Info.Nodes.nodes:type_name -> payload.v1.Info.Node
+	76,  // 73: payload.v1.Info.Services.services:type_name -> payload.v1.Info.Service
+	93,  // 74: payload.v1.Info.Index.Detail.counts:type_name -> payload.v1.Info.Index.Detail.CountsEntry
+	96,  // 75: payload.v1.Info.Index.StatisticsDetail.details:type_name -> payload.v1.Info.Index.StatisticsDetail.DetailsEntry
+	97,  // 76: payload.v1.Info.Index.PropertyDetail.details:type_name -> payload.v1.Info.Index.PropertyDetail.DetailsEntry
+	86,  // 77: payload.v1.Info.Index.Detail.CountsEntry.value:type_name -> payload.v1.Info.Index.Count
+	89,  // 78: payload.v1.Info.Index.StatisticsDetail.DetailsEntry.value:type_name -> payload.v1.Info.Index.Statistics
+	91,  // 79: payload.v1.Info.Index.PropertyDetail.DetailsEntry.value:type_name -> payload.v1.Info.Index.Property
+	100, // 80: payload.v1.Info.Stats.ResourceStats.cgroup_stats:type_name -> payload.v1.Info.Stats.CgroupStats
+	101, // 81: payload.v1.Info.Stats.ResourceStatsDetail.details:type_name -> payload.v1.Info.Stats.ResourceStatsDetail.DetailsEntry
+	98,  // 82: payload.v1.Info.Stats.ResourceStatsDetail.DetailsEntry.value:type_name -> payload.v1.Info.Stats.ResourceStats
+	104, // 83: payload.v1.Mirror.Targets.targets:type_name -> payload.v1.Mirror.Target
+	111, // 84: payload.v1.Meta.Value.value:type_name -> google.protobuf.Any
+	106, // 85: payload.v1.Meta.KeyValue.key:type_name -> payload.v1.Meta.Key
+	107, // 86: payload.v1.Meta.KeyValue.value:type_name -> payload.v1.Meta.Value
+	87,  // [87:87] is the sub-list for method output_type
+	87,  // [87:87] is the sub-list for method input_type
+	87,  // [87:87] is the sub-list for extension type_name
+	87,  // [87:87] is the sub-list for extension extendee
+	0,   // [0:87] is the sub-list for field type_name
 }
 
 func init() { file_v1_payload_payload_proto_init() }
@@ -6631,7 +6802,7 @@ func file_v1_payload_payload_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_v1_payload_payload_proto_rawDesc), len(file_v1_payload_payload_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   103,
+			NumMessages:   107,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
