@@ -96,18 +96,18 @@ func Test_server_ResourceStats(t *testing.T) {
 		req *payload.Empty
 	}
 	type want struct {
-		stats *payload.Info_ResourceStats
+		stats *payload.Info_Stats_ResourceStats
 		err   error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *payload.Info_ResourceStats, error) error
+		checkFunc  func(want, *payload.Info_Stats_ResourceStats, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, stats *payload.Info_ResourceStats, err error) error {
+	defaultCheckFunc := func(w want, stats *payload.Info_Stats_ResourceStats, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -127,7 +127,7 @@ func Test_server_ResourceStats(t *testing.T) {
 					ctx: context.Background(),
 					req: &payload.Empty{},
 				},
-				checkFunc: func(w want, stats *payload.Info_ResourceStats, err error) error {
+				checkFunc: func(w want, stats *payload.Info_Stats_ResourceStats, err error) error {
 					if err != nil {
 						return errors.Errorf("unexpected error: %v", err)
 					}
