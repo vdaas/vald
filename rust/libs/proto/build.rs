@@ -13,7 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-pub mod protobuf {
-    include!(concat!(env!("OUT_DIR"), "/google.protobuf.rs"));
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let mut config = prost_build::Config::default();
+
+    config
+        .compile_well_known_types()
+        .type_attribute(".", "#[derive(serde::Serialize, serde::Deserialize)]")
+        .type_attribute(".", "#[serde(rename_all = \"camelCase\")]")
+        .compile_protos(&["wkt.proto"], &["."])?;
+
+    Ok(())
 }
-pub mod rpc;
