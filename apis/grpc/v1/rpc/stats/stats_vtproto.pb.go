@@ -42,9 +42,10 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StatsClient interface {
-	// Overview
 	// Represent the RPC to get the resource stats.
-	ResourceStats(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_ResourceStats, error)
+	ResourceStats(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Stats_ResourceStats, error)
+	// Represent the RPC to get the resource stats detail.
+	ResourceStatsDetail(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Stats_ResourceStatsDetail, error)
 }
 
 type statsClient struct {
@@ -57,9 +58,20 @@ func NewStatsClient(cc grpc.ClientConnInterface) StatsClient {
 
 func (c *statsClient) ResourceStats(
 	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
-) (*payload.Info_ResourceStats, error) {
-	out := new(payload.Info_ResourceStats)
+) (*payload.Info_Stats_ResourceStats, error) {
+	out := new(payload.Info_Stats_ResourceStats)
 	err := c.cc.Invoke(ctx, "/rpc.v1.Stats/ResourceStats", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *statsClient) ResourceStatsDetail(
+	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
+) (*payload.Info_Stats_ResourceStatsDetail, error) {
+	out := new(payload.Info_Stats_ResourceStatsDetail)
+	err := c.cc.Invoke(ctx, "/rpc.v1.Stats/ResourceStatsDetail", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -70,9 +82,10 @@ func (c *statsClient) ResourceStats(
 // All implementations must embed UnimplementedStatsServer
 // for forward compatibility
 type StatsServer interface {
-	// Overview
 	// Represent the RPC to get the resource stats.
-	ResourceStats(context.Context, *payload.Empty) (*payload.Info_ResourceStats, error)
+	ResourceStats(context.Context, *payload.Empty) (*payload.Info_Stats_ResourceStats, error)
+	// Represent the RPC to get the resource stats detail.
+	ResourceStatsDetail(context.Context, *payload.Empty) (*payload.Info_Stats_ResourceStatsDetail, error)
 	mustEmbedUnimplementedStatsServer()
 }
 
@@ -81,8 +94,14 @@ type UnimplementedStatsServer struct{}
 
 func (UnimplementedStatsServer) ResourceStats(
 	context.Context, *payload.Empty,
-) (*payload.Info_ResourceStats, error) {
+) (*payload.Info_Stats_ResourceStats, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ResourceStats not implemented")
+}
+
+func (UnimplementedStatsServer) ResourceStatsDetail(
+	context.Context, *payload.Empty,
+) (*payload.Info_Stats_ResourceStatsDetail, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResourceStatsDetail not implemented")
 }
 func (UnimplementedStatsServer) mustEmbedUnimplementedStatsServer() {}
 
@@ -117,6 +136,26 @@ func _Stats_ResourceStats_Handler(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Stats_ResourceStatsDetail_Handler(
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
+	in := new(payload.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StatsServer).ResourceStatsDetail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rpc.v1.Stats/ResourceStatsDetail",
+	}
+	handler := func(ctx context.Context, req any) (any, error) {
+		return srv.(StatsServer).ResourceStatsDetail(ctx, req.(*payload.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Stats_ServiceDesc is the grpc.ServiceDesc for Stats service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -127,6 +166,10 @@ var Stats_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ResourceStats",
 			Handler:    _Stats_ResourceStats_Handler,
+		},
+		{
+			MethodName: "ResourceStatsDetail",
+			Handler:    _Stats_ResourceStatsDetail_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

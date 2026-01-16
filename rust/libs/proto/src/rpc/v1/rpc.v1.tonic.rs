@@ -107,7 +107,9 @@ pub mod stats_client {
             &mut self,
             request: impl tonic::IntoRequest<super::super::super::payload::v1::Empty>,
         ) -> std::result::Result<
-            tonic::Response<super::super::super::payload::v1::info::ResourceStats>,
+            tonic::Response<
+                super::super::super::payload::v1::info::stats::ResourceStats,
+            >,
             tonic::Status,
         > {
             self.inner
@@ -125,6 +127,32 @@ pub mod stats_client {
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(GrpcMethod::new("rpc.v1.Stats", "ResourceStats"));
+            self.inner.unary(req, path, codec).await
+        }
+        pub async fn resource_stats_detail(
+            &mut self,
+            request: impl tonic::IntoRequest<super::super::super::payload::v1::Empty>,
+        ) -> std::result::Result<
+            tonic::Response<
+                super::super::super::payload::v1::info::stats::ResourceStatsDetail,
+            >,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/rpc.v1.Stats/ResourceStatsDetail",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("rpc.v1.Stats", "ResourceStatsDetail"));
             self.inner.unary(req, path, codec).await
         }
     }
@@ -146,7 +174,18 @@ pub mod stats_server {
             &self,
             request: tonic::Request<super::super::super::payload::v1::Empty>,
         ) -> std::result::Result<
-            tonic::Response<super::super::super::payload::v1::info::ResourceStats>,
+            tonic::Response<
+                super::super::super::payload::v1::info::stats::ResourceStats,
+            >,
+            tonic::Status,
+        >;
+        async fn resource_stats_detail(
+            &self,
+            request: tonic::Request<super::super::super::payload::v1::Empty>,
+        ) -> std::result::Result<
+            tonic::Response<
+                super::super::super::payload::v1::info::stats::ResourceStatsDetail,
+            >,
             tonic::Status,
         >;
     }
@@ -234,7 +273,7 @@ pub mod stats_server {
                     > tonic::server::UnaryService<
                         super::super::super::payload::v1::Empty,
                     > for ResourceStatsSvc<T> {
-                        type Response = super::super::super::payload::v1::info::ResourceStats;
+                        type Response = super::super::super::payload::v1::info::stats::ResourceStats;
                         type Future = BoxFuture<
                             tonic::Response<Self::Response>,
                             tonic::Status,
@@ -259,6 +298,54 @@ pub mod stats_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let method = ResourceStatsSvc(inner);
+                        let codec = tonic_prost::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/rpc.v1.Stats/ResourceStatsDetail" => {
+                    #[allow(non_camel_case_types)]
+                    struct ResourceStatsDetailSvc<T: Stats>(pub Arc<T>);
+                    impl<
+                        T: Stats,
+                    > tonic::server::UnaryService<
+                        super::super::super::payload::v1::Empty,
+                    > for ResourceStatsDetailSvc<T> {
+                        type Response = super::super::super::payload::v1::info::stats::ResourceStatsDetail;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<
+                                super::super::super::payload::v1::Empty,
+                            >,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Stats>::resource_stats_detail(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = ResourceStatsDetailSvc(inner);
                         let codec = tonic_prost::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
