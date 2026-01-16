@@ -95,7 +95,7 @@ impl From<&Config> for Resource {
             .iter()
             .map(|(key, val)| KeyValue::new(key.clone(), val.clone()))
             .collect();
-        Resource::new(key_values)
+        Resource::builder().with_attributes(key_values).build()
     }
 }
 
