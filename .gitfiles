@@ -2049,6 +2049,7 @@ pkg/gateway/lb/handler/grpc/remove_test.go
 pkg/gateway/lb/handler/grpc/search.go
 pkg/gateway/lb/handler/grpc/search_benchmark_test.go
 pkg/gateway/lb/handler/grpc/search_test.go
+pkg/gateway/lb/handler/grpc/stats.go
 pkg/gateway/lb/handler/grpc/update.go
 pkg/gateway/lb/handler/grpc/update_test.go
 pkg/gateway/lb/handler/grpc/upsert.go
