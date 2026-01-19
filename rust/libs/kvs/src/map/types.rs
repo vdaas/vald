@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-use bincode::{Decode, Encode};
 use serde::{Serialize, de::DeserializeOwned};
 use std::fmt::Debug;
 use std::hash::Hash;
@@ -26,8 +25,8 @@ use std::hash::Hash;
 pub trait KeyType:
     Serialize
     + DeserializeOwned
-    + Encode
-    + Decode<()>
+    + wincode::SchemaWrite<Src = Self>
+    + for<'de> wincode::SchemaRead<'de, Dst = Self>
     + Eq
     + Hash
     + Clone
@@ -40,8 +39,8 @@ pub trait KeyType:
 impl<
     T: Serialize
         + DeserializeOwned
-        + Encode
-        + Decode<()>
+        + wincode::SchemaWrite<Src = T>
+        + for<'de> wincode::SchemaRead<'de, Dst = T>
         + Eq
         + Hash
         + Clone
@@ -60,8 +59,8 @@ impl<
 pub trait ValueType:
     Serialize
     + DeserializeOwned
-    + Encode
-    + Decode<()>
+    + wincode::SchemaWrite<Src = Self>
+    + for<'de> wincode::SchemaRead<'de, Dst = Self>
     + Eq
     + Hash
     + Clone
@@ -74,8 +73,8 @@ pub trait ValueType:
 impl<
     T: Serialize
         + DeserializeOwned
-        + Encode
-        + Decode<()>
+        + wincode::SchemaWrite<Src = T>
+        + for<'de> wincode::SchemaRead<'de, Dst = T>
         + Eq
         + Hash
         + Clone

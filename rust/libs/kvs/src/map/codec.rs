@@ -14,38 +14,45 @@
 // limitations under the License.
 //
 
-use bincode::{Decode, Encode, config::standard as bincode_standard};
-use serde::{Serialize, de::DeserializeOwned};
-
 use crate::map::error::Error;
 
 /// A trait for defining custom serialization and deserialization logic.
 ///
 /// This allows `Map` to be generic over the data format, enabling users to
-/// plug in their preferred serialization framework (e.g., Bincode, JSON, Protobuf).
+/// plug in their preferred serialization framework (e.g., Wincode, JSON, Protobuf).
 pub trait Codec: Send + Sync + 'static {
     /// Serializes a given value into a byte vector.
-    fn encode<T: Serialize + Encode + ?Sized>(&self, v: &T) -> Result<Vec<u8>, Error>;
+    fn encode<T: serde::Serialize + wincode::SchemaWrite<Src = T> + ?Sized>(
+        &self,
+        v: &T,
+    ) -> Result<Vec<u8>, Error>;
     /// Deserializes a byte slice into a value of a specific type.
-    fn decode<T: DeserializeOwned + Decode<()>>(&self, bytes: &[u8]) -> Result<T, Error>;
+    fn decode<T: serde::de::DeserializeOwned + for<'de> wincode::SchemaRead<'de, Dst = T>>(
+        &self,
+        bytes: &[u8],
+    ) -> Result<T, Error>;
 }
 
-/// The default codec implementation using `bincode`.
+/// The default codec implementation using `wincode`.
 #[derive(Clone, Debug, Default)]
-pub struct BincodeCodec;
+pub struct WincodeCodec;
 
-impl Codec for BincodeCodec {
-    fn encode<T: Serialize + Encode + ?Sized>(&self, v: &T) -> Result<Vec<u8>, Error> {
-        bincode::encode_to_vec(v, bincode_standard()).map_err(|e| Error::Codec {
+impl Codec for WincodeCodec {
+    fn encode<T: serde::Serialize + wincode::SchemaWrite<Src = T> + ?Sized>(
+        &self,
+        v: &T,
+    ) -> Result<Vec<u8>, Error> {
+        wincode::serialize(v).map_err(|e| Error::Codec {
             source: Box::new(e),
         })
     }
 
-    fn decode<T: DeserializeOwned + Decode<()>>(&self, bytes: &[u8]) -> Result<T, Error> {
-        bincode::decode_from_slice(bytes, bincode_standard())
-            .map(|(decoded, _)| decoded)
-            .map_err(|e| Error::Codec {
-                source: Box::new(e),
-            })
+    fn decode<T: serde::de::DeserializeOwned + for<'de> wincode::SchemaRead<'de, Dst = T>>(
+        &self,
+        bytes: &[u8],
+    ) -> Result<T, Error> {
+        wincode::deserialize(bytes).map_err(|e| Error::Codec {
+            source: Box::new(e),
+        })
     }
 }
