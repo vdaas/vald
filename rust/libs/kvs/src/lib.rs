@@ -30,7 +30,7 @@ pub mod map;
 
 use crate::map::{
     base::MapBase,
-    codec::{BincodeCodec, Codec},
+    codec::{WincodeCodec, Codec},
     error::Error,
 };
 
@@ -38,7 +38,7 @@ use crate::map::{
 ///
 /// This builder allows for configuration of the map before it is created,
 /// such as setting the path, codec, and startup behavior.
-pub struct MapBuilder<M: MapBase, C: Codec = BincodeCodec> {
+pub struct MapBuilder<M: MapBase, C: Codec = WincodeCodec> {
     path: String,
     codec: C,
     config: Config,
@@ -46,10 +46,10 @@ pub struct MapBuilder<M: MapBase, C: Codec = BincodeCodec> {
     _marker: std::marker::PhantomData<M>,
 }
 
-impl<M: MapBase<C = BincodeCodec>> MapBuilder<M, BincodeCodec> {
+impl<M: MapBase<C = WincodeCodec>> MapBuilder<M, WincodeCodec> {
     /// Creates a new `MapBuilder` with the given path.
     ///
-    /// By default, it uses `BincodeCodec` and scans the database on startup.
+    /// By default, it uses `WincodeCodec` and scans the database on startup.
     ///
     /// # Arguments
     ///
@@ -57,7 +57,7 @@ impl<M: MapBase<C = BincodeCodec>> MapBuilder<M, BincodeCodec> {
     pub fn new(path: impl AsRef<str>) -> Self {
         Self {
             path: path.as_ref().to_string(),
-            codec: BincodeCodec::default(),
+            codec: WincodeCodec::default(),
             config: Config::default(),
             scan_on_startup: true,
             _marker: std::marker::PhantomData,
@@ -197,7 +197,7 @@ mod integration_tests {
         (path, guard)
     }
 
-    async fn test_crud_and_len<M: MapBase<K = String, V = String, C = BincodeCodec>>(
+    async fn test_crud_and_len<M: MapBase<K = String, V = String, C = WincodeCodec>>(
         path: &str,
     ) -> Arc<M> {
         let map = MapBuilder::<M>::new(path).build().await.unwrap();
@@ -233,7 +233,7 @@ mod integration_tests {
     async fn test_bidirectional_map_crud_and_len() {
         let (path, _guard) = setup("bidirectional_map_crud_and_len");
 
-        let map = test_crud_and_len::<BidirectionalMap<String, String, BincodeCodec>>(&path).await;
+        let map = test_crud_and_len::<BidirectionalMap<String, String, WincodeCodec>>(&path).await;
 
         assert!(map.get_inverse("one").await.is_err());
     }
@@ -242,13 +242,13 @@ mod integration_tests {
     async fn test_unidirectional_map_crud_and_len() {
         let (path, _guard) = setup("unidirectional_map_crud_and_len");
 
-        test_crud_and_len::<UnidirectionalMap<String, String, BincodeCodec>>(&path).await;
+        test_crud_and_len::<UnidirectionalMap<String, String, WincodeCodec>>(&path).await;
     }
 
     #[tokio::test]
     async fn test_bidirectional_map_delete_inverse() {
         let (path, _guard) = setup("bidirectional_map_delete_inverse");
-        let map = MapBuilder::<BidirectionalMap<String, String, BincodeCodec>>::new(&path)
+        let map = MapBuilder::<BidirectionalMap<String, String, WincodeCodec>>::new(&path)
             .build()
             .await
             .unwrap();
@@ -262,7 +262,7 @@ mod integration_tests {
         assert!(map.get_inverse("1").await.is_err());
     }
 
-    async fn test_range_callback<M: MapBase<K = String, V = String, C = BincodeCodec>>(path: &str) {
+    async fn test_range_callback<M: MapBase<K = String, V = String, C = WincodeCodec>>(path: &str) {
         let map = MapBuilder::<M>::new(&path).build().await.unwrap();
         let mut expected = HashMap::new();
         for i in 0..10 {
@@ -289,16 +289,16 @@ mod integration_tests {
     #[tokio::test]
     async fn test_bidirectional_map_range_callback() {
         let (path, _guard) = setup("bidirectional_map_range_callback");
-        test_range_callback::<BidirectionalMap<String, String, BincodeCodec>>(&path).await;
+        test_range_callback::<BidirectionalMap<String, String, WincodeCodec>>(&path).await;
     }
 
     #[tokio::test]
     async fn test_unidirectional_map_range_callback() {
         let (path, _guard) = setup("unidirectional_map_range_callback");
-        test_range_callback::<UnidirectionalMap<String, String, BincodeCodec>>(&path).await;
+        test_range_callback::<UnidirectionalMap<String, String, WincodeCodec>>(&path).await;
     }
 
-    async fn test_range_stream<M: MapBase<K = String, V = String, C = BincodeCodec>>(path: &str) {
+    async fn test_range_stream<M: MapBase<K = String, V = String, C = WincodeCodec>>(path: &str) {
         let map = MapBuilder::<M>::new(path).build().await.unwrap();
         let mut expected = HashMap::new();
         for i in 0..10 {
@@ -323,16 +323,16 @@ mod integration_tests {
     #[tokio::test]
     async fn test_bidirectional_map_range_stream() {
         let (path, _guard) = setup("bidirectional_map_range_stream");
-        test_range_stream::<BidirectionalMap<String, String, BincodeCodec>>(&path).await;
+        test_range_stream::<BidirectionalMap<String, String, WincodeCodec>>(&path).await;
     }
 
     #[tokio::test]
     async fn test_unidirectional_map_range_stream() {
         let (path, _guard) = setup("unidirectional_map_range_stream");
-        test_range_stream::<UnidirectionalMap<String, String, BincodeCodec>>(&path).await;
+        test_range_stream::<UnidirectionalMap<String, String, WincodeCodec>>(&path).await;
     }
 
-    async fn test_disable_scan_on_startup<M: MapBase<K = String, V = String, C = BincodeCodec>>(
+    async fn test_disable_scan_on_startup<M: MapBase<K = String, V = String, C = WincodeCodec>>(
         path: &str,
     ) {
         {
@@ -357,19 +357,19 @@ mod integration_tests {
     #[tokio::test]
     async fn test_bidirectional_map_disable_scan_on_startup() {
         let (path, _guard) = setup("bidirectional_map_disable_scan_on_startup");
-        test_disable_scan_on_startup::<BidirectionalMap<String, String, BincodeCodec>>(&path).await;
+        test_disable_scan_on_startup::<BidirectionalMap<String, String, WincodeCodec>>(&path).await;
     }
 
     #[tokio::test]
     async fn test_unidirectional_map_disable_scan_on_startup() {
         let (path, _guard) = setup("unidirectional_map_disable_scan_on_startup");
-        test_disable_scan_on_startup::<UnidirectionalMap<String, String, BincodeCodec>>(&path)
+        test_disable_scan_on_startup::<UnidirectionalMap<String, String, WincodeCodec>>(&path)
             .await;
     }
 
     async fn test_concurrent_access<M, F1, F2, Fut1, Fut2>(path: &str, f1: F1, f2: F2)
     where
-        M: MapBase<K = String, V = String, C = BincodeCodec>,
+        M: MapBase<K = String, V = String, C = WincodeCodec>,
         F1: Fn(Arc<M>, String, String, u128) -> Fut1 + Send + Sync + Copy + 'static,
         F2: Fn(Arc<M>, String, String, usize) -> Fut2 + Send + Sync + Copy + 'static,
         Fut1: Future<Output = ()> + Send,
@@ -424,7 +424,7 @@ mod integration_tests {
     #[tokio::test]
     async fn test_bidirectional_map_concurrent_access() {
         let (path, _guard) = setup("bidirectional_map_concurrent_access");
-        let f1 = |map: Arc<BidirectionalMap<String, String, BincodeCodec>>,
+        let f1 = |map: Arc<BidirectionalMap<String, String, WincodeCodec>>,
                   key: String,
                   value: String,
                   timestamp: u128| async move {
@@ -435,7 +435,7 @@ mod integration_tests {
             assert_eq!(read_k, key);
             assert_eq!(read_ts_inv, timestamp);
         };
-        let f2 = |map: Arc<BidirectionalMap<String, String, BincodeCodec>>,
+        let f2 = |map: Arc<BidirectionalMap<String, String, WincodeCodec>>,
                   key: String,
                   value: String,
                   i: usize| async move {
@@ -453,7 +453,7 @@ mod integration_tests {
     #[tokio::test]
     async fn test_unidirectional_map_concurrent_access() {
         let (path, _guard) = setup("unidirectional_map_concurrent_access");
-        let f1 = |map: Arc<UnidirectionalMap<String, String, BincodeCodec>>,
+        let f1 = |map: Arc<UnidirectionalMap<String, String, WincodeCodec>>,
                   key: String,
                   value: String,
                   timestamp: u128| async move {
@@ -461,7 +461,7 @@ mod integration_tests {
             assert_eq!(read_v, value);
             assert_eq!(read_ts, timestamp);
         };
-        let f2 = |map: Arc<UnidirectionalMap<String, String, BincodeCodec>>,
+        let f2 = |map: Arc<UnidirectionalMap<String, String, WincodeCodec>>,
                   key: String,
                   value: String,
                   _: usize| async move {

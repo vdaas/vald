@@ -140,7 +140,6 @@ fn delete_transaction_func(
         (&t).transaction(move |tx| {
             if let Some(payload_ivec) = tx.remove(key.as_slice())? {
                 let (inverse_key_bytes, _): (Vec<u8>, u128) = wincode::deserialize(&payload_ivec)
-                    .map(|decoded| decoded)
                     .map_err(|e| {
                         ConflictableTransactionError::Abort(Error::Codec {
                             source: Box::new(e),

@@ -33,11 +33,11 @@ pub trait Codec: Send + Sync + 'static {
     ) -> Result<T, Error>;
 }
 
-/// The default codec implementation using `bincode`.
+/// The default codec implementation using `wincode`.
 #[derive(Clone, Debug, Default)]
-pub struct BincodeCodec;
+pub struct WincodeCodec;
 
-impl Codec for BincodeCodec {
+impl Codec for WincodeCodec {
     fn encode<T: serde::Serialize + wincode::SchemaWrite<Src = T> + ?Sized>(
         &self,
         v: &T,
@@ -51,10 +51,8 @@ impl Codec for BincodeCodec {
         &self,
         bytes: &[u8],
     ) -> Result<T, Error> {
-        wincode::deserialize(bytes)
-            .map(|decoded| decoded)
-            .map_err(|e| Error::Codec {
-                source: Box::new(e),
-            })
+        wincode::deserialize(bytes).map_err(|e| Error::Codec {
+            source: Box::new(e),
+        })
     }
 }

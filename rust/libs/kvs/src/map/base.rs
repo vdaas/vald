@@ -137,7 +137,6 @@ pub trait MapBase: Sized + Sync + Send + 'static {
                 let result = (|| {
                     let (k_ivec, payload_ivec) = item?;
                     let (v_b, ts): (Vec<u8>, u128) = wincode::deserialize(&payload_ivec)
-                        .map(|decoded| decoded)
                         .map_err(|e| Error::Codec {
                             source: Box::new(e),
                         })?;
@@ -192,7 +191,6 @@ pub trait MapBase: Sized + Sync + Send + 'static {
                 let payload_ivec = tree.get(encoded_input)?.ok_or(Error::NotFound)?;
 
                 let (output_bytes, ts): (Vec<u8>, u128) = wincode::deserialize(&payload_ivec)
-                    .map(|decoded| decoded)
                     .map_err(|e| Error::Codec {
                         source: Box::new(e),
                     })?;

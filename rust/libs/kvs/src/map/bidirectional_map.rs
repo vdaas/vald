@@ -168,7 +168,6 @@ fn set_transaction_func(
             if let Some(old_payload_ivec) = tx1.get(key.as_slice())? {
                 is_new = false;
                 let (old_val_bytes, _): (Vec<u8>, u128) = wincode::deserialize(&old_payload_ivec)
-                    .map(|decoded| decoded)
                     .map_err(|e| {
                         ConflictableTransactionError::Abort(Error::Codec {
                             source: Box::new(e),
@@ -196,7 +195,6 @@ fn delete_transaction_func(
         (&t1, &t2).transaction(move |(tx1, tx2)| {
             if let Some(payload_ivec) = tx1.remove(key.as_slice())? {
                 let (inverse_key_bytes, _): (Vec<u8>, u128) = wincode::deserialize(&payload_ivec)
-                    .map(|decoded| decoded)
                     .map_err(|e| {
                         ConflictableTransactionError::Abort(Error::Codec {
                             source: Box::new(e),
