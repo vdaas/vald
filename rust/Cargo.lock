@@ -5983,9 +5983,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "40990edd51aae2c2b6907af74ffb635029d5788228222c4bb811e9351c0caad3"
 
 [[package]]
+<<<<<<< HEAD
 name = "zlib-rs"
 version = "0.6.0"
+||||||| parent of 56688dc66 (impl)
+name = "zmij"
+version = "0.1.9"
+=======
+name = "zmij"
+version = "1.0.15"
+>>>>>>> 56688dc66 (impl)
 source = "registry+https://github.com/rust-lang/crates.io-index"
+<<<<<<< HEAD
 checksum = "a7948af682ccbc3342b6e9420e8c51c1fe5d7bf7756002b4a3c6cabfe96a7e3c"
 
 [[package]]
@@ -5993,3 +6002,8 @@ name = "zmij"
 version = "1.0.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4de98dfa5d5b7fef4ee834d0073d560c9ca7b6c46a71d058c48db7960f8cfaf7"
+||||||| parent of 56688dc66 (impl)
+checksum = "d0095ecd462946aa3927d9297b63ef82fb9a5316d7a37d134eeb36e58228615a"
+=======
+checksum = "94f63c051f4fe3c1509da62131a678643c5b6fbdc9273b2b79d4378ebda003d2"
+>>>>>>> 56688dc66 (impl)

@@ -18,8 +18,12 @@ use algorithm::{Error, MultiError};
 use anyhow::Result;
 use chrono::{Local, Timelike};
 use config::Config;
-use proto::payload::v1::object::Distance;
-use proto::payload::v1::search;
+use proto::{
+    core::v1::agent_server, payload::v1::{
+        object::Distance,
+        search,
+    }, vald::v1::{flush_server, index_server,insert_server, object_server, remove_server, search_server, update_server, upsert_server}
+};
 use qbg::index::Index;
 use qbg::property::Property;
 use std::collections::HashMap;
@@ -27,6 +31,18 @@ use std::time::Duration;
 
 mod handler;
 mod middleware;
+
+macro_rules! new_svc {
+    ($server:ty, $agent:expr, $settings:expr, $grpc_key:expr) => {
+        <$server>::new($agent.clone())
+            .max_decoding_message_size(
+                $settings.get::<usize>(format!("{}.grpc.max_receive_message_size", $grpc_key).as_str())?,
+            )
+            .max_encoding_message_size(
+                $settings.get::<usize>(format!("{}.grpc.max_send_message_size", $grpc_key).as_str())?,
+            )
+    };
+}
 
 #[derive(Debug)]
 struct _MockService {
@@ -482,18 +498,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             settings.get::<u32>(format!("{grpc_key}.grpc.max_concurrent_streams").as_str())?,
         )
         .layer(layer)
-        .add_service(
-            proto::core::v1::agent_server::AgentServer::new(agent)
-                .max_decoding_message_size(
-                    settings.get::<usize>(
-                        format!("{grpc_key}.grpc.max_receive_message_size").as_str(),
-                    )?,
-                )
-                .max_encoding_message_size(
-                    settings
-                        .get::<usize>(format!("{grpc_key}.grpc.max_send_message_size").as_str())?,
-                ),
-        )
+        .add_service(new_svc!(agent_server::AgentServer<handler::Agent>, agent, settings, grpc_key))
+        .add_service(new_svc!(search_server::SearchServer<handler::Agent>, agent, settings, grpc_key))
+        .add_service(new_svc!(insert_server::InsertServer<handler::Agent>, agent, settings, grpc_key))
+        .add_service(new_svc!(update_server::UpdateServer<handler::Agent>, agent, settings, grpc_key))
+        .add_service(new_svc!(upsert_server::UpsertServer<handler::Agent>, agent, settings, grpc_key))
+        .add_service(new_svc!(remove_server::RemoveServer<handler::Agent>, agent, settings, grpc_key))
+        .add_service(new_svc!(object_server::ObjectServer<handler::Agent>, agent, settings, grpc_key))
+        .add_service(new_svc!(index_server::IndexServer<handler::Agent>, agent, settings, grpc_key))
+        .add_service(new_svc!(flush_server::FlushServer<handler::Agent>, agent, settings, grpc_key))
         .serve(addr)
         .await?;
 
