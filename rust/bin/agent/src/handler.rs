@@ -24,6 +24,7 @@ pub mod upsert;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
+#[derive(Clone)]
 pub struct Agent {
     s: Arc<RwLock<dyn algorithm::ANN>>,
     name: String,
