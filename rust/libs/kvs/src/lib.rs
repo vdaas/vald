@@ -30,7 +30,7 @@ pub mod map;
 
 use crate::map::{
     base::MapBase,
-    codec::{WincodeCodec, Codec},
+    codec::{Codec, WincodeCodec},
     error::Error,
 };
 

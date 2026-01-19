@@ -136,8 +136,8 @@ pub trait MapBase: Sized + Sync + Send + 'static {
             for item in tree.iter() {
                 let result = (|| {
                     let (k_ivec, payload_ivec) = item?;
-                    let (v_b, ts): (Vec<u8>, u128) = wincode::deserialize(&payload_ivec)
-                        .map_err(|e| Error::Codec {
+                    let (v_b, ts): (Vec<u8>, u128) =
+                        wincode::deserialize(&payload_ivec).map_err(|e| Error::Codec {
                             source: Box::new(e),
                         })?;
                     let k: Self::K = codec.decode(&k_ivec)?;
