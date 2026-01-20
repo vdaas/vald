@@ -16,11 +16,11 @@
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct NotLeader {
     /// The requested region ID
-    ///
-    /// // Region leader of the requested region
-    /// metapb.Peer leader = 2;
     #[prost(uint64, tag="1")]
     pub region_id: u64,
+    /// Region leader of the requested region
+    #[prost(message, optional, tag="2")]
+    pub leader: ::core::option::Option<super::metapb::Peer>,
 }
 impl ::prost::Name for NotLeader {
 const NAME: &'static str = "NotLeader";
@@ -127,11 +127,11 @@ fn full_name() -> ::prost::alloc::string::String { "tikv.KeyNotInRegion".into() 
 /// EpochNotMatch is the error variant that tells a region has been updated.
 /// (e.g. by splitting / merging, or raft Confchange.)
 /// Hence, a command is based on a stale version of a region.
-///
-/// // Available regions that may be siblings of the requested one.
-/// repeated metapb.Region current_regions = 1;
-#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct EpochNotMatch {
+    /// Available regions that may be siblings of the requested one.
+    #[prost(message, repeated, tag="1")]
+    pub current_regions: ::prost::alloc::vec::Vec<super::metapb::Region2>,
 }
 impl ::prost::Name for EpochNotMatch {
 const NAME: &'static str = "EpochNotMatch";
@@ -293,7 +293,7 @@ const NAME: &'static str = "UndeterminedResult";
 const PACKAGE: &'static str = "tikv";
 fn full_name() -> ::prost::alloc::string::String { "tikv.UndeterminedResult".into() }fn type_url() -> ::prost::alloc::string::String { "/tikv.UndeterminedResult".into() }}
 /// Error wraps all region errors, indicates an error encountered by a request.
-#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Error {
     /// The error message
     #[prost(string, tag="1")]
@@ -370,7 +370,7 @@ impl ::prost::Name for RawGetRequest {
 const NAME: &'static str = "RawGetRequest";
 const PACKAGE: &'static str = "tikv";
 fn full_name() -> ::prost::alloc::string::String { "tikv.RawGetRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/tikv.RawGetRequest".into() }}
-#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct RawGetResponse {
     #[prost(message, optional, tag="1")]
     pub region_error: ::core::option::Option<Error>,
@@ -428,7 +428,7 @@ impl ::prost::Name for RawPutRequest {
 const NAME: &'static str = "RawPutRequest";
 const PACKAGE: &'static str = "tikv";
 fn full_name() -> ::prost::alloc::string::String { "tikv.RawPutRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/tikv.RawPutRequest".into() }}
-#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct RawPutResponse {
     #[prost(message, optional, tag="1")]
     pub region_error: ::core::option::Option<Error>,
@@ -462,7 +462,7 @@ impl ::prost::Name for RawBatchPutRequest {
 const NAME: &'static str = "RawBatchPutRequest";
 const PACKAGE: &'static str = "tikv";
 fn full_name() -> ::prost::alloc::string::String { "tikv.RawBatchPutRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/tikv.RawBatchPutRequest".into() }}
-#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct RawBatchPutResponse {
     #[prost(message, optional, tag="1")]
     pub region_error: ::core::option::Option<Error>,
@@ -488,7 +488,7 @@ impl ::prost::Name for RawDeleteRequest {
 const NAME: &'static str = "RawDeleteRequest";
 const PACKAGE: &'static str = "tikv";
 fn full_name() -> ::prost::alloc::string::String { "tikv.RawDeleteRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/tikv.RawDeleteRequest".into() }}
-#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct RawDeleteResponse {
     #[prost(message, optional, tag="1")]
     pub region_error: ::core::option::Option<Error>,
@@ -514,7 +514,7 @@ impl ::prost::Name for RawBatchDeleteRequest {
 const NAME: &'static str = "RawBatchDeleteRequest";
 const PACKAGE: &'static str = "tikv";
 fn full_name() -> ::prost::alloc::string::String { "tikv.RawBatchDeleteRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/tikv.RawBatchDeleteRequest".into() }}
-#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct RawBatchDeleteResponse {
     #[prost(message, optional, tag="1")]
     pub region_error: ::core::option::Option<Error>,
@@ -532,8 +532,10 @@ fn full_name() -> ::prost::alloc::string::String { "tikv.RawBatchDeleteResponse"
 pub struct Context {
     #[prost(uint64, tag="1")]
     pub region_id: u64,
-    /// metapb.RegionEpoch region_epoch = 2;
-    /// metapb.Peer peer = 3;
+    #[prost(message, optional, tag="2")]
+    pub region_epoch: ::core::option::Option<super::metapb::RegionEpoch>,
+    #[prost(message, optional, tag="3")]
+    pub peer: ::core::option::Option<super::metapb::Peer>,
     #[prost(uint64, tag="5")]
     pub term: u64,
     #[prost(enumeration="CommandPri", tag="6")]

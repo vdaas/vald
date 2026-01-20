@@ -893,6 +893,12 @@ impl serde::Serialize for Context {
         if self.region_id != 0 {
             len += 1;
         }
+        if self.region_epoch.is_some() {
+            len += 1;
+        }
+        if self.peer.is_some() {
+            len += 1;
+        }
         if self.term != 0 {
             len += 1;
         }
@@ -985,6 +991,12 @@ impl serde::Serialize for Context {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
             struct_ser.serialize_field("regionId", ToString::to_string(&self.region_id).as_str())?;
+        }
+        if let Some(v) = self.region_epoch.as_ref() {
+            struct_ser.serialize_field("regionEpoch", v)?;
+        }
+        if let Some(v) = self.peer.as_ref() {
+            struct_ser.serialize_field("peer", v)?;
         }
         if self.term != 0 {
             #[allow(clippy::needless_borrow)]
@@ -1113,6 +1125,9 @@ impl<'de> serde::Deserialize<'de> for Context {
         const FIELDS: &[&str] = &[
             "region_id",
             "regionId",
+            "region_epoch",
+            "regionEpoch",
+            "peer",
             "term",
             "priority",
             "isolation_level",
@@ -1174,6 +1189,8 @@ impl<'de> serde::Deserialize<'de> for Context {
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             RegionId,
+            RegionEpoch,
+            Peer,
             Term,
             Priority,
             IsolationLevel,
@@ -1225,6 +1242,8 @@ impl<'de> serde::Deserialize<'de> for Context {
                     {
                         match value {
                             "regionId" | "region_id" => Ok(GeneratedField::RegionId),
+                            "regionEpoch" | "region_epoch" => Ok(GeneratedField::RegionEpoch),
+                            "peer" => Ok(GeneratedField::Peer),
                             "term" => Ok(GeneratedField::Term),
                             "priority" => Ok(GeneratedField::Priority),
                             "isolationLevel" | "isolation_level" => Ok(GeneratedField::IsolationLevel),
@@ -1274,6 +1293,8 @@ impl<'de> serde::Deserialize<'de> for Context {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut region_id__ = None;
+                let mut region_epoch__ = None;
+                let mut peer__ = None;
                 let mut term__ = None;
                 let mut priority__ = None;
                 let mut isolation_level__ = None;
@@ -1312,6 +1333,18 @@ impl<'de> serde::Deserialize<'de> for Context {
                             region_id__ = 
                                 Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
+                        }
+                        GeneratedField::RegionEpoch => {
+                            if region_epoch__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("regionEpoch"));
+                            }
+                            region_epoch__ = map_.next_value()?;
+                        }
+                        GeneratedField::Peer => {
+                            if peer__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("peer"));
+                            }
+                            peer__ = map_.next_value()?;
                         }
                         GeneratedField::Term => {
                             if term__.is_some() {
@@ -1521,6 +1554,8 @@ impl<'de> serde::Deserialize<'de> for Context {
                 }
                 Ok(Context {
                     region_id: region_id__.unwrap_or_default(),
+                    region_epoch: region_epoch__,
+                    peer: peer__,
                     term: term__.unwrap_or_default(),
                     priority: priority__.unwrap_or_default(),
                     isolation_level: isolation_level__.unwrap_or_default(),
@@ -1981,8 +2016,14 @@ impl serde::Serialize for EpochNotMatch {
         S: serde::Serializer,
     {
         use serde::ser::SerializeStruct;
-        let len = 0;
-        let struct_ser = serializer.serialize_struct("tikv.EpochNotMatch", len)?;
+        let mut len = 0;
+        if !self.current_regions.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("tikv.EpochNotMatch", len)?;
+        if !self.current_regions.is_empty() {
+            struct_ser.serialize_field("currentRegions", &self.current_regions)?;
+        }
         struct_ser.end()
     }
 }
@@ -1993,10 +2034,13 @@ impl<'de> serde::Deserialize<'de> for EpochNotMatch {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
+            "current_regions",
+            "currentRegions",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
+            CurrentRegions,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -2017,7 +2061,10 @@ impl<'de> serde::Deserialize<'de> for EpochNotMatch {
                     where
                         E: serde::de::Error,
                     {
-                            Err(serde::de::Error::unknown_field(value, FIELDS))
+                        match value {
+                            "currentRegions" | "current_regions" => Ok(GeneratedField::CurrentRegions),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
                     }
                 }
                 deserializer.deserialize_identifier(GeneratedVisitor)
@@ -2035,10 +2082,19 @@ impl<'de> serde::Deserialize<'de> for EpochNotMatch {
                 where
                     V: serde::de::MapAccess<'de>,
             {
-                while map_.next_key::<GeneratedField>()?.is_some() {
-                    let _ = map_.next_value::<serde::de::IgnoredAny>()?;
+                let mut current_regions__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::CurrentRegions => {
+                            if current_regions__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("currentRegions"));
+                            }
+                            current_regions__ = Some(map_.next_value()?);
+                        }
+                    }
                 }
                 Ok(EpochNotMatch {
+                    current_regions: current_regions__.unwrap_or_default(),
                 })
             }
         }
@@ -5219,11 +5275,17 @@ impl serde::Serialize for NotLeader {
         if self.region_id != 0 {
             len += 1;
         }
+        if self.leader.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("tikv.NotLeader", len)?;
         if self.region_id != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
             struct_ser.serialize_field("regionId", ToString::to_string(&self.region_id).as_str())?;
+        }
+        if let Some(v) = self.leader.as_ref() {
+            struct_ser.serialize_field("leader", v)?;
         }
         struct_ser.end()
     }
@@ -5237,11 +5299,13 @@ impl<'de> serde::Deserialize<'de> for NotLeader {
         const FIELDS: &[&str] = &[
             "region_id",
             "regionId",
+            "leader",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             RegionId,
+            Leader,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -5264,6 +5328,7 @@ impl<'de> serde::Deserialize<'de> for NotLeader {
                     {
                         match value {
                             "regionId" | "region_id" => Ok(GeneratedField::RegionId),
+                            "leader" => Ok(GeneratedField::Leader),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -5284,6 +5349,7 @@ impl<'de> serde::Deserialize<'de> for NotLeader {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut region_id__ = None;
+                let mut leader__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::RegionId => {
@@ -5294,10 +5360,17 @@ impl<'de> serde::Deserialize<'de> for NotLeader {
                                 Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
+                        GeneratedField::Leader => {
+                            if leader__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("leader"));
+                            }
+                            leader__ = map_.next_value()?;
+                        }
                     }
                 }
                 Ok(NotLeader {
                     region_id: region_id__.unwrap_or_default(),
+                    leader: leader__,
                 })
             }
         }

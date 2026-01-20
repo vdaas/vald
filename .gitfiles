@@ -13,18 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-apis/docs/v1/meta.md
-apis/grpc/v1/vald/meta.pb.go
-apis/grpc/v1/vald/meta_vtproto.pb.go
-apis/swagger/v1/vald/meta.swagger.json
-rust/libs/proto/src/core/v1/core.v1.rs
-rust/libs/proto/src/discoverer/v1/discoverer.v1.rs
-rust/libs/proto/src/filter/egress/v1/filter.egress.v1.rs
-rust/libs/proto/src/filter/ingress/v1/filter.ingress.v1.rs
-rust/libs/proto/src/meta/v1/meta.v1.rs
-rust/libs/proto/src/mirror/v1/mirror.v1.rs
-rust/libs/proto/src/sidecar/v1/sidecar.v1.rs
-rust/libs/proto/src/vald/v1/vald.v1.rs
+rust/libs/proto/src/metapb/metapb.rs
+rust/libs/proto/src/metapb/metapb.serde.rs
+rust/libs/proto/src/pdpb/pdpb.rs
+rust/libs/proto/src/pdpb/pdpb.serde.rs
+rust/libs/proto/src/pdpb/pdpb.tonic.rs
+rust/libs/proto/src/tikvpb/tikvpb.rs
+rust/libs/proto/src/tikvpb/tikvpb.tonic.rs
 .all-contributorsrc
 .commit_template
 .cspell.json
@@ -188,6 +183,7 @@ apis/docs/v1/filter.md
 apis/docs/v1/flush.md
 apis/docs/v1/index.md
 apis/docs/v1/insert.md
+apis/docs/v1/meta.md
 apis/docs/v1/mirror.md
 apis/docs/v1/object.md
 apis/docs/v1/payload.md.tmpl
@@ -243,6 +239,8 @@ apis/grpc/v1/vald/index.pb.go
 apis/grpc/v1/vald/index_vtproto.pb.go
 apis/grpc/v1/vald/insert.pb.go
 apis/grpc/v1/vald/insert_vtproto.pb.go
+apis/grpc/v1/vald/meta.pb.go
+apis/grpc/v1/vald/meta_vtproto.pb.go
 apis/grpc/v1/vald/object.pb.go
 apis/grpc/v1/vald/object_vtproto.pb.go
 apis/grpc/v1/vald/remove.pb.go
@@ -300,6 +298,7 @@ apis/swagger/v1/vald/filter.swagger.json
 apis/swagger/v1/vald/flush.swagger.json
 apis/swagger/v1/vald/index.swagger.json
 apis/swagger/v1/vald/insert.swagger.json
+apis/swagger/v1/vald/meta.swagger.json
 apis/swagger/v1/vald/object.swagger.json
 apis/swagger/v1/vald/remove.swagger.json
 apis/swagger/v1/vald/search.swagger.json
@@ -2366,15 +2365,19 @@ rust/libs/observability/src/observability.rs
 rust/libs/proto/Cargo.toml
 rust/libs/proto/build.rs
 rust/libs/proto/src/core/mod.rs
+rust/libs/proto/src/core/v1/core.v1.rs
 rust/libs/proto/src/core/v1/core.v1.tonic.rs
 rust/libs/proto/src/core/v1/mod.rs
 rust/libs/proto/src/discoverer/mod.rs
+rust/libs/proto/src/discoverer/v1/discoverer.v1.rs
 rust/libs/proto/src/discoverer/v1/discoverer.v1.tonic.rs
 rust/libs/proto/src/discoverer/v1/mod.rs
 rust/libs/proto/src/filter/egress/mod.rs
+rust/libs/proto/src/filter/egress/v1/filter.egress.v1.rs
 rust/libs/proto/src/filter/egress/v1/filter.egress.v1.tonic.rs
 rust/libs/proto/src/filter/egress/v1/mod.rs
 rust/libs/proto/src/filter/ingress/mod.rs
+rust/libs/proto/src/filter/ingress/v1/filter.ingress.v1.rs
 rust/libs/proto/src/filter/ingress/v1/filter.ingress.v1.tonic.rs
 rust/libs/proto/src/filter/ingress/v1/mod.rs
 rust/libs/proto/src/filter/mod.rs
@@ -2383,9 +2386,11 @@ rust/libs/proto/src/google/rpc/mod.rs
 rust/libs/proto/src/google/rpc/status.rs
 rust/libs/proto/src/lib.rs
 rust/libs/proto/src/meta/mod.rs
+rust/libs/proto/src/meta/v1/meta.v1.rs
 rust/libs/proto/src/meta/v1/meta.v1.tonic.rs
 rust/libs/proto/src/meta/v1/mod.rs
 rust/libs/proto/src/mirror/mod.rs
+rust/libs/proto/src/mirror/v1/mirror.v1.rs
 rust/libs/proto/src/mirror/v1/mirror.v1.tonic.rs
 rust/libs/proto/src/mirror/v1/mod.rs
 rust/libs/proto/src/payload/mod.rs
@@ -2399,12 +2404,14 @@ rust/libs/proto/src/rpc/v1/rpc.v1.serde.rs
 rust/libs/proto/src/rpc/v1/rpc.v1.tonic.rs
 rust/libs/proto/src/sidecar/mod.rs
 rust/libs/proto/src/sidecar/v1/mod.rs
+rust/libs/proto/src/sidecar/v1/sidecar.v1.rs
 rust/libs/proto/src/sidecar/v1/sidecar.v1.tonic.rs
 rust/libs/proto/src/tikv/tikv.rs
 rust/libs/proto/src/tikv/tikv.serde.rs
 rust/libs/proto/src/tikv/tikv.tonic.rs
 rust/libs/proto/src/vald/mod.rs
 rust/libs/proto/src/vald/v1/mod.rs
+rust/libs/proto/src/vald/v1/vald.v1.rs
 rust/libs/proto/src/vald/v1/vald.v1.tonic.rs
 rust/libs/proto/wkt.proto
 rust/libs/vqueue/Cargo.toml

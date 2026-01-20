@@ -494,7 +494,6 @@ var (
 		(*RegionEpoch)(nil), // 4: metapb.RegionEpoch
 	}
 )
-
 var file_v1_tikv_metapb_proto_depIdxs = []int32{
 	0, // 0: metapb.Store.state:type_name -> metapb.StoreState
 	4, // 1: metapb.Region2.region_epoch:type_name -> metapb.RegionEpoch

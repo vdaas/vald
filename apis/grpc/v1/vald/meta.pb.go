@@ -20,7 +20,7 @@
 // 	protoc        (unknown)
 // source: v1/vald/meta.proto
 
-package metadata
+package vald
 
 import (
 	reflect "reflect"
