@@ -13,7 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
 mod common;
+pub mod flush;
 pub mod index;
 pub mod insert;
 pub mod object;
@@ -21,6 +23,7 @@ pub mod remove;
 pub mod search;
 pub mod update;
 pub mod upsert;
+
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
@@ -36,7 +39,7 @@ pub struct Agent {
 
 impl Agent {
     pub fn new(
-        s: impl algorithm::ANN + 'static,
+        s: dyn algorithm::ANN + 'static,
         name: &str,
         ip: &str,
         resource_type: &str,
