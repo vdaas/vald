@@ -263,6 +263,7 @@ apis/proto/v1/vald/filter.proto
 apis/proto/v1/vald/flush.proto
 apis/proto/v1/vald/index.proto
 apis/proto/v1/vald/insert.proto
+apis/proto/v1/vald/meta.proto
 apis/proto/v1/vald/object.proto
 apis/proto/v1/vald/remove.proto
 apis/proto/v1/vald/search.proto
