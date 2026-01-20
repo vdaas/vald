@@ -28,8 +28,8 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 
 #[derive(Clone)]
-pub struct Agent {
-    s: Arc<RwLock<dyn algorithm::ANN>>,
+pub struct Agent<S: algorithm::ANN> {
+    s: Arc<RwLock<S>>,
     name: String,
     ip: String,
     resource_type: String,
@@ -37,9 +37,9 @@ pub struct Agent {
     stream_concurrency: usize,
 }
 
-impl Agent {
+impl<S: algorithm::ANN> Agent<S> {
     pub fn new(
-        s: dyn algorithm::ANN + 'static,
+        s: S,
         name: &str,
         ip: &str,
         resource_type: &str,

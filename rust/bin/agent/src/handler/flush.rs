@@ -15,14 +15,17 @@
 //
 
 use algorithm::Error;
-use log::{error, info};
-use proto::{payload::v1::Empty, vald::v1::flush_server};
+use log::{debug, error, info, warn};
+use prost::Message;
+use proto::{payload::v1::info, vald::v1::flush_server};
 use std::collections::HashMap;
 use tonic::{Code, Status};
 use tonic_types::StatusExt;
 
+use crate::handler::common::build_error_details;
+
 #[tonic::async_trait]
-impl flush_server::Flush for super::Agent {
+impl<S: algorithm::ANN + 'static> flush_server::Flush for super::Agent<S> {
     async fn flush(
         &self,
         request: tonic::Request<proto::payload::v1::flush::Request>,
@@ -32,23 +35,19 @@ impl flush_server::Flush for super::Agent {
         let domain = hostname.to_str().unwrap();
         {
             let mut s = self.s.write().await;
-            let result = s.regenerate_indexes().await;
+            let result = s.regenerate_indexes();
             match result {
                 Err(err) => {
-                    error!("{:?}", err);
                     let metadata = HashMap::new();
                     let resource_type = self.resource_type.clone() + "/qbg.Flush";
                     let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
-                    let mut err_details = tonic_types::ErrorDetails::new();
-                    err_details.set_error_info(err.to_string(), domain, metadata);
-                    err_details.set_resource_info(resource_type, resource_name, "", "");
                     let status = match err {
-                        Error::FlushInprocess {} => {
+                        Error::FlushingIsInProgress {} => {
                             let err_details = build_error_details(
                                 err,
                                 domain,
-                                &vec.id,
-                                request_bytes,
+                                "",
+                                request.get_ref().encode_to_vec(),
                                 &resource_type,
                                 &resource_name,
                                 None,
@@ -61,24 +60,29 @@ impl flush_server::Flush for super::Agent {
                             let err_details = build_error_details(
                                 err,
                                 domain,
-                                &vec.id,
-                                request_bytes,
+                                "",
+                                request.get_ref().encode_to_vec(),
                                 &resource_type,
                                 &resource_name,
                                 None,
                             );
-                            Status::with_error_details(
-                                Code::Unknown,
-                                "failed to parse Insert gRPC error response",
+                            let status = Status::with_error_details(
+                                Code::Internal,
+                                "Flush API is failed",
                                 err_details,
-                            )
+                            );
+                            error!("{:?}", err_details);
+                            status
                         }
                     };
                     Err(status)
                 }
                 Ok(()) => {
-                    counts = info::index::Count {
-                        
+                    let res = info::index::Count {
+                        stored: 0,
+                        uncommitted: 0,
+                        indexing: false,
+                        saving: false,
                     };
                     Ok(tonic::Response::new(res))
                 }
