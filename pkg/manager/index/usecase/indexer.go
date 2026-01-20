@@ -108,7 +108,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	idx := handler.New(handler.WithIndexer(indexer))
 
 	grpcServerOptions := []server.Option{
-		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
+		server.WithGRPCRegisterFunc(func(srv *grpc.Server) {
 			index.RegisterIndexServer(srv, idx)
 		}),
 		server.WithPreStopFunction(func() error {

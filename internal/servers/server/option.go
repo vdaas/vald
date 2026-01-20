@@ -401,7 +401,7 @@ func WithGRPCOption(opts ...grpc.ServerOption) Option {
 	}
 }
 
-func WithGRPCRegistFunc(f func(*grpc.Server)) Option {
+func WithGRPCRegisterFunc(f func(*grpc.Server)) Option {
 	return func(s *server) error {
 		if f != nil {
 			if s.grpc.regs == nil {

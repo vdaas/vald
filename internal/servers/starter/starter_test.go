@@ -154,7 +154,7 @@ func TestSetupAPIs(t *testing.T) {
 					},
 					grpc: func(cfg *config.Server) []server.Option {
 						return []server.Option{
-							server.WithGRPCRegistFunc(fn),
+							server.WithGRPCRegisterFunc(fn),
 						}
 					},
 					gql: func(cfg *config.Server) []server.Option {

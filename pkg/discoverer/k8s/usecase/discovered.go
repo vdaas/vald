@@ -79,7 +79,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	grpcServerOptions := []server.Option{
-		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
+		server.WithGRPCRegisterFunc(func(srv *grpc.Server) {
 			discoverer.RegisterDiscovererServer(srv, h)
 		}),
 		server.WithPreStartFunc(func() error {
