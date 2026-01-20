@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 use anyhow::Result;
-use proto::payload::v1::search;
+use proto::payload::v1::{info, search};
 use std::{collections::HashMap, error, fmt, i64};
 
 pub trait MultiError {
@@ -144,28 +144,41 @@ impl fmt::Display for Error {
 }
 
 pub trait ANN: Send + Sync {
-    fn exists(&self, uuid: String) -> bool;
+    fn search(&self, vector: Vec<f32>, k: u32, epsilon: f32, radius: f32) -> Result<search::Response, Error>;
+    fn search_by_id(&self, uuid: String, k: u32, epsilon: f32, radius: f32) -> Result<search::Response, Error>;
+    fn linear_search(&self, vector: Vec<f32>, k: u32) -> Result<search::Response, Error>;
+    fn linear_search_by_id(&self, uuid: String, k: u32) -> Result<search::Response, Error>;
+    fn insert(&mut self, uuid: String, vector: Vec<f32>) -> Result<(), Error>;
+    fn insert_with_time(&mut self, uuid: String, vector: Vec<f32>, t: i64) -> Result<(), Error>;
+    fn insert_multiple(&mut self, vectors: HashMap<String, Vec<f32>>) -> Result<(), Error>;
+    fn insert_multiple_with_time(&mut self, vectors: HashMap<String, Vec<f32>>, t: i64) -> Result<(), Error>;
+    fn update(&mut self, uuid: String, vector: Vec<f32>, ts: i64) -> Result<(), Error>;
+    fn update_with_time(&mut self, uuid: String, vector: Vec<f32>, t: i64) -> Result<(), Error>;
+    fn update_multiple(&mut self, vectors: HashMap<String, Vec<f32>>) -> Result<(), Error>;
+    fn update_multiple_with_time(&mut self, vectors: HashMap<String, Vec<f32>>, t: i64) -> Result<(), Error>;
+    fn remove(&mut self, uuid: String, ts: i64) -> Result<(), Error>;
+    fn remove_with_time(&mut self, uuid: String, t: i64) -> Result<(), Error>;
+    fn remove_multiple(&mut self, uuids: Vec<String>) -> Result<(), Error>;
+    fn remove_multiple_with_time(&mut self, uuids: Vec<String>, t: i64) -> Result<(), Error>;
+    fn regenerate_indexes(&mut self) -> Result<(), Error>;
+    fn get_object(&self, uuid: String) -> Result<(Vec<f32>, i64), Error>;
+    fn list_object_func<F: Fn(String, Vec<f32>, i64) -> bool>(&self, f: F);
+    fn exists(&self, uuid: String) -> (usize, bool);
     fn create_index(&mut self) -> Result<(), Error>;
     fn save_index(&mut self) -> Result<(), Error>;
-    fn insert(&mut self, uuid: String, vector: Vec<f32>, ts: i64) -> Result<(), Error>;
-    fn insert_multiple(&mut self, vectors: HashMap<String, Vec<f32>>) -> Result<(), Error>;
-    fn update(&mut self, uuid: String, vector: Vec<f32>, ts: i64) -> Result<(), Error>;
-    fn update_multiple(&mut self, vectors: HashMap<String, Vec<f32>>) -> Result<(), Error>;
-    fn ready_for_update(&mut self, uuid: String, vector: Vec<f32>, ts: i64) -> Result<(), Error>;
-    fn remove(&mut self, uuid: String, ts: i64) -> Result<(), Error>;
-    fn remove_multiple(&mut self, uuids: Vec<String>) -> Result<(), Error>;
-    fn search(
-        &self,
-        vector: Vec<f32>,
-        k: u32,
-        epsilon: f32,
-        radius: f32,
-    ) -> Result<search::Response, Error>;
-    fn get_object(&self, uuid: String) -> Result<(Vec<f32>, i64), Error>;
-    fn get_dimension_size(&self) -> usize;
+    fn create_and_save_index(&mut self) -> Result<(), Error>;
+    fn is_indexing(&self) -> bool;
+    fn is_flushing(&self) -> bool;
+    fn is_saving(&self) -> bool;
     fn len(&self) -> u32;
+    fn number_of_create_index_executions(&self) -> u64;
+    fn uuids(&self) -> Vec<String>;
     fn insert_vqueue_buffer_len(&self) -> u32;
     fn delete_vqueue_buffer_len(&self) -> u32;
-    fn is_indexing(&self) -> bool;
-    fn is_saving(&self) -> bool;
+    fn get_dimension_size(&self) -> usize;
+    fn broken_index_count(&self) -> u64;
+    fn index_statistics(&self) -> Result<info::index::Statistics, Error>;
+    fn is_statistics_enabled(&self) -> bool;
+    fn index_property(&self) -> Result<info::index::Property, Error>;
+    fn close(&mut self) -> Result<(), Error>;
 }

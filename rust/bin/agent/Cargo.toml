@@ -40,6 +40,7 @@ tokio-stream = { version = "0.1.18", features = ["full"] }
 tonic = "0.14.3"
 tonic-types = "0.14.3"
 tower = "0.5.3"
+vqueue = { version = "0.1.0", path = "../../libs/vqueue" }
 
 [dev-dependencies]
 bytes = "1.11.1"
