@@ -27,15 +27,15 @@ use tonic_types::StatusExt;
 
 use super::common::{bidirectional_stream, build_error_details};
 
-pub(super) async fn insert(
-    s: Arc<RwLock<dyn algorithm::ANN>>,
+pub(super) async fn insert<S: algorithm::ANN>(
+    s: Arc<RwLock<S>>,
     resource_type: &str,
     api_name: &str,
     name: &str,
     ip: &str,
     request: &insert::Request,
 ) -> Result<object::Location, Status> {
-    let config = match request.config.clone() {
+    let _config = match request.config.clone() {
         Some(cfg) => cfg,
         None => return Err(Status::invalid_argument("Missing configuration in request")),
     };
@@ -71,7 +71,7 @@ pub(super) async fn insert(
             warn!("{:?}", status);
             return Err(status);
         }
-        let result = s.insert(vec.id.clone(), vec.vector.clone(), config.timestamp);
+        let result = s.insert(vec.id.clone(), vec.vector.clone());
         match result {
             Err(err) => {
                 let resource_type = format!("{}/qbg.Insert", resource_type);
@@ -160,7 +160,7 @@ pub(super) async fn insert(
 }
 
 #[tonic::async_trait]
-impl insert_server::Insert for super::Agent {
+impl<S: algorithm::ANN + 'static> insert_server::Insert for super::Agent<S> {
     async fn insert(
         &self,
         request: tonic::Request<insert::Request>,
