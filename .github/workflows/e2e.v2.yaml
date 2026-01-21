@@ -65,6 +65,7 @@ jobs:
             const baseInclude = [
               { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "null" },
               { scenario: "unary_crud",  deployment: "helm-chart", cluster: "k3d", environment: "null" },
+              { scenario: "unary_crud",  deployment: "helm-chart", cluster: "k3d", environment: "meta" },
               { scenario: "multi_crud",  deployment: "helm-chart", cluster: "k3d", environment: "null" },
               { scenario: "rollout",     deployment: "helm-chart", cluster: "k3d", environment: "null" },
               { scenario: "stream_crud", deployment: "helm-operator", cluster: "k3d", environment: "null" },
@@ -147,7 +148,7 @@ jobs:
         run: |
           echo "HELM_EXTRA_OPTIONS=\"--values .github/helm/values/values-index-management-jobs.yaml\"" >> $GITHUB_ENV
       - name: Deploy Vald by Helm Chart
-        if: ${{ matrix.deployment == 'helm-chart' && matrix.environment != 'mirror' && matrix.scenario != 'readreplica' }}
+        if: ${{ matrix.deployment == 'helm-chart' && matrix.environment != 'mirror' && matrix.scenario != 'readreplica' && matrix.environment != 'meta' }}
         uses: ./.github/actions/e2e-deploy-vald
         with:
           helm_extra_options: "${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}"
@@ -183,6 +184,13 @@ jobs:
           kubectl apply -f .github/helm/values/vald-mirror-target.yaml -n vald-01
           sleep 5s
           kubectl get pods -A && kubectl get vmt -o wide -A
+      - name: Deploy Vald with Meta
+        if: ${{ matrix.environment == 'meta' }}
+        uses: ./.github/actions/e2e-deploy-vald
+        with:
+          helm_extra_options: "${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}"
+          values: .github/helm/values/values-meta.yaml
+          wait_for_selector: "app=vald-lb-gateway"
 
       - name: Create Helm options for vald-helm-operator
         if: ${{ matrix.deployment == 'helm-operator' }}
