@@ -58,6 +58,7 @@
 .github/helm/values/values-index-management-jobs.yaml
 .github/helm/values/values-lb.yaml
 .github/helm/values/values-max-dim.yaml
+.github/helm/values/values-meta.yaml
 .github/helm/values/values-mirror-01.yaml
 .github/helm/values/values-mirror-02.yaml
 .github/helm/values/values-profile.yaml
@@ -262,6 +263,7 @@ apis/proto/v1/vald/filter.proto
 apis/proto/v1/vald/flush.proto
 apis/proto/v1/vald/index.proto
 apis/proto/v1/vald/insert.proto
+apis/proto/v1/vald/meta.proto
 apis/proto/v1/vald/object.proto
 apis/proto/v1/vald/remove.proto
 apis/proto/v1/vald/search.proto
