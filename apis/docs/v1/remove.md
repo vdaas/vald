@@ -75,11 +75,13 @@ Remove RPC is the method to remove a single vector.
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -184,11 +186,13 @@ This design allows for versatile deletion operations, facilitating tasks such as
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -292,11 +296,13 @@ It's the recommended method to remove a large number of vectors.
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -411,11 +417,13 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 

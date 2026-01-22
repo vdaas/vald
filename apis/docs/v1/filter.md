@@ -123,6 +123,7 @@ SearchObject RPC is the method to search object(s) similar to request object.
   message Object.Distance {
     string id = 1;
     float distance = 2;
+    optional bytes metadata = 3;
   }
 
   ```
@@ -136,10 +137,11 @@ SearchObject RPC is the method to search object(s) similar to request object.
 
   - Object.Distance
 
-    |  field   | type   | label | description    |
-    | :------: | :----- | :---- | :------------- |
-    |    id    | string |       | The vector ID. |
-    | distance | float  |       | The distance.  |
+    |  field   | type   | label    | description                                    |
+    | :------: | :----- | :------- | :--------------------------------------------- |
+    |    id    | string |          | The vector ID.                                 |
+    | distance | float  |          | The distance.                                  |
+    | metadata | bytes  | optional | The metadata is related to the request vector. |
 
 ### Status Code
 
@@ -268,6 +270,7 @@ Each Search request and response are independent.
   message Object.Distance {
     string id = 1;
     float distance = 2;
+    optional bytes metadata = 3;
   }
 
   ```
@@ -287,10 +290,11 @@ Each Search request and response are independent.
 
   - Object.Distance
 
-    |  field   | type   | label | description    |
-    | :------: | :----- | :---- | :------------- |
-    |    id    | string |       | The vector ID. |
-    | distance | float  |       | The distance.  |
+    |  field   | type   | label    | description                                    |
+    | :------: | :----- | :------- | :--------------------------------------------- |
+    |    id    | string |          | The vector ID.                                 |
+    | distance | float  |          | The distance.                                  |
+    | metadata | bytes  | optional | The metadata is related to the request vector. |
 
 ### Status Code
 
@@ -413,6 +417,7 @@ Please be careful that the size of the request exceeds the limit.
   message Object.Distance {
     string id = 1;
     float distance = 2;
+    optional bytes metadata = 3;
   }
 
   ```
@@ -433,10 +438,11 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Distance
 
-    |  field   | type   | label | description    |
-    | :------: | :----- | :---- | :------------- |
-    |    id    | string |       | The vector ID. |
-    | distance | float  |       | The distance.  |
+    |  field   | type   | label    | description                                    |
+    | :------: | :----- | :------- | :--------------------------------------------- |
+    |    id    | string |          | The vector ID.                                 |
+    | distance | float  |          | The distance.                                  |
+    | metadata | bytes  | optional | The metadata is related to the request vector. |
 
 ### Status Code
 
@@ -539,11 +545,13 @@ InsertObject RPC is the method to insert object through Vald Filter Gateway.
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -662,11 +670,13 @@ It's the recommended method to insert a large number of objects.
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -789,11 +799,13 @@ MultiInsertObject RPC is the method to add multiple new objects in **1** request
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -900,11 +912,13 @@ UpdateObject RPC is the method to update a single vector.
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -1026,11 +1040,13 @@ It's the recommended method to update the large amount of objects.
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -1162,11 +1178,13 @@ Please be careful that the size of the request exceed the limit.
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -1273,11 +1291,13 @@ UpsertObject RPC is the method to update a single object and add a new single ob
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -1396,11 +1416,13 @@ UpsertObject RPC is the method to update a single object and add a new single ob
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -1532,11 +1554,13 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 

@@ -32,6 +32,7 @@ Upsert RPC is the method to update the inserted vector to a new single vector or
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 
   message Upsert.Config {
@@ -66,6 +67,7 @@ Upsert RPC is the method to update the inserted vector to a new single vector or
     |    id     | string |          | The vector ID.                                  |
     |  vector   | float  | repeated | The vector.                                     |
     | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
 
   - Upsert.Config
 
@@ -106,11 +108,13 @@ Upsert RPC is the method to update the inserted vector to a new single vector or
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -162,6 +166,7 @@ It’s the recommended method to upsert a large number of vectors.
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 
   message Upsert.Config {
@@ -196,6 +201,7 @@ It’s the recommended method to upsert a large number of vectors.
     |    id     | string |          | The vector ID.                                  |
     |  vector   | float  | repeated | The vector.                                     |
     | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
 
   - Upsert.Config
 
@@ -248,11 +254,13 @@ It’s the recommended method to upsert a large number of vectors.
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -310,6 +318,7 @@ Please be careful that the size of the request exceeds the limit.
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 
   message Upsert.Config {
@@ -350,6 +359,7 @@ Please be careful that the size of the request exceeds the limit.
     |    id     | string |          | The vector ID.                                  |
     |  vector   | float  | repeated | The vector.                                     |
     | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
 
   - Upsert.Config
 
@@ -400,11 +410,13 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 

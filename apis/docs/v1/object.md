@@ -145,6 +145,7 @@ GetObject RPC is the method to get the metadata of a vector inserted into the `v
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 
   ```
@@ -156,6 +157,7 @@ GetObject RPC is the method to get the metadata of a vector inserted into the `v
     |    id     | string |          | The vector ID.                                  |
     |  vector   | float  | repeated | The vector.                                     |
     | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
 
 ### Status Code
 
@@ -255,6 +257,7 @@ Each Upsert request and response are independent.
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 
   ```
@@ -273,6 +276,7 @@ Each Upsert request and response are independent.
     |    id     | string |          | The vector ID.                                  |
     |  vector   | float  | repeated | The vector.                                     |
     | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
 
 ### Status Code
 
@@ -334,6 +338,7 @@ A method to get all the vectors with server streaming
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 
   ```
@@ -352,6 +357,7 @@ A method to get all the vectors with server streaming
     |    id     | string |          | The vector ID.                                  |
     |  vector   | float  | repeated | The vector.                                     |
     | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
 
 ### Status Code
 

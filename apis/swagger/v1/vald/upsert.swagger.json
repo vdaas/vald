@@ -93,20 +93,6 @@
       },
       "description": "Represent multiple vector locations."
     },
-    "ObjectStreamLocation": {
-      "type": "object",
-      "properties": {
-        "location": {
-          "$ref": "#/definitions/v1ObjectLocation",
-          "description": "The vector location."
-        },
-        "status": {
-          "$ref": "#/definitions/rpcStatus",
-          "description": "The RPC error status."
-        }
-      },
-      "description": "Represent the stream response of the vector location."
-    },
     "ObjectVector": {
       "type": "object",
       "properties": {
@@ -126,6 +112,11 @@
           "type": "string",
           "format": "int64",
           "description": "timestamp represents when this vector inserted."
+        },
+        "metadata": {
+          "type": "string",
+          "format": "byte",
+          "description": "The metadata is related to the request vector."
         }
       },
       "description": "Represent a vector."
@@ -202,7 +193,7 @@
         },
         "uuid": {
           "type": "string",
-          "description": "The UUID of the vector."
+          "description": "The UUID of the vector.\nTODO(v2): Use id to unify names."
         },
         "ips": {
           "type": "array",

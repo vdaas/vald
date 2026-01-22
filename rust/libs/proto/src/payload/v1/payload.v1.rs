@@ -413,6 +413,9 @@ fn full_name() -> ::prost::alloc::string::String { "payload.v1.Update.MultiObjec
         /// force represents forcefully update the timestamp.
         #[prost(bool, tag="3")]
         pub force: bool,
+        /// The metadata is related to the request vector.
+        #[prost(bytes="vec", optional, tag="4")]
+        pub metadata: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
     }
 impl ::prost::Name for TimestampRequest {
 const NAME: &'static str = "TimestampRequest";
@@ -702,6 +705,9 @@ fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.VectorRequ
         /// The distance.
         #[prost(float, tag="2")]
         pub distance: f32,
+        /// The metadata is related to the request vector.
+        #[prost(bytes="vec", optional, tag="3")]
+        pub metadata: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
     }
 impl ::prost::Name for Distance {
 const NAME: &'static str = "Distance";
@@ -761,6 +767,9 @@ fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.IDs".into(
         /// timestamp represents when this vector inserted.
         #[prost(int64, tag="3")]
         pub timestamp: i64,
+        /// The metadata is related to the request vector.
+        #[prost(bytes="vec", optional, tag="4")]
+        pub metadata: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
     }
 impl ::prost::Name for Vector {
 const NAME: &'static str = "Vector";
@@ -880,6 +889,7 @@ fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.StreamBlob
         #[prost(string, tag="1")]
         pub name: ::prost::alloc::string::String,
         /// The UUID of the vector.
+        /// TODO(v2): Use id to unify names.
         #[prost(string, tag="2")]
         pub uuid: ::prost::alloc::string::String,
         /// The IP list.

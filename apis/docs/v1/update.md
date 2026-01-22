@@ -33,6 +33,7 @@ Update RPC is the method to update a single vector.
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 
   message Update.Config {
@@ -67,6 +68,7 @@ Update RPC is the method to update a single vector.
     |    id     | string |          | The vector ID.                                  |
     |  vector   | float  | repeated | The vector.                                     |
     | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
 
   - Update.Config
 
@@ -107,11 +109,13 @@ Update RPC is the method to update a single vector.
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -164,6 +168,7 @@ It's the recommended method to update the large amount of vectors.
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 
   message Update.Config {
@@ -198,6 +203,7 @@ It's the recommended method to update the large amount of vectors.
     |    id     | string |          | The vector ID.                                  |
     |  vector   | float  | repeated | The vector.                                     |
     | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
 
   - Update.Config
 
@@ -250,11 +256,13 @@ It's the recommended method to update the large amount of vectors.
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -313,6 +321,7 @@ Please be careful that the size of the request exceeds the limit.
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 
   message Update.Config {
@@ -353,6 +362,7 @@ Please be careful that the size of the request exceeds the limit.
     |    id     | string |          | The vector ID.                                  |
     |  vector   | float  | repeated | The vector.                                     |
     | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
 
   - Update.Config
 
@@ -403,11 +413,13 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -452,17 +464,19 @@ A method to update timestamp an indexed vector.
     string id = 1;
     int64 timestamp = 2;
     bool force = 3;
+    optional bytes metadata = 4;
   }
 
   ```
 
   - Update.TimestampRequest
 
-    |   field   | type   | label | description                                       |
-    | :-------: | :----- | :---- | :------------------------------------------------ |
-    |    id     | string |       | The vector ID.                                    |
-    | timestamp | int64  |       | timestamp represents when this vector inserted.   |
-    |   force   | bool   |       | force represents forcefully update the timestamp. |
+    |   field   | type   | label    | description                                       |
+    | :-------: | :----- | :------- | :------------------------------------------------ |
+    |    id     | string |          | The vector ID.                                    |
+    | timestamp | int64  |          | timestamp represents when this vector inserted.   |
+    |   force   | bool   |          | force represents forcefully update the timestamp. |
+    | metadata  | bytes  | optional | The metadata is related to the request vector.    |
 
 ### Output
 
@@ -479,11 +493,13 @@ A method to update timestamp an indexed vector.
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 

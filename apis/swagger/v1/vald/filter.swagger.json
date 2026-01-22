@@ -298,6 +298,11 @@
           "type": "number",
           "format": "float",
           "description": "The distance."
+        },
+        "metadata": {
+          "type": "string",
+          "format": "byte",
+          "description": "The metadata is related to the request vector."
         }
       },
       "description": "Represent the ID and distance pair."
@@ -314,20 +319,6 @@
         }
       },
       "description": "Represent multiple vector locations."
-    },
-    "ObjectStreamLocation": {
-      "type": "object",
-      "properties": {
-        "location": {
-          "$ref": "#/definitions/v1ObjectLocation",
-          "description": "The vector location."
-        },
-        "status": {
-          "$ref": "#/definitions/rpcStatus",
-          "description": "The RPC error status."
-        }
-      },
-      "description": "Represent the stream response of the vector location."
     },
     "SearchAggregationAlgorithm": {
       "type": "string",
@@ -354,20 +345,6 @@
         }
       },
       "description": "Represent multiple search responses."
-    },
-    "SearchStreamResponse": {
-      "type": "object",
-      "properties": {
-        "response": {
-          "$ref": "#/definitions/v1SearchResponse",
-          "description": "Represent the search response."
-        },
-        "status": {
-          "$ref": "#/definitions/rpcStatus",
-          "description": "The RPC error status."
-        }
-      },
-      "description": "Represent stream search response."
     },
     "protobufAny": {
       "type": "object",
@@ -492,7 +469,7 @@
         },
         "uuid": {
           "type": "string",
-          "description": "The UUID of the vector."
+          "description": "The UUID of the vector.\nTODO(v2): Use id to unify names."
         },
         "ips": {
           "type": "array",

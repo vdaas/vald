@@ -573,6 +573,11 @@ func (m *Update_TimestampRequest) CloneVT() *Update_TimestampRequest {
 	r.Id = m.Id
 	r.Timestamp = m.Timestamp
 	r.Force = m.Force
+	if rhs := m.Metadata; rhs != nil {
+		tmpBytes := make([]byte, len(rhs))
+		copy(tmpBytes, rhs)
+		r.Metadata = tmpBytes
+	}
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
 		copy(r.unknownFields, m.unknownFields)
@@ -912,6 +917,11 @@ func (m *Object_Distance) CloneVT() *Object_Distance {
 	r := new(Object_Distance)
 	r.Id = m.Id
 	r.Distance = m.Distance
+	if rhs := m.Metadata; rhs != nil {
+		tmpBytes := make([]byte, len(rhs))
+		copy(tmpBytes, rhs)
+		r.Metadata = tmpBytes
+	}
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
 		copy(r.unknownFields, m.unknownFields)
@@ -1017,6 +1027,11 @@ func (m *Object_Vector) CloneVT() *Object_Vector {
 		tmpContainer := make([]float32, len(rhs))
 		copy(tmpContainer, rhs)
 		r.Vector = tmpContainer
+	}
+	if rhs := m.Metadata; rhs != nil {
+		tmpBytes := make([]byte, len(rhs))
+		copy(tmpBytes, rhs)
+		r.Metadata = tmpBytes
 	}
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
@@ -2980,6 +2995,9 @@ func (this *Update_TimestampRequest) EqualVT(that *Update_TimestampRequest) bool
 	if this.Force != that.Force {
 		return false
 	}
+	if p, q := this.Metadata, that.Metadata; (p == nil && q != nil) || (p != nil && q == nil) || string(p) != string(q) {
+		return false
+	}
 	return string(this.unknownFields) == string(that.unknownFields)
 }
 
@@ -3423,6 +3441,9 @@ func (this *Object_Distance) EqualVT(that *Object_Distance) bool {
 	if this.Distance != that.Distance {
 		return false
 	}
+	if p, q := this.Metadata, that.Metadata; (p == nil && q != nil) || (p != nil && q == nil) || string(p) != string(q) {
+		return false
+	}
 	return string(this.unknownFields) == string(that.unknownFields)
 }
 
@@ -3584,6 +3605,9 @@ func (this *Object_Vector) EqualVT(that *Object_Vector) bool {
 		}
 	}
 	if this.Timestamp != that.Timestamp {
+		return false
+	}
+	if p, q := this.Metadata, that.Metadata; (p == nil && q != nil) || (p != nil && q == nil) || string(p) != string(q) {
 		return false
 	}
 	return string(this.unknownFields) == string(that.unknownFields)
@@ -6650,6 +6674,13 @@ func (m *Update_TimestampRequest) MarshalToSizedBufferVT(dAtA []byte) (int, erro
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.Metadata != nil {
+		i -= len(m.Metadata)
+		copy(dAtA[i:], m.Metadata)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Metadata)))
+		i--
+		dAtA[i] = 0x22
+	}
 	if m.Force {
 		i--
 		if m.Force {
@@ -7499,6 +7530,13 @@ func (m *Object_Distance) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.Metadata != nil {
+		i -= len(m.Metadata)
+		copy(dAtA[i:], m.Metadata)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Metadata)))
+		i--
+		dAtA[i] = 0x1a
+	}
 	if m.Distance != 0 {
 		i -= 4
 		binary.LittleEndian.PutUint32(dAtA[i:], uint32(math.Float32bits(float32(m.Distance))))
@@ -7720,6 +7758,13 @@ func (m *Object_Vector) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.Metadata != nil {
+		i -= len(m.Metadata)
+		copy(dAtA[i:], m.Metadata)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Metadata)))
+		i--
+		dAtA[i] = 0x22
 	}
 	if m.Timestamp != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Timestamp))
@@ -12124,6 +12169,13 @@ func (m *Update_TimestampRequest) MarshalToSizedBufferVTStrict(dAtA []byte) (int
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.Metadata != nil {
+		i -= len(m.Metadata)
+		copy(dAtA[i:], m.Metadata)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Metadata)))
+		i--
+		dAtA[i] = 0x22
+	}
 	if m.Force {
 		i--
 		if m.Force {
@@ -12973,6 +13025,13 @@ func (m *Object_Distance) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error)
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.Metadata != nil {
+		i -= len(m.Metadata)
+		copy(dAtA[i:], m.Metadata)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Metadata)))
+		i--
+		dAtA[i] = 0x1a
+	}
 	if m.Distance != 0 {
 		i -= 4
 		binary.LittleEndian.PutUint32(dAtA[i:], uint32(math.Float32bits(float32(m.Distance))))
@@ -13199,6 +13258,13 @@ func (m *Object_Vector) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.Metadata != nil {
+		i -= len(m.Metadata)
+		copy(dAtA[i:], m.Metadata)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Metadata)))
+		i--
+		dAtA[i] = 0x22
 	}
 	if m.Timestamp != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Timestamp))
@@ -16809,6 +16875,10 @@ func (m *Update_TimestampRequest) SizeVT() (n int) {
 	if m.Force {
 		n += 2
 	}
+	if m.Metadata != nil {
+		l = len(m.Metadata)
+		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
+	}
 	n += len(m.unknownFields)
 	return n
 }
@@ -17094,6 +17164,10 @@ func (m *Object_Distance) SizeVT() (n int) {
 	if m.Distance != 0 {
 		n += 5
 	}
+	if m.Metadata != nil {
+		l = len(m.Metadata)
+		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
+	}
 	n += len(m.unknownFields)
 	return n
 }
@@ -17188,6 +17262,10 @@ func (m *Object_Vector) SizeVT() (n int) {
 	}
 	if m.Timestamp != 0 {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.Timestamp))
+	}
+	if m.Metadata != nil {
+		l = len(m.Metadata)
+		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
 	}
 	n += len(m.unknownFields)
 	return n
@@ -21228,6 +21306,40 @@ func (m *Update_TimestampRequest) UnmarshalVT(dAtA []byte) error {
 				}
 			}
 			m.Force = bool(v != 0)
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Metadata", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Metadata = append(m.Metadata[:0], dAtA[iNdEx:postIndex]...)
+			if m.Metadata == nil {
+				m.Metadata = []byte{}
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
@@ -22934,6 +23046,40 @@ func (m *Object_Distance) UnmarshalVT(dAtA []byte) error {
 			v = uint32(binary.LittleEndian.Uint32(dAtA[iNdEx:]))
 			iNdEx += 4
 			m.Distance = float32(math.Float32frombits(v))
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Metadata", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Metadata = append(m.Metadata[:0], dAtA[iNdEx:postIndex]...)
+			if m.Metadata == nil {
+				m.Metadata = []byte{}
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
@@ -23409,6 +23555,40 @@ func (m *Object_Vector) UnmarshalVT(dAtA []byte) error {
 					break
 				}
 			}
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Metadata", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Metadata = append(m.Metadata[:0], dAtA[iNdEx:postIndex]...)
+			if m.Metadata == nil {
+				m.Metadata = []byte{}
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
@@ -33433,6 +33613,37 @@ func (m *Update_TimestampRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 				}
 			}
 			m.Force = bool(v != 0)
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Metadata", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Metadata = dAtA[iNdEx:postIndex]
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
@@ -35143,6 +35354,37 @@ func (m *Object_Distance) UnmarshalVTUnsafe(dAtA []byte) error {
 			v = uint32(binary.LittleEndian.Uint32(dAtA[iNdEx:]))
 			iNdEx += 4
 			m.Distance = float32(math.Float32frombits(v))
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Metadata", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Metadata = dAtA[iNdEx:postIndex]
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
@@ -35630,6 +35872,37 @@ func (m *Object_Vector) UnmarshalVTUnsafe(dAtA []byte) error {
 					break
 				}
 			}
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Metadata", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Metadata = dAtA[iNdEx:postIndex]
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
