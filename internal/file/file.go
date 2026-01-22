@@ -21,9 +21,9 @@ import (
 	"context"
 	"io/fs"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strconv"
-	"time"
 
 	"github.com/kpango/fastime"
 	"github.com/vdaas/vald/internal/errors"
@@ -178,6 +178,8 @@ func CopyDir(ctx context.Context, src, dst string) (err error) {
 		return err
 	}
 	eg, _ := errgroup.New(ctx)
+	eg.SetLimit(runtime.GOMAXPROCS(0))
+
 	err = filepath.WalkDir(src, func(childPath string, info fs.DirEntry, err error) error {
 		if childPath == src || childPath == dst || strings.HasPrefix(childPath, dst) {
 			return nil
@@ -377,7 +379,7 @@ func AbsolutePath(path string) string {
 	if !filepath.IsAbs(path) {
 		root, err := os.Getwd()
 		if err == nil {
-			path = joinFilePaths(root, path)
+			path = filepath.Join(root, path)
 		}
 		if !filepath.IsAbs(path) {
 			absPath, err := filepath.Abs(path)
@@ -458,17 +460,11 @@ func MkdirAll(path string, perm fs.FileMode) (err error) {
 // MkdirTemp create temporary directory from given base path
 // if base path is nil temporary directory will create from Go's standard library.
 func MkdirTemp(baseDir string) (path string, err error) {
-	if len(baseDir) == 0 {
-		baseDir = os.TempDir()
-	}
-	path = Join(baseDir, strconv.FormatInt(time.Now().UnixNano(), 10))
-	err = MkdirAll(path, fs.ModePerm)
+	path, err = os.MkdirTemp(baseDir, "")
 	if err != nil {
-		err = errors.ErrFailedToMkTmpDir(err, path, nil)
-		log.Debug(err)
 		return "", err
 	}
-	return path, nil
+	return AbsolutePath(path), nil
 }
 
 // CreateTemp create temporary file from given base path
@@ -478,33 +474,18 @@ func CreateTemp(baseDir string) (f *os.File, err error) {
 	if err != nil {
 		return nil, err
 	}
-	var path string
-	for try := 0; try < 10000; try++ {
-		path = Join(dir, strconv.FormatInt(time.Now().UnixNano(), 10))
-		f, err = Open(path, os.O_CREATE|os.O_EXCL|os.O_RDWR|os.O_TRUNC, os.ModePerm)
-		if err == nil && f != nil {
-			return f, nil
-		}
-		if f != nil {
-			f.Close()
-		}
-	}
-	return nil, errors.ErrFailedToCreateFile(err, path, nil)
+	return os.CreateTemp(dir, "")
 }
 
 // ListInDir returns file list in directory.
 func ListInDir(path string) ([]string, error) {
-	exists, fi, err := ExistsWithDetail(path)
-	if !exists {
-		return nil, err
-	}
-	if fi.Mode().IsDir() && !strings.HasSuffix(path, sep) {
-		path += sep
-	}
-	path = filepath.Dir(path)
-	files, err := filepath.Glob(Join(path, "*"))
+	entries, err := ReadDir(path)
 	if err != nil {
 		return nil, err
+	}
+	files := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		files = append(files, Join(path, entry.Name()))
 	}
 	return files, nil
 }
@@ -524,6 +505,7 @@ func DeleteDir(ctx context.Context, path string) (err error) {
 		return nil
 	}
 	eg, _ := errgroup.New(ctx)
+	eg.SetLimit(runtime.GOMAXPROCS(0))
 
 	path, err = filepath.Abs(path)
 	if err != nil {
@@ -552,29 +534,8 @@ func DeleteDir(ctx context.Context, path string) (err error) {
 }
 
 func Join(paths ...string) (path string) {
-	if paths == nil {
+	if len(paths) == 0 {
 		return ""
 	}
-	if len(paths) > 1 {
-		path = joinFilePaths(paths...)
-	} else {
-		path = replacer.Replace(paths[0])
-	}
-	return AbsolutePath(path)
-}
-
-var replacer = strings.NewReplacer(
-	sep+sep+sep,
-	sep,
-	sep+sep,
-	sep,
-)
-
-func joinFilePaths(paths ...string) (path string) {
-	for i, path := range paths {
-		if path != "" {
-			return replacer.Replace(strings.Join(paths[i:], sep))
-		}
-	}
-	return ""
+	return AbsolutePath(filepath.Join(paths...))
 }
