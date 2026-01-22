@@ -123,7 +123,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	)
 
 	grpcServerOptions := []server.Option{
-		server.WithGRPCRegisterFunc(func(srv *grpc.Server) {
+		server.WithGRPCRegisterar(func(srv *grpc.Server) {
 			vald.RegisterValdServer(srv, v)
 		}),
 		server.WithPreStopFunction(func() error {

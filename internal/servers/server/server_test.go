@@ -197,7 +197,7 @@ func TestNew(t *testing.T) {
 				name: "returns gRPC server instance when in gRPC mode",
 				opts: []Option{
 					WithServerMode(GRPC),
-					WithGRPCRegisterFunc(fn),
+					WithGRPCRegisterar(fn),
 					WithGRPCKeepaliveTime("1s"),
 					WithGRPCOption([]grpc.ServerOption{}...),
 					WithTLSConfig(new(tls.Config)),

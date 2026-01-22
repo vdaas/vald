@@ -136,7 +136,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 	}
 
 	grpcServerOptions := []server.Option{
-		server.WithGRPCRegisterFunc(func(srv *grpc.Server) {
+		server.WithGRPCRegisterar(func(srv *grpc.Server) {
 			// TODO register grpc server handler here
 		}),
 		server.WithGRPCOption(

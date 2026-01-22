@@ -169,7 +169,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	g := handler.New(handler.WithStorageObserver(so))
 
 	grpcServerOptions := []server.Option{
-		server.WithGRPCRegisterFunc(func(srv *grpc.Server) {
+		server.WithGRPCRegisterar(func(srv *grpc.Server) {
 			sidecar.RegisterSidecarServer(srv, g)
 		}),
 		server.WithPreStopFunction(func() error {
