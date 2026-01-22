@@ -145,6 +145,9 @@ const (
 	IndexStatisticsRPCName       = "IndexStatistics"
 	IndexStatisticsDetailRPCName = "IndexStatisticsDetail"
 	IndexPropertyRPCName         = "IndexProperty"
+
+	ResourceStatsRPCName       = "ResourceStats"
+	ResourceStatsDetailRPCName = "ResourceStatsDetail"
 )
 
 type client struct {
