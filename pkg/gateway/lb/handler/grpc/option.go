@@ -20,6 +20,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/vdaas/vald/internal/client/v1/client/meta"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/os"
@@ -110,6 +111,14 @@ func WithMultiConcurrency(c int) Option {
 	return func(s *server) {
 		if c > 1 {
 			s.multiConcurrency = c
+		}
+	}
+}
+
+func WithMetadataClient(meta meta.MetadataClient) Option {
+	return func(s *server) {
+		if meta != nil {
+			s.metadataClient = meta
 		}
 	}
 }

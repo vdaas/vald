@@ -46,6 +46,16 @@ type UnimplementedValdServer struct {
 	UnimplementedUpsertServer
 }
 
+type UnimplementedValdServerWithMetadata struct {
+	UnimplementedValdServer
+	UnimplementedSearchWithMetadataServer
+	UnimplementedInsertWithMetadataServer
+	UnimplementedObjectWithMetadataServer
+	UnimplementedRemoveWithMetadataServer
+	UnimplementedUpdateWithMetadataServer
+	UnimplementedUpsertWithMetadataServer
+}
+
 type UnimplementedValdServerWithFilter struct {
 	UnimplementedValdServer
 	UnimplementedFilterServer
@@ -68,6 +78,8 @@ type ClientWithFilter interface {
 }
 
 const PackageName = "vald.v1"
+
+const MetadataSpanName = "WithMetadata"
 
 const (
 	FilterRPCServiceName = "Filter"
