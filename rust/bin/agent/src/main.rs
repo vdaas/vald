@@ -326,6 +326,7 @@ impl algorithm::ANN for QBGService {
             .map(|x| Distance {
                 id: x.0.to_string(),
                 distance: x.1,
+                metadata: None,
             })
             .collect();
         let res = search::Response {
