@@ -330,13 +330,13 @@ func (s *Server) Opts() []server.Option {
 
 			if s.GRPC.EnableReflection {
 				opts = append(opts,
-					server.WithGRPCRegistFunc(func(srv *grpc.Server) {
+					server.WithGRPCRegisterar(func(srv *grpc.Server) {
 						reflection.Register(srv)
 					}))
 			}
 			if s.GRPC.EnableAdmin || s.GRPC.EnableChannelz {
 				opts = append(opts,
-					server.WithGRPCRegistFunc(func(srv *grpc.Server) {
+					server.WithGRPCRegisterar(func(srv *grpc.Server) {
 						admin.Register(srv)
 					}))
 			}

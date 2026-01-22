@@ -1083,7 +1083,7 @@ func TestWithGRPCOption(t *testing.T) {
 	}
 }
 
-func TestWithGRPCRegistFunc(t *testing.T) {
+func TestWithGRPCRegisterar(t *testing.T) {
 	type test struct {
 		name      string
 		fn        func(*grpc.Server)
@@ -1130,7 +1130,7 @@ func TestWithGRPCRegistFunc(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opt := WithGRPCRegistFunc(tt.fn)
+			opt := WithGRPCRegisterar(tt.fn)
 			if err := tt.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
