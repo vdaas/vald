@@ -1423,9 +1423,7 @@ type Insert_Request struct {
 	// The vector to be inserted.
 	Vector *Object_Vector `protobuf:"bytes,1,opt,name=vector,proto3" json:"vector,omitempty"`
 	// The configuration of the insert request.
-	Config *Insert_Config `protobuf:"bytes,2,opt,name=config,proto3" json:"config,omitempty"`
-	// The metadata is related to the request vector.
-	Metadata      []byte `protobuf:"bytes,3,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
+	Config        *Insert_Config `protobuf:"bytes,2,opt,name=config,proto3" json:"config,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1470,13 +1468,6 @@ func (x *Insert_Request) GetVector() *Object_Vector {
 func (x *Insert_Request) GetConfig() *Insert_Config {
 	if x != nil {
 		return x.Config
-	}
-	return nil
-}
-
-func (x *Insert_Request) GetMetadata() []byte {
-	if x != nil {
-		return x.Metadata
 	}
 	return nil
 }
@@ -1535,9 +1526,7 @@ type Insert_ObjectRequest struct {
 	// The configuration of the insert request.
 	Config *Insert_Config `protobuf:"bytes,2,opt,name=config,proto3" json:"config,omitempty"`
 	// Filter configurations.
-	Vectorizer *Filter_Target `protobuf:"bytes,3,opt,name=vectorizer,proto3" json:"vectorizer,omitempty"`
-	// The metadata is related to the request vector.
-	Metadata      []byte `protobuf:"bytes,4,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
+	Vectorizer    *Filter_Target `protobuf:"bytes,3,opt,name=vectorizer,proto3" json:"vectorizer,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1589,13 +1578,6 @@ func (x *Insert_ObjectRequest) GetConfig() *Insert_Config {
 func (x *Insert_ObjectRequest) GetVectorizer() *Filter_Target {
 	if x != nil {
 		return x.Vectorizer
-	}
-	return nil
-}
-
-func (x *Insert_ObjectRequest) GetMetadata() []byte {
-	if x != nil {
-		return x.Metadata
 	}
 	return nil
 }
@@ -1716,9 +1698,7 @@ type Update_Request struct {
 	// The vector to be updated.
 	Vector *Object_Vector `protobuf:"bytes,1,opt,name=vector,proto3" json:"vector,omitempty"`
 	// The configuration of the update request.
-	Config *Update_Config `protobuf:"bytes,2,opt,name=config,proto3" json:"config,omitempty"`
-	// The metadata is related to the request vector.
-	Metadata      []byte `protobuf:"bytes,3,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
+	Config        *Update_Config `protobuf:"bytes,2,opt,name=config,proto3" json:"config,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1763,13 +1743,6 @@ func (x *Update_Request) GetVector() *Object_Vector {
 func (x *Update_Request) GetConfig() *Update_Config {
 	if x != nil {
 		return x.Config
-	}
-	return nil
-}
-
-func (x *Update_Request) GetMetadata() []byte {
-	if x != nil {
-		return x.Metadata
 	}
 	return nil
 }
@@ -1828,9 +1801,7 @@ type Update_ObjectRequest struct {
 	// The configuration of the update request.
 	Config *Update_Config `protobuf:"bytes,2,opt,name=config,proto3" json:"config,omitempty"`
 	// Filter target.
-	Vectorizer *Filter_Target `protobuf:"bytes,3,opt,name=vectorizer,proto3" json:"vectorizer,omitempty"`
-	// The metadata is related to the request vector.
-	Metadata      []byte `protobuf:"bytes,4,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
+	Vectorizer    *Filter_Target `protobuf:"bytes,3,opt,name=vectorizer,proto3" json:"vectorizer,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1882,13 +1853,6 @@ func (x *Update_ObjectRequest) GetConfig() *Update_Config {
 func (x *Update_ObjectRequest) GetVectorizer() *Filter_Target {
 	if x != nil {
 		return x.Vectorizer
-	}
-	return nil
-}
-
-func (x *Update_ObjectRequest) GetMetadata() []byte {
-	if x != nil {
-		return x.Metadata
 	}
 	return nil
 }
@@ -2092,9 +2056,7 @@ type Upsert_Request struct {
 	// The vector to be upserted.
 	Vector *Object_Vector `protobuf:"bytes,1,opt,name=vector,proto3" json:"vector,omitempty"`
 	// The configuration of the upsert request.
-	Config *Upsert_Config `protobuf:"bytes,2,opt,name=config,proto3" json:"config,omitempty"`
-	// The metadata is related to the request vector.
-	Metadata      []byte `protobuf:"bytes,3,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
+	Config        *Upsert_Config `protobuf:"bytes,2,opt,name=config,proto3" json:"config,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2139,13 +2101,6 @@ func (x *Upsert_Request) GetVector() *Object_Vector {
 func (x *Upsert_Request) GetConfig() *Upsert_Config {
 	if x != nil {
 		return x.Config
-	}
-	return nil
-}
-
-func (x *Upsert_Request) GetMetadata() []byte {
-	if x != nil {
-		return x.Metadata
 	}
 	return nil
 }
@@ -2204,9 +2159,7 @@ type Upsert_ObjectRequest struct {
 	// The configuration of the upsert request.
 	Config *Upsert_Config `protobuf:"bytes,2,opt,name=config,proto3" json:"config,omitempty"`
 	// Filter target.
-	Vectorizer *Filter_Target `protobuf:"bytes,3,opt,name=vectorizer,proto3" json:"vectorizer,omitempty"`
-	// The metadata is related to the request vector.
-	Metadata      []byte `protobuf:"bytes,4,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
+	Vectorizer    *Filter_Target `protobuf:"bytes,3,opt,name=vectorizer,proto3" json:"vectorizer,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2258,13 +2211,6 @@ func (x *Upsert_ObjectRequest) GetConfig() *Upsert_Config {
 func (x *Upsert_ObjectRequest) GetVectorizer() *Filter_Target {
 	if x != nil {
 		return x.Vectorizer
-	}
-	return nil
-}
-
-func (x *Upsert_ObjectRequest) GetMetadata() []byte {
-	if x != nil {
-		return x.Metadata
 	}
 	return nil
 }
@@ -3482,6 +3428,7 @@ type Object_Location struct {
 	// The name of the location.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// The UUID of the vector.
+	// TODO(v2): Use id to unify names.
 	Uuid string `protobuf:"bytes,2,opt,name=uuid,proto3" json:"uuid,omitempty"`
 	// The IP list.
 	Ips           []string `protobuf:"bytes,3,rep,name=ips,proto3" json:"ips,omitempty"`
@@ -6120,45 +6067,37 @@ const file_v1_payload_payload_proto_rawDesc = "" +
 	"\x04host\x18\x01 \x01(\tR\x04host\x12\x12\n" +
 	"\x04port\x18\x02 \x01(\rR\x04port\x1a=\n" +
 	"\x06Config\x123\n" +
-	"\atargets\x18\x01 \x03(\v2\x19.payload.v1.Filter.TargetR\atargets\"\xc2\x05\n" +
-	"\x06Insert\x1a\xa7\x01\n" +
+	"\atargets\x18\x01 \x03(\v2\x19.payload.v1.Filter.TargetR\atargets\"\xe5\x04\n" +
+	"\x06Insert\x1ay\n" +
 	"\aRequest\x12;\n" +
 	"\x06vector\x18\x01 \x01(\v2\x19.payload.v1.Object.VectorB\b\xbaH\x05\x92\x01\x02\b\x02R\x06vector\x121\n" +
-	"\x06config\x18\x02 \x01(\v2\x19.payload.v1.Insert.ConfigR\x06config\x12\x1f\n" +
-	"\bmetadata\x18\x03 \x01(\fH\x00R\bmetadata\x88\x01\x01B\v\n" +
-	"\t_metadata\x1aF\n" +
+	"\x06config\x18\x02 \x01(\v2\x19.payload.v1.Insert.ConfigR\x06config\x1aF\n" +
 	"\fMultiRequest\x126\n" +
-	"\brequests\x18\x01 \x03(\v2\x1a.payload.v1.Insert.RequestR\brequests\x1a\xdc\x01\n" +
+	"\brequests\x18\x01 \x03(\v2\x1a.payload.v1.Insert.RequestR\brequests\x1a\xae\x01\n" +
 	"\rObjectRequest\x12/\n" +
 	"\x06object\x18\x01 \x01(\v2\x17.payload.v1.Object.BlobR\x06object\x121\n" +
 	"\x06config\x18\x02 \x01(\v2\x19.payload.v1.Insert.ConfigR\x06config\x129\n" +
 	"\n" +
 	"vectorizer\x18\x03 \x01(\v2\x19.payload.v1.Filter.TargetR\n" +
-	"vectorizer\x12\x1f\n" +
-	"\bmetadata\x18\x04 \x01(\fH\x00R\bmetadata\x88\x01\x01B\v\n" +
-	"\t_metadata\x1aR\n" +
+	"vectorizer\x1aR\n" +
 	"\x12MultiObjectRequest\x12<\n" +
 	"\brequests\x18\x01 \x03(\v2 .payload.v1.Insert.ObjectRequestR\brequests\x1a\x92\x01\n" +
 	"\x06Config\x125\n" +
 	"\x17skip_strict_exist_check\x18\x01 \x01(\bR\x14skipStrictExistCheck\x123\n" +
 	"\afilters\x18\x02 \x01(\v2\x19.payload.v1.Filter.ConfigR\afilters\x12\x1c\n" +
-	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\"\x8a\a\n" +
-	"\x06Update\x1a\xa7\x01\n" +
+	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\"\xad\x06\n" +
+	"\x06Update\x1ay\n" +
 	"\aRequest\x12;\n" +
 	"\x06vector\x18\x01 \x01(\v2\x19.payload.v1.Object.VectorB\b\xbaH\x05\x92\x01\x02\b\x02R\x06vector\x121\n" +
-	"\x06config\x18\x02 \x01(\v2\x19.payload.v1.Update.ConfigR\x06config\x12\x1f\n" +
-	"\bmetadata\x18\x03 \x01(\fH\x00R\bmetadata\x88\x01\x01B\v\n" +
-	"\t_metadata\x1aF\n" +
+	"\x06config\x18\x02 \x01(\v2\x19.payload.v1.Update.ConfigR\x06config\x1aF\n" +
 	"\fMultiRequest\x126\n" +
-	"\brequests\x18\x01 \x03(\v2\x1a.payload.v1.Update.RequestR\brequests\x1a\xdc\x01\n" +
+	"\brequests\x18\x01 \x03(\v2\x1a.payload.v1.Update.RequestR\brequests\x1a\xae\x01\n" +
 	"\rObjectRequest\x12/\n" +
 	"\x06object\x18\x01 \x01(\v2\x17.payload.v1.Object.BlobR\x06object\x121\n" +
 	"\x06config\x18\x02 \x01(\v2\x19.payload.v1.Update.ConfigR\x06config\x129\n" +
 	"\n" +
 	"vectorizer\x18\x03 \x01(\v2\x19.payload.v1.Filter.TargetR\n" +
-	"vectorizer\x12\x1f\n" +
-	"\bmetadata\x18\x04 \x01(\fH\x00R\bmetadata\x88\x01\x01B\v\n" +
-	"\t_metadata\x1aR\n" +
+	"vectorizer\x1aR\n" +
 	"\x12MultiObjectRequest\x12<\n" +
 	"\brequests\x18\x01 \x03(\v2 .payload.v1.Update.ObjectRequestR\brequests\x1a\x8d\x01\n" +
 	"\x10TimestampRequest\x12\x17\n" +
@@ -6171,23 +6110,19 @@ const file_v1_payload_payload_proto_rawDesc = "" +
 	"\x17skip_strict_exist_check\x18\x01 \x01(\bR\x14skipStrictExistCheck\x123\n" +
 	"\afilters\x18\x02 \x01(\v2\x19.payload.v1.Filter.ConfigR\afilters\x12\x1c\n" +
 	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\x126\n" +
-	"\x17disable_balanced_update\x18\x04 \x01(\bR\x15disableBalancedUpdate\"\xfa\x05\n" +
-	"\x06Upsert\x1a\xa7\x01\n" +
+	"\x17disable_balanced_update\x18\x04 \x01(\bR\x15disableBalancedUpdate\"\x9d\x05\n" +
+	"\x06Upsert\x1ay\n" +
 	"\aRequest\x12;\n" +
 	"\x06vector\x18\x01 \x01(\v2\x19.payload.v1.Object.VectorB\b\xbaH\x05\x92\x01\x02\b\x02R\x06vector\x121\n" +
-	"\x06config\x18\x02 \x01(\v2\x19.payload.v1.Upsert.ConfigR\x06config\x12\x1f\n" +
-	"\bmetadata\x18\x03 \x01(\fH\x00R\bmetadata\x88\x01\x01B\v\n" +
-	"\t_metadata\x1aF\n" +
+	"\x06config\x18\x02 \x01(\v2\x19.payload.v1.Upsert.ConfigR\x06config\x1aF\n" +
 	"\fMultiRequest\x126\n" +
-	"\brequests\x18\x01 \x03(\v2\x1a.payload.v1.Upsert.RequestR\brequests\x1a\xdc\x01\n" +
+	"\brequests\x18\x01 \x03(\v2\x1a.payload.v1.Upsert.RequestR\brequests\x1a\xae\x01\n" +
 	"\rObjectRequest\x12/\n" +
 	"\x06object\x18\x01 \x01(\v2\x17.payload.v1.Object.BlobR\x06object\x121\n" +
 	"\x06config\x18\x02 \x01(\v2\x19.payload.v1.Upsert.ConfigR\x06config\x129\n" +
 	"\n" +
 	"vectorizer\x18\x03 \x01(\v2\x19.payload.v1.Filter.TargetR\n" +
-	"vectorizer\x12\x1f\n" +
-	"\bmetadata\x18\x04 \x01(\fH\x00R\bmetadata\x88\x01\x01B\v\n" +
-	"\t_metadata\x1aR\n" +
+	"vectorizer\x1aR\n" +
 	"\x12MultiObjectRequest\x12<\n" +
 	"\brequests\x18\x01 \x03(\v2 .payload.v1.Upsert.ObjectRequestR\brequests\x1a\xca\x01\n" +
 	"\x06Config\x125\n" +
@@ -6704,13 +6639,7 @@ func file_v1_payload_payload_proto_init() {
 		(*Search_StreamResponse_Response)(nil),
 		(*Search_StreamResponse_Status)(nil),
 	}
-	file_v1_payload_payload_proto_msgTypes[26].OneofWrappers = []any{}
-	file_v1_payload_payload_proto_msgTypes[28].OneofWrappers = []any{}
-	file_v1_payload_payload_proto_msgTypes[31].OneofWrappers = []any{}
-	file_v1_payload_payload_proto_msgTypes[33].OneofWrappers = []any{}
 	file_v1_payload_payload_proto_msgTypes[35].OneofWrappers = []any{}
-	file_v1_payload_payload_proto_msgTypes[37].OneofWrappers = []any{}
-	file_v1_payload_payload_proto_msgTypes[39].OneofWrappers = []any{}
 	file_v1_payload_payload_proto_msgTypes[49].OneofWrappers = []any{}
 	file_v1_payload_payload_proto_msgTypes[50].OneofWrappers = []any{
 		(*Object_StreamDistance_Distance)(nil),

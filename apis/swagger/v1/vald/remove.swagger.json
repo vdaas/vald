@@ -184,7 +184,7 @@
         },
         "uuid": {
           "type": "string",
-          "description": "The UUID of the vector."
+          "description": "The UUID of the vector.\nTODO(v2): Use id to unify names."
         },
         "ips": {
           "type": "array",

@@ -78,8 +78,8 @@ const file_v1_vald_meta_proto_rawDesc = "" +
 	"\x12UpsertWithMetadata\x12j\n" +
 	"\x12UpsertWithMetadata\x12\x1a.payload.v1.Upsert.Request\x1a\x1b.payload.v1.Object.Location\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\"\x10/upsert/metadata\x12_\n" +
 	"\x18StreamUpsertWithMetadata\x12\x1a.payload.v1.Upsert.Request\x1a!.payload.v1.Object.StreamLocation\"\x00(\x010\x01\x12~\n" +
-	"\x17MultiUpsertWithMetadata\x12\x1f.payload.v1.Upsert.MultiRequest\x1a\x1c.payload.v1.Object.Locations\"$\x82\xd3\xe4\x93\x02\x1e:\x01*\"\x19/upsert/multiple/metadataB]\n" +
-	"\x1eorg.vdaas.vald.api.v1.metadataB\fValdMetadataP\x01Z+github.com/vdaas/vald/apis/grpc/v1/metadatab\x06proto3"
+	"\x17MultiUpsertWithMetadata\x12\x1f.payload.v1.Upsert.MultiRequest\x1a\x1c.payload.v1.Object.Locations\"$\x82\xd3\xe4\x93\x02\x1e:\x01*\"\x19/upsert/multiple/metadataBY\n" +
+	"\x1eorg.vdaas.vald.api.v1.metadataB\fValdMetadataP\x01Z'github.com/vdaas/vald/apis/grpc/v1/valdb\x06proto3"
 
 var file_v1_vald_meta_proto_goTypes = []any{
 	(*payload.Search_Request)(nil),          // 0: payload.v1.Search.Request

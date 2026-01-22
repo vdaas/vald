@@ -675,12 +675,11 @@ Represent the multiple insert request.
 
 Represent the insert by binary object request.
 
-| Field      | Type                                       | Label    | Description                                    |
-| ---------- | ------------------------------------------ | -------- | ---------------------------------------------- |
-| object     | [Object.Blob](#payload-v1-Object-Blob)     |          | The binary object to be inserted.              |
-| config     | [Insert.Config](#payload-v1-Insert-Config) |          | The configuration of the insert request.       |
-| vectorizer | [Filter.Target](#payload-v1-Filter-Target) |          | Filter configurations.                         |
-| metadata   | [bytes](#bytes)                            | optional | The metadata is related to the request vector. |
+| Field      | Type                                       | Label | Description                              |
+| ---------- | ------------------------------------------ | ----- | ---------------------------------------- |
+| object     | [Object.Blob](#payload-v1-Object-Blob)     |       | The binary object to be inserted.        |
+| config     | [Insert.Config](#payload-v1-Insert-Config) |       | The configuration of the insert request. |
+| vectorizer | [Filter.Target](#payload-v1-Filter-Target) |       | Filter configurations.                   |
 
 <a name="payload-v1-Insert-Request"></a>
 
@@ -688,11 +687,10 @@ Represent the insert by binary object request.
 
 Represent the insert request.
 
-| Field    | Type                                       | Label    | Description                                    |
-| -------- | ------------------------------------------ | -------- | ---------------------------------------------- |
-| vector   | [Object.Vector](#payload-v1-Object-Vector) |          | The vector to be inserted.                     |
-| config   | [Insert.Config](#payload-v1-Insert-Config) |          | The configuration of the insert request.       |
-| metadata | [bytes](#bytes)                            | optional | The metadata is related to the request vector. |
+| Field  | Type                                       | Label | Description                              |
+| ------ | ------------------------------------------ | ----- | ---------------------------------------- |
+| vector | [Object.Vector](#payload-v1-Object-Vector) |       | The vector to be inserted.               |
+| config | [Insert.Config](#payload-v1-Insert-Config) |       | The configuration of the insert request. |
 
 <a name="payload-v1-Meta"></a>
 
@@ -824,11 +822,11 @@ Represent the list object vector stream request and response.
 
 Represent the vector location.
 
-| Field | Type              | Label    | Description               |
-| ----- | ----------------- | -------- | ------------------------- |
-| name  | [string](#string) |          | The name of the location. |
-| uuid  | [string](#string) |          | The UUID of the vector.   |
-| ips   | [string](#string) | repeated | The IP list.              |
+| Field | Type              | Label    | Description                                              |
+| ----- | ----------------- | -------- | -------------------------------------------------------- |
+| name  | [string](#string) |          | The name of the location.                                |
+| uuid  | [string](#string) |          | The UUID of the vector. TODO(v2): Use id to unify names. |
+| ips   | [string](#string) | repeated | The IP list.                                             |
 
 <a name="payload-v1-Object-Locations"></a>
 
@@ -1176,12 +1174,11 @@ Represent the multiple update request.
 
 Represent the update binary object request.
 
-| Field      | Type                                       | Label    | Description                                    |
-| ---------- | ------------------------------------------ | -------- | ---------------------------------------------- |
-| object     | [Object.Blob](#payload-v1-Object-Blob)     |          | The binary object to be updated.               |
-| config     | [Update.Config](#payload-v1-Update-Config) |          | The configuration of the update request.       |
-| vectorizer | [Filter.Target](#payload-v1-Filter-Target) |          | Filter target.                                 |
-| metadata   | [bytes](#bytes)                            | optional | The metadata is related to the request vector. |
+| Field      | Type                                       | Label | Description                              |
+| ---------- | ------------------------------------------ | ----- | ---------------------------------------- |
+| object     | [Object.Blob](#payload-v1-Object-Blob)     |       | The binary object to be updated.         |
+| config     | [Update.Config](#payload-v1-Update-Config) |       | The configuration of the update request. |
+| vectorizer | [Filter.Target](#payload-v1-Filter-Target) |       | Filter target.                           |
 
 <a name="payload-v1-Update-Request"></a>
 
@@ -1189,11 +1186,10 @@ Represent the update binary object request.
 
 Represent the update request.
 
-| Field    | Type                                       | Label    | Description                                    |
-| -------- | ------------------------------------------ | -------- | ---------------------------------------------- |
-| vector   | [Object.Vector](#payload-v1-Object-Vector) |          | The vector to be updated.                      |
-| config   | [Update.Config](#payload-v1-Update-Config) |          | The configuration of the update request.       |
-| metadata | [bytes](#bytes)                            | optional | The metadata is related to the request vector. |
+| Field  | Type                                       | Label | Description                              |
+| ------ | ------------------------------------------ | ----- | ---------------------------------------- |
+| vector | [Object.Vector](#payload-v1-Object-Vector) |       | The vector to be updated.                |
+| config | [Update.Config](#payload-v1-Update-Config) |       | The configuration of the update request. |
 
 <a name="payload-v1-Update-TimestampRequest"></a>
 
@@ -1253,12 +1249,11 @@ Represent mthe ultiple upsert request.
 
 Represent the upsert binary object request.
 
-| Field      | Type                                       | Label    | Description                                    |
-| ---------- | ------------------------------------------ | -------- | ---------------------------------------------- |
-| object     | [Object.Blob](#payload-v1-Object-Blob)     |          | The binary object to be upserted.              |
-| config     | [Upsert.Config](#payload-v1-Upsert-Config) |          | The configuration of the upsert request.       |
-| vectorizer | [Filter.Target](#payload-v1-Filter-Target) |          | Filter target.                                 |
-| metadata   | [bytes](#bytes)                            | optional | The metadata is related to the request vector. |
+| Field      | Type                                       | Label | Description                              |
+| ---------- | ------------------------------------------ | ----- | ---------------------------------------- |
+| object     | [Object.Blob](#payload-v1-Object-Blob)     |       | The binary object to be upserted.        |
+| config     | [Upsert.Config](#payload-v1-Upsert-Config) |       | The configuration of the upsert request. |
+| vectorizer | [Filter.Target](#payload-v1-Filter-Target) |       | Filter target.                           |
 
 <a name="payload-v1-Upsert-Request"></a>
 
@@ -1266,11 +1261,10 @@ Represent the upsert binary object request.
 
 Represent the upsert request.
 
-| Field    | Type                                       | Label    | Description                                    |
-| -------- | ------------------------------------------ | -------- | ---------------------------------------------- |
-| vector   | [Object.Vector](#payload-v1-Object-Vector) |          | The vector to be upserted.                     |
-| config   | [Upsert.Config](#payload-v1-Upsert-Config) |          | The configuration of the upsert request.       |
-| metadata | [bytes](#bytes)                            | optional | The metadata is related to the request vector. |
+| Field  | Type                                       | Label | Description                              |
+| ------ | ------------------------------------------ | ----- | ---------------------------------------- |
+| vector | [Object.Vector](#payload-v1-Object-Vector) |       | The vector to be upserted.               |
+| config | [Upsert.Config](#payload-v1-Upsert-Config) |       | The configuration of the upsert request. |
 
 <a name="payload-v1-Remove-Timestamp-Operator"></a>
 

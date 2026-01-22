@@ -227,11 +227,6 @@
         "config": {
           "$ref": "#/definitions/v1InsertConfig",
           "description": "The configuration of the insert request."
-        },
-        "metadata": {
-          "type": "string",
-          "format": "byte",
-          "description": "The metadata is related to the request vector."
         }
       },
       "description": "Represent the insert request."
@@ -245,7 +240,7 @@
         },
         "uuid": {
           "type": "string",
-          "description": "The UUID of the vector."
+          "description": "The UUID of the vector.\nTODO(v2): Use id to unify names."
         },
         "ips": {
           "type": "array",

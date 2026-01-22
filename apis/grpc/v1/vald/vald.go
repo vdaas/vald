@@ -79,6 +79,8 @@ type ClientWithFilter interface {
 
 const PackageName = "vald.v1"
 
+const MetadataSpanName = "WithMetadata"
+
 const (
 	FilterRPCServiceName = "Filter"
 	FlushRPCServiceName  = "Flush"

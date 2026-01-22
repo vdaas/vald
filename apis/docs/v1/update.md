@@ -27,7 +27,6 @@ Update RPC is the method to update a single vector.
   message Update.Request {
     Object.Vector vector = 1;
     Update.Config config = 2;
-    optional bytes metadata = 3;
   }
 
   message Object.Vector {
@@ -57,11 +56,10 @@ Update RPC is the method to update a single vector.
 
   - Update.Request
 
-    |  field   | type          | label    | description                                    |
-    | :------: | :------------ | :------- | :--------------------------------------------- |
-    |  vector  | Object.Vector |          | The vector to be updated.                      |
-    |  config  | Update.Config |          | The configuration of the update request.       |
-    | metadata | bytes         | optional | The metadata is related to the request vector. |
+    | field  | type          | label | description                              |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    | vector | Object.Vector |       | The vector to be updated.                |
+    | config | Update.Config |       | The configuration of the update request. |
 
   - Object.Vector
 
@@ -111,11 +109,13 @@ Update RPC is the method to update a single vector.
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -162,7 +162,6 @@ It's the recommended method to update the large amount of vectors.
   message Update.Request {
     Object.Vector vector = 1;
     Update.Config config = 2;
-    optional bytes metadata = 3;
   }
 
   message Object.Vector {
@@ -192,11 +191,10 @@ It's the recommended method to update the large amount of vectors.
 
   - Update.Request
 
-    |  field   | type          | label    | description                                    |
-    | :------: | :------------ | :------- | :--------------------------------------------- |
-    |  vector  | Object.Vector |          | The vector to be updated.                      |
-    |  config  | Update.Config |          | The configuration of the update request.       |
-    | metadata | bytes         | optional | The metadata is related to the request vector. |
+    | field  | type          | label | description                              |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    | vector | Object.Vector |       | The vector to be updated.                |
+    | config | Update.Config |       | The configuration of the update request. |
 
   - Object.Vector
 
@@ -258,11 +256,13 @@ It's the recommended method to update the large amount of vectors.
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -315,7 +315,6 @@ Please be careful that the size of the request exceeds the limit.
   message Update.Request {
     Object.Vector vector = 1;
     Update.Config config = 2;
-    optional bytes metadata = 3;
   }
 
   message Object.Vector {
@@ -351,11 +350,10 @@ Please be careful that the size of the request exceeds the limit.
 
   - Update.Request
 
-    |  field   | type          | label    | description                                    |
-    | :------: | :------------ | :------- | :--------------------------------------------- |
-    |  vector  | Object.Vector |          | The vector to be updated.                      |
-    |  config  | Update.Config |          | The configuration of the update request.       |
-    | metadata | bytes         | optional | The metadata is related to the request vector. |
+    | field  | type          | label | description                              |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    | vector | Object.Vector |       | The vector to be updated.                |
+    | config | Update.Config |       | The configuration of the update request. |
 
   - Object.Vector
 
@@ -415,11 +413,13 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -493,11 +493,13 @@ A method to update timestamp an indexed vector.
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 

@@ -26,7 +26,6 @@ Insert RPC is the method to add a new single vector.
   message Insert.Request {
     Object.Vector vector = 1;
     Insert.Config config = 2;
-    optional bytes metadata = 3;
   }
 
   message Object.Vector {
@@ -55,11 +54,10 @@ Insert RPC is the method to add a new single vector.
 
   - Insert.Request
 
-    |  field   | type          | label    | description                                    |
-    | :------: | :------------ | :------- | :--------------------------------------------- |
-    |  vector  | Object.Vector |          | The vector to be inserted.                     |
-    |  config  | Insert.Config |          | The configuration of the insert request.       |
-    | metadata | bytes         | optional | The metadata is related to the request vector. |
+    | field  | type          | label | description                              |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    | vector | Object.Vector |       | The vector to be inserted.               |
+    | config | Insert.Config |       | The configuration of the insert request. |
 
   - Object.Vector
 
@@ -106,11 +104,13 @@ Insert RPC is the method to add a new single vector.
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -154,7 +154,6 @@ It's the recommended method to insert a large number of vectors.
   message Insert.Request {
     Object.Vector vector = 1;
     Insert.Config config = 2;
-    optional bytes metadata = 3;
   }
 
   message Object.Vector {
@@ -183,11 +182,10 @@ It's the recommended method to insert a large number of vectors.
 
   - Insert.Request
 
-    |  field   | type          | label    | description                                    |
-    | :------: | :------------ | :------- | :--------------------------------------------- |
-    |  vector  | Object.Vector |          | The vector to be inserted.                     |
-    |  config  | Insert.Config |          | The configuration of the insert request.       |
-    | metadata | bytes         | optional | The metadata is related to the request vector. |
+    | field  | type          | label | description                              |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    | vector | Object.Vector |       | The vector to be inserted.               |
+    | config | Insert.Config |       | The configuration of the insert request. |
 
   - Object.Vector
 
@@ -246,11 +244,13 @@ It's the recommended method to insert a large number of vectors.
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -301,7 +301,6 @@ Please be careful that the size of the request exceeds the limit.
   message Insert.Request {
     Object.Vector vector = 1;
     Insert.Config config = 2;
-    optional bytes metadata = 3;
   }
 
   message Object.Vector {
@@ -336,11 +335,10 @@ Please be careful that the size of the request exceeds the limit.
 
   - Insert.Request
 
-    |  field   | type          | label    | description                                    |
-    | :------: | :------------ | :------- | :--------------------------------------------- |
-    |  vector  | Object.Vector |          | The vector to be inserted.                     |
-    |  config  | Insert.Config |          | The configuration of the insert request.       |
-    | metadata | bytes         | optional | The metadata is related to the request vector. |
+    | field  | type          | label | description                              |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    | vector | Object.Vector |       | The vector to be inserted.               |
+    | config | Insert.Config |       | The configuration of the insert request. |
 
   - Object.Vector
 
@@ -397,11 +395,13 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 

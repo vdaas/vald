@@ -26,7 +26,6 @@ Upsert RPC is the method to update the inserted vector to a new single vector or
   message Upsert.Request {
     Object.Vector vector = 1;
     Upsert.Config config = 2;
-    optional bytes metadata = 3;
   }
 
   message Object.Vector {
@@ -56,11 +55,10 @@ Upsert RPC is the method to update the inserted vector to a new single vector or
 
   - Upsert.Request
 
-    |  field   | type          | label    | description                                    |
-    | :------: | :------------ | :------- | :--------------------------------------------- |
-    |  vector  | Object.Vector |          | The vector to be upserted.                     |
-    |  config  | Upsert.Config |          | The configuration of the upsert request.       |
-    | metadata | bytes         | optional | The metadata is related to the request vector. |
+    | field  | type          | label | description                              |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    | vector | Object.Vector |       | The vector to be upserted.               |
+    | config | Upsert.Config |       | The configuration of the upsert request. |
 
   - Object.Vector
 
@@ -110,11 +108,13 @@ Upsert RPC is the method to update the inserted vector to a new single vector or
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -160,7 +160,6 @@ It’s the recommended method to upsert a large number of vectors.
   message Upsert.Request {
     Object.Vector vector = 1;
     Upsert.Config config = 2;
-    optional bytes metadata = 3;
   }
 
   message Object.Vector {
@@ -190,11 +189,10 @@ It’s the recommended method to upsert a large number of vectors.
 
   - Upsert.Request
 
-    |  field   | type          | label    | description                                    |
-    | :------: | :------------ | :------- | :--------------------------------------------- |
-    |  vector  | Object.Vector |          | The vector to be upserted.                     |
-    |  config  | Upsert.Config |          | The configuration of the upsert request.       |
-    | metadata | bytes         | optional | The metadata is related to the request vector. |
+    | field  | type          | label | description                              |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    | vector | Object.Vector |       | The vector to be upserted.               |
+    | config | Upsert.Config |       | The configuration of the upsert request. |
 
   - Object.Vector
 
@@ -256,11 +254,13 @@ It’s the recommended method to upsert a large number of vectors.
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -312,7 +312,6 @@ Please be careful that the size of the request exceeds the limit.
   message Upsert.Request {
     Object.Vector vector = 1;
     Upsert.Config config = 2;
-    optional bytes metadata = 3;
   }
 
   message Object.Vector {
@@ -348,11 +347,10 @@ Please be careful that the size of the request exceeds the limit.
 
   - Upsert.Request
 
-    |  field   | type          | label    | description                                    |
-    | :------: | :------------ | :------- | :--------------------------------------------- |
-    |  vector  | Object.Vector |          | The vector to be upserted.                     |
-    |  config  | Upsert.Config |          | The configuration of the upsert request.       |
-    | metadata | bytes         | optional | The metadata is related to the request vector. |
+    | field  | type          | label | description                              |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    | vector | Object.Vector |       | The vector to be upserted.               |
+    | config | Upsert.Config |       | The configuration of the upsert request. |
 
   - Object.Vector
 
@@ -412,11 +410,13 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Location
 
-    | field | type   | label    | description               |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+        | field | type | label | description |
+        | :---: | :--- | :---- | :---------- |
+        | name | string |  | The name of the location. |
+        | uuid | string |  | The UUID of the vector.
+
+    TODO(v2): Use id to unify names. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 

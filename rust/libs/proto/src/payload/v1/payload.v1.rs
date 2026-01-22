@@ -276,9 +276,6 @@ pub mod insert {
         /// The configuration of the insert request.
         #[prost(message, optional, tag="2")]
         pub config: ::core::option::Option<Config>,
-        /// The metadata is related to the request vector.
-        #[prost(bytes="vec", optional, tag="3")]
-        pub metadata: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
     }
 impl ::prost::Name for Request {
 const NAME: &'static str = "Request";
@@ -307,9 +304,6 @@ fn full_name() -> ::prost::alloc::string::String { "payload.v1.Insert.MultiReque
         /// Filter configurations.
         #[prost(message, optional, tag="3")]
         pub vectorizer: ::core::option::Option<super::filter::Target>,
-        /// The metadata is related to the request vector.
-        #[prost(bytes="vec", optional, tag="4")]
-        pub metadata: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
     }
 impl ::prost::Name for ObjectRequest {
 const NAME: &'static str = "ObjectRequest";
@@ -363,9 +357,6 @@ pub mod update {
         /// The configuration of the update request.
         #[prost(message, optional, tag="2")]
         pub config: ::core::option::Option<Config>,
-        /// The metadata is related to the request vector.
-        #[prost(bytes="vec", optional, tag="3")]
-        pub metadata: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
     }
 impl ::prost::Name for Request {
 const NAME: &'static str = "Request";
@@ -394,9 +385,6 @@ fn full_name() -> ::prost::alloc::string::String { "payload.v1.Update.MultiReque
         /// Filter target.
         #[prost(message, optional, tag="3")]
         pub vectorizer: ::core::option::Option<super::filter::Target>,
-        /// The metadata is related to the request vector.
-        #[prost(bytes="vec", optional, tag="4")]
-        pub metadata: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
     }
 impl ::prost::Name for ObjectRequest {
 const NAME: &'static str = "ObjectRequest";
@@ -474,9 +462,6 @@ pub mod upsert {
         /// The configuration of the upsert request.
         #[prost(message, optional, tag="2")]
         pub config: ::core::option::Option<Config>,
-        /// The metadata is related to the request vector.
-        #[prost(bytes="vec", optional, tag="3")]
-        pub metadata: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
     }
 impl ::prost::Name for Request {
 const NAME: &'static str = "Request";
@@ -505,9 +490,6 @@ fn full_name() -> ::prost::alloc::string::String { "payload.v1.Upsert.MultiReque
         /// Filter target.
         #[prost(message, optional, tag="3")]
         pub vectorizer: ::core::option::Option<super::filter::Target>,
-        /// The metadata is related to the request vector.
-        #[prost(bytes="vec", optional, tag="4")]
-        pub metadata: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
     }
 impl ::prost::Name for ObjectRequest {
 const NAME: &'static str = "ObjectRequest";
@@ -907,6 +889,7 @@ fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.StreamBlob
         #[prost(string, tag="1")]
         pub name: ::prost::alloc::string::String,
         /// The UUID of the vector.
+        /// TODO(v2): Use id to unify names.
         #[prost(string, tag="2")]
         pub uuid: ::prost::alloc::string::String,
         /// The IP list.

@@ -160,8 +160,6 @@ message Insert {
     Object.Vector vector = 1 [(buf.validate.field).repeated.min_items = 2];
     // The configuration of the insert request.
     Config config = 2;
-    // The metadata is related to the request vector.
-    optional bytes metadata = 3;
   }
 
   // Represent the multiple insert request.
@@ -178,8 +176,6 @@ message Insert {
     Config config = 2;
     // Filter configurations.
     Filter.Target vectorizer = 3;
-    // The metadata is related to the request vector.
-    optional bytes metadata = 4;
   }
 
   // Represent the multiple insert by binary object request.
@@ -207,8 +203,6 @@ message Update {
     Object.Vector vector = 1 [(buf.validate.field).repeated.min_items = 2];
     // The configuration of the update request.
     Config config = 2;
-    // The metadata is related to the request vector.
-    optional bytes metadata = 3;
   }
 
   // Represent the multiple update request.
@@ -225,8 +219,6 @@ message Update {
     Config config = 2;
     // Filter target.
     Filter.Target vectorizer = 3;
-    // The metadata is related to the request vector.
-    optional bytes metadata = 4;
   }
 
   // Represent the multiple update binary object request.
@@ -269,8 +261,6 @@ message Upsert {
     Object.Vector vector = 1 [(buf.validate.field).repeated.min_items = 2];
     // The configuration of the upsert request.
     Config config = 2;
-    // The metadata is related to the request vector.
-    optional bytes metadata = 3;
   }
 
   // Represent mthe ultiple upsert request.
@@ -287,8 +277,6 @@ message Upsert {
     Config config = 2;
     // Filter target.
     Filter.Target vectorizer = 3;
-    // The metadata is related to the request vector.
-    optional bytes metadata = 4;
   }
 
   // Represent the multiple upsert binary object request.
@@ -485,6 +473,7 @@ message Object {
     // The name of the location.
     string name = 1;
     // The UUID of the vector.
+    // TODO(v2): Use id to unify names.
     string uuid = 2;
     // The IP list.
     repeated string ips = 3;
