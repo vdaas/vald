@@ -20,10 +20,10 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.100"
-cxx = { version = "1.0.192", features = ["c++20"] }
+cxx = { version = "1.0.194", features = ["c++20"] }
 
 [build-dependencies]
-cxx-build = "1.0.192"
+cxx-build = "1.0.194"
 miette = { version = "7.6.0", features = ["fancy"] }
 
 [dev-dependencies]

@@ -13,12 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-pkg/gateway/lb/handler/grpc/insert_meta.go
-pkg/gateway/lb/handler/grpc/object_meta.go
-pkg/gateway/lb/handler/grpc/remove_meta.go
-pkg/gateway/lb/handler/grpc/search_meta.go
-pkg/gateway/lb/handler/grpc/update_meta.go
-pkg/gateway/lb/handler/grpc/upsert_meta.go
 .all-contributorsrc
 .commit_template
 .cspell.json
@@ -2076,23 +2070,29 @@ pkg/gateway/lb/handler/grpc/handler_test.go
 pkg/gateway/lb/handler/grpc/index.go
 pkg/gateway/lb/handler/grpc/index_test.go
 pkg/gateway/lb/handler/grpc/insert.go
+pkg/gateway/lb/handler/grpc/insert_meta.go
 pkg/gateway/lb/handler/grpc/insert_test.go
 pkg/gateway/lb/handler/grpc/linear_search.go
 pkg/gateway/lb/handler/grpc/linear_search_test.go
 pkg/gateway/lb/handler/grpc/object.go
+pkg/gateway/lb/handler/grpc/object_meta.go
 pkg/gateway/lb/handler/grpc/object_test.go
 pkg/gateway/lb/handler/grpc/option.go
 pkg/gateway/lb/handler/grpc/option_test.go
 pkg/gateway/lb/handler/grpc/pairing_heap.go
 pkg/gateway/lb/handler/grpc/pairing_heap_test.go
 pkg/gateway/lb/handler/grpc/remove.go
+pkg/gateway/lb/handler/grpc/remove_meta.go
 pkg/gateway/lb/handler/grpc/remove_test.go
 pkg/gateway/lb/handler/grpc/search.go
 pkg/gateway/lb/handler/grpc/search_benchmark_test.go
+pkg/gateway/lb/handler/grpc/search_meta.go
 pkg/gateway/lb/handler/grpc/search_test.go
 pkg/gateway/lb/handler/grpc/update.go
+pkg/gateway/lb/handler/grpc/update_meta.go
 pkg/gateway/lb/handler/grpc/update_test.go
 pkg/gateway/lb/handler/grpc/upsert.go
+pkg/gateway/lb/handler/grpc/upsert_meta.go
 pkg/gateway/lb/handler/grpc/upsert_test.go
 pkg/gateway/lb/handler/rest/doc.go
 pkg/gateway/lb/handler/rest/handler.go
