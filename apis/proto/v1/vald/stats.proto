@@ -16,21 +16,22 @@
 
 syntax = "proto3";
 
-package rpc.v1;
+package vald.v1;
 
 import "google/api/annotations.proto";
 import "v1/payload/payload.proto";
 
-option go_package = "github.com/vdaas/vald/apis/grpc/v1/rpc/stats";
+option go_package = "github.com/vdaas/vald/apis/grpc/v1/vald";
 option java_multiple_files = true;
-option java_outer_classname = "StatsProto";
-option java_package = "org.vdaas.vald.api.v1.rpc";
-option objc_class_prefix = "RPC";
+option java_outer_classname = "ValdStats";
+option java_package = "org.vdaas.vald.api.v1.vald";
 
-// Represent the resource stats service.
+// Overview
+// Represent the resource stats service for gateway.
 service Stats {
-  // Represent the RPC to get the resource stats.
-  rpc ResourceStats(payload.v1.Empty) returns (payload.v1.Info.Stats.ResourceStats) {
-    option (google.api.http).get = "/resource/stats";
+  // Overview
+  // Represent the RPC to get the resource stats for each agents.
+  rpc ResourceStatsDetail(payload.v1.Empty) returns (payload.v1.Info.Stats.ResourceStatsDetail) {
+    option (google.api.http).get = "/resource/stats/detail";
   }
 }
