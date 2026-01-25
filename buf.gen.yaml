@@ -36,7 +36,7 @@ plugins:
   - remote: buf.build/community/pseudomuto-doc
     out: apis/docs/v1
     opt: markdown,docs.md:v1/tikv/*
-  - remote: buf.build/grpc-ecosystem/openapiv2:v2.22.0
+  - remote: buf.build/grpc-ecosystem/openapiv2
     out: apis/swagger
     opt: json_names_for_fields=true
   - remote: buf.build/community/neoeinstein-prost

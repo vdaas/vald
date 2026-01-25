@@ -857,27 +857,6 @@ func (c *client) GetTimestamp(
 	return res, nil
 }
 
-func (c *client) ResourceStats(
-	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
-) (res *payload.Info_Stats_ResourceStats, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.ResourceStatsRPCName), apiName+"/"+vald.ResourceStatsRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Info_Stats_ResourceStats, error) {
-		return vald.NewValdClient(conn).ResourceStats(ctx, in, append(copts, opts...)...)
-	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
-}
-
 func (c *client) ResourceStatsDetail(
 	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
 ) (res *payload.Info_Stats_ResourceStatsDetail, err error) {
@@ -1353,18 +1332,6 @@ func (c *singleClient) GetTimestamp(
 		}
 	}()
 	return c.vc.GetTimestamp(ctx, in, opts...)
-}
-
-func (c *singleClient) ResourceStats(
-	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
-) (res *payload.Info_Stats_ResourceStats, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.ResourceStatsRPCName), apiName+"/"+vald.ResourceStatsRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.ResourceStats(ctx, in, opts...)
 }
 
 func (c *singleClient) ResourceStatsDetail(
