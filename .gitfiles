@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+apis/docs/v1/stats.md
+apis/grpc/v1/vald/stats.pb.go
+apis/grpc/v1/vald/stats_vtproto.pb.go
+apis/swagger/v1/vald/stats.swagger.json
 .all-contributorsrc
 .coderabbit.yaml
 .commit_template
@@ -259,6 +263,7 @@ apis/proto/v1/vald/insert.proto
 apis/proto/v1/vald/object.proto
 apis/proto/v1/vald/remove.proto
 apis/proto/v1/vald/search.proto
+apis/proto/v1/vald/stats.proto
 apis/proto/v1/vald/update.proto
 apis/proto/v1/vald/upsert.proto
 apis/swagger/v1/agent/core/agent.swagger.json

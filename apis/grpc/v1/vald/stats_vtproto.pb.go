@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-package stats
+package vald
 
 import (
 	context "context"
@@ -42,8 +42,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StatsClient interface {
-	// Represent the RPC to get the resource stats.
-	ResourceStats(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Stats_ResourceStats, error)
+	// Overview
+	// Represent the RPC to get the resource stats for each agents.
+	ResourceStatsDetail(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Stats_ResourceStatsDetail, error)
 }
 
 type statsClient struct {
@@ -54,11 +55,11 @@ func NewStatsClient(cc grpc.ClientConnInterface) StatsClient {
 	return &statsClient{cc}
 }
 
-func (c *statsClient) ResourceStats(
+func (c *statsClient) ResourceStatsDetail(
 	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
-) (*payload.Info_Stats_ResourceStats, error) {
-	out := new(payload.Info_Stats_ResourceStats)
-	err := c.cc.Invoke(ctx, "/rpc.v1.Stats/ResourceStats", in, out, opts...)
+) (*payload.Info_Stats_ResourceStatsDetail, error) {
+	out := new(payload.Info_Stats_ResourceStatsDetail)
+	err := c.cc.Invoke(ctx, "/vald.v1.Stats/ResourceStatsDetail", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -69,18 +70,19 @@ func (c *statsClient) ResourceStats(
 // All implementations must embed UnimplementedStatsServer
 // for forward compatibility
 type StatsServer interface {
-	// Represent the RPC to get the resource stats.
-	ResourceStats(context.Context, *payload.Empty) (*payload.Info_Stats_ResourceStats, error)
+	// Overview
+	// Represent the RPC to get the resource stats for each agents.
+	ResourceStatsDetail(context.Context, *payload.Empty) (*payload.Info_Stats_ResourceStatsDetail, error)
 	mustEmbedUnimplementedStatsServer()
 }
 
 // UnimplementedStatsServer must be embedded to have forward compatible implementations.
 type UnimplementedStatsServer struct{}
 
-func (UnimplementedStatsServer) ResourceStats(
+func (UnimplementedStatsServer) ResourceStatsDetail(
 	context.Context, *payload.Empty,
-) (*payload.Info_Stats_ResourceStats, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ResourceStats not implemented")
+) (*payload.Info_Stats_ResourceStatsDetail, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResourceStatsDetail not implemented")
 }
 func (UnimplementedStatsServer) mustEmbedUnimplementedStatsServer() {}
 
@@ -95,7 +97,7 @@ func RegisterStatsServer(s grpc.ServiceRegistrar, srv StatsServer) {
 	s.RegisterService(&Stats_ServiceDesc, srv)
 }
 
-func _Stats_ResourceStats_Handler(
+func _Stats_ResourceStatsDetail_Handler(
 	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Empty)
@@ -103,14 +105,14 @@ func _Stats_ResourceStats_Handler(
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(StatsServer).ResourceStats(ctx, in)
+		return srv.(StatsServer).ResourceStatsDetail(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/rpc.v1.Stats/ResourceStats",
+		FullMethod: "/vald.v1.Stats/ResourceStatsDetail",
 	}
 	handler := func(ctx context.Context, req any) (any, error) {
-		return srv.(StatsServer).ResourceStats(ctx, req.(*payload.Empty))
+		return srv.(StatsServer).ResourceStatsDetail(ctx, req.(*payload.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -119,14 +121,14 @@ func _Stats_ResourceStats_Handler(
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Stats_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "rpc.v1.Stats",
+	ServiceName: "vald.v1.Stats",
 	HandlerType: (*StatsServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "ResourceStats",
-			Handler:    _Stats_ResourceStats_Handler,
+			MethodName: "ResourceStatsDetail",
+			Handler:    _Stats_ResourceStatsDetail_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "v1/rpc/stats/stats.proto",
+	Metadata: "v1/vald/stats.proto",
 }
