@@ -35,15 +35,13 @@ import (
 )
 
 const (
-	StatsRPCServiceName        = "Stats"
-	ResourceStatsRPCName       = "ResourceStats"
-	ResourceStatsDetailRPCName = "ResourceStatsDetail"
+	ResourceStatsDetailRPCName = vald.ResourceStatsDetailRPCName
 )
 
 func (s *server) ResourceStatsDetail(
 	ctx context.Context, _ *payload.Empty,
 ) (detail *payload.Info_Stats_ResourceStatsDetail, err error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "rpc.v1."+StatsRPCServiceName+"/"+ResourceStatsDetailRPCName), apiName+"/"+ResourceStatsDetailRPCName)
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.StatsRPCServiceName+"/"+ResourceStatsDetailRPCName), apiName+"/"+ResourceStatsDetailRPCName)
 	defer func() {
 		if span != nil {
 			span.End()

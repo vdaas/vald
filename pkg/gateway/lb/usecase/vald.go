@@ -19,7 +19,6 @@ package usecase
 import (
 	"context"
 
-	stats "github.com/vdaas/vald/apis/grpc/v1/rpc/stats"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -126,7 +125,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	grpcServerOptions := []server.Option{
 		server.WithGRPCRegisterar(func(srv *grpc.Server) {
 			vald.RegisterValdServer(srv, v)
-			stats.RegisterStatsServer(srv, v)
 		}),
 		server.WithPreStopFunction(func() error {
 			// TODO notify another gateway and scheduler

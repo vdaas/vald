@@ -19,7 +19,6 @@ package grpc
 import (
 	"time"
 
-	stats "github.com/vdaas/vald/apis/grpc/v1/rpc/stats"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/gateway/lb/service"
@@ -35,7 +34,6 @@ type server struct {
 	name              string
 	ip                string
 	vald.UnimplementedValdServer
-	stats.UnimplementedStatsServer
 }
 
 const apiName = "vald/gateway/lb"
