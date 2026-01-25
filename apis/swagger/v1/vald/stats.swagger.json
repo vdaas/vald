@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "v1/rpc/stats/stats.proto",
+    "title": "v1/vald/stats.proto",
     "version": "version not set"
   },
   "tags": [
@@ -12,15 +12,15 @@
   "consumes": ["application/json"],
   "produces": ["application/json"],
   "paths": {
-    "/resource/stats": {
+    "/resource/stats/detail": {
       "get": {
-        "summary": "Represent the RPC to get the resource stats.",
-        "operationId": "Stats_ResourceStats",
+        "summary": "Overview\nRepresent the RPC to get the resource stats for each agents.",
+        "operationId": "Stats_ResourceStatsDetail",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1InfoStatsResourceStats"
+              "$ref": "#/definitions/v1InfoStatsResourceStatsDetail"
             }
           },
           "default": {
@@ -109,6 +109,18 @@
         }
       },
       "title": "Represent the resource stats"
+    },
+    "v1InfoStatsResourceStatsDetail": {
+      "type": "object",
+      "properties": {
+        "details": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/v1InfoStatsResourceStats"
+          }
+        }
+      },
+      "title": "Represents the resource stats for each Agents"
     }
   }
 }
