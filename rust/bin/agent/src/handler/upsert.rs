@@ -29,8 +29,8 @@ use super::common::{bidirectional_stream, build_error_details};
 use super::insert::insert as insert_fn;
 use super::update::update as update_fn;
 
-async fn upsert(
-    s: Arc<RwLock<dyn algorithm::ANN>>,
+async fn upsert<S: algorithm::ANN>(
+    s: Arc<RwLock<S>>,
     resource_type: &str,
     api_name: &str,
     name: &str,
@@ -97,7 +97,7 @@ async fn upsert(
         }
         let rt_name;
         let result;
-        let exists = s_inner.exists(uuid.clone());
+        let (_, exists) = s_inner.exists(uuid.clone()).await;
         if exists {
             result = update_fn(
                 s.clone(),
@@ -169,7 +169,7 @@ async fn upsert(
 }
 
 #[tonic::async_trait]
-impl upsert_server::Upsert for super::Agent {
+impl<S: algorithm::ANN + 'static> upsert_server::Upsert for super::Agent<S> {
     async fn upsert(
         &self,
         request: tonic::Request<upsert::Request>,
@@ -272,7 +272,7 @@ impl upsert_server::Upsert for super::Agent {
                     return Err(status);
                 }
                 ids.push(vec.id.clone());
-                let exists = s.exists(vec.id.clone());
+                let (_, exists) = s.exists(vec.id.clone()).await;
                 if exists {
                     ureqs.requests.push(update::Request {
                         vector: Some(vec),

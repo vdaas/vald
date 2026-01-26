@@ -27,8 +27,7 @@
 use std::{path::Path, sync::Arc};
 
 pub mod map;
-
-use crate::map::{
+pub use crate::map::{
     base::MapBase,
     codec::{BincodeCodec, Codec},
     error::Error,

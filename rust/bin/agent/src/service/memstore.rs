@@ -1,0 +1,827 @@
+//
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// You may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+//! # Memstore
+//!
+//! This module provides functions for managing the in-memory store that combines
+//! the KVS (key-value store) and VQueue (vector queue) for the agent.
+//! It handles conflict resolution between the two stores based on timestamps.
+
+use std::sync::Arc;
+
+use kvs::{BidirectionalMap, MapBase, map::codec::BincodeCodec};
+use thiserror::Error;
+use vqueue::{Queue, QueueError};
+
+/// Error type for memstore operations.
+#[derive(Debug, Error)]
+pub enum MemstoreError {
+    /// Error when UUID is not found.
+    #[error("UUID not found: {0}")]
+    UuidNotFound(String),
+
+    /// Error when object is not found.
+    #[error("Object not found: {0}")]
+    ObjectNotFound(String),
+
+    /// Error when object ID is not found.
+    #[error("Object ID not found: {0}")]
+    ObjectIdNotFound(String),
+
+    /// Error when timestamp is zero.
+    #[error("Zero timestamp provided")]
+    ZeroTimestamp,
+
+    /// Error when a newer timestamp object already exists.
+    #[error("Newer timestamp object already exists for uuid: {0}, provided timestamp: {1}")]
+    NewerTimestampObjectAlreadyExists(String, i64),
+
+    /// Error when nothing needs to be done for update.
+    #[error("Nothing to be done for update: {0}")]
+    NothingToBeDoneForUpdate(String),
+
+    /// Error from KVS operations.
+    #[error("KVS error: {0}")]
+    Kvs(#[from] kvs::map::error::Error),
+
+    /// Error from VQueue operations.
+    #[error("VQueue error: {0}")]
+    VQueue(#[from] QueueError),
+}
+
+/// Type alias for the bidirectional map used in memstore.
+/// Maps UUID (String) to OID (u32).
+pub type KvsMap = BidirectionalMap<String, u32, BincodeCodec>;
+
+/// Checks if a UUID exists in the memstore (kvs + vqueue).
+///
+/// # Arguments
+///
+/// * `kv` - The KVS bidirectional map.
+/// * `vq` - The vector queue.
+/// * `uuid` - The UUID to check.
+///
+/// # Returns
+///
+/// A tuple of (oid, exists). If the UUID exists, `oid` is the object ID and `exists` is true.
+pub async fn exists<Q: Queue>(
+    kv: &Arc<KvsMap>,
+    vq: &Q,
+    uuid: &str,
+) -> Result<(u32, bool), MemstoreError> {
+    // Check vqueue first
+    let vq_result = vq.get_vector_with_timestamp(uuid).await;
+    
+    match vq_result {
+        Ok((_vec, its, dts, exists)) => {
+            if exists {
+                // Found in vqueue with valid insert
+                // Try to get OID from kvs
+                match kv.get(uuid).await {
+                    Ok((oid, kts)) => {
+                        // Update kvs timestamp if vqueue is newer
+                        if (kts as i64) < its {
+                            let _ = kv.set(uuid.to_string(), oid, its as u128).await;
+                        }
+                        Ok((oid, true))
+                    }
+                    Err(_) => {
+                        // Not in kvs yet (still in vqueue), return 0 as oid
+                        Ok((0, true))
+                    }
+                }
+            } else {
+                // Not valid in vqueue (delete is newer or not found)
+                // Check kvs
+                match kv.get(uuid).await {
+                    Ok((oid, kts)) => {
+                        // Update kvs timestamp if insert timestamp is newer
+                        if its > 0 && (kts as i64) < its {
+                            let _ = kv.set(uuid.to_string(), oid, its as u128).await;
+                        }
+                        // If delete timestamp is newer than insert, object will be deleted soon
+                        if dts > its {
+                            log::debug!(
+                                "Exists: uuid {}'s data found in kvsdb but delete vqueue data exists. The object will be deleted soon",
+                                uuid
+                            );
+                            return Ok((0, false));
+                        }
+                        Ok((oid, true))
+                    }
+                    Err(_) => Ok((0, false)),
+                }
+            }
+        }
+        Err(QueueError::NotFound(_)) => {
+            // Not in vqueue, check kvs only
+            match kv.get(uuid).await {
+                Ok((oid, _ts)) => Ok((oid, true)),
+                Err(_) => Ok((0, false)),
+            }
+        }
+        Err(e) => Err(MemstoreError::VQueue(e)),
+    }
+}
+
+/// Gets an object (vector and timestamp) from the memstore.
+///
+/// # Arguments
+///
+/// * `kv` - The KVS bidirectional map.
+/// * `vq` - The vector queue.
+/// * `uuid` - The UUID of the object to retrieve.
+/// * `get_vector_fn` - A function to get the vector from the index by OID.
+///
+/// # Returns
+///
+/// A tuple of (vector, timestamp).
+pub async fn get_object<Q, F, Fut>(
+    kv: &Arc<KvsMap>,
+    vq: &Q,
+    uuid: &str,
+    get_vector_fn: Option<F>,
+) -> Result<(Vec<f32>, i64), MemstoreError>
+where
+    Q: Queue,
+    F: FnOnce(u32) -> Fut,
+    Fut: std::future::Future<Output = Result<Vec<f32>, MemstoreError>>,
+{
+    // Check vqueue first
+    let vq_result = vq.get_vector_with_timestamp(uuid).await;
+    
+    match vq_result {
+        Ok((Some(vec), its, dts, exists)) => {
+            if exists {
+                return Ok((vec, its));
+            }
+            // Vector exists but delete is newer, check kvs
+            match kv.get(uuid).await {
+                Ok((oid, kts)) => {
+                    // Update kvs timestamp if vqueue insert is newer
+                    if (kts as i64) < its {
+                        let _ = kv.set(uuid.to_string(), oid, its as u128).await;
+                    }
+                    // If delete timestamp is newer, object will be deleted soon
+                    if dts > its {
+                        log::debug!(
+                            "GetObject: uuid {}'s data found in kvsdb but delete vqueue data exists. The object will be deleted soon",
+                            uuid
+                        );
+                        return Err(MemstoreError::ObjectIdNotFound(uuid.to_string()));
+                    }
+                    // Get vector from index
+                    if let Some(f) = get_vector_fn {
+                        let vec = f(oid).await?;
+                        return Ok((vec, kts as i64));
+                    }
+                    Err(MemstoreError::ObjectNotFound(uuid.to_string()))
+                }
+                Err(_) => Err(MemstoreError::ObjectIdNotFound(uuid.to_string())),
+            }
+        }
+        Ok((None, its, dts, _exists)) => {
+            // No vector in vqueue, check kvs
+            match kv.get(uuid).await {
+                Ok((oid, kts)) => {
+                    // Update kvs timestamp if vqueue insert is newer
+                    if its > 0 && (kts as i64) < its {
+                        let _ = kv.set(uuid.to_string(), oid, its as u128).await;
+                    }
+                    // If delete timestamp is newer, object will be deleted soon
+                    if dts > its && dts > 0 {
+                        log::debug!(
+                            "GetObject: uuid {}'s data found in kvsdb but delete vqueue data exists. The object will be deleted soon",
+                            uuid
+                        );
+                        return Err(MemstoreError::ObjectIdNotFound(uuid.to_string()));
+                    }
+                    // Get vector from index
+                    if let Some(f) = get_vector_fn {
+                        let vec = f(oid).await?;
+                        return Ok((vec, kts as i64));
+                    }
+                    Err(MemstoreError::ObjectNotFound(uuid.to_string()))
+                }
+                Err(_) => {
+                    log::debug!("GetObject: uuid {}'s data not found in kvsdb and insert vqueue", uuid);
+                    Err(MemstoreError::ObjectIdNotFound(uuid.to_string()))
+                }
+            }
+        }
+        Err(QueueError::NotFound(_)) => {
+            // Not in vqueue, check kvs only
+            match kv.get(uuid).await {
+                Ok((oid, kts)) => {
+                    if let Some(f) = get_vector_fn {
+                        let vec = f(oid).await?;
+                        return Ok((vec, kts as i64));
+                    }
+                    Err(MemstoreError::ObjectNotFound(uuid.to_string()))
+                }
+                Err(_) => {
+                    log::debug!("GetObject: uuid {}'s data not found in kvsdb and insert vqueue", uuid);
+                    Err(MemstoreError::ObjectIdNotFound(uuid.to_string()))
+                }
+            }
+        }
+        Err(e) => Err(MemstoreError::VQueue(e)),
+    }
+}
+
+/// Collects all UUIDs from the memstore (kvs + vqueue).
+///
+/// # Arguments
+///
+/// * `kv` - The KVS bidirectional map.
+/// * `vq` - The vector queue.
+///
+/// # Returns
+///
+/// A vector of UUIDs.
+pub async fn uuids<Q: Queue>(
+    kv: &Arc<KvsMap>,
+    vq: &Q,
+) -> Result<Vec<String>, MemstoreError> {
+    use futures::StreamExt;
+    use kvs::MapBase;
+
+    let mut result = Vec::new();
+    let mut seen = std::collections::HashSet::new();
+
+    // Collect from kvs using range_stream
+    let mut stream = Box::pin(kv.range_stream());
+    while let Some(item) = stream.next().await {
+        if let Ok((uuid, _oid, _ts)) = item {
+            // Check if this uuid has a pending delete
+            match vq.dv_exists(&uuid).await {
+                Ok(dts) if dts > 0 => {
+                    // Has pending delete, check if insert is newer
+                    match vq.iv_exists(&uuid).await {
+                        Ok(its) if its > dts => {
+                            seen.insert(uuid.clone());
+                            result.push(uuid);
+                        }
+                        _ => {
+                            // Delete is newer or no insert, skip
+                        }
+                    }
+                }
+                _ => {
+                    // No pending delete
+                    seen.insert(uuid.clone());
+                    result.push(uuid);
+                }
+            }
+        }
+    }
+
+    // Then, collect from vqueue insert queue (items not yet in kvs)
+    // Note: This requires iterating through vqueue, which we can do via ivq_len check
+    // For now, we rely on the kvs having most items and vqueue having uncommitted ones
+    // A full implementation would need a range/iterator on vqueue
+
+    Ok(result)
+}
+
+/// Applies the input function on each index stored in the kvs and vqueue.
+/// Use this function for performing something on each object while caring about memory usage.
+/// If the vector exists in the vqueue, this vector is not indexed so the oid(object ID) is processed as 0.
+///
+/// # Arguments
+///
+/// * `kv` - The KVS bidirectional map.
+/// * `vq` - The vector queue.
+/// * `f` - A callback function to process each item. Returns false to stop iteration.
+pub async fn list_object_func<Q, F>(
+    kv: &Arc<KvsMap>,
+    vq: &Q,
+    mut f: F,
+) where
+    Q: Queue,
+    F: FnMut(String, u32, i64) -> bool + Send,
+{
+    use futures::StreamExt;
+    use kvs::MapBase;
+    use std::collections::HashSet;
+
+    let mut dup: HashSet<String> = HashSet::new();
+
+    // First, iterate through vqueue insert items
+    let mut vq_stream = Box::pin(vq.range());
+    while let Some(item) = vq_stream.next().await {
+        if let Ok((uuid, _vec, ts)) = item {
+            // Check if this uuid exists in kvs
+            match kv.get(&uuid).await {
+                Ok((oid, kts)) => {
+                    // Exists in kvs
+                    if ts > kts as i64 {
+                        // vqueue is newer, use vqueue timestamp
+                        dup.insert(uuid.clone());
+                        if !f(uuid, oid, ts) {
+                            return;
+                        }
+                    }
+                    // else: kvs data is newer, will process at kvs.range
+                }
+                Err(_) => {
+                    // Not in kvs, oid is 0
+                    if !f(uuid, 0, ts) {
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    // Then, iterate through kvs entries
+    let mut kv_stream = Box::pin(kv.range_stream());
+    while let Some(item) = kv_stream.next().await {
+        if let Ok((uuid, oid, ts)) = item {
+            // Skip if already processed from vqueue
+            if dup.contains(&uuid) {
+                continue;
+            }
+            // Check if delete vqueue data exists and is newer (data will be deleted soon)
+            match vq.dv_exists(&uuid).await {
+                Ok(dts) if dts > 0 => {
+                    // Has pending delete, skip
+                    continue;
+                }
+                _ => {}
+            }
+            if !f(uuid, oid, ts as i64) {
+                return;
+            }
+        }
+    }
+}
+
+/// Updates the timestamp of an object in the memstore.
+///
+/// # Arguments
+///
+/// * `kv` - The KVS bidirectional map.
+/// * `vq` - The vector queue.
+/// * `uuid` - The UUID of the object to update.
+/// * `ts` - The new timestamp.
+/// * `force` - If true, forces the update even if the new timestamp is older.
+/// * `get_vector_fn` - A function to get the vector from the index by OID.
+///
+/// # Returns
+///
+/// Ok(()) if the update was successful.
+pub async fn update_timestamp<Q, F, Fut>(
+    kv: &Arc<KvsMap>,
+    vq: &Q,
+    uuid: &str,
+    ts: i64,
+    force: bool,
+    get_vector_fn: Option<F>,
+) -> Result<(), MemstoreError>
+where
+    Q: Queue,
+    F: FnOnce(u32) -> Fut,
+    Fut: std::future::Future<Output = Result<Vec<f32>, MemstoreError>>,
+{
+    if uuid.is_empty() {
+        return Err(MemstoreError::UuidNotFound("empty".to_string()));
+    }
+    if !force && ts <= 0 {
+        return Err(MemstoreError::ZeroTimestamp);
+    }
+
+    // Read vqueue data
+    let vq_result = vq.get_vector_with_timestamp(uuid).await;
+    let (vec, its, dts, vqok) = match vq_result {
+        Ok((v, i, d, exists)) => (v, i, d, exists || i > 0 || d > 0),
+        Err(QueueError::NotFound(_)) => (None, 0, 0, false),
+        Err(e) => return Err(MemstoreError::VQueue(e)),
+    };
+
+    // Read kvs data
+    let kv_result = kv.get(uuid).await;
+    let (oid, kts, kvok) = match kv_result {
+        Ok((o, t)) => (o, t as i64, true),
+        Err(_) => (0, 0, false),
+    };
+
+    if !vqok && !kvok {
+        return Err(MemstoreError::ObjectNotFound(uuid.to_string()));
+    }
+
+    if !force && (ts <= kts || ts <= its) {
+        return Err(MemstoreError::NewerTimestampObjectAlreadyExists(uuid.to_string(), ts));
+    }
+
+    // Case 1: Only in vqueue, no kvs data, and timestamp is newer than delete
+    if vqok && !kvok && dts != 0 && dts < ts && (force || its < ts) {
+        if let Some(v) = vec {
+            vq.push_insert(uuid, v, Some(ts)).await?;
+            // Pop delete since we don't need it anymore
+            match vq.pop_delete(uuid).await {
+                Ok(pdts) if pdts != dts => {
+                    // Rollback if timestamp changed
+                    vq.push_delete(uuid, Some(pdts)).await?;
+                }
+                _ => {}
+            }
+            return Ok(());
+        }
+    }
+
+    // Case 2: Both in vqueue and kvs
+    if vqok && kvok && dts < ts && (force || (kts < ts && its < ts)) {
+        if let Some(v) = vec {
+            vq.push_insert(uuid, v, Some(ts)).await?;
+            kv.set(uuid.to_string(), oid, ts as u128).await?;
+            if dts == 0 {
+                // Add delete vqueue for update
+                vq.push_delete(uuid, Some(ts - 1)).await?;
+            }
+            return Ok(());
+        }
+    }
+
+    // Case 3: Not in insert vqueue, but in kvs
+    if !vqok && its == 0 && kvok && (force || kts < ts) {
+        kv.set(uuid.to_string(), oid, ts as u128).await?;
+        if dts != 0 && (force || dts < ts) {
+            match vq.pop_delete(uuid).await {
+                Ok(pdts) if pdts != dts => {
+                    // Rollback if timestamp changed
+                    vq.push_delete(uuid, Some(pdts)).await?;
+                }
+                _ => {}
+            }
+        }
+        return Ok(());
+    }
+
+    // Case 4: Insert vqueue found with special conditions
+    if !vqok && its != 0 && kvok && (force || kts < ts) {
+        kv.set(uuid.to_string(), oid, ts as u128).await?;
+        if vec.is_none() && its > dts {
+            if let Some(f) = get_vector_fn {
+                if let Ok(ovec) = f(oid).await {
+                    vq.push_insert(uuid, ovec, Some(ts)).await?;
+                    return Ok(());
+                }
+            }
+        }
+        match vq.pop_insert(uuid).await {
+            Ok((pvec, pits)) if pits != its => {
+                // Rollback if timestamp changed
+                vq.push_insert(uuid, pvec, Some(pits)).await?;
+            }
+            _ => {}
+        }
+        return Ok(());
+    }
+
+    Err(MemstoreError::NothingToBeDoneForUpdate(uuid.to_string()))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use std::future::Ready;
+    use vqueue::{Builder as VQueueBuilder, PersistentQueue};
+    use kvs::BidirectionalMapBuilder;
+
+    // Type alias for the None case in get_vector_fn
+    type NoopFuture = Ready<Result<Vec<f32>, MemstoreError>>;
+    type NoopFn = fn(u32) -> NoopFuture;
+
+    struct TestGuard {
+        paths: Vec<String>,
+    }
+
+    impl Drop for TestGuard {
+        fn drop(&mut self) {
+            for path in &self.paths {
+                let _ = fs::remove_dir_all(path);
+            }
+        }
+    }
+
+    async fn setup(test_name: &str) -> (Arc<KvsMap>, PersistentQueue, TestGuard) {
+        let kvs_path = format!("./test_memstore_kvs_{}", test_name);
+        let vq_path = format!("./test_memstore_vq_{}", test_name);
+        let _ = fs::remove_dir_all(&kvs_path);
+        let _ = fs::remove_dir_all(&vq_path);
+        
+        let guard = TestGuard {
+            paths: vec![kvs_path.clone(), vq_path.clone()],
+        };
+
+        let kv = BidirectionalMapBuilder::<String, u32, BincodeCodec>::new(&kvs_path)
+            .build()
+            .await
+            .unwrap();
+
+        let vq = VQueueBuilder::new(&vq_path)
+            .build()
+            .await
+            .unwrap();
+
+        (kv, vq, guard)
+    }
+
+    #[tokio::test]
+    async fn test_exists_in_vqueue() {
+        let (kv, vq, _guard) = setup("exists_in_vqueue").await;
+        
+        vq.push_insert("uuid1", vec![1.0, 2.0], Some(100)).await.unwrap();
+        
+        let (oid, ok) = exists(&kv, &vq, "uuid1").await.unwrap();
+        assert!(ok);
+        assert_eq!(oid, 0); // Not in kvs yet
+    }
+
+    #[tokio::test]
+    async fn test_exists_in_kvs() {
+        let (kv, vq, _guard) = setup("exists_in_kvs").await;
+        
+        kv.set("uuid1".to_string(), 42, 100).await.unwrap();
+        
+        let (oid, ok) = exists(&kv, &vq, "uuid1").await.unwrap();
+        assert!(ok);
+        assert_eq!(oid, 42);
+    }
+
+    #[tokio::test]
+    async fn test_exists_not_found() {
+        let (kv, vq, _guard) = setup("exists_not_found").await;
+        
+        let (oid, ok) = exists(&kv, &vq, "nonexistent").await.unwrap();
+        assert!(!ok);
+        assert_eq!(oid, 0);
+    }
+
+    #[tokio::test]
+    async fn test_exists_with_pending_delete() {
+        let (kv, vq, _guard) = setup("exists_with_pending_delete").await;
+        
+        // Insert then delete (delete is newer)
+        vq.push_insert("uuid1", vec![1.0], Some(100)).await.unwrap();
+        vq.push_delete("uuid1", Some(200)).await.unwrap();
+        
+        let (oid, ok) = exists(&kv, &vq, "uuid1").await.unwrap();
+        assert!(!ok);
+        assert_eq!(oid, 0);
+    }
+
+    #[tokio::test]
+    async fn test_get_object_from_vqueue() {
+        let (kv, vq, _guard) = setup("get_object_from_vqueue").await;
+        
+        vq.push_insert("uuid1", vec![1.0, 2.0], Some(100)).await.unwrap();
+        
+        let (vec, ts) = get_object::<_, NoopFn, NoopFuture>(&kv, &vq, "uuid1", None).await.unwrap();
+        assert_eq!(vec, vec![1.0, 2.0]);
+        assert_eq!(ts, 100);
+    }
+
+    #[tokio::test]
+    async fn test_get_object_from_kvs_with_fn() {
+        let (kv, vq, _guard) = setup("get_object_from_kvs_with_fn").await;
+        
+        kv.set("uuid1".to_string(), 42, 100).await.unwrap();
+        
+        let get_fn = |_oid: u32| async move {
+            Ok(vec![3.0, 4.0])
+        };
+        
+        let (vec, ts) = get_object(&kv, &vq, "uuid1", Some(get_fn)).await.unwrap();
+        assert_eq!(vec, vec![3.0, 4.0]);
+        assert_eq!(ts, 100);
+    }
+
+    #[tokio::test]
+    async fn test_get_object_not_found() {
+        let (kv, vq, _guard) = setup("get_object_not_found").await;
+        
+        let result = get_object::<_, NoopFn, NoopFuture>(&kv, &vq, "nonexistent", None).await;
+        assert!(matches!(result, Err(MemstoreError::ObjectIdNotFound(_))));
+    }
+
+    #[tokio::test]
+    async fn test_update_timestamp_in_kvs() {
+        let (kv, vq, _guard) = setup("update_timestamp_in_kvs").await;
+        
+        kv.set("uuid1".to_string(), 42, 100).await.unwrap();
+        
+        update_timestamp::<_, NoopFn, NoopFuture>(&kv, &vq, "uuid1", 200, false, None)
+            .await
+            .unwrap();
+        
+        let (oid, ts) = kv.get("uuid1").await.unwrap();
+        assert_eq!(oid, 42);
+        assert_eq!(ts, 200);
+    }
+
+    #[tokio::test]
+    async fn test_update_timestamp_not_found() {
+        let (kv, vq, _guard) = setup("update_timestamp_not_found").await;
+        
+        let result = update_timestamp::<_, NoopFn, NoopFuture>(&kv, &vq, "nonexistent", 200, false, None).await;
+        assert!(matches!(result, Err(MemstoreError::ObjectNotFound(_))));
+    }
+
+    #[tokio::test]
+    async fn test_update_timestamp_newer_exists() {
+        let (kv, vq, _guard) = setup("update_timestamp_newer_exists").await;
+        
+        kv.set("uuid1".to_string(), 42, 200).await.unwrap();
+        
+        let result = update_timestamp::<_, NoopFn, NoopFuture>(&kv, &vq, "uuid1", 100, false, None).await;
+        assert!(matches!(result, Err(MemstoreError::NewerTimestampObjectAlreadyExists(_, _))));
+    }
+
+    #[tokio::test]
+    async fn test_update_timestamp_force() {
+        let (kv, vq, _guard) = setup("update_timestamp_force").await;
+        
+        kv.set("uuid1".to_string(), 42, 200).await.unwrap();
+        
+        // Force update with older timestamp
+        update_timestamp::<_, NoopFn, NoopFuture>(&kv, &vq, "uuid1", 100, true, None)
+            .await
+            .unwrap();
+        
+        let (oid, ts) = kv.get("uuid1").await.unwrap();
+        assert_eq!(oid, 42);
+        assert_eq!(ts, 100);
+    }
+
+    // ========== list_object_func Tests ==========
+
+    #[tokio::test]
+    async fn test_list_object_func_empty() {
+        let (kv, vq, _guard) = setup("list_object_func_empty").await;
+        
+        let mut count = 0;
+        list_object_func(&kv, &vq, |_uuid, _oid, _ts| {
+            count += 1;
+            true
+        }).await;
+        
+        assert_eq!(count, 0);
+    }
+
+    #[tokio::test]
+    async fn test_list_object_func_kvs_only() {
+        let (kv, vq, _guard) = setup("list_object_func_kvs_only").await;
+        
+        kv.set("uuid1".to_string(), 1, 100).await.unwrap();
+        kv.set("uuid2".to_string(), 2, 200).await.unwrap();
+        
+        let mut items: Vec<(String, u32, i64)> = Vec::new();
+        list_object_func(&kv, &vq, |uuid, oid, ts| {
+            items.push((uuid, oid, ts));
+            true
+        }).await;
+        
+        assert_eq!(items.len(), 2);
+        let uuids: Vec<_> = items.iter().map(|(u, _, _)| u.clone()).collect();
+        assert!(uuids.contains(&"uuid1".to_string()));
+        assert!(uuids.contains(&"uuid2".to_string()));
+    }
+
+    #[tokio::test]
+    async fn test_list_object_func_vqueue_only() {
+        let (kv, vq, _guard) = setup("list_object_func_vqueue_only").await;
+        
+        vq.push_insert("uuid1", vec![1.0], Some(100)).await.unwrap();
+        vq.push_insert("uuid2", vec![2.0], Some(200)).await.unwrap();
+        
+        let mut items: Vec<(String, u32, i64)> = Vec::new();
+        list_object_func(&kv, &vq, |uuid, oid, ts| {
+            items.push((uuid, oid, ts));
+            true
+        }).await;
+        
+        assert_eq!(items.len(), 2);
+        // OID should be 0 for items only in vqueue
+        for (_, oid, _) in &items {
+            assert_eq!(*oid, 0);
+        }
+    }
+
+    #[tokio::test]
+    async fn test_list_object_func_both_kvs_and_vqueue() {
+        let (kv, vq, _guard) = setup("list_object_func_both").await;
+        
+        // Item in kvs
+        kv.set("uuid1".to_string(), 1, 100).await.unwrap();
+        // Item in vqueue only
+        vq.push_insert("uuid2", vec![2.0], Some(200)).await.unwrap();
+        
+        let mut items: Vec<(String, u32, i64)> = Vec::new();
+        list_object_func(&kv, &vq, |uuid, oid, ts| {
+            items.push((uuid, oid, ts));
+            true
+        }).await;
+        
+        assert_eq!(items.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn test_list_object_func_vqueue_newer_than_kvs() {
+        let (kv, vq, _guard) = setup("list_object_func_vqueue_newer").await;
+        
+        // Same uuid in both kvs and vqueue, vqueue is newer
+        kv.set("uuid1".to_string(), 1, 100).await.unwrap();
+        vq.push_insert("uuid1", vec![1.0], Some(200)).await.unwrap();
+        
+        let mut items: Vec<(String, u32, i64)> = Vec::new();
+        list_object_func(&kv, &vq, |uuid, oid, ts| {
+            items.push((uuid, oid, ts));
+            true
+        }).await;
+        
+        // Should only appear once with the newer timestamp
+        assert_eq!(items.len(), 1);
+        assert_eq!(items[0].0, "uuid1");
+        assert_eq!(items[0].1, 1); // OID from kvs
+        assert_eq!(items[0].2, 200); // timestamp from vqueue (newer)
+    }
+
+    #[tokio::test]
+    async fn test_list_object_func_skips_pending_delete() {
+        let (kv, vq, _guard) = setup("list_object_func_skips_delete").await;
+        
+        // Item in kvs with pending delete
+        kv.set("uuid1".to_string(), 1, 100).await.unwrap();
+        vq.push_delete("uuid1", Some(200)).await.unwrap();
+        
+        // Item in kvs without pending delete
+        kv.set("uuid2".to_string(), 2, 100).await.unwrap();
+        
+        let mut items: Vec<(String, u32, i64)> = Vec::new();
+        list_object_func(&kv, &vq, |uuid, oid, ts| {
+            items.push((uuid, oid, ts));
+            true
+        }).await;
+        
+        // Only uuid2 should appear (uuid1 has pending delete)
+        assert_eq!(items.len(), 1);
+        assert_eq!(items[0].0, "uuid2");
+    }
+
+    #[tokio::test]
+    async fn test_list_object_func_early_termination() {
+        let (kv, vq, _guard) = setup("list_object_func_early_term").await;
+        
+        kv.set("uuid1".to_string(), 1, 100).await.unwrap();
+        kv.set("uuid2".to_string(), 2, 200).await.unwrap();
+        kv.set("uuid3".to_string(), 3, 300).await.unwrap();
+        
+        let mut count = 0;
+        list_object_func(&kv, &vq, |_uuid, _oid, _ts| {
+            count += 1;
+            count < 2 // Stop after 2 items
+        }).await;
+        
+        // Should stop early
+        assert!(count <= 2);
+    }
+
+    #[tokio::test]
+    async fn test_list_object_func_vqueue_delete_newer_filters() {
+        let (kv, vq, _guard) = setup("list_object_func_vq_delete_filters").await;
+        
+        // Insert then delete in vqueue (delete is newer)
+        vq.push_insert("uuid1", vec![1.0], Some(100)).await.unwrap();
+        vq.push_delete("uuid1", Some(200)).await.unwrap();
+        
+        // Insert in vqueue only (no delete)
+        vq.push_insert("uuid2", vec![2.0], Some(300)).await.unwrap();
+        
+        let mut items: Vec<(String, u32, i64)> = Vec::new();
+        list_object_func(&kv, &vq, |uuid, oid, ts| {
+            items.push((uuid, oid, ts));
+            true
+        }).await;
+        
+        // uuid1 should be filtered by range() because delete is newer
+        // uuid2 should appear
+        assert_eq!(items.len(), 1);
+        assert_eq!(items[0].0, "uuid2");
+    }
+}

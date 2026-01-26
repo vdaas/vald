@@ -27,15 +27,15 @@ use tonic_types::StatusExt;
 
 use super::common::{bidirectional_stream, build_error_details};
 
-pub(crate) async fn update(
-    s: Arc<RwLock<dyn algorithm::ANN>>,
+pub(crate) async fn update<S: algorithm::ANN>(
+    s: Arc<RwLock<S>>,
     resource_type: &str,
     api_name: &str,
     name: &str,
     ip: &str,
     request: &update::Request,
 ) -> Result<object::Location, Status> {
-    let config = match request.config.clone() {
+    let _config = match request.config.clone() {
         Some(cfg) => cfg,
         None => return Err(Status::invalid_argument("Missing configuration in request")),
     };
@@ -93,7 +93,7 @@ pub(crate) async fn update(
             warn!("{:?}", status);
             return Err(status);
         }
-        let result = s.update(uuid.clone(), vec.vector.clone(), config.timestamp);
+        let result = s.update(uuid.clone(), vec.vector.clone()).await;
         match result {
             Err(err) => {
                 let resource_type = format!("{}/qbg.Update", resource_type);
@@ -202,7 +202,7 @@ pub(crate) async fn update(
 }
 
 #[tonic::async_trait]
-impl update_server::Update for super::Agent {
+impl<S: algorithm::ANN + 'static> update_server::Update for super::Agent<S> {
     async fn update(
         &self,
         request: tonic::Request<update::Request>,
@@ -303,7 +303,7 @@ impl update_server::Update for super::Agent {
                 uuids.push(vec.id.clone());
                 vmap.insert(vec.id, vec.vector);
             }
-            let result = s.update_multiple(vmap);
+            let result = s.update_multiple(vmap).await;
             match result {
                 Err(err) => {
                     let resource_type = self.resource_type.clone() + "/qbg.MultiUpdate";
@@ -344,11 +344,27 @@ impl update_server::Update for super::Agent {
                             status
                         }
                         Error::InvalidDimensionSize {
-                            ref uuid,
                             current: _,
                             limit: _,
+                        } => {
+                            let err_details = build_error_details(
+                                &err,
+                                domain,
+                                &uuids.join(","),
+                                request_bytes,
+                                &resource_type,
+                                &resource_name,
+                                Some("vector dimension"),
+                            );
+                            let status = Status::with_error_details(
+                                Code::InvalidArgument,
+                                format!("MultiUpdate API invalid dimension size detected"),
+                                err_details,
+                            );
+                            warn!("{:?}", status);
+                            status
                         }
-                        | Error::UUIDNotFound { ref uuid } => {
+                        Error::UUIDNotFound { ref uuid } => {
                             let err_details = build_error_details(
                                 &err,
                                 domain,
@@ -356,7 +372,7 @@ impl update_server::Update for super::Agent {
                                 request_bytes,
                                 &resource_type,
                                 &resource_name,
-                                Some("uuid or vector"),
+                                Some("uuid"),
                             );
                             let uuids = Error::split_uuids(uuid.to_string());
                             let status = Status::with_error_details(

@@ -25,3 +25,4 @@ ngt = { version = "0.1.0", path = "../algorithms/ngt" }
 qbg = { version = "0.1.0", path = "../algorithms/qbg" }
 proto = { version = "0.1.0", path = "../proto" }
 tonic = "0.14.2"
+thiserror = "2.0.18"

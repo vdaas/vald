@@ -24,8 +24,8 @@ use tonic_types::StatusExt;
 
 use super::common::{bidirectional_stream, build_error_details};
 
-async fn search(
-    s: Arc<RwLock<dyn algorithm::ANN>>,
+async fn search<S: algorithm::ANN>(
+    s: Arc<RwLock<S>>,
     resource_type: &str,
     api_name: &str,
     name: &str,
@@ -69,7 +69,7 @@ async fn search(
             config.num,
             config.epsilon,
             config.radius,
-        );
+        ).await;
         match result {
             Err(err) => {
                 let resource_type = format!("{}/qbg.Search", resource_type);
@@ -173,7 +173,7 @@ async fn search(
 }
 
 #[tonic::async_trait]
-impl search_server::Search for super::Agent {
+impl<S: algorithm::ANN + 'static> search_server::Search for super::Agent<S> {
     async fn search(
         &self,
         request: tonic::Request<search::Request>,

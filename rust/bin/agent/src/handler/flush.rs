@@ -15,10 +15,9 @@
 //
 
 use algorithm::Error;
-use log::{debug, error, info, warn};
+use log::{debug, error, info};
 use prost::Message;
 use proto::{payload::v1::info, vald::v1::flush_server};
-use std::collections::HashMap;
 use tonic::{Code, Status};
 use tonic_types::StatusExt;
 
@@ -35,43 +34,42 @@ impl<S: algorithm::ANN + 'static> flush_server::Flush for super::Agent<S> {
         let domain = hostname.to_str().unwrap();
         {
             let mut s = self.s.write().await;
-            let result = s.regenerate_indexes();
+            let result = s.regenerate_indexes().await;
             match result {
                 Err(err) => {
-                    let metadata = HashMap::new();
                     let resource_type = self.resource_type.clone() + "/qbg.Flush";
                     let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
+                    let err_details = build_error_details(
+                        err.to_string(),
+                        domain,
+                        "",
+                        request.get_ref().encode_to_vec(),
+                        &resource_type,
+                        &resource_name,
+                        None,
+                    );
                     let status = match err {
                         Error::FlushingIsInProgress {} => {
-                            let err_details = build_error_details(
-                                err,
-                                domain,
-                                "",
-                                request.get_ref().encode_to_vec(),
-                                &resource_type,
-                                &resource_name,
-                                None,
-                            );
                             let status = Status::with_error_details(Code::Aborted, "Flush API aborted due to flushing indices is in progress", err_details);
-                            warn!("{:?}", status);
+                            debug!("{:?}", status);
+                            status
+                        }
+                        Error::WriteOperationToReadReplica {} => {
+                            let status = Status::with_error_details(
+                                Code::Aborted,
+                                "Flush API aborted due to agent is read only",
+                                err_details,
+                            );
+                            debug!("{:?}", status);
                             status
                         }
                         _ => {
-                            let err_details = build_error_details(
-                                err,
-                                domain,
-                                "",
-                                request.get_ref().encode_to_vec(),
-                                &resource_type,
-                                &resource_name,
-                                None,
-                            );
                             let status = Status::with_error_details(
                                 Code::Internal,
                                 "Flush API is failed",
                                 err_details,
                             );
-                            error!("{:?}", err_details);
+                            error!("{:?}", status);
                             status
                         }
                     };

@@ -14,151 +14,171 @@
 // limitations under the License.
 //
 
-pub mod service;
-pub use service::qbg::QBGService;
+pub mod memstore;
+mod qbg;
+pub use qbg::QBGService;
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
+    use algorithm::Error;
+    use proto::payload::v1::{info, search};
+
 #[derive(Debug)]
 struct _MockService {
     dim: usize,
 }
 
 impl algorithm::ANN for _MockService {
-    fn search(&self, vector: Vec<f32>, k: u32, epsilon: f32, radius: f32) -> Result<search::Response, Error> {
+    // Async search operations
+    async fn search(&self, vector: Vec<f32>, _k: u32, _epsilon: f32, _radius: f32) -> Result<search::Response, Error> {
         Err(Error::IncompatibleDimensionSize {
             got: vector.len() as usize,
             want: self.dim,
-        }
-        .into())
+        })
     }
 
-    fn search_by_id(&self, uuid: String, k: u32, epsilon: f32, radius: f32) -> Result<search::Response, Error> {
+    async fn search_by_id(&self, _uuid: String, _k: u32, _epsilon: f32, _radius: f32) -> Result<search::Response, Error> {
         todo!()
     }
 
-    fn linear_search(&self, vector: Vec<f32>, k: u32) -> Result<search::Response, Error> {
+    async fn linear_search(&self, _vector: Vec<f32>, _k: u32) -> Result<search::Response, Error> {
         todo!()
     }
 
-    fn linear_search_by_id(&self, uuid: String, k: u32) -> Result<search::Response, Error> {
+    async fn linear_search_by_id(&self, _uuid: String, _k: u32) -> Result<search::Response, Error> {
         todo!()
     }
 
-    fn insert(&mut self, uuid: String, vector: Vec<f32>) -> Result<(), Error> {
+    // Async insert operations
+    async fn insert(&mut self, _uuid: String, _vector: Vec<f32>) -> Result<(), Error> {
         todo!()
     }
 
-    fn insert_with_time(&mut self, uuid: String, vector: Vec<f32>, t: i64) -> Result<(), Error> {
+    async fn insert_with_time(&mut self, _uuid: String, _vector: Vec<f32>, _t: i64) -> Result<(), Error> {
         todo!()
     }
 
-    fn insert_multiple(&mut self, vectors: HashMap<String, Vec<f32>>) -> Result<(), Error> {
+    async fn insert_multiple(&mut self, _vectors: HashMap<String, Vec<f32>>) -> Result<(), Error> {
         todo!()
     }
 
-    fn insert_multiple_with_time(&mut self, vectors: HashMap<String, Vec<f32>>, t: i64) -> Result<(), Error> {
+    async fn insert_multiple_with_time(&mut self, _vectors: HashMap<String, Vec<f32>>, _t: i64) -> Result<(), Error> {
         todo!()
     }
 
-    fn update(&mut self, uuid: String, vector: Vec<f32>, ts: i64) -> Result<(), Error> {
+    // Async update operations
+    async fn update(&mut self, _uuid: String, _vector: Vec<f32>) -> Result<(), Error> {
         todo!()
     }
 
-    fn update_with_time(&mut self, uuid: String, vector: Vec<f32>, t: i64) -> Result<(), Error> {
+    async fn update_with_time(&mut self, _uuid: String, _vector: Vec<f32>, _t: i64) -> Result<(), Error> {
         todo!()
     }
 
-    fn update_multiple(&mut self, vectors: HashMap<String, Vec<f32>>) -> Result<(), Error> {
+    async fn update_multiple(&mut self, _vectors: HashMap<String, Vec<f32>>) -> Result<(), Error> {
         todo!()
     }
 
-    fn update_multiple_with_time(&mut self, vectors: HashMap<String, Vec<f32>>, t: i64) -> Result<(), Error> {
+    async fn update_multiple_with_time(&mut self, _vectors: HashMap<String, Vec<f32>>, _t: i64) -> Result<(), Error> {
         todo!()
     }
 
-    fn remove(&mut self, uuid: String, ts: i64) -> Result<(), Error> {
+    async fn update_timestamp(&mut self, _uuid: String, _t: i64, _force: bool) -> Result<(), Error> {
         todo!()
     }
 
-    fn remove_with_time(&mut self, uuid: String, t: i64) -> Result<(), Error> {
+    // Async remove operations
+    async fn remove(&mut self, _uuid: String) -> Result<(), Error> {
         todo!()
     }
 
-    fn remove_multiple(&mut self, uuids: Vec<String>) -> Result<(), Error> {
+    async fn remove_with_time(&mut self, _uuid: String, _t: i64) -> Result<(), Error> {
         todo!()
     }
 
-    fn remove_multiple_with_time(&mut self, uuids: Vec<String>, t: i64) -> Result<(), Error> {
+    async fn remove_multiple(&mut self, _uuids: Vec<String>) -> Result<(), Error> {
         todo!()
     }
 
-    fn regenerate_indexes(&mut self) -> Result<(), Error> {
+    async fn remove_multiple_with_time(&mut self, _uuids: Vec<String>, _t: i64) -> Result<(), Error> {
         todo!()
     }
 
-    fn get_object(&self, uuid: String) -> Result<(Vec<f32>, i64), Error> {
+    // Async index management
+    async fn regenerate_indexes(&mut self) -> Result<(), Error> {
         todo!()
     }
 
-    fn list_object_func<F: Fn(String, Vec<f32>, i64) -> bool>(&self, f: F) {
+    async fn create_index(&mut self) -> Result<(), Error> {
         todo!()
     }
 
-    fn exists(&self, uuid: String) -> (usize, bool) {
+    async fn save_index(&mut self) -> Result<(), Error> {
         todo!()
     }
 
-    fn create_index(&mut self) -> Result<(), Error> {
+    async fn create_and_save_index(&mut self) -> Result<(), Error> {
         todo!()
     }
 
-    fn save_index(&mut self) -> Result<(), Error> {
+    // Async object retrieval
+    async fn get_object(&self, _uuid: String) -> Result<(Vec<f32>, i64), Error> {
         todo!()
     }
 
-    fn create_and_save_index(&mut self) -> Result<(), Error> {
+    async fn exists(&self, _uuid: String) -> (usize, bool) {
         todo!()
     }
 
+    async fn uuids(&self) -> Vec<String> {
+        todo!()
+    }
+
+    async fn list_object_func<F: FnMut(String, Vec<f32>, i64) -> bool + Send>(&self, _f: F) {
+        todo!()
+    }
+
+    async fn close(&mut self) -> Result<(), Error> {
+        todo!()
+    }
+
+    // Sync status methods
     fn is_indexing(&self) -> bool {
-        todo!()
+        false
     }
 
     fn is_flushing(&self) -> bool {
-        todo!()
+        false
     }
 
     fn is_saving(&self) -> bool {
-        todo!()
+        false
     }
 
     fn len(&self) -> u32 {
-        todo!()
+        0
     }
 
     fn number_of_create_index_executions(&self) -> u64 {
-        todo!()
-    }
-
-    fn uuids(&self) -> Vec<String> {
-        todo!()
+        0
     }
 
     fn insert_vqueue_buffer_len(&self) -> u32 {
-        todo!()
+        0
     }
 
     fn delete_vqueue_buffer_len(&self) -> u32 {
-        todo!()
+        0
     }
 
-    fn get_dimension_size(&self) -> i32 {
-        todo!()
+    fn get_dimension_size(&self) -> usize {
+        self.dim
     }
 
     fn broken_index_count(&self) -> u64 {
-        todo!()
+        0
     }
 
     fn index_statistics(&self) -> Result<info::index::Statistics, Error> {
@@ -166,14 +186,10 @@ impl algorithm::ANN for _MockService {
     }
 
     fn is_statistics_enabled(&self) -> bool {
-        todo!()
+        false
     }
 
     fn index_property(&self) -> Result<info::index::Property, Error> {
-        todo!()
-    }
-
-    fn close(&mut self) -> Result<(), Error> {
         todo!()
     }
 }
