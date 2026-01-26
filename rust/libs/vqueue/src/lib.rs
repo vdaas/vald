@@ -71,6 +71,9 @@ pub enum QueueError {
     /// Error returned for `sled` unabortable transaction failures.
     #[error("Sled unabortable transaction error")]
     Unabortable(#[from] UnabortableTransactionError),
+    /// Error returned when the requested UUID is not found in the queue.
+    #[error("UUID not found in queue: {0}")]
+    NotFound(String),
 }
 
 /// Represents an item drained from the queue.
@@ -111,6 +114,42 @@ pub trait Queue: Send + Sync {
         uuid: impl AsRef<str> + Send,
         timestamp: Option<i64>,
     ) -> Result<(), QueueError>;
+
+    async fn pop_insert(&self, uuid: impl AsRef<str> + Send) -> Result<(Vec<f32>, i64), QueueError>;
+
+    async fn pop_delete(&self, uuid: impl AsRef<str> + Send) -> Result<i64, QueueError>;
+
+    async fn iv_exists(&self, uuid: impl AsRef<str> + Send) -> Result<i64, QueueError>;
+
+    async fn dv_exists(&self, uuid: impl AsRef<str> + Send) -> Result<i64, QueueError>;
+
+    /// Returns the vector stored in the queue.
+    /// If the same UUID exists in both the insert queue and the delete queue,
+    /// the timestamp is compared and the vector is returned only if the insert timestamp is newer.
+    ///
+    /// # Arguments
+    ///
+    /// * `uuid` - The UUID of the vector to retrieve.
+    ///
+    /// # Returns
+    ///
+    /// A tuple of (vector, insert_timestamp, exists).
+    async fn get_vector(&self, uuid: impl AsRef<str> + Send) -> Result<(Vec<f32>, i64), QueueError>;
+
+    /// Returns the vector and both timestamps stored in the queue.
+    /// This method returns both insert and delete timestamps, allowing the caller
+    /// to determine the state of the vector.
+    ///
+    /// # Arguments
+    ///
+    /// * `uuid` - The UUID of the vector to retrieve.
+    ///
+    /// # Returns
+    ///
+    /// A tuple of (vector, insert_timestamp, delete_timestamp, exists).
+    /// - `exists` is true if the vector is valid (insert timestamp > delete timestamp)
+    /// - Even if `exists` is false, delete_timestamp may be non-zero if a delete is pending
+    async fn get_vector_with_timestamp(&self, uuid: impl AsRef<str> + Send) -> Result<(Option<Vec<f32>>, i64, i64, bool), QueueError>;
 
     /// Returns a stream that drains both the insert and delete queues up to the given timestamp.
     ///
@@ -389,6 +428,171 @@ impl PersistentQueue {
         })
         .await?
     }
+
+    /// Loads a vector from the insert queue without removing it.
+    /// Returns (vector, timestamp) if found.
+    async fn load_ivq(&self, uuid: &str) -> Result<(Vec<f32>, i64), QueueError> {
+        let uuid_bytes = uuid.as_bytes().to_vec();
+        let uuid_string = uuid.to_string();
+        let index = self.insert_index.clone();
+        let queue = self.insert_queue.clone();
+
+        tokio::task::spawn_blocking(move || {
+            // Get timestamp from index
+            let ts_bytes = match index.get(&uuid_bytes)? {
+                Some(bytes) => bytes,
+                None => return Err(QueueError::NotFound(uuid_string)),
+            };
+
+            let ts_bytes_arr: [u8; 8] = ts_bytes
+                .as_ref()
+                .try_into()
+                .map_err(|_| QueueError::KeyParse("Invalid timestamp in index".to_string()))?;
+            let ts = i64::from_be_bytes(ts_bytes_arr);
+
+            // Get vector from queue
+            let uuid_str = str::from_utf8(&uuid_bytes)?;
+            let key = Self::create_key(ts, uuid_str);
+            let value = match queue.get(&key)? {
+                Some(bytes) => bytes,
+                None => return Err(QueueError::NotFound(uuid_string)),
+            };
+
+            let (vec, _): (Vec<f32>, _) = bincode::decode_from_slice(&value, BINCODE_CONFIG)?;
+            Ok((vec, ts))
+        })
+        .await?
+    }
+
+    /// Loads a timestamp from the delete queue without removing it.
+    /// Returns the timestamp if found.
+    async fn load_dvq(&self, uuid: &str) -> Result<i64, QueueError> {
+        let uuid_bytes = uuid.as_bytes().to_vec();
+        let uuid_string = uuid.to_string();
+        let index = self.delete_index.clone();
+
+        tokio::task::spawn_blocking(move || {
+            match index.get(&uuid_bytes)? {
+                Some(ts_bytes) => {
+                    let ts_bytes_arr: [u8; 8] = ts_bytes
+                        .as_ref()
+                        .try_into()
+                        .map_err(|_| QueueError::KeyParse("Invalid timestamp in index".to_string()))?;
+                    Ok(i64::from_be_bytes(ts_bytes_arr))
+                }
+                None => Err(QueueError::NotFound(uuid_string)),
+            }
+        })
+        .await?
+    }
+
+    /// Internal implementation of get_vector with timestamp.
+    /// If enable_delete_timestamp is false, delete timestamp information is not returned.
+    async fn get_vector_internal(&self, uuid: &str, enable_delete_timestamp: bool) -> Result<(Option<Vec<f32>>, i64, i64, bool), QueueError> {
+        // Try to load from insert queue
+        let ivq_result = self.load_ivq(uuid).await;
+        
+        match ivq_result {
+            Ok((vec, its)) => {
+                // Vector exists in insert queue, check delete queue
+                let dts = match self.load_dvq(uuid).await {
+                    Ok(ts) => ts,
+                    Err(QueueError::NotFound(_)) => 0,
+                    Err(e) => return Err(e),
+                };
+
+                if dts == 0 {
+                    // Not in delete queue, vector exists
+                    Ok((Some(vec), its, 0, true))
+                } else {
+                    // Both queues have the UUID, compare timestamps
+                    // Vector exists if insert timestamp is newer than delete timestamp
+                    let exists = its > dts;
+                    Ok((Some(vec), its, dts, exists))
+                }
+            }
+            Err(QueueError::NotFound(_)) => {
+                // Not in insert queue
+                if !enable_delete_timestamp {
+                    // Don't check delete queue, just return not found
+                    return Ok((None, 0, 0, false));
+                }
+
+                // Check delete queue
+                let dts = match self.load_dvq(uuid).await {
+                    Ok(ts) => ts,
+                    Err(QueueError::NotFound(_)) => {
+                        // Not in either queue
+                        return Ok((None, 0, 0, false));
+                    }
+                    Err(e) => return Err(e),
+                };
+
+                // In delete queue but not insert queue
+                Ok((None, 0, dts, false))
+            }
+            Err(e) => Err(e),
+        }
+    }
+
+    /// Internal helper to pop an item from a queue by UUID.
+    /// Returns the value bytes and timestamp if found.
+    async fn pop_internal(
+        &self,
+        uuid: &str,
+        queue: &Tree,
+        index: &Tree,
+        counter: &Arc<AtomicU64>,
+    ) -> Result<(Vec<u8>, i64), QueueError> {
+        if uuid.trim().is_empty() {
+            return Err(QueueError::InvalidUuid);
+        }
+        let uuid_bytes = uuid.as_bytes().to_vec();
+        let uuid_string = uuid.to_string();
+
+        let q = queue.clone();
+        let i = index.clone();
+        let c = counter.clone();
+
+        tokio::task::spawn_blocking(move || {
+            (&q, &i)
+                .transaction(|(q_tx, i_tx)| {
+                    let to_abortable = |e| ConflictableTransactionError::Abort(e);
+                    // Get the timestamp from the index
+                    let ts_bytes = i_tx.remove(uuid_bytes.as_slice())?
+                        .ok_or_else(|| QueueError::NotFound(uuid_string.clone()))
+                        .map_err(to_abortable)?;
+                    
+                    let ts_bytes_arr: [u8; 8] = ts_bytes
+                        .as_ref()
+                        .try_into()
+                        .map_err(|_| {
+                            QueueError::KeyParse("Invalid timestamp in index".to_string())
+                        })
+                        .map_err(to_abortable)?;
+                    let ts = i64::from_be_bytes(ts_bytes_arr);
+                    
+                    // Create the key and remove from queue
+                    let uuid_str = str::from_utf8(&uuid_bytes)
+                        .map_err(QueueError::from)
+                        .map_err(to_abortable)?;
+                    let key = Self::create_key(ts, uuid_str);
+                    
+                    let value = q_tx.remove(key.as_slice())?
+                        .ok_or_else(|| QueueError::NotFound(uuid_string.clone()))
+                        .map_err(to_abortable)?;
+                    
+                    c.fetch_sub(1, Ordering::Relaxed);
+                    
+                    Ok((value.to_vec(), ts))
+                })
+                .map_err(|e| match e {
+                    TransactionError::Abort(qe) => qe,
+                    TransactionError::Storage(sled_err) => QueueError::Sled(sled_err),
+                })
+        })
+        .await?
+    }
 }
 
 #[async_trait]
@@ -468,6 +672,97 @@ impl Queue for PersistentQueue {
     /// Returns the number of vectors in the delete queue.
     fn dvq_len(&self) -> u64 {
         self.delete_count.load(Ordering::Acquire)
+    }
+
+    /// Pops an insert operation from the queue by UUID.
+    /// Returns the vector and timestamp if found.
+    async fn pop_insert(&self, uuid: impl AsRef<str> + Send) -> Result<(Vec<f32>, i64), QueueError> {
+        let (value_bytes, ts) = self.pop_internal(
+            uuid.as_ref(),
+            &self.insert_queue,
+            &self.insert_index,
+            &self.insert_count,
+        ).await?;
+        
+        let (vec, _): (Vec<f32>, _) = bincode::decode_from_slice(&value_bytes, BINCODE_CONFIG)?;
+        Ok((vec, ts))
+    }
+
+    /// Pops a delete operation from the queue by UUID.
+    /// Returns the timestamp if found.
+    async fn pop_delete(&self, uuid: impl AsRef<str> + Send) -> Result<i64, QueueError> {
+        let (_, ts) = self.pop_internal(
+            uuid.as_ref(),
+            &self.delete_queue,
+            &self.delete_index,
+            &self.delete_count,
+        ).await?;
+        Ok(ts)
+    }
+
+    /// Checks if a UUID exists in the insert queue and returns its timestamp.
+    async fn iv_exists(&self, uuid: impl AsRef<str> + Send) -> Result<i64, QueueError> {
+        let uuid_bytes = uuid.as_ref().as_bytes().to_vec();
+        let uuid_string = uuid.as_ref().to_string();
+        let index = self.insert_index.clone();
+        
+        tokio::task::spawn_blocking(move || {
+            match index.get(&uuid_bytes)? {
+                Some(ts_bytes) => {
+                    let ts_bytes_arr: [u8; 8] = ts_bytes
+                        .as_ref()
+                        .try_into()
+                        .map_err(|_| QueueError::KeyParse("Invalid timestamp in index".to_string()))?;
+                    Ok(i64::from_be_bytes(ts_bytes_arr))
+                }
+                None => Err(QueueError::NotFound(uuid_string)),
+            }
+        })
+        .await?
+    }
+
+    /// Checks if a UUID exists in the delete queue and returns its timestamp.
+    async fn dv_exists(&self, uuid: impl AsRef<str> + Send) -> Result<i64, QueueError> {
+        let uuid_bytes = uuid.as_ref().as_bytes().to_vec();
+        let uuid_string = uuid.as_ref().to_string();
+        let index = self.delete_index.clone();
+        
+        tokio::task::spawn_blocking(move || {
+            match index.get(&uuid_bytes)? {
+                Some(ts_bytes) => {
+                    let ts_bytes_arr: [u8; 8] = ts_bytes
+                        .as_ref()
+                        .try_into()
+                        .map_err(|_| QueueError::KeyParse("Invalid timestamp in index".to_string()))?;
+                    Ok(i64::from_be_bytes(ts_bytes_arr))
+                }
+                None => Err(QueueError::NotFound(uuid_string)),
+            }
+        })
+        .await?
+    }
+
+    /// Returns the vector stored in the queue.
+    /// If the same UUID exists in both the insert queue and the delete queue,
+    /// the timestamp is compared and the vector is returned only if the insert timestamp is newer.
+    async fn get_vector(&self, uuid: impl AsRef<str> + Send) -> Result<(Vec<f32>, i64), QueueError> {
+        let (vec_opt, its, _dts, exists) = self.get_vector_internal(uuid.as_ref(), false).await?;
+        
+        if !exists {
+            return Err(QueueError::NotFound(uuid.as_ref().to_string()));
+        }
+        
+        match vec_opt {
+            Some(vec) => Ok((vec, its)),
+            None => Err(QueueError::NotFound(uuid.as_ref().to_string())),
+        }
+    }
+
+    /// Returns the vector and both timestamps stored in the queue.
+    /// This method returns both insert and delete timestamps, allowing the caller
+    /// to determine the state of the vector.
+    async fn get_vector_with_timestamp(&self, uuid: impl AsRef<str> + Send) -> Result<(Option<Vec<f32>>, i64, i64, bool), QueueError> {
+        self.get_vector_internal(uuid.as_ref(), true).await
     }
 }
 
@@ -742,5 +1037,365 @@ mod tests {
 
         assert_eq!(q.ivq_len(), 0);
         assert_eq!(q.dvq_len(), 0);
+    }
+
+    #[tokio::test]
+    async fn test_pop_insert_basic() {
+        let (q, _guard) = setup("pop_insert_basic").await;
+        let vec = vec![1.0, 2.0, 3.0];
+        q.push_insert("key1", vec.clone(), Some(100)).await.unwrap();
+        assert_eq!(q.ivq_len(), 1);
+
+        let (popped_vec, ts) = q.pop_insert("key1").await.unwrap();
+        assert_eq!(popped_vec, vec);
+        assert_eq!(ts, 100);
+        assert_eq!(q.ivq_len(), 0);
+
+        // Trying to pop again should return NotFound
+        let res = q.pop_insert("key1").await;
+        assert!(matches!(res, Err(QueueError::NotFound(_))));
+    }
+
+    #[tokio::test]
+    async fn test_pop_delete_basic() {
+        let (q, _guard) = setup("pop_delete_basic").await;
+        q.push_delete("key1", Some(200)).await.unwrap();
+        assert_eq!(q.dvq_len(), 1);
+
+        let ts = q.pop_delete("key1").await.unwrap();
+        assert_eq!(ts, 200);
+        assert_eq!(q.dvq_len(), 0);
+
+        // Trying to pop again should return NotFound
+        let res = q.pop_delete("key1").await;
+        assert!(matches!(res, Err(QueueError::NotFound(_))));
+    }
+
+    #[tokio::test]
+    async fn test_pop_insert_not_found() {
+        let (q, _guard) = setup("pop_insert_not_found").await;
+        let res = q.pop_insert("nonexistent").await;
+        assert!(matches!(res, Err(QueueError::NotFound(_))));
+    }
+
+    #[tokio::test]
+    async fn test_pop_delete_not_found() {
+        let (q, _guard) = setup("pop_delete_not_found").await;
+        let res = q.pop_delete("nonexistent").await;
+        assert!(matches!(res, Err(QueueError::NotFound(_))));
+    }
+
+    #[tokio::test]
+    async fn test_pop_insert_invalid_uuid() {
+        let (q, _guard) = setup("pop_insert_invalid_uuid").await;
+        let res = q.pop_insert("").await;
+        assert!(matches!(res, Err(QueueError::InvalidUuid)));
+        let res = q.pop_insert("   ").await;
+        assert!(matches!(res, Err(QueueError::InvalidUuid)));
+    }
+
+    #[tokio::test]
+    async fn test_pop_delete_invalid_uuid() {
+        let (q, _guard) = setup("pop_delete_invalid_uuid").await;
+        let res = q.pop_delete("").await;
+        assert!(matches!(res, Err(QueueError::InvalidUuid)));
+        let res = q.pop_delete("   ").await;
+        assert!(matches!(res, Err(QueueError::InvalidUuid)));
+    }
+
+    #[tokio::test]
+    async fn test_pop_insert_after_update() {
+        let (q, _guard) = setup("pop_insert_after_update").await;
+        // Push initial vector
+        q.push_insert("key1", vec![1.0], Some(100)).await.unwrap();
+        // Update with new vector
+        q.push_insert("key1", vec![2.0], Some(200)).await.unwrap();
+        assert_eq!(q.ivq_len(), 1);
+
+        // Pop should return the latest vector
+        let (vec, ts) = q.pop_insert("key1").await.unwrap();
+        assert_eq!(vec, vec![2.0]);
+        assert_eq!(ts, 200);
+        assert_eq!(q.ivq_len(), 0);
+    }
+
+    #[tokio::test]
+    async fn test_iv_exists() {
+        let (q, _guard) = setup("iv_exists").await;
+        // Should not exist initially
+        let res = q.iv_exists("key1").await;
+        assert!(matches!(res, Err(QueueError::NotFound(_))));
+
+        // After push, should exist
+        q.push_insert("key1", vec![1.0], Some(100)).await.unwrap();
+        let ts = q.iv_exists("key1").await.unwrap();
+        assert_eq!(ts, 100);
+
+        // After pop, should not exist
+        q.pop_insert("key1").await.unwrap();
+        let res = q.iv_exists("key1").await;
+        assert!(matches!(res, Err(QueueError::NotFound(_))));
+    }
+
+    #[tokio::test]
+    async fn test_dv_exists() {
+        let (q, _guard) = setup("dv_exists").await;
+        // Should not exist initially
+        let res = q.dv_exists("key1").await;
+        assert!(matches!(res, Err(QueueError::NotFound(_))));
+
+        // After push, should exist
+        q.push_delete("key1", Some(200)).await.unwrap();
+        let ts = q.dv_exists("key1").await.unwrap();
+        assert_eq!(ts, 200);
+
+        // After pop, should not exist
+        q.pop_delete("key1").await.unwrap();
+        let res = q.dv_exists("key1").await;
+        assert!(matches!(res, Err(QueueError::NotFound(_))));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+    async fn test_pop_insert_concurrent() {
+        let (q, _guard) = setup("pop_insert_concurrent").await;
+        let queue = Arc::new(q);
+        let num_items = 50;
+
+        // Push multiple items
+        for i in 0..num_items {
+            queue
+                .push_insert(format!("key{}", i), vec![i as f32], Some(i as i64))
+                .await
+                .unwrap();
+        }
+        assert_eq!(queue.ivq_len(), num_items);
+
+        // Pop all items concurrently
+        let mut tasks = JoinSet::new();
+        for i in 0..num_items {
+            let q_clone = queue.clone();
+            tasks.spawn(async move {
+                q_clone.pop_insert(format!("key{}", i)).await
+            });
+        }
+
+        let mut success_count = 0;
+        while let Some(res) = tasks.join_next().await {
+            if res.unwrap().is_ok() {
+                success_count += 1;
+            }
+        }
+
+        assert_eq!(success_count, num_items as usize);
+        assert_eq!(queue.ivq_len(), 0);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+    async fn test_pop_delete_concurrent() {
+        let (q, _guard) = setup("pop_delete_concurrent").await;
+        let queue = Arc::new(q);
+        let num_items = 50;
+
+        // Push multiple delete items
+        for i in 0..num_items {
+            queue
+                .push_delete(format!("key{}", i), Some(i as i64))
+                .await
+                .unwrap();
+        }
+        assert_eq!(queue.dvq_len(), num_items);
+
+        // Pop all items concurrently
+        let mut tasks = JoinSet::new();
+        for i in 0..num_items {
+            let q_clone = queue.clone();
+            tasks.spawn(async move {
+                q_clone.pop_delete(format!("key{}", i)).await
+            });
+        }
+
+        let mut success_count = 0;
+        while let Some(res) = tasks.join_next().await {
+            if res.unwrap().is_ok() {
+                success_count += 1;
+            }
+        }
+
+        assert_eq!(success_count, num_items as usize);
+        assert_eq!(queue.dvq_len(), 0);
+    }
+
+    #[tokio::test]
+    async fn test_pop_insert_multiple_vectors() {
+        let (q, _guard) = setup("pop_insert_multiple_vectors").await;
+        
+        q.push_insert("key1", vec![1.0, 1.1], Some(100)).await.unwrap();
+        q.push_insert("key2", vec![2.0, 2.1, 2.2], Some(200)).await.unwrap();
+        q.push_insert("key3", vec![3.0], Some(300)).await.unwrap();
+        assert_eq!(q.ivq_len(), 3);
+
+        let (vec2, ts2) = q.pop_insert("key2").await.unwrap();
+        assert_eq!(vec2, vec![2.0, 2.1, 2.2]);
+        assert_eq!(ts2, 200);
+        assert_eq!(q.ivq_len(), 2);
+
+        let (vec1, ts1) = q.pop_insert("key1").await.unwrap();
+        assert_eq!(vec1, vec![1.0, 1.1]);
+        assert_eq!(ts1, 100);
+        assert_eq!(q.ivq_len(), 1);
+
+        let (vec3, ts3) = q.pop_insert("key3").await.unwrap();
+        assert_eq!(vec3, vec![3.0]);
+        assert_eq!(ts3, 300);
+        assert_eq!(q.ivq_len(), 0);
+    }
+
+    #[tokio::test]
+    async fn test_get_vector_basic() {
+        let (q, _guard) = setup("get_vector_basic").await;
+        let vec = vec![1.0, 2.0, 3.0];
+        q.push_insert("key1", vec.clone(), Some(100)).await.unwrap();
+
+        // get_vector should return the vector without removing it
+        let (got_vec, ts) = q.get_vector("key1").await.unwrap();
+        assert_eq!(got_vec, vec);
+        assert_eq!(ts, 100);
+
+        // Queue length should remain unchanged
+        assert_eq!(q.ivq_len(), 1);
+
+        // Should still be able to pop
+        let (popped_vec, _) = q.pop_insert("key1").await.unwrap();
+        assert_eq!(popped_vec, vec);
+        assert_eq!(q.ivq_len(), 0);
+    }
+
+    #[tokio::test]
+    async fn test_get_vector_not_found() {
+        let (q, _guard) = setup("get_vector_not_found").await;
+        let res = q.get_vector("nonexistent").await;
+        assert!(matches!(res, Err(QueueError::NotFound(_))));
+    }
+
+    #[tokio::test]
+    async fn test_get_vector_with_delete_newer() {
+        let (q, _guard) = setup("get_vector_with_delete_newer").await;
+        // Insert at t=100, delete at t=200
+        q.push_insert("key1", vec![1.0], Some(100)).await.unwrap();
+        q.push_delete("key1", Some(200)).await.unwrap();
+
+        // get_vector should return NotFound because delete is newer
+        let res = q.get_vector("key1").await;
+        assert!(matches!(res, Err(QueueError::NotFound(_))));
+    }
+
+    #[tokio::test]
+    async fn test_get_vector_with_insert_newer() {
+        let (q, _guard) = setup("get_vector_with_insert_newer").await;
+        // Delete at t=100, insert at t=200
+        q.push_delete("key1", Some(100)).await.unwrap();
+        q.push_insert("key1", vec![1.0], Some(200)).await.unwrap();
+
+        // get_vector should return the vector because insert is newer
+        let (vec, ts) = q.get_vector("key1").await.unwrap();
+        assert_eq!(vec, vec![1.0]);
+        assert_eq!(ts, 200);
+    }
+
+    #[tokio::test]
+    async fn test_get_vector_with_timestamp_basic() {
+        let (q, _guard) = setup("get_vector_with_timestamp_basic").await;
+        let vec = vec![1.0, 2.0];
+        q.push_insert("key1", vec.clone(), Some(100)).await.unwrap();
+
+        let (got_vec, its, dts, exists) = q.get_vector_with_timestamp("key1").await.unwrap();
+        assert_eq!(got_vec, Some(vec));
+        assert_eq!(its, 100);
+        assert_eq!(dts, 0);
+        assert!(exists);
+    }
+
+    #[tokio::test]
+    async fn test_get_vector_with_timestamp_not_found() {
+        let (q, _guard) = setup("get_vector_with_timestamp_not_found").await;
+        let (vec, its, dts, exists) = q.get_vector_with_timestamp("nonexistent").await.unwrap();
+        assert!(vec.is_none());
+        assert_eq!(its, 0);
+        assert_eq!(dts, 0);
+        assert!(!exists);
+    }
+
+    #[tokio::test]
+    async fn test_get_vector_with_timestamp_delete_only() {
+        let (q, _guard) = setup("get_vector_with_timestamp_delete_only").await;
+        q.push_delete("key1", Some(100)).await.unwrap();
+
+        let (vec, its, dts, exists) = q.get_vector_with_timestamp("key1").await.unwrap();
+        assert!(vec.is_none());
+        assert_eq!(its, 0);
+        assert_eq!(dts, 100);
+        assert!(!exists);
+    }
+
+    #[tokio::test]
+    async fn test_get_vector_with_timestamp_both_queues_insert_newer() {
+        let (q, _guard) = setup("get_vector_with_timestamp_both_insert_newer").await;
+        q.push_delete("key1", Some(100)).await.unwrap();
+        q.push_insert("key1", vec![1.0], Some(200)).await.unwrap();
+
+        let (vec, its, dts, exists) = q.get_vector_with_timestamp("key1").await.unwrap();
+        assert_eq!(vec, Some(vec![1.0]));
+        assert_eq!(its, 200);
+        assert_eq!(dts, 100);
+        assert!(exists); // insert is newer, so exists is true
+    }
+
+    #[tokio::test]
+    async fn test_get_vector_with_timestamp_both_queues_delete_newer() {
+        let (q, _guard) = setup("get_vector_with_timestamp_both_delete_newer").await;
+        q.push_insert("key1", vec![1.0], Some(100)).await.unwrap();
+        q.push_delete("key1", Some(200)).await.unwrap();
+
+        let (vec, its, dts, exists) = q.get_vector_with_timestamp("key1").await.unwrap();
+        assert_eq!(vec, Some(vec![1.0]));
+        assert_eq!(its, 100);
+        assert_eq!(dts, 200);
+        assert!(!exists); // delete is newer, so exists is false
+    }
+
+    #[tokio::test]
+    async fn test_get_vector_with_timestamp_same_timestamp() {
+        let (q, _guard) = setup("get_vector_with_timestamp_same_ts").await;
+        // Same timestamp for insert and delete (like update operation)
+        q.push_insert("key1", vec![1.0], Some(100)).await.unwrap();
+        q.push_delete("key1", Some(100)).await.unwrap();
+
+        let (vec, its, dts, exists) = q.get_vector_with_timestamp("key1").await.unwrap();
+        assert_eq!(vec, Some(vec![1.0]));
+        assert_eq!(its, 100);
+        assert_eq!(dts, 100);
+        assert!(!exists); // same timestamp means not newer, so exists is false
+    }
+
+    #[tokio::test]
+    async fn test_get_vector_does_not_modify_queue() {
+        let (q, _guard) = setup("get_vector_no_modify").await;
+        q.push_insert("key1", vec![1.0], Some(100)).await.unwrap();
+        q.push_insert("key2", vec![2.0], Some(200)).await.unwrap();
+        assert_eq!(q.ivq_len(), 2);
+
+        // Multiple get_vector calls should not modify the queue
+        for _ in 0..5 {
+            let _ = q.get_vector("key1").await.unwrap();
+            let _ = q.get_vector("key2").await.unwrap();
+        }
+
+        assert_eq!(q.ivq_len(), 2);
+
+        // get_vector_with_timestamp should also not modify
+        let _ = q.get_vector_with_timestamp("key1").await.unwrap();
+        let _ = q.get_vector_with_timestamp("key2").await.unwrap();
+        
+        assert_eq!(q.ivq_len(), 2);
     }
 }
