@@ -35,7 +35,7 @@ pub(super) async fn insert<S: algorithm::ANN>(
     ip: &str,
     request: &insert::Request,
 ) -> Result<object::Location, Status> {
-    let _config = match request.config.clone() {
+    let config = match request.config.clone() {
         Some(cfg) => cfg,
         None => return Err(Status::invalid_argument("Missing configuration in request")),
     };
@@ -71,7 +71,7 @@ pub(super) async fn insert<S: algorithm::ANN>(
             warn!("{:?}", status);
             return Err(status);
         }
-        let result = s.insert(vec.id.clone(), vec.vector.clone());
+        let result = s.insert_with_time(vec.id.clone(), vec.vector.clone(), config.timestamp).await;
         match result {
             Err(err) => {
                 let resource_type = format!("{}/qbg.Insert", resource_type);
@@ -264,7 +264,7 @@ impl<S: algorithm::ANN + 'static> insert_server::Insert for super::Agent<S> {
                 uuids.push(vec.id.clone());
                 vmap.insert(vec.id, vec.vector);
             }
-            let result = s.insert_multiple(vmap);
+            let result = s.insert_multiple(vmap).await;
             match result {
                 Err(err) => {
                     let resource_type = format!("{}/qbg.MultiInsert", self.resource_type);

@@ -27,15 +27,15 @@ use tonic_types::StatusExt;
 
 use super::common::{bidirectional_stream, build_error_details};
 
-async fn remove(
-    s: Arc<RwLock<dyn algorithm::ANN>>,
+async fn remove<S: algorithm::ANN>(
+    s: Arc<RwLock<S>>,
     resource_type: &str,
     api_name: &str,
     name: &str,
     ip: &str,
     request: &remove::Request,
 ) -> Result<object::Location, Status> {
-    let config = match request.config.clone() {
+    let _config = match request.config.clone() {
         Some(cfg) => cfg,
         None => return Err(Status::invalid_argument("Missing configuration in request")),
     };
@@ -69,12 +69,21 @@ async fn remove(
             warn!("{:?}", status);
             return Err(status);
         }
-        let result = s.remove(uuid.clone(), config.timestamp);
+        let result = s.remove(uuid.clone()).await;
         match result {
             Err(err) => {
                 let resource_type = format!("{}/qbg.Remove", resource_type);
                 let resource_name = format!("{}: {}({})", api_name, name, ip);
-                let request_bytes = request.encode_to_vec();
+                let err_msg = err.to_string();
+                let mut err_details = build_error_details(
+                    err_msg.clone(),
+                    domain,
+                    &uuid,
+                    request.encode_to_vec(),
+                    &resource_type,
+                    &resource_name,
+                    None,
+                );
                 let status = match err {
                     Error::FlushingIsInProgress {} => {
                         let err_details = build_error_details(
@@ -95,15 +104,6 @@ async fn remove(
                         status
                     }
                     Error::ObjectIDNotFound { uuid: _ } => {
-                        let err_details = build_error_details(
-                            err,
-                            domain,
-                            &uuid,
-                            request_bytes,
-                            &resource_type,
-                            &resource_name,
-                            None,
-                        );
                         let status = Status::with_error_details(
                             Code::NotFound,
                             format!("Remove API uuid {} not found", uuid),
@@ -113,15 +113,7 @@ async fn remove(
                         status
                     }
                     Error::UUIDNotFound { uuid: _ } => {
-                        let err_details = build_error_details(
-                            err,
-                            domain,
-                            &uuid,
-                            request_bytes,
-                            &resource_type,
-                            &resource_name,
-                            Some("uuid"),
-                        );
+                        err_details.set_bad_request(vec![tonic_types::FieldViolation::new("id", err_msg)]);
                         let status = Status::with_error_details(
                             Code::InvalidArgument,
                             format!("Remove API invalid argument for uuid \"{}\" detected", uuid),
@@ -131,15 +123,6 @@ async fn remove(
                         status
                     }
                     _ => {
-                        let err_details = build_error_details(
-                            err,
-                            domain,
-                            &uuid,
-                            request_bytes,
-                            &resource_type,
-                            &resource_name,
-                            None,
-                        );
                         let status = Status::with_error_details(
                             Code::Internal,
                             "Remove API failed",
@@ -161,7 +144,7 @@ async fn remove(
 }
 
 #[tonic::async_trait]
-impl remove_server::Remove for super::Agent {
+impl<S: algorithm::ANN + 'static> remove_server::Remove for super::Agent<S> {
     async fn remove(
         &self,
         request: tonic::Request<remove::Request>,
@@ -245,7 +228,7 @@ impl remove_server::Remove for super::Agent {
             .collect();
         {
             let mut s = self.s.write().await;
-            let result = s.remove_multiple(uuids.clone());
+            let result = s.remove_multiple(uuids.clone()).await;
             match result {
                 Err(err) => {
                     let resource_type = self.resource_type.clone() + "/qbg.MultiRemove";

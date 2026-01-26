@@ -115,12 +115,52 @@ pub trait Queue: Send + Sync {
         timestamp: Option<i64>,
     ) -> Result<(), QueueError>;
 
+    /// Pops and removes an insert operation from the queue by UUID.
+    /// This is a destructive operation that removes the entry from the insert queue.
+    ///
+    /// # Arguments
+    ///
+    /// * `uuid` - The UUID of the vector to pop.
+    ///
+    /// # Returns
+    ///
+    /// A tuple of (vector, timestamp) if the UUID exists in the insert queue.
     async fn pop_insert(&self, uuid: impl AsRef<str> + Send) -> Result<(Vec<f32>, i64), QueueError>;
 
+    /// Pops and removes a delete operation from the queue by UUID.
+    /// This is a destructive operation that removes the entry from the delete queue.
+    ///
+    /// # Arguments
+    ///
+    /// * `uuid` - The UUID of the delete operation to pop.
+    ///
+    /// # Returns
+    ///
+    /// The timestamp of the delete operation if the UUID exists in the delete queue.
     async fn pop_delete(&self, uuid: impl AsRef<str> + Send) -> Result<i64, QueueError>;
 
+    /// Checks if a UUID exists in the insert queue and returns its timestamp.
+    /// This is a non-destructive read operation.
+    ///
+    /// # Arguments
+    ///
+    /// * `uuid` - The UUID to check.
+    ///
+    /// # Returns
+    ///
+    /// The insert timestamp if the UUID exists, or 0 if not found.
     async fn iv_exists(&self, uuid: impl AsRef<str> + Send) -> Result<i64, QueueError>;
 
+    /// Checks if a UUID exists in the delete queue and returns its timestamp.
+    /// This is a non-destructive read operation.
+    ///
+    /// # Arguments
+    ///
+    /// * `uuid` - The UUID to check.
+    ///
+    /// # Returns
+    ///
+    /// The delete timestamp if the UUID exists, or 0 if not found.
     async fn dv_exists(&self, uuid: impl AsRef<str> + Send) -> Result<i64, QueueError>;
 
     /// Returns the vector stored in the queue.
@@ -171,6 +211,11 @@ pub trait Queue: Send + Sync {
 
     /// Returns the number of vectors in the delete queue.
     fn dvq_len(&self) -> u64;
+
+    /// Iterates over all items in the insert queue, filtering out items that have a newer delete.
+    /// This is a non-destructive operation that does not modify the queue.
+    /// Returns a stream of (uuid, vector, timestamp) tuples for each valid item.
+    fn range(&self) -> Pin<Box<dyn Stream<Item = Result<(String, Vec<f32>, i64), QueueError>> + Send>>;
 }
 
 /// A persistent queue implementation using `sled`.
@@ -672,6 +717,60 @@ impl Queue for PersistentQueue {
     /// Returns the number of vectors in the delete queue.
     fn dvq_len(&self) -> u64 {
         self.delete_count.load(Ordering::Acquire)
+    }
+
+    /// Iterates over all items in the insert queue, filtering out items that have a newer delete.
+    fn range(&self) -> Pin<Box<dyn Stream<Item = Result<(String, Vec<f32>, i64), QueueError>> + Send>> {
+        let (tx, rx) = mpsc::channel(64);
+        let iq = self.insert_queue.clone();
+        let di = self.delete_index.clone();
+
+        tokio::spawn(async move {
+            let result = tokio::task::spawn_blocking(move || {
+                let mut items = Vec::new();
+                for item in iq.iter() {
+                    if let Ok((key, val)) = item {
+                        if let Ok((its, uuid)) = Self::parse_key(&key) {
+                            // Check if there's a newer delete for this uuid
+                            let skip = if let Ok(Some(dts_bytes)) = di.get(uuid.as_bytes()) {
+                                if dts_bytes.len() >= 8 {
+                                    let dts_arr: [u8; 8] = dts_bytes[0..8].try_into().unwrap_or_default();
+                                    let dts = i64::from_be_bytes(dts_arr);
+                                    dts >= its
+                                } else {
+                                    false
+                                }
+                            } else {
+                                false
+                            };
+                            if skip {
+                                continue;
+                            }
+                            // Decode the vector
+                            if let Ok((vec, _)) = bincode::decode_from_slice::<Vec<f32>, _>(&val, BINCODE_CONFIG) {
+                                items.push((uuid, vec, its));
+                            }
+                        }
+                    }
+                }
+                items
+            }).await;
+
+            match result {
+                Ok(items) => {
+                    for item in items {
+                        if tx.send(Ok(item)).await.is_err() {
+                            break;
+                        }
+                    }
+                }
+                Err(e) => {
+                    let _ = tx.send(Err(QueueError::Internal(e))).await;
+                }
+            }
+        });
+
+        Box::pin(ReceiverStream::new(rx))
     }
 
     /// Pops an insert operation from the queue by UUID.
@@ -1397,5 +1496,125 @@ mod tests {
         let _ = q.get_vector_with_timestamp("key2").await.unwrap();
         
         assert_eq!(q.ivq_len(), 2);
+    }
+
+    // ========== Range Tests ==========
+
+    #[tokio::test]
+    async fn test_range_empty_queue() {
+        let (q, _guard) = setup("range_empty_queue").await;
+
+        let stream = q.range();
+        let items: Vec<_> = tokio_stream::StreamExt::collect(stream).await;
+        assert!(items.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_range_single_item() {
+        let (q, _guard) = setup("range_single_item").await;
+        
+        q.push_insert("key1", vec![1.0, 2.0], Some(100)).await.unwrap();
+
+        let stream = q.range();
+        let items: Vec<_> = tokio_stream::StreamExt::collect(stream).await;
+        
+        assert_eq!(items.len(), 1);
+        let (uuid, vec, ts) = items[0].as_ref().unwrap();
+        assert_eq!(uuid, "key1");
+        assert_eq!(vec, &vec![1.0, 2.0]);
+        assert_eq!(*ts, 100);
+    }
+
+    #[tokio::test]
+    async fn test_range_multiple_items() {
+        let (q, _guard) = setup("range_multiple_items").await;
+        
+        q.push_insert("key1", vec![1.0], Some(100)).await.unwrap();
+        q.push_insert("key2", vec![2.0], Some(200)).await.unwrap();
+        q.push_insert("key3", vec![3.0], Some(300)).await.unwrap();
+
+        let stream = q.range();
+        let items: Vec<_> = tokio_stream::StreamExt::collect(stream).await;
+        
+        assert_eq!(items.len(), 3);
+        
+        // Collect all uuids
+        let uuids: Vec<_> = items.iter()
+            .filter_map(|r| r.as_ref().ok())
+            .map(|(uuid, _, _)| uuid.clone())
+            .collect();
+        
+        assert!(uuids.contains(&"key1".to_string()));
+        assert!(uuids.contains(&"key2".to_string()));
+        assert!(uuids.contains(&"key3".to_string()));
+    }
+
+    #[tokio::test]
+    async fn test_range_filters_newer_delete() {
+        let (q, _guard) = setup("range_filters_newer_delete").await;
+        
+        // Insert at t=100, delete at t=200 (delete is newer, should be filtered)
+        q.push_insert("key1", vec![1.0], Some(100)).await.unwrap();
+        q.push_delete("key1", Some(200)).await.unwrap();
+        
+        // Insert at t=300, delete at t=100 (insert is newer, should appear)
+        q.push_insert("key2", vec![2.0], Some(300)).await.unwrap();
+        q.push_delete("key2", Some(100)).await.unwrap();
+
+        let stream = q.range();
+        let items: Vec<_> = tokio_stream::StreamExt::collect(stream).await;
+        
+        // Only key2 should appear because key1 has a newer delete
+        assert_eq!(items.len(), 1);
+        let (uuid, vec, ts) = items[0].as_ref().unwrap();
+        assert_eq!(uuid, "key2");
+        assert_eq!(vec, &vec![2.0]);
+        assert_eq!(*ts, 300);
+    }
+
+    #[tokio::test]
+    async fn test_range_same_timestamp_filtered() {
+        let (q, _guard) = setup("range_same_timestamp_filtered").await;
+        
+        // Insert and delete at same timestamp (delete >= insert, should be filtered)
+        q.push_insert("key1", vec![1.0], Some(100)).await.unwrap();
+        q.push_delete("key1", Some(100)).await.unwrap();
+
+        let stream = q.range();
+        let items: Vec<_> = tokio_stream::StreamExt::collect(stream).await;
+        
+        assert!(items.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_range_does_not_modify_queue() {
+        let (q, _guard) = setup("range_no_modify").await;
+        
+        q.push_insert("key1", vec![1.0], Some(100)).await.unwrap();
+        q.push_insert("key2", vec![2.0], Some(200)).await.unwrap();
+        
+        assert_eq!(q.ivq_len(), 2);
+
+        // Multiple range calls should not modify the queue
+        for _ in 0..3 {
+            let stream = q.range();
+            let _: Vec<_> = tokio_stream::StreamExt::collect(stream).await;
+        }
+
+        assert_eq!(q.ivq_len(), 2);
+    }
+
+    #[tokio::test]
+    async fn test_range_no_delete() {
+        let (q, _guard) = setup("range_no_delete").await;
+        
+        // Items without any delete should all appear
+        q.push_insert("key1", vec![1.0], Some(100)).await.unwrap();
+        q.push_insert("key2", vec![2.0], Some(200)).await.unwrap();
+
+        let stream = q.range();
+        let items: Vec<_> = tokio_stream::StreamExt::collect(stream).await;
+        
+        assert_eq!(items.len(), 2);
     }
 }

@@ -24,8 +24,8 @@ use tonic_types::StatusExt;
 
 use super::common::{bidirectional_stream, build_error_details};
 
-async fn get_object(
-    s: Arc<RwLock<dyn algorithm::ANN>>,
+async fn get_object<S: algorithm::ANN>(
+    s: Arc<RwLock<S>>,
     resource_type: &str,
     api_name: &str,
     name: &str,
@@ -65,7 +65,7 @@ async fn get_object(
             warn!("{:?}", status);
             return Err(status);
         }
-        let result = s.get_object(uuid.clone());
+        let result = s.get_object(uuid.clone()).await;
         match result {
             Err(_err) => {
                 let status =
@@ -82,7 +82,7 @@ async fn get_object(
 }
 
 #[tonic::async_trait]
-impl object_server::Object for super::Agent {
+impl<S: algorithm::ANN + 'static> object_server::Object for super::Agent<S> {
     async fn exists(
         &self,
         _request: tonic::Request<object::Id>,

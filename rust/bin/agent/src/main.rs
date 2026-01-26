@@ -14,76 +14,22 @@
 // limitations under the License.
 //
 
-use algorithm::{ANN, Error, MultiError};
-use anyhow::Result;
-use chrono::{Local, Timelike};
-use config::Config;
-use proto::{
-    core::v1::agent_server,
-    payload::v1::{
-        object::Distance,
-        search,
-        info,
-    },
-    vald::v1::{
-        flush_server, index_server,insert_server, object_server, remove_server, search_server, update_server, upsert_server
-    }
-};
-use service::qbg::QBGService;
-use std::collections::HashMap;
-use std::time::Duration;
-
 mod handler;
 mod middleware;
+mod service;
 
-macro_rules! new_svc {
-    ($server:ty, $agent:expr, $settings:expr, $grpc_key:expr) => {
-        <$server>::new($agent.clone())
-            .max_decoding_message_size(
-                $settings.get::<usize>(format!("{}.grpc.max_receive_message_size", $grpc_key).as_str())?,
-            )
-            .max_encoding_message_size(
-                $settings.get::<usize>(format!("{}.grpc.max_send_message_size", $grpc_key).as_str())?,
-            )
-    };
-}
+use config::Config;
+use handler::Agent;
+use service::QBGService;
 
-fn parse_duration_from_string(input: &str) -> Option<Duration> {
-    if input.len() < 2 {
-        return None;
-    }
-    let last_char = match input.chars().last() {
-        Some(c) => c,
-        None => return None,
-    };
-    if last_char.is_numeric() {
-        return None;
-    }
-
-    let (value, unit) = input.split_at(input.len() - 1);
-    let num: u64 = match value.parse() {
-        Ok(n) => n,
-        Err(_) => return None,
-    };
-    match unit {
-        "s" => Some(Duration::from_secs(num)),
-        "m" => Some(Duration::from_secs(num * 60)),
-        "h" => Some(Duration::from_secs(num * 60 * 60)),
-        _ => None,
-    }
-}
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let addr = "0.0.0.0:8081".parse()?;
-    let settings = Config::builder()
-        .add_source(config::File::with_name("/etc/server/config.yaml"))
-        .build()
-        .unwrap();
+async fn serve(settings: Config) -> Result<(), Box<dyn std::error::Error>> {
     let _logger =
         flexi_logger::Logger::try_with_str(settings.get::<String>("logging.level")?)?.start()?;
-    let service = QBGService::new(settings.clone());
-    let agent = handler::Agent::new(
+    let service = match settings.get_string("service.type")?.as_str() {
+        "qbg" => QBGService::new(settings.clone()).await,
+        _ => panic!("unsupported algorithm service"),
+    };
+    let agent = Agent::new(
         service,
         "agent-qbg",
         "127.0.0.1",
@@ -92,86 +38,99 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         10,
     );
 
-    let mut grpc_key = String::new();
-    for i in 0..settings.get_array("server_config.servers")?.len() {
-        let name = settings.get::<String>(format!("server_config.servers[{i}].name").as_str())?;
-        match name.as_str() {
-            "grpc" => {
-                grpc_key = format!("server_config.servers[{i}]");
-            }
-            _ => {}
-        }
+    agent.serve_grpc(settings).await
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let settings = Config::builder()
+        .add_source(config::File::with_name("/etc/server/config.yaml"))
+        .build()
+        .unwrap();
+    
+    serve(settings).await
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Helper function to create test config
+    fn create_test_config() -> Config {
+        let config_str = r#"
+logging:
+  level: "info"
+service:
+  type: "qbg"
+  dimension: 128
+  creation_edge_size: 10
+  search_edge_size: 40
+  object_type: "Float"
+  distance_type: "L2"
+  index_path: "/tmp/test_qbg_index"
+server_config:
+  servers:
+    - name: grpc
+      host: 0.0.0.0
+      port: 8081
+      grpc:
+        max_receive_message_size: 4194304
+        max_send_message_size: 4194304
+        initial_window_size: 65535
+        initial_conn_window_size: 65535
+        max_header_list_size: 8192
+        max_concurrent_streams: 100
+        connection_timeout: 30s
+        keepalive:
+          max_conn_age: 300s
+          time: 60s
+          timeout: 20s
+        interceptors:
+          - accesslog
+          - metric
+"#;
+        Config::builder()
+            .add_source(config::File::from_str(config_str, config::FileFormat::Yaml))
+            .build()
+            .unwrap()
     }
 
-    let mut builder = tonic::transport::Server::builder();
-    if let Some(duration) = parse_duration_from_string(
-        settings
-            .get::<String>(format!("{grpc_key}.grpc.keepalive.max_conn_age").as_str())?
-            .as_str(),
-    ) {
-        builder = builder.max_connection_age(duration);
-    }
-    if let Some(duration) = parse_duration_from_string(
-        settings
-            .get::<String>(format!("{grpc_key}.grpc.connection_timeout").as_str())?
-            .as_str(),
-    ) {
-        builder = builder.timeout(duration);
+    #[test]
+    fn test_config_parsing() {
+        let config = create_test_config();
+        
+        assert_eq!(config.get_string("logging.level").unwrap(), "info");
+        assert_eq!(config.get_string("service.type").unwrap(), "qbg");
+        assert_eq!(config.get::<usize>("service.dimension").unwrap(), 128);
     }
 
-    let mut accessloginterceptor: Option<()> = None;
-    let mut metricinterceptor: Option<()> = None;
-    for i in 0..settings
-        .get_array(format!("{grpc_key}.grpc.interceptors").as_str())?
-        .len()
-    {
-        let name = settings.get::<String>(format!("{grpc_key}.grpc.interceptors[{i}]").as_str())?;
-        match name.to_lowercase().as_str() {
-            "accessloginterceptor" | "accesslog" => accessloginterceptor = Some(()),
-            "metricinterceptor" | "metric" => metricinterceptor = Some(()),
-            _ => {}
-        }
+    #[test]
+    fn test_config_grpc_settings() {
+        let config = create_test_config();
+        
+        let servers = config.get_array("server_config.servers").unwrap();
+        assert_eq!(servers.len(), 1);
+        
+        let grpc_name = config.get_string("server_config.servers[0].name").unwrap();
+        assert_eq!(grpc_name, "grpc");
+        
+        let max_recv = config.get::<usize>("server_config.servers[0].grpc.max_receive_message_size").unwrap();
+        assert_eq!(max_recv, 4194304);
     }
-    let layer = tower::ServiceBuilder::new()
-        .option_layer(accessloginterceptor.map(|_| middleware::AccessLogMiddlewareLayer::default()))
-        .option_layer(metricinterceptor.map(|_| middleware::MetricMiddlewareLayer::default()))
-        .into_inner();
 
-    builder
-        .initial_stream_window_size(
-            settings.get::<u32>(format!("{grpc_key}.grpc.initial_window_size").as_str())?,
-        )
-        .initial_connection_window_size(
-            settings.get::<u32>(format!("{grpc_key}.grpc.initial_conn_window_size").as_str())?,
-        )
-        .http2_keepalive_interval(parse_duration_from_string(
-            settings
-                .get::<String>(format!("{grpc_key}.grpc.keepalive.time").as_str())?
-                .as_str(),
-        ))
-        .http2_keepalive_timeout(parse_duration_from_string(
-            settings
-                .get::<String>(format!("{grpc_key}.grpc.keepalive.timeout").as_str())?
-                .as_str(),
-        ))
-        .http2_max_header_list_size(
-            settings.get::<u32>(format!("{grpc_key}.grpc.max_header_list_size").as_str())?,
-        )
-        .max_concurrent_streams(
-            settings.get::<u32>(format!("{grpc_key}.grpc.max_concurrent_streams").as_str())?,
-        )
-        .layer(layer)
-        .add_service(new_svc!(agent_server::AgentServer<handler::Agent>, agent, settings, grpc_key))
-        .add_service(new_svc!(search_server::SearchServer<handler::Agent>, agent, settings, grpc_key))
-        .add_service(new_svc!(insert_server::InsertServer<handler::Agent>, agent, settings, grpc_key))
-        .add_service(new_svc!(update_server::UpdateServer<handler::Agent>, agent, settings, grpc_key))
-        .add_service(new_svc!(upsert_server::UpsertServer<handler::Agent>, agent, settings, grpc_key))
-        .add_service(new_svc!(remove_server::RemoveServer<handler::Agent>, agent, settings, grpc_key))
-        .add_service(new_svc!(object_server::ObjectServer<handler::Agent>, agent, settings, grpc_key))
-        .add_service(new_svc!(index_server::IndexServer<handler::Agent>, agent, settings, grpc_key))
-        .add_service(new_svc!(flush_server::FlushServer<handler::Agent>, agent, settings, grpc_key))
-        .serve(addr)
-        .await?;
-
-    Ok(())
+    #[test]
+    fn test_unsupported_service_type() {
+        let config_str = r#"
+logging:
+  level: "info"
+service:
+  type: "unsupported"
+"#;
+        let config = Config::builder()
+            .add_source(config::File::from_str(config_str, config::FileFormat::Yaml))
+            .build()
+            .unwrap();
+        
+        assert_eq!(config.get_string("service.type").unwrap(), "unsupported");
+    }
 }

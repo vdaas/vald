@@ -25,7 +25,7 @@ use tonic::{Code, Status};
 use tonic_types::{ErrorDetails, PreconditionViolation, StatusExt};
 
 #[tonic::async_trait]
-impl agent_server::Agent for super::Agent {
+impl<S: algorithm::ANN + 'static> agent_server::Agent for super::Agent<S> {
     async fn create_index(
         &self,
         request: tonic::Request<control::CreateIndexRequest>,
@@ -38,7 +38,7 @@ impl agent_server::Agent for super::Agent {
         let res = Empty {};
         {
             let mut s = self.s.write().await;
-            let result = s.create_index();
+            let result = s.create_index().await;
             match result {
                 Err(err) => {
                     let metadata = HashMap::new();
@@ -108,7 +108,7 @@ impl agent_server::Agent for super::Agent {
         let res = Empty {};
         {
             let mut s = self.s.write().await;
-            let result = s.save_index();
+            let result = s.save_index().await;
             match result {
                 Err(err) => {
                     error!("{:?}", err);
@@ -141,7 +141,7 @@ impl agent_server::Agent for super::Agent {
 }
 
 #[tonic::async_trait]
-impl index_server::Index for super::Agent {
+impl<S: algorithm::ANN + 'static> index_server::Index for super::Agent<S> {
     #[doc = " Represent the RPC to get the agent index information.\n"]
     async fn index_info(
         &self,
