@@ -68,6 +68,17 @@ pub enum Error {
         method: String,
         algorithm: String,
     },
+    #[error("index not found")]
+    IndexNotFound {},
+    #[error("timestamp {timestamp} is invalid")]
+    InvalidTimestamp {
+        timestamp: i64,
+    },
+    #[error("uuid {uuid}'s newer timestamp {timestamp} already exists")]
+    NewerTimestampAlreadyExists {
+        uuid: String,
+        timestamp: i64,
+    },
     #[error("{0}")]
     Internal(#[from] Box<dyn std::error::Error + Send + Sync>),
     #[error("unknown error")]

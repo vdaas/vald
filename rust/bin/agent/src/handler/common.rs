@@ -15,6 +15,7 @@
 //
 
 use futures::StreamExt;
+use std::sync::OnceLock;
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::mpsc;
 use tokio::sync::Mutex;
@@ -29,9 +30,10 @@ macro_rules! stream_type {
     };
 }
 
+pub static DOMAIN: OnceLock<String> = OnceLock::new();
+
 pub fn build_error_details(
     err_msg: impl ToString,
-    domain: &str,
     id: &str,
     request_bytes: Vec<u8>,
     resource_type: &str,
@@ -40,7 +42,7 @@ pub fn build_error_details(
 ) -> ErrorDetails {
     let mut err_details = ErrorDetails::new();
     let metadata = HashMap::new();
-    err_details.set_error_info(err_msg.to_string(), domain, metadata);
+    err_details.set_error_info(err_msg.to_string(), DOMAIN.get_or_init(|| { gethostname::gethostname().to_str().unwrap().to_string() }), metadata);
     err_details.set_request_info(
         id,
         String::from_utf8(request_bytes).unwrap_or_else(|_| "<invalid UTF-8>".to_string()),

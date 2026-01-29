@@ -14,8 +14,16 @@
 // limitations under the License.
 //
 
+pub mod daemon;
+pub mod k8s;
 pub mod memstore;
+pub mod metadata;
+pub mod persistence;
 mod qbg;
+pub use daemon::{DaemonConfig, DaemonHandle, start as start_daemon};
+pub use k8s::{K8sClient, MetricsExporter, Patcher, IndexMetrics};
+pub use metadata::Metadata;
+pub use persistence::{PersistenceConfig, PersistenceManager, IndexPaths};
 pub use qbg::QBGService;
 
 #[cfg(test)]

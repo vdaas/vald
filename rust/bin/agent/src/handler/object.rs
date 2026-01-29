@@ -19,6 +19,7 @@ use prost::Message;
 use proto::{payload::v1::object, vald::v1::object_server};
 use std::sync::Arc;
 use tokio::sync::RwLock;
+use tokio_stream::wrappers::ReceiverStream;
 use tonic::{Code, Status};
 use tonic_types::StatusExt;
 
@@ -37,8 +38,6 @@ async fn get_object<S: algorithm::ANN>(
         None => return Err(Status::invalid_argument("Missing ID in request")),
     };
     let uuid = id.id;
-    let hostname = cargo::util::hostname()?;
-    let domain = hostname.to_str().unwrap();
     {
         let s = s.read().await;
         if uuid.len() == 0 {
@@ -47,7 +46,6 @@ async fn get_object<S: algorithm::ANN>(
             let resource_name = format!("{}: {}({})", api_name, name, ip);
             let err_details = build_error_details(
                 err,
-                domain,
                 &uuid,
                 request.encode_to_vec(),
                 &resource_type,
@@ -85,9 +83,43 @@ async fn get_object<S: algorithm::ANN>(
 impl<S: algorithm::ANN + 'static> object_server::Object for super::Agent<S> {
     async fn exists(
         &self,
-        _request: tonic::Request<object::Id>,
+        request: tonic::Request<object::Id>,
     ) -> std::result::Result<tonic::Response<object::Id>, tonic::Status> {
-        todo!()
+        let id = request.into_inner();
+        let uuid = id.id.clone();
+
+        if uuid.is_empty() {
+            let err = Error::InvalidUUID { uuid: uuid.clone() };
+            let resource_type = format!("{}/qbg.Exists", self.resource_type);
+            let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
+            let err_details = build_error_details(
+                err,
+                &uuid,
+                id.encode_to_vec(),
+                &resource_type,
+                &resource_name,
+                Some("uuid"),
+            );
+            let status = Status::with_error_details(
+                Code::InvalidArgument,
+                format!("Exists API invalid argument for uuid \"{}\" detected", uuid),
+                err_details,
+            );
+            warn!("{:?}", status);
+            return Err(status);
+        }
+
+        let s = self.s.read().await;
+        let (_, exists) = s.exists(uuid.clone()).await;
+
+        if !exists {
+            return Err(Status::new(
+                Code::NotFound,
+                format!("Object ID {} not found", uuid),
+            ));
+        }
+
+        Ok(tonic::Response::new(object::Id { id: uuid }))
     }
     async fn get_object(
         &self,
@@ -148,13 +180,89 @@ impl<S: algorithm::ANN + 'static> object_server::Object for super::Agent<S> {
         &self,
         _request: tonic::Request<object::list::Request>,
     ) -> std::result::Result<tonic::Response<Self::StreamListObjectStream>, tonic::Status> {
-        todo!()
+        info!("Received stream list object request");
+
+        let s = self.s.clone();
+        let (tx, rx) = tokio::sync::mpsc::channel(128);
+
+        tokio::spawn(async move {
+            let s = s.read().await;
+            let uuids = s.uuids().await;
+            
+            for uuid in uuids {
+                let response = match s.get_object(uuid.clone()).await {
+                    Ok((vec, ts)) => object::list::Response {
+                        payload: Some(object::list::response::Payload::Vector(object::Vector {
+                            id: uuid,
+                            vector: vec,
+                            timestamp: ts,
+                        })),
+                    },
+                    Err(_) => {
+                        let status = proto::google::rpc::Status {
+                            code: Code::NotFound as i32,
+                            message: format!("failed to get object with uuid: {}", uuid),
+                            details: vec![],
+                        };
+                        object::list::Response {
+                            payload: Some(object::list::response::Payload::Status(status)),
+                        }
+                    }
+                };
+
+                if tx.send(Ok(response)).await.is_err() {
+                    // Receiver dropped, stop sending
+                    break;
+                }
+            }
+        });
+
+        Ok(tonic::Response::new(ReceiverStream::new(rx)))
     }
 
     async fn get_timestamp(
         &self,
-        _request: tonic::Request<object::TimestampRequest>,
+        request: tonic::Request<object::TimestampRequest>,
     ) -> std::result::Result<tonic::Response<object::Timestamp>, tonic::Status> {
-        todo!()
+        let req = request.into_inner();
+        let req_bytes = req.encode_to_vec();
+        let id = match req.id {
+            Some(id) => id,
+            None => return Err(Status::invalid_argument("Missing ID in request")),
+        };
+        let uuid = id.id;
+
+        if uuid.is_empty() {
+            let err = Error::InvalidUUID { uuid: uuid.clone() };
+            let resource_type = format!("{}/qbg.GetTimestamp", self.resource_type);
+            let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
+            let err_details = build_error_details(
+                err,
+                &uuid,
+                req_bytes,
+                &resource_type,
+                &resource_name,
+                Some("uuid"),
+            );
+            let status = Status::with_error_details(
+                Code::InvalidArgument,
+                format!("GetTimestamp API invalid argument for uuid \"{}\" detected", uuid),
+                err_details,
+            );
+            warn!("{:?}", status);
+            return Err(status);
+        }
+
+        let s = self.s.read().await;
+        match s.get_object(uuid.clone()).await {
+            Ok((_, ts)) => Ok(tonic::Response::new(object::Timestamp {
+                id: uuid,
+                timestamp: ts,
+            })),
+            Err(_) => Err(Status::new(
+                Code::NotFound,
+                format!("Object {} not found", uuid),
+            )),
+        }
     }
 }

@@ -24,13 +24,17 @@ edition = "2021"
 algorithm = { version = "0.1.0", path = "../../libs/algorithm" }
 qbg = { version = "0.1.0", path = "../../libs/algorithms/qbg" }
 kvs = { version = "0.1.0", path = "../../libs/kvs" }
+observability = { version = "0.1.0", path = "../../libs/observability" }
 anyhow = "1.0.100"
-cargo = "0.93.0"
-chrono = "0.4.42"
+async-trait = "0.1"
+chrono = "0.4.43"
 config = "0.15.19"
 flexi_logger = "0.31"
 futures = "0.3.31"
+gethostname = "1.1"
 http = "1.4.0"
+k8s-openapi = { version = "0.27", features = ["v1_32"] }
+kube = { version = "3.0", features = ["runtime", "client", "derive"] }
 log = "0.4"
 opentelemetry = { version = "0.31.0" }
 prost = "0.14.3"
@@ -39,9 +43,14 @@ proto = { version = "0.1.0", path = "../../libs/proto" }
 thiserror = "2.0"
 tokio = { version = "1.49.0", features = ["full"] }
 tokio-stream = { version = "0.1.18", features = ["full"] }
+tokio-util = "0.7"
 tonic = "0.14.2"
 tonic-types = "0.14.2"
 tower = "0.5.3"
+tracing = "0.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
 vqueue = { version = "0.1.0", path = "../../libs/vqueue" }
 
 [dev-dependencies]
