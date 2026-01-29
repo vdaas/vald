@@ -14,22 +14,43 @@
 // limitations under the License.
 //
 
+mod config;
 mod handler;
 mod middleware;
 mod service;
 
-use config::Config;
+use ::config::Config;
 use handler::Agent;
+use observability::{init_tracing, shutdown_tracing, TracingConfig};
 use service::QBGService;
+use tracing::{info, error};
 
 async fn serve(settings: Config) -> Result<(), Box<dyn std::error::Error>> {
-    let _logger =
-        flexi_logger::Logger::try_with_str(settings.get::<String>("logging.level")?)?.start()?;
+    // Initialize tracing
+    let tracing_config = TracingConfig::new()
+        .enable_stdout(true)
+        .enable_json(settings.get::<bool>("logging.json").unwrap_or(false))
+        .enable_otel(settings.get::<bool>("observability.tracer.enabled").unwrap_or(false))
+        .level(&settings.get::<String>("logging.level").unwrap_or_else(|_| "info".to_string()))
+        .service_name("vald-agent");
+
+    // Build OpenTelemetry config if enabled
+    let otel_config = if settings.get::<bool>("observability.enabled").unwrap_or(false) {
+        Some(build_otel_config(&settings))
+    } else {
+        None
+    };
+
+    let tracer_provider = init_tracing(&tracing_config, otel_config.as_ref())
+        .expect("failed to initialize tracing");
+
+    info!("starting vald-agent");
+
     let service = match settings.get_string("service.type")?.as_str() {
         "qbg" => QBGService::new(settings.clone()).await,
         _ => panic!("unsupported algorithm service"),
     };
-    let agent = Agent::new(
+    let mut agent = Agent::new(
         service,
         "agent-qbg",
         "127.0.0.1",
@@ -38,13 +59,64 @@ async fn serve(settings: Config) -> Result<(), Box<dyn std::error::Error>> {
         10,
     );
 
-    agent.serve_grpc(settings).await
+    // Start the daemon for automatic indexing and saving
+    agent.start(&settings).await;
+
+    // Setup graceful shutdown
+    let shutdown_agent = agent.clone();
+    tokio::spawn(async move {
+        match tokio::signal::ctrl_c().await {
+            Ok(()) => {
+                info!("Received shutdown signal, stopping daemon...");
+                shutdown_agent.stop();
+            }
+            Err(e) => {
+                error!("Failed to listen for shutdown signal: {}", e);
+            }
+        }
+    });
+
+    // Serve gRPC (blocks until server stops)
+    let result = agent.serve_grpc(settings).await;
+
+    // Shutdown tracing
+    if let Err(e) = shutdown_tracing(tracer_provider) {
+        error!("failed to shutdown tracing: {}", e);
+    }
+
+    result
+}
+
+fn build_otel_config(settings: &Config) -> observability::Config {
+    use std::time::Duration;
+    
+    let endpoint = settings.get::<String>("observability.endpoint").unwrap_or_default();
+    let service_name = settings.get::<String>("observability.service_name").unwrap_or_else(|_| "vald-agent".to_string());
+    
+    observability::Config::new()
+        .enabled(settings.get::<bool>("observability.enabled").unwrap_or(false))
+        .endpoint(&endpoint)
+        .attribute(observability::observability::SERVICE_NAME, &service_name)
+        .tracer(
+            observability::config::Tracer::new()
+                .enabled(settings.get::<bool>("observability.tracer.enabled").unwrap_or(false))
+        )
+        .meter(
+            observability::config::Meter::new()
+                .enabled(settings.get::<bool>("observability.meter.enabled").unwrap_or(false))
+                .export_duration(Duration::from_secs(
+                    settings.get::<u64>("observability.meter.export_duration_secs").unwrap_or(1)
+                ))
+                .export_timeout_duration(Duration::from_secs(
+                    settings.get::<u64>("observability.meter.export_timeout_secs").unwrap_or(5)
+                ))
+        )
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let settings = Config::builder()
-        .add_source(config::File::with_name("/etc/server/config.yaml"))
+    let settings = ::config::Config::builder()
+        .add_source(::config::File::with_name("/etc/server/config.yaml"))
         .build()
         .unwrap();
     
@@ -56,7 +128,7 @@ mod tests {
     use super::*;
 
     /// Helper function to create test config
-    fn create_test_config() -> Config {
+    fn create_test_config() -> ::config::Config {
         let config_str = r#"
 logging:
   level: "info"
@@ -89,8 +161,9 @@ server_config:
           - accesslog
           - metric
 "#;
-        Config::builder()
-            .add_source(config::File::from_str(config_str, config::FileFormat::Yaml))
+        use ::config::FileFormat;
+        ::config::Config::builder()
+            .add_source(::config::File::from_str(config_str, FileFormat::Yaml))
             .build()
             .unwrap()
     }
@@ -126,8 +199,9 @@ logging:
 service:
   type: "unsupported"
 "#;
-        let config = Config::builder()
-            .add_source(config::File::from_str(config_str, config::FileFormat::Yaml))
+        use ::config::FileFormat;
+        let config = ::config::Config::builder()
+            .add_source(::config::File::from_str(config_str, FileFormat::Yaml))
             .build()
             .unwrap();
         

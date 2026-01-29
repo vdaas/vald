@@ -41,15 +41,15 @@ async fn upsert<S: algorithm::ANN>(
         Some(cfg) => cfg,
         None => return Err(Status::invalid_argument("Missing configuration in request")),
     };
-    let hostname = cargo::util::hostname()?;
-    let domain = hostname.to_str().unwrap();
+    let vec = match request.vector.clone() {
+        Some(v) => v,
+        None => return Err(Status::invalid_argument("Missing vector in request")),
+    };
+    let uuid = vec.id.clone();
+    
+    // Check dimension size with a short-lived read lock
     {
-        let vec = match request.vector.clone() {
-            Some(v) => v,
-            None => return Err(Status::invalid_argument("Missing vector in request")),
-        };
         let s_inner = s.read().await;
-        let uuid = vec.id.clone();
         if vec.vector.len() != s_inner.get_dimension_size() {
             let err = Error::IncompatibleDimensionSize {
                 got: vec.vector.len(),
@@ -59,7 +59,6 @@ async fn upsert<S: algorithm::ANN>(
             let resource_name = format!("{}: {}({})", api_name, name, ip);
             let err_details = build_error_details(
                 err,
-                domain,
                 &vec.id,
                 request.encode_to_vec(),
                 &resource_type,
@@ -74,97 +73,100 @@ async fn upsert<S: algorithm::ANN>(
             warn!("{:?}", status);
             return Err(status);
         }
-        if uuid.len() == 0 {
-            let err = Error::InvalidUUID { uuid: uuid.clone() };
-            let resource_type = format!("{}/qbg.Upsert", resource_type);
-            let resource_name = format!("{}: {}({})", api_name, name, ip);
-            let err_details = build_error_details(
-                err,
-                domain,
-                &uuid,
-                request.encode_to_vec(),
-                &resource_type,
-                &resource_name,
-                Some("uuid"),
-            );
-            let status = Status::with_error_details(
-                Code::InvalidArgument,
-                format!("Upsert API invalid argument for uuid \"{}\" detected", uuid),
-                err_details,
-            );
-            warn!("{:?}", status);
-            return Err(status);
-        }
-        let rt_name;
-        let result;
+    }
+    
+    if uuid.is_empty() {
+        let err = Error::InvalidUUID { uuid: uuid.clone() };
+        let resource_type = format!("{}/qbg.Upsert", resource_type);
+        let resource_name = format!("{}: {}({})", api_name, name, ip);
+        let err_details = build_error_details(
+            err,
+            &uuid,
+            request.encode_to_vec(),
+            &resource_type,
+            &resource_name,
+            Some("uuid"),
+        );
+        let status = Status::with_error_details(
+            Code::InvalidArgument,
+            format!("Upsert API invalid argument for uuid \"{}\" detected", uuid),
+            err_details,
+        );
+        warn!("{:?}", status);
+        return Err(status);
+    }
+    let rt_name;
+    let result;
+    let exists = {
+        let s_inner = s.read().await;
         let (_, exists) = s_inner.exists(uuid.clone()).await;
-        if exists {
-            result = update_fn(
-                s.clone(),
-                resource_type,
-                api_name,
-                name,
-                ip,
-                &update::Request {
-                    vector: Some(vec),
-                    config: Some(update::Config {
-                        skip_strict_exist_check: true,
-                        filters: config.filters,
-                        timestamp: config.timestamp,
-                        disable_balanced_update: config.disable_balanced_update,
-                    }),
-                },
-            )
-            .await;
-            rt_name = format!("{}{}", "/qbg.Upsert", "/qbg.Update");
-        } else {
-            result = insert_fn(
-                s.clone(),
-                resource_type,
-                api_name,
-                name,
-                ip,
-                &insert::Request {
-                    vector: Some(vec),
-                    config: Some(insert::Config {
-                        skip_strict_exist_check: true,
-                        filters: config.filters,
-                        timestamp: config.timestamp,
-                    }),
-                },
-            )
-            .await;
-            rt_name = format!("{}{}", "/qbg.Upsert", "/qbg.Insert");
+        exists
+    }; // s_inner dropped here to release read lock
+    if exists {
+        result = update_fn(
+            s.clone(),
+            resource_type,
+            api_name,
+            name,
+            ip,
+            &update::Request {
+                vector: Some(vec),
+                config: Some(update::Config {
+                    skip_strict_exist_check: true,
+                    filters: config.filters,
+                    timestamp: config.timestamp,
+                    disable_balanced_update: config.disable_balanced_update,
+                }),
+            },
+        )
+        .await;
+        rt_name = format!("{}{}", "/qbg.Upsert", "/qbg.Update");
+    } else {
+        result = insert_fn(
+            s.clone(),
+            resource_type,
+            api_name,
+            name,
+            ip,
+            &insert::Request {
+                vector: Some(vec),
+                config: Some(insert::Config {
+                    skip_strict_exist_check: true,
+                    filters: config.filters,
+                    timestamp: config.timestamp,
+                }),
+            },
+        )
+        .await;
+        rt_name = format!("{}{}", "/qbg.Upsert", "/qbg.Insert");
+    }
+    match result {
+        Err(st) => {
+            let status = match st.code() {
+                Code::Aborted
+                | Code::Cancelled
+                | Code::DeadlineExceeded
+                | Code::AlreadyExists
+                | Code::NotFound
+                | Code::Ok
+                | Code::Unimplemented => return Err(st),
+                _ => {
+                    let resource_type = format!("{}{}", resource_type, rt_name);
+                    let resource_name = format!("{}: {}({})", api_name, name, ip);
+                    let err_details = build_error_details(
+                        st.get_details_error_info().unwrap().reason,
+                        &uuid,
+                        request.encode_to_vec(),
+                        &resource_type,
+                        &resource_name,
+                        None,
+                    );
+                    Status::with_error_details(st.code(), st.message(), err_details)
+                }
+            };
+            Err(status)
         }
-        match result {
-            Err(st) => {
-                let status = match st.code() {
-                    Code::Aborted
-                    | Code::Cancelled
-                    | Code::DeadlineExceeded
-                    | Code::AlreadyExists
-                    | Code::NotFound
-                    | Code::Ok
-                    | Code::Unimplemented => return Err(st),
-                    _ => {
-                        let resource_type = format!("{}{}", resource_type, rt_name);
-                        let resource_name = format!("{}: {}({})", api_name, name, ip);
-                        let err_details = build_error_details(
-                            st.get_details_error_info().unwrap().reason,
-                            domain,
-                            &uuid,
-                            request.encode_to_vec(),
-                            &resource_type,
-                            &resource_name,
-                            None,
-                        );
-                        Status::with_error_details(st.code(), st.message(), err_details)
-                    }
-                };
-                Err(status)
-            }
-            Ok(res) => Ok(res),
-        }
+        Ok(res) => Ok(res),
     }
 }
 
@@ -229,15 +231,15 @@ impl<S: algorithm::ANN + 'static> upsert_server::Upsert for super::Agent<S> {
         &self,
         request: tonic::Request<upsert::MultiRequest>,
     ) -> std::result::Result<tonic::Response<object::Locations>, tonic::Status> {
-        info!("Recieved a request from {:?}", request.remote_addr());
+        info!("Received a request from {:?}", request.remote_addr());
         let mreq = request.get_ref();
-        let hostname = cargo::util::hostname()?;
-        let domain = hostname.to_str().unwrap();
+        let mut ireqs = insert::MultiRequest { requests: vec![] };
+        let mut ureqs = update::MultiRequest { requests: vec![] };
+        let mut ids = vec![];
+        
+        // Use a block scope to release read lock before calling multi_insert/multi_update
         {
             let s = self.s.read().await;
-            let mut ireqs = insert::MultiRequest { requests: vec![] };
-            let mut ureqs = update::MultiRequest { requests: vec![] };
-            let mut ids = vec![];
             for req in mreq.requests.clone() {
                 let vec = match req.vector.clone() {
                     Some(v) => v,
@@ -256,7 +258,6 @@ impl<S: algorithm::ANN + 'static> upsert_server::Upsert for super::Agent<S> {
                     let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
                     let err_details = build_error_details(
                         err,
-                        domain,
                         &vec.id,
                         req.encode_to_vec(),
                         &resource_type,
@@ -294,29 +295,29 @@ impl<S: algorithm::ANN + 'static> upsert_server::Upsert for super::Agent<S> {
                     });
                 }
             }
+        } // read lock released here
 
-            if ireqs.requests.len() <= 0 {
-                let res = self.multi_update(tonic::Request::new(ureqs)).await?;
-                return Ok(res);
-            } else if ureqs.requests.len() <= 0 {
-                let res = self.multi_insert(tonic::Request::new(ireqs)).await?;
-                return Ok(res);
+        if ireqs.requests.is_empty() {
+            let res = self.multi_update(tonic::Request::new(ureqs)).await?;
+            return Ok(res);
+        } else if ureqs.requests.is_empty() {
+            let res = self.multi_insert(tonic::Request::new(ireqs)).await?;
+            return Ok(res);
+        } else {
+            let ures = self.multi_update(tonic::Request::new(ureqs)).await?;
+            let ires = self.multi_insert(tonic::Request::new(ireqs)).await?;
+
+            let mut locs = object::Locations { locations: vec![] };
+            let ilocs = ires.into_inner().locations;
+            let ulocs = ures.into_inner().locations;
+            if ulocs.is_empty() {
+                locs.locations = ilocs;
+            } else if ilocs.is_empty() {
+                locs.locations = ulocs;
             } else {
-                let ures = self.multi_update(tonic::Request::new(ureqs)).await?;
-                let ires = self.multi_insert(tonic::Request::new(ireqs)).await?;
-
-                let mut locs = object::Locations { locations: vec![] };
-                let ilocs = ires.into_inner().locations;
-                let ulocs = ures.into_inner().locations;
-                if ulocs.len() == 0 {
-                    locs.locations = ilocs;
-                } else if ilocs.len() == 0 {
-                    locs.locations = ulocs;
-                } else {
-                    locs.locations = [ilocs, ulocs].concat();
-                }
-                return Ok(tonic::Response::new(locs));
+                locs.locations = [ilocs, ulocs].concat();
             }
+            return Ok(tonic::Response::new(locs));
         }
     }
 }

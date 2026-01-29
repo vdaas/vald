@@ -22,6 +22,7 @@ edition = "2024"
 
 [lib]
 path = "src/lib.rs"
+doctest = false
 
 [dependencies]
 futures-core = "0.3.31"
