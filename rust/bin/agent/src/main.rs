@@ -14,397 +14,43 @@
 // limitations under the License.
 //
 
-use algorithm::{Error, MultiError};
-use anyhow::Result;
-use chrono::{Local, Timelike};
-use config::Config;
-use proto::payload::v1::object::Distance;
-use proto::payload::v1::search;
-use qbg::index::Index;
-use qbg::property::Property;
-use std::collections::HashMap;
-use std::time::Duration;
-
+mod config;
 mod handler;
 mod middleware;
+mod service;
 
-#[derive(Debug)]
-struct _MockService {
-    dim: usize,
-}
+use ::config::Config;
+use handler::Agent;
+use observability::{init_tracing, shutdown_tracing, TracingConfig};
+use service::QBGService;
+use tracing::{info, error};
 
-impl algorithm::ANN for _MockService {
-    fn exists(&self, _uuid: String) -> bool {
-        todo!()
-    }
+async fn serve(settings: Config) -> Result<(), Box<dyn std::error::Error>> {
+    // Initialize tracing
+    let tracing_config = TracingConfig::new()
+        .enable_stdout(true)
+        .enable_json(settings.get::<bool>("logging.json").unwrap_or(false))
+        .enable_otel(settings.get::<bool>("observability.tracer.enabled").unwrap_or(false))
+        .level(&settings.get::<String>("logging.level").unwrap_or_else(|_| "info".to_string()))
+        .service_name("vald-agent");
 
-    fn create_index(&mut self) -> Result<(), Error> {
-        todo!()
-    }
-
-    fn save_index(&mut self) -> Result<(), Error> {
-        todo!()
-    }
-
-    fn insert(&mut self, _uuid: String, _vector: Vec<f32>, _ts: i64) -> Result<(), Error> {
-        todo!()
-    }
-
-    fn insert_multiple(&mut self, _vectors: HashMap<String, Vec<f32>>) -> Result<(), Error> {
-        todo!()
-    }
-
-    fn update(&mut self, _uuid: String, _vector: Vec<f32>, _ts: i64) -> Result<(), Error> {
-        todo!()
-    }
-
-    fn update_multiple(&mut self, _vectors: HashMap<String, Vec<f32>>) -> Result<(), Error> {
-        todo!()
-    }
-
-    fn ready_for_update(
-        &mut self,
-        _uuid: String,
-        _vector: Vec<f32>,
-        _ts: i64,
-    ) -> Result<(), Error> {
-        todo!()
-    }
-
-    fn remove(&mut self, _uuid: String, _ts: i64) -> Result<(), Error> {
-        todo!()
-    }
-
-    fn remove_multiple(&mut self, _uuids: Vec<String>) -> Result<(), Error> {
-        todo!()
-    }
-
-    fn search(
-        &self,
-        vector: Vec<f32>,
-        _k: u32,
-        _epsilon: f32,
-        _radius: f32,
-    ) -> Result<search::Response, Error> {
-        Err(Error::IncompatibleDimensionSize {
-            got: vector.len() as usize,
-            want: self.dim,
-        }
-        .into())
-    }
-
-    fn get_object(&self, _uuid: String) -> Result<(Vec<f32>, i64), Error> {
-        todo!()
-    }
-
-    fn get_dimension_size(&self) -> usize {
-        self.dim
-    }
-
-    fn len(&self) -> u32 {
-        todo!()
-    }
-
-    fn insert_vqueue_buffer_len(&self) -> u32 {
-        todo!()
-    }
-
-    fn delete_vqueue_buffer_len(&self) -> u32 {
-        todo!()
-    }
-
-    fn is_indexing(&self) -> bool {
-        todo!()
-    }
-
-    fn is_saving(&self) -> bool {
-        todo!()
-    }
-}
-
-struct QBGService {
-    path: String,
-    index: Index,
-    property: Property,
-}
-
-impl QBGService {
-    fn new(settings: Config) -> Self {
-        let path = settings
-            .get::<String>("qbg.index_path")
-            .unwrap_or("index".to_string());
-        let mut property = Property::new();
-        property.init_qbg_construction_parameters();
-        property.set_qbg_construction_parameters(
-            settings.get::<usize>("qbg.extended_dimension").unwrap_or(0),
-            settings.get::<usize>("qbg.dimension").unwrap_or(0),
-            settings
-                .get::<usize>("qbg.number_of_subvectors")
-                .unwrap_or(1),
-            settings.get::<usize>("qbg.number_of_blobs").unwrap_or(0),
-            settings.get::<i32>("qbg.internal_data_type").unwrap_or(1),
-            settings.get::<i32>("qbg.data_type").unwrap_or(1),
-            settings.get::<i32>("qbg.distance_type").unwrap_or(1),
-        );
-        property.init_qbg_build_parameters();
-        property.set_qbg_build_parameters(
-            settings
-                .get::<i32>("qbg.hierarchical_clustering_init_mode")
-                .unwrap_or(2),
-            settings
-                .get::<usize>("qbg.number_of_first_objects")
-                .unwrap_or(0),
-            settings
-                .get::<usize>("qbg.number_of_first_clusters")
-                .unwrap_or(0),
-            settings
-                .get::<usize>("qbg.number_of_second_objects")
-                .unwrap_or(0),
-            settings
-                .get::<usize>("qbg.number_of_second_clusters")
-                .unwrap_or(0),
-            settings
-                .get::<usize>("qbg.number_of_third_clusters")
-                .unwrap_or(0),
-            settings
-                .get::<usize>("qbg.number_of_objects")
-                .unwrap_or(1000),
-            settings
-                .get::<usize>("qbg.number_of_subvectors")
-                .unwrap_or(1),
-            settings
-                .get::<i32>("qbg.optimization_clustering_init_mode")
-                .unwrap_or(2),
-            settings
-                .get::<usize>("qbg.rotation_iteration")
-                .unwrap_or(2000),
-            settings
-                .get::<usize>("qbg.subvector_iteration")
-                .unwrap_or(400),
-            settings.get::<usize>("qbg.number_of_matrices").unwrap_or(3),
-            settings.get::<bool>("qbg.rotation").unwrap_or(true),
-            settings.get::<bool>("qbg.repositioning").unwrap_or(false),
-        );
-        let index = Index::new(&path, &mut property).unwrap();
-        QBGService {
-            path,
-            index,
-            property,
-        }
-    }
-}
-
-impl algorithm::ANN for QBGService {
-    fn exists(&self, _uuid: String) -> bool {
-        // convert uuid to id
-        let id = 1;
-        let result = self.index.get_object(id);
-        match result {
-            Ok(_vec) => true,
-            Err(_err) => false,
-        }
-    }
-
-    fn create_index(&mut self) -> Result<(), Error> {
-        self.index
-            .build_index(&self.path, &mut self.property)
-            .unwrap();
-        Ok(())
-    }
-
-    fn save_index(&mut self) -> Result<(), Error> {
-        self.index.save_index().unwrap();
-        Ok(())
-    }
-
-    fn insert(&mut self, _uuid: String, vector: Vec<f32>, _ts: i64) -> Result<(), Error> {
-        let _i = self.index.append(vector.as_slice()).unwrap();
-        Ok(())
-    }
-
-    fn insert_multiple(&mut self, vectors: HashMap<String, Vec<f32>>) -> Result<(), Error> {
-        let mut uuids: Vec<String> = vec![];
-        for (uuid, vec) in vectors {
-            let result = self.insert(uuid, vec, Local::now().nanosecond().into());
-            match result {
-                Ok(()) => continue,
-                Err(err) => match err {
-                    Error::UUIDAlreadyExists { uuid } => uuids.push(uuid),
-                    _ => return Err(err),
-                },
-            }
-        }
-        if !uuids.is_empty() {
-            return Err(Error::new_uuid_already_exists(uuids));
-        }
-        Ok(())
-    }
-
-    fn update(&mut self, uuid: String, vector: Vec<f32>, ts: i64) -> Result<(), Error> {
-        self.remove(uuid.clone(), ts)?;
-        self.insert(uuid, vector, ts)?;
-        Ok(())
-    }
-
-    fn update_multiple(&mut self, mut vectors: HashMap<String, Vec<f32>>) -> Result<(), Error> {
-        let mut uuids: Vec<String> = vec![];
-        for (uuid, vec) in vectors.clone() {
-            let result = self.ready_for_update(uuid.clone(), vec, Local::now().nanosecond().into());
-            match result {
-                Ok(()) => uuids.push(uuid),
-                Err(_err) => {
-                    let _ = vectors.remove(&uuid);
-                }
-            }
-        }
-        self.remove_multiple(uuids.clone())?;
-        self.insert_multiple(vectors)
-    }
-
-    fn ready_for_update(&mut self, uuid: String, vector: Vec<f32>, ts: i64) -> Result<(), Error> {
-        if uuid.len() == 0 {
-            return Err(Error::UUIDNotFound {
-                uuid: "0".to_string(),
-            });
-        }
-        if vector.len() != self.get_dimension_size() {
-            return Err(Error::InvalidDimensionSize {
-                uuid: uuid,
-                current: vector.len().to_string(),
-                limit: self.get_dimension_size().to_string(),
-            });
-        }
-        let (ovec, ots) = self.get_object(uuid.clone())?;
-        if (vector.len() != ovec.len()) || (vector != ovec) {
-            return Ok(());
-        }
-        if ots < ts {
-            self.update(uuid.clone(), vector, ts)?;
-            return Ok(());
-        }
-        Err(Error::UUIDAlreadyExists { uuid })
-    }
-
-    fn remove(&mut self, _uuid: String, _ts: i64) -> Result<(), Error> {
-        // convert uuid to id
-        let id = 1;
-        self.index.remove(id).unwrap();
-        Ok(())
-    }
-
-    fn remove_multiple(&mut self, uuids: Vec<String>) -> Result<(), Error> {
-        let mut ids: Vec<String> = vec![];
-        for uuid in uuids {
-            let result = self.remove(uuid, Local::now().nanosecond().into());
-            match result {
-                Ok(()) => continue,
-                Err(err) => match err {
-                    Error::ObjectIDNotFound { uuid } => ids.push(uuid),
-                    _ => return Err(err),
-                },
-            }
-        }
-        if !ids.is_empty() {
-            return Err(Error::new_object_id_not_found(ids));
-        }
-        Ok(())
-    }
-
-    fn search(
-        &self,
-        vector: Vec<f32>,
-        k: u32,
-        epsilon: f32,
-        radius: f32,
-    ) -> Result<search::Response, Error> {
-        let vec = self
-            .index
-            .search(vector.as_slice(), k as usize, radius, epsilon)
-            .unwrap();
-        let results: Vec<Distance> = vec
-            .into_iter()
-            .map(|x| Distance {
-                id: x.0.to_string(),
-                distance: x.1,
-            })
-            .collect();
-        let res = search::Response {
-            request_id: "".to_string(),
-            results: results,
-        };
-        Ok(res)
-    }
-
-    fn get_object(&self, _uuid: String) -> Result<(Vec<f32>, i64), Error> {
-        // convert uuid to id
-        let id = 1;
-        let vec = self.index.get_object(id).unwrap();
-        // get timestamp
-        let ts: i64 = 0;
-        Ok((vec.to_vec(), ts))
-    }
-
-    fn get_dimension_size(&self) -> usize {
-        self.index.get_dimension().unwrap_or_default()
-    }
-
-    fn len(&self) -> u32 {
-        todo!()
-    }
-
-    fn insert_vqueue_buffer_len(&self) -> u32 {
-        todo!()
-    }
-
-    fn delete_vqueue_buffer_len(&self) -> u32 {
-        todo!()
-    }
-
-    fn is_indexing(&self) -> bool {
-        todo!()
-    }
-
-    fn is_saving(&self) -> bool {
-        todo!()
-    }
-}
-
-fn parse_duration_from_string(input: &str) -> Option<Duration> {
-    if input.len() < 2 {
-        return None;
-    }
-    let last_char = match input.chars().last() {
-        Some(c) => c,
-        None => return None,
+    // Build OpenTelemetry config if enabled
+    let otel_config = if settings.get::<bool>("observability.enabled").unwrap_or(false) {
+        Some(build_otel_config(&settings))
+    } else {
+        None
     };
-    if last_char.is_numeric() {
-        return None;
-    }
 
-    let (value, unit) = input.split_at(input.len() - 1);
-    let num: u64 = match value.parse() {
-        Ok(n) => n,
-        Err(_) => return None,
+    let tracer_provider = init_tracing(&tracing_config, otel_config.as_ref())
+        .expect("failed to initialize tracing");
+
+    info!("starting vald-agent");
+
+    let service = match settings.get_string("service.type")?.as_str() {
+        "qbg" => QBGService::new(settings.clone()).await,
+        _ => panic!("unsupported algorithm service"),
     };
-    match unit {
-        "s" => Some(Duration::from_secs(num)),
-        "m" => Some(Duration::from_secs(num * 60)),
-        "h" => Some(Duration::from_secs(num * 60 * 60)),
-        _ => None,
-    }
-}
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let addr = "0.0.0.0:8081".parse()?;
-    let settings = Config::builder()
-        .add_source(config::File::with_name("/etc/server/config.yaml"))
-        .build()
-        .unwrap();
-    let _logger =
-        flexi_logger::Logger::try_with_str(settings.get::<String>("logging.level")?)?.start()?;
-    let service = QBGService::new(settings.clone());
-    let agent = handler::Agent::new(
+    let mut agent = Agent::new(
         service,
         "agent-qbg",
         "127.0.0.1",
@@ -413,89 +59,152 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         10,
     );
 
-    let mut grpc_key = String::new();
-    for i in 0..settings.get_array("server_config.servers")?.len() {
-        let name = settings.get::<String>(format!("server_config.servers[{i}].name").as_str())?;
-        match name.as_str() {
-            "grpc" => {
-                grpc_key = format!("server_config.servers[{i}]");
+    // Start the daemon for automatic indexing and saving
+    agent.start(&settings).await;
+
+    // Setup graceful shutdown
+    let shutdown_agent = agent.clone();
+    tokio::spawn(async move {
+        match tokio::signal::ctrl_c().await {
+            Ok(()) => {
+                info!("Received shutdown signal, stopping daemon...");
+                shutdown_agent.stop();
             }
-            _ => {}
+            Err(e) => {
+                error!("Failed to listen for shutdown signal: {}", e);
+            }
         }
+    });
+
+    // Serve gRPC (blocks until server stops)
+    let result = agent.serve_grpc(settings).await;
+
+    // Shutdown tracing
+    if let Err(e) = shutdown_tracing(tracer_provider) {
+        error!("failed to shutdown tracing: {}", e);
     }
 
-    let mut builder = tonic::transport::Server::builder();
-    if let Some(duration) = parse_duration_from_string(
-        settings
-            .get::<String>(format!("{grpc_key}.grpc.keepalive.max_conn_age").as_str())?
-            .as_str(),
-    ) {
-        builder = builder.max_connection_age(duration);
-    }
-    if let Some(duration) = parse_duration_from_string(
-        settings
-            .get::<String>(format!("{grpc_key}.grpc.connection_timeout").as_str())?
-            .as_str(),
-    ) {
-        builder = builder.timeout(duration);
+    result
+}
+
+fn build_otel_config(settings: &Config) -> observability::Config {
+    use std::time::Duration;
+    
+    let endpoint = settings.get::<String>("observability.endpoint").unwrap_or_default();
+    let service_name = settings.get::<String>("observability.service_name").unwrap_or_else(|_| "vald-agent".to_string());
+    
+    observability::Config::new()
+        .enabled(settings.get::<bool>("observability.enabled").unwrap_or(false))
+        .endpoint(&endpoint)
+        .attribute(observability::observability::SERVICE_NAME, &service_name)
+        .tracer(
+            observability::config::Tracer::new()
+                .enabled(settings.get::<bool>("observability.tracer.enabled").unwrap_or(false))
+        )
+        .meter(
+            observability::config::Meter::new()
+                .enabled(settings.get::<bool>("observability.meter.enabled").unwrap_or(false))
+                .export_duration(Duration::from_secs(
+                    settings.get::<u64>("observability.meter.export_duration_secs").unwrap_or(1)
+                ))
+                .export_timeout_duration(Duration::from_secs(
+                    settings.get::<u64>("observability.meter.export_timeout_secs").unwrap_or(5)
+                ))
+        )
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let settings = ::config::Config::builder()
+        .add_source(::config::File::with_name("/etc/server/config.yaml"))
+        .build()
+        .unwrap();
+    
+    serve(settings).await
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Helper function to create test config
+    fn create_test_config() -> ::config::Config {
+        let config_str = r#"
+logging:
+  level: "info"
+service:
+  type: "qbg"
+  dimension: 128
+  creation_edge_size: 10
+  search_edge_size: 40
+  object_type: "Float"
+  distance_type: "L2"
+  index_path: "/tmp/test_qbg_index"
+server_config:
+  servers:
+    - name: grpc
+      host: 0.0.0.0
+      port: 8081
+      grpc:
+        max_receive_message_size: 4194304
+        max_send_message_size: 4194304
+        initial_window_size: 65535
+        initial_conn_window_size: 65535
+        max_header_list_size: 8192
+        max_concurrent_streams: 100
+        connection_timeout: 30s
+        keepalive:
+          max_conn_age: 300s
+          time: 60s
+          timeout: 20s
+        interceptors:
+          - accesslog
+          - metric
+"#;
+        use ::config::FileFormat;
+        ::config::Config::builder()
+            .add_source(::config::File::from_str(config_str, FileFormat::Yaml))
+            .build()
+            .unwrap()
     }
 
-    let mut accessloginterceptor: Option<()> = None;
-    let mut metricinterceptor: Option<()> = None;
-    for i in 0..settings
-        .get_array(format!("{grpc_key}.grpc.interceptors").as_str())?
-        .len()
-    {
-        let name = settings.get::<String>(format!("{grpc_key}.grpc.interceptors[{i}]").as_str())?;
-        match name.to_lowercase().as_str() {
-            "accessloginterceptor" | "accesslog" => accessloginterceptor = Some(()),
-            "metricinterceptor" | "metric" => metricinterceptor = Some(()),
-            _ => {}
-        }
+    #[test]
+    fn test_config_parsing() {
+        let config = create_test_config();
+        
+        assert_eq!(config.get_string("logging.level").unwrap(), "info");
+        assert_eq!(config.get_string("service.type").unwrap(), "qbg");
+        assert_eq!(config.get::<usize>("service.dimension").unwrap(), 128);
     }
-    let layer = tower::ServiceBuilder::new()
-        .option_layer(accessloginterceptor.map(|_| middleware::AccessLogMiddlewareLayer::default()))
-        .option_layer(metricinterceptor.map(|_| middleware::MetricMiddlewareLayer::default()))
-        .into_inner();
 
-    builder
-        .initial_stream_window_size(
-            settings.get::<u32>(format!("{grpc_key}.grpc.initial_window_size").as_str())?,
-        )
-        .initial_connection_window_size(
-            settings.get::<u32>(format!("{grpc_key}.grpc.initial_conn_window_size").as_str())?,
-        )
-        .http2_keepalive_interval(parse_duration_from_string(
-            settings
-                .get::<String>(format!("{grpc_key}.grpc.keepalive.time").as_str())?
-                .as_str(),
-        ))
-        .http2_keepalive_timeout(parse_duration_from_string(
-            settings
-                .get::<String>(format!("{grpc_key}.grpc.keepalive.timeout").as_str())?
-                .as_str(),
-        ))
-        .http2_max_header_list_size(
-            settings.get::<u32>(format!("{grpc_key}.grpc.max_header_list_size").as_str())?,
-        )
-        .max_concurrent_streams(
-            settings.get::<u32>(format!("{grpc_key}.grpc.max_concurrent_streams").as_str())?,
-        )
-        .layer(layer)
-        .add_service(
-            proto::core::v1::agent_server::AgentServer::new(agent)
-                .max_decoding_message_size(
-                    settings.get::<usize>(
-                        format!("{grpc_key}.grpc.max_receive_message_size").as_str(),
-                    )?,
-                )
-                .max_encoding_message_size(
-                    settings
-                        .get::<usize>(format!("{grpc_key}.grpc.max_send_message_size").as_str())?,
-                ),
-        )
-        .serve(addr)
-        .await?;
+    #[test]
+    fn test_config_grpc_settings() {
+        let config = create_test_config();
+        
+        let servers = config.get_array("server_config.servers").unwrap();
+        assert_eq!(servers.len(), 1);
+        
+        let grpc_name = config.get_string("server_config.servers[0].name").unwrap();
+        assert_eq!(grpc_name, "grpc");
+        
+        let max_recv = config.get::<usize>("server_config.servers[0].grpc.max_receive_message_size").unwrap();
+        assert_eq!(max_recv, 4194304);
+    }
 
-    Ok(())
+    #[test]
+    fn test_unsupported_service_type() {
+        let config_str = r#"
+logging:
+  level: "info"
+service:
+  type: "unsupported"
+"#;
+        use ::config::FileFormat;
+        let config = ::config::Config::builder()
+            .add_source(::config::File::from_str(config_str, FileFormat::Yaml))
+            .build()
+            .unwrap();
+        
+        assert_eq!(config.get_string("service.type").unwrap(), "unsupported");
+    }
 }
