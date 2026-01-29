@@ -17,6 +17,12 @@
 pub mod config;
 pub mod macros;
 pub mod observability;
+pub mod tracing;
 
 #[doc(hidden)]
 pub use paste;
+
+// Re-export commonly used items
+pub use crate::tracing::{init_tracing, shutdown_tracing, TracingConfig};
+pub use config::Config;
+pub use observability::{Observability, ObservabilityImpl};

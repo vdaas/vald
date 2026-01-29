@@ -404,6 +404,7 @@ pub mod index {
 mod tests {
     use crate::{ffi, index::Index, property::Property};
     use anyhow::Result;
+    use tempfile::tempdir;
 
     const DIMENSION: usize = 128;
     const K: usize = 30;
@@ -414,7 +415,8 @@ mod tests {
     fn test_ffi_qbg() -> Result<()> {
         // New
         println!("create an empty index...");
-        let path: String = "index".to_string();
+        let temp_dir = tempdir()?;
+        let path = temp_dir.path().join("index").to_string_lossy().to_string();
         let mut p = ffi::new_property();
         ////////// Test Setter //////////
         p.pin_mut().set_extended_dimension(1);
@@ -518,8 +520,32 @@ mod tests {
 
     #[test]
     fn test_ffi_qbg_prebuilt() -> Result<()> {
-        // New
-        let path = "index".to_string();
+        // First create an index for this test
+        let temp_dir = tempdir()?;
+        let path = temp_dir.path().join("index").to_string_lossy().to_string();
+        
+        // Create and build a fresh index
+        let mut p = ffi::new_property();
+        p.pin_mut().init_qbg_construction_parameters();
+        p.pin_mut().set_dimension(DIMENSION);
+        p.pin_mut().set_number_of_subvectors(64);
+        p.pin_mut().set_number_of_blobs(0);
+        p.pin_mut().init_qbg_build_parameters();
+        p.pin_mut().set_number_of_objects(500);
+        let mut index = ffi::new_index(&path, p.pin_mut())?;
+
+        // Append some objects
+        for i in 0..100 {
+            let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|x| (x + i) as f32).collect();
+            index.pin_mut().append(vec.as_slice())?;
+        }
+        index.pin_mut().save_index()?;
+        index.pin_mut().close_index();
+
+        // Build the index
+        index.pin_mut().build_index(&path, p.pin_mut())?;
+        
+        // Now test with prebuilt index
         let mut index = ffi::new_prebuilt_index(&path, true).unwrap();
 
         // Insert
@@ -611,7 +637,8 @@ mod tests {
     fn test_index() -> Result<()> {
         // New
         println!("create an empty index...");
-        let path: String = "index".to_string();
+        let temp_dir = tempdir()?;
+        let path = temp_dir.path().join("index").to_string_lossy().to_string();
         let mut p = Property::new();
         p.init_qbg_construction_parameters();
         p.set_dimension(DIMENSION);
