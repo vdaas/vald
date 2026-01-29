@@ -87,7 +87,7 @@ jobs:
           ./bin/deepsource report --analyzer test-coverage --key go --value-file ./cover.out
         env:
           DEEPSOURCE_DSN: ${{ secrets.DEEPSOURCE_DSN }}
-      - name: Upload go coverage report to deepsource
+      - name: Upload rust coverage report to deepsource
         run: |
           curl https://deepsource.io/cli | sh
           ./bin/deepsource report --analyzer test-coverage --key rust --value-file ./rust-coverage.out
