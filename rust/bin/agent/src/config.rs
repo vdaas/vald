@@ -18,9 +18,300 @@ use serde::{Deserialize, Serialize};
 use std::env;
 use std::path::Path;
 
+/// AgentConfig represents the global configuration for the agent
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AgentConfig {
+    #[serde(default)]
+    pub logging: Logging,
+
+    #[serde(default)]
+    pub observability: Observability,
+
+    #[serde(default)]
+    pub server_config: ServerConfig,
+
+    #[serde(default)]
+    pub service: Service,
+
+    #[serde(default)]
+    pub daemon: Daemon,
+
+    #[serde(default)]
+    pub qbg: QBG,
+}
+
+impl AgentConfig {
+    pub fn bind(&mut self) -> &mut Self {
+        self.qbg.bind();
+        self
+    }
+
+    pub fn validate(&self) -> Result<(), String> {
+        self.qbg.validate()?;
+        Ok(())
+    }
+}
+
+/// Logging configuration
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Logging {
+    #[serde(default = "default_logging_level")]
+    pub level: String,
+
+    #[serde(default)]
+    pub json: bool,
+}
+
+fn default_logging_level() -> String {
+    "info".to_string()
+}
+
+impl Default for Logging {
+    fn default() -> Self {
+        Self {
+            level: default_logging_level(),
+            json: false,
+        }
+    }
+}
+
+/// Observability configuration
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Observability {
+    #[serde(default)]
+    pub enabled: bool,
+
+    #[serde(default)]
+    pub endpoint: String,
+
+    #[serde(default = "default_service_name")]
+    pub service_name: String,
+
+    #[serde(default)]
+    pub tracer: Tracer,
+
+    #[serde(default)]
+    pub meter: Meter,
+}
+
+fn default_service_name() -> String {
+    "vald-agent".to_string()
+}
+
+impl Default for Observability {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            endpoint: String::new(),
+            service_name: default_service_name(),
+            tracer: Tracer::default(),
+            meter: Meter::default(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct Tracer {
+    #[serde(default)]
+    pub enabled: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Meter {
+    #[serde(default)]
+    pub enabled: bool,
+
+    #[serde(default = "default_meter_export_duration_secs")]
+    pub export_duration_secs: u64,
+
+    #[serde(default = "default_meter_export_timeout_secs")]
+    pub export_timeout_secs: u64,
+}
+
+fn default_meter_export_duration_secs() -> u64 {
+    1
+}
+
+fn default_meter_export_timeout_secs() -> u64 {
+    5
+}
+
+impl Default for Meter {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            export_duration_secs: default_meter_export_duration_secs(),
+            export_timeout_secs: default_meter_export_timeout_secs(),
+        }
+    }
+}
+
+/// Server configuration
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct ServerConfig {
+    #[serde(default)]
+    pub servers: Vec<Server>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Server {
+    #[serde(default)]
+    pub name: String,
+
+    #[serde(default)]
+    pub host: String,
+
+    #[serde(default)]
+    pub port: u16,
+
+    #[serde(default)]
+    pub grpc: GrpcServerConfig,
+}
+
+impl Default for Server {
+    fn default() -> Self {
+        Self {
+            name: String::new(),
+            host: String::new(),
+            port: 0,
+            grpc: GrpcServerConfig::default(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GrpcServerConfig {
+    #[serde(default)]
+    pub max_receive_message_size: usize,
+
+    #[serde(default)]
+    pub max_send_message_size: usize,
+
+    #[serde(default)]
+    pub initial_window_size: u32,
+
+    #[serde(default)]
+    pub initial_conn_window_size: u32,
+
+    #[serde(default)]
+    pub max_header_list_size: u32,
+
+    #[serde(default)]
+    pub max_concurrent_streams: u32,
+
+    #[serde(default)]
+    pub connection_timeout: String,
+
+    #[serde(default)]
+    pub keepalive: Keepalive,
+
+    #[serde(default)]
+    pub interceptors: Vec<String>,
+}
+
+impl Default for GrpcServerConfig {
+    fn default() -> Self {
+        Self {
+            max_receive_message_size: 4 * 1024 * 1024,
+            max_send_message_size: 4 * 1024 * 1024,
+            initial_window_size: 65535,
+            initial_conn_window_size: 65535,
+            max_header_list_size: 8192,
+            max_concurrent_streams: 100,
+            connection_timeout: String::new(),
+            keepalive: Keepalive::default(),
+            interceptors: Vec::new(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct Keepalive {
+    #[serde(default)]
+    pub max_conn_age: String,
+
+    #[serde(default)]
+    pub time: String,
+
+    #[serde(default)]
+    pub timeout: String,
+}
+
+/// Service configuration
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct Service {
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub type_: String,
+}
+
+/// Daemon configuration
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Daemon {
+    #[serde(default = "default_daemon_auto_index_check_duration_ms")]
+    pub auto_index_check_duration_ms: u64,
+
+    #[serde(default = "default_daemon_auto_save_index_duration_ms")]
+    pub auto_save_index_duration_ms: u64,
+
+    #[serde(default = "default_daemon_auto_index_limit_ms")]
+    pub auto_index_limit_ms: u64,
+
+    #[serde(default = "default_daemon_auto_index_length")]
+    pub auto_index_length: usize,
+
+    #[serde(default = "default_daemon_pool_size")]
+    pub pool_size: u32,
+
+    #[serde(default = "default_daemon_initial_delay_ms")]
+    pub initial_delay_ms: u64,
+
+    #[serde(default)]
+    pub enable_proactive_gc: bool,
+}
+
+fn default_daemon_auto_index_check_duration_ms() -> u64 {
+    1000
+}
+
+fn default_daemon_auto_save_index_duration_ms() -> u64 {
+    60000
+}
+
+fn default_daemon_auto_index_limit_ms() -> u64 {
+    3600000
+}
+
+fn default_daemon_auto_index_length() -> usize {
+    100
+}
+
+fn default_daemon_pool_size() -> u32 {
+    10000
+}
+
+fn default_daemon_initial_delay_ms() -> u64 {
+    0
+}
+
+impl Default for Daemon {
+    fn default() -> Self {
+        Self {
+            auto_index_check_duration_ms: default_daemon_auto_index_check_duration_ms(),
+            auto_save_index_duration_ms: default_daemon_auto_save_index_duration_ms(),
+            auto_index_limit_ms: default_daemon_auto_index_limit_ms(),
+            auto_index_length: default_daemon_auto_index_length(),
+            pool_size: default_daemon_pool_size(),
+            initial_delay_ms: default_daemon_initial_delay_ms(),
+            enable_proactive_gc: false,
+        }
+    }
+}
+
 /// VQueue configuration for vector queue buffer sizes
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct VQueue {
+// ... existing code ...
     /// InsertBufferPoolSize represents insert time ordered slice buffer size
     #[serde(default = "default_insert_buffer_pool_size")]
     pub insert_buffer_pool_size: usize,

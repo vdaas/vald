@@ -21,7 +21,7 @@ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use algorithm::{ANN, Error, MultiError};
 use anyhow::Result;
 use chrono::{Local, Timelike, Utc};
-use config::Config;
+use crate::config::QBG;
 use futures::StreamExt;
 use kvs::{BidirectionalMap, BidirectionalMapBuilder, MapBase};
 use kvs::map::codec::BincodeCodec;
@@ -48,7 +48,7 @@ pub struct QBGService {
     is_flushing: AtomicBool,
     is_indexing: AtomicBool,
     is_saving: AtomicBool,
-    is_read_replica: bool,
+    is_readreplica: bool,
     create_index_count: AtomicU64,
     unsaved_create_index_count: AtomicU64,
     processed_vq_count: AtomicU64,
@@ -59,17 +59,19 @@ pub struct QBGService {
 }
 
 impl QBGService {
-    pub async fn new(settings: Config) -> Self {
-        let path = settings
-            .get::<String>("qbg.index_path")
-            .unwrap_or("index".to_string());
+    pub async fn new(config: &QBG) -> Self {
+        let path = if config.index_path.is_empty() {
+            "index".to_string()
+        } else {
+            config.index_path.clone()
+        };
         
         // Read replica configuration
-        let is_read_replica = settings.get::<bool>("qbg.is_read_replica").unwrap_or(false);
+        let is_readreplica = config.is_readreplica;
         
         // Persistence configuration
-        let enable_copy_on_write = settings.get::<bool>("qbg.enable_copy_on_write").unwrap_or(false);
-        let broken_index_history_limit = settings.get::<usize>("qbg.broken_index_history_limit").unwrap_or(3);
+        let enable_copy_on_write = config.enable_copy_on_write;
+        let broken_index_history_limit = config.broken_index_history_limit;
         
         // Initialize persistence manager and prepare folders
         let persistence_config = PersistenceConfig {
@@ -97,54 +99,30 @@ impl QBGService {
         let mut property = Property::new();
         property.init_qbg_construction_parameters();
         property.set_qbg_construction_parameters(
-            settings.get::<usize>("qbg.extended_dimension").unwrap_or(0),
-            settings.get::<usize>("qbg.dimension").unwrap_or(0),
-            settings
-                .get::<usize>("qbg.number_of_subvectors")
-                .unwrap_or(1),
-            settings.get::<usize>("qbg.number_of_blobs").unwrap_or(0),
-            settings.get::<i32>("qbg.internal_data_type").unwrap_or(1),
-            settings.get::<i32>("qbg.data_type").unwrap_or(1),
-            settings.get::<i32>("qbg.distance_type").unwrap_or(1),
+            config.extended_dimension,
+            config.dimension,
+            config.number_of_subvectors,
+            config.number_of_blobs,
+            config.internal_data_type,
+            config.data_type,
+            config.distance_type,
         );
         property.init_qbg_build_parameters();
         property.set_qbg_build_parameters(
-            settings
-                .get::<i32>("qbg.hierarchical_clustering_init_mode")
-                .unwrap_or(2),
-            settings
-                .get::<usize>("qbg.number_of_first_objects")
-                .unwrap_or(0),
-            settings
-                .get::<usize>("qbg.number_of_first_clusters")
-                .unwrap_or(0),
-            settings
-                .get::<usize>("qbg.number_of_second_objects")
-                .unwrap_or(0),
-            settings
-                .get::<usize>("qbg.number_of_second_clusters")
-                .unwrap_or(0),
-            settings
-                .get::<usize>("qbg.number_of_third_clusters")
-                .unwrap_or(0),
-            settings
-                .get::<usize>("qbg.number_of_objects")
-                .unwrap_or(1000),
-            settings
-                .get::<usize>("qbg.number_of_subvectors")
-                .unwrap_or(1),
-            settings
-                .get::<i32>("qbg.optimization_clustering_init_mode")
-                .unwrap_or(2),
-            settings
-                .get::<usize>("qbg.rotation_iteration")
-                .unwrap_or(2000),
-            settings
-                .get::<usize>("qbg.subvector_iteration")
-                .unwrap_or(400),
-            settings.get::<usize>("qbg.number_of_matrices").unwrap_or(3),
-            settings.get::<bool>("qbg.rotation").unwrap_or(true),
-            settings.get::<bool>("qbg.repositioning").unwrap_or(false),
+            config.hierarchical_clustering_init_mode,
+            config.number_of_first_objects,
+            config.number_of_first_clusters,
+            config.number_of_second_objects,
+            config.number_of_second_clusters,
+            config.number_of_third_clusters,
+            config.number_of_objects,
+            config.number_of_subvectors,
+            config.optimization_clustering_init_mode,
+            config.rotation_iteration,
+            config.subvector_iteration,
+            config.number_of_matrices,
+            config.rotation,
+            config.repositioning,
         );
         
         // Use the primary path from persistence manager for the index
@@ -169,18 +147,14 @@ impl QBGService {
             Index::new(&index_path, &mut property).unwrap()
         };
         
-        let vq_path = settings
-            .get::<String>("qbg.vqueue_path")
-            .unwrap_or("index".to_string());
+        let vq_path = path.clone();
         let vq = vqueue::Builder::new(vq_path).build().await.unwrap();
-        let kvs_path = settings
-            .get::<String>("qbg.kvs_path")
-            .unwrap_or("kvs".to_string());
+        let kvs_path = format!("{}_kvs", path);
         let kvs = BidirectionalMapBuilder::new(kvs_path)
-            .cache_capacity(settings.get::<u64>("qbg.kvs_cache_capacity").unwrap_or(10000))
-            .compression_factor(settings.get::<i32>("qbg.kvs_compression_factor").unwrap_or(9))
+            .cache_capacity(10000) // TODO: Add kvs_cache_capacity to QBG config
+            .compression_factor(9) // TODO: Add kvs_compression_factor to QBG config
             .mode(kvs::Mode::HighThroughput)
-            .use_compression(settings.get::<bool>("qbg.kvs_use_compression").unwrap_or(true))
+            .use_compression(true) // TODO: Add kvs_use_compression to QBG config
             .build()
             .await
             .unwrap();
@@ -193,7 +167,7 @@ impl QBGService {
         }
 
         // Initialize K8s metrics exporter if enabled
-        let enable_export_index_info = settings.get::<bool>("qbg.enable_export_index_info").unwrap_or(false);
+        let enable_export_index_info = config.enable_export_index_info_to_k8s;
         let metrics_exporter = if enable_export_index_info {
             let pod_name = std::env::var("MY_POD_NAME").unwrap_or_default();
             let pod_namespace = std::env::var("MY_POD_NAMESPACE").unwrap_or_default();
@@ -233,7 +207,7 @@ impl QBGService {
             is_flushing: AtomicBool::new(false),
             is_indexing: AtomicBool::new(false),
             is_saving: AtomicBool::new(false),
-            is_read_replica,
+            is_readreplica,
             create_index_count: AtomicU64::new(0),
             unsaved_create_index_count: AtomicU64::new(0),
             processed_vq_count: AtomicU64::new(0),
@@ -277,7 +251,7 @@ impl QBGService {
     }
 
     async fn insert_internal(&mut self, uuid: String, vector: Vec<f32>, t: i64, validation: bool) -> Result<(), Error> {
-        if self.is_read_replica {
+        if self.is_readreplica {
             return Err(Error::WriteOperationToReadReplica {});
         }
         if uuid.len() == 0 {
@@ -305,7 +279,7 @@ impl QBGService {
     }
 
     async fn update_internal(&mut self, uuid: String, vector: Vec<f32>, t: i64) -> Result<(), Error> {
-        if self.is_read_replica {
+        if self.is_readreplica {
             return Err(Error::WriteOperationToReadReplica {});
         }
         self.ready_for_update(uuid.clone(), vector.clone(), t).await?;
@@ -314,7 +288,7 @@ impl QBGService {
     }
 
     async fn remove_internal(&mut self, uuid: String, t: i64, validation: bool) -> Result<(), Error> {
-        if self.is_read_replica {
+        if self.is_readreplica {
             return Err(Error::WriteOperationToReadReplica {});
         }
         if uuid.len() == 0 {
@@ -363,7 +337,7 @@ impl ANN for QBGService {
     #[tracing::instrument(skip(self), level = "info")]
     async fn create_index(&mut self) -> Result<(), Error> {
         // Check if read replica
-        if self.is_read_replica {
+        if self.is_readreplica {
             return Err(Error::WriteOperationToReadReplica {});
         }
 
@@ -488,7 +462,7 @@ impl ANN for QBGService {
     #[tracing::instrument(skip(self), level = "info")]
     async fn save_index(&mut self) -> Result<(), Error> {
         // Read replica cannot perform write operations
-        if self.is_read_replica {
+        if self.is_readreplica {
             return Err(Error::WriteOperationToReadReplica {});
         }
 
@@ -716,7 +690,7 @@ impl ANN for QBGService {
     #[tracing::instrument(skip(self), level = "info")]
     async fn regenerate_indexes(&mut self) -> Result<(), Error> {
         // Read replica cannot perform write operations
-        if self.is_read_replica {
+        if self.is_readreplica {
             return Err(Error::WriteOperationToReadReplica {});
         }
 
@@ -874,7 +848,7 @@ impl ANN for QBGService {
         info!("Closing QBGService...");
         
         // Skip index operations for read replicas
-        if self.is_read_replica {
+        if self.is_readreplica {
             info!("Read replica mode: skipping index creation and save on close");
         } else {
             // Create final index if there are uncommitted changes
@@ -913,6 +887,7 @@ impl ANN for QBGService {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use config::Config;
     use tempfile::TempDir;
 
     /// Test helper to create a QBGService with temporary directories
@@ -935,7 +910,7 @@ mod tests {
             let temp_dir = TempDir::new().expect("Failed to create temp directory");
             let base_path = temp_dir.path().to_str().unwrap().to_string();
 
-            let settings = Config::builder()
+            let config = Config::builder()
                 .set_default("qbg.index_path", format!("{}/index", base_path)).unwrap()
                 .set_default("qbg.vqueue_path", format!("{}/vqueue", base_path)).unwrap()
                 .set_default("qbg.kvs_path", format!("{}/kvs", base_path)).unwrap()
@@ -946,11 +921,12 @@ mod tests {
                 .set_default("qbg.distance_type", 1_i64).unwrap() // L2
                 .set_default("qbg.data_type", 1_i64).unwrap() // Float
                 .set_default("qbg.internal_data_type", 1_i64).unwrap()
-                .set_default("qbg.is_read_replica", is_read_replica).unwrap()
+                .set_default("qbg.is_readreplica", is_read_replica).unwrap()
                 .build()
                 .unwrap();
 
-            let service = QBGService::new(settings).await;
+            let agent_config: crate::config::AgentConfig = config.try_deserialize().unwrap();
+            let service = QBGService::new(&agent_config.qbg).await;
 
             TestQBGService {
                 service,
@@ -962,7 +938,7 @@ mod tests {
         /// Create a Read Replica service using the same paths as this service.
         /// The original service should have built and saved the index first.
         async fn create_read_replica_from_same_path(&self, dimension: usize) -> QBGService {
-            let settings = Config::builder()
+            let config = Config::builder()
                 .set_default("qbg.index_path", format!("{}/index", self.base_path)).unwrap()
                 .set_default("qbg.vqueue_path", format!("{}/vqueue", self.base_path)).unwrap()
                 .set_default("qbg.kvs_path", format!("{}/kvs", self.base_path)).unwrap()
@@ -973,11 +949,12 @@ mod tests {
                 .set_default("qbg.distance_type", 1_i64).unwrap()
                 .set_default("qbg.data_type", 1_i64).unwrap()
                 .set_default("qbg.internal_data_type", 1_i64).unwrap()
-                .set_default("qbg.is_read_replica", true).unwrap()
+                .set_default("qbg.is_readreplica", true).unwrap()
                 .build()
                 .unwrap();
 
-            QBGService::new(settings).await
+            let agent_config: crate::config::AgentConfig = config.try_deserialize().unwrap();
+            QBGService::new(&agent_config.qbg).await
         }
     }
 
