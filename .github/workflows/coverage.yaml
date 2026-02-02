@@ -81,7 +81,7 @@ jobs:
           ./bin/deepsource report --analyzer test-coverage --key go --value-file ./cover.out
         env:
           DEEPSOURCE_DSN: ${{ secrets.DEEPSOURCE_DSN }}
-      - name: Run coverage
+      - name: Run Rust coverage
         continue-on-error: true
         run: |
           make coverage/rust
