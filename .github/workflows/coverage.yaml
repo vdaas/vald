@@ -64,22 +64,16 @@ jobs:
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Run coverage
+      - name: Run Go coverage
         continue-on-error: true
         run: |
-          make coverage
+          make coverage/go
       - name: Upload go coverage report to Codecov
         uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         with:
           token: ${{secrets.CODECOV_TOKEN}}
           files: ./coverage.out
           flags: go
-      - name: Upload rust coverage report to Codecov
-        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
-        with:
-          token: ${{secrets.CODECOV_TOKEN}}
-          files: ./rust-coverage.out
-          flags: rust
       - name: Upload go coverage report to deepsource
         run: |
           mv ./coverage.out ./cover.out
@@ -87,6 +81,16 @@ jobs:
           ./bin/deepsource report --analyzer test-coverage --key go --value-file ./cover.out
         env:
           DEEPSOURCE_DSN: ${{ secrets.DEEPSOURCE_DSN }}
+      - name: Run coverage
+        continue-on-error: true
+        run: |
+          make coverage/rust
+      - name: Upload rust coverage report to Codecov
+        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}
+          files: ./rust-coverage.out
+          flags: rust
       - name: Upload rust coverage report to deepsource
         run: |
           curl https://deepsource.io/cli | sh
