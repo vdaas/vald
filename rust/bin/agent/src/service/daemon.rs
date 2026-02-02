@@ -74,47 +74,15 @@ impl Default for DaemonConfig {
 
 impl DaemonConfig {
     /// Creates a new DaemonConfig from config settings.
-    pub fn from_config(settings: &config::Config) -> Self {
-        let auto_index_check_duration = settings
-            .get::<u64>("daemon.auto_index_check_duration_ms")
-            .map(Duration::from_millis)
-            .unwrap_or(Duration::from_secs(1));
-
-        let auto_save_index_duration = settings
-            .get::<u64>("daemon.auto_save_index_duration_ms")
-            .map(Duration::from_millis)
-            .unwrap_or(Duration::from_secs(60));
-
-        let auto_index_limit = settings
-            .get::<u64>("daemon.auto_index_limit_ms")
-            .map(Duration::from_millis)
-            .unwrap_or(Duration::from_secs(3600));
-
-        let auto_index_length = settings
-            .get::<usize>("daemon.auto_index_length")
-            .unwrap_or(100);
-
-        let pool_size = settings
-            .get::<u32>("daemon.pool_size")
-            .unwrap_or(10000);
-
-        let initial_delay = settings
-            .get::<u64>("daemon.initial_delay_ms")
-            .map(Duration::from_millis)
-            .unwrap_or(Duration::ZERO);
-
-        let enable_proactive_gc = settings
-            .get::<bool>("daemon.enable_proactive_gc")
-            .unwrap_or(false);
-
+    pub fn from_config(config: &crate::config::Daemon) -> Self {
         Self {
-            auto_index_check_duration,
-            auto_save_index_duration,
-            auto_index_limit,
-            auto_index_length,
-            pool_size,
-            initial_delay,
-            enable_proactive_gc,
+            auto_index_check_duration: Duration::from_millis(config.auto_index_check_duration_ms),
+            auto_save_index_duration: Duration::from_millis(config.auto_save_index_duration_ms),
+            auto_index_limit: Duration::from_millis(config.auto_index_limit_ms),
+            auto_index_length: config.auto_index_length,
+            pool_size: config.pool_size,
+            initial_delay: Duration::from_millis(config.initial_delay_ms),
+            enable_proactive_gc: config.enable_proactive_gc,
         }
     }
 }

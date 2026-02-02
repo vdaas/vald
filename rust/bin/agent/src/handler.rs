@@ -27,7 +27,7 @@ pub mod upsert;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::{RwLock, mpsc};
-use config::Config;
+use crate::config::AgentConfig;
 use proto::{
     core::v1::agent_server,
     vald::v1::{
@@ -71,8 +71,8 @@ impl<S: algorithm::ANN + 'static> Agent<S> {
 
     /// Starts the daemon for automatic indexing and saving.
     /// This should be called before serve_grpc.
-    pub async fn start(&mut self, settings: &Config) {
-        let daemon_config = DaemonConfig::from_config(settings);
+    pub async fn start(&mut self, config: &AgentConfig) {
+        let daemon_config = DaemonConfig::from_config(&config.daemon);
         log::info!("Starting daemon with config: {:?}", daemon_config);
         
         let (handle, error_rx) = start_daemon(self.s.clone(), daemon_config).await;
@@ -131,42 +131,25 @@ impl<S: algorithm::ANN + 'static> Agent<S> {
     }
 
     /// Starts the gRPC server with all registered services.
-    pub async fn serve_grpc(self, settings: Config) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn serve_grpc(self, config: AgentConfig) -> Result<(), Box<dyn std::error::Error>> {
         let addr = "0.0.0.0:8081".parse()?;
-        let mut grpc_key = String::new();
-        for i in 0..settings.get_array("server_config.servers")?.len() {
-            let name = settings.get::<String>(format!("server_config.servers[{i}].name").as_str())?;
-            match name.as_str() {
-                "grpc" => {
-                    grpc_key = format!("server_config.servers[{i}]");
-                }
-                _ => {}
-            }
-        }
+        
+        let grpc_server_config = config.server_config.servers.iter()
+            .find(|s| s.name == "grpc")
+            .map(|s| &s.grpc)
+            .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::NotFound, "grpc server config not found"))?;
 
         let mut builder = tonic::transport::Server::builder();
-        if let Some(duration) = parse_duration_from_string(
-            settings
-                .get::<String>(format!("{grpc_key}.grpc.keepalive.max_conn_age").as_str())?
-                .as_str(),
-        ) {
+        if let Some(duration) = parse_duration_from_string(&grpc_server_config.keepalive.max_conn_age) {
             builder = builder.max_connection_age(duration);
         }
-        if let Some(duration) = parse_duration_from_string(
-            settings
-                .get::<String>(format!("{grpc_key}.grpc.connection_timeout").as_str())?
-                .as_str(),
-        ) {
+        if let Some(duration) = parse_duration_from_string(&grpc_server_config.connection_timeout) {
             builder = builder.timeout(duration);
         }
 
         let mut accessloginterceptor: Option<()> = None;
         let mut metricinterceptor: Option<()> = None;
-        for i in 0..settings
-            .get_array(format!("{grpc_key}.grpc.interceptors").as_str())?
-            .len()
-        {
-            let name = settings.get::<String>(format!("{grpc_key}.grpc.interceptors[{i}]").as_str())?;
+        for name in &grpc_server_config.interceptors {
             match name.to_lowercase().as_str() {
                 "accessloginterceptor" | "accesslog" => accessloginterceptor = Some(()),
                 "metricinterceptor" | "metric" => metricinterceptor = Some(()),
@@ -179,32 +162,16 @@ impl<S: algorithm::ANN + 'static> Agent<S> {
             .option_layer(metricinterceptor.map(|_| middleware::MetricMiddlewareLayer::default()))
             .into_inner();
 
-        let max_recv_size = settings.get::<usize>(format!("{grpc_key}.grpc.max_receive_message_size").as_str())?;
-        let max_send_size = settings.get::<usize>(format!("{grpc_key}.grpc.max_send_message_size").as_str())?;
+        let max_recv_size = grpc_server_config.max_receive_message_size;
+        let max_send_size = grpc_server_config.max_send_message_size;
 
         builder
-            .initial_stream_window_size(
-                settings.get::<u32>(format!("{grpc_key}.grpc.initial_window_size").as_str())?,
-            )
-            .initial_connection_window_size(
-                settings.get::<u32>(format!("{grpc_key}.grpc.initial_conn_window_size").as_str())?,
-            )
-            .http2_keepalive_interval(parse_duration_from_string(
-                settings
-                    .get::<String>(format!("{grpc_key}.grpc.keepalive.time").as_str())?
-                    .as_str(),
-            ))
-            .http2_keepalive_timeout(parse_duration_from_string(
-                settings
-                    .get::<String>(format!("{grpc_key}.grpc.keepalive.timeout").as_str())?
-                    .as_str(),
-            ))
-            .http2_max_header_list_size(
-                settings.get::<u32>(format!("{grpc_key}.grpc.max_header_list_size").as_str())?,
-            )
-            .max_concurrent_streams(
-                settings.get::<u32>(format!("{grpc_key}.grpc.max_concurrent_streams").as_str())?,
-            )
+            .initial_stream_window_size(Some(grpc_server_config.initial_window_size))
+            .initial_connection_window_size(Some(grpc_server_config.initial_conn_window_size))
+            .http2_keepalive_interval(parse_duration_from_string(&grpc_server_config.keepalive.time))
+            .http2_keepalive_timeout(parse_duration_from_string(&grpc_server_config.keepalive.timeout))
+            .http2_max_header_list_size(Some(grpc_server_config.max_header_list_size))
+            .max_concurrent_streams(Some(grpc_server_config.max_concurrent_streams))
             .layer(layer)
             .add_service(
                 agent_server::AgentServer::new(self.clone())

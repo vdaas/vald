@@ -19,24 +19,24 @@ mod handler;
 mod middleware;
 mod service;
 
-use ::config::Config;
+use crate::config::AgentConfig;
 use handler::Agent;
 use observability::{init_tracing, shutdown_tracing, TracingConfig};
 use service::QBGService;
 use tracing::{info, error};
 
-async fn serve(settings: Config) -> Result<(), Box<dyn std::error::Error>> {
+async fn serve(config: AgentConfig) -> Result<(), Box<dyn std::error::Error>> {
     // Initialize tracing
     let tracing_config = TracingConfig::new()
         .enable_stdout(true)
-        .enable_json(settings.get::<bool>("logging.json").unwrap_or(false))
-        .enable_otel(settings.get::<bool>("observability.tracer.enabled").unwrap_or(false))
-        .level(&settings.get::<String>("logging.level").unwrap_or_else(|_| "info".to_string()))
+        .enable_json(config.logging.json)
+        .enable_otel(config.observability.tracer.enabled)
+        .level(&config.logging.level)
         .service_name("vald-agent");
 
     // Build OpenTelemetry config if enabled
-    let otel_config = if settings.get::<bool>("observability.enabled").unwrap_or(false) {
-        Some(build_otel_config(&settings))
+    let otel_config = if config.observability.enabled {
+        Some(build_otel_config(&config))
     } else {
         None
     };
@@ -46,8 +46,8 @@ async fn serve(settings: Config) -> Result<(), Box<dyn std::error::Error>> {
 
     info!("starting vald-agent");
 
-    let service = match settings.get_string("service.type")?.as_str() {
-        "qbg" => QBGService::new(settings.clone()).await,
+    let service = match config.service.type_.as_str() {
+        "qbg" => QBGService::new(&config.qbg).await,
         _ => panic!("unsupported algorithm service"),
     };
     let mut agent = Agent::new(
@@ -60,7 +60,7 @@ async fn serve(settings: Config) -> Result<(), Box<dyn std::error::Error>> {
     );
 
     // Start the daemon for automatic indexing and saving
-    agent.start(&settings).await;
+    agent.start(&config).await;
 
     // Setup graceful shutdown
     let shutdown_agent = agent.clone();
@@ -77,7 +77,7 @@ async fn serve(settings: Config) -> Result<(), Box<dyn std::error::Error>> {
     });
 
     // Serve gRPC (blocks until server stops)
-    let result = agent.serve_grpc(settings).await;
+    let result = agent.serve_grpc(config).await;
 
     // Shutdown tracing
     if let Err(e) = shutdown_tracing(tracer_provider) {
@@ -87,29 +87,25 @@ async fn serve(settings: Config) -> Result<(), Box<dyn std::error::Error>> {
     result
 }
 
-fn build_otel_config(settings: &Config) -> observability::Config {
+fn build_otel_config(config: &AgentConfig) -> observability::Config {
     use std::time::Duration;
     
-    let endpoint = settings.get::<String>("observability.endpoint").unwrap_or_default();
-    let service_name = settings.get::<String>("observability.service_name").unwrap_or_else(|_| "vald-agent".to_string());
+    let endpoint = &config.observability.endpoint;
+    let service_name = &config.observability.service_name;
     
     observability::Config::new()
-        .enabled(settings.get::<bool>("observability.enabled").unwrap_or(false))
-        .endpoint(&endpoint)
-        .attribute(observability::observability::SERVICE_NAME, &service_name)
+        .enabled(config.observability.enabled)
+        .endpoint(endpoint)
+        .attribute(observability::observability::SERVICE_NAME, service_name)
         .tracer(
             observability::config::Tracer::new()
-                .enabled(settings.get::<bool>("observability.tracer.enabled").unwrap_or(false))
+                .enabled(config.observability.tracer.enabled)
         )
         .meter(
             observability::config::Meter::new()
-                .enabled(settings.get::<bool>("observability.meter.enabled").unwrap_or(false))
-                .export_duration(Duration::from_secs(
-                    settings.get::<u64>("observability.meter.export_duration_secs").unwrap_or(1)
-                ))
-                .export_timeout_duration(Duration::from_secs(
-                    settings.get::<u64>("observability.meter.export_timeout_secs").unwrap_or(5)
-                ))
+                .enabled(config.observability.meter.enabled)
+                .export_duration(Duration::from_secs(config.observability.meter.export_duration_secs))
+                .export_timeout_duration(Duration::from_secs(config.observability.meter.export_timeout_secs))
         )
 }
 
@@ -120,7 +116,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build()
         .unwrap();
     
-    serve(settings).await
+    let mut config: AgentConfig = settings.try_deserialize().unwrap();
+    config.bind();
+    config.validate()?;
+
+    serve(config).await
 }
 
 #[cfg(test)]
@@ -128,17 +128,14 @@ mod tests {
     use super::*;
 
     /// Helper function to create test config
-    fn create_test_config() -> ::config::Config {
+    fn create_test_config() -> AgentConfig {
         let config_str = r#"
 logging:
   level: "info"
 service:
   type: "qbg"
+qbg:
   dimension: 128
-  creation_edge_size: 10
-  search_edge_size: 40
-  object_type: "Float"
-  distance_type: "L2"
   index_path: "/tmp/test_qbg_index"
 server_config:
   servers:
@@ -162,33 +159,32 @@ server_config:
           - metric
 "#;
         use ::config::FileFormat;
-        ::config::Config::builder()
+        let settings = ::config::Config::builder()
             .add_source(::config::File::from_str(config_str, FileFormat::Yaml))
             .build()
-            .unwrap()
+            .unwrap();
+        
+        settings.try_deserialize().unwrap()
     }
 
     #[test]
     fn test_config_parsing() {
         let config = create_test_config();
         
-        assert_eq!(config.get_string("logging.level").unwrap(), "info");
-        assert_eq!(config.get_string("service.type").unwrap(), "qbg");
-        assert_eq!(config.get::<usize>("service.dimension").unwrap(), 128);
+        assert_eq!(config.logging.level, "info");
+        assert_eq!(config.service.type_, "qbg");
+        assert_eq!(config.qbg.dimension, 128);
     }
 
     #[test]
     fn test_config_grpc_settings() {
         let config = create_test_config();
         
-        let servers = config.get_array("server_config.servers").unwrap();
-        assert_eq!(servers.len(), 1);
+        assert_eq!(config.server_config.servers.len(), 1);
         
-        let grpc_name = config.get_string("server_config.servers[0].name").unwrap();
-        assert_eq!(grpc_name, "grpc");
-        
-        let max_recv = config.get::<usize>("server_config.servers[0].grpc.max_receive_message_size").unwrap();
-        assert_eq!(max_recv, 4194304);
+        let server = &config.server_config.servers[0];
+        assert_eq!(server.name, "grpc");
+        assert_eq!(server.grpc.max_receive_message_size, 4194304);
     }
 
     #[test]
@@ -198,13 +194,18 @@ logging:
   level: "info"
 service:
   type: "unsupported"
+qbg:
+  dimension: 128
+  index_path: "/tmp/index"
 "#;
         use ::config::FileFormat;
-        let config = ::config::Config::builder()
+        let settings = ::config::Config::builder()
             .add_source(::config::File::from_str(config_str, FileFormat::Yaml))
             .build()
             .unwrap();
         
-        assert_eq!(config.get_string("service.type").unwrap(), "unsupported");
+        let config: AgentConfig = settings.try_deserialize().unwrap();
+        
+        assert_eq!(config.service.type_, "unsupported");
     }
 }
