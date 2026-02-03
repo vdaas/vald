@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-use bincode::{Decode, Encode, config::standard as bincode_standard};
 use futures::{Stream, StreamExt};
 use serde::{Serialize, de::DeserializeOwned};
 use sled::{Db, Tree, transaction::TransactionError};
@@ -24,6 +23,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
 use tracing::instrument;
+use wincode::{SchemaRead, SchemaWrite};
 
 use crate::map::{
     codec::Codec,
@@ -74,7 +74,7 @@ pub trait MapBase: Sized + Sync + Send + 'static {
     fn get<Q>(&self, key: &Q) -> impl Future<Output = Result<(Self::V, u128), Error>> + Send
     where
         Self::K: Borrow<Q>,
-        Q: Serialize + Encode + ?Sized + Sync;
+        Q: Serialize + SchemaWrite<Src = Q> + ?Sized + Sync;
 
     /// Inserts or updates a key-value pair with a specified timestamp.
     ///
@@ -98,7 +98,7 @@ pub trait MapBase: Sized + Sync + Send + 'static {
     fn delete<Q>(&self, key: &Q) -> impl Future<Output = Result<Self::V, Error>> + Send
     where
         Self::K: Borrow<Q>,
-        Q: Serialize + Encode + ?Sized + Sync;
+        Q: Serialize + SchemaWrite<Src = Q> + ?Sized + Sync;
 
     /// Iterates over all key-value pairs using a callback function.
     ///
@@ -137,11 +137,9 @@ pub trait MapBase: Sized + Sync + Send + 'static {
                 let result = (|| {
                     let (k_ivec, payload_ivec) = item?;
                     let (v_b, ts): (Vec<u8>, u128) =
-                        bincode::decode_from_slice(&payload_ivec, bincode_standard())
-                            .map(|(decoded, _)| decoded)
-                            .map_err(|e| Error::Codec {
-                                source: Box::new(e),
-                            })?;
+                        wincode::deserialize(&payload_ivec).map_err(|e| Error::Codec {
+                            source: Box::new(e),
+                        })?;
                     let k: Self::K = codec.decode(&k_ivec)?;
                     let v: Self::V = codec.decode(&v_b)?;
                     Ok((k, v, ts))
@@ -181,8 +179,8 @@ pub trait MapBase: Sized + Sync + Send + 'static {
         tree: &Tree,
     ) -> impl Future<Output = Result<(Output, u128), Error>> + Send
     where
-        Input: Serialize + Encode + ?Sized + Sync,
-        Output: DeserializeOwned + Decode<()> + Send + 'static,
+        Input: Serialize + SchemaWrite<Src = Input> + ?Sized + Sync,
+        Output: DeserializeOwned + for<'de> SchemaRead<'de, Dst = Output> + Send + 'static,
     {
         let tree = tree.clone();
         let codec = self._codec().clone();
@@ -192,12 +190,10 @@ pub trait MapBase: Sized + Sync + Send + 'static {
             tokio::task::spawn_blocking(move || -> Result<(Output, u128), Error> {
                 let payload_ivec = tree.get(encoded_input)?.ok_or(Error::NotFound)?;
 
-                let (output_bytes, ts): (Vec<u8>, u128) =
-                    bincode::decode_from_slice(&payload_ivec, bincode_standard())
-                        .map(|(decoded, _)| decoded)
-                        .map_err(|e| Error::Codec {
-                            source: Box::new(e),
-                        })?;
+                let (output_bytes, ts): (Vec<u8>, u128) = wincode::deserialize(&payload_ivec)
+                    .map_err(|e| Error::Codec {
+                        source: Box::new(e),
+                    })?;
                 let output = codec.decode(&output_bytes)?;
                 Ok((output, ts))
             })
@@ -245,8 +241,8 @@ pub trait MapBase: Sized + Sync + Send + 'static {
         f: F,
     ) -> impl Future<Output = Result<Output, Error>> + Send
     where
-        Input: Serialize + Encode + ?Sized + Sync,
-        Output: DeserializeOwned + Decode<()> + Send + 'static,
+        Input: Serialize + SchemaWrite<Src = Input> + ?Sized + Sync,
+        Output: DeserializeOwned + for<'de> SchemaRead<'de, Dst = Output> + Send + 'static,
         F: FnOnce(Vec<u8>) -> Result<Option<Vec<u8>>, TransactionError<Error>> + Send + 'static,
     {
         let codec = self._codec().clone();
