@@ -25,6 +25,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"github.com/vdaas/vald/internal/errors"
 
 	tierr "github.com/tikv/client-go/v2/error"
 	"github.com/vdaas/vald/internal/test/goleak"
@@ -60,7 +61,7 @@ func createClient(b *testing.B) Client {
 
 	// basic connectivity probe (Get for non-existing key)
 	_, err = cli.Get(context.Background(), []byte("vald_bench_probe"))
-	if err != nil && !tierr.IsErrNotFound(err) {
+	if err != nil && !errors.Is(tierr.ErrNotExist, err) {
 		// Depending on cluster state Get may return region not found etc.
 		// We treat only network/connection errors as fatal.
 		b.Logf("tiKV connectivity probe returned error: %v (continuing)", err)
