@@ -188,7 +188,7 @@ impl<S: algorithm::ANN + 'static> object_server::Object for super::Agent<S> {
         tokio::spawn(async move {
             let s = s.read().await;
             let uuids = s.uuids().await;
-            
+
             for uuid in uuids {
                 let response = match s.get_object(uuid.clone()).await {
                     Ok((vec, ts)) => object::list::Response {
@@ -246,7 +246,10 @@ impl<S: algorithm::ANN + 'static> object_server::Object for super::Agent<S> {
             );
             let status = Status::with_error_details(
                 Code::InvalidArgument,
-                format!("GetTimestamp API invalid argument for uuid \"{}\" detected", uuid),
+                format!(
+                    "GetTimestamp API invalid argument for uuid \"{}\" detected",
+                    uuid
+                ),
                 err_details,
             );
             warn!("{:?}", status);

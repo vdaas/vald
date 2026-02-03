@@ -23,7 +23,7 @@ use crate::config::AgentConfig;
 use handler::Agent;
 use observability::{init_tracing, shutdown_tracing, TracingConfig};
 use service::QBGService;
-use tracing::{info, error};
+use tracing::{error, info};
 
 async fn serve(config: AgentConfig) -> Result<(), Box<dyn std::error::Error>> {
     // Initialize tracing
@@ -41,8 +41,8 @@ async fn serve(config: AgentConfig) -> Result<(), Box<dyn std::error::Error>> {
         None
     };
 
-    let tracer_provider = init_tracing(&tracing_config, otel_config.as_ref())
-        .expect("failed to initialize tracing");
+    let tracer_provider =
+        init_tracing(&tracing_config, otel_config.as_ref()).expect("failed to initialize tracing");
 
     info!("starting vald-agent");
 
@@ -89,23 +89,24 @@ async fn serve(config: AgentConfig) -> Result<(), Box<dyn std::error::Error>> {
 
 fn build_otel_config(config: &AgentConfig) -> observability::Config {
     use std::time::Duration;
-    
+
     let endpoint = &config.observability.endpoint;
     let service_name = &config.observability.service_name;
-    
+
     observability::Config::new()
         .enabled(config.observability.enabled)
         .endpoint(endpoint)
         .attribute(observability::observability::SERVICE_NAME, service_name)
-        .tracer(
-            observability::config::Tracer::new()
-                .enabled(config.observability.tracer.enabled)
-        )
+        .tracer(observability::config::Tracer::new().enabled(config.observability.tracer.enabled))
         .meter(
             observability::config::Meter::new()
                 .enabled(config.observability.meter.enabled)
-                .export_duration(Duration::from_secs(config.observability.meter.export_duration_secs))
-                .export_timeout_duration(Duration::from_secs(config.observability.meter.export_timeout_secs))
+                .export_duration(Duration::from_secs(
+                    config.observability.meter.export_duration_secs,
+                ))
+                .export_timeout_duration(Duration::from_secs(
+                    config.observability.meter.export_timeout_secs,
+                )),
         )
 }
 
@@ -115,7 +116,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_source(::config::File::with_name("/etc/server/config.yaml"))
         .build()
         .unwrap();
-    
+
     let mut config: AgentConfig = settings.try_deserialize().unwrap();
     config.bind();
     config.validate()?;
@@ -163,14 +164,14 @@ server_config:
             .add_source(::config::File::from_str(config_str, FileFormat::Yaml))
             .build()
             .unwrap();
-        
+
         settings.try_deserialize().unwrap()
     }
 
     #[test]
     fn test_config_parsing() {
         let config = create_test_config();
-        
+
         assert_eq!(config.logging.level, "info");
         assert_eq!(config.service.type_, "qbg");
         assert_eq!(config.qbg.dimension, 128);
@@ -179,9 +180,9 @@ server_config:
     #[test]
     fn test_config_grpc_settings() {
         let config = create_test_config();
-        
+
         assert_eq!(config.server_config.servers.len(), 1);
-        
+
         let server = &config.server_config.servers[0];
         assert_eq!(server.name, "grpc");
         assert_eq!(server.grpc.max_receive_message_size, 4194304);
@@ -203,9 +204,9 @@ qbg:
             .add_source(::config::File::from_str(config_str, FileFormat::Yaml))
             .build()
             .unwrap();
-        
+
         let config: AgentConfig = settings.try_deserialize().unwrap();
-        
+
         assert_eq!(config.service.type_, "unsupported");
     }
 }

@@ -311,7 +311,7 @@ impl Default for Daemon {
 /// VQueue configuration for vector queue buffer sizes
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct VQueue {
-// ... existing code ...
+    // ... existing code ...
     /// InsertBufferPoolSize represents insert time ordered slice buffer size
     #[serde(default = "default_insert_buffer_pool_size")]
     pub insert_buffer_pool_size: usize,
@@ -1034,9 +1034,7 @@ is_readreplica: false
                 insert_buffer_pool_size: 2000,
                 delete_buffer_pool_size: 1500,
             }),
-            kvsdb: Some(KVSDB {
-                concurrency: 15,
-            }),
+            kvsdb: Some(KVSDB { concurrency: 15 }),
             ..QBG::new()
         };
 

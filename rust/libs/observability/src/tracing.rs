@@ -108,8 +108,8 @@ pub fn init_tracing(
     tracing_config: &TracingConfig,
     otel_config: Option<&Config>,
 ) -> Result<Option<SdkTracerProvider>> {
-    let env_filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new(&tracing_config.level));
+    let env_filter =
+        EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(&tracing_config.level));
 
     // Initialize OpenTelemetry tracer if enabled
     let tracer_provider = if tracing_config.enable_otel {
@@ -128,7 +128,11 @@ pub fn init_tracing(
 
     // Build subscriber based on configuration
     // Note: We use separate match branches to avoid complex type combinations
-    match (tracing_config.enable_stdout, tracing_config.enable_json, &tracer_provider) {
+    match (
+        tracing_config.enable_stdout,
+        tracing_config.enable_json,
+        &tracer_provider,
+    ) {
         // stdout + json + otel
         (true, true, Some(provider)) => {
             let tracer = provider.tracer(tracing_config.service_name.clone());

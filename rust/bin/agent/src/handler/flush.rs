@@ -30,7 +30,7 @@ impl<S: algorithm::ANN + 'static> flush_server::Flush for super::Agent<S> {
         request: tonic::Request<proto::payload::v1::flush::Request>,
     ) -> std::result::Result<tonic::Response<proto::payload::v1::info::index::Count>, Status> {
         info!("Recieved a request from {:?}", request.remote_addr());
-        
+
         let mut s = self.s.write().await;
         let result = s.regenerate_indexes().await;
         match result {
@@ -47,7 +47,11 @@ impl<S: algorithm::ANN + 'static> flush_server::Flush for super::Agent<S> {
                 );
                 let status = match err {
                     Error::FlushingIsInProgress {} => {
-                        let status = Status::with_error_details(Code::Aborted, "Flush API aborted due to flushing indices is in progress", err_details);
+                        let status = Status::with_error_details(
+                            Code::Aborted,
+                            "Flush API aborted due to flushing indices is in progress",
+                            err_details,
+                        );
                         debug!("{:?}", status);
                         status
                     }
