@@ -25,9 +25,9 @@ import (
 	"slices"
 	"strings"
 	"testing"
-	"github.com/vdaas/vald/internal/errors"
 
 	tierr "github.com/tikv/client-go/v2/error"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
