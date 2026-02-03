@@ -67,7 +67,9 @@ pub(super) async fn insert<S: algorithm::ANN>(
         warn!("{:?}", status);
         return Err(status);
     }
-    let result = s.insert_with_time(vec.id.clone(), vec.vector.clone(), config.timestamp).await;
+    let result = s
+        .insert_with_time(vec.id.clone(), vec.vector.clone(), config.timestamp)
+        .await;
     match result {
         Err(err) => {
             let resource_type = format!("{}/qbg.Insert", resource_type);

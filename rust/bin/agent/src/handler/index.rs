@@ -44,7 +44,14 @@ impl<S: algorithm::ANN + 'static> agent_server::Agent for super::Agent<S> {
                 let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
                 let status = match err {
                     Error::UncommittedIndexNotFound {} => {
-                        let mut err_details = build_error_details(&err, "", vec![], &resource_type, &resource_name, None);
+                        let mut err_details = build_error_details(
+                            &err,
+                            "",
+                            vec![],
+                            &resource_type,
+                            &resource_name,
+                            None,
+                        );
                         err_details.set_precondition_failure(vec![PreconditionViolation::new(
                             "uncommitted index is empty",
                             "failed to CreateIndex operation caused by empty uncommitted indices",
@@ -57,7 +64,14 @@ impl<S: algorithm::ANN + 'static> agent_server::Agent for super::Agent<S> {
                         )
                     }
                     Error::FlushingIsInProgress {} => {
-                        let err_details = build_error_details(&err, "", vec![], &resource_type, &resource_name, None);
+                        let err_details = build_error_details(
+                            &err,
+                            "",
+                            vec![],
+                            &resource_type,
+                            &resource_name,
+                            None,
+                        );
                         Status::with_error_details(
                             Code::Aborted,
                             "CreateIndex API aborted to process create indexes request due to flushing indices is in progress",
@@ -65,7 +79,14 @@ impl<S: algorithm::ANN + 'static> agent_server::Agent for super::Agent<S> {
                         )
                     }
                     _ => {
-                        let err_details = build_error_details(&err, "", vec![], &resource_type, &resource_name, None);
+                        let err_details = build_error_details(
+                            &err,
+                            "",
+                            vec![],
+                            &resource_type,
+                            &resource_name,
+                            None,
+                        );
                         let status = Status::with_error_details(
                             Code::Internal,
                             format!("CreateIndex API failed to create indexes pool_size = {}, error: {}", pool_size, err),
@@ -95,7 +116,8 @@ impl<S: algorithm::ANN + 'static> agent_server::Agent for super::Agent<S> {
                     error!("{:?}", err);
                     let resource_type = format!("{}/qbg.SaveIndex", self.resource_type);
                     let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
-                    let err_details = build_error_details(&err, "", vec![], &resource_type, &resource_name, None);
+                    let err_details =
+                        build_error_details(&err, "", vec![], &resource_type, &resource_name, None);
                     let status = Status::with_error_details(
                         Code::Internal,
                         "SaveIndex API failed to save indices",
@@ -126,7 +148,14 @@ impl<S: algorithm::ANN + 'static> agent_server::Agent for super::Agent<S> {
                 let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
                 let status = match err {
                     Error::UncommittedIndexNotFound {} => {
-                        let mut err_details = build_error_details(&err, "", vec![], &resource_type, &resource_name, None);
+                        let mut err_details = build_error_details(
+                            &err,
+                            "",
+                            vec![],
+                            &resource_type,
+                            &resource_name,
+                            None,
+                        );
                         err_details.set_precondition_failure(vec![PreconditionViolation::new(
                             "uncommitted index is empty",
                             "failed to CreateAndSaveIndex operation caused by empty uncommitted indices",
@@ -139,7 +168,14 @@ impl<S: algorithm::ANN + 'static> agent_server::Agent for super::Agent<S> {
                         )
                     }
                     Error::FlushingIsInProgress {} => {
-                        let err_details = build_error_details(&err, "", vec![], &resource_type, &resource_name, None);
+                        let err_details = build_error_details(
+                            &err,
+                            "",
+                            vec![],
+                            &resource_type,
+                            &resource_name,
+                            None,
+                        );
                         Status::with_error_details(
                             Code::Aborted,
                             "CreateAndSaveIndex API aborted to process create indexes request due to flushing indices is in progress",
@@ -147,7 +183,14 @@ impl<S: algorithm::ANN + 'static> agent_server::Agent for super::Agent<S> {
                         )
                     }
                     _ => {
-                        let err_details = build_error_details(&err, "", vec![], &resource_type, &resource_name, None);
+                        let err_details = build_error_details(
+                            &err,
+                            "",
+                            vec![],
+                            &resource_type,
+                            &resource_name,
+                            None,
+                        );
                         let status = Status::with_error_details(
                             Code::Internal,
                             format!("CreateAndSaveIndex API failed to create indexes pool_size = {}, error: {}", pool_size, err),
@@ -218,7 +261,8 @@ impl<S: algorithm::ANN + 'static> index_server::Index for super::Agent<S> {
                 error!("IndexStatistics API failed: {:?}", err);
                 let resource_type = format!("{}/qbg.IndexStatistics", self.resource_type);
                 let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
-                let err_details = build_error_details(&err, "", vec![], &resource_type, &resource_name, None);
+                let err_details =
+                    build_error_details(&err, "", vec![], &resource_type, &resource_name, None);
                 Err(Status::with_error_details(
                     Code::Internal,
                     format!("IndexStatistics API failed: {}", err),
@@ -239,13 +283,16 @@ impl<S: algorithm::ANN + 'static> index_server::Index for super::Agent<S> {
             Ok(stats) => {
                 let mut details = HashMap::new();
                 details.insert(self.name.clone(), stats);
-                Ok(tonic::Response::new(info::index::StatisticsDetail { details }))
+                Ok(tonic::Response::new(info::index::StatisticsDetail {
+                    details,
+                }))
             }
             Err(err) => {
                 error!("IndexStatisticsDetail API failed: {:?}", err);
                 let resource_type = format!("{}/qbg.IndexStatisticsDetail", self.resource_type);
                 let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
-                let err_details = build_error_details(&err, "", vec![], &resource_type, &resource_name, None);
+                let err_details =
+                    build_error_details(&err, "", vec![], &resource_type, &resource_name, None);
                 Err(Status::with_error_details(
                     Code::Internal,
                     format!("IndexStatisticsDetail API failed: {}", err),
@@ -266,13 +313,16 @@ impl<S: algorithm::ANN + 'static> index_server::Index for super::Agent<S> {
             Ok(prop) => {
                 let mut details = HashMap::new();
                 details.insert(self.name.clone(), prop);
-                Ok(tonic::Response::new(info::index::PropertyDetail { details }))
+                Ok(tonic::Response::new(info::index::PropertyDetail {
+                    details,
+                }))
             }
             Err(err) => {
                 error!("IndexProperty API failed: {:?}", err);
                 let resource_type = format!("{}/qbg.IndexProperty", self.resource_type);
                 let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
-                let err_details = build_error_details(&err, "", vec![], &resource_type, &resource_name, None);
+                let err_details =
+                    build_error_details(&err, "", vec![], &resource_type, &resource_name, None);
                 Err(Status::with_error_details(
                     Code::Internal,
                     format!("IndexProperty API failed: {}", err),

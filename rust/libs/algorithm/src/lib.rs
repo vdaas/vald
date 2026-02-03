@@ -276,29 +276,97 @@ use std::{collections::HashMap, future::Future, i64};
 /// All methods that involve I/O or potentially blocking operations are async.
 pub trait ANN: Send + Sync {
     // Search operations (async for potential I/O with vqueue/kvs)
-    fn search(&self, vector: Vec<f32>, k: u32, epsilon: f32, radius: f32) -> impl Future<Output = Result<search::Response, Error>> + Send;
-    fn search_by_id(&self, uuid: String, k: u32, epsilon: f32, radius: f32) -> impl Future<Output = Result<search::Response, Error>> + Send;
-    fn linear_search(&self, vector: Vec<f32>, k: u32) -> impl Future<Output = Result<search::Response, Error>> + Send;
-    fn linear_search_by_id(&self, uuid: String, k: u32) -> impl Future<Output = Result<search::Response, Error>> + Send;
+    fn search(
+        &self,
+        vector: Vec<f32>,
+        k: u32,
+        epsilon: f32,
+        radius: f32,
+    ) -> impl Future<Output = Result<search::Response, Error>> + Send;
+    fn search_by_id(
+        &self,
+        uuid: String,
+        k: u32,
+        epsilon: f32,
+        radius: f32,
+    ) -> impl Future<Output = Result<search::Response, Error>> + Send;
+    fn linear_search(
+        &self,
+        vector: Vec<f32>,
+        k: u32,
+    ) -> impl Future<Output = Result<search::Response, Error>> + Send;
+    fn linear_search_by_id(
+        &self,
+        uuid: String,
+        k: u32,
+    ) -> impl Future<Output = Result<search::Response, Error>> + Send;
 
     // Insert operations (async for vqueue push)
-    fn insert(&mut self, uuid: String, vector: Vec<f32>) -> impl Future<Output = Result<(), Error>> + Send;
-    fn insert_with_time(&mut self, uuid: String, vector: Vec<f32>, t: i64) -> impl Future<Output = Result<(), Error>> + Send;
-    fn insert_multiple(&mut self, vectors: HashMap<String, Vec<f32>>) -> impl Future<Output = Result<(), Error>> + Send;
-    fn insert_multiple_with_time(&mut self, vectors: HashMap<String, Vec<f32>>, t: i64) -> impl Future<Output = Result<(), Error>> + Send;
+    fn insert(
+        &mut self,
+        uuid: String,
+        vector: Vec<f32>,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+    fn insert_with_time(
+        &mut self,
+        uuid: String,
+        vector: Vec<f32>,
+        t: i64,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+    fn insert_multiple(
+        &mut self,
+        vectors: HashMap<String, Vec<f32>>,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+    fn insert_multiple_with_time(
+        &mut self,
+        vectors: HashMap<String, Vec<f32>>,
+        t: i64,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 
     // Update operations (async for vqueue/kvs)
-    fn update(&mut self, uuid: String, vector: Vec<f32>) -> impl Future<Output = Result<(), Error>> + Send;
-    fn update_with_time(&mut self, uuid: String, vector: Vec<f32>, t: i64) -> impl Future<Output = Result<(), Error>> + Send;
-    fn update_multiple(&mut self, vectors: HashMap<String, Vec<f32>>) -> impl Future<Output = Result<(), Error>> + Send;
-    fn update_multiple_with_time(&mut self, vectors: HashMap<String, Vec<f32>>, t: i64) -> impl Future<Output = Result<(), Error>> + Send;
-    fn update_timestamp(&mut self, uuid: String, t: i64, force: bool) -> impl Future<Output = Result<(), Error>> + Send;
+    fn update(
+        &mut self,
+        uuid: String,
+        vector: Vec<f32>,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+    fn update_with_time(
+        &mut self,
+        uuid: String,
+        vector: Vec<f32>,
+        t: i64,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+    fn update_multiple(
+        &mut self,
+        vectors: HashMap<String, Vec<f32>>,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+    fn update_multiple_with_time(
+        &mut self,
+        vectors: HashMap<String, Vec<f32>>,
+        t: i64,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+    fn update_timestamp(
+        &mut self,
+        uuid: String,
+        t: i64,
+        force: bool,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 
     // Remove operations (async for vqueue push)
     fn remove(&mut self, uuid: String) -> impl Future<Output = Result<(), Error>> + Send;
-    fn remove_with_time(&mut self, uuid: String, t: i64) -> impl Future<Output = Result<(), Error>> + Send;
-    fn remove_multiple(&mut self, uuids: Vec<String>) -> impl Future<Output = Result<(), Error>> + Send;
-    fn remove_multiple_with_time(&mut self, uuids: Vec<String>, t: i64) -> impl Future<Output = Result<(), Error>> + Send;
+    fn remove_with_time(
+        &mut self,
+        uuid: String,
+        t: i64,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+    fn remove_multiple(
+        &mut self,
+        uuids: Vec<String>,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
+    fn remove_multiple_with_time(
+        &mut self,
+        uuids: Vec<String>,
+        t: i64,
+    ) -> impl Future<Output = Result<(), Error>> + Send;
 
     // Index management (async for I/O)
     fn regenerate_indexes(&mut self) -> impl Future<Output = Result<(), Error>> + Send;
@@ -307,12 +375,18 @@ pub trait ANN: Send + Sync {
     fn create_and_save_index(&mut self) -> impl Future<Output = Result<(), Error>> + Send;
 
     // Object retrieval (async for kvs/vqueue lookup)
-    fn get_object(&self, uuid: String) -> impl Future<Output = Result<(Vec<f32>, i64), Error>> + Send;
+    fn get_object(
+        &self,
+        uuid: String,
+    ) -> impl Future<Output = Result<(Vec<f32>, i64), Error>> + Send;
     fn exists(&self, uuid: String) -> impl Future<Output = (usize, bool)> + Send;
     fn uuids(&self) -> impl Future<Output = Vec<String>> + Send;
 
     // List with callback (sync, but may need async variant in future)
-    fn list_object_func<F: FnMut(String, Vec<f32>, i64) -> bool + Send>(&self, f: F) -> impl Future<Output = ()> + Send;
+    fn list_object_func<F: FnMut(String, Vec<f32>, i64) -> bool + Send>(
+        &self,
+        f: F,
+    ) -> impl Future<Output = ()> + Send;
 
     // Status queries (sync - these are typically fast in-memory checks)
     fn is_indexing(&self) -> bool;

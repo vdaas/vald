@@ -42,7 +42,11 @@ pub fn build_error_details(
 ) -> ErrorDetails {
     let mut err_details = ErrorDetails::new();
     let metadata = HashMap::new();
-    err_details.set_error_info(err_msg.to_string(), DOMAIN.get_or_init(|| { gethostname::gethostname().to_str().unwrap().to_string() }), metadata);
+    err_details.set_error_info(
+        err_msg.to_string(),
+        DOMAIN.get_or_init(|| gethostname::gethostname().to_str().unwrap().to_string()),
+        metadata,
+    );
     err_details.set_request_info(
         id,
         String::from_utf8(request_bytes).unwrap_or_else(|_| "<invalid UTF-8>".to_string()),

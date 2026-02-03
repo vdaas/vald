@@ -513,7 +513,10 @@ impl<S: algorithm::ANN + 'static> update_server::Update for super::Agent<S> {
                         warn!("{:?}", status);
                         status
                     }
-                    Error::NewerTimestampAlreadyExists { uuid: _, timestamp: _ } => {
+                    Error::NewerTimestampAlreadyExists {
+                        uuid: _,
+                        timestamp: _,
+                    } => {
                         let err_details = build_error_details(
                             err,
                             uuid,
@@ -524,7 +527,10 @@ impl<S: algorithm::ANN + 'static> update_server::Update for super::Agent<S> {
                         );
                         let status = Status::with_error_details(
                             Code::AlreadyExists,
-                            format!("UpdateTimestamp API uuid {}'s newer timestamp already exists", uuid),
+                            format!(
+                                "UpdateTimestamp API uuid {}'s newer timestamp already exists",
+                                uuid
+                            ),
                             err_details,
                         );
                         warn!("{:?}", status);

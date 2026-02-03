@@ -15,11 +15,11 @@
 //
 
 use anyhow::{Context, Result};
+use k8s_openapi::api::core::v1::Pod;
 use kube::{
     api::{Api, Patch, PatchParams},
     Client,
 };
-use k8s_openapi::api::core::v1::Pod;
 use serde_json::json;
 use std::collections::HashMap;
 use tracing::{debug, error, info};
@@ -149,7 +149,10 @@ impl IndexMetrics {
             annotations.insert(annotations::LAST_SAVE_TIMESTAMP.to_string(), v.clone());
         }
         if let Some(v) = self.unsaved_create_index_exec {
-            annotations.insert(annotations::UNSAVED_CREATE_INDEX_EXEC.to_string(), v.to_string());
+            annotations.insert(
+                annotations::UNSAVED_CREATE_INDEX_EXEC.to_string(),
+                v.to_string(),
+            );
         }
 
         annotations
@@ -204,7 +207,11 @@ impl MetricsExporter {
         );
 
         self.patcher
-            .apply_pod_annotations(&self.pod_name, &self.pod_namespace, metrics.to_annotations())
+            .apply_pod_annotations(
+                &self.pod_name,
+                &self.pod_namespace,
+                metrics.to_annotations(),
+            )
             .await
     }
 
@@ -235,7 +242,11 @@ impl MetricsExporter {
         );
 
         self.patcher
-            .apply_pod_annotations(&self.pod_name, &self.pod_namespace, metrics.to_annotations())
+            .apply_pod_annotations(
+                &self.pod_name,
+                &self.pod_namespace,
+                metrics.to_annotations(),
+            )
             .await
     }
 
@@ -263,7 +274,11 @@ impl MetricsExporter {
         );
 
         self.patcher
-            .apply_pod_annotations(&self.pod_name, &self.pod_namespace, metrics.to_annotations())
+            .apply_pod_annotations(
+                &self.pod_name,
+                &self.pod_namespace,
+                metrics.to_annotations(),
+            )
             .await
     }
 }
@@ -305,12 +320,8 @@ mod tests {
     #[tokio::test]
     async fn test_export_on_tick() {
         let patcher = Box::new(MockPatcher::new());
-        let exporter = MetricsExporter::new(
-            patcher,
-            "test-pod".to_string(),
-            "default".to_string(),
-            true,
-        );
+        let exporter =
+            MetricsExporter::new(patcher, "test-pod".to_string(), "default".to_string(), true);
 
         exporter.export_on_tick(100, 5).await.unwrap();
 
@@ -328,9 +339,18 @@ mod tests {
         };
 
         let annotations = metrics.to_annotations();
-        assert_eq!(annotations.get(annotations::INDEX_COUNT), Some(&"100".to_string()));
-        assert_eq!(annotations.get(annotations::UNCOMMITTED_COUNT), Some(&"5".to_string()));
-        assert_eq!(annotations.get(annotations::PROCESSED_VQ_COUNT), Some(&"10".to_string()));
+        assert_eq!(
+            annotations.get(annotations::INDEX_COUNT),
+            Some(&"100".to_string())
+        );
+        assert_eq!(
+            annotations.get(annotations::UNCOMMITTED_COUNT),
+            Some(&"5".to_string())
+        );
+        assert_eq!(
+            annotations.get(annotations::PROCESSED_VQ_COUNT),
+            Some(&"10".to_string())
+        );
         assert_eq!(
             annotations.get(annotations::LAST_SAVE_TIMESTAMP),
             Some(&"2024-01-01T00:00:00Z".to_string())
@@ -350,6 +370,9 @@ mod tests {
 
         let annotations = metrics.to_annotations();
         assert_eq!(annotations.len(), 1);
-        assert_eq!(annotations.get(annotations::INDEX_COUNT), Some(&"50".to_string()));
+        assert_eq!(
+            annotations.get(annotations::INDEX_COUNT),
+            Some(&"50".to_string())
+        );
     }
 }

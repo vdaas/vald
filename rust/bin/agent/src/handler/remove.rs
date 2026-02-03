@@ -108,7 +108,8 @@ async fn remove<S: algorithm::ANN>(
                         status
                     }
                     Error::UUIDNotFound { uuid: _ } => {
-                        err_details.set_bad_request(vec![tonic_types::FieldViolation::new("id", err_msg)]);
+                        err_details
+                            .set_bad_request(vec![tonic_types::FieldViolation::new("id", err_msg)]);
                         let status = Status::with_error_details(
                             Code::InvalidArgument,
                             format!("Remove API invalid argument for uuid \"{}\" detected", uuid),
@@ -199,7 +200,8 @@ impl<S: algorithm::ANN + 'static> remove_server::Remove for super::Agent<S> {
                     matching_uuids.push(uuid);
                 }
                 true
-            }).await;
+            })
+            .await;
             uuids_to_remove = matching_uuids;
         }
 
@@ -216,7 +218,9 @@ impl<S: algorithm::ANN + 'static> remove_server::Remove for super::Agent<S> {
                 &self.name,
                 &self.ip,
                 &remove_req,
-            ).await {
+            )
+            .await
+            {
                 Ok(loc) => locations.push(loc),
                 Err(e) => errors.push(e),
             }

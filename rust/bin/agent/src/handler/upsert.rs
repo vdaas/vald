@@ -46,7 +46,7 @@ async fn upsert<S: algorithm::ANN>(
         None => return Err(Status::invalid_argument("Missing vector in request")),
     };
     let uuid = vec.id.clone();
-    
+
     // Check dimension size with a short-lived read lock
     {
         let s_inner = s.read().await;
@@ -74,7 +74,7 @@ async fn upsert<S: algorithm::ANN>(
             return Err(status);
         }
     }
-    
+
     if uuid.is_empty() {
         let err = Error::InvalidUUID { uuid: uuid.clone() };
         let resource_type = format!("{}/qbg.Upsert", resource_type);
@@ -236,7 +236,7 @@ impl<S: algorithm::ANN + 'static> upsert_server::Upsert for super::Agent<S> {
         let mut ireqs = insert::MultiRequest { requests: vec![] };
         let mut ureqs = update::MultiRequest { requests: vec![] };
         let mut ids = vec![];
-        
+
         // Use a block scope to release read lock before calling multi_insert/multi_update
         {
             let s = self.s.read().await;
