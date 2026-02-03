@@ -26,9 +26,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/test/goleak"
+
+	tierr "github.com/tikv/client-go/v2/error"
 )
 
 const (
@@ -53,29 +53,15 @@ func createClient(b *testing.B) Client {
 	}
 	var err error
 	cli, err = New(
-		WithClient(
-			grpc.New(
-				"TiKV Client",
-				grpc.WithInsecure(true),
-			),
-		),
-		WithPDClient(
-			grpc.New(
-				"PD Client",
-				grpc.WithAddrs(pdAddrs...),
-				grpc.WithInsecure(true),
-			),
-		),
+		WithPDAddrs(pdAddrs...),
 	)
 	if err != nil {
 		b.Fatalf("failed to create tikv client: %v", err)
 	}
-	cli.Start(b.Context())
-	cli.StartPD(b.Context())
 
 	// basic connectivity probe (Get for non-existing key)
 	_, err = cli.Get(context.Background(), []byte("vald_bench_probe"))
-	if err != nil && !errors.Is(err, errNotFound) {
+	if err != nil && !tierr.IsErrNotFound(err) {
 		// Depending on cluster state Get may return region not found etc.
 		// We treat only network/connection errors as fatal.
 		b.Logf("tiKV connectivity probe returned error: %v (continuing)", err)
@@ -85,8 +71,6 @@ func createClient(b *testing.B) Client {
 
 func Benchmark(b *testing.B) {
 	cli := createClient(b)
-	defer cli.Stop(b.Context())
-	defer cli.StopPD(b.Context())
 
 	ctx := b.Context()
 	val := []byte("vald_bench_val")
@@ -164,12 +148,20 @@ func Benchmark(b *testing.B) {
 		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
 			key := makeKey(i)
-			_, err := cli.Get(ctx, key[:])
-			if !errors.Is(err, errNotFound) {
-				b.Fatalf("i=%d: expected not found, got: %v", i, err)
+			v, err := cli.Get(ctx, key[:])
+			if err != nil {
+				b.Fatalf("i=%d: Get error: %v", i, err)
+			}
+			if v != nil {
+				b.Fatalf("i=%d: expected nil value for non-existing key, got %v", i, v)
 			}
 		}
 	})
+
+	err := cli.Close()
+	if err != nil {
+		b.Fatalf("failed to close tikv client: %v", err)
+	}
 }
 
 // Ensure that no goroutines leak from the benchmarks.
