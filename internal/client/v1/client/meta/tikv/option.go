@@ -16,31 +16,9 @@
 
 package tikv
 
-import "github.com/vdaas/vald/internal/net/grpc"
-
 type Option func(*client) error
 
-var defaultOptions = []Option{WithRegionErrorRetryLimit(3)}
-
-// WithClient sets a prepared grpc.Client.
-func WithClient(cl grpc.Client) Option {
-	return func(c *client) error {
-		if cl != nil {
-			c.c = cl
-		}
-		return nil
-	}
-}
-
-// WithPDClient injects existing PD client.
-func WithPDClient(pc grpc.Client) Option {
-	return func(c *client) error {
-		if pc != nil {
-			c.pd.c = pc
-		}
-		return nil
-	}
-}
+var defaultOptions = []Option{}
 
 // WithPDAddrs creates PD client internally from addresses.
 func WithPDAddrs(addrs ...string) Option {
@@ -48,17 +26,7 @@ func WithPDAddrs(addrs ...string) Option {
 		if len(addrs) == 0 {
 			return nil
 		}
-		c.pd.addrs = append(c.pd.addrs, addrs...)
-		return nil
-	}
-}
-
-// WithRegionErrorRetryLimit sets the retry limit for region errors.
-func WithRegionErrorRetryLimit(limit int) Option {
-	return func(c *client) error {
-		if limit > 0 {
-			c.regionErrorRetryLimit = limit
-		}
+		c.addrs = append(c.addrs, addrs...)
 		return nil
 	}
 }
