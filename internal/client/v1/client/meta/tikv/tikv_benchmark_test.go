@@ -26,9 +26,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/vdaas/vald/internal/test/goleak"
-
 	tierr "github.com/tikv/client-go/v2/error"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 const (

@@ -17,12 +17,11 @@ import (
 	"context"
 	"time"
 
+	"github.com/tikv/client-go/v2/config"
+	"github.com/tikv/client-go/v2/rawkv"
 	"github.com/vdaas/vald/internal/client/v1/client/meta"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability/trace"
-
-	"github.com/tikv/client-go/v2/config"
-	"github.com/tikv/client-go/v2/rawkv"
 )
 
 const (
@@ -36,7 +35,7 @@ type Client interface {
 }
 
 type client struct {
-	addrs	[]string
+	addrs []string
 	c     *rawkv.Client
 }
 
