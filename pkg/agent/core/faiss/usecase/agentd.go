@@ -78,7 +78,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 
 	grpcServerOptions := []server.Option{
-		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
+		server.WithGRPCRegisterar(func(srv *grpc.Server) {
 			agent.RegisterAgentServer(srv, g)
 			vald.RegisterValdServer(srv, g)
 		}),
