@@ -14,21 +14,14 @@
 package tikv
 
 import (
-	"bytes"
 	"context"
-	"encoding/hex"
-	"slices"
-	"sort"
-	"sync"
 	"time"
 
-	"github.com/vdaas/vald/apis/grpc/v1/tikv"
+	"github.com/tikv/client-go/v2/config"
+	"github.com/tikv/client-go/v2/rawkv"
 	"github.com/vdaas/vald/internal/client/v1/client/meta"
-	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability/trace"
-	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 const (
@@ -38,360 +31,35 @@ const (
 
 type Client interface {
 	meta.MetadataClient
-	GRPCClient() grpc.Client
-	Start(context.Context) (<-chan error, error)
-	StartPD(context.Context) (<-chan error, error)
-	Stop(context.Context) error
-	StopPD(context.Context) error
+	Close() error
 }
 
 type client struct {
-	c grpc.Client
-
-	pd *pdClient
-
-	regionErrorRetryLimit int
-
-	clusterId uint64
-
-	// range cache
-	rmu           sync.RWMutex
-	ranges        []*rangeEntry
-	regions       map[uint64]*rangeEntry
-	storeIdToAddr map[uint64]string
+	addrs []string
+	c     *rawkv.Client
 }
-
-// rangeEntry maps [start,end) to addr.
-type rangeEntry struct {
-	start []byte
-	end   []byte // nil or empty means +Inf
-	addr  string
-	ctx   *tikv.Context
-}
-
-func (c *client) lookupRange(key []byte) *rangeEntry {
-	idx := sort.Search(len(c.ranges), func(i int) bool {
-		return bytes.Compare(c.ranges[i].start, key) > 0
-	}) - 1
-	if idx >= 0 {
-		re := c.ranges[idx]
-		if len(re.end) == 0 || bytes.Compare(key, re.end) < 0 {
-			return re
-		}
-	}
-	return nil
-}
-
-type lookupResult struct {
-	keys [][]byte
-	re   *rangeEntry
-}
-
-func (c *client) lookupAddrs(ctx context.Context, keys [][]byte) (map[uint64]*lookupResult, error) {
-	unknownKeys := make([][]byte, 0, len(keys))
-	res := make(map[uint64]*lookupResult)
-	func() {
-		c.rmu.RLock()
-		defer c.rmu.RUnlock()
-		for _, key := range keys {
-			re := c.lookupRange(key)
-			if re == nil {
-				unknownKeys = append(unknownKeys, key)
-				continue
-			}
-			if res[re.ctx.RegionId] == nil {
-				res[re.ctx.RegionId] = &lookupResult{
-					keys: [][]byte{key},
-					re:   re,
-				}
-				continue
-			}
-			res[re.ctx.RegionId].keys = append(res[re.ctx.RegionId].keys, key)
-		}
-	}()
-	err := c.refresh(ctx, unknownKeys)
-	if err != nil {
-		return nil, err
-	}
-	c.rmu.RLock()
-	defer c.rmu.RUnlock()
-	for _, key := range unknownKeys {
-		re := c.lookupRange(key)
-		if re == nil || re.addr == "" {
-			return nil, errors.Errorf("address not found for key: %s", hex.EncodeToString(key))
-		}
-		if res[re.ctx.RegionId] == nil {
-			res[re.ctx.RegionId] = &lookupResult{
-				keys: [][]byte{key},
-				re:   re,
-			}
-			continue
-		}
-		res[re.ctx.RegionId].keys = append(res[re.ctx.RegionId].keys, key)
-	}
-	return res, nil
-}
-
-func (c *client) refresh(ctx context.Context, keys [][]byte) error {
-	if c.clusterId == 0 {
-		res, err := c.pd.GetClusterInfo(ctx, &tikv.GetClusterInfoRequest{
-			Header: &tikv.ResponseHeader{},
-		})
-		if err != nil {
-			return errors.Errorf("PD GetClusterInfo failed, err: %w", err)
-		}
-		if res.Header.Error != nil {
-			return errors.Errorf("PD GetClusterInfo failed, message: %s", res.Header.Error.Message)
-		}
-		c.clusterId = res.Header.ClusterId
-	}
-	c.storeIdToAddr = make(map[uint64]string)
-	var regions []*tikv.Region
-	g, ctx := errgroup.WithContext(ctx)
-	g.Go(func() error {
-		res, err := c.pd.GetAllStores(ctx, &tikv.GetAllStoresRequest{
-			Header:                 &tikv.RequestHeader{ClusterId: c.clusterId},
-			ExcludeTombstoneStores: true,
-		})
-		if err != nil {
-			return errors.Errorf("PD GetAllStores failed, err: %w", err)
-		}
-		for _, store := range res.Stores {
-			c.storeIdToAddr[store.Id] = store.Address
-		}
-		return nil
-	})
-	g.Go(func() error {
-		req := make([]*tikv.KeyRange, len(keys))
-		sort.Slice(keys, func(i, j int) bool {
-			return bytes.Compare(keys[i], keys[j]) < 0
-		})
-		for i, key := range keys {
-			req[i] = &tikv.KeyRange{
-				StartKey: key,
-				EndKey:   nil,
-			}
-		}
-		res, err := c.pd.BatchScanRegions(ctx, &tikv.BatchScanRegionsRequest{
-			Header:             &tikv.RequestHeader{ClusterId: c.clusterId},
-			Ranges:             req,
-			ContainAllKeyRange: true,
-		})
-		if err != nil {
-			return errors.Errorf("PD BatchScanRegions failed, err: %w", err)
-		}
-		regions = res.Regions
-		return nil
-	})
-	if err := g.Wait(); err != nil {
-		return err
-	}
-	c.rmu.Lock()
-	defer c.rmu.Unlock()
-	for _, r := range regions {
-		if r == nil || r.Region == nil || r.Leader == nil {
-			continue
-		}
-		if _, ok := c.storeIdToAddr[r.Leader.StoreId]; !ok {
-			return errors.Errorf("store id %d not found", r.Leader.StoreId)
-		}
-		start := slices.Clone(r.Region.StartKey)
-		end := slices.Clone(r.Region.EndKey)
-		re := &rangeEntry{
-			start: start,
-			end:   end,
-			addr:  c.storeIdToAddr[r.Leader.StoreId],
-			ctx: &tikv.Context{
-				RegionId: r.Region.Id,
-				RegionEpoch: &tikv.RegionEpoch{
-					Version: r.Region.RegionEpoch.Version,
-					ConfVer: r.Region.RegionEpoch.ConfVer,
-				},
-				Peer: &tikv.Peer{
-					Id:      r.Leader.Id,
-					StoreId: r.Leader.StoreId,
-				},
-			},
-		}
-		c.regions[r.Region.Id] = re
-		c.ranges = mergeByNewerVersion(c.ranges, re)
-	}
-	return nil
-}
-
-func epochCmp(a, b *tikv.RegionEpoch) int {
-	// return 1 if a newer than b, 0 if equal, -1 if older
-	if a.GetConfVer() != b.GetConfVer() {
-		if a.GetConfVer() > b.GetConfVer() {
-			return 1
-		}
-		return -1
-	}
-	if a.GetVersion() != b.GetVersion() {
-		if a.GetVersion() > b.GetVersion() {
-			return 1
-		}
-		return -1
-	}
-	return 0
-}
-
-func mergeByNewerVersion(old []*rangeEntry, newE *rangeEntry) []*rangeEntry {
-	// log.Errorf("merging %#v into existing ranges %#v", newE, old)
-	out := make([]*rangeEntry, 0, len(old)+1)
-	inserted := false
-
-	for _, e := range old {
-		if !overlap(e.start, e.end, newE.start, newE.end) {
-			out = append(out, e)
-			continue
-		}
-
-		cmp := epochCmp(newE.ctx.RegionEpoch, e.ctx.RegionEpoch)
-		switch {
-		case cmp > 0:
-			// new is newer: drop old overlapping entry
-			continue
-		case cmp == 0:
-			// same epoch: replace entire entry (start/end/ctx/addr)
-			out = append(out, newE)
-			inserted = true
-		default:
-			// new is older: keep old set
-			return old
-		}
-	}
-
-	if !inserted {
-		out = append(out, newE)
-	}
-
-	sort.Slice(out, func(i, j int) bool {
-		return bytes.Compare(out[i].start, out[j].start) < 0
-	})
-	// log.Errorf("out: %#v", out)
-	return out
-}
-
-func overlap(aStart, aEnd, bStart, bEnd []byte) bool {
-	// Does [aStart, aEnd) and [bStart, bEnd) overlap?
-	if len(aEnd) != 0 && bytes.Compare(aEnd, bStart) <= 0 {
-		return false
-	}
-	if len(bEnd) != 0 && bytes.Compare(bEnd, aStart) <= 0 {
-		return false
-	}
-	return true
-}
-
-var errNotFound = errors.New("tikv: key not found")
 
 func New(opts ...Option) (Client, error) {
 	c := new(client)
-	c.pd = new(pdClient)
 	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(c); err != nil {
 			return nil, err
 		}
 	}
-
-	c.regions = make(map[uint64]*rangeEntry)
-
-	if c.c == nil {
-		c.c = grpc.New("TiKV Client")
-	}
-	if c.pd.c == nil {
-		if len(c.pd.addrs) == 0 {
-			return nil, errors.ErrGRPCTargetAddrNotFound
-		}
-		c.pd.c = grpc.New("PD Client", grpc.WithAddrs(c.pd.addrs...))
+	var err error
+	c.c, err = rawkv.NewClient(
+		context.Background(),
+		c.addrs,
+		config.DefaultConfig().Security,
+	)
+	if err != nil {
+		return nil, err
 	}
 	return c, nil
 }
 
-func (c *client) Start(ctx context.Context) (<-chan error, error) {
-	return c.c.StartConnectionMonitor(ctx)
-}
-
-func (c *client) StartPD(ctx context.Context) (<-chan error, error) {
-	return c.pd.c.StartConnectionMonitor(ctx)
-}
-
-func (c *client) Stop(ctx context.Context) error {
-	return c.c.Close(ctx)
-}
-
-func (c *client) StopPD(ctx context.Context) error {
-	return c.pd.c.Close(ctx)
-}
-
-func (c *client) GRPCClient() grpc.Client {
-	return c.c
-}
-
-func (c *client) GRPCClientPD() grpc.Client {
-	return c.pd.c
-}
-
-func (c *client) handleRegionError(
-	ctx context.Context, regionErr *tikv.Error, keys [][]byte, refresh bool,
-) error {
-	log.Errorf("region error: %+v", regionErr)
-	c.rmu.Lock()
-	if err := regionErr.ServerIsBusy; err != nil {
-		c.rmu.Unlock()
-		time.Sleep(waitInterval)
-		return nil
-	}
-	if err := regionErr.NotLeader; regionErr.NotLeader != nil {
-		if err.Leader == nil {
-			// sleep while electing new leader
-			c.rmu.Unlock()
-			time.Sleep(waitInterval)
-			return nil
-		}
-		if _, ok := c.regions[err.RegionId]; ok {
-			c.regions[err.RegionId].addr = c.storeIdToAddr[err.Leader.StoreId]
-			c.regions[err.RegionId].ctx.Peer.Id = err.Leader.Id
-			c.regions[err.RegionId].ctx.Peer.StoreId = err.Leader.StoreId
-			c.rmu.Unlock()
-			return nil
-		}
-	}
-	if err := regionErr.EpochNotMatch; err != nil {
-		for _, r := range err.CurrentRegions {
-			if len(r.Peers) == 0 {
-				continue
-			}
-			re := &rangeEntry{
-				start: slices.Clone(r.StartKey),
-				end:   slices.Clone(r.EndKey),
-				addr:  c.storeIdToAddr[r.Peers[0].StoreId],
-				ctx: &tikv.Context{
-					RegionId: r.Id,
-					RegionEpoch: &tikv.RegionEpoch{
-						Version: r.RegionEpoch.Version,
-						ConfVer: r.RegionEpoch.ConfVer,
-					},
-					Peer: &tikv.Peer{
-						Id:      r.Peers[0].Id,
-						StoreId: r.Peers[0].StoreId,
-					},
-				},
-			}
-			c.ranges = mergeByNewerVersion(c.ranges, re)
-		}
-		c.rmu.Unlock()
-		return nil
-	}
-	c.rmu.Unlock()
-	if !refresh {
-		return nil
-	}
-	if err := c.refresh(ctx, keys); err != nil {
-		return err
-	}
-	return nil
+func (c *client) Close() error {
+	return c.c.Close()
 }
 
 func (c *client) Get(ctx context.Context, key []byte) ([]byte, error) {
@@ -401,40 +69,7 @@ func (c *client) Get(ctx context.Context, key []byte) ([]byte, error) {
 			span.End()
 		}
 	}()
-	for range c.regionErrorRetryLimit {
-		lookups, err := c.lookupAddrs(ctx, [][]byte{key})
-		if err != nil {
-			return nil, err
-		}
-		for _, lookup := range lookups {
-			c.c.Connect(ctx, lookup.re.addr)
-			res, err := grpc.Do(ctx, lookup.re.addr, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawGetResponse, error) {
-				return tikv.NewTikvClient(conn).RawGet(ctx, &tikv.RawGetRequest{
-					Context: lookup.re.ctx,
-					Key:     key,
-					Cf:      "default",
-				}, copts...)
-			})
-			if err != nil {
-				return nil, errors.Errorf("Get failed, err: %w", err)
-			}
-			if res.Error != "" {
-				return nil, errors.Errorf("Get failed, message: %s", res.Error)
-			}
-			if res.NotFound {
-				return nil, errNotFound
-			}
-			if res.RegionError != nil {
-				if err = c.handleRegionError(ctx, res.RegionError, [][]byte{key}, true); err != nil {
-					return nil, err
-				}
-				// After refresh, retry with updated region info.
-				continue
-			}
-			return res.Value, nil
-		}
-	}
-	return nil, errors.Errorf("exceeded region error retry limit for key: %s", hex.EncodeToString(key))
+	return c.c.Get(ctx, key)
 }
 
 func (c *client) Put(ctx context.Context, key, val []byte) error {
@@ -444,40 +79,7 @@ func (c *client) Put(ctx context.Context, key, val []byte) error {
 			span.End()
 		}
 	}()
-
-	for range c.regionErrorRetryLimit {
-		lookups, err := c.lookupAddrs(ctx, [][]byte{key})
-		if err != nil {
-			return err
-		}
-
-		for _, lookup := range lookups {
-			c.c.Connect(ctx, lookup.re.addr)
-			res, err := grpc.Do(ctx, lookup.re.addr, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawPutResponse, error) {
-				return tikv.NewTikvClient(conn).RawPut(ctx, &tikv.RawPutRequest{
-					Context: lookup.re.ctx,
-					Key:     key,
-					Value:   val,
-					Cf:      "default",
-				}, copts...)
-			})
-			if err != nil {
-				return errors.Errorf("Put failed, err: %w", err)
-			}
-			if res.Error != "" {
-				return errors.Errorf("Put failed, message: %s", res.Error)
-			}
-			if res.RegionError != nil {
-				if err = c.handleRegionError(ctx, res.RegionError, [][]byte{key}, true); err != nil {
-					return err
-				}
-				// retry with refreshed region info
-				break
-			}
-			return nil
-		}
-	}
-	return errors.Errorf("exceeded region error retry limit for key: %s", hex.EncodeToString(key))
+	return c.c.Put(ctx, key, val)
 }
 
 func (c *client) Delete(ctx context.Context, key []byte) error {
@@ -487,37 +89,5 @@ func (c *client) Delete(ctx context.Context, key []byte) error {
 			span.End()
 		}
 	}()
-
-	for range c.regionErrorRetryLimit {
-		lookups, err := c.lookupAddrs(ctx, [][]byte{key})
-		if err != nil {
-			return err
-		}
-
-		for _, lookup := range lookups {
-			c.c.Connect(ctx, lookup.re.addr)
-			res, err := grpc.Do(ctx, lookup.re.addr, c.c, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*tikv.RawDeleteResponse, error) {
-				return tikv.NewTikvClient(conn).RawDelete(ctx, &tikv.RawDeleteRequest{
-					Context: lookup.re.ctx,
-					Key:     key,
-					Cf:      "default",
-				}, copts...)
-			})
-			if err != nil {
-				return errors.Errorf("Delete failed, err: %w", err)
-			}
-			if res.Error != "" {
-				return errors.Errorf("Delete failed, message: %s", res.Error)
-			}
-			if res.RegionError != nil {
-				if err = c.handleRegionError(ctx, res.RegionError, [][]byte{key}, true); err != nil {
-					return err
-				}
-				// retry
-				break
-			}
-			return nil
-		}
-	}
-	return errors.Errorf("exceeded region error retry limit for key: %s", hex.EncodeToString(key))
+	return c.c.Delete(ctx, key)
 }

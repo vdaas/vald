@@ -24,7 +24,7 @@ edition = "2021"
 algorithm = { version = "0.1.0", path = "../../libs/algorithm" }
 qbg = { version = "0.1.0", path = "../../libs/algorithms/qbg" }
 anyhow = "1.0.100"
-cargo = "0.93.0"
+cargo = "0.94.0"
 chrono = "0.4.43"
 config = "0.15.19"
 flexi_logger = "0.31"
@@ -37,8 +37,8 @@ prost-types = "0.14.3"
 proto = { version = "0.1.0", path = "../../libs/proto" }
 tokio = { version = "1.49.0", features = ["full"] }
 tokio-stream = { version = "0.1.18", features = ["full"] }
-tonic = "0.14.2"
-tonic-types = "0.14.2"
+tonic = "0.14.3"
+tonic-types = "0.14.3"
 tower = "0.5.3"
 
 [dev-dependencies]

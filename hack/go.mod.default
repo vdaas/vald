@@ -1,6 +1,6 @@
 module github.com/vdaas/vald
 
-go 1.25.5
+go 1.25.6
 
 tool (
 	github.com/bufbuild/buf/cmd/buf
@@ -365,4 +365,6 @@ replace (
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.22.4
 	sigs.k8s.io/json => sigs.k8s.io/json upgrade
 	sigs.k8s.io/kustomize => sigs.k8s.io/kustomize upgrade
+	github.com/tikv/client-go/v2 => github.com/tikv/client-go/v2 v2.0.7
+	github.com/tikv/pd/client => github.com/tikv/pd/client v0.0.0-20230329114254-1948c247c2b1
 )
