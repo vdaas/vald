@@ -58,3 +58,4 @@ bytes = "1.11.0"
 http-body = "1.0.1"
 tempfile = "3"
 rand = "0.9"
+opentelemetry_sdk = { version = "0.31.0", features = ["rt-tokio"] }
