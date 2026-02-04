@@ -24,18 +24,19 @@ pub mod search;
 pub mod update;
 pub mod upsert;
 
-use std::sync::Arc;
-use std::time::Duration;
-use tokio::sync::{RwLock, mpsc};
-use config::Config;
+use crate::config::AgentConfig;
+use crate::middleware;
+use crate::service::{start_daemon, DaemonConfig, DaemonHandle};
 use proto::{
     core::v1::agent_server,
     vald::v1::{
-        flush_server, index_server, insert_server, object_server, remove_server, search_server, update_server, upsert_server
-    }
+        flush_server, index_server, insert_server, object_server, remove_server, search_server,
+        update_server, upsert_server,
+    },
 };
-use crate::middleware;
-use crate::service::{DaemonConfig, DaemonHandle, start_daemon};
+use std::sync::Arc;
+use std::time::Duration;
+use tokio::sync::{mpsc, RwLock};
 
 pub struct Agent<S: algorithm::ANN + 'static> {
     s: Arc<RwLock<S>>,
@@ -71,14 +72,14 @@ impl<S: algorithm::ANN + 'static> Agent<S> {
 
     /// Starts the daemon for automatic indexing and saving.
     /// This should be called before serve_grpc.
-    pub async fn start(&mut self, settings: &Config) {
-        let daemon_config = DaemonConfig::from_config(settings);
+    pub async fn start(&mut self, config: &AgentConfig) {
+        let daemon_config = DaemonConfig::from_config(&config.daemon);
         log::info!("Starting daemon with config: {:?}", daemon_config);
-        
+
         let (handle, error_rx) = start_daemon(self.s.clone(), daemon_config).await;
         self.daemon_handle = Some(handle);
         self.error_rx = Some(error_rx);
-        
+
         log::info!("Daemon started successfully");
     }
 
@@ -92,36 +93,36 @@ impl<S: algorithm::ANN + 'static> Agent<S> {
     }
 
     /// Performs a graceful shutdown of the agent.
-    /// 
+    ///
     /// This method:
     /// 1. Stops the daemon and waits for it to complete final index creation
     /// 2. Calls close() on the underlying service to:
     ///    - Create and save any uncommitted index changes
     ///    - Close the QBG index
     ///    - Flush and close KVS
-    /// 
+    ///
     /// This should be called when the application is shutting down to ensure
     /// all data is persisted correctly.
     pub async fn shutdown(&self) -> Result<(), algorithm::Error> {
         log::info!("Agent shutdown initiated...");
-        
+
         // Stop daemon and wait for it to complete
         if let Some(ref handle) = self.daemon_handle {
             log::info!("Waiting for daemon to complete shutdown...");
             handle.stop_and_wait().await;
             log::info!("Daemon shutdown complete");
         }
-        
+
         // Close the service
         log::info!("Closing service...");
         let mut service = self.s.write().await;
         let result = service.close().await;
-        
+
         match &result {
             Ok(()) => log::info!("Agent shutdown complete"),
             Err(e) => log::error!("Agent shutdown completed with errors: {:?}", e),
         }
-        
+
         result
     }
 
@@ -131,42 +132,32 @@ impl<S: algorithm::ANN + 'static> Agent<S> {
     }
 
     /// Starts the gRPC server with all registered services.
-    pub async fn serve_grpc(self, settings: Config) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn serve_grpc(self, config: AgentConfig) -> Result<(), Box<dyn std::error::Error>> {
         let addr = "0.0.0.0:8081".parse()?;
-        let mut grpc_key = String::new();
-        for i in 0..settings.get_array("server_config.servers")?.len() {
-            let name = settings.get::<String>(format!("server_config.servers[{i}].name").as_str())?;
-            match name.as_str() {
-                "grpc" => {
-                    grpc_key = format!("server_config.servers[{i}]");
-                }
-                _ => {}
-            }
-        }
+
+        let grpc_server_config = config
+            .server_config
+            .servers
+            .iter()
+            .find(|s| s.name == "grpc")
+            .map(|s| &s.grpc)
+            .ok_or_else(|| {
+                std::io::Error::new(std::io::ErrorKind::NotFound, "grpc server config not found")
+            })?;
 
         let mut builder = tonic::transport::Server::builder();
-        if let Some(duration) = parse_duration_from_string(
-            settings
-                .get::<String>(format!("{grpc_key}.grpc.keepalive.max_conn_age").as_str())?
-                .as_str(),
-        ) {
+        if let Some(duration) =
+            parse_duration_from_string(&grpc_server_config.keepalive.max_conn_age)
+        {
             builder = builder.max_connection_age(duration);
         }
-        if let Some(duration) = parse_duration_from_string(
-            settings
-                .get::<String>(format!("{grpc_key}.grpc.connection_timeout").as_str())?
-                .as_str(),
-        ) {
+        if let Some(duration) = parse_duration_from_string(&grpc_server_config.connection_timeout) {
             builder = builder.timeout(duration);
         }
 
         let mut accessloginterceptor: Option<()> = None;
         let mut metricinterceptor: Option<()> = None;
-        for i in 0..settings
-            .get_array(format!("{grpc_key}.grpc.interceptors").as_str())?
-            .len()
-        {
-            let name = settings.get::<String>(format!("{grpc_key}.grpc.interceptors[{i}]").as_str())?;
+        for name in &grpc_server_config.interceptors {
             match name.to_lowercase().as_str() {
                 "accessloginterceptor" | "accesslog" => accessloginterceptor = Some(()),
                 "metricinterceptor" | "metric" => metricinterceptor = Some(()),
@@ -175,81 +166,71 @@ impl<S: algorithm::ANN + 'static> Agent<S> {
         }
 
         let layer = tower::ServiceBuilder::new()
-            .option_layer(accessloginterceptor.map(|_| middleware::AccessLogMiddlewareLayer::default()))
+            .option_layer(
+                accessloginterceptor.map(|_| middleware::AccessLogMiddlewareLayer::default()),
+            )
             .option_layer(metricinterceptor.map(|_| middleware::MetricMiddlewareLayer::default()))
             .into_inner();
 
-        let max_recv_size = settings.get::<usize>(format!("{grpc_key}.grpc.max_receive_message_size").as_str())?;
-        let max_send_size = settings.get::<usize>(format!("{grpc_key}.grpc.max_send_message_size").as_str())?;
+        let max_recv_size = grpc_server_config.max_receive_message_size;
+        let max_send_size = grpc_server_config.max_send_message_size;
 
         builder
-            .initial_stream_window_size(
-                settings.get::<u32>(format!("{grpc_key}.grpc.initial_window_size").as_str())?,
-            )
-            .initial_connection_window_size(
-                settings.get::<u32>(format!("{grpc_key}.grpc.initial_conn_window_size").as_str())?,
-            )
+            .initial_stream_window_size(Some(grpc_server_config.initial_window_size))
+            .initial_connection_window_size(Some(grpc_server_config.initial_conn_window_size))
             .http2_keepalive_interval(parse_duration_from_string(
-                settings
-                    .get::<String>(format!("{grpc_key}.grpc.keepalive.time").as_str())?
-                    .as_str(),
+                &grpc_server_config.keepalive.time,
             ))
             .http2_keepalive_timeout(parse_duration_from_string(
-                settings
-                    .get::<String>(format!("{grpc_key}.grpc.keepalive.timeout").as_str())?
-                    .as_str(),
+                &grpc_server_config.keepalive.timeout,
             ))
-            .http2_max_header_list_size(
-                settings.get::<u32>(format!("{grpc_key}.grpc.max_header_list_size").as_str())?,
-            )
-            .max_concurrent_streams(
-                settings.get::<u32>(format!("{grpc_key}.grpc.max_concurrent_streams").as_str())?,
-            )
+            .http2_max_header_list_size(Some(grpc_server_config.max_header_list_size))
+            .max_concurrent_streams(Some(grpc_server_config.max_concurrent_streams))
             .layer(layer)
             .add_service(
                 agent_server::AgentServer::new(self.clone())
                     .max_decoding_message_size(max_recv_size)
-                    .max_encoding_message_size(max_send_size)
+                    .max_encoding_message_size(max_send_size),
             )
             .add_service(
                 search_server::SearchServer::new(self.clone())
                     .max_decoding_message_size(max_recv_size)
-                    .max_encoding_message_size(max_send_size)
+                    .max_encoding_message_size(max_send_size),
             )
             .add_service(
                 insert_server::InsertServer::new(self.clone())
                     .max_decoding_message_size(max_recv_size)
-                    .max_encoding_message_size(max_send_size)
+                    .max_encoding_message_size(max_send_size),
             )
             .add_service(
                 update_server::UpdateServer::new(self.clone())
                     .max_decoding_message_size(max_recv_size)
-                    .max_encoding_message_size(max_send_size)
+                    .max_encoding_message_size(max_send_size),
             )
             .add_service(
                 upsert_server::UpsertServer::new(self.clone())
                     .max_decoding_message_size(max_recv_size)
-                    .max_encoding_message_size(max_send_size)
+                    .max_encoding_message_size(max_send_size),
             )
             .add_service(
                 remove_server::RemoveServer::new(self.clone())
                     .max_decoding_message_size(max_recv_size)
-                    .max_encoding_message_size(max_send_size)
+                    .max_encoding_message_size(max_send_size),
             )
             .add_service(
                 object_server::ObjectServer::new(self.clone())
                     .max_decoding_message_size(max_recv_size)
-                    .max_encoding_message_size(max_send_size)
+                    .max_encoding_message_size(max_send_size),
             )
             .add_service(
                 index_server::IndexServer::new(self.clone())
                     .max_decoding_message_size(max_recv_size)
-                    .max_encoding_message_size(max_send_size)
+                    .max_encoding_message_size(max_send_size),
             )
             .add_service(
                 flush_server::FlushServer::new(self.clone())
                     .max_decoding_message_size(max_recv_size)
-                    .max_encoding_message_size(max_send_size)
+                    .max_encoding_message_size(max_send_size),
             )
             .serve(addr)
             .await?;
@@ -308,9 +289,11 @@ fn parse_duration_from_string(input: &str) -> Option<Duration> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use algorithm::{ANN, Error};
-    use proto::payload::v1::{info, insert, object, search, remove, upsert, update};
-    use proto::vald::v1::{insert_server::Insert, search_server::Search, remove_server::Remove, object_server::Object};
+    use algorithm::{Error, ANN};
+    use proto::payload::v1::{info, insert, object, remove, search, update, upsert};
+    use proto::vald::v1::{
+        insert_server::Insert, object_server::Object, remove_server::Remove, search_server::Search,
+    };
     use std::collections::HashMap;
 
     /// Minimal mock ANN service for handler testing.
@@ -340,10 +323,12 @@ mod tests {
             async move {
                 Ok(search::Response {
                     request_id: String::new(),
-                    results: (0..num).map(|i| object::Distance {
-                        id: format!("result-{}", i),
-                        distance: 0.1 * i as f32,
-                    }).collect(),
+                    results: (0..num)
+                        .map(|i| object::Distance {
+                            id: format!("result-{}", i),
+                            distance: 0.1 * i as f32,
+                        })
+                        .collect(),
                 })
             }
         }
@@ -358,71 +343,225 @@ mod tests {
             async move {
                 Ok(search::Response {
                     request_id: String::new(),
-                    results: (0..num).map(|i| object::Distance {
-                        id: format!("result-{}", i),
-                        distance: 0.1 * i as f32,
-                    }).collect(),
+                    results: (0..num)
+                        .map(|i| object::Distance {
+                            id: format!("result-{}", i),
+                            distance: 0.1 * i as f32,
+                        })
+                        .collect(),
                 })
             }
         }
 
-        fn linear_search(&self, _v: Vec<f32>, _n: u32) -> impl std::future::Future<Output = Result<search::Response, Error>> + Send {
-            async { Err(Error::Unsupported { method: "linear_search".into(), algorithm: "Mock".into() }) }
+        fn linear_search(
+            &self,
+            _v: Vec<f32>,
+            _n: u32,
+        ) -> impl std::future::Future<Output = Result<search::Response, Error>> + Send {
+            async {
+                Err(Error::Unsupported {
+                    method: "linear_search".into(),
+                    algorithm: "Mock".into(),
+                })
+            }
         }
 
-        fn linear_search_by_id(&self, _u: String, _n: u32) -> impl std::future::Future<Output = Result<search::Response, Error>> + Send {
-            async { Err(Error::Unsupported { method: "linear_search_by_id".into(), algorithm: "Mock".into() }) }
+        fn linear_search_by_id(
+            &self,
+            _u: String,
+            _n: u32,
+        ) -> impl std::future::Future<Output = Result<search::Response, Error>> + Send {
+            async {
+                Err(Error::Unsupported {
+                    method: "linear_search_by_id".into(),
+                    algorithm: "Mock".into(),
+                })
+            }
         }
 
-        fn insert(&mut self, _u: String, _v: Vec<f32>) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn insert_with_time(&mut self, _u: String, _v: Vec<f32>, _t: i64) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn insert_multiple(&mut self, _vs: HashMap<String, Vec<f32>>) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn insert_multiple_with_time(&mut self, _vs: HashMap<String, Vec<f32>>, _t: i64) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn update(&mut self, _u: String, _v: Vec<f32>) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn update_with_time(&mut self, _u: String, _v: Vec<f32>, _t: i64) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn update_multiple(&mut self, _vs: HashMap<String, Vec<f32>>) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn update_multiple_with_time(&mut self, _vs: HashMap<String, Vec<f32>>, _t: i64) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn update_timestamp(&mut self, _u: String, _t: i64, _f: bool) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn remove(&mut self, _u: String) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn remove_with_time(&mut self, _u: String, _t: i64) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn remove_multiple(&mut self, _us: Vec<String>) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn remove_multiple_with_time(&mut self, _us: Vec<String>, _t: i64) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
+        fn insert(
+            &mut self,
+            _u: String,
+            _v: Vec<f32>,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn insert_with_time(
+            &mut self,
+            _u: String,
+            _v: Vec<f32>,
+            _t: i64,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn insert_multiple(
+            &mut self,
+            _vs: HashMap<String, Vec<f32>>,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn insert_multiple_with_time(
+            &mut self,
+            _vs: HashMap<String, Vec<f32>>,
+            _t: i64,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn update(
+            &mut self,
+            _u: String,
+            _v: Vec<f32>,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn update_with_time(
+            &mut self,
+            _u: String,
+            _v: Vec<f32>,
+            _t: i64,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn update_multiple(
+            &mut self,
+            _vs: HashMap<String, Vec<f32>>,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn update_multiple_with_time(
+            &mut self,
+            _vs: HashMap<String, Vec<f32>>,
+            _t: i64,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn update_timestamp(
+            &mut self,
+            _u: String,
+            _t: i64,
+            _f: bool,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn remove(
+            &mut self,
+            _u: String,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn remove_with_time(
+            &mut self,
+            _u: String,
+            _t: i64,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn remove_multiple(
+            &mut self,
+            _us: Vec<String>,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn remove_multiple_with_time(
+            &mut self,
+            _us: Vec<String>,
+            _t: i64,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
 
-        fn get_object(&self, _uuid: String) -> impl std::future::Future<Output = Result<(Vec<f32>, i64), Error>> + Send {
+        fn get_object(
+            &self,
+            _uuid: String,
+        ) -> impl std::future::Future<Output = Result<(Vec<f32>, i64), Error>> + Send {
             let dim = self.dimension;
             async move { Ok((vec![0.0; dim], 12345)) }
         }
 
-        fn exists(&self, _uuid: String) -> impl std::future::Future<Output = (usize, bool)> + Send { async { (1, true) } }
-        fn uuids(&self) -> impl std::future::Future<Output = Vec<String>> + Send { async { vec!["uuid-1".into()] } }
-        fn list_object_func<F: FnMut(String, Vec<f32>, i64) -> bool + Send>(&self, _f: F) -> impl std::future::Future<Output = ()> + Send { async {} }
-        fn create_index(&mut self) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn save_index(&mut self) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn create_and_save_index(&mut self) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn regenerate_indexes(&mut self) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn len(&self) -> u32 { 100 }
-        fn insert_vqueue_buffer_len(&self) -> u32 { 5 }
-        fn delete_vqueue_buffer_len(&self) -> u32 { 2 }
-        fn is_indexing(&self) -> bool { false }
-        fn is_flushing(&self) -> bool { false }
-        fn is_saving(&self) -> bool { false }
-        fn number_of_create_index_executions(&self) -> u64 { 10 }
-        fn broken_index_count(&self) -> u64 { 0 }
-        fn is_statistics_enabled(&self) -> bool { false }
-        fn index_statistics(&self) -> Result<info::index::Statistics, Error> { Ok(info::index::Statistics::default()) }
-        fn index_property(&self) -> Result<info::index::Property, Error> { Ok(info::index::Property::default()) }
-        fn close(&mut self) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
+        fn exists(&self, _uuid: String) -> impl std::future::Future<Output = (usize, bool)> + Send {
+            async { (1, true) }
+        }
+        fn uuids(&self) -> impl std::future::Future<Output = Vec<String>> + Send {
+            async { vec!["uuid-1".into()] }
+        }
+        fn list_object_func<F: FnMut(String, Vec<f32>, i64) -> bool + Send>(
+            &self,
+            _f: F,
+        ) -> impl std::future::Future<Output = ()> + Send {
+            async {}
+        }
+        fn create_index(&mut self) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn save_index(&mut self) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn create_and_save_index(
+            &mut self,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn regenerate_indexes(
+            &mut self,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn len(&self) -> u32 {
+            100
+        }
+        fn insert_vqueue_buffer_len(&self) -> u32 {
+            5
+        }
+        fn delete_vqueue_buffer_len(&self) -> u32 {
+            2
+        }
+        fn is_indexing(&self) -> bool {
+            false
+        }
+        fn is_flushing(&self) -> bool {
+            false
+        }
+        fn is_saving(&self) -> bool {
+            false
+        }
+        fn number_of_create_index_executions(&self) -> u64 {
+            10
+        }
+        fn broken_index_count(&self) -> u64 {
+            0
+        }
+        fn is_statistics_enabled(&self) -> bool {
+            false
+        }
+        fn index_statistics(&self) -> Result<info::index::Statistics, Error> {
+            Ok(info::index::Statistics::default())
+        }
+        fn index_property(&self) -> Result<info::index::Property, Error> {
+            Ok(info::index::Property::default())
+        }
+        fn close(&mut self) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
     }
 
     fn create_test_agent(dimension: usize) -> Agent<MockANNService> {
-        Agent::new(MockANNService::new(dimension), "test-agent", "127.0.0.1", "vald.v1", "vald-agent", 10)
+        Agent::new(
+            MockANNService::new(dimension),
+            "test-agent",
+            "127.0.0.1",
+            "vald.v1",
+            "vald-agent",
+            10,
+        )
     }
 
     fn gen_vector(dim: usize, seed: u64) -> Vec<f32> {
         let mut state = seed;
         (0..dim)
             .map(|i| {
-                state = state.wrapping_mul(6364136223846793005).wrapping_add(i as u64);
+                state = state
+                    .wrapping_mul(6364136223846793005)
+                    .wrapping_add(i as u64);
                 ((state >> 33) as f32 / u32::MAX as f32) * 2.0 - 1.0
             })
             .collect()
@@ -433,7 +572,7 @@ mod tests {
     #[tokio::test]
     async fn test_insert_handler_success() {
         let agent = create_test_agent(128);
-        
+
         let request = tonic::Request::new(insert::Request {
             vector: Some(object::Vector {
                 id: "test-uuid-1".to_string(),
@@ -449,7 +588,7 @@ mod tests {
 
         let result = agent.insert(request).await;
         assert!(result.is_ok());
-        
+
         let response = result.unwrap().into_inner();
         assert_eq!(response.uuid, "test-uuid-1");
         assert_eq!(response.name, "test-agent");
@@ -458,9 +597,9 @@ mod tests {
     #[tokio::test]
     async fn test_insert_handler_duplicate_uuid() {
         let agent = create_test_agent(128);
-        
+
         let vector = gen_vector(128, 1);
-        
+
         // First insert
         let request1 = tonic::Request::new(insert::Request {
             vector: Some(object::Vector {
@@ -471,7 +610,7 @@ mod tests {
             config: Some(insert::Config::default()),
         });
         let _ = agent.insert(request1).await.unwrap();
-        
+
         // Second insert with same UUID - Mock always succeeds, so we just verify handler doesn't crash
         let request2 = tonic::Request::new(insert::Request {
             vector: Some(object::Vector {
@@ -481,7 +620,7 @@ mod tests {
             }),
             config: Some(insert::Config::default()),
         });
-        
+
         // With simplified mock, this succeeds (no duplicate check)
         let result = agent.insert(request2).await;
         assert!(result.is_ok());
@@ -490,7 +629,7 @@ mod tests {
     #[tokio::test]
     async fn test_insert_handler_invalid_dimension() {
         let agent = create_test_agent(128);
-        
+
         let request = tonic::Request::new(insert::Request {
             vector: Some(object::Vector {
                 id: "test-uuid".to_string(),
@@ -502,7 +641,7 @@ mod tests {
 
         let result = agent.insert(request).await;
         assert!(result.is_err());
-        
+
         let status = result.unwrap_err();
         assert_eq!(status.code(), tonic::Code::InvalidArgument);
     }
@@ -510,7 +649,7 @@ mod tests {
     #[tokio::test]
     async fn test_insert_handler_missing_config() {
         let agent = create_test_agent(128);
-        
+
         let request = tonic::Request::new(insert::Request {
             vector: Some(object::Vector {
                 id: "test-uuid".to_string(),
@@ -522,7 +661,7 @@ mod tests {
 
         let result = agent.insert(request).await;
         assert!(result.is_err());
-        
+
         let status = result.unwrap_err();
         assert_eq!(status.code(), tonic::Code::InvalidArgument);
     }
@@ -532,7 +671,7 @@ mod tests {
     #[tokio::test]
     async fn test_search_handler_success() {
         let agent = create_test_agent(128);
-        
+
         // Insert some vectors first
         for i in 0..5 {
             let request = tonic::Request::new(insert::Request {
@@ -545,7 +684,7 @@ mod tests {
             });
             agent.insert(request).await.unwrap();
         }
-        
+
         // Search
         let search_request = tonic::Request::new(search::Request {
             vector: gen_vector(128, 100),
@@ -566,7 +705,7 @@ mod tests {
 
         let result = agent.search(search_request).await;
         assert!(result.is_ok());
-        
+
         let response = result.unwrap().into_inner();
         assert!(!response.results.is_empty());
         assert!(response.results.len() <= 3);
@@ -575,7 +714,7 @@ mod tests {
     #[tokio::test]
     async fn test_search_handler_invalid_dimension() {
         let agent = create_test_agent(128);
-        
+
         let request = tonic::Request::new(search::Request {
             vector: gen_vector(64, 1), // Wrong dimension
             config: Some(search::Config {
@@ -595,7 +734,7 @@ mod tests {
 
         let result = agent.search(request).await;
         assert!(result.is_err());
-        
+
         let status = result.unwrap_err();
         assert_eq!(status.code(), tonic::Code::InvalidArgument);
     }
@@ -603,7 +742,7 @@ mod tests {
     #[tokio::test]
     async fn test_search_handler_empty_index() {
         let agent = create_test_agent(128);
-        
+
         let request = tonic::Request::new(search::Request {
             vector: gen_vector(128, 1),
             config: Some(search::Config {
@@ -631,7 +770,7 @@ mod tests {
     #[tokio::test]
     async fn test_remove_handler_success() {
         let agent = create_test_agent(128);
-        
+
         // Insert a vector first
         let insert_request = tonic::Request::new(insert::Request {
             vector: Some(object::Vector {
@@ -642,7 +781,7 @@ mod tests {
             config: Some(insert::Config::default()),
         });
         agent.insert(insert_request).await.unwrap();
-        
+
         // Remove
         let remove_request = tonic::Request::new(remove::Request {
             id: Some(object::Id {
@@ -656,7 +795,7 @@ mod tests {
 
         let result = agent.remove(remove_request).await;
         assert!(result.is_ok());
-        
+
         let response = result.unwrap().into_inner();
         assert_eq!(response.uuid, "to-remove");
     }
@@ -664,7 +803,7 @@ mod tests {
     #[tokio::test]
     async fn test_remove_handler_not_found() {
         let agent = create_test_agent(128);
-        
+
         let request = tonic::Request::new(remove::Request {
             id: Some(object::Id {
                 id: "nonexistent".to_string(),
@@ -680,7 +819,7 @@ mod tests {
     #[tokio::test]
     async fn test_remove_handler_empty_uuid() {
         let agent = create_test_agent(128);
-        
+
         let request = tonic::Request::new(remove::Request {
             id: Some(object::Id {
                 id: "".to_string(), // Empty UUID
@@ -690,7 +829,7 @@ mod tests {
 
         let result = agent.remove(request).await;
         assert!(result.is_err());
-        
+
         let status = result.unwrap_err();
         assert_eq!(status.code(), tonic::Code::InvalidArgument);
     }
@@ -700,7 +839,7 @@ mod tests {
     #[tokio::test]
     async fn test_get_object_handler_success() {
         let agent = create_test_agent(128);
-        
+
         // Get object - Mock returns fixed values
         let get_request = tonic::Request::new(object::VectorRequest {
             id: Some(object::Id {
@@ -711,7 +850,7 @@ mod tests {
 
         let result = agent.get_object(get_request).await;
         assert!(result.is_ok());
-        
+
         let response = result.unwrap().into_inner();
         assert_eq!(response.id, "get-object-test");
         assert_eq!(response.vector.len(), 128); // Mock returns vec![0.0; 128]
@@ -720,7 +859,7 @@ mod tests {
     #[tokio::test]
     async fn test_get_object_handler_not_found() {
         let agent = create_test_agent(128);
-        
+
         let request = tonic::Request::new(object::VectorRequest {
             id: Some(object::Id {
                 id: "nonexistent".to_string(),
@@ -736,7 +875,7 @@ mod tests {
     #[tokio::test]
     async fn test_get_object_handler_empty_uuid() {
         let agent = create_test_agent(128);
-        
+
         let request = tonic::Request::new(object::VectorRequest {
             id: Some(object::Id {
                 id: "".to_string(), // Empty UUID
@@ -746,7 +885,7 @@ mod tests {
 
         let result = agent.get_object(request).await;
         assert!(result.is_err());
-        
+
         let status = result.unwrap_err();
         assert_eq!(status.code(), tonic::Code::InvalidArgument);
     }
@@ -756,9 +895,9 @@ mod tests {
     #[tokio::test]
     async fn test_multi_insert_handler_success() {
         use proto::vald::v1::insert_server::Insert;
-        
+
         let agent = create_test_agent(128);
-        
+
         let requests: Vec<insert::Request> = (0..5)
             .map(|i| insert::Request {
                 vector: Some(object::Vector {
@@ -772,7 +911,7 @@ mod tests {
 
         let request = tonic::Request::new(insert::MultiRequest { requests });
         let result = agent.multi_insert(request).await;
-        
+
         assert!(result.is_ok());
         let response = result.unwrap().into_inner();
         assert_eq!(response.locations.len(), 5);
@@ -781,9 +920,9 @@ mod tests {
     #[tokio::test]
     async fn test_multi_search_handler_success() {
         use proto::vald::v1::search_server::Search;
-        
+
         let agent = create_test_agent(128);
-        
+
         // Insert vectors first
         for i in 0..10 {
             let request = tonic::Request::new(insert::Request {
@@ -796,7 +935,7 @@ mod tests {
             });
             agent.insert(request).await.unwrap();
         }
-        
+
         let requests: Vec<search::Request> = (0..3)
             .map(|i| search::Request {
                 vector: gen_vector(128, i + 100),
@@ -818,7 +957,7 @@ mod tests {
 
         let request = tonic::Request::new(search::MultiRequest { requests });
         let result = agent.multi_search(request).await;
-        
+
         assert!(result.is_ok());
         let response = result.unwrap().into_inner();
         assert_eq!(response.responses.len(), 3);
@@ -828,21 +967,42 @@ mod tests {
 
     #[test]
     fn test_parse_duration_seconds() {
-        assert_eq!(parse_duration_from_string("30s"), Some(Duration::from_secs(30)));
-        assert_eq!(parse_duration_from_string("1s"), Some(Duration::from_secs(1)));
-        assert_eq!(parse_duration_from_string("0s"), Some(Duration::from_secs(0)));
+        assert_eq!(
+            parse_duration_from_string("30s"),
+            Some(Duration::from_secs(30))
+        );
+        assert_eq!(
+            parse_duration_from_string("1s"),
+            Some(Duration::from_secs(1))
+        );
+        assert_eq!(
+            parse_duration_from_string("0s"),
+            Some(Duration::from_secs(0))
+        );
     }
 
     #[test]
     fn test_parse_duration_minutes() {
-        assert_eq!(parse_duration_from_string("5m"), Some(Duration::from_secs(300)));
-        assert_eq!(parse_duration_from_string("1m"), Some(Duration::from_secs(60)));
+        assert_eq!(
+            parse_duration_from_string("5m"),
+            Some(Duration::from_secs(300))
+        );
+        assert_eq!(
+            parse_duration_from_string("1m"),
+            Some(Duration::from_secs(60))
+        );
     }
 
     #[test]
     fn test_parse_duration_hours() {
-        assert_eq!(parse_duration_from_string("1h"), Some(Duration::from_secs(3600)));
-        assert_eq!(parse_duration_from_string("2h"), Some(Duration::from_secs(7200)));
+        assert_eq!(
+            parse_duration_from_string("1h"),
+            Some(Duration::from_secs(3600))
+        );
+        assert_eq!(
+            parse_duration_from_string("2h"),
+            Some(Duration::from_secs(7200))
+        );
     }
 
     #[test]
@@ -858,9 +1018,9 @@ mod tests {
     #[tokio::test]
     async fn test_update_handler_success() {
         use proto::vald::v1::update_server::Update;
-        
+
         let agent = create_test_agent(128);
-        
+
         // Update the vector - Mock always succeeds
         let new_vector = gen_vector(128, 100);
         let update_request = tonic::Request::new(update::Request {
@@ -871,7 +1031,7 @@ mod tests {
             }),
             config: Some(update::Config::default()),
         });
-        
+
         let result = agent.update(update_request).await;
         assert!(result.is_ok());
         assert_eq!(result.unwrap().into_inner().uuid, "update-test");
@@ -880,9 +1040,9 @@ mod tests {
     #[tokio::test]
     async fn test_update_handler_not_found() {
         use proto::vald::v1::update_server::Update;
-        
+
         let agent = create_test_agent(128);
-        
+
         let request = tonic::Request::new(update::Request {
             vector: Some(object::Vector {
                 id: "nonexistent".to_string(),
@@ -891,7 +1051,7 @@ mod tests {
             }),
             config: Some(update::Config::default()),
         });
-        
+
         // Mock always succeeds
         let result = agent.update(request).await;
         assert!(result.is_ok());
@@ -900,9 +1060,9 @@ mod tests {
     #[tokio::test]
     async fn test_update_handler_invalid_dimension() {
         use proto::vald::v1::update_server::Update;
-        
+
         let agent = create_test_agent(128);
-        
+
         // Insert first
         let insert_request = tonic::Request::new(insert::Request {
             vector: Some(object::Vector {
@@ -913,7 +1073,7 @@ mod tests {
             config: Some(insert::Config::default()),
         });
         agent.insert(insert_request).await.unwrap();
-        
+
         // Try to update with wrong dimension
         let request = tonic::Request::new(update::Request {
             vector: Some(object::Vector {
@@ -923,7 +1083,7 @@ mod tests {
             }),
             config: Some(update::Config::default()),
         });
-        
+
         let result = agent.update(request).await;
         assert!(result.is_err());
         assert_eq!(result.unwrap_err().code(), tonic::Code::InvalidArgument);
@@ -934,9 +1094,9 @@ mod tests {
     #[tokio::test]
     async fn test_upsert_handler_insert_new() {
         use proto::vald::v1::upsert_server::Upsert;
-        
+
         let agent = create_test_agent(128);
-        
+
         let vector = gen_vector(128, 1);
         let request = tonic::Request::new(upsert::Request {
             vector: Some(object::Vector {
@@ -946,7 +1106,7 @@ mod tests {
             }),
             config: Some(upsert::Config::default()),
         });
-        
+
         let result = agent.upsert(request).await;
         assert!(result.is_ok());
         assert_eq!(result.unwrap().into_inner().uuid, "upsert-new");
@@ -955,9 +1115,9 @@ mod tests {
     #[tokio::test]
     async fn test_upsert_handler_update_existing() {
         use proto::vald::v1::upsert_server::Upsert;
-        
+
         let agent = create_test_agent(128);
-        
+
         // Upsert (update) with new vector - Mock always reports exists=true
         let new_vector = gen_vector(128, 100);
         let request = tonic::Request::new(upsert::Request {
@@ -968,7 +1128,7 @@ mod tests {
             }),
             config: Some(upsert::Config::default()),
         });
-        
+
         let result = agent.upsert(request).await;
         assert!(result.is_ok());
         assert_eq!(result.unwrap().into_inner().uuid, "upsert-update");
@@ -979,9 +1139,9 @@ mod tests {
     #[tokio::test]
     async fn test_exists_handler_found() {
         use proto::vald::v1::object_server::Object;
-        
+
         let agent = create_test_agent(128);
-        
+
         // Insert a vector
         let insert_request = tonic::Request::new(insert::Request {
             vector: Some(object::Vector {
@@ -992,12 +1152,12 @@ mod tests {
             config: Some(insert::Config::default()),
         });
         agent.insert(insert_request).await.unwrap();
-        
+
         // Check exists
         let request = tonic::Request::new(object::Id {
             id: "exists-test".to_string(),
         });
-        
+
         let result = agent.exists(request).await;
         assert!(result.is_ok());
         assert_eq!(result.unwrap().into_inner().id, "exists-test");
@@ -1006,13 +1166,13 @@ mod tests {
     #[tokio::test]
     async fn test_exists_handler_not_found() {
         use proto::vald::v1::object_server::Object;
-        
+
         let agent = create_test_agent(128);
-        
+
         let request = tonic::Request::new(object::Id {
             id: "nonexistent".to_string(),
         });
-        
+
         // Mock always returns exists=true
         let result = agent.exists(request).await;
         assert!(result.is_ok());
@@ -1022,13 +1182,11 @@ mod tests {
     #[tokio::test]
     async fn test_exists_handler_empty_uuid() {
         use proto::vald::v1::object_server::Object;
-        
+
         let agent = create_test_agent(128);
-        
-        let request = tonic::Request::new(object::Id {
-            id: "".to_string(),
-        });
-        
+
+        let request = tonic::Request::new(object::Id { id: "".to_string() });
+
         let result = agent.exists(request).await;
         assert!(result.is_err());
         assert_eq!(result.unwrap_err().code(), tonic::Code::InvalidArgument);
@@ -1040,12 +1198,12 @@ mod tests {
     async fn test_create_index_handler() {
         use proto::core::v1::agent_server::Agent as AgentServer;
         use proto::payload::v1::control;
-        
+
         let agent = create_test_agent(128);
-        
+
         let request = tonic::Request::new(control::CreateIndexRequest { pool_size: 10 });
         let result = agent.create_index(request).await;
-        
+
         assert!(result.is_ok());
     }
 
@@ -1053,12 +1211,12 @@ mod tests {
     async fn test_save_index_handler() {
         use proto::core::v1::agent_server::Agent as AgentServer;
         use proto::payload::v1::Empty;
-        
+
         let agent = create_test_agent(128);
-        
+
         let request = tonic::Request::new(Empty {});
         let result = agent.save_index(request).await;
-        
+
         assert!(result.is_ok());
     }
 
@@ -1066,25 +1224,25 @@ mod tests {
     async fn test_create_and_save_index_handler() {
         use proto::core::v1::agent_server::Agent as AgentServer;
         use proto::payload::v1::control;
-        
+
         let agent = create_test_agent(128);
-        
+
         let request = tonic::Request::new(control::CreateIndexRequest { pool_size: 10 });
         let result = agent.create_and_save_index(request).await;
-        
+
         assert!(result.is_ok());
     }
 
     #[tokio::test]
     async fn test_index_info_handler() {
-        use proto::vald::v1::index_server::Index;
         use proto::payload::v1::Empty;
-        
+        use proto::vald::v1::index_server::Index;
+
         let agent = create_test_agent(128);
-        
+
         let request = tonic::Request::new(Empty {});
         let result = agent.index_info(request).await;
-        
+
         assert!(result.is_ok());
         let response = result.unwrap().into_inner();
         assert!(!response.indexing);
@@ -1093,14 +1251,14 @@ mod tests {
 
     #[tokio::test]
     async fn test_index_detail_handler() {
-        use proto::vald::v1::index_server::Index;
         use proto::payload::v1::Empty;
-        
+        use proto::vald::v1::index_server::Index;
+
         let agent = create_test_agent(128);
-        
+
         let request = tonic::Request::new(Empty {});
         let result = agent.index_detail(request).await;
-        
+
         assert!(result.is_ok());
         let response = result.unwrap().into_inner();
         assert_eq!(response.replica, 1);
@@ -1110,27 +1268,27 @@ mod tests {
 
     #[tokio::test]
     async fn test_index_statistics_handler() {
-        use proto::vald::v1::index_server::Index;
         use proto::payload::v1::Empty;
-        
+        use proto::vald::v1::index_server::Index;
+
         let agent = create_test_agent(128);
-        
+
         let request = tonic::Request::new(Empty {});
         let result = agent.index_statistics(request).await;
-        
+
         assert!(result.is_ok());
     }
 
     #[tokio::test]
     async fn test_index_property_handler() {
-        use proto::vald::v1::index_server::Index;
         use proto::payload::v1::Empty;
-        
+        use proto::vald::v1::index_server::Index;
+
         let agent = create_test_agent(128);
-        
+
         let request = tonic::Request::new(Empty {});
         let result = agent.index_property(request).await;
-        
+
         assert!(result.is_ok());
         let response = result.unwrap().into_inner();
         assert!(response.details.contains_key("test-agent"));
@@ -1140,14 +1298,14 @@ mod tests {
 
     #[tokio::test]
     async fn test_flush_handler() {
-        use proto::vald::v1::flush_server::Flush;
         use proto::payload::v1::flush;
-        
+        use proto::vald::v1::flush_server::Flush;
+
         let agent = create_test_agent(128);
-        
+
         let request = tonic::Request::new(flush::Request {});
         let result = agent.flush(request).await;
-        
+
         assert!(result.is_ok());
         let response = result.unwrap().into_inner();
         assert!(!response.indexing);
@@ -1159,9 +1317,9 @@ mod tests {
     #[tokio::test]
     async fn test_search_by_id_handler_success() {
         use proto::vald::v1::search_server::Search;
-        
+
         let agent = create_test_agent(128);
-        
+
         // Insert vectors first
         for i in 0..10 {
             let request = tonic::Request::new(insert::Request {
@@ -1174,7 +1332,7 @@ mod tests {
             });
             agent.insert(request).await.unwrap();
         }
-        
+
         let request = tonic::Request::new(search::IdRequest {
             id: "search-id-0".to_string(),
             config: Some(search::Config {
@@ -1191,7 +1349,7 @@ mod tests {
                 nprobe: 0,
             }),
         });
-        
+
         let result = agent.search_by_id(request).await;
         assert!(result.is_ok());
     }
@@ -1199,14 +1357,14 @@ mod tests {
     #[tokio::test]
     async fn test_search_by_id_handler_empty_uuid() {
         use proto::vald::v1::search_server::Search;
-        
+
         let agent = create_test_agent(128);
-        
+
         let request = tonic::Request::new(search::IdRequest {
             id: "".to_string(),
             config: Some(search::Config::default()),
         });
-        
+
         let result = agent.search_by_id(request).await;
         assert!(result.is_err());
         assert_eq!(result.unwrap_err().code(), tonic::Code::InvalidArgument);
@@ -1215,9 +1373,9 @@ mod tests {
     #[tokio::test]
     async fn test_search_by_id_handler_not_found() {
         use proto::vald::v1::search_server::Search;
-        
+
         let agent = create_test_agent(128);
-        
+
         let request = tonic::Request::new(search::IdRequest {
             id: "nonexistent".to_string(),
             config: Some(search::Config {
@@ -1234,7 +1392,7 @@ mod tests {
                 nprobe: 0,
             }),
         });
-        
+
         // Mock always returns results
         let result = agent.search_by_id(request).await;
         assert!(result.is_ok());
@@ -1245,9 +1403,9 @@ mod tests {
     #[tokio::test]
     async fn test_linear_search_handler_unsupported() {
         use proto::vald::v1::search_server::Search;
-        
+
         let agent = create_test_agent(128);
-        
+
         let request = tonic::Request::new(search::Request {
             vector: gen_vector(128, 1),
             config: Some(search::Config {
@@ -1264,7 +1422,7 @@ mod tests {
                 nprobe: 0,
             }),
         });
-        
+
         let result = agent.linear_search(request).await;
         // MockANNService returns Unsupported error for linear_search
         assert!(result.is_err());
@@ -1274,9 +1432,9 @@ mod tests {
     #[tokio::test]
     async fn test_linear_search_by_id_handler_unsupported() {
         use proto::vald::v1::search_server::Search;
-        
+
         let agent = create_test_agent(128);
-        
+
         let request = tonic::Request::new(search::IdRequest {
             id: "test-uuid".to_string(),
             config: Some(search::Config {
@@ -1293,7 +1451,7 @@ mod tests {
                 nprobe: 0,
             }),
         });
-        
+
         let result = agent.linear_search_by_id(request).await;
         // MockANNService returns Unsupported error for linear_search_by_id
         assert!(result.is_err());
@@ -1305,9 +1463,9 @@ mod tests {
     #[tokio::test]
     async fn test_multi_remove_handler_success() {
         use proto::vald::v1::remove_server::Remove;
-        
+
         let agent = create_test_agent(128);
-        
+
         // Insert vectors first
         for i in 0..5 {
             let request = tonic::Request::new(insert::Request {
@@ -1320,7 +1478,7 @@ mod tests {
             });
             agent.insert(request).await.unwrap();
         }
-        
+
         let requests: Vec<remove::Request> = (0..5)
             .map(|i| remove::Request {
                 id: Some(object::Id {
@@ -1332,7 +1490,7 @@ mod tests {
 
         let request = tonic::Request::new(remove::MultiRequest { requests });
         let result = agent.multi_remove(request).await;
-        
+
         assert!(result.is_ok());
         let response = result.unwrap().into_inner();
         assert_eq!(response.locations.len(), 5);
@@ -1343,9 +1501,9 @@ mod tests {
     #[tokio::test]
     async fn test_multi_update_handler_success() {
         use proto::vald::v1::update_server::Update;
-        
+
         let agent = create_test_agent(128);
-        
+
         // Insert vectors first
         for i in 0..3 {
             let request = tonic::Request::new(insert::Request {
@@ -1358,7 +1516,7 @@ mod tests {
             });
             agent.insert(request).await.unwrap();
         }
-        
+
         let requests: Vec<update::Request> = (0..3)
             .map(|i| update::Request {
                 vector: Some(object::Vector {
@@ -1372,7 +1530,7 @@ mod tests {
 
         let request = tonic::Request::new(update::MultiRequest { requests });
         let result = agent.multi_update(request).await;
-        
+
         assert!(result.is_ok());
         let response = result.unwrap().into_inner();
         assert_eq!(response.locations.len(), 3);
@@ -1383,9 +1541,9 @@ mod tests {
     #[tokio::test]
     async fn test_multi_upsert_handler_success() {
         use proto::vald::v1::upsert_server::Upsert;
-        
+
         let agent = create_test_agent(128);
-        
+
         let requests: Vec<upsert::Request> = (0..5)
             .map(|i| upsert::Request {
                 vector: Some(object::Vector {
@@ -1399,7 +1557,7 @@ mod tests {
 
         let request = tonic::Request::new(upsert::MultiRequest { requests });
         let result = agent.multi_upsert(request).await;
-        
+
         assert!(result.is_ok());
         let response = result.unwrap().into_inner();
         assert_eq!(response.locations.len(), 5);
@@ -1430,80 +1588,226 @@ mod tests {
         }
 
         fn get_create_index_count(&self) -> u32 {
-            self.create_index_count.load(std::sync::atomic::Ordering::SeqCst)
+            self.create_index_count
+                .load(std::sync::atomic::Ordering::SeqCst)
         }
 
         fn get_save_index_count(&self) -> u32 {
-            self.save_index_count.load(std::sync::atomic::Ordering::SeqCst)
+            self.save_index_count
+                .load(std::sync::atomic::Ordering::SeqCst)
         }
     }
 
     impl ANN for MockShutdownService {
-        fn get_dimension_size(&self) -> usize { self.dimension }
+        fn get_dimension_size(&self) -> usize {
+            self.dimension
+        }
 
-        fn search(&self, _v: Vec<f32>, _n: u32, _e: f32, _r: f32) -> impl std::future::Future<Output = Result<search::Response, Error>> + Send {
+        fn search(
+            &self,
+            _v: Vec<f32>,
+            _n: u32,
+            _e: f32,
+            _r: f32,
+        ) -> impl std::future::Future<Output = Result<search::Response, Error>> + Send {
             async { Ok(search::Response::default()) }
         }
-        fn search_by_id(&self, _u: String, _n: u32, _e: f32, _r: f32) -> impl std::future::Future<Output = Result<search::Response, Error>> + Send {
+        fn search_by_id(
+            &self,
+            _u: String,
+            _n: u32,
+            _e: f32,
+            _r: f32,
+        ) -> impl std::future::Future<Output = Result<search::Response, Error>> + Send {
             async { Ok(search::Response::default()) }
         }
-        fn linear_search(&self, _v: Vec<f32>, _n: u32) -> impl std::future::Future<Output = Result<search::Response, Error>> + Send {
+        fn linear_search(
+            &self,
+            _v: Vec<f32>,
+            _n: u32,
+        ) -> impl std::future::Future<Output = Result<search::Response, Error>> + Send {
             async { Ok(search::Response::default()) }
         }
-        fn linear_search_by_id(&self, _u: String, _n: u32) -> impl std::future::Future<Output = Result<search::Response, Error>> + Send {
+        fn linear_search_by_id(
+            &self,
+            _u: String,
+            _n: u32,
+        ) -> impl std::future::Future<Output = Result<search::Response, Error>> + Send {
             async { Ok(search::Response::default()) }
         }
-        fn insert(&mut self, _u: String, _v: Vec<f32>) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn insert_with_time(&mut self, _u: String, _v: Vec<f32>, _t: i64) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn insert_multiple(&mut self, _vs: HashMap<String, Vec<f32>>) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn insert_multiple_with_time(&mut self, _vs: HashMap<String, Vec<f32>>, _t: i64) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn update(&mut self, _u: String, _v: Vec<f32>) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn update_with_time(&mut self, _u: String, _v: Vec<f32>, _t: i64) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn update_multiple(&mut self, _vs: HashMap<String, Vec<f32>>) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn update_multiple_with_time(&mut self, _vs: HashMap<String, Vec<f32>>, _t: i64) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn update_timestamp(&mut self, _u: String, _t: i64, _f: bool) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn remove(&mut self, _u: String) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn remove_with_time(&mut self, _u: String, _t: i64) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn remove_multiple(&mut self, _us: Vec<String>) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn remove_multiple_with_time(&mut self, _us: Vec<String>, _t: i64) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
+        fn insert(
+            &mut self,
+            _u: String,
+            _v: Vec<f32>,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn insert_with_time(
+            &mut self,
+            _u: String,
+            _v: Vec<f32>,
+            _t: i64,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn insert_multiple(
+            &mut self,
+            _vs: HashMap<String, Vec<f32>>,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn insert_multiple_with_time(
+            &mut self,
+            _vs: HashMap<String, Vec<f32>>,
+            _t: i64,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn update(
+            &mut self,
+            _u: String,
+            _v: Vec<f32>,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn update_with_time(
+            &mut self,
+            _u: String,
+            _v: Vec<f32>,
+            _t: i64,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn update_multiple(
+            &mut self,
+            _vs: HashMap<String, Vec<f32>>,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn update_multiple_with_time(
+            &mut self,
+            _vs: HashMap<String, Vec<f32>>,
+            _t: i64,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn update_timestamp(
+            &mut self,
+            _u: String,
+            _t: i64,
+            _f: bool,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn remove(
+            &mut self,
+            _u: String,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn remove_with_time(
+            &mut self,
+            _u: String,
+            _t: i64,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn remove_multiple(
+            &mut self,
+            _us: Vec<String>,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn remove_multiple_with_time(
+            &mut self,
+            _us: Vec<String>,
+            _t: i64,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
 
-        fn get_object(&self, _uuid: String) -> impl std::future::Future<Output = Result<(Vec<f32>, i64), Error>> + Send {
+        fn get_object(
+            &self,
+            _uuid: String,
+        ) -> impl std::future::Future<Output = Result<(Vec<f32>, i64), Error>> + Send {
             let dim = self.dimension;
             async move { Ok((vec![0.0; dim], 12345)) }
         }
 
-        fn exists(&self, _uuid: String) -> impl std::future::Future<Output = (usize, bool)> + Send { async { (1, true) } }
-        fn uuids(&self) -> impl std::future::Future<Output = Vec<String>> + Send { async { vec![] } }
-        fn list_object_func<F: FnMut(String, Vec<f32>, i64) -> bool + Send>(&self, _f: F) -> impl std::future::Future<Output = ()> + Send { async {} }
+        fn exists(&self, _uuid: String) -> impl std::future::Future<Output = (usize, bool)> + Send {
+            async { (1, true) }
+        }
+        fn uuids(&self) -> impl std::future::Future<Output = Vec<String>> + Send {
+            async { vec![] }
+        }
+        fn list_object_func<F: FnMut(String, Vec<f32>, i64) -> bool + Send>(
+            &self,
+            _f: F,
+        ) -> impl std::future::Future<Output = ()> + Send {
+            async {}
+        }
 
         fn create_index(&mut self) -> impl std::future::Future<Output = Result<(), Error>> + Send {
-            self.create_index_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            self.create_index_count
+                .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
             async { Ok(()) }
         }
         fn save_index(&mut self) -> impl std::future::Future<Output = Result<(), Error>> + Send {
-            self.save_index_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            self.save_index_count
+                .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
             async { Ok(()) }
         }
-        fn create_and_save_index(&mut self) -> impl std::future::Future<Output = Result<(), Error>> + Send {
-            self.create_index_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-            self.save_index_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        fn create_and_save_index(
+            &mut self,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            self.create_index_count
+                .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            self.save_index_count
+                .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
             async { Ok(()) }
         }
-        fn regenerate_indexes(&mut self) -> impl std::future::Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn len(&self) -> u32 { 100 }
-        fn insert_vqueue_buffer_len(&self) -> u32 { 0 }
-        fn delete_vqueue_buffer_len(&self) -> u32 { 0 }
-        fn is_indexing(&self) -> bool { false }
-        fn is_flushing(&self) -> bool { false }
-        fn is_saving(&self) -> bool { false }
-        fn number_of_create_index_executions(&self) -> u64 { 0 }
-        fn broken_index_count(&self) -> u64 { 0 }
-        fn is_statistics_enabled(&self) -> bool { false }
-        fn index_statistics(&self) -> Result<info::index::Statistics, Error> { Ok(info::index::Statistics::default()) }
-        fn index_property(&self) -> Result<info::index::Property, Error> { Ok(info::index::Property::default()) }
+        fn regenerate_indexes(
+            &mut self,
+        ) -> impl std::future::Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn len(&self) -> u32 {
+            100
+        }
+        fn insert_vqueue_buffer_len(&self) -> u32 {
+            0
+        }
+        fn delete_vqueue_buffer_len(&self) -> u32 {
+            0
+        }
+        fn is_indexing(&self) -> bool {
+            false
+        }
+        fn is_flushing(&self) -> bool {
+            false
+        }
+        fn is_saving(&self) -> bool {
+            false
+        }
+        fn number_of_create_index_executions(&self) -> u64 {
+            0
+        }
+        fn broken_index_count(&self) -> u64 {
+            0
+        }
+        fn is_statistics_enabled(&self) -> bool {
+            false
+        }
+        fn index_statistics(&self) -> Result<info::index::Statistics, Error> {
+            Ok(info::index::Statistics::default())
+        }
+        fn index_property(&self) -> Result<info::index::Property, Error> {
+            Ok(info::index::Property::default())
+        }
 
         fn close(&mut self) -> impl std::future::Future<Output = Result<(), Error>> + Send {
-            self.close_called.store(true, std::sync::atomic::Ordering::SeqCst);
+            self.close_called
+                .store(true, std::sync::atomic::Ordering::SeqCst);
             async { Ok(()) }
         }
     }
@@ -1511,25 +1815,35 @@ mod tests {
     #[tokio::test]
     async fn test_agent_shutdown_without_daemon() {
         // Test shutdown when daemon is not started
-        let agent = Agent::new(MockShutdownService::new(128), "test", "127.0.0.1", "vald.v1", "vald-agent", 10);
-        
+        let agent = Agent::new(
+            MockShutdownService::new(128),
+            "test",
+            "127.0.0.1",
+            "vald.v1",
+            "vald-agent",
+            10,
+        );
+
         // Shutdown should succeed even without daemon
         let result = agent.shutdown().await;
         assert!(result.is_ok(), "Shutdown should succeed without daemon");
-        
+
         // Verify close was called
         let service = agent.service();
         let svc = service.read().await;
-        assert!(svc.is_close_called(), "close() should be called during shutdown");
+        assert!(
+            svc.is_close_called(),
+            "close() should be called during shutdown"
+        );
     }
 
     #[tokio::test]
     async fn test_agent_shutdown_with_daemon() {
-        use crate::service::{DaemonConfig, start_daemon};
-        
+        use crate::service::{start_daemon, DaemonConfig};
+
         let service = MockShutdownService::new(128);
         let service_arc = Arc::new(RwLock::new(service));
-        
+
         // Create daemon manually
         let daemon_config = DaemonConfig {
             auto_index_check_duration: std::time::Duration::from_secs(3600),
@@ -1540,9 +1854,9 @@ mod tests {
             initial_delay: std::time::Duration::ZERO,
             enable_proactive_gc: false,
         };
-        
+
         let (handle, error_rx) = start_daemon(service_arc.clone(), daemon_config).await;
-        
+
         // Create agent with daemon
         let agent = Agent {
             s: service_arc.clone(),
@@ -1554,36 +1868,45 @@ mod tests {
             daemon_handle: Some(handle),
             error_rx: Some(error_rx),
         };
-        
+
         // Let daemon start
         tokio::time::sleep(std::time::Duration::from_millis(50)).await;
-        
+
         // Shutdown should complete and call close
         let start = std::time::Instant::now();
         let result = agent.shutdown().await;
         let elapsed = start.elapsed();
-        
+
         assert!(result.is_ok(), "Shutdown should succeed");
-        assert!(elapsed < std::time::Duration::from_secs(1), "Shutdown should be fast");
-        
+        assert!(
+            elapsed < std::time::Duration::from_secs(1),
+            "Shutdown should be fast"
+        );
+
         // Verify close was called
         let svc = service_arc.read().await;
-        assert!(svc.is_close_called(), "close() should be called during shutdown");
-        
+        assert!(
+            svc.is_close_called(),
+            "close() should be called during shutdown"
+        );
+
         // Verify final index was created (daemon shutdown creates index)
-        assert!(svc.get_create_index_count() >= 1, "create_index should be called on shutdown");
+        assert!(
+            svc.get_create_index_count() >= 1,
+            "create_index should be called on shutdown"
+        );
     }
 
     #[tokio::test]
     async fn test_agent_stop_signals_daemon() {
-        use crate::service::{DaemonConfig, start_daemon};
-        
+        use crate::service::{start_daemon, DaemonConfig};
+
         let service = MockShutdownService::new(128);
         let service_arc = Arc::new(RwLock::new(service));
-        
+
         let daemon_config = DaemonConfig::default();
         let (handle, error_rx) = start_daemon(service_arc.clone(), daemon_config).await;
-        
+
         let agent = Agent {
             s: service_arc.clone(),
             name: "test".to_string(),
@@ -1594,24 +1917,37 @@ mod tests {
             daemon_handle: Some(handle.clone()),
             error_rx: Some(error_rx),
         };
-        
+
         // Verify daemon is not cancelled yet
-        assert!(!handle.is_cancelled(), "Daemon should not be cancelled initially");
-        
+        assert!(
+            !handle.is_cancelled(),
+            "Daemon should not be cancelled initially"
+        );
+
         // Stop should signal daemon
         agent.stop();
-        
-        assert!(handle.is_cancelled(), "Daemon should be cancelled after stop()");
+
+        assert!(
+            handle.is_cancelled(),
+            "Daemon should be cancelled after stop()"
+        );
     }
 
     #[tokio::test]
     async fn test_agent_shutdown_is_idempotent() {
-        let agent = Agent::new(MockShutdownService::new(128), "test", "127.0.0.1", "vald.v1", "vald-agent", 10);
-        
+        let agent = Agent::new(
+            MockShutdownService::new(128),
+            "test",
+            "127.0.0.1",
+            "vald.v1",
+            "vald-agent",
+            10,
+        );
+
         // First shutdown
         let result1 = agent.shutdown().await;
         assert!(result1.is_ok());
-        
+
         // Second shutdown should also succeed (idempotent)
         let result2 = agent.shutdown().await;
         assert!(result2.is_ok());

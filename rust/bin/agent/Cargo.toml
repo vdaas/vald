@@ -33,7 +33,7 @@ flexi_logger = "0.31"
 futures = "0.3.31"
 gethostname = "1.1"
 http = "1.4.0"
-k8s-openapi = { version = "0.27", features = ["v1_32"] }
+k8s-openapi = { version = "0.27", features = ["v1_35"] }
 kube = { version = "3.0", features = ["runtime", "client", "derive"] }
 log = "0.4"
 opentelemetry = { version = "0.31.0" }
@@ -44,8 +44,8 @@ thiserror = "2.0"
 tokio = { version = "1.49.0", features = ["full"] }
 tokio-stream = { version = "0.1.18", features = ["full"] }
 tokio-util = "0.7"
-tonic = "0.14.2"
-tonic-types = "0.14.2"
+tonic = "0.14.3"
+tonic-types = "0.14.3"
 tower = "0.5.3"
 tracing = "0.1"
 serde = { version = "1.0", features = ["derive"] }

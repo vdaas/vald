@@ -523,7 +523,7 @@ mod tests {
         // First create an index for this test
         let temp_dir = tempdir()?;
         let path = temp_dir.path().join("index").to_string_lossy().to_string();
-        
+
         // Create and build a fresh index
         let mut p = ffi::new_property();
         p.pin_mut().init_qbg_construction_parameters();
@@ -544,7 +544,7 @@ mod tests {
 
         // Build the index
         index.pin_mut().build_index(&path, p.pin_mut())?;
-        
+
         // Now test with prebuilt index
         let mut index = ffi::new_prebuilt_index(&path, true).unwrap();
 

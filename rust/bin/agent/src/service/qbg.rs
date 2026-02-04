@@ -15,16 +15,16 @@
 //
 
 use std::collections::HashMap;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::Arc;
 
-use algorithm::{ANN, Error, MultiError};
+use crate::config::QBG;
+use algorithm::{Error, MultiError, ANN};
 use anyhow::Result;
 use chrono::{Local, Timelike, Utc};
-use config::Config;
 use futures::StreamExt;
-use kvs::{BidirectionalMap, BidirectionalMapBuilder, MapBase};
 use kvs::map::codec::BincodeCodec;
+use kvs::{BidirectionalMap, BidirectionalMapBuilder, MapBase};
 use proto::payload::v1::object::Distance;
 use proto::payload::v1::search;
 use qbg::index::Index;
@@ -48,7 +48,7 @@ pub struct QBGService {
     is_flushing: AtomicBool,
     is_indexing: AtomicBool,
     is_saving: AtomicBool,
-    is_read_replica: bool,
+    is_readreplica: bool,
     create_index_count: AtomicU64,
     unsaved_create_index_count: AtomicU64,
     processed_vq_count: AtomicU64,
@@ -59,18 +59,20 @@ pub struct QBGService {
 }
 
 impl QBGService {
-    pub async fn new(settings: Config) -> Self {
-        let path = settings
-            .get::<String>("qbg.index_path")
-            .unwrap_or("index".to_string());
-        
+    pub async fn new(config: &QBG) -> Self {
+        let path = if config.index_path.is_empty() {
+            "index".to_string()
+        } else {
+            config.index_path.clone()
+        };
+
         // Read replica configuration
-        let is_read_replica = settings.get::<bool>("qbg.is_read_replica").unwrap_or(false);
-        
+        let is_readreplica = config.is_readreplica;
+
         // Persistence configuration
-        let enable_copy_on_write = settings.get::<bool>("qbg.enable_copy_on_write").unwrap_or(false);
-        let broken_index_history_limit = settings.get::<usize>("qbg.broken_index_history_limit").unwrap_or(3);
-        
+        let enable_copy_on_write = config.enable_copy_on_write;
+        let broken_index_history_limit = config.broken_index_history_limit;
+
         // Initialize persistence manager and prepare folders
         let persistence_config = PersistenceConfig {
             enable_copy_on_write,
@@ -80,11 +82,11 @@ impl QBGService {
         if let Err(e) = persistence.prepare_folders() {
             warn!("failed to prepare persistence folders: {}", e);
         }
-        
+
         // Check if we need to load an existing index
         let should_load = persistence.index_exists();
         let mut broken_index_count = persistence.broken_index_count();
-        
+
         // If existing index is potentially broken, try to back it up
         if PersistenceManager::needs_backup(&persistence.paths().primary_path) {
             info!("detected potentially broken index, attempting backup");
@@ -93,63 +95,43 @@ impl QBGService {
             }
             broken_index_count = persistence.broken_index_count();
         }
-        
+
         let mut property = Property::new();
         property.init_qbg_construction_parameters();
         property.set_qbg_construction_parameters(
-            settings.get::<usize>("qbg.extended_dimension").unwrap_or(0),
-            settings.get::<usize>("qbg.dimension").unwrap_or(0),
-            settings
-                .get::<usize>("qbg.number_of_subvectors")
-                .unwrap_or(1),
-            settings.get::<usize>("qbg.number_of_blobs").unwrap_or(0),
-            settings.get::<i32>("qbg.internal_data_type").unwrap_or(1),
-            settings.get::<i32>("qbg.data_type").unwrap_or(1),
-            settings.get::<i32>("qbg.distance_type").unwrap_or(1),
+            config.extended_dimension,
+            config.dimension,
+            config.number_of_subvectors,
+            config.number_of_blobs,
+            config.internal_data_type,
+            config.data_type,
+            config.distance_type,
         );
         property.init_qbg_build_parameters();
         property.set_qbg_build_parameters(
-            settings
-                .get::<i32>("qbg.hierarchical_clustering_init_mode")
-                .unwrap_or(2),
-            settings
-                .get::<usize>("qbg.number_of_first_objects")
-                .unwrap_or(0),
-            settings
-                .get::<usize>("qbg.number_of_first_clusters")
-                .unwrap_or(0),
-            settings
-                .get::<usize>("qbg.number_of_second_objects")
-                .unwrap_or(0),
-            settings
-                .get::<usize>("qbg.number_of_second_clusters")
-                .unwrap_or(0),
-            settings
-                .get::<usize>("qbg.number_of_third_clusters")
-                .unwrap_or(0),
-            settings
-                .get::<usize>("qbg.number_of_objects")
-                .unwrap_or(1000),
-            settings
-                .get::<usize>("qbg.number_of_subvectors")
-                .unwrap_or(1),
-            settings
-                .get::<i32>("qbg.optimization_clustering_init_mode")
-                .unwrap_or(2),
-            settings
-                .get::<usize>("qbg.rotation_iteration")
-                .unwrap_or(2000),
-            settings
-                .get::<usize>("qbg.subvector_iteration")
-                .unwrap_or(400),
-            settings.get::<usize>("qbg.number_of_matrices").unwrap_or(3),
-            settings.get::<bool>("qbg.rotation").unwrap_or(true),
-            settings.get::<bool>("qbg.repositioning").unwrap_or(false),
+            config.hierarchical_clustering_init_mode,
+            config.number_of_first_objects,
+            config.number_of_first_clusters,
+            config.number_of_second_objects,
+            config.number_of_second_clusters,
+            config.number_of_third_clusters,
+            config.number_of_objects,
+            config.number_of_subvectors,
+            config.optimization_clustering_init_mode,
+            config.rotation_iteration,
+            config.subvector_iteration,
+            config.number_of_matrices,
+            config.rotation,
+            config.repositioning,
         );
-        
+
         // Use the primary path from persistence manager for the index
-        let index_path = persistence.paths().primary_path.to_string_lossy().to_string();
-        
+        let index_path = persistence
+            .paths()
+            .primary_path
+            .to_string_lossy()
+            .to_string();
+
         // Load or create the index
         let index = if should_load {
             info!("loading existing index from {}", index_path);
@@ -168,19 +150,15 @@ impl QBGService {
             debug!("creating new index at {}", index_path);
             Index::new(&index_path, &mut property).unwrap()
         };
-        
-        let vq_path = settings
-            .get::<String>("qbg.vqueue_path")
-            .unwrap_or("index".to_string());
+
+        let vq_path = path.clone();
         let vq = vqueue::Builder::new(vq_path).build().await.unwrap();
-        let kvs_path = settings
-            .get::<String>("qbg.kvs_path")
-            .unwrap_or("kvs".to_string());
+        let kvs_path = format!("{}_kvs", path);
         let kvs = BidirectionalMapBuilder::new(kvs_path)
-            .cache_capacity(settings.get::<u64>("qbg.kvs_cache_capacity").unwrap_or(10000))
-            .compression_factor(settings.get::<i32>("qbg.kvs_compression_factor").unwrap_or(9))
+            .cache_capacity(10000) // TODO: Add kvs_cache_capacity to QBG config
+            .compression_factor(9) // TODO: Add kvs_compression_factor to QBG config
             .mode(kvs::Mode::HighThroughput)
-            .use_compression(settings.get::<bool>("qbg.kvs_use_compression").unwrap_or(true))
+            .use_compression(true) // TODO: Add kvs_use_compression to QBG config
             .build()
             .await
             .unwrap();
@@ -193,18 +171,21 @@ impl QBGService {
         }
 
         // Initialize K8s metrics exporter if enabled
-        let enable_export_index_info = settings.get::<bool>("qbg.enable_export_index_info").unwrap_or(false);
+        let enable_export_index_info = config.enable_export_index_info_to_k8s;
         let metrics_exporter = if enable_export_index_info {
             let pod_name = std::env::var("MY_POD_NAME").unwrap_or_default();
             let pod_namespace = std::env::var("MY_POD_NAMESPACE").unwrap_or_default();
-            
+
             if pod_name.is_empty() || pod_namespace.is_empty() {
                 warn!("K8s metrics export enabled but MY_POD_NAME or MY_POD_NAMESPACE not set");
                 None
             } else {
                 match super::k8s::K8sClient::new().await {
                     Ok(client) => {
-                        info!("K8s metrics exporter initialized for pod {}/{}", pod_namespace, pod_name);
+                        info!(
+                            "K8s metrics exporter initialized for pod {}/{}",
+                            pod_namespace, pod_name
+                        );
                         Some(MetricsExporter::new(
                             Box::new(client),
                             pod_name,
@@ -221,7 +202,7 @@ impl QBGService {
         } else {
             None
         };
-        
+
         QBGService {
             path: index_path,
             index,
@@ -233,7 +214,7 @@ impl QBGService {
             is_flushing: AtomicBool::new(false),
             is_indexing: AtomicBool::new(false),
             is_saving: AtomicBool::new(false),
-            is_read_replica,
+            is_readreplica,
             create_index_count: AtomicU64::new(0),
             unsaved_create_index_count: AtomicU64::new(0),
             processed_vq_count: AtomicU64::new(0),
@@ -244,7 +225,12 @@ impl QBGService {
         }
     }
 
-    async fn ready_for_update(&mut self, uuid: String, vector: Vec<f32>, ts: i64) -> Result<(), Error> {
+    async fn ready_for_update(
+        &mut self,
+        uuid: String,
+        vector: Vec<f32>,
+        ts: i64,
+    ) -> Result<(), Error> {
         if uuid.len() == 0 {
             return Err(Error::UUIDNotFound {
                 uuid: "0".to_string(),
@@ -276,8 +262,14 @@ impl QBGService {
         }
     }
 
-    async fn insert_internal(&mut self, uuid: String, vector: Vec<f32>, t: i64, validation: bool) -> Result<(), Error> {
-        if self.is_read_replica {
+    async fn insert_internal(
+        &mut self,
+        uuid: String,
+        vector: Vec<f32>,
+        t: i64,
+        validation: bool,
+    ) -> Result<(), Error> {
+        if self.is_readreplica {
             return Err(Error::WriteOperationToReadReplica {});
         }
         if uuid.len() == 0 {
@@ -291,10 +283,18 @@ impl QBGService {
                 return Err(Error::UUIDAlreadyExists { uuid });
             }
         }
-        self.vq.push_insert(uuid, vector, Some(t)).await.map_err(|e| Error::Internal(Box::new(e)))
+        self.vq
+            .push_insert(uuid, vector, Some(t))
+            .await
+            .map_err(|e| Error::Internal(Box::new(e)))
     }
 
-    async fn insert_multiple_internal(&mut self, vectors: HashMap<String, Vec<f32>>, t: i64, validation: bool) -> Result<(), Error> {
+    async fn insert_multiple_internal(
+        &mut self,
+        vectors: HashMap<String, Vec<f32>>,
+        t: i64,
+        validation: bool,
+    ) -> Result<(), Error> {
         for (uuid, vec) in vectors {
             if validation {
                 self.ready_for_update(uuid.clone(), vec.clone(), t).await?;
@@ -304,17 +304,28 @@ impl QBGService {
         Ok(())
     }
 
-    async fn update_internal(&mut self, uuid: String, vector: Vec<f32>, t: i64) -> Result<(), Error> {
-        if self.is_read_replica {
+    async fn update_internal(
+        &mut self,
+        uuid: String,
+        vector: Vec<f32>,
+        t: i64,
+    ) -> Result<(), Error> {
+        if self.is_readreplica {
             return Err(Error::WriteOperationToReadReplica {});
         }
-        self.ready_for_update(uuid.clone(), vector.clone(), t).await?;
+        self.ready_for_update(uuid.clone(), vector.clone(), t)
+            .await?;
         self.remove_internal(uuid.clone(), t, true).await?;
-        self.insert_internal(uuid, vector, t+1, false).await
+        self.insert_internal(uuid, vector, t + 1, false).await
     }
 
-    async fn remove_internal(&mut self, uuid: String, t: i64, validation: bool) -> Result<(), Error> {
-        if self.is_read_replica {
+    async fn remove_internal(
+        &mut self,
+        uuid: String,
+        t: i64,
+        validation: bool,
+    ) -> Result<(), Error> {
+        if self.is_readreplica {
             return Err(Error::WriteOperationToReadReplica {});
         }
         if uuid.len() == 0 {
@@ -329,10 +340,18 @@ impl QBGService {
                 return Err(Error::ObjectIDNotFound { uuid });
             }
         }
-        self.vq.push_delete(uuid, Some(t)).await.map_err(|e| Error::Internal(Box::new(e)))
+        self.vq
+            .push_delete(uuid, Some(t))
+            .await
+            .map_err(|e| Error::Internal(Box::new(e)))
     }
 
-    async fn remove_multiple_internal(&mut self, uuids: Vec<String>, t: i64, validation: bool) -> Result<(), Error> {
+    async fn remove_multiple_internal(
+        &mut self,
+        uuids: Vec<String>,
+        t: i64,
+        validation: bool,
+    ) -> Result<(), Error> {
         let mut ids: Vec<String> = vec![];
         for uuid in uuids {
             let result = self.remove_internal(uuid, t, validation).await;
@@ -363,7 +382,7 @@ impl ANN for QBGService {
     #[tracing::instrument(skip(self), level = "info")]
     async fn create_index(&mut self) -> Result<(), Error> {
         // Check if read replica
-        if self.is_read_replica {
+        if self.is_readreplica {
             return Err(Error::WriteOperationToReadReplica {});
         }
 
@@ -381,7 +400,10 @@ impl ANN for QBGService {
         }
 
         self.is_indexing.store(true, Ordering::SeqCst);
-        info!("create index operation started, uncommitted indexes = {}", ic);
+        info!(
+            "create index operation started, uncommitted indexes = {}",
+            ic
+        );
 
         let now = Utc::now().timestamp_nanos_opt().unwrap_or(0);
         let batch_size = 1000; // TODO: make configurable
@@ -414,8 +436,11 @@ impl ANN for QBGService {
                         debug!("processing insert for uuid: {}", uuid);
                         match self.index.insert(&vector) {
                             Ok(oid) => {
-                                let timestamp = Utc::now().timestamp_nanos_opt().unwrap_or(0) as u128;
-                                if let Err(e) = self.kvs.set(uuid.clone(), oid as u32, timestamp).await {
+                                let timestamp =
+                                    Utc::now().timestamp_nanos_opt().unwrap_or(0) as u128;
+                                if let Err(e) =
+                                    self.kvs.set(uuid.clone(), oid as u32, timestamp).await
+                                {
                                     error!("failed to set kvs for uuid {}: {}", uuid, e);
                                 }
                                 insert_cnt += 1;
@@ -425,9 +450,15 @@ impl ANN for QBGService {
                                 error!("failed to insert vector for uuid {}: {}", uuid, e);
                                 // Retry once
                                 if let Ok(oid) = self.index.insert(&vector) {
-                                    let timestamp = Utc::now().timestamp_nanos_opt().unwrap_or(0) as u128;
-                                    if let Err(e) = self.kvs.set(uuid.clone(), oid as u32, timestamp).await {
-                                        error!("failed to set kvs on retry for uuid {}: {}", uuid, e);
+                                    let timestamp =
+                                        Utc::now().timestamp_nanos_opt().unwrap_or(0) as u128;
+                                    if let Err(e) =
+                                        self.kvs.set(uuid.clone(), oid as u32, timestamp).await
+                                    {
+                                        error!(
+                                            "failed to set kvs on retry for uuid {}: {}",
+                                            uuid, e
+                                        );
                                     }
                                     insert_cnt += 1;
                                 } else {
@@ -443,10 +474,14 @@ impl ANN for QBGService {
                 }
             }
         }
-        debug!("create index drain phase finished, processed {} items, inserted {}", vq_processed_cnt, insert_cnt);
+        debug!(
+            "create index drain phase finished, processed {} items, inserted {}",
+            vq_processed_cnt, insert_cnt
+        );
 
         // Update processed vq count
-        self.processed_vq_count.fetch_add(vq_processed_cnt, Ordering::SeqCst);
+        self.processed_vq_count
+            .fetch_add(vq_processed_cnt, Ordering::SeqCst);
 
         // Phase 2: Build the index
         debug!("create graph and tree phase started");
@@ -456,7 +491,8 @@ impl ANN for QBGService {
         match result {
             Ok(()) => {
                 self.create_index_count.fetch_add(1, Ordering::SeqCst);
-                self.unsaved_create_index_count.fetch_add(1, Ordering::SeqCst);
+                self.unsaved_create_index_count
+                    .fetch_add(1, Ordering::SeqCst);
                 debug!("create graph and tree phase finished");
                 info!("create index operation finished");
 
@@ -466,12 +502,15 @@ impl ANN for QBGService {
                     let uncommitted = (self.vq.ivq_len() + self.vq.dvq_len()) as u64;
                     let processed_vq = self.processed_vq_count.load(Ordering::SeqCst);
                     let unsaved_exec = self.unsaved_create_index_count.load(Ordering::SeqCst);
-                    if let Err(e) = exporter.export_on_create_index(
-                        index_count,
-                        uncommitted,
-                        processed_vq,
-                        unsaved_exec,
-                    ).await {
+                    if let Err(e) = exporter
+                        .export_on_create_index(
+                            index_count,
+                            uncommitted,
+                            processed_vq,
+                            unsaved_exec,
+                        )
+                        .await
+                    {
                         warn!("failed to export create_index metrics: {}", e);
                     }
                 }
@@ -480,7 +519,9 @@ impl ANN for QBGService {
             }
             Err(e) => {
                 error!("an error occurred on creating graph and tree phase: {}", e);
-                Err(Error::Internal(Box::new(std::io::Error::other(e.to_string()))))
+                Err(Error::Internal(Box::new(std::io::Error::other(
+                    e.to_string(),
+                ))))
             }
         }
     }
@@ -488,7 +529,7 @@ impl ANN for QBGService {
     #[tracing::instrument(skip(self), level = "info")]
     async fn save_index(&mut self) -> Result<(), Error> {
         // Read replica cannot perform write operations
-        if self.is_read_replica {
+        if self.is_readreplica {
             return Err(Error::WriteOperationToReadReplica {});
         }
 
@@ -497,9 +538,9 @@ impl ANN for QBGService {
             debug!("save already in progress, skipping");
             return Ok(());
         }
-        
+
         self.is_saving.store(true, Ordering::SeqCst);
-        
+
         // Determine save path (temp for CoW, primary otherwise)
         let save_path = if let Some(ref persistence) = self.persistence {
             persistence.get_save_path().to_string_lossy().to_string()
@@ -508,23 +549,26 @@ impl ANN for QBGService {
         };
 
         debug!("saving index to path: {}", save_path);
-        
+
         // Save the core index to the appropriate path
         // Note: QBG save_index uses the path from when the index was created
         // For CoW we need to copy the saved index to the temp location
         let result = self.index.save_index();
-        
+
         // Save metadata to the appropriate path
         if let Some(ref persistence) = self.persistence {
             let index_count = self.kvs.len() as u64;
             let metadata = Metadata::new_qbg(index_count);
-            
+
             if persistence.is_copy_on_write_enabled() {
                 // For CoW, save to temp path and then switch
                 if let Err(e) = persistence.save_metadata_to_save_path(&metadata) {
                     warn!("failed to save metadata to CoW path: {}", e);
                 } else {
-                    debug!("saved metadata with index_count={} to CoW path", index_count);
+                    debug!(
+                        "saved metadata with index_count={} to CoW path",
+                        index_count
+                    );
                 }
             } else {
                 if let Err(e) = persistence.save_metadata(&metadata) {
@@ -534,7 +578,7 @@ impl ANN for QBGService {
                 }
             }
         }
-        
+
         // Flush kvs to ensure persistence
         if let Err(e) = self.kvs.flush().await {
             warn!("failed to flush kvs: {}", e);
@@ -550,9 +594,9 @@ impl ANN for QBGService {
                 }
             }
         }
-        
+
         self.is_saving.store(false, Ordering::SeqCst);
-        
+
         match result {
             Ok(()) => {
                 // Reset unsaved create index count after successful save
@@ -570,13 +614,16 @@ impl ANN for QBGService {
                 info!("index saved successfully");
                 Ok(())
             }
-            Err(e) => Err(Error::Internal(Box::new(std::io::Error::other(e.to_string()))))
+            Err(e) => Err(Error::Internal(Box::new(std::io::Error::other(
+                e.to_string(),
+            )))),
         }
     }
 
     #[tracing::instrument(skip(self, vector), level = "debug", fields(vector_dim = vector.len()))]
     async fn insert(&mut self, uuid: String, vector: Vec<f32>) -> Result<(), Error> {
-        self.insert_internal(uuid, vector, Local::now().nanosecond().into(), true).await
+        self.insert_internal(uuid, vector, Local::now().nanosecond().into(), true)
+            .await
     }
 
     #[tracing::instrument(skip(self, vectors), level = "debug", fields(count = vectors.len()))]
@@ -603,14 +650,20 @@ impl ANN for QBGService {
         if self.is_flushing() {
             return Err(Error::FlushingIsInProgress {});
         }
-        self.update_internal(uuid, vector, Local::now().nanosecond().into()).await
+        self.update_internal(uuid, vector, Local::now().nanosecond().into())
+            .await
     }
 
     #[tracing::instrument(skip(self, vectors), level = "debug", fields(count = vectors.len()))]
-    async fn update_multiple(&mut self, mut vectors: HashMap<String, Vec<f32>>) -> Result<(), Error> {
+    async fn update_multiple(
+        &mut self,
+        mut vectors: HashMap<String, Vec<f32>>,
+    ) -> Result<(), Error> {
         let mut uuids: Vec<String> = vec![];
         for (uuid, vec) in vectors.clone() {
-            let result = self.ready_for_update(uuid.clone(), vec, Local::now().nanosecond().into()).await;
+            let result = self
+                .ready_for_update(uuid.clone(), vec, Local::now().nanosecond().into())
+                .await;
             match result {
                 Ok(()) => uuids.push(uuid),
                 Err(_err) => {
@@ -627,7 +680,8 @@ impl ANN for QBGService {
         if self.is_flushing() {
             return Err(Error::FlushingIsInProgress {});
         }
-        self.remove_internal(uuid, Local::now().nanosecond().into(), true).await
+        self.remove_internal(uuid, Local::now().nanosecond().into(), true)
+            .await
     }
 
     #[tracing::instrument(skip(self), level = "debug", fields(count = uuids.len()))]
@@ -635,7 +689,8 @@ impl ANN for QBGService {
         if self.is_flushing() {
             return Err(Error::FlushingIsInProgress {});
         }
-        self.remove_multiple_internal(uuids, Local::now().nanosecond().into(), true).await
+        self.remove_multiple_internal(uuids, Local::now().nanosecond().into(), true)
+            .await
     }
 
     #[tracing::instrument(skip(self, vector), level = "debug", fields(vector_dim = vector.len()))]
@@ -668,11 +723,12 @@ impl ANN for QBGService {
     async fn get_object(&self, uuid: String) -> Result<(Vec<f32>, i64), Error> {
         let index = &self.index;
         let get_vector_fn = |oid: u32| async move {
-            index.get_object(oid as usize)
+            index
+                .get_object(oid as usize)
                 .map(|v| v.to_vec())
                 .map_err(|e| memstore::MemstoreError::ObjectNotFound(e.to_string()))
         };
-        
+
         memstore::get_object(&self.kvs, &self.vq, &uuid, Some(get_vector_fn))
             .await
             .map_err(|e| match e {
@@ -716,7 +772,7 @@ impl ANN for QBGService {
     #[tracing::instrument(skip(self), level = "info")]
     async fn regenerate_indexes(&mut self) -> Result<(), Error> {
         // Read replica cannot perform write operations
-        if self.is_read_replica {
+        if self.is_readreplica {
             return Err(Error::WriteOperationToReadReplica {});
         }
 
@@ -726,38 +782,70 @@ impl ANN for QBGService {
     }
 
     #[tracing::instrument(skip(self), level = "debug")]
-    async fn search_by_id(&self, uuid: String, k: u32, epsilon: f32, radius: f32) -> Result<proto::payload::v1::search::Response, Error> {
+    async fn search_by_id(
+        &self,
+        uuid: String,
+        k: u32,
+        epsilon: f32,
+        radius: f32,
+    ) -> Result<proto::payload::v1::search::Response, Error> {
         let (vec, _ts) = self.get_object(uuid).await?;
         self.search(vec, k, epsilon, radius).await
     }
 
-    async fn linear_search(&self, _vector: Vec<f32>, _k: u32) -> Result<proto::payload::v1::search::Response, Error> {
+    async fn linear_search(
+        &self,
+        _vector: Vec<f32>,
+        _k: u32,
+    ) -> Result<proto::payload::v1::search::Response, Error> {
         Err(Error::Unsupported {
             method: "LinearSearch".to_string(),
             algorithm: "QBG".to_string(),
         })
     }
 
-    async fn linear_search_by_id(&self, _uuid: String, _k: u32) -> Result<proto::payload::v1::search::Response, Error> {
+    async fn linear_search_by_id(
+        &self,
+        _uuid: String,
+        _k: u32,
+    ) -> Result<proto::payload::v1::search::Response, Error> {
         Err(Error::Unsupported {
             method: "LinearSearchByID".to_string(),
             algorithm: "QBG".to_string(),
         })
     }
 
-    async fn insert_with_time(&mut self, uuid: String, vector: Vec<f32>, t: i64) -> Result<(), Error> {
+    async fn insert_with_time(
+        &mut self,
+        uuid: String,
+        vector: Vec<f32>,
+        t: i64,
+    ) -> Result<(), Error> {
         self.insert_internal(uuid, vector, t, true).await
     }
 
-    async fn insert_multiple_with_time(&mut self, vectors: HashMap<String, Vec<f32>>, t: i64) -> Result<(), Error> {
+    async fn insert_multiple_with_time(
+        &mut self,
+        vectors: HashMap<String, Vec<f32>>,
+        t: i64,
+    ) -> Result<(), Error> {
         self.insert_multiple_internal(vectors, t, true).await
     }
 
-    async fn update_with_time(&mut self, uuid: String, vector: Vec<f32>, t: i64) -> Result<(), Error> {
+    async fn update_with_time(
+        &mut self,
+        uuid: String,
+        vector: Vec<f32>,
+        t: i64,
+    ) -> Result<(), Error> {
         self.update_internal(uuid, vector, t).await
     }
 
-    async fn update_multiple_with_time(&mut self, vectors: HashMap<String, Vec<f32>>, t: i64) -> Result<(), Error> {
+    async fn update_multiple_with_time(
+        &mut self,
+        vectors: HashMap<String, Vec<f32>>,
+        t: i64,
+    ) -> Result<(), Error> {
         for (uuid, vec) in vectors {
             self.update_internal(uuid, vec, t).await?;
         }
@@ -767,20 +855,27 @@ impl ANN for QBGService {
     async fn update_timestamp(&mut self, uuid: String, t: i64, force: bool) -> Result<(), Error> {
         let index = &self.index;
         let get_vector_fn = |oid: u32| async move {
-            index.get_object(oid as usize)
+            index
+                .get_object(oid as usize)
                 .map(|v| v.to_vec())
                 .map_err(|e| memstore::MemstoreError::ObjectNotFound(e.to_string()))
         };
-        
+
         memstore::update_timestamp(&self.kvs, &self.vq, &uuid, t, force, Some(get_vector_fn))
             .await
             .map_err(|e| match e {
                 memstore::MemstoreError::ObjectIdNotFound(uuid) => Error::ObjectIDNotFound { uuid },
                 memstore::MemstoreError::ObjectNotFound(uuid) => Error::ObjectIDNotFound { uuid },
                 memstore::MemstoreError::UuidNotFound(uuid) => Error::UUIDNotFound { uuid },
-                memstore::MemstoreError::ZeroTimestamp => Error::InvalidUUID { uuid: "timestamp is zero".to_string() },
-                memstore::MemstoreError::NewerTimestampObjectAlreadyExists(uuid, _) => Error::UUIDAlreadyExists { uuid },
-                memstore::MemstoreError::NothingToBeDoneForUpdate(uuid) => Error::UUIDAlreadyExists { uuid },
+                memstore::MemstoreError::ZeroTimestamp => Error::InvalidUUID {
+                    uuid: "timestamp is zero".to_string(),
+                },
+                memstore::MemstoreError::NewerTimestampObjectAlreadyExists(uuid, _) => {
+                    Error::UUIDAlreadyExists { uuid }
+                }
+                memstore::MemstoreError::NothingToBeDoneForUpdate(uuid) => {
+                    Error::UUIDAlreadyExists { uuid }
+                }
                 _ => Error::Internal(Box::new(e)),
             })
     }
@@ -803,7 +898,8 @@ impl ANN for QBGService {
                 }
             }
             true // continue iteration if vector not available
-        }).await;
+        })
+        .await;
     }
 
     async fn create_and_save_index(&mut self) -> Result<(), Error> {
@@ -816,7 +912,9 @@ impl ANN for QBGService {
     }
 
     async fn uuids(&self) -> Vec<String> {
-        memstore::uuids(&self.kvs, &self.vq).await.unwrap_or_default()
+        memstore::uuids(&self.kvs, &self.vq)
+            .await
+            .unwrap_or_default()
     }
 
     fn broken_index_count(&self) -> u64 {
@@ -866,45 +964,51 @@ impl ANN for QBGService {
     }
 
     fn index_property(&self) -> Result<proto::payload::v1::info::index::Property, Error> {
-        Err(Error::Unsupported { method: "index_property".to_owned(), algorithm: "QBG".to_owned() })
+        Err(Error::Unsupported {
+            method: "index_property".to_owned(),
+            algorithm: "QBG".to_owned(),
+        })
     }
 
     #[tracing::instrument(skip(self), level = "info")]
     async fn close(&mut self) -> Result<(), Error> {
         info!("Closing QBGService...");
-        
+
         // Skip index operations for read replicas
-        if self.is_read_replica {
+        if self.is_readreplica {
             info!("Read replica mode: skipping index creation and save on close");
         } else {
             // Create final index if there are uncommitted changes
             let uncommitted = self.vq.ivq_len() + self.vq.dvq_len();
             if uncommitted > 0 {
-                info!("Creating final index with {} uncommitted changes...", uncommitted);
+                info!(
+                    "Creating final index with {} uncommitted changes...",
+                    uncommitted
+                );
                 if let Err(e) = self.create_index().await {
                     if !matches!(e, Error::UncommittedIndexNotFound {}) {
                         warn!("Failed to create final index: {:?}", e);
                     }
                 }
             }
-            
+
             // Save the index
             info!("Saving index...");
             if let Err(e) = self.save_index().await {
                 warn!("Failed to save index on close: {:?}", e);
             }
         }
-        
+
         // Close the QBG index
         info!("Closing QBG core index...");
         self.index.close_index();
-        
+
         // Flush and close KVS
         info!("Flushing KVS...");
         if let Err(e) = self.kvs.flush().await {
             warn!("Failed to flush KVS: {:?}", e);
         }
-        
+
         info!("QBGService closed successfully");
         Ok(())
     }
@@ -913,6 +1017,7 @@ impl ANN for QBGService {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use config::Config;
     use tempfile::TempDir;
 
     /// Test helper to create a QBGService with temporary directories
@@ -935,22 +1040,34 @@ mod tests {
             let temp_dir = TempDir::new().expect("Failed to create temp directory");
             let base_path = temp_dir.path().to_str().unwrap().to_string();
 
-            let settings = Config::builder()
-                .set_default("qbg.index_path", format!("{}/index", base_path)).unwrap()
-                .set_default("qbg.vqueue_path", format!("{}/vqueue", base_path)).unwrap()
-                .set_default("qbg.kvs_path", format!("{}/kvs", base_path)).unwrap()
-                .set_default("qbg.dimension", dimension as i64).unwrap()
-                .set_default("qbg.extended_dimension", dimension as i64).unwrap()
-                .set_default("qbg.number_of_subvectors", 1_i64).unwrap()
-                .set_default("qbg.number_of_blobs", 0_i64).unwrap()
-                .set_default("qbg.distance_type", 1_i64).unwrap() // L2
-                .set_default("qbg.data_type", 1_i64).unwrap() // Float
-                .set_default("qbg.internal_data_type", 1_i64).unwrap()
-                .set_default("qbg.is_read_replica", is_read_replica).unwrap()
+            let config = Config::builder()
+                .set_default("qbg.index_path", format!("{}/index", base_path))
+                .unwrap()
+                .set_default("qbg.vqueue_path", format!("{}/vqueue", base_path))
+                .unwrap()
+                .set_default("qbg.kvs_path", format!("{}/kvs", base_path))
+                .unwrap()
+                .set_default("qbg.dimension", dimension as i64)
+                .unwrap()
+                .set_default("qbg.extended_dimension", dimension as i64)
+                .unwrap()
+                .set_default("qbg.number_of_subvectors", 1_i64)
+                .unwrap()
+                .set_default("qbg.number_of_blobs", 0_i64)
+                .unwrap()
+                .set_default("qbg.distance_type", 1_i64)
+                .unwrap() // L2
+                .set_default("qbg.data_type", 1_i64)
+                .unwrap() // Float
+                .set_default("qbg.internal_data_type", 1_i64)
+                .unwrap()
+                .set_default("qbg.is_readreplica", is_read_replica)
+                .unwrap()
                 .build()
                 .unwrap();
 
-            let service = QBGService::new(settings).await;
+            let agent_config: crate::config::AgentConfig = config.try_deserialize().unwrap();
+            let service = QBGService::new(&agent_config.qbg).await;
 
             TestQBGService {
                 service,
@@ -962,22 +1079,34 @@ mod tests {
         /// Create a Read Replica service using the same paths as this service.
         /// The original service should have built and saved the index first.
         async fn create_read_replica_from_same_path(&self, dimension: usize) -> QBGService {
-            let settings = Config::builder()
-                .set_default("qbg.index_path", format!("{}/index", self.base_path)).unwrap()
-                .set_default("qbg.vqueue_path", format!("{}/vqueue", self.base_path)).unwrap()
-                .set_default("qbg.kvs_path", format!("{}/kvs", self.base_path)).unwrap()
-                .set_default("qbg.dimension", dimension as i64).unwrap()
-                .set_default("qbg.extended_dimension", dimension as i64).unwrap()
-                .set_default("qbg.number_of_subvectors", 1_i64).unwrap()
-                .set_default("qbg.number_of_blobs", 0_i64).unwrap()
-                .set_default("qbg.distance_type", 1_i64).unwrap()
-                .set_default("qbg.data_type", 1_i64).unwrap()
-                .set_default("qbg.internal_data_type", 1_i64).unwrap()
-                .set_default("qbg.is_read_replica", true).unwrap()
+            let config = Config::builder()
+                .set_default("qbg.index_path", format!("{}/index", self.base_path))
+                .unwrap()
+                .set_default("qbg.vqueue_path", format!("{}/vqueue", self.base_path))
+                .unwrap()
+                .set_default("qbg.kvs_path", format!("{}/kvs", self.base_path))
+                .unwrap()
+                .set_default("qbg.dimension", dimension as i64)
+                .unwrap()
+                .set_default("qbg.extended_dimension", dimension as i64)
+                .unwrap()
+                .set_default("qbg.number_of_subvectors", 1_i64)
+                .unwrap()
+                .set_default("qbg.number_of_blobs", 0_i64)
+                .unwrap()
+                .set_default("qbg.distance_type", 1_i64)
+                .unwrap()
+                .set_default("qbg.data_type", 1_i64)
+                .unwrap()
+                .set_default("qbg.internal_data_type", 1_i64)
+                .unwrap()
+                .set_default("qbg.is_readreplica", true)
+                .unwrap()
                 .build()
                 .unwrap();
 
-            QBGService::new(settings).await
+            let agent_config: crate::config::AgentConfig = config.try_deserialize().unwrap();
+            QBGService::new(&agent_config.qbg).await
         }
     }
 
@@ -1052,7 +1181,11 @@ mod tests {
         }
 
         let result = test_svc.service.insert_multiple(vectors.clone()).await;
-        assert!(result.is_ok(), "Insert multiple should succeed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Insert multiple should succeed: {:?}",
+            result.err()
+        );
 
         // Check all vectors exist
         for uuid in vectors.keys() {
@@ -1071,7 +1204,11 @@ mod tests {
         let vector = gen_random_vector(128);
         let timestamp = 1000i64;
 
-        test_svc.service.insert_with_time(uuid.clone(), vector.clone(), timestamp).await.unwrap();
+        test_svc
+            .service
+            .insert_with_time(uuid.clone(), vector.clone(), timestamp)
+            .await
+            .unwrap();
 
         let (retrieved_vec, retrieved_ts) = test_svc.service.get_object(uuid).await.unwrap();
         assert_eq!(retrieved_vec, vector);
@@ -1082,7 +1219,10 @@ mod tests {
     async fn test_get_object_not_found() {
         let test_svc = TestQBGService::new(128).await;
 
-        let result = test_svc.service.get_object("nonexistent-uuid".to_string()).await;
+        let result = test_svc
+            .service
+            .get_object("nonexistent-uuid".to_string())
+            .await;
         assert!(result.is_err());
         match result.err().unwrap() {
             Error::ObjectIDNotFound { uuid } => {
@@ -1126,7 +1266,7 @@ mod tests {
         let vector = gen_random_vector(128);
 
         test_svc.service.insert(uuid.clone(), vector).await.unwrap();
-        
+
         let (_, exists_before) = test_svc.service.exists(uuid.clone()).await;
         assert!(exists_before);
 
@@ -1141,7 +1281,10 @@ mod tests {
     async fn test_remove_nonexistent_vector_fails() {
         let mut test_svc = TestQBGService::new(128).await;
 
-        let result = test_svc.service.remove("nonexistent-uuid".to_string()).await;
+        let result = test_svc
+            .service
+            .remove("nonexistent-uuid".to_string())
+            .await;
         assert!(result.is_err());
         match result.err().unwrap() {
             Error::ObjectIDNotFound { .. } => {}
@@ -1154,10 +1297,14 @@ mod tests {
         let mut test_svc = TestQBGService::new(128).await;
 
         let uuids: Vec<String> = (0..5).map(|i| format!("multi-remove-{}", i)).collect();
-        
+
         // Insert all
         for uuid in &uuids {
-            test_svc.service.insert(uuid.clone(), gen_random_vector(128)).await.unwrap();
+            test_svc
+                .service
+                .insert(uuid.clone(), gen_random_vector(128))
+                .await
+                .unwrap();
         }
 
         // Remove all
@@ -1167,7 +1314,11 @@ mod tests {
         // Check none exist
         for uuid in &uuids {
             let (_, exists) = test_svc.service.exists(uuid.clone()).await;
-            assert!(!exists, "Vector {} should not exist after remove_multiple", uuid);
+            assert!(
+                !exists,
+                "Vector {} should not exist after remove_multiple",
+                uuid
+            );
         }
     }
 
@@ -1181,7 +1332,11 @@ mod tests {
         let vector1 = gen_random_vector(128);
         let vector2 = gen_random_vector(128);
 
-        test_svc.service.insert(uuid.clone(), vector1.clone()).await.unwrap();
+        test_svc
+            .service
+            .insert(uuid.clone(), vector1.clone())
+            .await
+            .unwrap();
 
         // Get original
         let (orig_vec, _) = test_svc.service.get_object(uuid.clone()).await.unwrap();
@@ -1204,7 +1359,7 @@ mod tests {
 
         let vector = gen_random_vector(128);
         let result = test_svc.service.linear_search(vector, 10).await;
-        
+
         assert!(result.is_err());
         match result.err().unwrap() {
             Error::Unsupported { method, algorithm } => {
@@ -1219,8 +1374,11 @@ mod tests {
     async fn test_linear_search_by_id_returns_unsupported() {
         let test_svc = TestQBGService::new(128).await;
 
-        let result = test_svc.service.linear_search_by_id("some-uuid".to_string(), 10).await;
-        
+        let result = test_svc
+            .service
+            .linear_search_by_id("some-uuid".to_string(), 10)
+            .await;
+
         assert!(result.is_err());
         match result.err().unwrap() {
             Error::Unsupported { method, algorithm } => {
@@ -1240,11 +1398,19 @@ mod tests {
         assert_eq!(test_svc.service.insert_vqueue_buffer_len(), 0);
 
         // Insert a vector
-        test_svc.service.insert("uuid-1".to_string(), gen_random_vector(128)).await.unwrap();
+        test_svc
+            .service
+            .insert("uuid-1".to_string(), gen_random_vector(128))
+            .await
+            .unwrap();
         assert_eq!(test_svc.service.insert_vqueue_buffer_len(), 1);
 
         // Insert another
-        test_svc.service.insert("uuid-2".to_string(), gen_random_vector(128)).await.unwrap();
+        test_svc
+            .service
+            .insert("uuid-2".to_string(), gen_random_vector(128))
+            .await
+            .unwrap();
         assert_eq!(test_svc.service.insert_vqueue_buffer_len(), 2);
     }
 
@@ -1255,8 +1421,16 @@ mod tests {
         assert_eq!(test_svc.service.delete_vqueue_buffer_len(), 0);
 
         // Insert and then delete
-        test_svc.service.insert("uuid-del".to_string(), gen_random_vector(128)).await.unwrap();
-        test_svc.service.remove("uuid-del".to_string()).await.unwrap();
+        test_svc
+            .service
+            .insert("uuid-del".to_string(), gen_random_vector(128))
+            .await
+            .unwrap();
+        test_svc
+            .service
+            .remove("uuid-del".to_string())
+            .await
+            .unwrap();
 
         assert_eq!(test_svc.service.delete_vqueue_buffer_len(), 1);
     }
@@ -1286,7 +1460,11 @@ mod tests {
 
         // Insert vectors
         for i in 0..10 {
-            test_svc.service.insert(format!("uuid-{}", i), gen_random_vector(128)).await.unwrap();
+            test_svc
+                .service
+                .insert(format!("uuid-{}", i), gen_random_vector(128))
+                .await
+                .unwrap();
         }
 
         // Note: QBG's HierarchicalKmeans requires many objects for clustering
@@ -1303,7 +1481,11 @@ mod tests {
 
         // Insert some vectors
         for i in 0..50 {
-            test_svc.service.insert(format!("uuid-{}", i), gen_random_vector(128)).await.unwrap();
+            test_svc
+                .service
+                .insert(format!("uuid-{}", i), gen_random_vector(128))
+                .await
+                .unwrap();
         }
 
         // Note: QBG's create_index may fail with HierarchicalKmeans clustering errors
@@ -1320,7 +1502,10 @@ mod tests {
         // Note: search_by_id requires a built searchable index.
         // QBG throws an exception if called on an unbuilt index, causing SIGABRT.
         // This test just verifies the method exists and returns an error for nonexistent UUID.
-        let result = test_svc.service.search_by_id("nonexistent".to_string(), 5, 0.1, -1.0).await;
+        let result = test_svc
+            .service
+            .search_by_id("nonexistent".to_string(), 5, 0.1, -1.0)
+            .await;
         assert!(result.is_err());
     }
 
@@ -1328,7 +1513,10 @@ mod tests {
     async fn test_search_by_id_not_found() {
         let test_svc = TestQBGService::new(128).await;
 
-        let result = test_svc.service.search_by_id("nonexistent".to_string(), 5, 0.1, -1.0).await;
+        let result = test_svc
+            .service
+            .search_by_id("nonexistent".to_string(), 5, 0.1, -1.0)
+            .await;
         assert!(result.is_err());
         match result.err().unwrap() {
             Error::ObjectIDNotFound { .. } => {}
@@ -1344,7 +1532,11 @@ mod tests {
 
         // Insert some vectors
         for i in 0..50 {
-            test_svc.service.insert(format!("uuid-{}", i), gen_random_vector(128)).await.unwrap();
+            test_svc
+                .service
+                .insert(format!("uuid-{}", i), gen_random_vector(128))
+                .await
+                .unwrap();
         }
 
         // Note: QBG's create_index may fail with HierarchicalKmeans clustering errors.
@@ -1367,7 +1559,11 @@ mod tests {
 
         let expected_uuids: Vec<String> = (0..5).map(|i| format!("uuid-{}", i)).collect();
         for uuid in &expected_uuids {
-            test_svc.service.insert(uuid.clone(), gen_random_vector(128)).await.unwrap();
+            test_svc
+                .service
+                .insert(uuid.clone(), gen_random_vector(128))
+                .await
+                .unwrap();
         }
 
         // uuids() returns items from both kvs and vqueue
@@ -1388,7 +1584,11 @@ mod tests {
 
         // Insert some vectors and try create_index
         for i in 0..50 {
-            test_svc.service.insert(format!("uuid-{}", i), gen_random_vector(128)).await.unwrap();
+            test_svc
+                .service
+                .insert(format!("uuid-{}", i), gen_random_vector(128))
+                .await
+                .unwrap();
         }
         let _ = test_svc.service.create_index().await;
 
@@ -1440,7 +1640,11 @@ mod tests {
         let mut test_svc = TestQBGService::new(128).await;
 
         // Insert some data
-        test_svc.service.insert("uuid-1".to_string(), gen_random_vector(128)).await.unwrap();
+        test_svc
+            .service
+            .insert("uuid-1".to_string(), gen_random_vector(128))
+            .await
+            .unwrap();
 
         // Close should succeed
         let result = test_svc.service.close().await;
@@ -1453,16 +1657,24 @@ mod tests {
 
         // Insert multiple vectors (uncommitted)
         for i in 0..10 {
-            test_svc.service.insert(format!("uuid-{}", i), gen_random_vector(128)).await.unwrap();
+            test_svc
+                .service
+                .insert(format!("uuid-{}", i), gen_random_vector(128))
+                .await
+                .unwrap();
         }
 
         // Verify we have uncommitted changes
-        let uncommitted = test_svc.service.insert_vqueue_buffer_len() + test_svc.service.delete_vqueue_buffer_len();
+        let uncommitted = test_svc.service.insert_vqueue_buffer_len()
+            + test_svc.service.delete_vqueue_buffer_len();
         assert!(uncommitted > 0, "Should have uncommitted changes");
 
         // Close should handle uncommitted changes gracefully
         let result = test_svc.service.close().await;
-        assert!(result.is_ok(), "close with uncommitted changes should succeed");
+        assert!(
+            result.is_ok(),
+            "close with uncommitted changes should succeed"
+        );
     }
 
     #[tokio::test]
@@ -1480,7 +1692,11 @@ mod tests {
 
         // Insert vectors
         for i in 0..50 {
-            test_svc.service.insert(format!("uuid-{}", i), gen_random_vector(128)).await.unwrap();
+            test_svc
+                .service
+                .insert(format!("uuid-{}", i), gen_random_vector(128))
+                .await
+                .unwrap();
         }
 
         // Create index first
@@ -1497,7 +1713,11 @@ mod tests {
 
         // Insert and create index
         for i in 0..50 {
-            test_svc.service.insert(format!("uuid-{}", i), gen_random_vector(128)).await.unwrap();
+            test_svc
+                .service
+                .insert(format!("uuid-{}", i), gen_random_vector(128))
+                .await
+                .unwrap();
         }
         let _ = test_svc.service.create_index().await;
         let _ = test_svc.service.save_index().await;
@@ -1513,9 +1733,13 @@ mod tests {
 
         // Insert and remove some vectors
         for i in 0..20 {
-            test_svc.service.insert(format!("uuid-{}", i), gen_random_vector(128)).await.unwrap();
+            test_svc
+                .service
+                .insert(format!("uuid-{}", i), gen_random_vector(128))
+                .await
+                .unwrap();
         }
-        
+
         // Remove half of them
         for i in 0..10 {
             let _ = test_svc.service.remove(format!("uuid-{}", i)).await;
@@ -1523,7 +1747,10 @@ mod tests {
 
         // Close should handle mixed insert/delete queue
         let result = test_svc.service.close().await;
-        assert!(result.is_ok(), "close with remove operations should succeed");
+        assert!(
+            result.is_ok(),
+            "close with remove operations should succeed"
+        );
     }
 
     #[tokio::test]
@@ -1532,17 +1759,27 @@ mod tests {
 
         // Insert vectors
         for i in 0..10 {
-            test_svc.service.insert(format!("uuid-{}", i), gen_random_vector(128)).await.unwrap();
+            test_svc
+                .service
+                .insert(format!("uuid-{}", i), gen_random_vector(128))
+                .await
+                .unwrap();
         }
 
         // Update some vectors
         for i in 0..5 {
-            let _ = test_svc.service.update(format!("uuid-{}", i), gen_random_vector(128)).await;
+            let _ = test_svc
+                .service
+                .update(format!("uuid-{}", i), gen_random_vector(128))
+                .await;
         }
 
         // Close should succeed
         let result = test_svc.service.close().await;
-        assert!(result.is_ok(), "close with update operations should succeed");
+        assert!(
+            result.is_ok(),
+            "close with update operations should succeed"
+        );
     }
 
     // ========== State Flag Tests ==========
@@ -1550,19 +1787,28 @@ mod tests {
     #[tokio::test]
     async fn test_is_flushing_initial_state() {
         let test_svc = TestQBGService::new(128).await;
-        assert!(!test_svc.service.is_flushing(), "is_flushing should be false initially");
+        assert!(
+            !test_svc.service.is_flushing(),
+            "is_flushing should be false initially"
+        );
     }
 
     #[tokio::test]
     async fn test_is_indexing_initial_state() {
         let test_svc = TestQBGService::new(128).await;
-        assert!(!test_svc.service.is_indexing(), "is_indexing should be false initially");
+        assert!(
+            !test_svc.service.is_indexing(),
+            "is_indexing should be false initially"
+        );
     }
 
     #[tokio::test]
     async fn test_is_saving_initial_state() {
         let test_svc = TestQBGService::new(128).await;
-        assert!(!test_svc.service.is_saving(), "is_saving should be false initially");
+        assert!(
+            !test_svc.service.is_saving(),
+            "is_saving should be false initially"
+        );
     }
 
     // ========== List Object Func Tests ==========
@@ -1573,15 +1819,22 @@ mod tests {
 
         // Insert some vectors
         for i in 0..3 {
-            test_svc.service.insert(format!("uuid-{}", i), gen_random_vector(128)).await.unwrap();
+            test_svc
+                .service
+                .insert(format!("uuid-{}", i), gen_random_vector(128))
+                .await
+                .unwrap();
         }
 
         use std::sync::atomic::AtomicUsize;
         let count = AtomicUsize::new(0);
-        test_svc.service.list_object_func(|_uuid, _vec, _ts| {
-            count.fetch_add(1, Ordering::SeqCst);
-            true // continue iterating
-        }).await;
+        test_svc
+            .service
+            .list_object_func(|_uuid, _vec, _ts| {
+                count.fetch_add(1, Ordering::SeqCst);
+                true // continue iterating
+            })
+            .await;
 
         // Note: list_object_func only iterates over indexed objects (oid > 0)
         // Objects in vqueue without create_index won't be counted
@@ -1595,7 +1848,10 @@ mod tests {
     async fn test_read_replica_insert_fails() {
         let mut test_svc = TestQBGService::new_read_replica(128).await;
 
-        let result = test_svc.service.insert("uuid-1".to_string(), gen_random_vector(128)).await;
+        let result = test_svc
+            .service
+            .insert("uuid-1".to_string(), gen_random_vector(128))
+            .await;
         assert!(result.is_err());
         match result.err().unwrap() {
             Error::WriteOperationToReadReplica {} => {}
@@ -1607,7 +1863,10 @@ mod tests {
     async fn test_read_replica_update_fails() {
         let mut test_svc = TestQBGService::new_read_replica(128).await;
 
-        let result = test_svc.service.update("uuid-1".to_string(), gen_random_vector(128)).await;
+        let result = test_svc
+            .service
+            .update("uuid-1".to_string(), gen_random_vector(128))
+            .await;
         assert!(result.is_err());
         match result.err().unwrap() {
             Error::WriteOperationToReadReplica {} => {}
@@ -1713,16 +1972,19 @@ mod tests {
     #[tokio::test]
     async fn test_read_replica_search_operations_succeed() {
         // Test that read replica correctly rejects write operations while allowing reads.
-        // Note: Testing actual search on read replica requires a pre-built index which is 
+        // Note: Testing actual search on read replica requires a pre-built index which is
         // complex to set up in unit tests due to QBG's directory handling.
         // We verify that search_by_id returns ObjectIDNotFound (not WriteOperationToReadReplica),
         // proving that read operations are allowed.
-        
+
         let test_svc = TestQBGService::new_read_replica(128).await;
 
         // search_by_id should fail with ObjectIDNotFound, not WriteOperationToReadReplica
         // This proves that read operations are permitted on read replicas
-        let search_by_id_result = test_svc.service.search_by_id("nonexistent".to_string(), 5, 0.1, -1.0).await;
+        let search_by_id_result = test_svc
+            .service
+            .search_by_id("nonexistent".to_string(), 5, 0.1, -1.0)
+            .await;
         assert!(search_by_id_result.is_err());
         match search_by_id_result.err().unwrap() {
             Error::ObjectIDNotFound { .. } => {}
@@ -1734,7 +1996,10 @@ mod tests {
         assert!(get_result.is_err());
         match get_result.err().unwrap() {
             Error::ObjectIDNotFound { .. } | Error::UUIDNotFound { .. } => {}
-            e => panic!("Expected ObjectIDNotFound or UUIDNotFound error, got: {:?}", e),
+            e => panic!(
+                "Expected ObjectIDNotFound or UUIDNotFound error, got: {:?}",
+                e
+            ),
         }
     }
 
@@ -1751,11 +2016,10 @@ mod tests {
     async fn test_read_replica_insert_with_time_fails() {
         let mut test_svc = TestQBGService::new_read_replica(128).await;
 
-        let result = test_svc.service.insert_with_time(
-            "uuid-1".to_string(),
-            gen_random_vector(128),
-            1234567890,
-        ).await;
+        let result = test_svc
+            .service
+            .insert_with_time("uuid-1".to_string(), gen_random_vector(128), 1234567890)
+            .await;
         assert!(result.is_err());
         match result.err().unwrap() {
             Error::WriteOperationToReadReplica {} => {}
@@ -1767,7 +2031,10 @@ mod tests {
     async fn test_read_replica_remove_with_time_fails() {
         let mut test_svc = TestQBGService::new_read_replica(128).await;
 
-        let result = test_svc.service.remove_with_time("uuid-1".to_string(), 1234567890).await;
+        let result = test_svc
+            .service
+            .remove_with_time("uuid-1".to_string(), 1234567890)
+            .await;
         assert!(result.is_err());
         match result.err().unwrap() {
             Error::WriteOperationToReadReplica {} => {}
@@ -1792,7 +2059,10 @@ mod tests {
 
         // Try to update timestamp - it should work or return a specific error related to timing
         let new_timestamp: i64 = 9876543210;
-        let result = test_svc.service.update_timestamp(uuid.clone(), new_timestamp, true).await;
+        let result = test_svc
+            .service
+            .update_timestamp(uuid.clone(), new_timestamp, true)
+            .await;
         // The result can be either success or a "newer timestamp exists" error, both are acceptable
         // since this tests the update_timestamp behavior with already-existing entries
         let _ = result;
@@ -1804,12 +2074,15 @@ mod tests {
 
         // Try to update timestamp for a UUID that has never been inserted
         let uuid = "never-inserted".to_string();
-        let result = test_svc.service.update_timestamp(uuid.clone(), 1234567890, false).await;
+        let result = test_svc
+            .service
+            .update_timestamp(uuid.clone(), 1234567890, false)
+            .await;
         assert!(result.is_err(), "Should fail for non-existent UUID");
-        
+
         // Accept either ObjectIDNotFound or UUIDNotFound errors
         match result {
-            Err(Error::UUIDNotFound { .. }) | Err(Error::ObjectIDNotFound { .. }) => {}, // Expected
+            Err(Error::UUIDNotFound { .. }) | Err(Error::ObjectIDNotFound { .. }) => {} // Expected
             Err(e) => panic!("Got unexpected error: {:?}", e),
             Ok(_) => panic!("Should not succeed for non-existent UUID"),
         }
@@ -1821,9 +2094,13 @@ mod tests {
 
         let uuid = "test-uuid-3".to_string();
         let vector1 = gen_random_vector(128);
-        
+
         // Insert first vector
-        test_svc.service.insert(uuid.clone(), vector1).await.unwrap();
+        test_svc
+            .service
+            .insert(uuid.clone(), vector1)
+            .await
+            .unwrap();
 
         // Remove it
         test_svc.service.remove(uuid.clone()).await.unwrap();
@@ -1833,7 +2110,10 @@ mod tests {
         // After remove, the UUID may still be in vqueue, so we just check the behavior
 
         // Try to update timestamp - may succeed (if still in vqueue) or fail (if removed from kvs)
-        let result = test_svc.service.update_timestamp(uuid.clone(), 1234567890, false).await;
+        let result = test_svc
+            .service
+            .update_timestamp(uuid.clone(), 1234567890, false)
+            .await;
         // Both success and failure are acceptable depending on implementation timing
         let _ = result;
     }
@@ -1858,7 +2138,12 @@ mod tests {
                     let vector = gen_random_vector(128);
                     let mut svc = service.lock().await;
                     let result = svc.insert(uuid.clone(), vector).await;
-                    assert!(result.is_ok(), "Insert failed for {}: {:?}", uuid, result.err());
+                    assert!(
+                        result.is_ok(),
+                        "Insert failed for {}: {:?}",
+                        uuid,
+                        result.err()
+                    );
                 }
             });
             handles.push(handle);
@@ -1888,7 +2173,7 @@ mod tests {
 
         // Spawn concurrent inserts and exists checks
         let mut handles = vec![];
-        
+
         // Insert thread
         {
             let service = service.clone();
@@ -1983,7 +2268,10 @@ mod tests {
         let ivqueue = svc.insert_vqueue_buffer_len();
         let dvqueue = svc.delete_vqueue_buffer_len();
         // Should have some pending operations
-        assert!(ivqueue > 0 || dvqueue > 0, "Should have pending operations in vqueue");
+        assert!(
+            ivqueue > 0 || dvqueue > 0,
+            "Should have pending operations in vqueue"
+        );
     }
 
     #[tokio::test]
@@ -2056,7 +2344,10 @@ mod tests {
         let vector = gen_random_vector(128);
 
         // Empty UUID should fail
-        let result = test_svc.service.insert(empty_uuid.clone(), vector.clone()).await;
+        let result = test_svc
+            .service
+            .insert(empty_uuid.clone(), vector.clone())
+            .await;
         assert!(result.is_err(), "Insert with empty UUID should fail");
     }
 
@@ -2086,7 +2377,10 @@ mod tests {
 
         // Special characters in UUID should work
         let result = test_svc.service.insert(special_uuid.clone(), vector).await;
-        assert!(result.is_ok(), "Insert with special characters in UUID should succeed");
+        assert!(
+            result.is_ok(),
+            "Insert with special characters in UUID should succeed"
+        );
 
         let (_, exists) = test_svc.service.exists(special_uuid).await;
         assert!(exists, "UUID with special characters should exist");
@@ -2100,7 +2394,10 @@ mod tests {
         let vector = gen_random_vector(128);
 
         // Insert with zero timestamp
-        let result = test_svc.service.insert_with_time(uuid.clone(), vector, 0).await;
+        let result = test_svc
+            .service
+            .insert_with_time(uuid.clone(), vector, 0)
+            .await;
         // Should succeed or fail depending on implementation
         let _ = result;
     }
@@ -2113,7 +2410,10 @@ mod tests {
         let vector = gen_random_vector(128);
 
         // Insert with negative timestamp
-        let result = test_svc.service.insert_with_time(uuid.clone(), vector, -1234567890).await;
+        let result = test_svc
+            .service
+            .insert_with_time(uuid.clone(), vector, -1234567890)
+            .await;
         // Should succeed or fail depending on implementation
         let _ = result;
     }
@@ -2126,7 +2426,10 @@ mod tests {
         let vector = gen_random_vector(128);
 
         // Insert with i64::MAX timestamp
-        let result = test_svc.service.insert_with_time(uuid.clone(), vector, i64::MAX).await;
+        let result = test_svc
+            .service
+            .insert_with_time(uuid.clone(), vector, i64::MAX)
+            .await;
         assert!(result.is_ok(), "Insert with max timestamp should succeed");
     }
 
@@ -2138,7 +2441,10 @@ mod tests {
         let vector = gen_random_vector(128);
 
         // Insert with i64::MIN timestamp
-        let result = test_svc.service.insert_with_time(uuid.clone(), vector, i64::MIN).await;
+        let result = test_svc
+            .service
+            .insert_with_time(uuid.clone(), vector, i64::MIN)
+            .await;
         assert!(result.is_ok(), "Insert with min timestamp should succeed");
     }
 
@@ -2150,7 +2456,10 @@ mod tests {
 
         // Insert empty vector map
         let result = test_svc.service.insert_multiple(vectors).await;
-        assert!(result.is_ok(), "Insert multiple with empty map should succeed");
+        assert!(
+            result.is_ok(),
+            "Insert multiple with empty map should succeed"
+        );
     }
 
     #[tokio::test]
@@ -2161,7 +2470,10 @@ mod tests {
 
         // Remove empty list
         let result = test_svc.service.remove_multiple(uuids).await;
-        assert!(result.is_ok(), "Remove multiple with empty list should succeed");
+        assert!(
+            result.is_ok(),
+            "Remove multiple with empty list should succeed"
+        );
     }
 
     #[tokio::test]
@@ -2172,7 +2484,11 @@ mod tests {
         let vector = gen_random_vector(128);
 
         // Single insert
-        test_svc.service.insert(uuid.clone(), vector.clone()).await.unwrap();
+        test_svc
+            .service
+            .insert(uuid.clone(), vector.clone())
+            .await
+            .unwrap();
 
         // Single update (may fail if insert not fully processed yet)
         let _result = test_svc.service.update(uuid.clone(), vector.clone()).await;
@@ -2229,7 +2545,11 @@ mod tests {
         let vector2 = gen_random_vector(128);
 
         // First insert
-        test_svc.service.insert(uuid.clone(), vector1).await.unwrap();
+        test_svc
+            .service
+            .insert(uuid.clone(), vector1)
+            .await
+            .unwrap();
 
         // Second insert with same UUID (should fail)
         let result = test_svc.service.insert(uuid, vector2).await;
@@ -2285,7 +2605,11 @@ mod tests {
             if i == 0 {
                 assert!(result.is_ok(), "First insert should succeed");
             } else {
-                assert!(result.is_err(), "Insert {} should fail (UUID already exists)", i);
+                assert!(
+                    result.is_err(),
+                    "Insert {} should fail (UUID already exists)",
+                    i
+                );
             }
         }
     }
@@ -2298,15 +2622,22 @@ mod tests {
         let vector = gen_random_vector(128);
 
         // Insert once
-        test_svc.service.insert(uuid.clone(), vector.clone()).await.unwrap();
+        test_svc
+            .service
+            .insert(uuid.clone(), vector.clone())
+            .await
+            .unwrap();
 
         // Get many times
         for _ in 0..100 {
             let result = test_svc.service.get_object(uuid.clone()).await;
             assert!(result.is_ok(), "Get should succeed");
             let (retrieved_vec, _) = result.unwrap();
-            assert_eq!(retrieved_vec.len(), 128, "Retrieved vector dimension should match");
+            assert_eq!(
+                retrieved_vec.len(),
+                128,
+                "Retrieved vector dimension should match"
+            );
         }
     }
-
 }

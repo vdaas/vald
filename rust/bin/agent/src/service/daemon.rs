@@ -24,8 +24,8 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use algorithm::{ANN, Error};
-use tokio::sync::{RwLock, mpsc};
+use algorithm::{Error, ANN};
+use tokio::sync::{mpsc, RwLock};
 use tokio::time::{interval, Instant};
 use tokio_util::sync::CancellationToken;
 use tracing::{debug, info, warn};
@@ -74,47 +74,15 @@ impl Default for DaemonConfig {
 
 impl DaemonConfig {
     /// Creates a new DaemonConfig from config settings.
-    pub fn from_config(settings: &config::Config) -> Self {
-        let auto_index_check_duration = settings
-            .get::<u64>("daemon.auto_index_check_duration_ms")
-            .map(Duration::from_millis)
-            .unwrap_or(Duration::from_secs(1));
-
-        let auto_save_index_duration = settings
-            .get::<u64>("daemon.auto_save_index_duration_ms")
-            .map(Duration::from_millis)
-            .unwrap_or(Duration::from_secs(60));
-
-        let auto_index_limit = settings
-            .get::<u64>("daemon.auto_index_limit_ms")
-            .map(Duration::from_millis)
-            .unwrap_or(Duration::from_secs(3600));
-
-        let auto_index_length = settings
-            .get::<usize>("daemon.auto_index_length")
-            .unwrap_or(100);
-
-        let pool_size = settings
-            .get::<u32>("daemon.pool_size")
-            .unwrap_or(10000);
-
-        let initial_delay = settings
-            .get::<u64>("daemon.initial_delay_ms")
-            .map(Duration::from_millis)
-            .unwrap_or(Duration::ZERO);
-
-        let enable_proactive_gc = settings
-            .get::<bool>("daemon.enable_proactive_gc")
-            .unwrap_or(false);
-
+    pub fn from_config(config: &crate::config::Daemon) -> Self {
         Self {
-            auto_index_check_duration,
-            auto_save_index_duration,
-            auto_index_limit,
-            auto_index_length,
-            pool_size,
-            initial_delay,
-            enable_proactive_gc,
+            auto_index_check_duration: Duration::from_millis(config.auto_index_check_duration_ms),
+            auto_save_index_duration: Duration::from_millis(config.auto_save_index_duration_ms),
+            auto_index_limit: Duration::from_millis(config.auto_index_limit_ms),
+            auto_index_length: config.auto_index_length,
+            pool_size: config.pool_size,
+            initial_delay: Duration::from_millis(config.initial_delay_ms),
+            enable_proactive_gc: config.enable_proactive_gc,
         }
     }
 }
@@ -316,9 +284,9 @@ pub async fn start<T: ANN + 'static>(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use proto::payload::v1::{info, search};
     use std::collections::HashMap;
     use std::sync::atomic::{AtomicU32, Ordering};
-    use proto::payload::v1::{info, search};
 
     /// Mock ANN service for testing
     struct MockANNService {
@@ -352,19 +320,39 @@ mod tests {
     }
 
     impl ANN for MockANNService {
-        async fn search(&self, _vector: Vec<f32>, _k: u32, _epsilon: f32, _radius: f32) -> Result<search::Response, Error> {
+        async fn search(
+            &self,
+            _vector: Vec<f32>,
+            _k: u32,
+            _epsilon: f32,
+            _radius: f32,
+        ) -> Result<search::Response, Error> {
             Ok(search::Response::default())
         }
 
-        async fn search_by_id(&self, _uuid: String, _k: u32, _epsilon: f32, _radius: f32) -> Result<search::Response, Error> {
+        async fn search_by_id(
+            &self,
+            _uuid: String,
+            _k: u32,
+            _epsilon: f32,
+            _radius: f32,
+        ) -> Result<search::Response, Error> {
             Ok(search::Response::default())
         }
 
-        async fn linear_search(&self, _vector: Vec<f32>, _k: u32) -> Result<search::Response, Error> {
+        async fn linear_search(
+            &self,
+            _vector: Vec<f32>,
+            _k: u32,
+        ) -> Result<search::Response, Error> {
             Ok(search::Response::default())
         }
 
-        async fn linear_search_by_id(&self, _uuid: String, _k: u32) -> Result<search::Response, Error> {
+        async fn linear_search_by_id(
+            &self,
+            _uuid: String,
+            _k: u32,
+        ) -> Result<search::Response, Error> {
             Ok(search::Response::default())
         }
 
@@ -372,15 +360,27 @@ mod tests {
             Ok(())
         }
 
-        async fn insert_with_time(&mut self, _uuid: String, _vector: Vec<f32>, _t: i64) -> Result<(), Error> {
+        async fn insert_with_time(
+            &mut self,
+            _uuid: String,
+            _vector: Vec<f32>,
+            _t: i64,
+        ) -> Result<(), Error> {
             Ok(())
         }
 
-        async fn insert_multiple(&mut self, _vectors: HashMap<String, Vec<f32>>) -> Result<(), Error> {
+        async fn insert_multiple(
+            &mut self,
+            _vectors: HashMap<String, Vec<f32>>,
+        ) -> Result<(), Error> {
             Ok(())
         }
 
-        async fn insert_multiple_with_time(&mut self, _vectors: HashMap<String, Vec<f32>>, _t: i64) -> Result<(), Error> {
+        async fn insert_multiple_with_time(
+            &mut self,
+            _vectors: HashMap<String, Vec<f32>>,
+            _t: i64,
+        ) -> Result<(), Error> {
             Ok(())
         }
 
@@ -388,19 +388,36 @@ mod tests {
             Ok(())
         }
 
-        async fn update_with_time(&mut self, _uuid: String, _vector: Vec<f32>, _t: i64) -> Result<(), Error> {
+        async fn update_with_time(
+            &mut self,
+            _uuid: String,
+            _vector: Vec<f32>,
+            _t: i64,
+        ) -> Result<(), Error> {
             Ok(())
         }
 
-        async fn update_multiple(&mut self, _vectors: HashMap<String, Vec<f32>>) -> Result<(), Error> {
+        async fn update_multiple(
+            &mut self,
+            _vectors: HashMap<String, Vec<f32>>,
+        ) -> Result<(), Error> {
             Ok(())
         }
 
-        async fn update_multiple_with_time(&mut self, _vectors: HashMap<String, Vec<f32>>, _t: i64) -> Result<(), Error> {
+        async fn update_multiple_with_time(
+            &mut self,
+            _vectors: HashMap<String, Vec<f32>>,
+            _t: i64,
+        ) -> Result<(), Error> {
             Ok(())
         }
 
-        async fn update_timestamp(&mut self, _uuid: String, _t: i64, _force: bool) -> Result<(), Error> {
+        async fn update_timestamp(
+            &mut self,
+            _uuid: String,
+            _t: i64,
+            _force: bool,
+        ) -> Result<(), Error> {
             Ok(())
         }
 
@@ -416,7 +433,11 @@ mod tests {
             Ok(())
         }
 
-        async fn remove_multiple_with_time(&mut self, _uuids: Vec<String>, _t: i64) -> Result<(), Error> {
+        async fn remove_multiple_with_time(
+            &mut self,
+            _uuids: Vec<String>,
+            _t: i64,
+        ) -> Result<(), Error> {
             Ok(())
         }
 
@@ -440,7 +461,9 @@ mod tests {
         }
 
         async fn get_object(&self, _uuid: String) -> Result<(Vec<f32>, i64), Error> {
-            Err(Error::ObjectIDNotFound { uuid: "not found".to_string() })
+            Err(Error::ObjectIDNotFound {
+                uuid: "not found".to_string(),
+            })
         }
 
         async fn exists(&self, _uuid: String) -> (usize, bool) {
@@ -509,11 +532,11 @@ mod tests {
     #[tokio::test]
     async fn test_daemon_auto_index() {
         let service = Arc::new(RwLock::new(MockANNService::new()));
-        
+
         let config = DaemonConfig {
             auto_index_check_duration: Duration::from_millis(50),
             auto_save_index_duration: Duration::from_secs(3600), // Disable save for this test
-            auto_index_limit: Duration::from_secs(3600), // Disable limit for this test
+            auto_index_limit: Duration::from_secs(3600),         // Disable limit for this test
             auto_index_length: 10,
             pool_size: 100,
             initial_delay: Duration::ZERO,
@@ -530,7 +553,11 @@ mod tests {
 
         // Check that create_index was called
         let create_count = service.read().await.get_create_index_count();
-        assert!(create_count >= 1, "Expected at least 1 create_index call, got {}", create_count);
+        assert!(
+            create_count >= 1,
+            "Expected at least 1 create_index call, got {}",
+            create_count
+        );
 
         handle.stop();
         tokio::time::sleep(Duration::from_millis(50)).await;
@@ -539,7 +566,7 @@ mod tests {
     #[tokio::test]
     async fn test_daemon_auto_save() {
         let service = Arc::new(RwLock::new(MockANNService::new()));
-        
+
         let config = DaemonConfig {
             auto_index_check_duration: Duration::from_secs(3600), // Disable index check
             auto_save_index_duration: Duration::from_millis(50),
@@ -557,7 +584,11 @@ mod tests {
 
         // Check that save_index was called
         let save_count = service.read().await.get_save_index_count();
-        assert!(save_count >= 1, "Expected at least 1 save_index call, got {}", save_count);
+        assert!(
+            save_count >= 1,
+            "Expected at least 1 save_index call, got {}",
+            save_count
+        );
 
         handle.stop();
         tokio::time::sleep(Duration::from_millis(50)).await;
@@ -566,7 +597,7 @@ mod tests {
     #[tokio::test]
     async fn test_daemon_handle_stop() {
         let service = Arc::new(RwLock::new(MockANNService::new()));
-        
+
         let config = DaemonConfig::default();
         let (handle, _error_rx) = start(service.clone(), config).await;
 
@@ -581,7 +612,7 @@ mod tests {
     #[tokio::test]
     async fn test_daemon_initial_delay() {
         let service = Arc::new(RwLock::new(MockANNService::new()));
-        
+
         let config = DaemonConfig {
             auto_index_check_duration: Duration::from_millis(10),
             auto_save_index_duration: Duration::from_secs(3600),
@@ -598,12 +629,18 @@ mod tests {
         // Immediately after start, create_index should not have been called
         tokio::time::sleep(Duration::from_millis(20)).await;
         let count_before_delay = service.read().await.get_create_index_count();
-        assert_eq!(count_before_delay, 0, "Should not have created index during initial delay");
+        assert_eq!(
+            count_before_delay, 0,
+            "Should not have created index during initial delay"
+        );
 
         // After initial delay passes
         tokio::time::sleep(Duration::from_millis(150)).await;
         let count_after_delay = service.read().await.get_create_index_count();
-        assert!(count_after_delay >= 1, "Should have created index after initial delay");
+        assert!(
+            count_after_delay >= 1,
+            "Should have created index after initial delay"
+        );
 
         handle.stop();
     }
@@ -614,7 +651,7 @@ mod tests {
         mock.is_flushing = true;
         mock.ivq_len.store(1000, Ordering::SeqCst);
         let service = Arc::new(RwLock::new(mock));
-        
+
         let config = DaemonConfig {
             auto_index_check_duration: Duration::from_millis(20),
             auto_save_index_duration: Duration::from_secs(3600),
@@ -640,7 +677,7 @@ mod tests {
     #[tokio::test]
     async fn test_daemon_shutdown_creates_final_index() {
         let service = Arc::new(RwLock::new(MockANNService::new()));
-        
+
         let config = DaemonConfig {
             auto_index_check_duration: Duration::from_secs(3600), // Disable periodic
             auto_save_index_duration: Duration::from_secs(3600),
@@ -663,7 +700,10 @@ mod tests {
         tokio::time::sleep(Duration::from_millis(100)).await;
 
         let count_after = service.read().await.get_create_index_count();
-        assert_eq!(count_after, 1, "Should have created final index on shutdown");
+        assert_eq!(
+            count_after, 1,
+            "Should have created final index on shutdown"
+        );
     }
 
     // ========== Graceful Shutdown Tests ==========
@@ -671,7 +711,7 @@ mod tests {
     #[tokio::test]
     async fn test_daemon_stop_and_wait() {
         let service = Arc::new(RwLock::new(MockANNService::new()));
-        
+
         let config = DaemonConfig {
             auto_index_check_duration: Duration::from_secs(3600),
             auto_save_index_duration: Duration::from_secs(3600),
@@ -693,7 +733,11 @@ mod tests {
         let elapsed = start_time.elapsed();
 
         // Should complete quickly (within 500ms for test)
-        assert!(elapsed < Duration::from_millis(500), "stop_and_wait took too long: {:?}", elapsed);
+        assert!(
+            elapsed < Duration::from_millis(500),
+            "stop_and_wait took too long: {:?}",
+            elapsed
+        );
 
         // Should have called create_index on shutdown
         let count = service.read().await.get_create_index_count();
@@ -703,7 +747,7 @@ mod tests {
     #[tokio::test]
     async fn test_daemon_wait_after_stop() {
         let service = Arc::new(RwLock::new(MockANNService::new()));
-        
+
         let config = DaemonConfig {
             auto_index_check_duration: Duration::from_secs(3600),
             auto_save_index_duration: Duration::from_secs(3600),
@@ -725,13 +769,17 @@ mod tests {
         handle.wait().await;
         let elapsed = start_time.elapsed();
 
-        assert!(elapsed < Duration::from_millis(200), "wait() took too long: {:?}", elapsed);
+        assert!(
+            elapsed < Duration::from_millis(200),
+            "wait() took too long: {:?}",
+            elapsed
+        );
     }
 
     #[tokio::test]
     async fn test_daemon_multiple_wait_calls() {
         let service = Arc::new(RwLock::new(MockANNService::new()));
-        
+
         let config = DaemonConfig::default();
         let (handle, _error_rx) = start(service.clone(), config).await;
 
@@ -760,7 +808,7 @@ mod tests {
     #[tokio::test]
     async fn test_daemon_shutdown_during_initial_delay() {
         let service = Arc::new(RwLock::new(MockANNService::new()));
-        
+
         let config = DaemonConfig {
             auto_index_check_duration: Duration::from_millis(10),
             auto_save_index_duration: Duration::from_secs(3600),
@@ -780,17 +828,24 @@ mod tests {
         let elapsed = start_time.elapsed();
 
         // Should stop quickly, not wait for full initial delay
-        assert!(elapsed < Duration::from_millis(500), "Shutdown should be fast: {:?}", elapsed);
+        assert!(
+            elapsed < Duration::from_millis(500),
+            "Shutdown should be fast: {:?}",
+            elapsed
+        );
 
         // No index creation should have happened (cancelled during initial delay)
         let count = service.read().await.get_create_index_count();
-        assert_eq!(count, 0, "Should not create index when cancelled during initial delay");
+        assert_eq!(
+            count, 0,
+            "Should not create index when cancelled during initial delay"
+        );
     }
 
     #[tokio::test]
     async fn test_daemon_graceful_shutdown_with_pending_operations() {
         let service = Arc::new(RwLock::new(MockANNService::new()));
-        
+
         // Set high vqueue length to simulate pending operations
         service.read().await.set_ivq_len(1000);
 
@@ -817,6 +872,9 @@ mod tests {
 
         // Should have created one more final index
         let count_after = service.read().await.get_create_index_count();
-        assert!(count_after > count_before, "Should have created final index on shutdown");
+        assert!(
+            count_after > count_before,
+            "Should have created final index on shutdown"
+        );
     }
 }

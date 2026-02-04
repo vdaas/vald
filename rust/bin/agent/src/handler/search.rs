@@ -60,12 +60,14 @@ async fn search<S: algorithm::ANN>(
         warn!("{:?}", status);
         return Err(status);
     }
-    let result = s.search(
-        request.vector.clone(),
-        config.num,
-        config.epsilon,
-        config.radius,
-    ).await;
+    let result = s
+        .search(
+            request.vector.clone(),
+            config.num,
+            config.epsilon,
+            config.radius,
+        )
+        .await;
     match result {
         Err(err) => {
             let resource_type = format!("{}/qbg.Search", resource_type);
@@ -204,7 +206,10 @@ impl<S: algorithm::ANN + 'static> search_server::Search for super::Agent<S> {
             );
             let status = Status::with_error_details(
                 Code::InvalidArgument,
-                format!("SearchByID API invalid argument for uuid \"{}\" detected", uuid),
+                format!(
+                    "SearchByID API invalid argument for uuid \"{}\" detected",
+                    uuid
+                ),
                 err_details,
             );
             warn!("{:?}", status);
@@ -217,12 +222,9 @@ impl<S: algorithm::ANN + 'static> search_server::Search for super::Agent<S> {
         };
 
         let s = self.s.read().await;
-        let result = s.search_by_id(
-            uuid.clone(),
-            config.num,
-            config.epsilon,
-            config.radius,
-        ).await;
+        let result = s
+            .search_by_id(uuid.clone(), config.num, config.epsilon, config.radius)
+            .await;
 
         match result {
             Err(err) => {
@@ -396,23 +398,25 @@ impl<S: algorithm::ANN + 'static> search_server::Search for super::Agent<S> {
                     );
                     return Err(Status::with_error_details(
                         Code::InvalidArgument,
-                        format!("SearchByID API invalid argument for uuid \"{}\" detected", uuid),
+                        format!(
+                            "SearchByID API invalid argument for uuid \"{}\" detected",
+                            uuid
+                        ),
                         err_details,
                     ));
                 }
 
                 let config = match req.config.clone() {
                     Some(cfg) => cfg,
-                    None => return Err(Status::invalid_argument("Missing configuration in request")),
+                    None => {
+                        return Err(Status::invalid_argument("Missing configuration in request"))
+                    }
                 };
 
                 let s = s.read().await;
-                let result = s.search_by_id(
-                    uuid.clone(),
-                    config.num,
-                    config.epsilon,
-                    config.radius,
-                ).await;
+                let result = s
+                    .search_by_id(uuid.clone(), config.num, config.epsilon, config.radius)
+                    .await;
 
                 match result {
                     Ok(mut response) => {
@@ -480,12 +484,9 @@ impl<S: algorithm::ANN + 'static> search_server::Search for super::Agent<S> {
             }
 
             let s = self.s.read().await;
-            let result = s.search_by_id(
-                uuid.clone(),
-                config.num,
-                config.epsilon,
-                config.radius,
-            ).await;
+            let result = s
+                .search_by_id(uuid.clone(), config.num, config.epsilon, config.radius)
+                .await;
 
             match result {
                 Ok(mut response) => {
@@ -598,13 +599,19 @@ impl<S: algorithm::ANN + 'static> search_server::Search for super::Agent<S> {
                         );
                         let status = Status::with_error_details(
                             Code::NotFound,
-                            format!("LinearSearch API requestID {}'s search result not found", &config.request_id),
+                            format!(
+                                "LinearSearch API requestID {}'s search result not found",
+                                &config.request_id
+                            ),
                             err_details,
                         );
                         debug!("{:?}", status);
                         status
                     }
-                    Error::Unsupported { method: _, algorithm: _ } => {
+                    Error::Unsupported {
+                        method: _,
+                        algorithm: _,
+                    } => {
                         let err_details = build_error_details(
                             err,
                             &config.request_id,
@@ -671,7 +678,10 @@ impl<S: algorithm::ANN + 'static> search_server::Search for super::Agent<S> {
             );
             let status = Status::with_error_details(
                 Code::InvalidArgument,
-                format!("LinearSearchByID API invalid argument for uuid \"{}\" detected", uuid),
+                format!(
+                    "LinearSearchByID API invalid argument for uuid \"{}\" detected",
+                    uuid
+                ),
                 err_details,
             );
             warn!("{:?}", status);
@@ -729,7 +739,10 @@ impl<S: algorithm::ANN + 'static> search_server::Search for super::Agent<S> {
                         );
                         let status = Status::with_error_details(
                             Code::NotFound,
-                            format!("LinearSearchByID API uuid {}'s search result not found", uuid),
+                            format!(
+                                "LinearSearchByID API uuid {}'s search result not found",
+                                uuid
+                            ),
                             err_details,
                         );
                         debug!("{:?}", status);
@@ -752,7 +765,10 @@ impl<S: algorithm::ANN + 'static> search_server::Search for super::Agent<S> {
                         debug!("{:?}", status);
                         status
                     }
-                    Error::Unsupported { method: _, algorithm: _ } => {
+                    Error::Unsupported {
+                        method: _,
+                        algorithm: _,
+                    } => {
                         let err_details = build_error_details(
                             err,
                             &config.request_id,
@@ -824,7 +840,9 @@ impl<S: algorithm::ANN + 'static> search_server::Search for super::Agent<S> {
             async move {
                 let config = match req.config.clone() {
                     Some(cfg) => cfg,
-                    None => return Err(Status::invalid_argument("Missing configuration in request")),
+                    None => {
+                        return Err(Status::invalid_argument("Missing configuration in request"))
+                    }
                 };
 
                 let s = s.read().await;
@@ -922,14 +940,19 @@ impl<S: algorithm::ANN + 'static> search_server::Search for super::Agent<S> {
                     );
                     return Err(Status::with_error_details(
                         Code::InvalidArgument,
-                        format!("LinearSearchByID API invalid argument for uuid \"{}\" detected", uuid),
+                        format!(
+                            "LinearSearchByID API invalid argument for uuid \"{}\" detected",
+                            uuid
+                        ),
                         err_details,
                     ));
                 }
 
                 let config = match req.config.clone() {
                     Some(cfg) => cfg,
-                    None => return Err(Status::invalid_argument("Missing configuration in request")),
+                    None => {
+                        return Err(Status::invalid_argument("Missing configuration in request"))
+                    }
                 };
 
                 let s = s.read().await;

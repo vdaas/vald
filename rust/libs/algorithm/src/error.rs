@@ -17,10 +17,7 @@
 pub trait MultiError {
     fn new_uuid_already_exists(uuids: Vec<String>) -> Error;
     fn new_object_id_not_found(uuids: Vec<String>) -> Error;
-    fn new_invalid_dimension_size(
-        current: Vec<String>,
-        limit: Vec<String>,
-    ) -> Error;
+    fn new_invalid_dimension_size(current: Vec<String>, limit: Vec<String>) -> Error;
     fn new_uuid_not_found(uuids: Vec<String>) -> Error;
     fn split_uuids(uuids: String) -> Vec<String>;
 }
@@ -34,51 +31,29 @@ pub enum Error {
     #[error("flush is in progress")]
     FlushingIsInProgress {},
     #[error("incompatible dimension size detected\trequested: {got},\tconfigured: {want}")]
-    IncompatibleDimensionSize {
-        got: usize,
-        want: usize,
-    },
+    IncompatibleDimensionSize { got: usize, want: usize },
     #[error("uuid {uuid} index already exists")]
-    UUIDAlreadyExists {
-        uuid: String,
-    },
+    UUIDAlreadyExists { uuid: String },
     #[error("object uuid{} not found", if uuid == "0" { "" } else { " {uuid}'s metadata" })]
-    UUIDNotFound {
-        uuid: String,
-    },
+    UUIDNotFound { uuid: String },
     #[error("uncommitted indexes are not found")]
     UncommittedIndexNotFound {},
     #[error("uuid \"{uuid}\" is invalid")]
-    InvalidUUID {
-        uuid: String,
-    },
+    InvalidUUID { uuid: String },
     #[error("dimension size {} is invalid, the supporting dimension size must be {}", current, if limit == "0" { "bigger than 2" } else { "between 2 ~ {limit}" })]
-    InvalidDimensionSize{
-        current: String,
-        limit: String,
-    },
+    InvalidDimensionSize { current: String, limit: String },
     #[error("uuid {uuid}'s object id not found")]
-    ObjectIDNotFound {
-        uuid: String,
-    },
+    ObjectIDNotFound { uuid: String },
     #[error("write operation to read replica is not possible")]
     WriteOperationToReadReplica {},
     #[error("{method} is not supported for {algorithm}")]
-    Unsupported {
-        method: String,
-        algorithm: String,
-    },
+    Unsupported { method: String, algorithm: String },
     #[error("index not found")]
     IndexNotFound {},
     #[error("timestamp {timestamp} is invalid")]
-    InvalidTimestamp {
-        timestamp: i64,
-    },
+    InvalidTimestamp { timestamp: i64 },
     #[error("uuid {uuid}'s newer timestamp {timestamp} already exists")]
-    NewerTimestampAlreadyExists {
-        uuid: String,
-        timestamp: i64,
-    },
+    NewerTimestampAlreadyExists { uuid: String, timestamp: i64 },
     #[error("{0}")]
     Internal(#[from] Box<dyn std::error::Error + Send + Sync>),
     #[error("unknown error")]
@@ -98,10 +73,7 @@ impl MultiError for Error {
         }
     }
 
-    fn new_invalid_dimension_size(
-        current: Vec<String>,
-        limit: Vec<String>,
-    ) -> Error {
+    fn new_invalid_dimension_size(current: Vec<String>, limit: Vec<String>) -> Error {
         Error::InvalidDimensionSize {
             current: current.join(","),
             limit: limit.join(","),

@@ -34,16 +34,16 @@ pub const AGENT_METADATA_FILENAME: &str = "metadata.json";
 pub enum MetadataError {
     #[error("metadata file not found: {0}")]
     FileNotFound(String),
-    
+
     #[error("metadata file is empty: {0}")]
     FileEmpty(String),
-    
+
     #[error("failed to read metadata: {0}")]
     ReadError(#[from] std::io::Error),
-    
+
     #[error("failed to parse metadata: {0}")]
     ParseError(#[from] serde_json::Error),
-    
+
     #[error("invalid metadata: {0}")]
     Invalid(String),
 }
@@ -68,11 +68,11 @@ pub struct Metadata {
     /// Whether this index is marked as invalid.
     #[serde(default)]
     pub is_invalid: bool,
-    
+
     /// NGT-specific metadata.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ngt: Option<NgtMetadata>,
-    
+
     /// QBG-specific metadata.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub qbg: Option<QbgMetadata>,
@@ -87,7 +87,7 @@ impl Metadata {
             qbg: Some(QbgMetadata { index_count }),
         }
     }
-    
+
     /// Creates a new metadata instance for NGT with the given index count.
     pub fn new_ngt(index_count: u64) -> Self {
         Metadata {
@@ -96,7 +96,7 @@ impl Metadata {
             qbg: None,
         }
     }
-    
+
     /// Creates a metadata instance marked as invalid.
     pub fn invalid() -> Self {
         Metadata {
@@ -105,10 +105,12 @@ impl Metadata {
             qbg: None,
         }
     }
-    
+
     /// Returns the index count from either NGT or QBG metadata.
     pub fn index_count(&self) -> u64 {
-        self.qbg.as_ref().map(|q| q.index_count)
+        self.qbg
+            .as_ref()
+            .map(|q| q.index_count)
             .or_else(|| self.ngt.as_ref().map(|n| n.index_count))
             .unwrap_or(0)
     }
@@ -123,24 +125,24 @@ impl Metadata {
 /// The loaded metadata or an error if the file cannot be read.
 pub fn load<P: AsRef<Path>>(path: P) -> Result<Metadata, MetadataError> {
     let path = path.as_ref();
-    
+
     // Check if file exists
     if !path.exists() {
         return Err(MetadataError::FileNotFound(path.display().to_string()));
     }
-    
+
     // Check if file is empty
     let file_metadata = fs::metadata(path)?;
     if file_metadata.len() == 0 {
         return Err(MetadataError::FileEmpty(path.display().to_string()));
     }
-    
+
     // Open and read the file
     let file = File::open(path)?;
     let reader = BufReader::new(file);
-    
+
     let metadata: Metadata = serde_json::from_reader(reader)?;
-    
+
     Ok(metadata)
 }
 
@@ -154,19 +156,19 @@ pub fn load<P: AsRef<Path>>(path: P) -> Result<Metadata, MetadataError> {
 /// Ok(()) on success, or an error if the file cannot be written.
 pub fn store<P: AsRef<Path>>(path: P, metadata: &Metadata) -> Result<(), MetadataError> {
     let path = path.as_ref();
-    
+
     // Ensure parent directory exists
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent)?;
     }
-    
+
     // Open file for writing (create or truncate)
     let file = File::create(path)?;
     let writer = BufWriter::new(file);
-    
+
     // Write metadata as JSON
     serde_json::to_writer_pretty(writer, metadata)?;
-    
+
     Ok(())
 }
 
@@ -209,10 +211,10 @@ mod tests {
     fn test_store_and_load() {
         let dir = tempdir().unwrap();
         let path = dir.path().join("metadata.json");
-        
+
         let original = Metadata::new_qbg(12345);
         store(&path, &original).unwrap();
-        
+
         let loaded = load(&path).unwrap();
         assert_eq!(original, loaded);
     }
@@ -227,10 +229,10 @@ mod tests {
     fn test_load_empty_file() {
         let dir = tempdir().unwrap();
         let path = dir.path().join("empty.json");
-        
+
         // Create empty file
         File::create(&path).unwrap();
-        
+
         let result = load(&path);
         assert!(matches!(result, Err(MetadataError::FileEmpty(_))));
     }
@@ -239,7 +241,7 @@ mod tests {
     fn test_json_serialization() {
         let meta = Metadata::new_qbg(100);
         let json = serde_json::to_string_pretty(&meta).unwrap();
-        
+
         // Verify it matches the Go format
         assert!(json.contains("\"is_invalid\": false"));
         assert!(json.contains("\"index_count\": 100"));
