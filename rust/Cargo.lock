@@ -38,6 +38,7 @@ dependencies = [
  "log",
  "observability",
  "opentelemetry",
+ "opentelemetry_sdk",
  "prost",
  "prost-types",
  "proto",
