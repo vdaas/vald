@@ -16,6 +16,7 @@
 
 mod config;
 mod handler;
+mod metrics;
 mod middleware;
 mod service;
 
@@ -61,6 +62,17 @@ async fn serve(settings: Config) -> Result<(), Box<dyn std::error::Error>> {
 
     // Start the daemon for automatic indexing and saving
     agent.start(&settings).await;
+
+    // Register NGT metrics if metering is enabled
+    if settings.get::<bool>("observability.enabled").unwrap_or(false)
+        && settings.get::<bool>("observability.meter.enabled").unwrap_or(false)
+    {
+        if let Err(e) = metrics::register_metrics(agent.service()) {
+            error!("failed to register metrics: {}", e);
+        } else {
+            info!("NGT metrics registered successfully");
+        }
+    }
 
     // Setup graceful shutdown
     let shutdown_agent = agent.clone();
