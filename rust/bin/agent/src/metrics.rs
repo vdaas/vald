@@ -280,7 +280,11 @@ mod tests {
     use proto::payload::v1::{info, search};
     use std::collections::HashMap;
     use std::future::Future;
-    use opentelemetry_sdk::metrics::SdkMeterProvider;
+    use opentelemetry_sdk::metrics::{
+        reader::{ManualReader, MetricReader},
+        SdkMeterProvider,
+    };
+    use opentelemetry_sdk::Resource;
 
     #[derive(Clone)]
     struct MockANN {
@@ -359,20 +363,55 @@ mod tests {
     }
 
     #[test]
-    fn test_register_metrics() {
-        // Setup meter provider
-        let provider = SdkMeterProvider::builder().build();
+    fn test_metrics_integration() {
+        // Setup ManualReader to allow triggering collection
+        let reader = ManualReader::builder().build();
+
+        // Create MeterProvider with the reader
+        let provider = SdkMeterProvider::builder()
+            .with_reader(reader.clone())
+            .with_resource(Resource::default())
+            .build();
+
+        // Set global provider (note: this might affect other tests if running in parallel)
         global::set_meter_provider(provider);
 
         let mock_ann = MockANN::new();
         let service = Arc::new(RwLock::new(mock_ann));
 
-        // Test registration
-        let result = register_metrics(service.clone());
-        assert!(result.is_ok());
+        // Register metrics
+        register_metrics(service.clone()).unwrap();
 
-        // We cannot easily verify the callback invocation without using a reader/exporter in the provider
-        // and waiting for collection, but this confirms the registration logic logic doesn't panic
-        // and the callback closure compiles and holds the weak reference correctly.
+        // Trigger collection
+        let mut rm = opentelemetry_sdk::metrics::data::ResourceMetrics {
+            resource: Resource::default(),
+            scope_metrics: vec![],
+        };
+
+        // Collect metrics into ResourceMetrics
+        reader.collect(&mut rm).unwrap();
+
+        // Verification
+        // We look for our specific metrics in the collected data
+        let mut found_index_count = false;
+        let mut found_median_indegree = false;
+
+        for scope_metric in rm.scope_metrics {
+            if scope_metric.scope.name == "vald-agent" {
+                for metric in scope_metric.metrics {
+                    if metric.name == INDEX_COUNT {
+                        found_index_count = true;
+                        // Inspect data points if necessary
+                        // For simplicity, existence proves registration worked
+                    }
+                    if metric.name == MEDIAN_INDEGREE {
+                        found_median_indegree = true;
+                    }
+                }
+            }
+        }
+
+        assert!(found_index_count, "INDEX_COUNT metric should be collected");
+        assert!(found_median_indegree, "MEDIAN_INDEGREE metric should be collected");
     }
 }
