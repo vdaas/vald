@@ -107,7 +107,9 @@ pub mod stats_client {
             &mut self,
             request: impl tonic::IntoRequest<super::super::super::payload::v1::Empty>,
         ) -> std::result::Result<
-            tonic::Response<super::super::super::payload::v1::info::ResourceStats>,
+            tonic::Response<
+                super::super::super::payload::v1::info::stats::ResourceStats,
+            >,
             tonic::Status,
         > {
             self.inner
@@ -146,7 +148,9 @@ pub mod stats_server {
             &self,
             request: tonic::Request<super::super::super::payload::v1::Empty>,
         ) -> std::result::Result<
-            tonic::Response<super::super::super::payload::v1::info::ResourceStats>,
+            tonic::Response<
+                super::super::super::payload::v1::info::stats::ResourceStats,
+            >,
             tonic::Status,
         >;
     }
@@ -234,7 +238,7 @@ pub mod stats_server {
                     > tonic::server::UnaryService<
                         super::super::super::payload::v1::Empty,
                     > for ResourceStatsSvc<T> {
-                        type Response = super::super::super::payload::v1::info::ResourceStats;
+                        type Response = super::super::super::payload::v1::info::stats::ResourceStats;
                         type Future = BoxFuture<
                             tonic::Response<Self::Response>,
                             tonic::Status,
