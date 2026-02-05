@@ -22,8 +22,8 @@ use observability::{
 };
 use opentelemetry::global;
 use opentelemetry::propagation::Extractor;
-use tonic::transport::Server;
 use tonic::Request;
+use tonic::transport::Server;
 
 struct MetadataMap<'a>(&'a tonic::metadata::MetadataMap);
 

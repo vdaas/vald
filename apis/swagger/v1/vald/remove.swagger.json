@@ -135,19 +135,62 @@
       },
       "description": "Represent multiple vector locations."
     },
-    "ObjectStreamLocation": {
+    "RemoveConfig": {
       "type": "object",
       "properties": {
-        "location": {
-          "$ref": "#/definitions/v1ObjectLocation",
-          "description": "The vector location."
+        "skipStrictExistCheck": {
+          "type": "boolean",
+          "description": "A flag to skip exist check during upsert operation."
         },
-        "status": {
-          "$ref": "#/definitions/rpcStatus",
-          "description": "The RPC error status."
+        "timestamp": {
+          "type": "string",
+          "format": "int64",
+          "description": "Remove timestamp."
         }
       },
-      "description": "Represent the stream response of the vector location."
+      "description": "Represent the remove configuration."
+    },
+    "RemoveMultiRequest": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/RemoveRequest"
+          },
+          "description": "Represent the multiple remove request content."
+        }
+      },
+      "description": "Represent the multiple remove request."
+    },
+    "RemoveRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/ObjectID",
+          "description": "The object ID to be removed."
+        },
+        "config": {
+          "$ref": "#/definitions/RemoveConfig",
+          "description": "The configuration of the remove request."
+        }
+      },
+      "description": "Represent the remove request."
+    },
+    "RemoveTimestampRequest": {
+      "type": "object",
+      "properties": {
+        "timestamps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RemoveTimestamp"
+          },
+          "description": "The timestamp comparison list. If more than one is specified, the `AND`\nsearch is applied."
+        }
+      },
+      "description": "Represent the remove request based on timestamp."
     },
     "TimestampOperator": {
       "type": "string",
@@ -210,49 +253,6 @@
       },
       "description": "Represent the vector location."
     },
-    "v1RemoveConfig": {
-      "type": "object",
-      "properties": {
-        "skipStrictExistCheck": {
-          "type": "boolean",
-          "description": "A flag to skip exist check during upsert operation."
-        },
-        "timestamp": {
-          "type": "string",
-          "format": "int64",
-          "description": "Remove timestamp."
-        }
-      },
-      "description": "Represent the remove configuration."
-    },
-    "v1RemoveMultiRequest": {
-      "type": "object",
-      "properties": {
-        "requests": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1RemoveRequest"
-          },
-          "description": "Represent the multiple remove request content."
-        }
-      },
-      "description": "Represent the multiple remove request."
-    },
-    "v1RemoveRequest": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "$ref": "#/definitions/ObjectID",
-          "description": "The object ID to be removed."
-        },
-        "config": {
-          "$ref": "#/definitions/v1RemoveConfig",
-          "description": "The configuration of the remove request."
-        }
-      },
-      "description": "Represent the remove request."
-    },
     "v1RemoveTimestamp": {
       "type": "object",
       "properties": {
@@ -267,20 +267,6 @@
         }
       },
       "description": "Represent the timestamp comparison."
-    },
-    "v1RemoveTimestampRequest": {
-      "type": "object",
-      "properties": {
-        "timestamps": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1RemoveTimestamp"
-          },
-          "description": "The timestamp comparison list. If more than one is specified, the `AND`\nsearch is applied."
-        }
-      },
-      "description": "Represent the remove request based on timestamp."
     }
   }
 }

@@ -108,7 +108,7 @@ rust/deps: \
 	rust/install
 	rustup toolchain install $(RUST_VERSION)
 	rustup default $(RUST_VERSION)
-	cargo install cargo-edit
+	cargo install cargo-edit --force
 	cd $(ROOTDIR)/rust && $(CARGO_HOME)/bin/cargo update && $(CARGO_HOME)/bin/cargo upgrade --incompatible && cd -
 
 .PHONY: update/chaos-mesh

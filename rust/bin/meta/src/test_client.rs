@@ -19,8 +19,8 @@ use opentelemetry::propagation::Injector;
 use proto::google::protobuf::Any;
 use proto::meta::v1::meta_client::MetaClient;
 use proto::payload::v1::meta;
-use tonic::metadata::MetadataMap;
 use tonic::Request;
+use tonic::metadata::MetadataMap;
 struct MetadataInjector<'a>(&'a mut MetadataMap);
 
 impl<'a> Injector for MetadataInjector<'a> {

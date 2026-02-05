@@ -361,7 +361,12 @@ func (o *operator) benchScenarioReconcile(
 				// delete old job resource. If it is succeeded, job pod will be deleted automatically because of OwnerReference.
 				err := o.deleteBenchmarkJob(ctx, oldScenario.Crd.GetName(), oldScenario.Crd.Generation)
 				if err != nil {
-					log.Warnf("[reconcile benchmark scenario resource] failed to delete old version benchmark jobs: scenario name=%s, version=%d\t%s", oldScenario.Crd.GetName(), oldScenario.Crd.Generation, err.Error())
+					log.Warnf(
+						"[reconcile benchmark scenario resource] failed to delete old version benchmark jobs: scenario name=%s, version=%d\t%s",
+						oldScenario.Crd.GetName(),
+						oldScenario.Crd.Generation,
+						err.Error(),
+					)
 				}
 				// create new benchmark job resources of new version.
 				jobNames, err := o.createBenchmarkJob(ctx, sc)
