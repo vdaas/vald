@@ -317,9 +317,14 @@ $(CARGO_HOME)/bin/cargo:
 	rustup default $(RUST_VERSION)
 	source "${CARGO_HOME}/env"
 
-.PHONY: rust-fmt/install
-## install rust-fmt
-rust-fmt/install: rust/install
+.PHONY: rustfmt/install
+## install rustfmt
+rustfmt/install:
+	$(MAKE) rust/install
+	$(MAKE) $(CARGO_HOME)/bin/rustfmt
+
+$(CARGO_HOME)/bin/rustfmt:
+	CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} \
 	rustup component add rustfmt
 
 .PHONY: zlib/install

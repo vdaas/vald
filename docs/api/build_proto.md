@@ -83,7 +83,7 @@ There are many tools for building proto in Rust, we use [tonic](https://github.c
     [package]
     name = "vald-grpc"
     version = "0.1.0"
-    edition = "2021"
+    edition = "2024"
 
     # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
