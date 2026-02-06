@@ -272,6 +272,21 @@
     }
   },
   "definitions": {
+    "FilterTarget": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "The target hostname."
+        },
+        "port": {
+          "type": "integer",
+          "format": "int64",
+          "description": "The target port."
+        }
+      },
+      "description": "Represent the target filter server."
+    },
     "ObjectBlob": {
       "type": "object",
       "properties": {
@@ -315,20 +330,6 @@
       },
       "description": "Represent multiple vector locations."
     },
-    "ObjectStreamLocation": {
-      "type": "object",
-      "properties": {
-        "location": {
-          "$ref": "#/definitions/v1ObjectLocation",
-          "description": "The vector location."
-        },
-        "status": {
-          "$ref": "#/definitions/rpcStatus",
-          "description": "The RPC error status."
-        }
-      },
-      "description": "Represent the stream response of the vector location."
-    },
     "SearchAggregationAlgorithm": {
       "type": "string",
       "enum": [
@@ -341,6 +342,24 @@
       "default": "Unknown",
       "title": "AggregationAlgorithm is enum of each aggregation algorithms"
     },
+    "SearchResponse": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string",
+          "description": "The unique request ID."
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/ObjectDistance"
+          },
+          "description": "Search results."
+        }
+      },
+      "description": "Represent a search response."
+    },
     "SearchResponses": {
       "type": "object",
       "properties": {
@@ -348,26 +367,12 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v1SearchResponse"
+            "$ref": "#/definitions/SearchResponse"
           },
           "description": "Represent the multiple search response content."
         }
       },
       "description": "Represent multiple search responses."
-    },
-    "SearchStreamResponse": {
-      "type": "object",
-      "properties": {
-        "response": {
-          "$ref": "#/definitions/v1SearchResponse",
-          "description": "Represent the search response."
-        },
-        "status": {
-          "$ref": "#/definitions/rpcStatus",
-          "description": "The RPC error status."
-        }
-      },
-      "description": "Represent stream search response."
     },
     "protobufAny": {
       "type": "object",
@@ -410,27 +415,12 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v1FilterTarget"
+            "$ref": "#/definitions/FilterTarget"
           },
           "description": "Represent the filter target configuration."
         }
       },
       "description": "Represent filter configuration."
-    },
-    "v1FilterTarget": {
-      "type": "object",
-      "properties": {
-        "host": {
-          "type": "string",
-          "description": "The target hostname."
-        },
-        "port": {
-          "type": "integer",
-          "format": "int64",
-          "description": "The target port."
-        }
-      },
-      "description": "Represent the target filter server."
     },
     "v1InsertConfig": {
       "type": "object",
@@ -477,7 +467,7 @@
           "description": "The configuration of the insert request."
         },
         "vectorizer": {
-          "$ref": "#/definitions/v1FilterTarget",
+          "$ref": "#/definitions/FilterTarget",
           "description": "Filter configurations."
         }
       },
@@ -588,29 +578,11 @@
           "description": "The configuration of the search request."
         },
         "vectorizer": {
-          "$ref": "#/definitions/v1FilterTarget",
+          "$ref": "#/definitions/FilterTarget",
           "description": "Filter configuration."
         }
       },
       "description": "Represent a search by binary object request."
-    },
-    "v1SearchResponse": {
-      "type": "object",
-      "properties": {
-        "requestId": {
-          "type": "string",
-          "description": "The unique request ID."
-        },
-        "results": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/ObjectDistance"
-          },
-          "description": "Search results."
-        }
-      },
-      "description": "Represent a search response."
     },
     "v1UpdateConfig": {
       "type": "object",
@@ -661,7 +633,7 @@
           "description": "The configuration of the update request."
         },
         "vectorizer": {
-          "$ref": "#/definitions/v1FilterTarget",
+          "$ref": "#/definitions/FilterTarget",
           "description": "Filter target."
         }
       },
@@ -716,7 +688,7 @@
           "description": "The configuration of the upsert request."
         },
         "vectorizer": {
-          "$ref": "#/definitions/v1FilterTarget",
+          "$ref": "#/definitions/FilterTarget",
           "description": "Filter target."
         }
       },

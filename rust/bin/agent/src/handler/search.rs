@@ -86,7 +86,11 @@ async fn search(
                             &resource_name,
                             None,
                         );
-                        let status = Status::with_error_details(Code::Aborted, "Search API aborted to process search request due to creating indices is in progress", err_details);
+                        let status = Status::with_error_details(
+                            Code::Aborted,
+                            "Search API aborted to process search request due to creating indices is in progress",
+                            err_details,
+                        );
                         debug!("{:?}", status);
                         status
                     }
@@ -100,7 +104,11 @@ async fn search(
                             &resource_name,
                             None,
                         );
-                        let status = Status::with_error_details(Code::Aborted, "Search API aborted to process search request due to flushing indices is in progress", err_details);
+                        let status = Status::with_error_details(
+                            Code::Aborted,
+                            "Search API aborted to process search request due to flushing indices is in progress",
+                            err_details,
+                        );
                         debug!("{:?}", status);
                         status
                     }

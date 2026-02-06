@@ -19,10 +19,10 @@ pub mod discoverer_client {
         dead_code,
         missing_docs,
         clippy::wildcard_imports,
-        clippy::let_unit_value,
+        clippy::let_unit_value
     )]
-    use tonic::codegen::*;
     use tonic::codegen::http::Uri;
+    use tonic::codegen::*;
     #[derive(Debug, Clone)]
     pub struct DiscovererClient<T> {
         inner: tonic::client::Grpc<T>,
@@ -61,14 +61,13 @@ pub mod discoverer_client {
             F: tonic::service::Interceptor,
             T::ResponseBody: Default,
             T: tonic::codegen::Service<
-                http::Request<tonic::body::Body>,
-                Response = http::Response<
-                    <T as tonic::client::GrpcService<tonic::body::Body>>::ResponseBody,
+                    http::Request<tonic::body::Body>,
+                    Response = http::Response<
+                        <T as tonic::client::GrpcService<tonic::body::Body>>::ResponseBody,
+                    >,
                 >,
-            >,
-            <T as tonic::codegen::Service<
-                http::Request<tonic::body::Body>,
-            >>::Error: Into<StdError> + std::marker::Send + std::marker::Sync,
+            <T as tonic::codegen::Service<http::Request<tonic::body::Body>>>::Error:
+                Into<StdError> + std::marker::Send + std::marker::Sync,
         {
             DiscovererClient::new(InterceptedService::new(inner, interceptor))
         }
@@ -105,81 +104,54 @@ pub mod discoverer_client {
         }
         pub async fn pods(
             &mut self,
-            request: impl tonic::IntoRequest<
-                super::super::super::payload::v1::discoverer::Request,
-            >,
+            request: impl tonic::IntoRequest<super::super::super::payload::v1::discoverer::Request>,
         ) -> std::result::Result<
             tonic::Response<super::super::super::payload::v1::info::Pods>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic_prost::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/discoverer.v1.Discoverer/Pods",
-            );
+            let path = http::uri::PathAndQuery::from_static("/discoverer.v1.Discoverer/Pods");
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(GrpcMethod::new("discoverer.v1.Discoverer", "Pods"));
             self.inner.unary(req, path, codec).await
         }
         /** Represent the RPC to get the node information.
-*/
+         */
         pub async fn nodes(
             &mut self,
-            request: impl tonic::IntoRequest<
-                super::super::super::payload::v1::discoverer::Request,
-            >,
+            request: impl tonic::IntoRequest<super::super::super::payload::v1::discoverer::Request>,
         ) -> std::result::Result<
             tonic::Response<super::super::super::payload::v1::info::Nodes>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic_prost::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/discoverer.v1.Discoverer/Nodes",
-            );
+            let path = http::uri::PathAndQuery::from_static("/discoverer.v1.Discoverer/Nodes");
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(GrpcMethod::new("discoverer.v1.Discoverer", "Nodes"));
             self.inner.unary(req, path, codec).await
         }
         /** Represent the RPC to get the readreplica svc information.
-*/
+         */
         pub async fn services(
             &mut self,
-            request: impl tonic::IntoRequest<
-                super::super::super::payload::v1::discoverer::Request,
-            >,
+            request: impl tonic::IntoRequest<super::super::super::payload::v1::discoverer::Request>,
         ) -> std::result::Result<
             tonic::Response<super::super::super::payload::v1::info::Services>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic_prost::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/discoverer.v1.Discoverer/Services",
-            );
+            let path = http::uri::PathAndQuery::from_static("/discoverer.v1.Discoverer/Services");
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(GrpcMethod::new("discoverer.v1.Discoverer", "Services"));
@@ -194,7 +166,7 @@ pub mod discoverer_server {
         dead_code,
         missing_docs,
         clippy::wildcard_imports,
-        clippy::let_unit_value,
+        clippy::let_unit_value
     )]
     use tonic::codegen::*;
     /// Generated trait containing gRPC methods that should be implemented for use with DiscovererServer.
@@ -202,31 +174,25 @@ pub mod discoverer_server {
     pub trait Discoverer: std::marker::Send + std::marker::Sync + 'static {
         async fn pods(
             &self,
-            request: tonic::Request<
-                super::super::super::payload::v1::discoverer::Request,
-            >,
+            request: tonic::Request<super::super::super::payload::v1::discoverer::Request>,
         ) -> std::result::Result<
             tonic::Response<super::super::super::payload::v1::info::Pods>,
             tonic::Status,
         >;
         /** Represent the RPC to get the node information.
-*/
+         */
         async fn nodes(
             &self,
-            request: tonic::Request<
-                super::super::super::payload::v1::discoverer::Request,
-            >,
+            request: tonic::Request<super::super::super::payload::v1::discoverer::Request>,
         ) -> std::result::Result<
             tonic::Response<super::super::super::payload::v1::info::Nodes>,
             tonic::Status,
         >;
         /** Represent the RPC to get the readreplica svc information.
-*/
+         */
         async fn services(
             &self,
-            request: tonic::Request<
-                super::super::super::payload::v1::discoverer::Request,
-            >,
+            request: tonic::Request<super::super::super::payload::v1::discoverer::Request>,
         ) -> std::result::Result<
             tonic::Response<super::super::super::payload::v1::info::Services>,
             tonic::Status,
@@ -253,10 +219,7 @@ pub mod discoverer_server {
                 max_encoding_message_size: None,
             }
         }
-        pub fn with_interceptor<F>(
-            inner: T,
-            interceptor: F,
-        ) -> InterceptedService<Self, F>
+        pub fn with_interceptor<F>(inner: T, interceptor: F) -> InterceptedService<Self, F>
         where
             F: tonic::service::Interceptor,
         {
@@ -311,16 +274,13 @@ pub mod discoverer_server {
                 "/discoverer.v1.Discoverer/Pods" => {
                     #[allow(non_camel_case_types)]
                     struct PodsSvc<T: Discoverer>(pub Arc<T>);
-                    impl<
-                        T: Discoverer,
-                    > tonic::server::UnaryService<
-                        super::super::super::payload::v1::discoverer::Request,
-                    > for PodsSvc<T> {
+                    impl<T: Discoverer>
+                        tonic::server::UnaryService<
+                            super::super::super::payload::v1::discoverer::Request,
+                        > for PodsSvc<T>
+                    {
                         type Response = super::super::super::payload::v1::info::Pods;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<
@@ -328,9 +288,7 @@ pub mod discoverer_server {
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Discoverer>::pods(&inner, request).await
-                            };
+                            let fut = async move { <T as Discoverer>::pods(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -359,16 +317,13 @@ pub mod discoverer_server {
                 "/discoverer.v1.Discoverer/Nodes" => {
                     #[allow(non_camel_case_types)]
                     struct NodesSvc<T: Discoverer>(pub Arc<T>);
-                    impl<
-                        T: Discoverer,
-                    > tonic::server::UnaryService<
-                        super::super::super::payload::v1::discoverer::Request,
-                    > for NodesSvc<T> {
+                    impl<T: Discoverer>
+                        tonic::server::UnaryService<
+                            super::super::super::payload::v1::discoverer::Request,
+                        > for NodesSvc<T>
+                    {
                         type Response = super::super::super::payload::v1::info::Nodes;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<
@@ -376,9 +331,8 @@ pub mod discoverer_server {
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Discoverer>::nodes(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Discoverer>::nodes(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -407,16 +361,13 @@ pub mod discoverer_server {
                 "/discoverer.v1.Discoverer/Services" => {
                     #[allow(non_camel_case_types)]
                     struct ServicesSvc<T: Discoverer>(pub Arc<T>);
-                    impl<
-                        T: Discoverer,
-                    > tonic::server::UnaryService<
-                        super::super::super::payload::v1::discoverer::Request,
-                    > for ServicesSvc<T> {
+                    impl<T: Discoverer>
+                        tonic::server::UnaryService<
+                            super::super::super::payload::v1::discoverer::Request,
+                        > for ServicesSvc<T>
+                    {
                         type Response = super::super::super::payload::v1::info::Services;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<
@@ -424,9 +375,8 @@ pub mod discoverer_server {
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Discoverer>::services(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Discoverer>::services(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -452,25 +402,19 @@ pub mod discoverer_server {
                     };
                     Box::pin(fut)
                 }
-                _ => {
-                    Box::pin(async move {
-                        let mut response = http::Response::new(
-                            tonic::body::Body::default(),
-                        );
-                        let headers = response.headers_mut();
-                        headers
-                            .insert(
-                                tonic::Status::GRPC_STATUS,
-                                (tonic::Code::Unimplemented as i32).into(),
-                            );
-                        headers
-                            .insert(
-                                http::header::CONTENT_TYPE,
-                                tonic::metadata::GRPC_CONTENT_TYPE,
-                            );
-                        Ok(response)
-                    })
-                }
+                _ => Box::pin(async move {
+                    let mut response = http::Response::new(tonic::body::Body::default());
+                    let headers = response.headers_mut();
+                    headers.insert(
+                        tonic::Status::GRPC_STATUS,
+                        (tonic::Code::Unimplemented as i32).into(),
+                    );
+                    headers.insert(
+                        http::header::CONTENT_TYPE,
+                        tonic::metadata::GRPC_CONTENT_TYPE,
+                    );
+                    Ok(response)
+                }),
             }
         }
     }

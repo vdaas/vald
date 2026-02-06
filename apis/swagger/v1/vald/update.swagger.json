@@ -112,6 +112,21 @@
     }
   },
   "definitions": {
+    "FilterTarget": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "The target hostname."
+        },
+        "port": {
+          "type": "integer",
+          "format": "int64",
+          "description": "The target port."
+        }
+      },
+      "description": "Represent the target filter server."
+    },
     "ObjectLocations": {
       "type": "object",
       "properties": {
@@ -124,20 +139,6 @@
         }
       },
       "description": "Represent multiple vector locations."
-    },
-    "ObjectStreamLocation": {
-      "type": "object",
-      "properties": {
-        "location": {
-          "$ref": "#/definitions/v1ObjectLocation",
-          "description": "The vector location."
-        },
-        "status": {
-          "$ref": "#/definitions/rpcStatus",
-          "description": "The RPC error status."
-        }
-      },
-      "description": "Represent the stream response of the vector location."
     },
     "ObjectVector": {
       "type": "object",
@@ -161,6 +162,53 @@
         }
       },
       "description": "Represent a vector."
+    },
+    "UpdateMultiRequest": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/UpdateRequest"
+          },
+          "description": "Represent the multiple update request content."
+        }
+      },
+      "description": "Represent the multiple update request."
+    },
+    "UpdateRequest": {
+      "type": "object",
+      "properties": {
+        "vector": {
+          "$ref": "#/definitions/ObjectVector",
+          "description": "The vector to be updated."
+        },
+        "config": {
+          "$ref": "#/definitions/v1UpdateConfig",
+          "description": "The configuration of the update request."
+        }
+      },
+      "description": "Represent the update request."
+    },
+    "UpdateTimestampRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The vector ID."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "int64",
+          "description": "timestamp represents when this vector inserted."
+        },
+        "force": {
+          "type": "boolean",
+          "description": "force represents forcefully update the timestamp."
+        }
+      },
+      "description": "Represent a vector meta data."
     },
     "protobufAny": {
       "type": "object",
@@ -203,27 +251,12 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v1FilterTarget"
+            "$ref": "#/definitions/FilterTarget"
           },
           "description": "Represent the filter target configuration."
         }
       },
       "description": "Represent filter configuration."
-    },
-    "v1FilterTarget": {
-      "type": "object",
-      "properties": {
-        "host": {
-          "type": "string",
-          "description": "The target hostname."
-        },
-        "port": {
-          "type": "integer",
-          "format": "int64",
-          "description": "The target port."
-        }
-      },
-      "description": "Represent the target filter server."
     },
     "v1ObjectLocation": {
       "type": "object",
@@ -268,53 +301,6 @@
         }
       },
       "description": "Represent the update configuration."
-    },
-    "v1UpdateMultiRequest": {
-      "type": "object",
-      "properties": {
-        "requests": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1UpdateRequest"
-          },
-          "description": "Represent the multiple update request content."
-        }
-      },
-      "description": "Represent the multiple update request."
-    },
-    "v1UpdateRequest": {
-      "type": "object",
-      "properties": {
-        "vector": {
-          "$ref": "#/definitions/ObjectVector",
-          "description": "The vector to be updated."
-        },
-        "config": {
-          "$ref": "#/definitions/v1UpdateConfig",
-          "description": "The configuration of the update request."
-        }
-      },
-      "description": "Represent the update request."
-    },
-    "v1UpdateTimestampRequest": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "The vector ID."
-        },
-        "timestamp": {
-          "type": "string",
-          "format": "int64",
-          "description": "timestamp represents when this vector inserted."
-        },
-        "force": {
-          "type": "boolean",
-          "description": "force represents forcefully update the timestamp."
-        }
-      },
-      "description": "Represent a vector meta data."
     }
   }
 }
