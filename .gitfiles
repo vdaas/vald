@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 .all-contributorsrc
+.coderabbit.yaml
 .commit_template
 .cspell.json
 .curlrc
@@ -138,6 +139,7 @@
 .gitignore
 .golangci.json
 .prh.yaml
+.semgrepignore
 .textlintrc
 .whitesource
 .yamlfmt
@@ -526,6 +528,7 @@ charts/vald/values/vald-backup-via-pv-and-s3.yaml
 charts/vald/values/vald-backup-via-pv.yaml
 charts/vald/values/vald-backup-via-s3.yaml
 charts/vald/values/vald-in-memory-mode-no-backup.yaml
+checkmake.ini
 cmd/agent/core/faiss/doc.go
 cmd/agent/core/faiss/main.go
 cmd/agent/core/faiss/main_test.go
@@ -2364,6 +2367,7 @@ rust/libs/proto/wkt.proto
 rust/libs/vqueue/Cargo.toml
 rust/libs/vqueue/src/lib.rs
 rust/rust-toolchain.toml
+semgrep.yaml
 tests/chaos/chart/.helmignore
 tests/chaos/chart/Chart.yaml
 tests/chaos/chart/README.md
@@ -2440,6 +2444,7 @@ tests/v2/e2e/metrics/testdata/AsJSON.golden
 tests/v2/e2e/metrics/testdata/AsString.golden
 tests/v2/e2e/metrics/testdata/AsTSV.golden
 tests/v2/e2e/metrics/testdata/AsYAML.golden
+trivy.yaml
 versions/BUF_VERSION
 versions/BUSYBOX_VERSION
 versions/CHAOS_MESH_VERSION

@@ -1,0 +1,168 @@
+language: "en-US"
+tone_instructions: |
+  Use a concise, professional tone for experienced backend engineer. Focus on architecture, performance, and maintainability. Avoid vague feedback—give clear reasons. Prefer idiomatic Go/Rust/K8s. Follow Vald’s internal packages and coding conventions
+early_access: true
+reviews:
+  profile: "assertive"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: true
+  review_status: true
+  review_details: false
+  changed_files_summary: true
+  collapse_walkthrough: true
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - "main"
+    ignore_title_keywords:
+      - "wip"
+      - "WIP"
+      - "draft"
+      - "Draft"
+  path_filters:
+    - "!**/*.gif"
+    - "!**/*.hdf5"
+    - "!**/*.ico"
+    - "!**/*.jpeg"
+    - "!**/*.jpg"
+    - "!**/*.pb.go"
+    - "!**/*.pb.gw.go"
+    - "!**/*.pb.json.go"
+    - "!**/*.pdf"
+    - "!**/*.png"
+    - "!**/*.svg"
+    - "!**/*.tonic.rs"
+    - "!**/*_vtproto.pb.go"
+    - "!**/Cargo.lock"
+    - "!**/_output/**"
+    - "!**/assets/**"
+    - "!**/bin/**"
+    - "!**/buf.lock"
+    - "!**/dist/**"
+    - "!**/go.sum"
+    - "!**/vendor/**"
+    - "!hack/**"
+    - "!versions/**"
+  path_instructions:
+    - path: "**/*.go"
+      instructions: |
+        Review the Go code for:
+        - Adherence to idiomatic Go conventions (Effective Go and Vald's style guide).
+        - Proper error handling: ensure errors are not ignored and are wrapped or handled appropriately. All new error types should go in `internal/errors` with an `Err` prefix.
+        - Concurrency safety: check for race conditions, proper channel usage, goroutine leaks, and use of Vald’s `internal/sync/errgroup` for multi-goroutine error handling.
+        - Performance: identify any potential bottlenecks or inefficient memory usage.
+        - Vald specifics: ensure context is passed through all calls (no missing `context.Context` propagation) and that proper gRPC error codes are returned when applicable.
+        - Internal package usage: prefer Vald's internal libraries over standard ones for common functionality (e.g., use `internal/log` for logging, `internal/timeutil` for time parsing, etc.) in order to maintain consistency.
+        - Code style & lint: Follow Vald's coding style guidelines (naming, formatting, project structure) and ensure the code complies with the repository’s custom GolangCI-Lint rules.
+        - Compliance with project lint rules: code should conform to Vald’s custom linters (per `.golangci.json`), so avoid patterns that are disallowed by project configuration.
+    - path: "**/*.rs"
+      instructions: |
+        Review the Rust code for:
+        - Safety: Ensure no `unsafe` blocks are used unless absolutely necessary and well-documented.
+        - Memory management: Check for proper ownership and borrowing; avoid unnecessary cloning.
+        - Error handling: Use `Result`/`Option` effectively; avoid panics / unwraps / expect in production code.
+        - Async/Await: Ensure proper usage of async runtimes (e.g. Tokio) and avoid blocking operations in async contexts.
+        - Consistency: Follow Rust idioms and Vald's conventions if any (e.g., module organization, naming).
+    - path: "charts/**/*.yaml"
+      instructions: |
+        Review Helm chart YAML for:
+        - Best practices: Values should be templated (avoid hardcoding). Chart follows Helm conventions.
+        - Security: Check securityContext settings; containers shouldn’t run as root if possible.
+        - Resources: Ensure resource requests and limits are defined for each component.
+        - Liveness/Readiness/Startup: Verify liveness and readiness and startup probes are configured appropriately.
+    - path: "k8s/**/*.yaml"
+      instructions: |
+        Review Kubernetes manifest YAML for:
+        - Resource limits and requests are specified for containers.
+        - Security contexts at pod and container level (drop capabilities, non-root user, etc.).
+        - Health checks: Verify liveness/readiness/startup probes exist and are correct.
+        - Metadata: Labels and annotations follow organizational conventions.
+    - path: "{Makefile,Makefile.d/**}"
+      instructions: |
+        Review Makefiles for:
+        - Efficiency: Ensure targets are optimized and avoid unnecessary rebuilds or commands.
+        - Phony targets: Verify that `.PHONY` is correctly used for non-file targets.
+        - Portability: Shell commands are POSIX-compliant or guarded for environment (no bash-specific syntax if `/bin/sh` is used).
+        - Clarity: Complex commands are commented or split into well-named sub-targets.
+    - path: "**/*.md"
+      instructions: |
+        Review documentation (Markdown) for:
+        - Clarity and conciseness: Ensure the content is easy to understand and free of ambiguity.
+        - Formatting: Check for correct Markdown syntax (headers, lists, code blocks, links) and consistent style.
+        - Links: Verify that internal and external hyperlinks are valid and not-broken and updated.
+        - Inclusive language: Ensure terminology is neutral and inclusive.
+    - path: ".github/workflows/**/*.yaml"
+      instructions: |
+        Review GitHub Actions workflows for:
+        - Security: Pin actions to specific versions or SHAs (no unpinned `@latest`), and verify `permissions` are set to least privilege.
+        - Performance: Check for caching where appropriate and efficient job matrix setup.
+        - Triggers: Verify workflows run on intended events/branches (e.g. only on relevant PRs or pushes).
+        - Permissions: Ensure `permissions` are set to least privilege required for the workflow.
+        - Consistency: Names and job structures follow common patterns for easier maintenance.
+    - path: "**/Dockerfile"
+      instructions: |
+        Review Dockerfile for:
+        - Efficiency: Use lightweight base images and multi-stage builds if applicable to minimize image size.
+        - Best practices: Consolidate RUN commands to reduce layers; clean up package manager caches (apt/yum) in the same layer.
+        - Security: Do not use root user in the container if possible; no hard-coded secrets or credentials.
+        - Reproducibility: Pin versions of base images and packages to avoid unintended changes.
+        - Compliance: Ensure the Dockerfile passes Hadolint checks (no critical warnings).
+  labeling_instructions:
+    - label: "type/bug"
+      instructions: "Bug fix PR. Code changes that resolve clear errors or issues."
+    - label: "type/feature"
+      instructions: "Addition of new functionality that provides new value to users."
+    - label: "type/refactoring"
+      instructions: "Enhancement of existing features improving performance, usability, readability, etc."
+    - label: "type/dependency"
+      instructions: "Update feature"
+    - label: "type/documentation"
+      instructions: "Update documentation"
+    - label: "type/security"
+      instructions: "Security fixes"
+    - label: "type/ci"
+      instructions: "CI Work"
+  tools:
+    golangci-lint:
+      enabled: true
+      config_file: ".golangci.json"
+    markdownlint:
+      enabled: true
+    shellcheck:
+      enabled: true
+    yamllint:
+      enabled: true
+    hadolint:
+      enabled: true
+    buf:
+      enabled: true
+    gitleaks:
+      enabled: true
+    clippy:
+      enabled: true
+    semgrep: # https://docs.coderabbit.ai/tools/semgrep
+      enabled: true
+      config_file: "semgrep.yaml"
+    checkov: # https://docs.coderabbit.ai/tools/checkov
+      enabled: true
+    trivy: # https://docs.coderabbit.ai/tools/trivy
+      enabled: true
+    languagetool: # https://docs.coderabbit.ai/tools/languagetool
+      enabled: true
+      level: "default"
+    actionlint: # https://docs.coderabbit.ai/tools/actionlint
+      enabled: true
+    checkmake: # https://docs.coderabbit.ai/tools/checkmake
+      enabled: true
+chat:
+  auto_reply: true
+knowledge_base:
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - "**/AGENTS.md"
+      - "**/CONTRIBUTING.md"
+      - "**/README.md"
+      - "**/docs/contributing/*.md"

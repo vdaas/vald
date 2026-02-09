@@ -1,0 +1,259 @@
+rules:
+  # Go: Additional performance and Vald-specific rules
+  - id: go.defer.in-loop
+    languages: [go]
+    message: "Using defer inside a loop delays resource release and increases memory usage. Move defer outside the loop or use a function to scope it."
+    severity: WARNING
+    patterns:
+      - pattern-inside: |
+          for ... {
+            ...
+          }
+      - pattern: |
+          defer $FUNC(...)
+
+  - id: go.errgroup.external
+    languages: [go]
+    message: "Using golang.org/x/sync/errgroup. Use Vald's internal/sync/errgroup for context-aware error handling."
+    severity: ERROR
+    patterns:
+      - pattern: |
+          import $X "golang.org/x/sync/errgroup"
+      - pattern: |
+          import "golang.org/x/sync/errgroup"
+
+  - id: go.error.pkg-errors
+    languages: [go]
+    message: "Using pkg/errors. Use Vald's internal/errors package for error definitions."
+    severity: ERROR
+    patterns:
+      - pattern: |
+          import $X "github.com/pkg/errors"
+      - pattern: |
+          import "github.com/pkg/errors"
+
+  - id: go.error.go-errors
+    languages: [go]
+    message: "Using go-errors package. Use Vald's internal/errors package for error definitions."
+    severity: ERROR
+    patterns:
+      - pattern: |
+          import $X "github.com/go-errors/errors"
+      - pattern: |
+          import "github.com/go-errors/errors"
+
+  - id: go.goleak.external
+    languages: [go]
+    message: "Using go.uber.org/goleak. Use Vald's internal/test/goleak for goroutine leak tests."
+    severity: ERROR
+    patterns:
+      - pattern: |
+          import $X "go.uber.org/goleak"
+      - pattern: |
+          import "go.uber.org/goleak"
+
+  - id: go.context.todo-used
+    languages: [go]
+    message: "Avoid context.TODO()/Background() in production code. Use proper propagated context for timeouts/cancellation."
+    severity: INFO
+    patterns:
+      - pattern-either:
+          - pattern: context.TODO()
+          - pattern: context.Background()
+    metadata:
+      category: correctness
+      technology: [go, context]
+
+  - id: go.fs.perm-insecure
+    languages: [go]
+    message: "File/dir permission is too permissive (0666/0777). Use a more restrictive mode to avoid security issues."
+    severity: WARNING
+    patterns:
+      - pattern-either:
+          - pattern: |
+              os.MkdirAll($PATH, 0777)
+          - pattern: |
+              os.Mkdir($PATH, 0777)
+          - pattern: |
+              ioutil.WriteFile($F, $D, 0666)
+          - pattern: |
+              os.OpenFile($F, $FLAG, 0666)
+    metadata:
+      category: security
+      cwe: ["CWE-732"]
+      technology: [go, filesystem]
+
+  # Rust: Security and correctness rules
+  - id: rust.tls.accept-invalid-cert
+    languages: [rust]
+    message: "Reqwest client is set to accept invalid TLS certificates/hostnames, which is unsafe."
+    severity: WARNING
+    patterns:
+      - pattern-either:
+          - pattern: reqwest::Client::builder(). ... .danger_accept_invalid_certs(true)
+          - pattern: reqwest::Client::builder(). ... .danger_accept_invalid_hostnames(true)
+    metadata:
+      category: security
+      cwe: ["CWE-295"]
+      technology: [rust, reqwest]
+
+  - id: rust.command.shell-exec
+    languages: [rust]
+    message: "Shell command execution via `sh -c` may allow injection if inputs are attacker-controlled. Avoid using shell for exec."
+    severity: ERROR
+    patterns:
+      - pattern: |
+          Command::new("sh").arg("-c").arg($CMD).$REST
+    metadata:
+      category: security
+      cwe: ["CWE-78"]
+      technology: [rust, process]
+
+  - id: rust.crypto.insecure-rng
+    languages: [rust]
+    message: "Using non-cryptographic RNG for sensitive data. Use a crypto-safe RNG (e.g., OsRng) for secrets."
+    severity: ERROR
+    patterns:
+      - pattern-either:
+          - pattern: rand::random()
+          - pattern: thread_rng().$FUN(...)
+          - pattern: rand::thread_rng().$FUN(...)
+    metadata:
+      category: security
+      cwe: ["CWE-338"]
+      technology: [rust, crypto]
+
+  - id: rust.crypto.weak-hash
+    languages: [rust]
+    message: "Using MD5/SHA-1 hash algorithm which is weak against collisions. Prefer SHA-256 or stronger."
+    severity: WARNING
+    patterns:
+      - pattern-either:
+          - pattern: Md5::new()
+          - pattern: Sha1::new()
+          - pattern: md5::compute(...)
+          - pattern: sha1::Sha1::digest(...)
+          - pattern: MessageDigest::md5()
+          - pattern: MessageDigest::sha1()
+    metadata:
+      category: security
+      cwe: ["CWE-327"]
+      technology: [rust, crypto]
+
+  - id: rust.error.unwrap-in-result-fn
+    languages: [rust]
+    message: "`unwrap/expect` used in function returning Result. Propagate errors instead of panicking."
+    severity: WARNING
+    patterns:
+      - pattern-either:
+          - pattern: $VAL.unwrap()
+          - pattern: $VAL.expect($MSG)
+      - pattern-inside: |
+          fn $FUNC(...)-> Result<$T, $E> {
+            ...
+          }
+      - pattern-not-inside: |
+          #[cfg(test)]
+          mod tests {
+            ...
+          }
+    metadata:
+      category: correctness
+      cwe: ["CWE-703"]
+      technology: [rust, error-handling]
+
+  - id: rust.std.panic-used
+    languages: [rust]
+    message: "`panic!` called. Avoid panicking in library/production code; return Result instead."
+    severity: INFO
+    patterns:
+      - pattern: panic!(...)
+    metadata:
+      category: design
+      technology: [rust, error-handling]
+
+  # YAML: Kubernetes config best practices
+  - id: yaml.k8s.image-tag-latest
+    languages: [yaml]
+    message: "Container image uses 'latest' tag. Pin to a specific version for stability."
+    severity: ERROR
+    patterns:
+      - pattern: |
+          image: *:latest
+
+  - id: yaml.k8s.privileged-container
+    languages: [yaml]
+    message: "Privileged container is not allowed. Drop privileged flag for better security."
+    severity: ERROR
+    patterns:
+      - pattern: |
+          securityContext:
+            ...
+            privileged: true
+
+  - id: yaml.k8s.run-as-root
+    languages: [yaml]
+    message: "Container runs as root. Set runAsNonRoot: true or use non-zero UID for security."
+    severity: WARNING
+    patterns:
+      - pattern-either:
+          - pattern: |
+              securityContext:
+                ...
+                runAsNonRoot: false
+          - pattern: |
+              securityContext:
+                ...
+                runAsUser: 0
+
+  - id: yaml.k8s.resources.not-limited
+    languages: [yaml]
+    message: "No resource limit set for container. Define resources.limits to avoid unlimited resource usage."
+    severity: INFO
+    patterns:
+      - pattern: |
+          containers:
+            - name: $NAME
+              $+:
+                image: $IMAGE
+              $-:
+                resources:
+                  requests: $REQ
+              # 'limits' key is missing under resources
+
+  # Generic/Makefile: Insecure command usage & formatting
+  - id: generic.curl.http-url
+    languages: [generic]
+    message: "Unencrypted HTTP URL used with curl. Use HTTPS to prevent MITM eavesdropping."
+    severity: WARNING
+    pattern-regex: 'curl\s+[^-]+http://'
+
+  - id: generic.curl.insecure-flag
+    languages: [generic]
+    message: "curl with -k/--insecure flag disables SSL verification."
+    severity: ERROR
+    pattern-regex: 'curl\s+.*(--insecure|-k)'
+
+  - id: generic.wget.http-url
+    languages: [generic]
+    message: "Unencrypted HTTP URL used with wget. Use HTTPS for security."
+    severity: WARNING
+    pattern-regex: 'wget\s+[^-]+http://'
+
+  - id: generic.wget.no-check-cert
+    languages: [generic]
+    message: "wget with --no-check-certificate flag disables SSL verification."
+    severity: ERROR
+    pattern-regex: 'wget\s+.*--no-check-certificate'
+
+  - id: generic.ssh.no-host-key-check
+    languages: [generic]
+    message: "ssh with StrictHostKeyChecking=no. Man-in-the-middle attacks possible."
+    severity: WARNING
+    pattern-regex: 'ssh\s+.*-o\s+StrictHostKeyChecking=no'
+
+  - id: make.recipe.space-indent
+    languages: [generic]
+    message: "Makefile recipe line starts with spaces instead of a tab. Use a tab to indent recipe commands."
+    severity: ERROR
+    pattern-regex: '^[ ]+[^#\s]'
