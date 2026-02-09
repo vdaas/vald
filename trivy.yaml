@@ -1,0 +1,26 @@
+timeout: 5m
+format: table
+exit-code: 1
+severity:
+  - UNKNOWN
+  - LOW
+  - MEDIUM
+  - HIGH
+  - CRITICAL
+scanners:
+  - vuln
+  - secret
+  - misconfig
+  - license
+scan:
+  dirs:
+    - .
+  skip-dirs:
+    - vendor
+    - .git
+    - .github
+    - .vscode
+    - .idea
+    - hack
+    - versions
+    - assets
