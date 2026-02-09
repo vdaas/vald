@@ -54,7 +54,7 @@ rules:
 
   - id: go.context.todo-used
     languages: [go]
-    message: "Avoid context.TODO()/Background() in production code. Use proper propagated context for timeouts/cancellation."
+    message: "Avoid using context.TODO()/Background() except in top-level init/main/test setup; prefer propagated contexts with cancellation/timeouts in request-handling code"
     severity: INFO
     patterns:
       - pattern-either:
@@ -76,6 +76,8 @@ rules:
               os.Mkdir($PATH, 0777)
           - pattern: |
               ioutil.WriteFile($F, $D, 0666)
+          - pattern: |
+              os.WriteFile($F, $D, 0666)
           - pattern: |
               os.OpenFile($F, $FLAG, 0666)
     metadata:
@@ -102,8 +104,11 @@ rules:
     message: "Shell command execution via `sh -c` may allow injection if inputs are attacker-controlled. Avoid using shell for exec."
     severity: ERROR
     patterns:
-      - pattern: |
-          Command::new("sh").arg("-c").arg($CMD).$REST
+      - pattern-either:
+          - pattern: |
+              Command::new("sh").arg("-c").arg($CMD).$REST
+          - pattern: |
+              Command::new("sh").arg("-c").arg($CMD)
     metadata:
       category: security
       cwe: ["CWE-78"]
