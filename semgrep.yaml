@@ -16,7 +16,7 @@ rules:
     languages: [go]
     message: "Using golang.org/x/sync/errgroup. Use Vald's internal/sync/errgroup for context-aware error handling."
     severity: ERROR
-    patterns:
+    pattern-either:
       - pattern: |
           import $X "golang.org/x/sync/errgroup"
       - pattern: |
@@ -26,7 +26,7 @@ rules:
     languages: [go]
     message: "Using pkg/errors. Use Vald's internal/errors package for error definitions."
     severity: ERROR
-    patterns:
+    pattern-either:
       - pattern: |
           import $X "github.com/pkg/errors"
       - pattern: |
@@ -36,7 +36,7 @@ rules:
     languages: [go]
     message: "Using go-errors package. Use Vald's internal/errors package for error definitions."
     severity: ERROR
-    patterns:
+    pattern-either:
       - pattern: |
           import $X "github.com/go-errors/errors"
       - pattern: |
@@ -46,7 +46,7 @@ rules:
     languages: [go]
     message: "Using go.uber.org/goleak. Use Vald's internal/test/goleak for goroutine leak tests."
     severity: ERROR
-    patterns:
+    pattern-either:
       - pattern: |
           import $X "go.uber.org/goleak"
       - pattern: |
@@ -179,7 +179,7 @@ rules:
     severity: ERROR
     patterns:
       - pattern: |
-          image: *:latest
+          image: $IMAGE:latest
 
   - id: yaml.k8s.privileged-container
     languages: [yaml]
@@ -211,22 +211,22 @@ rules:
     message: "No resource limit set for container. Define resources.limits to avoid unlimited resource usage."
     severity: INFO
     patterns:
-      - pattern: |
+      - pattern-inside: |
           containers:
-            - name: $NAME
-              $+:
-                image: $IMAGE
-              $-:
-                resources:
-                  requests: $REQ
-              # 'limits' key is missing under resources
+            - ...
+      - pattern: |
+          resources:
+            requests: $REQ
+      - pattern-not: |
+          resources:
+            limits: $LIMITS
 
   # Generic/Makefile: Insecure command usage & formatting
   - id: generic.curl.http-url
     languages: [generic]
     message: "Unencrypted HTTP URL used with curl. Use HTTPS to prevent MITM eavesdropping."
     severity: WARNING
-    pattern-regex: 'curl\s+[^-]+http://'
+    pattern-regex: 'curl\s+(?:-\S+\s+)*http://'
 
   - id: generic.curl.insecure-flag
     languages: [generic]
@@ -238,7 +238,7 @@ rules:
     languages: [generic]
     message: "Unencrypted HTTP URL used with wget. Use HTTPS for security."
     severity: WARNING
-    pattern-regex: 'wget\s+[^-]+http://'
+    pattern-regex: 'wget\s+(?:-\S+\s+)*http://'
 
   - id: generic.wget.no-check-cert
     languages: [generic]
@@ -254,6 +254,10 @@ rules:
 
   - id: make.recipe.space-indent
     languages: [generic]
+    paths:
+      include:
+        - "Makefile"
+        - "*.mk"
     message: "Makefile recipe line starts with spaces instead of a tab. Use a tab to indent recipe commands."
     severity: ERROR
     pattern-regex: '^[ ]+[^#\s]'
