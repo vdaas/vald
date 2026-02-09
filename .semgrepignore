@@ -1,0 +1,8 @@
+vendor/
+**/*_test.go
+**/*.pb.go
+**/*.pb.gw.go
+**/*.pb.json.go
+**/*_vtproto.pb.go
+**/*.tonic.rs
+**/*.serde.rs
