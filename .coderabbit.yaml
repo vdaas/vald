@@ -120,9 +120,9 @@ reviews:
     - label: "type/documentation"
       instructions: "PR primarily changes documentation files (*.md, docs/, comments) without altering runtime behavior."
     - label: "type/security"
-      instructions: "Security fixes"
+      instructions: "Security fixes (e.g., include vulnerability type, CVE or severity, affected components, and remediation steps)."
     - label: "type/ci"
-      instructions: "CI Work"
+      instructions: "CI Work (e.g., pipeline config, test additions, deployment workflow changes, and whether they affect build time or infra)."
   tools:
     golangci-lint:
       enabled: true
