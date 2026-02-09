@@ -208,9 +208,11 @@ rules:
       - pattern: |
           resources:
             requests: $REQ
+            ...
       - pattern-not: |
           resources:
             limits: $LIMITS
+            ...
 
   # Generic/Makefile: Insecure command usage & formatting
   - id: generic.curl.http-url
