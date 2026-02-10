@@ -1016,8 +1016,11 @@ impl ANN for QBGService {
 
 #[cfg(test)]
 mod tests {
+    use std::vec;
+
     use super::*;
     use config::Config;
+    use rand::prelude::*;
     use tempfile::TempDir;
 
     /// Test helper to create a QBGService with temporary directories
@@ -1111,7 +1114,6 @@ mod tests {
     }
 
     fn gen_random_vector(dim: usize) -> Vec<f32> {
-        use rand::Rng;
         let mut rng = rand::rng();
         (0..dim).map(|_| rng.random::<f32>()).collect()
     }
