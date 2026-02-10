@@ -169,10 +169,10 @@ fn set_transaction_func(
                 is_new = false;
                 let (old_val_bytes, _): (Vec<u8>, u128) = wincode::deserialize(&old_payload_ivec)
                     .map_err(|e| {
-                        ConflictableTransactionError::Abort(Error::Codec {
-                            source: Box::new(e),
-                        })
-                    })?;
+                    ConflictableTransactionError::Abort(Error::Codec {
+                        source: Box::new(e),
+                    })
+                })?;
                 tx2.remove(old_val_bytes.as_slice())?;
             } else {
                 is_new = true;
@@ -196,10 +196,10 @@ fn delete_transaction_func(
             if let Some(payload_ivec) = tx1.remove(key.as_slice())? {
                 let (inverse_key_bytes, _): (Vec<u8>, u128) = wincode::deserialize(&payload_ivec)
                     .map_err(|e| {
-                        ConflictableTransactionError::Abort(Error::Codec {
-                            source: Box::new(e),
-                        })
-                    })?;
+                    ConflictableTransactionError::Abort(Error::Codec {
+                        source: Box::new(e),
+                    })
+                })?;
                 tx2.remove(inverse_key_bytes.as_slice())?;
                 Ok(Some(inverse_key_bytes))
             } else {

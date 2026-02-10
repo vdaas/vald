@@ -27,7 +27,7 @@ sled = "0.34"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "2.0"
 moka = { version = "0.12", features = ["future"] }
-wincode = { version = "0.2.5", features = ["derive"] }
+wincode = { version = "0.4.1", features = ["derive"] }
 
 
 [dev-dependencies]
