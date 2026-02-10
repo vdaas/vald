@@ -225,7 +225,7 @@ rules:
     languages: [generic]
     message: "curl with -k/--insecure flag disables SSL verification."
     severity: ERROR
-    pattern-regex: 'curl\s+.*(--insecure|-k)'
+    pattern-regex: 'curl\s+(?:-k\b|.*(?:--insecure\b|\s-k\b))'
 
   - id: generic.wget.http-url
     languages: [generic]
