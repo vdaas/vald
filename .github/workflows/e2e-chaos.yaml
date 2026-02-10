@@ -35,7 +35,7 @@ jobs:
       contents: read
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
       - uses: ./.github/actions/dump-context
@@ -58,7 +58,7 @@ jobs:
         password: ${{ secrets.PACKAGE_TOKEN }}
       options: "--add-host host.docker.internal:host-gateway"
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
       - name: Set Git config
@@ -106,7 +106,7 @@ jobs:
         password: ${{ secrets.PACKAGE_TOKEN }}
       options: "--add-host host.docker.internal:host-gateway"
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
       - name: Set Git config
@@ -154,7 +154,7 @@ jobs:
         password: ${{ secrets.PACKAGE_TOKEN }}
       options: "--add-host host.docker.internal:host-gateway"
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
       - name: Set Git config
@@ -202,7 +202,7 @@ jobs:
         password: ${{ secrets.PACKAGE_TOKEN }}
       options: "--add-host host.docker.internal:host-gateway"
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
       - name: Set Git config
@@ -248,7 +248,7 @@ jobs:
       - clusterwide-network-bandwidth
       - random-pod-failure
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
       - uses: ./.github/actions/notify-slack

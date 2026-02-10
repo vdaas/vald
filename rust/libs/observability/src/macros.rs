@@ -16,20 +16,14 @@
 
 #[macro_export]
 macro_rules! tracer {
-    () => {{
-        tracer!("vald")
-    }};
+    () => {{ tracer!("vald") }};
 
-    ($name:expr) => {{
-        opentelemetry::global::tracer($name)
-    }};
+    ($name:expr) => {{ opentelemetry::global::tracer($name) }};
 }
 
 #[macro_export]
 macro_rules! ctx_span {
-    ($ctx:expr, $name:expr) => {{
-        ctx_span!($ctx, $name, opentelemetry::trace::SpanKind::Internal)
-    }};
+    ($ctx:expr, $name:expr) => {{ ctx_span!($ctx, $name, opentelemetry::trace::SpanKind::Internal) }};
 
     ($ctx:expr, $name:expr, $kind:expr) => {{
         let tracer = tracer!();
@@ -44,13 +38,9 @@ macro_rules! ctx_span {
 
 #[macro_export]
 macro_rules! meter {
-    () => {{
-        meter!("vald")
-    }};
+    () => {{ meter!("vald") }};
 
-    ($name:expr) => {{
-        opentelemetry::global::meter($name)
-    }};
+    ($name:expr) => {{ opentelemetry::global::meter($name) }};
 }
 
 #[derive(Debug, PartialEq)]

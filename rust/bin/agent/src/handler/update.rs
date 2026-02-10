@@ -110,7 +110,11 @@ pub(crate) async fn update(
                             &resource_name,
                             None,
                         );
-                        let status = Status::with_error_details(Code::Aborted, "Update API aborted to process update request due to flushing indices is in progress", err_details);
+                        let status = Status::with_error_details(
+                            Code::Aborted,
+                            "Update API aborted to process update request due to flushing indices is in progress",
+                            err_details,
+                        );
                         warn!("{:?}", status);
                         status
                     }
@@ -320,7 +324,11 @@ impl update_server::Update for super::Agent {
                                 &resource_name,
                                 None,
                             );
-                            let status = Status::with_error_details(Code::Aborted, "MultiUpdate API aborted to process update request due to flushing indices is in progress", err_details);
+                            let status = Status::with_error_details(
+                                Code::Aborted,
+                                "MultiUpdate API aborted to process update request due to flushing indices is in progress",
+                                err_details,
+                            );
                             warn!("{:?}", status);
                             status
                         }

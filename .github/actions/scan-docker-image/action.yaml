@@ -43,6 +43,6 @@ runs:
         severity: ${{ inputs.severity }}
         timeout: 30m
     - name: Upload Trivy scan results to Security tab
-      uses: github/codeql-action/upload-sarif@1b168cd39490f61582a9beae412bb7057a6b2c4e # v4.31.8
+      uses: github/codeql-action/upload-sarif@45cbd0c69e560cd9e7cd7f8c32362050c9b7ded2 # v4.32.2
       with:
         sarif_file: "trivy-results.sarif"
