@@ -71,25 +71,18 @@ async fn remove<S: algorithm::ANN>(
             Err(err) => {
                 let resource_type = format!("{}/qbg.Remove", resource_type);
                 let resource_name = format!("{}: {}({})", api_name, name, ip);
+                let request_bytes = request.encode_to_vec();
                 let err_msg = err.to_string();
                 let mut err_details = build_error_details(
                     err_msg.clone(),
                     &uuid,
-                    request.encode_to_vec(),
+                    request_bytes,
                     &resource_type,
                     &resource_name,
                     None,
                 );
                 let status = match err {
                     Error::FlushingIsInProgress {} => {
-                        let err_details = build_error_details(
-                            err,
-                            &uuid,
-                            request_bytes,
-                            &resource_type,
-                            &resource_name,
-                            None,
-                        );
                         let status = Status::with_error_details(
                             Code::Aborted,
                             "Remove API aborted to process remove request due to flushing indices is in progress",

@@ -761,6 +761,8 @@ pub fn load_config_from_file<P: AsRef<Path>>(path: P) -> Result<QBG, Box<dyn std
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::io::Write;
+    use tempfile::NamedTempFile;
 
     #[test]
     fn test_vqueue_new() {
@@ -952,11 +954,13 @@ mod tests {
 
     #[test]
     fn test_get_actual_value_with_env_var() {
-        env::set_var("TEST_VAR", "test_value");
-        let value = "${TEST_VAR}";
+        let existing = match env::var("HOME") {
+            Ok(value) => value,
+            Err(_) => return,
+        };
+        let value = "${HOME}";
         let result = get_actual_value(value);
-        assert_eq!(result, "test_value");
-        env::remove_var("TEST_VAR");
+        assert_eq!(result, existing);
     }
 
     #[test]
@@ -1018,6 +1022,21 @@ is_readreplica: false
         assert!(qbg.enable_copy_on_write);
         assert!(qbg.enable_in_memory_mode);
         assert!(!qbg.is_readreplica);
+    }
+
+    #[test]
+    fn test_load_config_from_file() {
+        let mut file = NamedTempFile::new().expect("Failed to create temp file");
+        let yaml_str = "\
+index_path: /tmp/test_index
+dimension: 128
+";
+        file.write_all(yaml_str.as_bytes())
+            .expect("Failed to write config file");
+
+        let cfg = load_config_from_file(file.path()).expect("Failed to load config");
+        assert_eq!(cfg.index_path, "/tmp/test_index");
+        assert_eq!(cfg.dimension, 128);
     }
 
     #[test]

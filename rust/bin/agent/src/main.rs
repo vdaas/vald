@@ -64,9 +64,7 @@ async fn serve(config: AgentConfig) -> Result<(), Box<dyn std::error::Error>> {
     agent.start(&config).await;
 
     // Register NGT metrics if metering is enabled
-    if settings.get::<bool>("observability.enabled").unwrap_or(false)
-        && settings.get::<bool>("observability.meter.enabled").unwrap_or(false)
-    {
+    if config.observability.enabled && config.observability.meter.enabled {
         if let Err(e) = metrics::register_metrics(agent.service()) {
             error!("failed to register metrics: {}", e);
         } else {
