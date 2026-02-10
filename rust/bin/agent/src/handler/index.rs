@@ -17,7 +17,7 @@ use algorithm::Error;
 use log::{error, info};
 use proto::{
     core::v1::agent_server,
-    payload::v1::{control, info, Empty},
+    payload::v1::{Empty, control, info},
     vald::v1::index_server,
 };
 use std::collections::HashMap;
@@ -56,7 +56,11 @@ impl agent_server::Agent for super::Agent {
                             err_details.set_resource_info(resource_type, resource_name, "", "");
                             Status::with_error_details(
                                 Code::FailedPrecondition,
-                                format!("CreateIndex API failed to create indexes pool_size = {} due to the precondition failure, error: {}", pool_size, err.to_string()),
+                                format!(
+                                    "CreateIndex API failed to create indexes pool_size = {} due to the precondition failure, error: {}",
+                                    pool_size,
+                                    err.to_string()
+                                ),
                                 err_details,
                             )
                         }
@@ -76,7 +80,11 @@ impl agent_server::Agent for super::Agent {
                             err_details.set_resource_info(resource_type, resource_name, "", "");
                             let status = Status::with_error_details(
                                 Code::Internal,
-                                format!("CreateIndex API failed to create indexes pool_size = {}, error: {}", pool_size, err.to_string()),
+                                format!(
+                                    "CreateIndex API failed to create indexes pool_size = {}, error: {}",
+                                    pool_size,
+                                    err.to_string()
+                                ),
                                 err_details,
                             );
                             error!("{:?}", status);

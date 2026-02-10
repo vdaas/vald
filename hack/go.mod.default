@@ -1,6 +1,6 @@
 module github.com/vdaas/vald
 
-go 1.25.5
+go 1.25.7
 
 tool (
 	github.com/bufbuild/buf/cmd/buf
@@ -362,7 +362,7 @@ replace (
 	k8s.io/kubectl => k8s.io/kubectl upgrade
 	nhooyr.io/websocket => nhooyr.io/websocket upgrade
 	rsc.io/pdf => rsc.io/pdf upgrade
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.22.4
+	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.23.1
 	sigs.k8s.io/json => sigs.k8s.io/json upgrade
 	sigs.k8s.io/kustomize => sigs.k8s.io/kustomize upgrade
 )
