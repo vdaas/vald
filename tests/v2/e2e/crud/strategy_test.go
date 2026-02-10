@@ -30,6 +30,8 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/observability"
+	obsmetrics "github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/tests/v2/e2e/config"
 	k8s "github.com/vdaas/vald/tests/v2/e2e/kubernetes"
@@ -52,6 +54,28 @@ func TestE2EStrategy(t *testing.T) {
 
 	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
+
+	if cfg.Observability != nil && cfg.Observability.Enabled {
+		var extraMetrics []obsmetrics.Metric
+		if cfg.Collector != nil {
+			extraMetrics = append(extraMetrics, metrics.NewOTELMetrics(cfg.Collector))
+		} else {
+			t.Log("observability enabled but collector is nil, skipping otel metrics registration")
+		}
+
+		obs, err := observability.NewWithConfig(cfg.Observability, extraMetrics...)
+		if err != nil {
+			t.Fatalf("failed to create observability: %v", err)
+		}
+		if err := obs.PreStart(ctx); err != nil {
+			t.Fatalf("failed to start observability: %v", err)
+		}
+		defer func() {
+			if err := obs.Stop(ctx); err != nil {
+				t.Logf("failed to stop observability: %v", err)
+			}
+		}()
+	}
 
 	var err error
 	r := new(runner)
@@ -367,6 +391,7 @@ func executeWithTimings[T interface {
 			var cancel context.CancelFunc
 			ctx, cancel = context.WithTimeout(ctx, dur)
 			defer cancel()
+
 		}
 	}
 
