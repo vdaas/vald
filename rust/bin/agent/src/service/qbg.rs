@@ -15,11 +15,11 @@
 //
 
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 
 use crate::config::QBG;
-use algorithm::{Error, MultiError, ANN};
+use algorithm::{ANN, Error, MultiError};
 use anyhow::Result;
 use chrono::{Local, Timelike, Utc};
 use futures::StreamExt;

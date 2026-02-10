@@ -22,7 +22,7 @@
 
 use std::sync::Arc;
 
-use kvs::{map::codec::WincodeCodec, BidirectionalMap, MapBase};
+use kvs::{BidirectionalMap, MapBase, map::codec::WincodeCodec};
 use thiserror::Error;
 use vqueue::{Queue, QueueError};
 

@@ -104,7 +104,11 @@ pub(crate) async fn update<S: algorithm::ANN>(
                         &resource_name,
                         None,
                     );
-                    let status = Status::with_error_details(Code::Aborted, "Update API aborted to process update request due to flushing indices is in progress", err_details);
+                    let status = Status::with_error_details(
+                        Code::Aborted,
+                        "Update API aborted to process update request due to flushing indices is in progress",
+                        err_details,
+                    );
                     warn!("{:?}", status);
                     status
                 }

@@ -31,7 +31,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use thiserror::Error;
 use tracing::{debug, info, warn};
 
-use super::metadata::{self, Metadata, AGENT_METADATA_FILENAME};
+use super::metadata::{self, AGENT_METADATA_FILENAME, Metadata};
 
 /// Directory name for backup index (Copy-on-Write mode).
 const OLD_INDEX_DIR_NAME: &str = "backup";

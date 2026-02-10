@@ -85,7 +85,11 @@ pub(super) async fn insert<S: algorithm::ANN>(
                         &resource_name,
                         None,
                     );
-                    let status = Status::with_error_details(Code::Aborted, "Insert API aborted to process insert request due to flushing indices is in progress", err_details);
+                    let status = Status::with_error_details(
+                        Code::Aborted,
+                        "Insert API aborted to process insert request due to flushing indices is in progress",
+                        err_details,
+                    );
                     warn!("{:?}", status);
                     status
                 }
@@ -265,7 +269,11 @@ impl<S: algorithm::ANN + 'static> insert_server::Insert for super::Agent<S> {
                             &resource_name,
                             None,
                         );
-                        let status = Status::with_error_details(Code::Aborted, "MultiInsert API aborted to process insert request due to flushing indices is in progress", err_details);
+                        let status = Status::with_error_details(
+                            Code::Aborted,
+                            "MultiInsert API aborted to process insert request due to flushing indices is in progress",
+                            err_details,
+                        );
                         warn!("{:?}", status);
                         status
                     }

@@ -83,7 +83,11 @@ async fn search<S: algorithm::ANN>(
                         &resource_name,
                         None,
                     );
-                    let status = Status::with_error_details(Code::Aborted, "Search API aborted to process search request due to creating indices is in progress", err_details);
+                    let status = Status::with_error_details(
+                        Code::Aborted,
+                        "Search API aborted to process search request due to creating indices is in progress",
+                        err_details,
+                    );
                     debug!("{:?}", status);
                     status
                 }
@@ -96,7 +100,11 @@ async fn search<S: algorithm::ANN>(
                         &resource_name,
                         None,
                     );
-                    let status = Status::with_error_details(Code::Aborted, "Search API aborted to process search request due to flushing indices is in progress", err_details);
+                    let status = Status::with_error_details(
+                        Code::Aborted,
+                        "Search API aborted to process search request due to flushing indices is in progress",
+                        err_details,
+                    );
                     debug!("{:?}", status);
                     status
                 }
@@ -241,7 +249,11 @@ impl<S: algorithm::ANN + 'static> search_server::Search for super::Agent<S> {
                             &resource_name,
                             None,
                         );
-                        let status = Status::with_error_details(Code::Aborted, "SearchByID API aborted to process search request due to creating indices is in progress", err_details);
+                        let status = Status::with_error_details(
+                            Code::Aborted,
+                            "SearchByID API aborted to process search request due to creating indices is in progress",
+                            err_details,
+                        );
                         debug!("{:?}", status);
                         status
                     }
@@ -254,7 +266,11 @@ impl<S: algorithm::ANN + 'static> search_server::Search for super::Agent<S> {
                             &resource_name,
                             None,
                         );
-                        let status = Status::with_error_details(Code::Aborted, "SearchByID API aborted to process search request due to flushing indices is in progress", err_details);
+                        let status = Status::with_error_details(
+                            Code::Aborted,
+                            "SearchByID API aborted to process search request due to flushing indices is in progress",
+                            err_details,
+                        );
                         debug!("{:?}", status);
                         status
                     }
@@ -409,7 +425,7 @@ impl<S: algorithm::ANN + 'static> search_server::Search for super::Agent<S> {
                 let config = match req.config.clone() {
                     Some(cfg) => cfg,
                     None => {
-                        return Err(Status::invalid_argument("Missing configuration in request"))
+                        return Err(Status::invalid_argument("Missing configuration in request"));
                     }
                 };
 
@@ -571,7 +587,11 @@ impl<S: algorithm::ANN + 'static> search_server::Search for super::Agent<S> {
                             &resource_name,
                             None,
                         );
-                        let status = Status::with_error_details(Code::Aborted, "LinearSearch API aborted to process search request due to creating indices is in progress", err_details);
+                        let status = Status::with_error_details(
+                            Code::Aborted,
+                            "LinearSearch API aborted to process search request due to creating indices is in progress",
+                            err_details,
+                        );
                         debug!("{:?}", status);
                         status
                     }
@@ -584,7 +604,11 @@ impl<S: algorithm::ANN + 'static> search_server::Search for super::Agent<S> {
                             &resource_name,
                             None,
                         );
-                        let status = Status::with_error_details(Code::Aborted, "LinearSearch API aborted to process search request due to flushing indices is in progress", err_details);
+                        let status = Status::with_error_details(
+                            Code::Aborted,
+                            "LinearSearch API aborted to process search request due to flushing indices is in progress",
+                            err_details,
+                        );
                         debug!("{:?}", status);
                         status
                     }
@@ -711,7 +735,11 @@ impl<S: algorithm::ANN + 'static> search_server::Search for super::Agent<S> {
                             &resource_name,
                             None,
                         );
-                        let status = Status::with_error_details(Code::Aborted, "LinearSearchByID API aborted to process search request due to creating indices is in progress", err_details);
+                        let status = Status::with_error_details(
+                            Code::Aborted,
+                            "LinearSearchByID API aborted to process search request due to creating indices is in progress",
+                            err_details,
+                        );
                         debug!("{:?}", status);
                         status
                     }
@@ -724,7 +752,11 @@ impl<S: algorithm::ANN + 'static> search_server::Search for super::Agent<S> {
                             &resource_name,
                             None,
                         );
-                        let status = Status::with_error_details(Code::Aborted, "LinearSearchByID API aborted to process search request due to flushing indices is in progress", err_details);
+                        let status = Status::with_error_details(
+                            Code::Aborted,
+                            "LinearSearchByID API aborted to process search request due to flushing indices is in progress",
+                            err_details,
+                        );
                         debug!("{:?}", status);
                         status
                     }
@@ -841,7 +873,7 @@ impl<S: algorithm::ANN + 'static> search_server::Search for super::Agent<S> {
                 let config = match req.config.clone() {
                     Some(cfg) => cfg,
                     None => {
-                        return Err(Status::invalid_argument("Missing configuration in request"))
+                        return Err(Status::invalid_argument("Missing configuration in request"));
                     }
                 };
 
@@ -951,7 +983,7 @@ impl<S: algorithm::ANN + 'static> search_server::Search for super::Agent<S> {
                 let config = match req.config.clone() {
                     Some(cfg) => cfg,
                     None => {
-                        return Err(Status::invalid_argument("Missing configuration in request"))
+                        return Err(Status::invalid_argument("Missing configuration in request"));
                     }
                 };
 

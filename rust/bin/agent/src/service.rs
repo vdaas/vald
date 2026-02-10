@@ -20,7 +20,7 @@ pub mod memstore;
 pub mod metadata;
 pub mod persistence;
 mod qbg;
-pub use daemon::{start as start_daemon, DaemonConfig, DaemonHandle};
+pub use daemon::{DaemonConfig, DaemonHandle, start as start_daemon};
 pub use k8s::{IndexMetrics, K8sClient, MetricsExporter, Patcher};
 pub use metadata::Metadata;
 pub use persistence::{IndexPaths, PersistenceConfig, PersistenceManager};

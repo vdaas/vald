@@ -24,9 +24,9 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use algorithm::{Error, ANN};
-use tokio::sync::{mpsc, RwLock};
-use tokio::time::{interval, Instant};
+use algorithm::{ANN, Error};
+use tokio::sync::{RwLock, mpsc};
+use tokio::time::{Instant, interval};
 use tokio_util::sync::CancellationToken;
 use tracing::{debug, info, warn};
 

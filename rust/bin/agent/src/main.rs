@@ -22,7 +22,7 @@ mod service;
 
 use crate::config::AgentConfig;
 use handler::Agent;
-use observability::{init_tracing, shutdown_tracing, TracingConfig};
+use observability::{TracingConfig, init_tracing, shutdown_tracing};
 use service::QBGService;
 use tracing::{error, info};
 

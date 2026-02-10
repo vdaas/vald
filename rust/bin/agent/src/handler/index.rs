@@ -59,7 +59,10 @@ impl<S: algorithm::ANN + 'static> agent_server::Agent for super::Agent<S> {
                         )]);
                         Status::with_error_details(
                             Code::FailedPrecondition,
-                            format!("CreateIndex API failed to create indexes pool_size = {} due to the precondition failure, error: {}", pool_size, err),
+                            format!(
+                                "CreateIndex API failed to create indexes pool_size = {} due to the precondition failure, error: {}",
+                                pool_size, err
+                            ),
                             err_details,
                         )
                     }
@@ -89,7 +92,10 @@ impl<S: algorithm::ANN + 'static> agent_server::Agent for super::Agent<S> {
                         );
                         let status = Status::with_error_details(
                             Code::Internal,
-                            format!("CreateIndex API failed to create indexes pool_size = {}, error: {}", pool_size, err),
+                            format!(
+                                "CreateIndex API failed to create indexes pool_size = {}, error: {}",
+                                pool_size, err
+                            ),
                             err_details,
                         );
                         error!("{:?}", status);
@@ -163,7 +169,10 @@ impl<S: algorithm::ANN + 'static> agent_server::Agent for super::Agent<S> {
                         )]);
                         Status::with_error_details(
                             Code::FailedPrecondition,
-                            format!("CreateAndSaveIndex API failed to create indexes pool_size = {} due to the precondition failure, error: {}", pool_size, err),
+                            format!(
+                                "CreateAndSaveIndex API failed to create indexes pool_size = {} due to the precondition failure, error: {}",
+                                pool_size, err
+                            ),
                             err_details,
                         )
                     }
@@ -193,7 +202,10 @@ impl<S: algorithm::ANN + 'static> agent_server::Agent for super::Agent<S> {
                         );
                         let status = Status::with_error_details(
                             Code::Internal,
-                            format!("CreateAndSaveIndex API failed to create indexes pool_size = {}, error: {}", pool_size, err),
+                            format!(
+                                "CreateAndSaveIndex API failed to create indexes pool_size = {}, error: {}",
+                                pool_size, err
+                            ),
                             err_details,
                         );
                         error!("{:?}", status);

@@ -17,8 +17,8 @@
 use anyhow::{Context, Result};
 use k8s_openapi::api::core::v1::Pod;
 use kube::{
-    api::{Api, Patch, PatchParams},
     Client,
+    api::{Api, Patch, PatchParams},
 };
 use serde_json::json;
 use std::collections::HashMap;

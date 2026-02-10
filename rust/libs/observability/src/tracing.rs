@@ -23,13 +23,13 @@ use anyhow::Result;
 use opentelemetry::global;
 use opentelemetry::trace::TracerProvider;
 use opentelemetry_otlp::{SpanExporter, WithExportConfig};
+use opentelemetry_sdk::Resource;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use opentelemetry_sdk::trace::{self, SdkTracerProvider};
-use opentelemetry_sdk::Resource;
 use tracing_opentelemetry::OpenTelemetryLayer;
+use tracing_subscriber::EnvFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
-use tracing_subscriber::EnvFilter;
 use url::Url;
 
 use crate::config::Config;

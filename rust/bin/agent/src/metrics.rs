@@ -40,7 +40,8 @@ const MIN_NUMBER_OF_OUTDEGREE: &str = "agent_core_ngt_min_number_of_outdegree";
 const MODE_INDEGREE: &str = "agent_core_ngt_mode_indegree";
 const MODE_OUTDEGREE: &str = "agent_core_ngt_mode_outdegree";
 const NODES_SKIPPED_FOR_10_EDGES: &str = "agent_core_ngt_nodes_skipped_for_10_edges";
-const NODES_SKIPPED_FOR_INDEGREE_DISTANCE: &str = "agent_core_ngt_nodes_skipped_for_indegree_distance";
+const NODES_SKIPPED_FOR_INDEGREE_DISTANCE: &str =
+    "agent_core_ngt_nodes_skipped_for_indegree_distance";
 const NUMBER_OF_EDGES: &str = "agent_core_ngt_number_of_edges";
 const NUMBER_OF_INDEXED_OBJECTS: &str = "agent_core_ngt_number_of_indexed_objects";
 const NUMBER_OF_NODES: &str = "agent_core_ngt_number_of_nodes";
@@ -49,12 +50,14 @@ const NUMBER_OF_NODES_WITHOUT_INDEGREE: &str = "agent_core_ngt_number_of_nodes_w
 const NUMBER_OF_OBJECTS: &str = "agent_core_ngt_number_of_objects";
 const NUMBER_OF_REMOVED_OBJECTS: &str = "agent_core_ngt_number_of_removed_objects";
 const SIZE_OF_OBJECT_REPOSITORY: &str = "agent_core_ngt_size_of_object_repository";
-const SIZE_OF_REFINEMENT_OBJECT_REPOSITORY: &str = "agent_core_ngt_size_of_refinement_object_repository";
+const SIZE_OF_REFINEMENT_OBJECT_REPOSITORY: &str =
+    "agent_core_ngt_size_of_refinement_object_repository";
 const VARIANCE_OF_INDEGREE: &str = "agent_core_ngt_variance_of_indegree";
 const VARIANCE_OF_OUTDEGREE: &str = "agent_core_ngt_variance_of_outdegree";
 const MEAN_EDGE_LENGTH: &str = "agent_core_ngt_mean_edge_length";
 const MEAN_EDGE_LENGTH_FOR_10_EDGES: &str = "agent_core_ngt_mean_edge_length_for_10_edges";
-const MEAN_INDEGREE_DISTANCE_FOR_10_EDGES: &str = "agent_core_ngt_mean_indegree_distance_for_10_edges";
+const MEAN_INDEGREE_DISTANCE_FOR_10_EDGES: &str =
+    "agent_core_ngt_mean_indegree_distance_for_10_edges";
 const MEAN_NUMBER_OF_EDGES_PER_NODE: &str = "agent_core_ngt_mean_number_of_edges_per_node";
 const C1_INDEGREE: &str = "agent_core_ngt_c1_indegree";
 const C5_INDEGREE: &str = "agent_core_ngt_c5_indegree";
@@ -472,7 +475,8 @@ where
                 if let Ok(s) = service.try_read() {
                     if s.is_statistics_enabled() {
                         if let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.size_of_refinement_object_repository as i64, &[]);
+                            observer
+                                .observe(stats.size_of_refinement_object_repository as i64, &[]);
                         }
                     }
                 }
@@ -648,11 +652,11 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use algorithm::{Error, ANN};
+    use algorithm::{ANN, Error};
+    use opentelemetry_sdk::metrics::{InMemoryMetricExporter, PeriodicReader, SdkMeterProvider};
     use proto::payload::v1::{info, search};
     use std::collections::HashMap;
     use std::future::Future;
-    use opentelemetry_sdk::metrics::{InMemoryMetricExporter, PeriodicReader, SdkMeterProvider};
 
     #[derive(Clone)]
     struct MockANN {
@@ -682,44 +686,190 @@ mod tests {
     }
 
     impl ANN for MockANN {
-        fn search(&self, _v: Vec<f32>, _k: u32, _e: f32, _r: f32) -> impl Future<Output = Result<search::Response, Error>> + Send { async { Ok(search::Response::default()) } }
-        fn search_by_id(&self, _u: String, _k: u32, _e: f32, _r: f32) -> impl Future<Output = Result<search::Response, Error>> + Send { async { Ok(search::Response::default()) } }
-        fn linear_search(&self, _v: Vec<f32>, _k: u32) -> impl Future<Output = Result<search::Response, Error>> + Send { async { Ok(search::Response::default()) } }
-        fn linear_search_by_id(&self, _u: String, _k: u32) -> impl Future<Output = Result<search::Response, Error>> + Send { async { Ok(search::Response::default()) } }
-        fn insert(&mut self, _u: String, _v: Vec<f32>) -> impl Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn insert_with_time(&mut self, _u: String, _v: Vec<f32>, _t: i64) -> impl Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn insert_multiple(&mut self, _vs: HashMap<String, Vec<f32>>) -> impl Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn insert_multiple_with_time(&mut self, _vs: HashMap<String, Vec<f32>>, _t: i64) -> impl Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn update(&mut self, _u: String, _v: Vec<f32>) -> impl Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn update_with_time(&mut self, _u: String, _v: Vec<f32>, _t: i64) -> impl Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn update_multiple(&mut self, _vs: HashMap<String, Vec<f32>>) -> impl Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn update_multiple_with_time(&mut self, _vs: HashMap<String, Vec<f32>>, _t: i64) -> impl Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn update_timestamp(&mut self, _u: String, _t: i64, _f: bool) -> impl Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn remove(&mut self, _u: String) -> impl Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn remove_with_time(&mut self, _u: String, _t: i64) -> impl Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn remove_multiple(&mut self, _us: Vec<String>) -> impl Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn remove_multiple_with_time(&mut self, _us: Vec<String>, _t: i64) -> impl Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn regenerate_indexes(&mut self) -> impl Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn create_index(&mut self) -> impl Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn save_index(&mut self) -> impl Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn create_and_save_index(&mut self) -> impl Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
-        fn get_object(&self, _u: String) -> impl Future<Output = Result<(Vec<f32>, i64), Error>> + Send { async { Ok((vec![], 0)) } }
-        fn exists(&self, _u: String) -> impl Future<Output = (usize, bool)> + Send { async { (0, false) } }
-        fn uuids(&self) -> impl Future<Output = Vec<String>> + Send { async { vec![] } }
-        fn list_object_func<F: FnMut(String, Vec<f32>, i64) -> bool + Send>(&self, _f: F) -> impl Future<Output = ()> + Send { async {} }
-        fn close(&mut self) -> impl Future<Output = Result<(), Error>> + Send { async { Ok(()) } }
+        fn search(
+            &self,
+            _v: Vec<f32>,
+            _k: u32,
+            _e: f32,
+            _r: f32,
+        ) -> impl Future<Output = Result<search::Response, Error>> + Send {
+            async { Ok(search::Response::default()) }
+        }
+        fn search_by_id(
+            &self,
+            _u: String,
+            _k: u32,
+            _e: f32,
+            _r: f32,
+        ) -> impl Future<Output = Result<search::Response, Error>> + Send {
+            async { Ok(search::Response::default()) }
+        }
+        fn linear_search(
+            &self,
+            _v: Vec<f32>,
+            _k: u32,
+        ) -> impl Future<Output = Result<search::Response, Error>> + Send {
+            async { Ok(search::Response::default()) }
+        }
+        fn linear_search_by_id(
+            &self,
+            _u: String,
+            _k: u32,
+        ) -> impl Future<Output = Result<search::Response, Error>> + Send {
+            async { Ok(search::Response::default()) }
+        }
+        fn insert(
+            &mut self,
+            _u: String,
+            _v: Vec<f32>,
+        ) -> impl Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn insert_with_time(
+            &mut self,
+            _u: String,
+            _v: Vec<f32>,
+            _t: i64,
+        ) -> impl Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn insert_multiple(
+            &mut self,
+            _vs: HashMap<String, Vec<f32>>,
+        ) -> impl Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn insert_multiple_with_time(
+            &mut self,
+            _vs: HashMap<String, Vec<f32>>,
+            _t: i64,
+        ) -> impl Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn update(
+            &mut self,
+            _u: String,
+            _v: Vec<f32>,
+        ) -> impl Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn update_with_time(
+            &mut self,
+            _u: String,
+            _v: Vec<f32>,
+            _t: i64,
+        ) -> impl Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn update_multiple(
+            &mut self,
+            _vs: HashMap<String, Vec<f32>>,
+        ) -> impl Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn update_multiple_with_time(
+            &mut self,
+            _vs: HashMap<String, Vec<f32>>,
+            _t: i64,
+        ) -> impl Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn update_timestamp(
+            &mut self,
+            _u: String,
+            _t: i64,
+            _f: bool,
+        ) -> impl Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn remove(&mut self, _u: String) -> impl Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn remove_with_time(
+            &mut self,
+            _u: String,
+            _t: i64,
+        ) -> impl Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn remove_multiple(
+            &mut self,
+            _us: Vec<String>,
+        ) -> impl Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn remove_multiple_with_time(
+            &mut self,
+            _us: Vec<String>,
+            _t: i64,
+        ) -> impl Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn regenerate_indexes(&mut self) -> impl Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn create_index(&mut self) -> impl Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn save_index(&mut self) -> impl Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn create_and_save_index(&mut self) -> impl Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
+        fn get_object(
+            &self,
+            _u: String,
+        ) -> impl Future<Output = Result<(Vec<f32>, i64), Error>> + Send {
+            async { Ok((vec![], 0)) }
+        }
+        fn exists(&self, _u: String) -> impl Future<Output = (usize, bool)> + Send {
+            async { (0, false) }
+        }
+        fn uuids(&self) -> impl Future<Output = Vec<String>> + Send {
+            async { vec![] }
+        }
+        fn list_object_func<F: FnMut(String, Vec<f32>, i64) -> bool + Send>(
+            &self,
+            _f: F,
+        ) -> impl Future<Output = ()> + Send {
+            async {}
+        }
+        fn close(&mut self) -> impl Future<Output = Result<(), Error>> + Send {
+            async { Ok(()) }
+        }
 
         // Metrics methods
-        fn is_indexing(&self) -> bool { self.indexing }
-        fn is_flushing(&self) -> bool { false }
-        fn is_saving(&self) -> bool { self.saving }
-        fn len(&self) -> u32 { self.len }
-        fn number_of_create_index_executions(&self) -> u64 { self.create_index_count }
-        fn insert_vqueue_buffer_len(&self) -> u32 { self.insert_buffer }
-        fn delete_vqueue_buffer_len(&self) -> u32 { self.delete_buffer }
-        fn get_dimension_size(&self) -> usize { 128 }
-        fn broken_index_count(&self) -> u64 { self.broken_count }
-        fn is_statistics_enabled(&self) -> bool { self.stats_enabled }
+        fn is_indexing(&self) -> bool {
+            self.indexing
+        }
+        fn is_flushing(&self) -> bool {
+            false
+        }
+        fn is_saving(&self) -> bool {
+            self.saving
+        }
+        fn len(&self) -> u32 {
+            self.len
+        }
+        fn number_of_create_index_executions(&self) -> u64 {
+            self.create_index_count
+        }
+        fn insert_vqueue_buffer_len(&self) -> u32 {
+            self.insert_buffer
+        }
+        fn delete_vqueue_buffer_len(&self) -> u32 {
+            self.delete_buffer
+        }
+        fn get_dimension_size(&self) -> usize {
+            128
+        }
+        fn broken_index_count(&self) -> u64 {
+            self.broken_count
+        }
+        fn is_statistics_enabled(&self) -> bool {
+            self.stats_enabled
+        }
         fn index_statistics(&self) -> Result<info::index::Statistics, Error> {
             Ok(info::index::Statistics {
                 median_indegree: 10,
@@ -727,7 +877,9 @@ mod tests {
                 ..Default::default()
             })
         }
-        fn index_property(&self) -> Result<info::index::Property, Error> { Ok(info::index::Property::default()) }
+        fn index_property(&self) -> Result<info::index::Property, Error> {
+            Ok(info::index::Property::default())
+        }
     }
 
     #[test]

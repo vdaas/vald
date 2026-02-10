@@ -26,7 +26,7 @@ pub mod upsert;
 
 use crate::config::AgentConfig;
 use crate::middleware;
-use crate::service::{start_daemon, DaemonConfig, DaemonHandle};
+use crate::service::{DaemonConfig, DaemonHandle, start_daemon};
 use proto::{
     core::v1::agent_server,
     vald::v1::{
@@ -36,7 +36,7 @@ use proto::{
 };
 use std::sync::Arc;
 use std::time::Duration;
-use tokio::sync::{mpsc, RwLock};
+use tokio::sync::{RwLock, mpsc};
 
 pub struct Agent<S: algorithm::ANN + 'static> {
     s: Arc<RwLock<S>>,
@@ -289,7 +289,7 @@ fn parse_duration_from_string(input: &str) -> Option<Duration> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use algorithm::{Error, ANN};
+    use algorithm::{ANN, Error};
     use proto::payload::v1::{info, insert, object, remove, search, update, upsert};
     use proto::vald::v1::{
         insert_server::Insert, object_server::Object, remove_server::Remove, search_server::Search,
@@ -1839,7 +1839,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_agent_shutdown_with_daemon() {
-        use crate::service::{start_daemon, DaemonConfig};
+        use crate::service::{DaemonConfig, start_daemon};
 
         let service = MockShutdownService::new(128);
         let service_arc = Arc::new(RwLock::new(service));
@@ -1899,7 +1899,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_agent_stop_signals_daemon() {
-        use crate::service::{start_daemon, DaemonConfig};
+        use crate::service::{DaemonConfig, start_daemon};
 
         let service = MockShutdownService::new(128);
         let service_arc = Arc::new(RwLock::new(service));

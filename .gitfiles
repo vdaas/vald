@@ -2288,6 +2288,7 @@ rust/bin/agent/src/handler/search.rs
 rust/bin/agent/src/handler/update.rs
 rust/bin/agent/src/handler/upsert.rs
 rust/bin/agent/src/main.rs
+rust/bin/agent/src/metrics.rs
 rust/bin/agent/src/middleware.rs
 rust/bin/agent/src/service.rs
 rust/bin/agent/src/service/daemon.rs
