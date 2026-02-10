@@ -19,10 +19,10 @@ pub mod agent_client {
         dead_code,
         missing_docs,
         clippy::wildcard_imports,
-        clippy::let_unit_value,
+        clippy::let_unit_value
     )]
-    use tonic::codegen::*;
     use tonic::codegen::http::Uri;
+    use tonic::codegen::*;
     #[derive(Debug, Clone)]
     pub struct AgentClient<T> {
         inner: tonic::client::Grpc<T>,
@@ -61,14 +61,13 @@ pub mod agent_client {
             F: tonic::service::Interceptor,
             T::ResponseBody: Default,
             T: tonic::codegen::Service<
-                http::Request<tonic::body::Body>,
-                Response = http::Response<
-                    <T as tonic::client::GrpcService<tonic::body::Body>>::ResponseBody,
+                    http::Request<tonic::body::Body>,
+                    Response = http::Response<
+                        <T as tonic::client::GrpcService<tonic::body::Body>>::ResponseBody,
+                    >,
                 >,
-            >,
-            <T as tonic::codegen::Service<
-                http::Request<tonic::body::Body>,
-            >>::Error: Into<StdError> + std::marker::Send + std::marker::Sync,
+            <T as tonic::codegen::Service<http::Request<tonic::body::Body>>>::Error:
+                Into<StdError> + std::marker::Send + std::marker::Sync,
         {
             AgentClient::new(InterceptedService::new(inner, interceptor))
         }
@@ -112,24 +111,18 @@ pub mod agent_client {
             tonic::Response<super::super::super::payload::v1::Empty>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic_prost::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/core.v1.Agent/CreateIndex",
-            );
+            let path = http::uri::PathAndQuery::from_static("/core.v1.Agent/CreateIndex");
             let mut req = request.into_request();
-            req.extensions_mut().insert(GrpcMethod::new("core.v1.Agent", "CreateIndex"));
+            req.extensions_mut()
+                .insert(GrpcMethod::new("core.v1.Agent", "CreateIndex"));
             self.inner.unary(req, path, codec).await
         }
         /** Represent the saving index RPC.
-*/
+         */
         pub async fn save_index(
             &mut self,
             request: impl tonic::IntoRequest<super::super::super::payload::v1::Empty>,
@@ -137,22 +130,18 @@ pub mod agent_client {
             tonic::Response<super::super::super::payload::v1::Empty>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/core.v1.Agent/SaveIndex");
             let mut req = request.into_request();
-            req.extensions_mut().insert(GrpcMethod::new("core.v1.Agent", "SaveIndex"));
+            req.extensions_mut()
+                .insert(GrpcMethod::new("core.v1.Agent", "SaveIndex"));
             self.inner.unary(req, path, codec).await
         }
         /** Represent the creating and saving index RPC.
-*/
+         */
         pub async fn create_and_save_index(
             &mut self,
             request: impl tonic::IntoRequest<
@@ -162,18 +151,11 @@ pub mod agent_client {
             tonic::Response<super::super::super::payload::v1::Empty>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic_prost::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/core.v1.Agent/CreateAndSaveIndex",
-            );
+            let path = http::uri::PathAndQuery::from_static("/core.v1.Agent/CreateAndSaveIndex");
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(GrpcMethod::new("core.v1.Agent", "CreateAndSaveIndex"));
@@ -188,7 +170,7 @@ pub mod agent_server {
         dead_code,
         missing_docs,
         clippy::wildcard_imports,
-        clippy::let_unit_value,
+        clippy::let_unit_value
     )]
     use tonic::codegen::*;
     /// Generated trait containing gRPC methods that should be implemented for use with AgentServer.
@@ -196,15 +178,13 @@ pub mod agent_server {
     pub trait Agent: std::marker::Send + std::marker::Sync + 'static {
         async fn create_index(
             &self,
-            request: tonic::Request<
-                super::super::super::payload::v1::control::CreateIndexRequest,
-            >,
+            request: tonic::Request<super::super::super::payload::v1::control::CreateIndexRequest>,
         ) -> std::result::Result<
             tonic::Response<super::super::super::payload::v1::Empty>,
             tonic::Status,
         >;
         /** Represent the saving index RPC.
-*/
+         */
         async fn save_index(
             &self,
             request: tonic::Request<super::super::super::payload::v1::Empty>,
@@ -213,12 +193,10 @@ pub mod agent_server {
             tonic::Status,
         >;
         /** Represent the creating and saving index RPC.
-*/
+         */
         async fn create_and_save_index(
             &self,
-            request: tonic::Request<
-                super::super::super::payload::v1::control::CreateIndexRequest,
-            >,
+            request: tonic::Request<super::super::super::payload::v1::control::CreateIndexRequest>,
         ) -> std::result::Result<
             tonic::Response<super::super::super::payload::v1::Empty>,
             tonic::Status,
@@ -245,10 +223,7 @@ pub mod agent_server {
                 max_encoding_message_size: None,
             }
         }
-        pub fn with_interceptor<F>(
-            inner: T,
-            interceptor: F,
-        ) -> InterceptedService<Self, F>
+        pub fn with_interceptor<F>(inner: T, interceptor: F) -> InterceptedService<Self, F>
         where
             F: tonic::service::Interceptor,
         {
@@ -303,16 +278,13 @@ pub mod agent_server {
                 "/core.v1.Agent/CreateIndex" => {
                     #[allow(non_camel_case_types)]
                     struct CreateIndexSvc<T: Agent>(pub Arc<T>);
-                    impl<
-                        T: Agent,
-                    > tonic::server::UnaryService<
-                        super::super::super::payload::v1::control::CreateIndexRequest,
-                    > for CreateIndexSvc<T> {
+                    impl<T: Agent>
+                        tonic::server::UnaryService<
+                            super::super::super::payload::v1::control::CreateIndexRequest,
+                        > for CreateIndexSvc<T>
+                    {
                         type Response = super::super::super::payload::v1::Empty;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<
@@ -320,9 +292,8 @@ pub mod agent_server {
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Agent>::create_index(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Agent>::create_index(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -351,26 +322,19 @@ pub mod agent_server {
                 "/core.v1.Agent/SaveIndex" => {
                     #[allow(non_camel_case_types)]
                     struct SaveIndexSvc<T: Agent>(pub Arc<T>);
-                    impl<
-                        T: Agent,
-                    > tonic::server::UnaryService<
-                        super::super::super::payload::v1::Empty,
-                    > for SaveIndexSvc<T> {
+                    impl<T: Agent>
+                        tonic::server::UnaryService<super::super::super::payload::v1::Empty>
+                        for SaveIndexSvc<T>
+                    {
                         type Response = super::super::super::payload::v1::Empty;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
-                            request: tonic::Request<
-                                super::super::super::payload::v1::Empty,
-                            >,
+                            request: tonic::Request<super::super::super::payload::v1::Empty>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Agent>::save_index(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Agent>::save_index(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -399,16 +363,13 @@ pub mod agent_server {
                 "/core.v1.Agent/CreateAndSaveIndex" => {
                     #[allow(non_camel_case_types)]
                     struct CreateAndSaveIndexSvc<T: Agent>(pub Arc<T>);
-                    impl<
-                        T: Agent,
-                    > tonic::server::UnaryService<
-                        super::super::super::payload::v1::control::CreateIndexRequest,
-                    > for CreateAndSaveIndexSvc<T> {
+                    impl<T: Agent>
+                        tonic::server::UnaryService<
+                            super::super::super::payload::v1::control::CreateIndexRequest,
+                        > for CreateAndSaveIndexSvc<T>
+                    {
                         type Response = super::super::super::payload::v1::Empty;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<
@@ -444,25 +405,19 @@ pub mod agent_server {
                     };
                     Box::pin(fut)
                 }
-                _ => {
-                    Box::pin(async move {
-                        let mut response = http::Response::new(
-                            tonic::body::Body::default(),
-                        );
-                        let headers = response.headers_mut();
-                        headers
-                            .insert(
-                                tonic::Status::GRPC_STATUS,
-                                (tonic::Code::Unimplemented as i32).into(),
-                            );
-                        headers
-                            .insert(
-                                http::header::CONTENT_TYPE,
-                                tonic::metadata::GRPC_CONTENT_TYPE,
-                            );
-                        Ok(response)
-                    })
-                }
+                _ => Box::pin(async move {
+                    let mut response = http::Response::new(tonic::body::Body::default());
+                    let headers = response.headers_mut();
+                    headers.insert(
+                        tonic::Status::GRPC_STATUS,
+                        (tonic::Code::Unimplemented as i32).into(),
+                    );
+                    headers.insert(
+                        http::header::CONTENT_TYPE,
+                        tonic::metadata::GRPC_CONTENT_TYPE,
+                    );
+                    Ok(response)
+                }),
             }
         }
     }
