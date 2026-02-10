@@ -510,7 +510,7 @@ impl PersistentQueue {
                 None => return Err(QueueError::NotFound(uuid_string)),
             };
 
-            let (vec, _): (Vec<f32>, _) = bincode::decode_from_slice(&value, BINCODE_CONFIG)?;
+            let vec = wincode::deserialize(&value)?;
             Ok((vec, ts))
         })
         .await?
@@ -759,9 +759,7 @@ impl Queue for PersistentQueue {
                                 continue;
                             }
                             // Decode the vector
-                            if let Ok((vec, _)) =
-                                bincode::decode_from_slice::<Vec<f32>, _>(&val, BINCODE_CONFIG)
-                            {
+                            if let Ok(vec) = wincode::deserialize(&val) {
                                 items.push((uuid, vec, its));
                             }
                         }
@@ -803,7 +801,7 @@ impl Queue for PersistentQueue {
             )
             .await?;
 
-        let (vec, _): (Vec<f32>, _) = bincode::decode_from_slice(&value_bytes, BINCODE_CONFIG)?;
+        let vec = wincode::deserialize(&value_bytes)?;
         Ok((vec, ts))
     }
 

@@ -23,7 +23,7 @@ use algorithm::{Error, MultiError, ANN};
 use anyhow::Result;
 use chrono::{Local, Timelike, Utc};
 use futures::StreamExt;
-use kvs::map::codec::BincodeCodec;
+use kvs::map::codec::WincodeCodec;
 use kvs::{BidirectionalMap, BidirectionalMapBuilder, MapBase};
 use proto::payload::v1::object::Distance;
 use proto::payload::v1::search;
@@ -42,7 +42,7 @@ pub struct QBGService {
     index: Index,
     property: Property,
     vq: vqueue::PersistentQueue,
-    kvs: Arc<BidirectionalMap<String, u32, BincodeCodec>>,
+    kvs: Arc<BidirectionalMap<String, u32, WincodeCodec>>,
     persistence: Option<PersistenceManager>,
     metrics_exporter: Option<MetricsExporter>,
     is_flushing: AtomicBool,

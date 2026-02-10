@@ -22,7 +22,7 @@
 
 use std::sync::Arc;
 
-use kvs::{map::codec::BincodeCodec, BidirectionalMap, MapBase};
+use kvs::{map::codec::WincodeCodec, BidirectionalMap, MapBase};
 use thiserror::Error;
 use vqueue::{Queue, QueueError};
 
@@ -64,7 +64,7 @@ pub enum MemstoreError {
 
 /// Type alias for the bidirectional map used in memstore.
 /// Maps UUID (String) to OID (u32).
-pub type KvsMap = BidirectionalMap<String, u32, BincodeCodec>;
+pub type KvsMap = BidirectionalMap<String, u32, WincodeCodec>;
 
 /// Checks if a UUID exists in the memstore (kvs + vqueue).
 ///
@@ -532,7 +532,7 @@ mod tests {
             paths: vec![kvs_path.clone(), vq_path.clone()],
         };
 
-        let kv = BidirectionalMapBuilder::<String, u32, BincodeCodec>::new(&kvs_path)
+        let kv = BidirectionalMapBuilder::<String, u32, WincodeCodec>::new(&kvs_path)
             .build()
             .await
             .unwrap();
