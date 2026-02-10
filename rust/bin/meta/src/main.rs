@@ -17,6 +17,7 @@
 mod config;
 mod handler;
 
+use anyhow::Result;
 use clap::Parser;
 use config::Config;
 use observability::observability::{Observability, ObservabilityImpl};
@@ -54,15 +55,15 @@ fn intercept(mut req: Request<()>) -> Result<Request<()>, tonic::Status> {
 #[command(author, version, about, long_about = None)]
 pub struct Args {
     /// Path to the configuration YAML file.
-    #[arg(short, long)]
+    #[arg(short, long, env = "META_CONFIG")]
     pub config: Option<String>,
 
     /// Path to the database directory. Overrides the value in the configuration file.
-    #[arg(short, long)]
+    #[arg(short, long, env = "META_DATABASE_PATH")]
     pub database_path: Option<String>,
 
     /// Address to bind the server to (e.g., "[::1]:8095"). Overrides the value in the configuration file.
-    #[arg(short, long)]
+    #[arg(short, long, env = "META_SERVER_ADDR")]
     pub server_addr: Option<String>,
 }
 
@@ -77,11 +78,13 @@ fn apply_args_to_config(config: &mut Config, args: &Args) {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> Result<()> {
     let args = Args::parse();
 
     let mut cfg = Config::load(args.config.as_deref())?;
     apply_args_to_config(&mut cfg, &args);
+
+    cfg.validate()?;
 
     let observability_cfg = cfg.observability.to_observability_config()?;
     let mut observability = ObservabilityImpl::new(observability_cfg)?;

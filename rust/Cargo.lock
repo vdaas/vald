@@ -3145,6 +3145,7 @@ dependencies = [
 name = "meta"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "clap",
  "defer",
  "kv",
@@ -3155,6 +3156,7 @@ dependencies = [
  "serde_yaml",
  "sled",
  "tempfile",
+ "thiserror 2.0.18",
  "tokio",
  "tonic",
 ]

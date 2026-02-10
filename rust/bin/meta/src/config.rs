@@ -15,11 +15,24 @@
 //
 
 use std::collections::HashMap;
-use std::error::Error;
 use std::fs::File;
+use std::path::Path;
 use std::time::Duration;
 
 use serde::Deserialize;
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum ConfigError {
+    #[error("failed to open config file: {0}")]
+    Io(#[from] std::io::Error),
+    #[error("failed to parse yaml config: {0}")]
+    Yaml(#[from] serde_yaml::Error),
+    #[error("invalid duration: nanos must be less than 1e9")]
+    InvalidDurationNanos,
+    #[error("invalid database path: {0}")]
+    InvalidDatabasePath(String),
+}
 
 #[derive(Debug, Clone, Deserialize, Default)]
 pub struct DurationConfig {
@@ -30,9 +43,9 @@ pub struct DurationConfig {
 }
 
 impl DurationConfig {
-    pub fn to_duration(&self) -> Result<Duration, Box<dyn Error>> {
+    pub fn to_duration(&self) -> Result<Duration, ConfigError> {
         if self.nanos >= 1_000_000_000 {
-            return Err("nanos must be less than 1e9".into());
+            return Err(ConfigError::InvalidDurationNanos);
         }
         Ok(Duration::new(self.secs, self.nanos))
     }
@@ -125,7 +138,7 @@ impl Default for Config {
 }
 
 impl Config {
-    pub fn load(path: Option<&str>) -> Result<Self, Box<dyn Error>> {
+    pub fn load(path: Option<&str>) -> Result<Self, ConfigError> {
         match path {
             Some(p) => {
                 let f = File::open(p)?;
@@ -135,11 +148,50 @@ impl Config {
             None => Ok(Config::default()),
         }
     }
+
+    pub fn validate(&self) -> Result<(), ConfigError> {
+        let path = Path::new(&self.database_path);
+
+        // If path exists, check if it's writable (implied by checking permissions usually,
+        // but checking metadata access is a basic check)
+        if path.exists() {
+            if let Ok(metadata) = std::fs::metadata(path) {
+                if metadata.permissions().readonly() {
+                    return Err(ConfigError::InvalidDatabasePath(format!(
+                        "path {} is read-only",
+                        self.database_path
+                    )));
+                }
+            } else {
+                return Err(ConfigError::InvalidDatabasePath(format!(
+                    "cannot access path {}",
+                    self.database_path
+                )));
+            }
+        } else {
+            // If path doesn't exist, check parent
+            if let Some(parent) = path.parent() {
+                if !parent.exists() {
+                    // In many cases we might create it, but let's at least check we can access the parent
+                    // Or just leave it to the application to fail later.
+                    // A simple validation is ensuring it's not empty.
+                }
+            }
+        }
+
+        if self.database_path.trim().is_empty() {
+            return Err(ConfigError::InvalidDatabasePath(
+                "database path cannot be empty".to_string(),
+            ));
+        }
+
+        Ok(())
+    }
 }
 
 // Conversion to internal observability types
 impl ObservabilityConfig {
-    pub fn to_observability_config(&self) -> Result<observability::config::Config, Box<dyn Error>> {
+    pub fn to_observability_config(&self) -> Result<observability::config::Config, ConfigError> {
         let mut cfg = observability::config::Config::new()
             .enabled(self.enabled)
             .endpoint(&self.endpoint)
@@ -207,5 +259,15 @@ observability:
         assert_eq!(cfg.database_path, "/var/lib/meta");
         assert!(cfg.observability.enabled);
         assert_eq!(cfg.observability.endpoint, "http://localhost:4317");
+    }
+
+    #[test]
+    fn test_validate() {
+        let mut cfg = Config::default();
+        cfg.database_path = "".to_string();
+        assert!(cfg.validate().is_err());
+
+        cfg.database_path = "/tmp/valid_path".to_string();
+        assert!(cfg.validate().is_ok());
     }
 }
