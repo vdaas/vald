@@ -212,6 +212,10 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 
 	log.Debugf("gRPC %s connection monitor started for %v", g.name, addrs)
 
+	el := len(addrs)
+	if el < 2 {
+		el = 2
+	}
 	ech := make(chan error, len(addrs))
 	for _, addr := range addrs {
 		if addr != "" {

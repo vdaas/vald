@@ -376,17 +376,20 @@ When `timestamp` is not set, the current time will be used.
 Vald provides four types of search services.
 
 1. Search
+
    - `Search` is the `ANN(Approximate Nearest Neighbor)` search with query vector.
      It is a fast search even though large dimension vector.
      The search duration is quick but less accurate than `LinearSearch`.
      The search algorithm depends on each core algorithm.
 
 1. SearchById
+
    - `SearchById` is the `ANN(Approximate Nearest Neighbor)` search with the stored vector's ID.
      The ID should already exist in the NGT indexes before the search process.
      The search algorithm is the same as `Search`.
 
 1. LinearSearch
+
    - `LinearSearch` is the most general search algorithm with a query vector.
      It searches all indexed vectors and calculates the distance between the query.
      It returns accurate results but requires more processing time than `Search` (ANN search) as it needs to calculate from all indexed vectors instead of only a subset of indexed vectors.

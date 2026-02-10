@@ -13,13 +13,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-pub mod core;
-pub mod discoverer;
-pub mod filter;
-pub mod google;
-pub mod meta;
-pub mod mirror;
-pub mod payload;
-pub mod rpc;
-pub mod sidecar;
-pub mod vald;
+pub mod google {
+    pub mod rpc {
+        pub type Status = tonic_types::Status;
+//        include!("rpc.v1.rs");
+    }
+}
+
+pub mod payload {
+    pub mod v1 {
+        include!("payload.v1.rs");
+    }
+}
+
+pub mod vald {
+    pub mod v1 {
+        include!("vald.v1.tonic.rs");
+    }
+}
+
+pub mod core {
+    pub mod v1 {
+        include!("core.v1.tonic.rs");
+    }
+}
+
+pub mod meta {
+    pub mod v1 {
+        include!("meta.v1.tonic.rs");
+    }
+}

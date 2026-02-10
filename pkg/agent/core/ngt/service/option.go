@@ -19,7 +19,6 @@ package service
 import (
 	"math"
 	"math/big"
-	stdrand "math/rand/v2"
 	"time"
 
 	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
@@ -27,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/os"
+	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
@@ -190,10 +190,7 @@ func WithInitialDelayMaxDuration(dur string) Option {
 			dbs = defaultDurationLimit
 		}
 
-		var rnd int64
-		if dbs > 0 {
-			rnd = int64(stdrand.N(uint32(dbs)))
-		}
+		rnd := int64(rand.LimitedUint32(uint64(dbs)))
 		brnd := big.NewInt(rnd)
 		if rnd <= 0 || bigMaxInt64.Cmp(brnd) <= 0 || bigMinInt64.Cmp(brnd) >= 0 {
 			rnd = defaultRandDuration

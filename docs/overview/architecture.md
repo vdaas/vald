@@ -52,6 +52,7 @@ Here are the concepts of Vald.
 - Kubernetes based
 
   Vald can integrate with Kubernetes which enables the following features.
+
   - Orchestrated
 
     Kubernetes supports container orchestration. All components in Vald can be managed by Kubernetes automatically.

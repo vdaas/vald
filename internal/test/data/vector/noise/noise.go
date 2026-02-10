@@ -20,11 +20,11 @@ package noise
 import (
 	"math"
 	"math/bits"
-	"math/rand/v2"
 	"slices"
 	"time"
 
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/rand"
 )
 
 type Func func(i uint64, vec []float32) (res []float32)

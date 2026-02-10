@@ -23,6 +23,7 @@ Vald ===> OpenTelemetry Collector  ====
    ```
 
 2. Deploy Jaeger and Prometheus to export traces and metrics from OpenTelemetry Collector.
+
    - Deploy Jaeger
 
    ```sh
@@ -42,6 +43,7 @@ Vald ===> OpenTelemetry Collector  ====
    ```
 
 4. Deploy OpenTelemetry Operator and Collector.
+
    - Deploy OpenTelemetry Operator
 
    ```sh
