@@ -136,7 +136,7 @@ jobs:
           git checkout go.mod go.sum ./example/client/go.mod ./example/client/go.sum ./rust/Cargo.lock ./rust/rust-toolchain.toml ./dockers
       - name: Check format and deps difference
         run: |
-          if git diff --quiet --exit-code; then
+          if git diff --quiet --exit-code -w; then
             echo "Nothing updated"
           else
             git diff
