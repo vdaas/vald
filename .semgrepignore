@@ -13,15 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-[package]
-name = "algorithm"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-anyhow = "1.0.101"
-faiss = { version = "0.1.0", path = "../algorithms/faiss" }
-ngt = { version = "0.1.0", path = "../algorithms/ngt" }
-qbg = { version = "0.1.0", path = "../algorithms/qbg" }
-proto = { version = "0.1.0", path = "../proto" }
-tonic = "0.14.3"
+vendor/
+**/*_test.go
+**/*.pb.go
+**/*.pb.gw.go
+**/*.pb.json.go
+**/*_vtproto.pb.go
+**/*.tonic.rs
+**/*.serde.rs
