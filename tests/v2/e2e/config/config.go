@@ -60,9 +60,9 @@ type Data struct {
 	Kubernetes          *Kubernetes           `json:"kubernetes,omitempty"      yaml:"kubernetes,omitempty"`
 	Metrics             *Metrics              `json:"metrics,omitempty"         yaml:"metrics,omitempty"`
 	Metadata            map[string]string     `json:"metadata,omitempty"        yaml:"metadata,omitempty"`
-	MetaString          string                `json:"metadata_string,omitempty" yaml:"metadata_string,omitempty"`
-	FilePath            string                `json:"-"                         yaml:"-"`
-	Collector           metrics.Collector     `json:"-"                         yaml:"-"`
+	MetaString          string             `json:"metadata_string,omitempty" yaml:"metadata_string,omitempty"`
+	FilePath            string             `json:"-"                         yaml:"-"`
+	Collector           metrics.Collector  `json:"-"                         yaml:"-"`
 }
 
 // Metrics represents the configuration for the metrics collector.

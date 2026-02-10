@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 package grpc
 
 import (
@@ -73,11 +71,7 @@ func (s *server) Insert(
 		return nil, err
 	}
 
-	ts := vec.GetTimestamp()
-	if ts == 0 {
-		ts = req.GetConfig().GetTimestamp()
-	}
-	err = s.ngt.InsertWithTime(vec.GetId(), vec.GetVector(), ts)
+	err = s.ngt.InsertWithTime(vec.GetId(), vec.GetVector(), req.GetConfig().GetTimestamp())
 	if err != nil {
 		var attrs []attribute.KeyValue
 		if errors.Is(err, errors.ErrFlushingIsInProgress) {
@@ -209,15 +203,8 @@ func (s *server) MultiInsert(
 	}()
 	uuids := make([]string, 0, len(reqs.GetRequests()))
 	vmap := make(map[string][]float32, len(reqs.GetRequests()))
-	var ts int64
-	for i, req := range reqs.GetRequests() {
+	for _, req := range reqs.GetRequests() {
 		vec := req.GetVector()
-		if i == 0 {
-			ts = vec.GetTimestamp()
-			if ts == 0 {
-				ts = req.GetConfig().GetTimestamp()
-			}
-		}
 		if len(vec.GetVector()) != s.ngt.GetDimensionSize() {
 			err = errors.ErrIncompatibleDimensionSize(len(vec.GetVector()), int(s.ngt.GetDimensionSize()))
 			err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
@@ -249,11 +236,7 @@ func (s *server) MultiInsert(
 		vmap[vec.GetId()] = vec.GetVector()
 		uuids = append(uuids, vec.GetId())
 	}
-	if ts != 0 {
-		err = s.ngt.InsertMultipleWithTime(vmap, ts)
-	} else {
-		err = s.ngt.InsertMultiple(vmap)
-	}
+	err = s.ngt.InsertMultiple(vmap)
 	if err != nil {
 		var attrs []attribute.KeyValue
 		if errors.Is(err, errors.ErrFlushingIsInProgress) {

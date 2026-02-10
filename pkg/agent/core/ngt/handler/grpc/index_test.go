@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 package grpc
 
 import (
@@ -631,7 +629,11 @@ func Test_server_SaveIndex(t *testing.T) {
 				return err
 			}
 
-			if !reflect.DeepEqual(obj, ir.GetVector()) {
+			// FIXME: remove these 2 lines after migrating Config.Timestamp to Vector.Timestamp
+			wantVec := ir.GetVector()
+			wantVec.Timestamp = obj.Timestamp
+
+			if !reflect.DeepEqual(obj, wantVec) {
 				return errors.Errorf("vector is not match, got: %v, want: %v", obj, ir)
 			}
 		}
@@ -673,10 +675,6 @@ func Test_server_SaveIndex(t *testing.T) {
 			irs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, 1, dim, nil)
 			if err != nil {
 				t.Error(err)
-			}
-			ts := time.Now().UnixNano()
-			for _, req := range irs.GetRequests() {
-				req.GetVector().Timestamp = ts
 			}
 
 			return test{
@@ -721,10 +719,6 @@ func Test_server_SaveIndex(t *testing.T) {
 			irs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, 100, dim, nil)
 			if err != nil {
 				t.Error(err)
-			}
-			ts := time.Now().UnixNano()
-			for _, req := range irs.GetRequests() {
-				req.GetVector().Timestamp = ts
 			}
 
 			return test{
@@ -771,10 +765,6 @@ func Test_server_SaveIndex(t *testing.T) {
 			irs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, dim, nil)
 			if err != nil {
 				t.Error(err)
-			}
-			ts := time.Now().UnixNano()
-			for _, req := range irs.GetRequests() {
-				req.GetVector().Timestamp = ts
 			}
 
 			return test{
@@ -1173,6 +1163,10 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 				return err
 			}
 
+			// FIXME: remove these 2 lines after migrating Config.Timestamp to Vector.Timestamp
+			wantVec := ir.GetVector()
+			wantVec.Timestamp = obj.Timestamp
+
 			if !reflect.DeepEqual(obj, ir.GetVector()) {
 				return errors.Errorf("vector is not match, got: %v, want: %v", obj, ir)
 			}
@@ -1242,10 +1236,6 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 					if ir, err = request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig); err != nil {
 						t.Error(err)
 					}
-					ts := time.Now().UnixNano()
-					for _, req := range ir.GetRequests() {
-						req.GetVector().Timestamp = ts
-					}
 					if _, err := s.MultiInsert(ctx, ir); err != nil {
 						t.Error(err)
 					}
@@ -1283,10 +1273,6 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 					var err error
 					if ir, err = request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig); err != nil {
 						t.Error(err)
-					}
-					ts := time.Now().UnixNano()
-					for _, req := range ir.GetRequests() {
-						req.GetVector().Timestamp = ts
 					}
 					if _, err := s.MultiInsert(ctx, ir); err != nil {
 						t.Error(err)
@@ -1647,10 +1633,6 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 					var err error
 					if ir, err = request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig); err != nil {
 						t.Error(err)
-					}
-					ts := time.Now().UnixNano()
-					for _, req := range ir.GetRequests() {
-						req.GetVector().Timestamp = ts
 					}
 					if _, err := s.MultiInsert(ctx, ir); err != nil {
 						t.Error(err)
