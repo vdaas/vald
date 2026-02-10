@@ -32,6 +32,7 @@ runs:
       with:
         image-ref: ${{ inputs.image_ref }}
         format: "table"
+        trivy-config: "${{ github.workspace }}/trivy.yaml"
         severity: ${{ inputs.severity }}
         timeout: 30m
     - name: Run vulnerability scanner (sarif)
@@ -40,6 +41,7 @@ runs:
         image-ref: ${{ inputs.image_ref }}
         format: "sarif"
         output: "trivy-results.sarif"
+        trivy-config: "${{ github.workspace }}/trivy.yaml"
         severity: ${{ inputs.severity }}
         timeout: 30m
     - name: Upload Trivy scan results to Security tab
