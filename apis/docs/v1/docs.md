@@ -147,6 +147,7 @@
   - [RetryInfo](#rpc-v1-RetryInfo)
 - [v1/rpc/stats/stats.proto](#v1_rpc_stats_stats-proto)
   - [Stats](#rpc-v1-Stats)
+  - [StatsDetail](#rpc-v1-StatsDetail)
 - [v1/vald/filter.proto](#v1_vald_filter-proto)
   - [Filter](#vald-v1-Filter)
 - [v1/vald/flush.proto](#v1_vald_flush-proto)
@@ -161,8 +162,6 @@
   - [Remove](#vald-v1-Remove)
 - [v1/vald/search.proto](#v1_vald_search-proto)
   - [Search](#vald-v1-Search)
-- [v1/vald/stats.proto](#v1_vald_stats-proto)
-  - [Stats](#vald-v1-Stats)
 - [v1/vald/update.proto](#v1_vald_update-proto)
   - [Update](#vald-v1-Update)
 - [v1/vald/upsert.proto](#v1_vald_upsert-proto)
@@ -1708,6 +1707,16 @@ Represent the resource stats service.
 | ------------- | -------------------------------------- | ---------------------------------------------------------------------------- | -------------------------------------------- |
 | ResourceStats | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Stats.ResourceStats](#payload-v1-Info-Stats-ResourceStats) | Represent the RPC to get the resource stats. |
 
+<a name="rpc-v1-StatsDetail"></a>
+
+### StatsDetail
+
+Represent the resource stats detail service.
+
+| Method Name         | Request Type                           | Response Type                                                                            | Description                                                  |
+| ------------------- | -------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| ResourceStatsDetail | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Stats.ResourceStatsDetail](#payload-v1-Info-Stats-ResourceStatsDetail) | Represent the RPC to get the resource stats for each agents. |
+
 <a name="v1_vald_filter-proto"></a>
 
 <p align="right"><a href="#top">Top</a></p>
@@ -1977,23 +1986,6 @@ Here are some common reasons and how to resolve each error.
 Here are some common reasons and how to resolve each error.
 
 | name | common reason | how to resolve | | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- | | CANCELLED | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed. | | INVALID_ARGUMENT | The Requested vector&#39;s ID is empty, or some request payload is invalid. | Check request payload and fix request payload. | | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side. | Check the gRPC timeout setting on both the client and server sides and fix it if needed. | | NOT_FOUND | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value. | | INTERNAL | Target Vald cluster or network route has some critical error. | Check target Vald cluster first and check network route including ingress as second. | |
-
-<a name="v1_vald_stats-proto"></a>
-
-<p align="right"><a href="#top">Top</a></p>
-
-## v1/vald/stats.proto
-
-<a name="vald-v1-Stats"></a>
-
-### Stats
-
-Overview
-Represent the resource stats service for gateway.
-
-| Method Name         | Request Type                           | Response Type                                                                            | Description                                                           |
-| ------------------- | -------------------------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| ResourceStatsDetail | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Stats.ResourceStatsDetail](#payload-v1-Info-Stats-ResourceStatsDetail) | Overview Represent the RPC to get the resource stats for each agents. |
 
 <a name="v1_vald_update-proto"></a>
 

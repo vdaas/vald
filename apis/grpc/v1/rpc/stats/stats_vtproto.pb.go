@@ -130,3 +130,96 @@ var Stats_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "v1/rpc/stats/stats.proto",
 }
+
+// StatsDetailClient is the client API for StatsDetail service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type StatsDetailClient interface {
+	// Represent the RPC to get the resource stats for each agents.
+	ResourceStatsDetail(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Stats_ResourceStatsDetail, error)
+}
+
+type statsDetailClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewStatsDetailClient(cc grpc.ClientConnInterface) StatsDetailClient {
+	return &statsDetailClient{cc}
+}
+
+func (c *statsDetailClient) ResourceStatsDetail(
+	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
+) (*payload.Info_Stats_ResourceStatsDetail, error) {
+	out := new(payload.Info_Stats_ResourceStatsDetail)
+	err := c.cc.Invoke(ctx, "/rpc.v1.StatsDetail/ResourceStatsDetail", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// StatsDetailServer is the server API for StatsDetail service.
+// All implementations must embed UnimplementedStatsDetailServer
+// for forward compatibility
+type StatsDetailServer interface {
+	// Represent the RPC to get the resource stats for each agents.
+	ResourceStatsDetail(context.Context, *payload.Empty) (*payload.Info_Stats_ResourceStatsDetail, error)
+	mustEmbedUnimplementedStatsDetailServer()
+}
+
+// UnimplementedStatsDetailServer must be embedded to have forward compatible implementations.
+type UnimplementedStatsDetailServer struct{}
+
+func (UnimplementedStatsDetailServer) ResourceStatsDetail(
+	context.Context, *payload.Empty,
+) (*payload.Info_Stats_ResourceStatsDetail, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResourceStatsDetail not implemented")
+}
+func (UnimplementedStatsDetailServer) mustEmbedUnimplementedStatsDetailServer() {}
+
+// UnsafeStatsDetailServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to StatsDetailServer will
+// result in compilation errors.
+type UnsafeStatsDetailServer interface {
+	mustEmbedUnimplementedStatsDetailServer()
+}
+
+func RegisterStatsDetailServer(s grpc.ServiceRegistrar, srv StatsDetailServer) {
+	s.RegisterService(&StatsDetail_ServiceDesc, srv)
+}
+
+func _StatsDetail_ResourceStatsDetail_Handler(
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
+	in := new(payload.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StatsDetailServer).ResourceStatsDetail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rpc.v1.StatsDetail/ResourceStatsDetail",
+	}
+	handler := func(ctx context.Context, req any) (any, error) {
+		return srv.(StatsDetailServer).ResourceStatsDetail(ctx, req.(*payload.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// StatsDetail_ServiceDesc is the grpc.ServiceDesc for StatsDetail service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var StatsDetail_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "rpc.v1.StatsDetail",
+	HandlerType: (*StatsDetailServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ResourceStatsDetail",
+			Handler:    _StatsDetail_ResourceStatsDetail_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "v1/rpc/stats/stats.proto",
+}

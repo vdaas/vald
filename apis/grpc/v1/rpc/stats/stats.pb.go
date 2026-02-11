@@ -45,19 +45,24 @@ const file_v1_rpc_stats_stats_proto_rawDesc = "" +
 	"\n" +
 	"\x18v1/rpc/stats/stats.proto\x12\x06rpc.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x18v1/payload/payload.proto2j\n" +
 	"\x05Stats\x12a\n" +
-	"\rResourceStats\x12\x11.payload.v1.Empty\x1a$.payload.v1.Info.Stats.ResourceStats\"\x17\x82\xd3\xe4\x93\x02\x11\x12\x0f/resource/statsB]\n" +
+	"\rResourceStats\x12\x11.payload.v1.Empty\x1a$.payload.v1.Info.Stats.ResourceStats\"\x17\x82\xd3\xe4\x93\x02\x11\x12\x0f/resource/stats2\x83\x01\n" +
+	"\vStatsDetail\x12t\n" +
+	"\x13ResourceStatsDetail\x12\x11.payload.v1.Empty\x1a*.payload.v1.Info.Stats.ResourceStatsDetail\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/resource/stats/detailB]\n" +
 	"\x19org.vdaas.vald.api.v1.rpcB\n" +
 	"StatsProtoP\x01Z,github.com/vdaas/vald/apis/grpc/v1/rpc/stats\xa2\x02\x03RPCb\x06proto3"
 
 var file_v1_rpc_stats_stats_proto_goTypes = []any{
-	(*payload.Empty)(nil),                    // 0: payload.v1.Empty
-	(*payload.Info_Stats_ResourceStats)(nil), // 1: payload.v1.Info.Stats.ResourceStats
+	(*payload.Empty)(nil),                          // 0: payload.v1.Empty
+	(*payload.Info_Stats_ResourceStats)(nil),       // 1: payload.v1.Info.Stats.ResourceStats
+	(*payload.Info_Stats_ResourceStatsDetail)(nil), // 2: payload.v1.Info.Stats.ResourceStatsDetail
 }
 var file_v1_rpc_stats_stats_proto_depIdxs = []int32{
 	0, // 0: rpc.v1.Stats.ResourceStats:input_type -> payload.v1.Empty
-	1, // 1: rpc.v1.Stats.ResourceStats:output_type -> payload.v1.Info.Stats.ResourceStats
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
+	0, // 1: rpc.v1.StatsDetail.ResourceStatsDetail:input_type -> payload.v1.Empty
+	1, // 2: rpc.v1.Stats.ResourceStats:output_type -> payload.v1.Info.Stats.ResourceStats
+	2, // 3: rpc.v1.StatsDetail.ResourceStatsDetail:output_type -> payload.v1.Info.Stats.ResourceStatsDetail
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -76,7 +81,7 @@ func file_v1_rpc_stats_stats_proto_init() {
 			NumEnums:      0,
 			NumMessages:   0,
 			NumExtensions: 0,
-			NumServices:   1,
+			NumServices:   2,
 		},
 		GoTypes:           file_v1_rpc_stats_stats_proto_goTypes,
 		DependencyIndexes: file_v1_rpc_stats_stats_proto_depIdxs,

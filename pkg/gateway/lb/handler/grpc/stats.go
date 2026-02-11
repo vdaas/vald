@@ -35,13 +35,15 @@ import (
 )
 
 const (
-	ResourceStatsDetailRPCName = vald.ResourceStatsDetailRPCName
+	StatsDetailRPCServiceName   = "StatsDetail"
+	ResourceStatsDetailRPCName  = "ResourceStatsDetail"
+	resourceStatsDetailRPCScope = "/rpc.v1." + StatsDetailRPCServiceName + "." + ResourceStatsDetailRPCName
 )
 
 func (s *server) ResourceStatsDetail(
 	ctx context.Context, _ *payload.Empty,
 ) (detail *payload.Info_Stats_ResourceStatsDetail, err error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.StatsRPCServiceName+"/"+ResourceStatsDetailRPCName), apiName+"/"+ResourceStatsDetailRPCName)
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "rpc.v1."+StatsDetailRPCServiceName+"/"+ResourceStatsDetailRPCName), apiName+"/"+ResourceStatsDetailRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -75,20 +77,20 @@ func (s *server) ResourceStatsDetail(
 					errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
 					attrs = trace.StatusCodeCancelled(
 						errdetails.ValdGRPCResourceTypePrefix +
-							"/rpc.v1." + ResourceStatsDetailRPCName + ".BroadCast/" +
+							resourceStatsDetailRPCScope + ".BroadCast/" +
 							target + " canceled: " + err.Error())
 					code = codes.Canceled
 				case errors.Is(err, context.DeadlineExceeded),
 					errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
 					attrs = trace.StatusCodeDeadlineExceeded(
 						errdetails.ValdGRPCResourceTypePrefix +
-							"/rpc.v1." + ResourceStatsDetailRPCName + ".BroadCast/" +
+							resourceStatsDetailRPCScope + ".BroadCast/" +
 							target + " deadline_exceeded: " + err.Error())
 					code = codes.DeadlineExceeded
 				default:
 					st, msg, err = status.ParseError(err, codes.NotFound, "error "+ResourceStatsDetailRPCName+" API",
 						&errdetails.ResourceInfo{
-							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/rpc.v1." + ResourceStatsDetailRPCName + ".BroadCast/" + target,
+							ResourceType: errdetails.ValdGRPCResourceTypePrefix + resourceStatsDetailRPCScope + ".BroadCast/" + target,
 							ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
 						})
 					if st != nil {
@@ -130,7 +132,7 @@ func (s *server) ResourceStatsDetail(
 	}
 	if err != nil {
 		resInfo := &errdetails.ResourceInfo{
-			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/rpc.v1." + ResourceStatsDetailRPCName,
+			ResourceType: errdetails.ValdGRPCResourceTypePrefix + resourceStatsDetailRPCScope,
 			ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
 		}
 		var attrs trace.Attributes

@@ -29,7 +29,6 @@ type Server interface {
 	ObjectServer
 	RemoveServer
 	SearchServer
-	StatsServer
 	UpdateServer
 	UpsertServer
 }
@@ -46,7 +45,6 @@ type UnimplementedValdServer struct {
 	UnimplementedObjectServer
 	UnimplementedRemoveServer
 	UnimplementedSearchServer
-	UnimplementedStatsServer
 	UnimplementedUpdateServer
 	UnimplementedUpsertServer
 }
@@ -63,7 +61,6 @@ type Client interface {
 	ObjectClient
 	RemoveClient
 	SearchClient
-	StatsClient
 	stats.StatsClient
 	UpdateClient
 	UpsertClient
@@ -84,7 +81,6 @@ const (
 	ObjectRPCServiceName = "Object"
 	RemoveRPCServiceName = "Remove"
 	SearchRPCServiceName = "Search"
-	StatsRPCServiceName  = "Stats"
 	UpdateRPCServiceName = "Update"
 	UpsertRPCServiceName = "Upsert"
 )
@@ -149,8 +145,6 @@ const (
 	IndexStatisticsRPCName       = "IndexStatistics"
 	IndexStatisticsDetailRPCName = "IndexStatisticsDetail"
 	IndexPropertyRPCName         = "IndexProperty"
-
-	ResourceStatsDetailRPCName = "ResourceStatsDetail"
 )
 
 type client struct {
@@ -160,7 +154,6 @@ type client struct {
 	ObjectClient
 	RemoveClient
 	SearchClient
-	StatsClient
 	stats.StatsClient
 	UpdateClient
 	UpsertClient
@@ -173,7 +166,6 @@ func RegisterValdServer(s *grpc.Server, srv Server) {
 	RegisterObjectServer(s, srv)
 	RegisterRemoveServer(s, srv)
 	RegisterSearchServer(s, srv)
-	RegisterStatsServer(s, srv)
 	RegisterUpdateServer(s, srv)
 	RegisterUpsertServer(s, srv)
 }
@@ -191,7 +183,7 @@ func NewValdClient(conn *grpc.ClientConn) Client {
 		ObjectClient: NewObjectClient(conn),
 		RemoveClient: NewRemoveClient(conn),
 		SearchClient: NewSearchClient(conn),
-		StatsClient:  NewStatsClient(conn),
+		StatsClient:  stats.NewStatsClient(conn),
 		UpdateClient: NewUpdateClient(conn),
 		UpsertClient: NewUpsertClient(conn),
 	}

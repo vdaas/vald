@@ -44,7 +44,8 @@ type singleClient struct {
 }
 
 const (
-	apiName = "vald/internal/client/v1/client/vald"
+	apiName              = "vald/internal/client/v1/client/vald"
+	resourceStatsRPCName = "ResourceStats"
 )
 
 func New(opts ...Option) (Client, error) {
@@ -857,10 +858,10 @@ func (c *client) GetTimestamp(
 	return res, nil
 }
 
-func (c *client) ResourceStatsDetail(
+func (c *client) ResourceStats(
 	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
-) (res *payload.Info_Stats_ResourceStatsDetail, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.ResourceStatsDetailRPCName), apiName+"/"+vald.ResourceStatsDetailRPCName)
+) (res *payload.Info_Stats_ResourceStats, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+resourceStatsRPCName), apiName+"/"+resourceStatsRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -869,8 +870,8 @@ func (c *client) ResourceStatsDetail(
 	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (*payload.Info_Stats_ResourceStatsDetail, error) {
-		return vald.NewValdClient(conn).ResourceStatsDetail(ctx, in, append(copts, opts...)...)
+	) (*payload.Info_Stats_ResourceStats, error) {
+		return vald.NewValdClient(conn).ResourceStats(ctx, in, append(copts, opts...)...)
 	})
 	if err != nil {
 		return nil, err
@@ -1334,14 +1335,14 @@ func (c *singleClient) GetTimestamp(
 	return c.vc.GetTimestamp(ctx, in, opts...)
 }
 
-func (c *singleClient) ResourceStatsDetail(
+func (c *singleClient) ResourceStats(
 	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
-) (res *payload.Info_Stats_ResourceStatsDetail, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.ResourceStatsDetailRPCName), apiName+"/"+vald.ResourceStatsDetailRPCName)
+) (res *payload.Info_Stats_ResourceStats, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+resourceStatsRPCName), apiName+"/"+resourceStatsRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	return c.vc.ResourceStatsDetail(ctx, in, opts...)
+	return c.vc.ResourceStats(ctx, in, opts...)
 }

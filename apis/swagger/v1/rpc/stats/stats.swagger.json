@@ -7,6 +7,9 @@
   "tags": [
     {
       "name": "Stats"
+    },
+    {
+      "name": "StatsDetail"
     }
   ],
   "consumes": ["application/json"],
@@ -31,6 +34,27 @@
           }
         },
         "tags": ["Stats"]
+      }
+    },
+    "/resource/stats/detail": {
+      "get": {
+        "summary": "Represent the RPC to get the resource stats for each agents.",
+        "operationId": "StatsDetail_ResourceStatsDetail",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/InfoStatsResourceStatsDetail"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": ["StatsDetail"]
       }
     }
   },
@@ -59,6 +83,18 @@
           "title": "Memory usage in bytes"
         }
       }
+    },
+    "InfoStatsResourceStatsDetail": {
+      "type": "object",
+      "properties": {
+        "details": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/v1InfoStatsResourceStats"
+          }
+        }
+      },
+      "title": "Represents the resource stats for each Agents"
     },
     "protobufAny": {
       "type": "object",
