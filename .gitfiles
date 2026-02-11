@@ -13,16 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-pkg/agent/core/faiss/handler/grpc/stats.go
-pkg/agent/core/ngt/handler/grpc/stats.go
-rust/libs/proto/src/core/v1/core.v1.rs
-rust/libs/proto/src/discoverer/v1/discoverer.v1.rs
-rust/libs/proto/src/filter/egress/v1/filter.egress.v1.rs
-rust/libs/proto/src/filter/ingress/v1/filter.ingress.v1.rs
-rust/libs/proto/src/meta/v1/meta.v1.rs
-rust/libs/proto/src/mirror/v1/mirror.v1.rs
-rust/libs/proto/src/sidecar/v1/sidecar.v1.rs
-rust/libs/proto/src/vald/v1/vald.v1.rs
 .all-contributorsrc
 .coderabbit.yaml
 .commit_template
@@ -1842,6 +1832,7 @@ pkg/agent/core/faiss/handler/grpc/remove.go
 pkg/agent/core/faiss/handler/grpc/remove_test.go
 pkg/agent/core/faiss/handler/grpc/search.go
 pkg/agent/core/faiss/handler/grpc/search_test.go
+pkg/agent/core/faiss/handler/grpc/stats.go
 pkg/agent/core/faiss/handler/grpc/update.go
 pkg/agent/core/faiss/handler/grpc/update_test.go
 pkg/agent/core/faiss/handler/grpc/upsert.go
@@ -1890,6 +1881,7 @@ pkg/agent/core/ngt/handler/grpc/remove.go
 pkg/agent/core/ngt/handler/grpc/remove_test.go
 pkg/agent/core/ngt/handler/grpc/search.go
 pkg/agent/core/ngt/handler/grpc/search_test.go
+pkg/agent/core/ngt/handler/grpc/stats.go
 pkg/agent/core/ngt/handler/grpc/update.go
 pkg/agent/core/ngt/handler/grpc/update_test.go
 pkg/agent/core/ngt/handler/grpc/upsert.go

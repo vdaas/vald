@@ -59,7 +59,19 @@
     }
   },
   "definitions": {
-    "InfoStatsCgroupStats": {
+    "InfoStatsResourceStatsDetail": {
+      "type": "object",
+      "properties": {
+        "details": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/v1InfoStatsResourceStats"
+          }
+        }
+      },
+      "title": "Represents the resource stats for each Agents"
+    },
+    "StatsCgroupStats": {
       "type": "object",
       "properties": {
         "cpuLimitCores": {
@@ -83,18 +95,6 @@
           "title": "Memory usage in bytes"
         }
       }
-    },
-    "InfoStatsResourceStatsDetail": {
-      "type": "object",
-      "properties": {
-        "details": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/v1InfoStatsResourceStats"
-          }
-        }
-      },
-      "title": "Represents the resource stats for each Agents"
     },
     "protobufAny": {
       "type": "object",
@@ -140,7 +140,7 @@
           "type": "string"
         },
         "cgroupStats": {
-          "$ref": "#/definitions/InfoStatsCgroupStats",
+          "$ref": "#/definitions/StatsCgroupStats",
           "title": "Container resource usage statistics"
         }
       },
