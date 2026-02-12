@@ -38,7 +38,7 @@
     },
     "/resource/stats/detail": {
       "get": {
-        "summary": "Represent the RPC to get the resource stats for each agents.",
+        "summary": "Represent the RPC to get the resource stats for each agent.",
         "operationId": "StatsDetail_ResourceStatsDetail",
         "responses": {
           "200": {
@@ -69,7 +69,7 @@
           }
         }
       },
-      "title": "Represents the resource stats for each Agents"
+      "title": "Represents the resource stats for each agent"
     },
     "StatsCgroupStats": {
       "type": "object",

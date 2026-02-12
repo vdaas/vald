@@ -37,7 +37,7 @@ service Stats {
 
 // Represent the resource stats detail service.
 service StatsDetail {
-  // Represent the RPC to get the resource stats for each agents.
+  // Represent the RPC to get the resource stats for each agent.
   rpc ResourceStatsDetail(payload.v1.Empty) returns (payload.v1.Info.Stats.ResourceStatsDetail) {
     option (google.api.http).get = "/resource/stats/detail";
   }

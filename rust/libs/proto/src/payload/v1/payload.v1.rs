@@ -1736,7 +1736,7 @@ pub mod info {
                 "/payload.v1.Info.Stats.ResourceStats".into()
             }
         }
-        /// Represents the resource stats for each Agents
+        /// Represents the resource stats for each agent
         #[derive(Clone, PartialEq, ::prost::Message)]
         pub struct ResourceStatsDetail {
             #[prost(map = "string, message", tag = "1")]

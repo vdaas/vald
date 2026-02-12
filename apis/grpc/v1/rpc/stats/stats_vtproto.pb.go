@@ -135,7 +135,7 @@ var Stats_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StatsDetailClient interface {
-	// Represent the RPC to get the resource stats for each agents.
+	// Represent the RPC to get the resource stats for each agent.
 	ResourceStatsDetail(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Stats_ResourceStatsDetail, error)
 }
 
@@ -162,7 +162,7 @@ func (c *statsDetailClient) ResourceStatsDetail(
 // All implementations must embed UnimplementedStatsDetailServer
 // for forward compatibility
 type StatsDetailServer interface {
-	// Represent the RPC to get the resource stats for each agents.
+	// Represent the RPC to get the resource stats for each agent.
 	ResourceStatsDetail(context.Context, *payload.Empty) (*payload.Info_Stats_ResourceStatsDetail, error)
 	mustEmbedUnimplementedStatsDetailServer()
 }

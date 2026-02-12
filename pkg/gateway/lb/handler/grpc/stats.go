@@ -35,15 +35,18 @@ import (
 )
 
 const (
-	StatsDetailRPCServiceName   = "StatsDetail"
-	ResourceStatsDetailRPCName  = "ResourceStatsDetail"
-	resourceStatsDetailRPCScope = "/rpc.v1." + StatsDetailRPCServiceName + "." + ResourceStatsDetailRPCName
+	statsPackageName           = "rpc.v1"
+	statsDetailRPCServiceName  = "StatsDetail"
+	resourceStatsDetailRPCName = "ResourceStatsDetail"
 )
 
 func (s *server) ResourceStatsDetail(
 	ctx context.Context, _ *payload.Empty,
 ) (detail *payload.Info_Stats_ResourceStatsDetail, err error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "rpc.v1."+StatsDetailRPCServiceName+"/"+ResourceStatsDetailRPCName), apiName+"/"+ResourceStatsDetailRPCName)
+	ctx, span := trace.StartSpan(
+		grpc.WithGRPCMethod(ctx, statsPackageName+"."+statsDetailRPCServiceName+"/"+resourceStatsDetailRPCName),
+		apiName+"/"+resourceStatsDetailRPCName,
+	)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -57,7 +60,7 @@ func (s *server) ResourceStatsDetail(
 	s.eg.Go(safety.RecoverFunc(func() error {
 		defer close(ech)
 		ech <- s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
-			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+ResourceStatsDetailRPCName+"/"+target)
+			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+resourceStatsDetailRPCName+"/"+target)
 			defer func() {
 				if sspan != nil {
 					sspan.End()
@@ -77,20 +80,20 @@ func (s *server) ResourceStatsDetail(
 					errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
 					attrs = trace.StatusCodeCancelled(
 						errdetails.ValdGRPCResourceTypePrefix +
-							resourceStatsDetailRPCScope + ".BroadCast/" +
+							"/" + statsPackageName + "." + resourceStatsDetailRPCName + ".BroadCast/" +
 							target + " canceled: " + err.Error())
 					code = codes.Canceled
 				case errors.Is(err, context.DeadlineExceeded),
 					errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
 					attrs = trace.StatusCodeDeadlineExceeded(
 						errdetails.ValdGRPCResourceTypePrefix +
-							resourceStatsDetailRPCScope + ".BroadCast/" +
+							"/" + statsPackageName + "." + resourceStatsDetailRPCName + ".BroadCast/" +
 							target + " deadline_exceeded: " + err.Error())
 					code = codes.DeadlineExceeded
 				default:
-					st, msg, err = status.ParseError(err, codes.NotFound, "error "+ResourceStatsDetailRPCName+" API",
+					st, msg, err = status.ParseError(err, codes.NotFound, "error "+resourceStatsDetailRPCName+" API",
 						&errdetails.ResourceInfo{
-							ResourceType: errdetails.ValdGRPCResourceTypePrefix + resourceStatsDetailRPCScope + ".BroadCast/" + target,
+							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/" + statsPackageName + "." + resourceStatsDetailRPCName + ".BroadCast/" + target,
 							ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
 						})
 					if st != nil {
@@ -132,19 +135,19 @@ func (s *server) ResourceStatsDetail(
 	}
 	if err != nil {
 		resInfo := &errdetails.ResourceInfo{
-			ResourceType: errdetails.ValdGRPCResourceTypePrefix + resourceStatsDetailRPCScope,
+			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/" + statsPackageName + "." + resourceStatsDetailRPCName,
 			ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
 		}
 		var attrs trace.Attributes
 		switch {
 		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
-			err = status.WrapWithInternal(ResourceStatsDetailRPCName+" API connection not found", err, resInfo)
+			err = status.WrapWithInternal(resourceStatsDetailRPCName+" API connection not found", err, resInfo)
 			attrs = trace.StatusCodeInternal(err.Error())
 		case errors.Is(err, context.Canceled):
-			err = status.WrapWithCanceled(ResourceStatsDetailRPCName+" API canceled", err, resInfo)
+			err = status.WrapWithCanceled(resourceStatsDetailRPCName+" API canceled", err, resInfo)
 			attrs = trace.StatusCodeCancelled(err.Error())
 		case errors.Is(err, context.DeadlineExceeded):
-			err = status.WrapWithDeadlineExceeded(ResourceStatsDetailRPCName+" API deadline exceeded", err, resInfo)
+			err = status.WrapWithDeadlineExceeded(resourceStatsDetailRPCName+" API deadline exceeded", err, resInfo)
 			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 		default:
 			st, _ := status.FromError(err)

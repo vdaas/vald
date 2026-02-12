@@ -659,7 +659,7 @@ message Info {
       CgroupStats cgroup_stats = 3;
     }
 
-    // Represents the resource stats for each Agents
+    // Represents the resource stats for each agent
     message ResourceStatsDetail {
       map<string, ResourceStats> details = 1;
     }

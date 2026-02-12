@@ -391,7 +391,7 @@ pub mod stats_detail_client {
             self.inner = self.inner.max_encoding_message_size(limit);
             self
         }
-        /** Represent the RPC to get the resource stats for each agents.
+        /** Represent the RPC to get the resource stats for each agent.
          */
         pub async fn resource_stats_detail(
             &mut self,
@@ -426,7 +426,7 @@ pub mod stats_detail_server {
     /// Generated trait containing gRPC methods that should be implemented for use with StatsDetailServer.
     #[async_trait]
     pub trait StatsDetail: std::marker::Send + std::marker::Sync + 'static {
-        /** Represent the RPC to get the resource stats for each agents.
+        /** Represent the RPC to get the resource stats for each agent.
          */
         async fn resource_stats_detail(
             &self,

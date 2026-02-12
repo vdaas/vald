@@ -650,7 +650,7 @@ Represent the resource stats
 
 ### Info.Stats.ResourceStatsDetail
 
-Represents the resource stats for each Agents
+Represents the resource stats for each agent
 
 | Field   | Type                                                                                                   | Label    | Description |
 | ------- | ------------------------------------------------------------------------------------------------------ | -------- | ----------- |
@@ -1713,9 +1713,9 @@ Represent the resource stats service.
 
 Represent the resource stats detail service.
 
-| Method Name         | Request Type                           | Response Type                                                                            | Description                                                  |
-| ------------------- | -------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| ResourceStatsDetail | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Stats.ResourceStatsDetail](#payload-v1-Info-Stats-ResourceStatsDetail) | Represent the RPC to get the resource stats for each agents. |
+| Method Name         | Request Type                           | Response Type                                                                            | Description                                                 |
+| ------------------- | -------------------------------------- | ---------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| ResourceStatsDetail | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Stats.ResourceStatsDetail](#payload-v1-Info-Stats-ResourceStatsDetail) | Represent the RPC to get the resource stats for each agent. |
 
 <a name="v1_vald_filter-proto"></a>
 

@@ -5775,7 +5775,7 @@ func (x *Info_Stats_ResourceStats) GetCgroupStats() *Info_Stats_CgroupStats {
 	return nil
 }
 
-// Represents the resource stats for each Agents
+// Represents the resource stats for each agent
 type Info_Stats_ResourceStatsDetail struct {
 	state         protoimpl.MessageState               `protogen:"open.v1"`
 	Details       map[string]*Info_Stats_ResourceStats `protobuf:"bytes,1,rep,name=details,proto3" json:"details,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
