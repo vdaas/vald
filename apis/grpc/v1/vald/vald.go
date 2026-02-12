@@ -17,7 +17,10 @@
 // Package vald provides vald server interface
 package vald
 
-import grpc "google.golang.org/grpc"
+import (
+	stats "github.com/vdaas/vald/apis/grpc/v1/rpc/stats"
+	grpc "google.golang.org/grpc"
+)
 
 type Server interface {
 	FlushServer
@@ -58,6 +61,7 @@ type Client interface {
 	ObjectClient
 	RemoveClient
 	SearchClient
+	stats.StatsClient
 	UpdateClient
 	UpsertClient
 }
@@ -150,6 +154,7 @@ type client struct {
 	ObjectClient
 	RemoveClient
 	SearchClient
+	stats.StatsClient
 	UpdateClient
 	UpsertClient
 }
@@ -178,6 +183,7 @@ func NewValdClient(conn *grpc.ClientConn) Client {
 		ObjectClient: NewObjectClient(conn),
 		RemoveClient: NewRemoveClient(conn),
 		SearchClient: NewSearchClient(conn),
+		StatsClient:  stats.NewStatsClient(conn),
 		UpdateClient: NewUpdateClient(conn),
 		UpsertClient: NewUpsertClient(conn),
 	}

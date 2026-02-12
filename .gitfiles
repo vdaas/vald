@@ -1832,6 +1832,7 @@ pkg/agent/core/faiss/handler/grpc/remove.go
 pkg/agent/core/faiss/handler/grpc/remove_test.go
 pkg/agent/core/faiss/handler/grpc/search.go
 pkg/agent/core/faiss/handler/grpc/search_test.go
+pkg/agent/core/faiss/handler/grpc/stats.go
 pkg/agent/core/faiss/handler/grpc/update.go
 pkg/agent/core/faiss/handler/grpc/update_test.go
 pkg/agent/core/faiss/handler/grpc/upsert.go
@@ -1880,6 +1881,7 @@ pkg/agent/core/ngt/handler/grpc/remove.go
 pkg/agent/core/ngt/handler/grpc/remove_test.go
 pkg/agent/core/ngt/handler/grpc/search.go
 pkg/agent/core/ngt/handler/grpc/search_test.go
+pkg/agent/core/ngt/handler/grpc/stats.go
 pkg/agent/core/ngt/handler/grpc/update.go
 pkg/agent/core/ngt/handler/grpc/update_test.go
 pkg/agent/core/ngt/handler/grpc/upsert.go
@@ -2049,6 +2051,7 @@ pkg/gateway/lb/handler/grpc/remove_test.go
 pkg/gateway/lb/handler/grpc/search.go
 pkg/gateway/lb/handler/grpc/search_benchmark_test.go
 pkg/gateway/lb/handler/grpc/search_test.go
+pkg/gateway/lb/handler/grpc/stats.go
 pkg/gateway/lb/handler/grpc/update.go
 pkg/gateway/lb/handler/grpc/update_test.go
 pkg/gateway/lb/handler/grpc/upsert.go
@@ -2411,6 +2414,7 @@ tests/v2/e2e/crud/kubernetes_test.go
 tests/v2/e2e/crud/modification_test.go
 tests/v2/e2e/crud/object_test.go
 tests/v2/e2e/crud/search_test.go
+tests/v2/e2e/crud/stats_test.go
 tests/v2/e2e/crud/strategy_test.go
 tests/v2/e2e/hdf5/hdf5.go
 tests/v2/e2e/kubernetes/client.go

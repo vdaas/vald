@@ -41,10 +41,14 @@
   - [Info.Nodes](#payload-v1-Info-Nodes)
   - [Info.Pod](#payload-v1-Info-Pod)
   - [Info.Pods](#payload-v1-Info-Pods)
-  - [Info.ResourceStats](#payload-v1-Info-ResourceStats)
   - [Info.Service](#payload-v1-Info-Service)
   - [Info.ServicePort](#payload-v1-Info-ServicePort)
   - [Info.Services](#payload-v1-Info-Services)
+  - [Info.Stats](#payload-v1-Info-Stats)
+  - [Info.Stats.CgroupStats](#payload-v1-Info-Stats-CgroupStats)
+  - [Info.Stats.ResourceStats](#payload-v1-Info-Stats-ResourceStats)
+  - [Info.Stats.ResourceStatsDetail](#payload-v1-Info-Stats-ResourceStatsDetail)
+  - [Info.Stats.ResourceStatsDetail.DetailsEntry](#payload-v1-Info-Stats-ResourceStatsDetail-DetailsEntry)
   - [Insert](#payload-v1-Insert)
   - [Insert.Config](#payload-v1-Insert-Config)
   - [Insert.MultiObjectRequest](#payload-v1-Insert-MultiObjectRequest)
@@ -143,6 +147,7 @@
   - [RetryInfo](#rpc-v1-RetryInfo)
 - [v1/rpc/stats/stats.proto](#v1_rpc_stats_stats-proto)
   - [Stats](#rpc-v1-Stats)
+  - [StatsDetail](#rpc-v1-StatsDetail)
 - [v1/vald/filter.proto](#v1_vald_filter-proto)
   - [Filter](#vald-v1-Filter)
 - [v1/vald/flush.proto](#v1_vald_flush-proto)
@@ -576,18 +581,6 @@ Represent the multiple pod information message.
 | ----- | -------------------------------- | -------- | ----------------------------- |
 | pods  | [Info.Pod](#payload-v1-Info-Pod) | repeated | The multiple pod information. |
 
-<a name="payload-v1-Info-ResourceStats"></a>
-
-### Info.ResourceStats
-
-Represent the resource stats
-
-| Field        | Type                                             | Label | Description                         |
-| ------------ | ------------------------------------------------ | ----- | ----------------------------------- |
-| name         | [string](#string)                                |       |                                     |
-| ip           | [string](#string)                                |       |                                     |
-| cgroup_stats | [Info.CgroupStats](#payload-v1-Info-CgroupStats) |       | Container resource usage statistics |
-
 <a name="payload-v1-Info-Service"></a>
 
 ### Info.Service
@@ -623,6 +616,54 @@ Represent the multiple service information message.
 | Field    | Type                                     | Label    | Description                       |
 | -------- | ---------------------------------------- | -------- | --------------------------------- |
 | services | [Info.Service](#payload-v1-Info-Service) | repeated | The multiple service information. |
+
+<a name="payload-v1-Info-Stats"></a>
+
+### Info.Stats
+
+Represents the stats info messages.
+
+<a name="payload-v1-Info-Stats-CgroupStats"></a>
+
+### Info.Stats.CgroupStats
+
+| Field              | Type              | Label | Description                         |
+| ------------------ | ----------------- | ----- | ----------------------------------- |
+| cpu_limit_cores    | [double](#double) |       | CPU cores available                 |
+| cpu_usage_cores    | [double](#double) |       | CPU usage in cores (not percentage) |
+| memory_limit_bytes | [uint64](#uint64) |       | Memory limit in bytes               |
+| memory_usage_bytes | [uint64](#uint64) |       | Memory usage in bytes               |
+
+<a name="payload-v1-Info-Stats-ResourceStats"></a>
+
+### Info.Stats.ResourceStats
+
+Represent the resource stats
+
+| Field        | Type                                                         | Label | Description                         |
+| ------------ | ------------------------------------------------------------ | ----- | ----------------------------------- |
+| name         | [string](#string)                                            |       |                                     |
+| ip           | [string](#string)                                            |       |                                     |
+| cgroup_stats | [Info.Stats.CgroupStats](#payload-v1-Info-Stats-CgroupStats) |       | Container resource usage statistics |
+
+<a name="payload-v1-Info-Stats-ResourceStatsDetail"></a>
+
+### Info.Stats.ResourceStatsDetail
+
+Represents the resource stats for each agent
+
+| Field   | Type                                                                                                   | Label    | Description |
+| ------- | ------------------------------------------------------------------------------------------------------ | -------- | ----------- |
+| details | [Info.Stats.ResourceStatsDetail.DetailsEntry](#payload-v1-Info-Stats-ResourceStatsDetail-DetailsEntry) | repeated |             |
+
+<a name="payload-v1-Info-Stats-ResourceStatsDetail-DetailsEntry"></a>
+
+### Info.Stats.ResourceStatsDetail.DetailsEntry
+
+| Field | Type                                                             | Label | Description |
+| ----- | ---------------------------------------------------------------- | ----- | ----------- |
+| key   | [string](#string)                                                |       |             |
+| value | [Info.Stats.ResourceStats](#payload-v1-Info-Stats-ResourceStats) |       |             |
 
 <a name="payload-v1-Insert"></a>
 
@@ -1660,12 +1701,21 @@ reached.
 
 ### Stats
 
-Overview
 Represent the resource stats service.
 
-| Method Name   | Request Type                           | Response Type                                                    | Description                                           |
-| ------------- | -------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------- |
-| ResourceStats | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.ResourceStats](#payload-v1-Info-ResourceStats) | Overview Represent the RPC to get the resource stats. |
+| Method Name   | Request Type                           | Response Type                                                                | Description                                  |
+| ------------- | -------------------------------------- | ---------------------------------------------------------------------------- | -------------------------------------------- |
+| ResourceStats | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Stats.ResourceStats](#payload-v1-Info-Stats-ResourceStats) | Represent the RPC to get the resource stats. |
+
+<a name="rpc-v1-StatsDetail"></a>
+
+### StatsDetail
+
+Represent the resource stats detail service.
+
+| Method Name         | Request Type                           | Response Type                                                                            | Description                                                 |
+| ------------------- | -------------------------------------- | ---------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| ResourceStatsDetail | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Stats.ResourceStatsDetail](#payload-v1-Info-Stats-ResourceStatsDetail) | Represent the RPC to get the resource stats for each agent. |
 
 <a name="v1_vald_filter-proto"></a>
 

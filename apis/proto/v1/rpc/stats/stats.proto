@@ -27,12 +27,18 @@ option java_outer_classname = "StatsProto";
 option java_package = "org.vdaas.vald.api.v1.rpc";
 option objc_class_prefix = "RPC";
 
-// Overview
 // Represent the resource stats service.
 service Stats {
-  // Overview
   // Represent the RPC to get the resource stats.
-  rpc ResourceStats(payload.v1.Empty) returns (payload.v1.Info.ResourceStats) {
+  rpc ResourceStats(payload.v1.Empty) returns (payload.v1.Info.Stats.ResourceStats) {
     option (google.api.http).get = "/resource/stats";
+  }
+}
+
+// Represent the resource stats detail service.
+service StatsDetail {
+  // Represent the RPC to get the resource stats for each agent.
+  rpc ResourceStatsDetail(payload.v1.Empty) returns (payload.v1.Info.Stats.ResourceStatsDetail) {
+    option (google.api.http).get = "/resource/stats/detail";
   }
 }

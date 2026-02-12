@@ -446,3 +446,13 @@ strategies:
             type: index_info
             expect:
               - value: {}
+  - concurrency: 1
+    name: ResourceStatsDetail
+    operations:
+      - name: ResourceStatsDetail Operation
+        executions:
+          - name: ResourceStatsDetail
+            mode: unary
+            type: resource_stats_detail
+            expect:
+              - status_code: ok
