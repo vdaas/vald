@@ -22,7 +22,7 @@ use sled::{
 use std::sync::atomic::AtomicUsize;
 use std::{borrow::Borrow, sync::Arc};
 use tracing::instrument;
-use wincode::SchemaWrite;
+use wincode::{SchemaWrite, config::DefaultConfig};
 
 use crate::map::{
     base::MapBase,
@@ -69,7 +69,7 @@ impl<K: KeyType, V: ValueType, C: Codec> MapBase for UnidirectionalMap<K, V, C> 
     fn get<Q>(&self, key: &Q) -> impl Future<Output = Result<(Self::V, u128), Error>> + Send
     where
         Self::K: Borrow<Q>,
-        Q: Serialize + SchemaWrite<Src = Q> + ?Sized + Sync,
+        Q: Serialize + SchemaWrite<DefaultConfig, Src = Q> + ?Sized + Sync,
     {
         self.perform_get(key, &self.tree)
     }
@@ -90,7 +90,7 @@ impl<K: KeyType, V: ValueType, C: Codec> MapBase for UnidirectionalMap<K, V, C> 
     fn delete<Q>(&self, key: &Q) -> impl Future<Output = Result<Self::V, Error>> + Send
     where
         Self::K: Borrow<Q>,
-        Q: Serialize + SchemaWrite<Src = Q> + ?Sized + Sync,
+        Q: Serialize + SchemaWrite<DefaultConfig, Src = Q> + ?Sized + Sync,
     {
         let t = self.tree.clone();
         let f = delete_transaction_func(t);

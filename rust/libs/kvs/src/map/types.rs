@@ -17,6 +17,7 @@
 use serde::{Serialize, de::DeserializeOwned};
 use std::fmt::Debug;
 use std::hash::Hash;
+use wincode::config::DefaultConfig;
 
 /// A trait that defines the requirements for a key in the key-value store.
 ///
@@ -25,8 +26,8 @@ use std::hash::Hash;
 pub trait KeyType:
     Serialize
     + DeserializeOwned
-    + wincode::SchemaWrite<Src = Self>
-    + for<'de> wincode::SchemaRead<'de, Dst = Self>
+    + wincode::SchemaWrite<DefaultConfig, Src = Self>
+    + for<'de> wincode::SchemaRead<'de, DefaultConfig, Dst = Self>
     + Eq
     + Hash
     + Clone
@@ -39,8 +40,8 @@ pub trait KeyType:
 impl<
     T: Serialize
         + DeserializeOwned
-        + wincode::SchemaWrite<Src = T>
-        + for<'de> wincode::SchemaRead<'de, Dst = T>
+        + wincode::SchemaWrite<DefaultConfig, Src = T>
+        + for<'de> wincode::SchemaRead<'de, DefaultConfig, Dst = T>
         + Eq
         + Hash
         + Clone
@@ -59,8 +60,8 @@ impl<
 pub trait ValueType:
     Serialize
     + DeserializeOwned
-    + wincode::SchemaWrite<Src = Self>
-    + for<'de> wincode::SchemaRead<'de, Dst = Self>
+    + wincode::SchemaWrite<DefaultConfig, Src = Self>
+    + for<'de> wincode::SchemaRead<'de, DefaultConfig, Dst = Self>
     + Eq
     + Hash
     + Clone
@@ -73,8 +74,8 @@ pub trait ValueType:
 impl<
     T: Serialize
         + DeserializeOwned
-        + wincode::SchemaWrite<Src = T>
-        + for<'de> wincode::SchemaRead<'de, Dst = T>
+        + wincode::SchemaWrite<DefaultConfig, Src = T>
+        + for<'de> wincode::SchemaRead<'de, DefaultConfig, Dst = T>
         + Eq
         + Hash
         + Clone

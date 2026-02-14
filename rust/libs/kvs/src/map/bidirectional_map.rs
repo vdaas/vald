@@ -24,7 +24,7 @@ use std::{
     sync::{Arc, atomic::AtomicUsize},
 };
 use tracing::instrument;
-use wincode::SchemaWrite;
+use wincode::{SchemaWrite, config::DefaultConfig};
 
 use crate::map::{
     base::MapBase,
@@ -74,7 +74,7 @@ impl<K: KeyType, V: ValueType, C: Codec> MapBase for BidirectionalMap<K, V, C> {
     fn get<Q>(&self, key: &Q) -> impl Future<Output = Result<(Self::V, u128), Error>> + Send
     where
         Self::K: Borrow<Q>,
-        Q: Serialize + SchemaWrite<Src = Q> + ?Sized + Sync,
+        Q: Serialize + SchemaWrite<DefaultConfig, Src = Q> + ?Sized + Sync,
     {
         self.perform_get(key, &self.primary_tree)
     }
@@ -96,7 +96,7 @@ impl<K: KeyType, V: ValueType, C: Codec> MapBase for BidirectionalMap<K, V, C> {
     fn delete<Q>(&self, key: &Q) -> impl Future<Output = Result<Self::V, Error>> + Send
     where
         Self::K: Borrow<Q>,
-        Q: Serialize + SchemaWrite<Src = Q> + ?Sized + Sync,
+        Q: Serialize + SchemaWrite<DefaultConfig, Src = Q> + ?Sized + Sync,
     {
         let pt = self.primary_tree.clone();
         let st = self.secondary_tree.clone();
@@ -126,7 +126,7 @@ impl<K: KeyType, V: ValueType, C: Codec> BidirectionalMap<K, V, C> {
     pub fn get_inverse<Q>(&self, value: &Q) -> impl Future<Output = Result<(K, u128), Error>> + Send
     where
         V: Borrow<Q>,
-        Q: Serialize + SchemaWrite<Src = Q> + ?Sized + Sync,
+        Q: Serialize + SchemaWrite<DefaultConfig, Src = Q> + ?Sized + Sync,
     {
         self.perform_get(value, &self.secondary_tree)
     }
@@ -136,7 +136,7 @@ impl<K: KeyType, V: ValueType, C: Codec> BidirectionalMap<K, V, C> {
     pub fn delete_inverse<Q>(&self, value: &Q) -> impl Future<Output = Result<K, Error>> + Send
     where
         V: Borrow<Q>,
-        Q: Serialize + wincode::SchemaWrite<Src = Q> + ?Sized + Sync,
+        Q: Serialize + wincode::SchemaWrite<DefaultConfig, Src = Q> + ?Sized + Sync,
     {
         let pt = self.primary_tree.clone();
         let st = self.secondary_tree.clone();
