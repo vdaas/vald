@@ -821,40 +821,12 @@ impl Queue for PersistentQueue {
 
     /// Checks if a UUID exists in the insert queue and returns its timestamp.
     async fn iv_exists(&self, uuid: impl AsRef<str> + Send) -> Result<i64, QueueError> {
-        let uuid_bytes = uuid.as_ref().as_bytes().to_vec();
-        let uuid_string = uuid.as_ref().to_string();
-        let index = self.insert_index.clone();
-
-        tokio::task::spawn_blocking(move || match index.get(&uuid_bytes)? {
-            Some(ts_bytes) => {
-                let ts_bytes_arr: [u8; 8] = ts_bytes
-                    .as_ref()
-                    .try_into()
-                    .map_err(|_| QueueError::KeyParse("Invalid timestamp in index".to_string()))?;
-                Ok(i64::from_be_bytes(ts_bytes_arr))
-            }
-            None => Err(QueueError::NotFound(uuid_string)),
-        })
-        .await?
+        self.load_ivq(uuid.as_ref()).await.map(|(_, ts)| ts)
     }
 
     /// Checks if a UUID exists in the delete queue and returns its timestamp.
     async fn dv_exists(&self, uuid: impl AsRef<str> + Send) -> Result<i64, QueueError> {
-        let uuid_bytes = uuid.as_ref().as_bytes().to_vec();
-        let uuid_string = uuid.as_ref().to_string();
-        let index = self.delete_index.clone();
-
-        tokio::task::spawn_blocking(move || match index.get(&uuid_bytes)? {
-            Some(ts_bytes) => {
-                let ts_bytes_arr: [u8; 8] = ts_bytes
-                    .as_ref()
-                    .try_into()
-                    .map_err(|_| QueueError::KeyParse("Invalid timestamp in index".to_string()))?;
-                Ok(i64::from_be_bytes(ts_bytes_arr))
-            }
-            None => Err(QueueError::NotFound(uuid_string)),
-        })
-        .await?
+        self.load_dvq(uuid.as_ref()).await
     }
 
     /// Returns the vector stored in the queue.
