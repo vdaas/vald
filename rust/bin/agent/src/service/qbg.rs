@@ -56,6 +56,7 @@ pub struct QBGService {
     statistics_enabled: bool,
     enable_copy_on_write: bool,
     broken_index_history_limit: usize,
+    bulk_insert_chunk_size: usize,
 }
 
 impl QBGService {
@@ -154,11 +155,12 @@ impl QBGService {
         let vq_path = path.clone();
         let vq = vqueue::Builder::new(vq_path).build().await.unwrap();
         let kvs_path = format!("{}_kvs", path);
+        let kvs_config = config.kvsdb.clone().unwrap_or_default();
         let kvs = BidirectionalMapBuilder::new(kvs_path)
-            .cache_capacity(10000) // TODO: Add kvs_cache_capacity to QBG config
-            .compression_factor(9) // TODO: Add kvs_compression_factor to QBG config
+            .cache_capacity(kvs_config.cache_capacity as u64)
+            .compression_factor(kvs_config.compression_factor)
             .mode(kvs::Mode::HighThroughput)
-            .use_compression(true) // TODO: Add kvs_use_compression to QBG config
+            .use_compression(kvs_config.use_compression)
             .build()
             .await
             .unwrap();
@@ -222,6 +224,7 @@ impl QBGService {
             statistics_enabled: false,
             enable_copy_on_write,
             broken_index_history_limit,
+            bulk_insert_chunk_size: config.bulk_insert_chunk_size,
         }
     }
 
@@ -406,7 +409,7 @@ impl ANN for QBGService {
         );
 
         let now = Utc::now().timestamp_nanos_opt().unwrap_or(0);
-        let batch_size = 1000; // TODO: make configurable
+        let batch_size = self.bulk_insert_chunk_size;
         let mut vq_processed_cnt: u64 = 0;
         let mut insert_cnt: u32 = 0;
 
@@ -1111,6 +1114,34 @@ mod tests {
             let agent_config: crate::config::AgentConfig = config.try_deserialize().unwrap();
             QBGService::new(&agent_config.qbg).await
         }
+    }
+
+    #[tokio::test]
+    async fn test_kvs_config() {
+        let temp_dir = TempDir::new().expect("Failed to create temp directory");
+        let base_path = temp_dir.path().to_str().unwrap().to_string();
+
+        let config = Config::builder()
+            .set_default("qbg.index_path", format!("{}/index", base_path))
+            .unwrap()
+            .set_default("qbg.dimension", 128)
+            .unwrap()
+            .set_default("qbg.kvsdb.concurrency", 10)
+            .unwrap()
+            .set_default("qbg.kvsdb.cache_capacity", 1024 * 1024)
+            .unwrap()
+            .set_default("qbg.kvsdb.compression_factor", 5)
+            .unwrap()
+            .set_default("qbg.kvsdb.use_compression", false)
+            .unwrap()
+            .build()
+            .unwrap();
+
+        let agent_config: crate::config::AgentConfig = config.try_deserialize().unwrap();
+        let service = QBGService::new(&agent_config.qbg).await;
+
+        // Verify service was created successfully (implicit check that config didn't cause panic)
+        assert_eq!(service.get_dimension_size(), 128);
     }
 
     fn gen_random_vector(dim: usize) -> Vec<f32> {

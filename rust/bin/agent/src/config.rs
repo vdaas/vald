@@ -354,16 +354,43 @@ pub struct KVSDB {
     /// Concurrency represents kvsdb range loop processing concurrency
     #[serde(default = "default_kvsdb_concurrency")]
     pub concurrency: usize,
+
+    /// CacheCapacity represents kvsdb cache capacity
+    #[serde(default = "default_kvsdb_cache_capacity")]
+    pub cache_capacity: usize,
+
+    /// CompressionFactor represents kvsdb compression factor
+    #[serde(default = "default_kvsdb_compression_factor")]
+    pub compression_factor: i32,
+
+    /// UseCompression represents kvsdb compression usage
+    #[serde(default = "default_kvsdb_use_compression")]
+    pub use_compression: bool,
 }
 
 fn default_kvsdb_concurrency() -> usize {
     10
 }
 
+fn default_kvsdb_cache_capacity() -> usize {
+    10000
+}
+
+fn default_kvsdb_compression_factor() -> i32 {
+    9
+}
+
+fn default_kvsdb_use_compression() -> bool {
+    true
+}
+
 impl KVSDB {
     pub fn new() -> Self {
         Self {
             concurrency: default_kvsdb_concurrency(),
+            cache_capacity: default_kvsdb_cache_capacity(),
+            compression_factor: default_kvsdb_compression_factor(),
+            use_compression: default_kvsdb_use_compression(),
         }
     }
 
@@ -782,12 +809,18 @@ mod tests {
     fn test_kvsdb_new() {
         let kvs = KVSDB::new();
         assert_eq!(kvs.concurrency, 10);
+        assert_eq!(kvs.cache_capacity, 10000);
+        assert_eq!(kvs.compression_factor, 9);
+        assert!(kvs.use_compression);
     }
 
     #[test]
     fn test_kvsdb_default() {
         let kvs = KVSDB::default();
         assert_eq!(kvs.concurrency, 10);
+        assert_eq!(kvs.cache_capacity, 10000);
+        assert_eq!(kvs.compression_factor, 9);
+        assert!(kvs.use_compression);
     }
 
     #[test]
@@ -1053,7 +1086,12 @@ dimension: 128
                 insert_buffer_pool_size: 2000,
                 delete_buffer_pool_size: 1500,
             }),
-            kvsdb: Some(KVSDB { concurrency: 15 }),
+            kvsdb: Some(KVSDB {
+                concurrency: 15,
+                cache_capacity: 10000,
+                compression_factor: 9,
+                use_compression: true,
+            }),
             ..QBG::new()
         };
 
