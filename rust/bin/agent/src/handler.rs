@@ -133,17 +133,17 @@ impl<S: algorithm::ANN + 'static> Agent<S> {
 
     /// Starts the gRPC server with all registered services.
     pub async fn serve_grpc(self, config: AgentConfig) -> Result<(), Box<dyn std::error::Error>> {
-        let addr = "0.0.0.0:8081".parse()?;
-
-        let grpc_server_config = config
+        let server_config = config
             .server_config
             .servers
             .iter()
             .find(|s| s.name == "grpc")
-            .map(|s| &s.grpc)
             .ok_or_else(|| {
                 std::io::Error::new(std::io::ErrorKind::NotFound, "grpc server config not found")
             })?;
+
+        let addr = format!("{}:{}", server_config.host, server_config.port).parse()?;
+        let grpc_server_config = &server_config.grpc;
 
         let mut builder = tonic::transport::Server::builder();
         if let Some(duration) =

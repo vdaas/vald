@@ -100,7 +100,7 @@ pub mod ffi {
             k: usize,
             radius: f32,
             epsilon: f32,
-        ) -> UniquePtr<CxxVector<SearchResult>>;
+        ) -> Result<UniquePtr<CxxVector<SearchResult>>>;
         fn get_object(self: &Index, id: usize) -> Result<*mut f32>;
         fn get_dimension(self: &Index) -> Result<usize>;
     }
@@ -377,7 +377,7 @@ pub mod index {
             epsilon: f32,
         ) -> Result<Vec<(u32, f32)>, cxx::Exception> {
             let index = self.inner.as_ref().unwrap();
-            let mut search_results = index.search(v, k, radius, epsilon);
+            let mut search_results = index.search(v, k, radius, epsilon)?;
             Ok(search_results
                 .pin_mut()
                 .into_iter()
