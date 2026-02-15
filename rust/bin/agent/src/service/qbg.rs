@@ -48,13 +48,16 @@ pub struct QBGService {
     is_flushing: AtomicBool,
     is_indexing: AtomicBool,
     is_saving: AtomicBool,
+    is_built: AtomicBool,
     is_readreplica: bool,
     create_index_count: AtomicU64,
     unsaved_create_index_count: AtomicU64,
     processed_vq_count: AtomicU64,
     broken_index_count: AtomicU64,
     statistics_enabled: bool,
+    #[allow(dead_code)]
     enable_copy_on_write: bool,
+    #[allow(dead_code)]
     broken_index_history_limit: usize,
     bulk_insert_chunk_size: usize,
 }
@@ -134,22 +137,22 @@ impl QBGService {
             .to_string();
 
         // Load or create the index
-        let index = if should_load {
+        let (index, is_built) = if should_load {
             info!("loading existing index from {}", index_path);
             // Use new_prebuilt to open an existing index (prebuilt=false for read-write mode)
             match Index::new_prebuilt(&index_path, false) {
                 Ok(idx) => {
                     info!("successfully loaded existing index");
-                    idx
+                    (idx, true)
                 }
                 Err(e) => {
                     warn!("failed to load existing index, creating new: {}", e);
-                    Index::new(&index_path, &mut property).unwrap()
+                    (Index::new(&index_path, &mut property).unwrap(), false)
                 }
             }
         } else {
             debug!("creating new index at {}", index_path);
-            Index::new(&index_path, &mut property).unwrap()
+            (Index::new(&index_path, &mut property).unwrap(), false)
         };
 
         let vq_path = path.clone();
@@ -216,6 +219,7 @@ impl QBGService {
             is_flushing: AtomicBool::new(false),
             is_indexing: AtomicBool::new(false),
             is_saving: AtomicBool::new(false),
+            is_built: AtomicBool::new(is_built),
             is_readreplica,
             create_index_count: AtomicU64::new(0),
             unsaved_create_index_count: AtomicU64::new(0),
@@ -437,7 +441,12 @@ impl ANN for QBGService {
                     }
                     Ok(DrainItem::Insert(uuid, vector)) => {
                         debug!("processing insert for uuid: {}", uuid);
-                        match self.index.insert(&vector) {
+                        let insert_result = if self.is_built.load(Ordering::SeqCst) {
+                            self.index.insert(&vector)
+                        } else {
+                            self.index.append(&vector)
+                        };
+                        match insert_result {
                             Ok(oid) => {
                                 let timestamp =
                                     Utc::now().timestamp_nanos_opt().unwrap_or(0) as u128;
@@ -452,7 +461,12 @@ impl ANN for QBGService {
                             Err(e) => {
                                 error!("failed to insert vector for uuid {}: {}", uuid, e);
                                 // Retry once
-                                if let Ok(oid) = self.index.insert(&vector) {
+                                let retry_result = if self.is_built.load(Ordering::SeqCst) {
+                                    self.index.insert(&vector)
+                                } else {
+                                    self.index.append(&vector)
+                                };
+                                if let Ok(oid) = retry_result {
                                     let timestamp =
                                         Utc::now().timestamp_nanos_opt().unwrap_or(0) as u128;
                                     if let Err(e) =
@@ -487,8 +501,28 @@ impl ANN for QBGService {
             .fetch_add(vq_processed_cnt, Ordering::SeqCst);
 
         // Phase 2: Build the index
-        debug!("create graph and tree phase started");
-        let result = self.index.build_index(&self.path, &mut self.property);
+        let result = if !self.is_built.load(Ordering::SeqCst) {
+            debug!("create graph and tree phase started");
+            match self.index.build_index(&self.path, &mut self.property) {
+                Ok(()) => {
+                    debug!("create graph and tree phase finished");
+                    match self.index.open_index(&self.path, true) {
+                        Ok(()) => {
+                            self.is_built.store(true, Ordering::SeqCst);
+                            Ok(())
+                        }
+                        Err(e) => {
+                            error!("failed to open index after build: {}", e);
+                            Err(e)
+                        }
+                    }
+                }
+                Err(e) => Err(e),
+            }
+        } else {
+            debug!("index already built, skipping build phase");
+            Ok(())
+        };
         self.is_indexing.store(false, Ordering::SeqCst);
 
         match result {
@@ -496,7 +530,6 @@ impl ANN for QBGService {
                 self.create_index_count.fetch_add(1, Ordering::SeqCst);
                 self.unsaved_create_index_count
                     .fetch_add(1, Ordering::SeqCst);
-                debug!("create graph and tree phase finished");
                 info!("create index operation finished");
 
                 // Export metrics to K8s pod annotations
@@ -707,7 +740,7 @@ impl ANN for QBGService {
         let vec = self
             .index
             .search(vector.as_slice(), k as usize, radius, epsilon)
-            .unwrap();
+            .map_err(|e| Error::Internal(Box::new(std::io::Error::other(e.to_string()))))?;
         let results: Vec<Distance> = vec
             .into_iter()
             .map(|x| Distance {
@@ -1084,6 +1117,7 @@ mod tests {
 
         /// Create a Read Replica service using the same paths as this service.
         /// The original service should have built and saved the index first.
+        #[allow(dead_code)]
         async fn create_read_replica_from_same_path(&self, dimension: usize) -> QBGService {
             let config = Config::builder()
                 .set_default("qbg.index_path", format!("{}/index", self.base_path))

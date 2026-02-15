@@ -54,6 +54,7 @@ serde_yaml = "0.9"
 vqueue = { version = "0.1.0", path = "../../libs/vqueue" }
 
 [dev-dependencies]
+rand_distr = "0.6"
 bytes = "1.11.1"
 http-body = "1.0.1"
 tempfile = "3"
