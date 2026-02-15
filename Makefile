@@ -643,9 +643,11 @@ format/go/diff: \
 
 .PHONY: format/rust
 ## format rust codes
-format/rust: rustfmt/install
+format/rust: \
+	rustfmt/install \
+	files
 	@echo "Formatting Rust files..."
-	@cd $(ROOTDIR)/rust && cargo fmt
+	@cd $(ROOTDIR)/rust && $(CARGO_HOME)/bin/cargo fmt
 	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
 		grep -e "\.rs$$" "$(ROOTDIR)/.gitfiles" \
 		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
