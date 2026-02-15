@@ -34,6 +34,7 @@ const GRPCMETHOD_KEY_NAME: &str = "grpc_server_method";
 const GRPCSTATUS: &str = "grpc_server_status";
 
 #[derive(Debug)]
+#[allow(dead_code)]
 struct AccessLogEntity {
     grpc: AccessLogGRPCEntity,
     start_time: i64,
@@ -43,6 +44,7 @@ struct AccessLogEntity {
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 struct AccessLogGRPCEntity {
     kind: String,
     service: String,

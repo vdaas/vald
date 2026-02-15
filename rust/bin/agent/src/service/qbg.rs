@@ -55,7 +55,9 @@ pub struct QBGService {
     processed_vq_count: AtomicU64,
     broken_index_count: AtomicU64,
     statistics_enabled: bool,
+    #[allow(dead_code)]
     enable_copy_on_write: bool,
+    #[allow(dead_code)]
     broken_index_history_limit: usize,
     bulk_insert_chunk_size: usize,
 }
@@ -1115,6 +1117,7 @@ mod tests {
 
         /// Create a Read Replica service using the same paths as this service.
         /// The original service should have built and saved the index first.
+        #[allow(dead_code)]
         async fn create_read_replica_from_same_path(&self, dimension: usize) -> QBGService {
             let config = Config::builder()
                 .set_default("qbg.index_path", format!("{}/index", self.base_path))

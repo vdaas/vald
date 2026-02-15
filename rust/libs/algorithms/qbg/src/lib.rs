@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+#[allow(clippy::too_many_arguments)]
 #[cxx::bridge]
 pub mod ffi {
     unsafe extern "C++" {
@@ -120,6 +121,12 @@ pub mod property {
         inner: UniquePtr<ffi::Property>,
     }
 
+    impl Default for Property {
+        fn default() -> Self {
+            Self::new()
+        }
+    }
+
     impl Property {
         pub fn new() -> Self {
             let inner = ffi::new_property();
@@ -134,6 +141,7 @@ pub mod property {
             self.inner.pin_mut().init_qbg_construction_parameters()
         }
 
+        #[allow(clippy::too_many_arguments)]
         pub fn set_qbg_construction_parameters(
             &mut self,
             extended_dimension: usize,
@@ -193,6 +201,7 @@ pub mod property {
             self.inner.pin_mut().init_qbg_build_parameters()
         }
 
+        #[allow(clippy::too_many_arguments)]
         pub fn set_qbg_build_parameters(
             &mut self,
             hierarchical_clustering_init_mode: i32,
@@ -482,7 +491,7 @@ mod tests {
         // Search
         println!("search the index for the specified query...");
         let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
-        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON);
+        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON)?;
         let ids: Vec<u32> = search_results
             .pin_mut()
             .into_iter()
@@ -499,7 +508,7 @@ mod tests {
         // Remove
         index.pin_mut().remove(1).unwrap();
         let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
-        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON);
+        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON)?;
         let ids: Vec<u32> = search_results
             .pin_mut()
             .into_iter()
@@ -565,7 +574,7 @@ mod tests {
 
         // Search
         let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
-        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON);
+        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON)?;
         let ids: Vec<u32> = search_results
             .pin_mut()
             .into_iter()
@@ -582,7 +591,7 @@ mod tests {
         // Remove
         index.pin_mut().remove(1).unwrap();
         let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
-        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON);
+        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON)?;
         let ids: Vec<u32> = search_results
             .pin_mut()
             .into_iter()

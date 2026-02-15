@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+#[allow(clippy::missing_safety_doc)]
+#[allow(clippy::too_many_arguments)]
 #[cxx::bridge]
 pub mod ffi {
     #[repr(i32)]
