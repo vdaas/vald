@@ -40,7 +40,7 @@ async fn get_object<S: algorithm::ANN>(
     let uuid = id.id;
     {
         let s = s.read().await;
-        if uuid.len() == 0 {
+        if uuid.is_empty() {
             let err = Error::InvalidUUID { uuid: uuid.clone() };
             let resource_type = format!("{}/qbg.GetObject", resource_type);
             let resource_name = format!("{}: {}({})", api_name, name, ip);

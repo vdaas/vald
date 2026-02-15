@@ -265,10 +265,7 @@ fn parse_duration_from_string(input: &str) -> Option<Duration> {
     if input.len() < 2 {
         return None;
     }
-    let last_char = match input.chars().last() {
-        Some(c) => c,
-        None => return None,
-    };
+    let last_char = input.chars().last()?;
     if last_char.is_numeric() {
         return None;
     }

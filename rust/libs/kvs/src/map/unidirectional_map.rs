@@ -103,7 +103,7 @@ impl<K: KeyType, V: ValueType, C: Codec> MapBase for UnidirectionalMap<K, V, C> 
 
         Ok(UnidirectionalMap {
             db: Arc::new(db),
-            tree: tree,
+            tree,
             len: AtomicUsize::new(initial_len),
             codec: Arc::new(codec),
             _marker: std::marker::PhantomData,
@@ -123,8 +123,8 @@ fn set_transaction_func(
                 source: Box::new(e),
             })
         })?;
-        (&t).transaction(move |tx| {
-            let is_new = !tx.get(key.as_slice())?.is_some();
+        t.transaction(move |tx| {
+            let is_new = tx.get(key.as_slice())?.is_none();
             tx.insert(key.as_slice(), IVec::from(encoded_payload.clone()))?;
 
             Ok(is_new)
@@ -137,7 +137,7 @@ fn delete_transaction_func(
     t: Tree,
 ) -> impl FnOnce(Vec<u8>) -> Result<Option<Vec<u8>>, TransactionError<Error>> + Send + 'static {
     move |key: Vec<u8>| -> Result<Option<Vec<u8>>, TransactionError<Error>> {
-        (&t).transaction(move |tx| {
+        t.transaction(move |tx| {
             if let Some(payload_ivec) = tx.remove(key.as_slice())? {
                 let (inverse_key_bytes, _): (Vec<u8>, u128) = wincode::deserialize(&payload_ivec)
                     .map_err(|e| {

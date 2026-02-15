@@ -44,6 +44,11 @@ use thiserror::Error;
 use tokio::sync::mpsc;
 use tokio_stream::{Stream, wrappers::ReceiverStream};
 
+/// A tuple representing a queue item: (UUID, Vector, Timestamp).
+pub type QueueItem = (String, Vec<f32>, i64);
+
+type RangeStream = Pin<Box<dyn Stream<Item = Result<QueueItem, QueueError>> + Send>>;
+
 /// Error type representing possible failures for queue operations.
 #[derive(Debug, Error)]
 pub enum QueueError {
@@ -220,9 +225,7 @@ pub trait Queue: Send + Sync {
     /// Iterates over all items in the insert queue, filtering out items that have a newer delete.
     /// This is a non-destructive operation that does not modify the queue.
     /// Returns a stream of (uuid, vector, timestamp) tuples for each valid item.
-    fn range(
-        &self,
-    ) -> Pin<Box<dyn Stream<Item = Result<(String, Vec<f32>, i64), QueueError>> + Send>>;
+    fn range(&self) -> RangeStream;
 }
 
 /// A persistent queue implementation using `sled`.
@@ -729,9 +732,7 @@ impl Queue for PersistentQueue {
     }
 
     /// Iterates over all items in the insert queue, filtering out items that have a newer delete.
-    fn range(
-        &self,
-    ) -> Pin<Box<dyn Stream<Item = Result<(String, Vec<f32>, i64), QueueError>> + Send>> {
+    fn range(&self) -> RangeStream {
         let (tx, rx) = mpsc::channel(64);
         let iq = self.insert_queue.clone();
         let di = self.delete_index.clone();
@@ -739,29 +740,28 @@ impl Queue for PersistentQueue {
         tokio::spawn(async move {
             let result = tokio::task::spawn_blocking(move || {
                 let mut items = Vec::new();
-                for item in iq.iter() {
-                    if let Ok((key, val)) = item {
-                        if let Ok((its, uuid)) = Self::parse_key(&key) {
-                            // Check if there's a newer delete for this uuid
-                            let skip = if let Ok(Some(dts_bytes)) = di.get(uuid.as_bytes()) {
-                                if dts_bytes.len() >= 8 {
-                                    let dts_arr: [u8; 8] =
-                                        dts_bytes[0..8].try_into().unwrap_or_default();
-                                    let dts = i64::from_be_bytes(dts_arr);
-                                    dts >= its
-                                } else {
-                                    false
-                                }
-                            } else {
-                                false
-                            };
-                            if skip {
-                                continue;
-                            }
-                            // Decode the vector
-                            if let Ok(vec) = wincode::deserialize(&val) {
-                                items.push((uuid, vec, its));
-                            }
+                for (key, val) in iq.iter().flatten() {
+                    if let Ok((its, uuid)) = Self::parse_key(&key) {
+                        // Check if there's a newer delete for this uuid
+                        let skip = di
+                            .get(uuid.as_bytes())
+                            .ok()
+                            .flatten()
+                            .filter(|dts_bytes| dts_bytes.len() >= 8)
+                            .map(|dts_bytes| {
+                                let dts_arr: [u8; 8] =
+                                    dts_bytes[0..8].try_into().unwrap_or_default();
+                                let dts = i64::from_be_bytes(dts_arr);
+                                dts >= its
+                            })
+                            .unwrap_or(false);
+
+                        if skip {
+                            continue;
+                        }
+                        // Decode the vector
+                        if let Ok(vec) = wincode::deserialize(&val) {
+                            items.push((uuid, vec, its));
                         }
                     }
                 }

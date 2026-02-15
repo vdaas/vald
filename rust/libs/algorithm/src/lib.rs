@@ -19,7 +19,7 @@ pub use error::{Error, MultiError};
 
 use anyhow::Result;
 use proto::payload::v1::{info, search};
-use std::{collections::HashMap, future::Future, i64};
+use std::{collections::HashMap, future::Future};
 
 /// Trait for Approximate Nearest Neighbor (ANN) index implementations.
 ///
@@ -143,6 +143,9 @@ pub trait ANN: Send + Sync {
     fn is_flushing(&self) -> bool;
     fn is_saving(&self) -> bool;
     fn len(&self) -> u32;
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
     fn number_of_create_index_executions(&self) -> u64;
     fn insert_vqueue_buffer_len(&self) -> u32;
     fn delete_vqueue_buffer_len(&self) -> u32;

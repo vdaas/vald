@@ -56,7 +56,7 @@ impl<M: MapBase<C = WincodeCodec>> MapBuilder<M, WincodeCodec> {
     pub fn new(path: impl AsRef<str>) -> Self {
         Self {
             path: path.as_ref().to_string(),
-            codec: WincodeCodec::default(),
+            codec: WincodeCodec,
             config: Config::default(),
             scan_on_startup: true,
             _marker: std::marker::PhantomData,

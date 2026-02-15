@@ -17,6 +17,7 @@
 use anyhow::Result;
 use std::fs;
 use std::path::{Path, PathBuf};
+use chrono;
 
 #[derive(Debug)]
 pub struct IndexPaths {
@@ -98,9 +99,12 @@ impl PersistenceManager {
     }
 
     pub fn broken_index_count(&self) -> u64 {
-        // Implementation to count broken indices in history/broken folder
-        // For now, return 0 as placeholder
-        0
+        if !self.paths.broken_path.exists() {
+            return 0;
+        }
+        fs::read_dir(&self.paths.broken_path)
+            .map(|entries| entries.count() as u64)
+            .unwrap_or(0)
     }
 
     pub fn paths(&self) -> &IndexPaths {
@@ -114,8 +118,41 @@ impl PersistenceManager {
     }
 
     pub fn backup_broken(&self) -> Result<()> {
-        // Move primary path to broken/history path
-        // Simplified implementation
+        if !self.paths.broken_path.exists() {
+            fs::create_dir_all(&self.paths.broken_path)?;
+        }
+        let timestamp = chrono::Utc::now().format("%Y%m%d%H%M%S%f").to_string();
+        let target = self.paths.broken_path.join(timestamp);
+
+        if self.paths.primary_path.exists() {
+            fs::rename(&self.paths.primary_path, &target)?;
+        }
+
+        self.cleanup_broken_indices()?;
+
+        Ok(())
+    }
+
+    fn cleanup_broken_indices(&self) -> Result<()> {
+        if !self.paths.broken_path.exists() {
+            return Ok(());
+        }
+
+        let mut entries: Vec<_> = fs::read_dir(&self.paths.broken_path)?
+            .filter_map(|e| e.ok())
+            .collect();
+
+        if entries.len() > self.config.broken_index_history_limit {
+            entries.sort_by_key(|e| e.file_name());
+            let to_remove = entries.len() - self.config.broken_index_history_limit;
+            for entry in entries.iter().take(to_remove) {
+                if entry.path().is_dir() {
+                    fs::remove_dir_all(entry.path())?;
+                } else {
+                    fs::remove_file(entry.path())?;
+                }
+            }
+        }
         Ok(())
     }
 

@@ -68,7 +68,7 @@ pub(crate) async fn update<S: algorithm::ANN>(
         warn!("{:?}", status);
         return Err(status);
     }
-    if uuid.len() == 0 {
+    if uuid.is_empty() {
         let err = Error::InvalidUUID { uuid: uuid.clone() };
         let resource_type = format!("{}/qbg.Update", resource_type);
         let resource_name = format!("{}: {}({})", api_name, name, ip);
@@ -188,7 +188,7 @@ pub(crate) async fn update<S: algorithm::ANN>(
         }
         Ok(()) => Ok(object::Location {
             name: name.to_owned(),
-            uuid: uuid,
+            uuid,
             ips: vec![ip.to_owned()],
         }),
     }
@@ -320,7 +320,7 @@ impl<S: algorithm::ANN + 'static> update_server::Update for super::Agent<S> {
                         Error::ObjectIDNotFound { ref uuid } => {
                             let err_details = build_error_details(
                                 &err,
-                                &uuid,
+                                uuid,
                                 request_bytes,
                                 &resource_type,
                                 &resource_name,
@@ -349,7 +349,7 @@ impl<S: algorithm::ANN + 'static> update_server::Update for super::Agent<S> {
                             );
                             let status = Status::with_error_details(
                                 Code::InvalidArgument,
-                                format!("MultiUpdate API invalid dimension size detected"),
+                                "MultiUpdate API invalid dimension size detected".to_string(),
                                 err_details,
                             );
                             warn!("{:?}", status);
@@ -358,7 +358,7 @@ impl<S: algorithm::ANN + 'static> update_server::Update for super::Agent<S> {
                         Error::UUIDNotFound { ref uuid } => {
                             let err_details = build_error_details(
                                 &err,
-                                &uuid,
+                                uuid,
                                 request_bytes,
                                 &resource_type,
                                 &resource_name,
@@ -379,7 +379,7 @@ impl<S: algorithm::ANN + 'static> update_server::Update for super::Agent<S> {
                         Error::UUIDAlreadyExists { ref uuid } => {
                             let err_details = build_error_details(
                                 &err,
-                                &uuid,
+                                uuid,
                                 request_bytes,
                                 &resource_type,
                                 &resource_name,

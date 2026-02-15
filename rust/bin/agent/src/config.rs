@@ -154,6 +154,7 @@ pub struct ServerConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Default)]
 pub struct Server {
     #[serde(default)]
     pub name: String,
@@ -168,16 +169,6 @@ pub struct Server {
     pub grpc: GrpcServerConfig,
 }
 
-impl Default for Server {
-    fn default() -> Self {
-        Self {
-            name: String::new(),
-            host: String::new(),
-            port: 0,
-            grpc: GrpcServerConfig::default(),
-        }
-    }
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GrpcServerConfig {

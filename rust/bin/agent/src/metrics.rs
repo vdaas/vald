@@ -494,7 +494,7 @@ where
                 if let Ok(s) = service.try_read() {
                     if s.is_statistics_enabled() {
                         if let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.variance_of_indegree as f64, &[]);
+                            observer.observe(stats.variance_of_indegree, &[]);
                         }
                     }
                 }
@@ -510,7 +510,7 @@ where
                 if let Ok(s) = service.try_read() {
                     if s.is_statistics_enabled() {
                         if let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.variance_of_outdegree as f64, &[]);
+                            observer.observe(stats.variance_of_outdegree, &[]);
                         }
                     }
                 }
@@ -526,7 +526,7 @@ where
                 if let Ok(s) = service.try_read() {
                     if s.is_statistics_enabled() {
                         if let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.mean_edge_length as f64, &[]);
+                            observer.observe(stats.mean_edge_length, &[]);
                         }
                     }
                 }
@@ -542,7 +542,7 @@ where
                 if let Ok(s) = service.try_read() {
                     if s.is_statistics_enabled() {
                         if let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.mean_edge_length_for_10_edges as f64, &[]);
+                            observer.observe(stats.mean_edge_length_for_10_edges, &[]);
                         }
                     }
                 }
@@ -558,7 +558,7 @@ where
                 if let Ok(s) = service.try_read() {
                     if s.is_statistics_enabled() {
                         if let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.mean_indegree_distance_for_10_edges as f64, &[]);
+                            observer.observe(stats.mean_indegree_distance_for_10_edges, &[]);
                         }
                     }
                 }
@@ -574,7 +574,7 @@ where
                 if let Ok(s) = service.try_read() {
                     if s.is_statistics_enabled() {
                         if let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.mean_number_of_edges_per_node as f64, &[]);
+                            observer.observe(stats.mean_number_of_edges_per_node, &[]);
                         }
                     }
                 }
@@ -590,7 +590,7 @@ where
                 if let Ok(s) = service.try_read() {
                     if s.is_statistics_enabled() {
                         if let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.c1_indegree as f64, &[]);
+                            observer.observe(stats.c1_indegree, &[]);
                         }
                     }
                 }
@@ -606,7 +606,7 @@ where
                 if let Ok(s) = service.try_read() {
                     if s.is_statistics_enabled() {
                         if let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.c5_indegree as f64, &[]);
+                            observer.observe(stats.c5_indegree, &[]);
                         }
                     }
                 }
@@ -622,7 +622,7 @@ where
                 if let Ok(s) = service.try_read() {
                     if s.is_statistics_enabled() {
                         if let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.c95_outdegree as f64, &[]);
+                            observer.observe(stats.c95_outdegree, &[]);
                         }
                     }
                 }
@@ -638,7 +638,7 @@ where
                 if let Ok(s) = service.try_read() {
                     if s.is_statistics_enabled() {
                         if let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.c99_outdegree as f64, &[]);
+                            observer.observe(stats.c99_outdegree, &[]);
                         }
                     }
                 }

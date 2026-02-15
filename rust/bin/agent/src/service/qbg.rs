@@ -238,7 +238,7 @@ impl QBGService {
         vector: Vec<f32>,
         ts: i64,
     ) -> Result<(), Error> {
-        if uuid.len() == 0 {
+        if uuid.is_empty() {
             return Err(Error::UUIDNotFound {
                 uuid: "0".to_string(),
             });
@@ -279,7 +279,7 @@ impl QBGService {
         if self.is_readreplica {
             return Err(Error::WriteOperationToReadReplica {});
         }
-        if uuid.len() == 0 {
+        if uuid.is_empty() {
             return Err(Error::UUIDNotFound {
                 uuid: "0".to_string(),
             });
@@ -335,7 +335,7 @@ impl QBGService {
         if self.is_readreplica {
             return Err(Error::WriteOperationToReadReplica {});
         }
-        if uuid.len() == 0 {
+        if uuid.is_empty() {
             return Err(Error::UUIDNotFound {
                 uuid: "0".to_string(),
             });
@@ -535,7 +535,7 @@ impl ANN for QBGService {
                 // Export metrics to K8s pod annotations
                 if let Some(ref exporter) = self.metrics_exporter {
                     let index_count = self.kvs.len() as u64;
-                    let uncommitted = (self.vq.ivq_len() + self.vq.dvq_len()) as u64;
+                    let uncommitted = self.vq.ivq_len() + self.vq.dvq_len();
                     let processed_vq = self.processed_vq_count.load(Ordering::SeqCst);
                     let unsaved_exec = self.unsaved_create_index_count.load(Ordering::SeqCst);
                     if let Err(e) = exporter
@@ -606,12 +606,10 @@ impl ANN for QBGService {
                         index_count
                     );
                 }
+            } else if let Err(e) = persistence.save_metadata(&metadata) {
+                warn!("failed to save metadata: {}", e);
             } else {
-                if let Err(e) = persistence.save_metadata(&metadata) {
-                    warn!("failed to save metadata: {}", e);
-                } else {
-                    debug!("saved metadata with index_count={}", index_count);
-                }
+                debug!("saved metadata with index_count={}", index_count);
             }
         }
 
@@ -750,7 +748,7 @@ impl ANN for QBGService {
             .collect();
         let res = search::Response {
             request_id: "".to_string(),
-            results: results,
+            results,
         };
         Ok(res)
     }

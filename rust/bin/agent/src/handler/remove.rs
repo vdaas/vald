@@ -35,7 +35,7 @@ async fn remove<S: algorithm::ANN>(
     ip: &str,
     request: &remove::Request,
 ) -> Result<object::Location, Status> {
-    let _config = match request.config.clone() {
+    let _config = match request.config {
         Some(cfg) => cfg,
         None => return Err(Status::invalid_argument("Missing configuration in request")),
     };
@@ -46,7 +46,7 @@ async fn remove<S: algorithm::ANN>(
     let uuid = id.id;
     {
         let mut s = s.write().await;
-        if uuid.len() == 0 {
+        if uuid.is_empty() {
             let err = Error::InvalidUUID { uuid: uuid.clone() };
             let resource_type = format!("{}/qbg.Remove", resource_type);
             let resource_name = format!("{}: {}({})", api_name, name, ip);
@@ -125,7 +125,7 @@ async fn remove<S: algorithm::ANN>(
             }
             Ok(()) => Ok(object::Location {
                 name: name.to_owned(),
-                uuid: uuid,
+                uuid,
                 ips: vec![ip.to_owned()],
             }),
         }

@@ -160,6 +160,12 @@ pub trait MapBase: Sized + Sync + Send + 'static {
         self._len().load(Ordering::Relaxed)
     }
 
+    /// Returns whether the map is empty.
+    #[instrument(skip(self))]
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     /// Flushes all pending writes to the disk, ensuring durability.
     #[instrument(skip(self))]
     fn flush(&self) -> impl Future<Output = Result<(), Error>> + Send {
