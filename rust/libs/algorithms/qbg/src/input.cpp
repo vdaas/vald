@@ -230,7 +230,10 @@ Index::Index(const rust::String &path, bool prebuilt)
     open_index(cpath.c_str(), prebuilt);
 }
 
-Index::~Index() {}
+Index::~Index()
+{
+    close_index();
+}
 
 void Index::open_index(const rust::String &path, bool prebuilt)
 {
@@ -281,7 +284,11 @@ void Index::save_index()
 
 void Index::close_index()
 {
-    qbg_close_index(index);
+    if (index != nullptr)
+    {
+        qbg_close_index(index);
+        index = nullptr;
+    }
 }
 
 rust::i32 Index::append(rust::Slice<const rust::f32> v)

@@ -91,7 +91,7 @@ public:
 
 class Index
 {
-    void *index;
+    void *index = nullptr;
 
 public:
     Index(
