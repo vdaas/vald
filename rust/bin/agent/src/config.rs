@@ -153,8 +153,7 @@ pub struct ServerConfig {
     pub servers: Vec<Server>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[derive(Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Server {
     #[serde(default)]
     pub name: String,
@@ -168,7 +167,6 @@ pub struct Server {
     #[serde(default)]
     pub grpc: GrpcServerConfig,
 }
-
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GrpcServerConfig {

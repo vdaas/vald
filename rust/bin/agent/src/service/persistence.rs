@@ -15,9 +15,9 @@
 //
 
 use anyhow::Result;
+use chrono;
 use std::fs;
 use std::path::{Path, PathBuf};
-use chrono;
 
 #[derive(Debug)]
 pub struct IndexPaths {
