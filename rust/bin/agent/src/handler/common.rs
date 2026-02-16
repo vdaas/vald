@@ -117,6 +117,7 @@ where
     Ok(Response::new(output_stream))
 }
 
+// deepsource-disable-next-line 
 #[cfg(test)]
 mod tests {
     use crate::middleware::{AccessLogMiddlewareLayer, MetricMiddlewareLayer};
@@ -145,7 +146,6 @@ mod tests {
         transport::{Channel, Server},
     };
 
-    // tonic-mock uses old version of http_body, so we need to implement below ourselves.
     #[derive(Clone)]
     pub struct MockBody {
         data: VecDeque<Bytes>,

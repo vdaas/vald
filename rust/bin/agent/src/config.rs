@@ -801,7 +801,7 @@ impl Default for QBG {
 /// Get actual value by expanding environment variables
 /// If value starts with ${, it attempts to resolve from environment variables
 fn get_actual_value(value: &str) -> String {
-    if value.starts_with("${") && value.ends_with("}") {
+    if value.starts_with("${") && value.ends_with('}') {
         let env_var = &value[2..value.len() - 1];
         if let Some(idx) = env_var.find(':') {
             let (var_name, default_val) = env_var.split_at(idx);
@@ -814,20 +814,20 @@ fn get_actual_value(value: &str) -> String {
     }
 }
 
-/// Load configuration from YAML file
-pub fn load_config_from_file<P: AsRef<Path>>(path: P) -> Result<QBG, Box<dyn std::error::Error>> {
-    let content = std::fs::read_to_string(path)?;
-    let mut config: QBG = serde_yaml::from_str(&content)?;
-    config.bind();
-    config.validate()?;
-    Ok(config)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::io::Write;
+    use std::env::temp_dir;
     use tempfile::NamedTempFile;
+
+    fn load_config_from_file<P: AsRef<Path>>(path: P) -> Result<QBG, Box<dyn std::error::Error>> {
+        let content = std::fs::read_to_string(path)?;
+        let mut config: QBG = serde_yaml::from_str(&content)?;
+        config.bind();
+        config.validate()?;
+        Ok(config)
+    }
 
     #[test]
     fn test_vqueue_default() {
@@ -857,7 +857,7 @@ mod tests {
         let mut qbg = QBG {
             pod_name: "test-pod".to_string(),
             namespace: "test-ns".to_string(),
-            index_path: "/tmp/index".to_string(),
+            index_path: temp_dir().join("index").to_str().unwrap().to_string(),
             dimension: 128,
             vqueue: None,
             kvsdb: None,
@@ -876,7 +876,7 @@ mod tests {
     fn test_qbg_validate_valid() {
         let qbg = QBG {
             dimension: 128,
-            index_path: "/tmp/index".to_string(),
+            index_path: temp_dir().join("index").to_str().unwrap().to_string(),
             bulk_insert_chunk_size: 100,
             number_of_subvectors: 1,
             ..QBG::default()
@@ -889,7 +889,7 @@ mod tests {
     fn test_qbg_validate_zero_dimension() {
         let qbg = QBG {
             dimension: 0,
-            index_path: "/tmp/index".to_string(),
+            index_path: temp_dir().join("index").to_str().unwrap().to_string(),
             ..QBG::default()
         };
 
@@ -915,7 +915,7 @@ mod tests {
     fn test_qbg_validate_zero_bulk_insert_chunk_size() {
         let qbg = QBG {
             dimension: 128,
-            index_path: "/tmp/index".to_string(),
+            index_path: temp_dir().join("index").to_str().unwrap().to_string(),
             bulk_insert_chunk_size: 0,
             ..QBG::default()
         };
@@ -932,7 +932,7 @@ mod tests {
     fn test_qbg_validate_zero_number_of_subvectors() {
         let qbg = QBG {
             dimension: 128,
-            index_path: "/tmp/index".to_string(),
+            index_path: temp_dir().join("index").to_str().unwrap().to_string(),
             number_of_subvectors: 0,
             ..QBG::default()
         };
@@ -949,7 +949,7 @@ mod tests {
     fn test_qbg_validate_invalid_internal_data_type() {
         let qbg = QBG {
             dimension: 128,
-            index_path: "/tmp/index".to_string(),
+            index_path: temp_dir().join("index").to_str().unwrap().to_string(),
             internal_data_type: 3,
             ..QBG::default()
         };
@@ -963,7 +963,7 @@ mod tests {
     fn test_qbg_validate_invalid_data_type() {
         let qbg = QBG {
             dimension: 128,
-            index_path: "/tmp/index".to_string(),
+            index_path: temp_dir().join("index").to_str().unwrap().to_string(),
             data_type: 99,
             ..QBG::default()
         };
@@ -1000,10 +1000,11 @@ mod tests {
 
     #[test]
     fn test_deserialize_from_yaml_string() {
-        let yaml_str = r#"
+        let index_path = temp_dir().join("index").to_str().unwrap().to_string();
+        let yaml_str = format!(r#"
 pod_name: test-pod
 namespace: test-namespace
-index_path: /tmp/test_index
+index_path: {}
 dimension: 256
 extended_dimension: 512
 number_of_subvectors: 4
@@ -1025,12 +1026,12 @@ kvsdb:
 enable_copy_on_write: true
 enable_in_memory_mode: true
 is_readreplica: false
-"#;
+"#, index_path);
 
-        let qbg: QBG = serde_yaml::from_str(yaml_str).expect("Failed to deserialize");
+        let qbg: QBG = serde_yaml::from_str(yaml_str.as_str()).expect("Failed to deserialize");
         assert_eq!(qbg.pod_name, "test-pod");
         assert_eq!(qbg.namespace, "test-namespace");
-        assert_eq!(qbg.index_path, "/tmp/test_index");
+        assert_eq!(qbg.index_path, index_path);
         assert_eq!(qbg.dimension, 256);
         assert_eq!(qbg.extended_dimension, 512);
         assert_eq!(qbg.number_of_subvectors, 4);
@@ -1055,15 +1056,16 @@ is_readreplica: false
     #[test]
     fn test_load_config_from_file() {
         let mut file = NamedTempFile::new().expect("Failed to create temp file");
-        let yaml_str = "\
-index_path: /tmp/test_index
+        let index_path = temp_dir().join("index").to_str().unwrap().to_string();
+        let yaml_str = format!(r#"
+index_path: {}
 dimension: 128
-";
+"#, index_path);
         file.write_all(yaml_str.as_bytes())
             .expect("Failed to write config file");
 
         let cfg = load_config_from_file(file.path()).expect("Failed to load config");
-        assert_eq!(cfg.index_path, "/tmp/test_index");
+        assert_eq!(cfg.index_path, index_path);
         assert_eq!(cfg.dimension, 128);
     }
 
@@ -1072,7 +1074,7 @@ dimension: 128
         let qbg = QBG {
             pod_name: "test-pod".to_string(),
             namespace: "test-ns".to_string(),
-            index_path: "/tmp/index".to_string(),
+            index_path: temp_dir().join("index").to_str().unwrap().to_string(),
             dimension: 128,
             extended_dimension: 256,
             number_of_subvectors: 4,
@@ -1107,7 +1109,7 @@ dimension: 128
         for dt in &[1, 2] {
             let qbg = QBG {
                 dimension: 128,
-                index_path: "/tmp/index".to_string(),
+                index_path: temp_dir().join("index").to_str().unwrap().to_string(),
                 data_type: *dt,
                 internal_data_type: *dt,
                 ..QBG::default()
