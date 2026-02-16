@@ -811,7 +811,7 @@ mod tests {
     use std::env::temp_dir;
     use tempfile::NamedTempFile;
 
-    fn load_config_from_file<P: AsRef<Path>>(path: P) -> Result<QBG, Box<dyn std::error::Error>> {
+    fn load_config_from_file<P: AsRef<std::path::Path>>(path: P) -> Result<QBG, Box<dyn std::error::Error>> {
         let content = std::fs::read_to_string(path)?;
         let mut config: QBG = serde_yaml::from_str(&content)?;
         config.bind();
