@@ -379,14 +379,6 @@ fn default_delete_buffer_pool_size() -> usize {
 }
 
 impl VQueue {
-    /// Creates a VQueue configuration with default values.
-    pub fn new() -> Self {
-        Self {
-            insert_buffer_pool_size: default_insert_buffer_pool_size(),
-            delete_buffer_pool_size: default_delete_buffer_pool_size(),
-        }
-    }
-
     /// Applies environment-variable expansion to string fields.
     pub fn bind(&mut self) -> &mut Self {
         self
@@ -395,7 +387,10 @@ impl VQueue {
 
 impl Default for VQueue {
     fn default() -> Self {
-        Self::new()
+        Self {
+            insert_buffer_pool_size: default_insert_buffer_pool_size(),
+            delete_buffer_pool_size: default_delete_buffer_pool_size(),
+        }
     }
 }
 
@@ -436,16 +431,6 @@ fn default_kvsdb_use_compression() -> bool {
 }
 
 impl KVSDB {
-    /// Creates a KVSDB configuration with default values.
-    pub fn new() -> Self {
-        Self {
-            concurrency: default_kvsdb_concurrency(),
-            cache_capacity: default_kvsdb_cache_capacity(),
-            compression_factor: default_kvsdb_compression_factor(),
-            use_compression: default_kvsdb_use_compression(),
-        }
-    }
-
     /// Applies environment-variable expansion to string fields.
     pub fn bind(&mut self) -> &mut Self {
         self
@@ -454,7 +439,12 @@ impl KVSDB {
 
 impl Default for KVSDB {
     fn default() -> Self {
-        Self::new()
+        Self{
+            concurrency: default_kvsdb_concurrency(),
+            cache_capacity: default_kvsdb_cache_capacity(),
+            compression_factor: default_kvsdb_compression_factor(),
+            use_compression: default_kvsdb_use_compression(),
+        }
     }
 }
 
@@ -696,54 +686,6 @@ fn default_broken_index_history_limit() -> usize {
 }
 
 impl QBG {
-    /// Create a new QBG configuration with default values
-    pub fn new() -> Self {
-        Self {
-            pod_name: String::default(),
-            namespace: String::default(),
-            index_path: String::default(),
-            dimension: 0,
-            extended_dimension: 0,
-            number_of_subvectors: default_number_of_subvectors(),
-            number_of_blobs: 0,
-            internal_data_type: default_internal_data_type(),
-            data_type: default_data_type(),
-            distance_type: default_distance_type(),
-            hierarchical_clustering_init_mode: default_hierarchical_clustering_init_mode(),
-            number_of_first_objects: 0,
-            number_of_first_clusters: 0,
-            number_of_second_objects: 0,
-            number_of_second_clusters: 0,
-            number_of_third_clusters: 0,
-            number_of_objects: default_number_of_objects(),
-            optimization_clustering_init_mode: default_optimization_clustering_init_mode(),
-            rotation_iteration: default_rotation_iteration(),
-            subvector_iteration: default_subvector_iteration(),
-            number_of_matrices: default_number_of_matrices(),
-            rotation: default_rotation(),
-            repositioning: false,
-            bulk_insert_chunk_size: default_bulk_insert_chunk_size(),
-            default_pool_size: default_pool_size(),
-            default_radius: default_radius(),
-            default_epsilon: default_epsilon(),
-            auto_index_duration_limit: String::default(),
-            auto_index_check_duration: String::default(),
-            auto_save_index_duration: String::default(),
-            auto_index_length: 0,
-            initial_delay_max_duration: String::default(),
-            enable_in_memory_mode: false,
-            enable_copy_on_write: false,
-            vqueue: None,
-            kvsdb: None,
-            broken_index_history_limit: default_broken_index_history_limit(),
-            error_buffer_limit: 0,
-            is_readreplica: false,
-            enable_export_index_info_to_k8s: false,
-            export_index_info_duration: String::default(),
-            enable_statistics: false,
-        }
-    }
-
     /// Bind applies environment variable expansion to string fields
     pub fn bind(&mut self) -> &mut Self {
         self.pod_name = get_actual_value(&self.pod_name);
@@ -809,7 +751,50 @@ impl QBG {
 
 impl Default for QBG {
     fn default() -> Self {
-        Self::new()
+        Self {
+            pod_name: String::default(),
+            namespace: String::default(),
+            index_path: String::default(),
+            dimension: 0,
+            extended_dimension: 0,
+            number_of_subvectors: default_number_of_subvectors(),
+            number_of_blobs: 0,
+            internal_data_type: default_internal_data_type(),
+            data_type: default_data_type(),
+            distance_type: default_distance_type(),
+            hierarchical_clustering_init_mode: default_hierarchical_clustering_init_mode(),
+            number_of_first_objects: 0,
+            number_of_first_clusters: 0,
+            number_of_second_objects: 0,
+            number_of_second_clusters: 0,
+            number_of_third_clusters: 0,
+            number_of_objects: default_number_of_objects(),
+            optimization_clustering_init_mode: default_optimization_clustering_init_mode(),
+            rotation_iteration: default_rotation_iteration(),
+            subvector_iteration: default_subvector_iteration(),
+            number_of_matrices: default_number_of_matrices(),
+            rotation: default_rotation(),
+            repositioning: false,
+            bulk_insert_chunk_size: default_bulk_insert_chunk_size(),
+            default_pool_size: default_pool_size(),
+            default_radius: default_radius(),
+            default_epsilon: default_epsilon(),
+            auto_index_duration_limit: String::default(),
+            auto_index_check_duration: String::default(),
+            auto_save_index_duration: String::default(),
+            auto_index_length: 0,
+            initial_delay_max_duration: String::default(),
+            enable_in_memory_mode: false,
+            enable_copy_on_write: false,
+            vqueue: None,
+            kvsdb: None,
+            broken_index_history_limit: default_broken_index_history_limit(),
+            error_buffer_limit: 0,
+            is_readreplica: false,
+            enable_export_index_info_to_k8s: false,
+            export_index_info_duration: String::default(),
+            enable_statistics: false,
+        }
     }
 }
 
@@ -845,26 +830,10 @@ mod tests {
     use tempfile::NamedTempFile;
 
     #[test]
-    fn test_vqueue_new() {
-        let vq = VQueue::new();
-        assert_eq!(vq.insert_buffer_pool_size, 1000);
-        assert_eq!(vq.delete_buffer_pool_size, 1000);
-    }
-
-    #[test]
     fn test_vqueue_default() {
         let vq = VQueue::default();
         assert_eq!(vq.insert_buffer_pool_size, 1000);
         assert_eq!(vq.delete_buffer_pool_size, 1000);
-    }
-
-    #[test]
-    fn test_kvsdb_new() {
-        let kvs = KVSDB::new();
-        assert_eq!(kvs.concurrency, 10);
-        assert_eq!(kvs.cache_capacity, 10000);
-        assert_eq!(kvs.compression_factor, 9);
-        assert!(kvs.use_compression);
     }
 
     #[test]
@@ -874,33 +843,6 @@ mod tests {
         assert_eq!(kvs.cache_capacity, 10000);
         assert_eq!(kvs.compression_factor, 9);
         assert!(kvs.use_compression);
-    }
-
-    #[test]
-    fn test_qbg_new() {
-        let qbg = QBG::new();
-        assert_eq!(qbg.dimension, 0);
-        assert_eq!(qbg.extended_dimension, 0);
-        assert_eq!(qbg.number_of_subvectors, 1);
-        assert_eq!(qbg.internal_data_type, 1);
-        assert_eq!(qbg.data_type, 1);
-        assert_eq!(qbg.distance_type, 1);
-        assert_eq!(qbg.number_of_objects, 1000);
-        assert_eq!(qbg.rotation_iteration, 2000);
-        assert_eq!(qbg.subvector_iteration, 400);
-        assert_eq!(qbg.number_of_matrices, 3);
-        assert!(qbg.rotation);
-        assert!(!qbg.repositioning);
-        assert_eq!(qbg.bulk_insert_chunk_size, 100);
-        assert_eq!(qbg.default_pool_size, 10);
-        assert_eq!(qbg.default_radius, -1.0);
-        assert_eq!(qbg.default_epsilon, 0.1);
-        assert_eq!(qbg.broken_index_history_limit, 3);
-        assert!(!qbg.enable_in_memory_mode);
-        assert!(!qbg.enable_copy_on_write);
-        assert!(!qbg.is_readreplica);
-        assert!(!qbg.enable_export_index_info_to_k8s);
-        assert!(!qbg.enable_statistics);
     }
 
     #[test]
@@ -919,7 +861,7 @@ mod tests {
             dimension: 128,
             vqueue: None,
             kvsdb: None,
-            ..QBG::new()
+            ..QBG::default()
         };
 
         qbg.bind();
@@ -937,7 +879,7 @@ mod tests {
             index_path: "/tmp/index".to_string(),
             bulk_insert_chunk_size: 100,
             number_of_subvectors: 1,
-            ..QBG::new()
+            ..QBG::default()
         };
 
         assert!(qbg.validate().is_ok());
@@ -948,7 +890,7 @@ mod tests {
         let qbg = QBG {
             dimension: 0,
             index_path: "/tmp/index".to_string(),
-            ..QBG::new()
+            ..QBG::default()
         };
 
         let result = qbg.validate();
@@ -961,7 +903,7 @@ mod tests {
         let qbg = QBG {
             dimension: 128,
             index_path: String::default(),
-            ..QBG::new()
+            ..QBG::default()
         };
 
         let result = qbg.validate();
@@ -975,7 +917,7 @@ mod tests {
             dimension: 128,
             index_path: "/tmp/index".to_string(),
             bulk_insert_chunk_size: 0,
-            ..QBG::new()
+            ..QBG::default()
         };
 
         let result = qbg.validate();
@@ -992,7 +934,7 @@ mod tests {
             dimension: 128,
             index_path: "/tmp/index".to_string(),
             number_of_subvectors: 0,
-            ..QBG::new()
+            ..QBG::default()
         };
 
         let result = qbg.validate();
@@ -1009,7 +951,7 @@ mod tests {
             dimension: 128,
             index_path: "/tmp/index".to_string(),
             internal_data_type: 3,
-            ..QBG::new()
+            ..QBG::default()
         };
 
         let result = qbg.validate();
@@ -1023,7 +965,7 @@ mod tests {
             dimension: 128,
             index_path: "/tmp/index".to_string(),
             data_type: 99,
-            ..QBG::new()
+            ..QBG::default()
         };
 
         let result = qbg.validate();
@@ -1145,7 +1087,7 @@ dimension: 128
                 compression_factor: 9,
                 use_compression: true,
             }),
-            ..QBG::new()
+            ..QBG::default()
         };
 
         let yaml_str = serde_yaml::to_string(&qbg).expect("Failed to serialize");
@@ -1168,7 +1110,7 @@ dimension: 128
                 index_path: "/tmp/index".to_string(),
                 data_type: *dt,
                 internal_data_type: *dt,
-                ..QBG::new()
+                ..QBG::default()
             };
             assert!(qbg.validate().is_ok(), "Failed for data_type: {}", dt);
         }
