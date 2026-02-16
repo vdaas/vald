@@ -31,3 +31,6 @@ scopeguard = { version = "1.2.0"}
 paste = {version = "1.0.15"}
 anyhow = { version = "1.0.101"}
 url = { version = "2.5.8"}
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tracing-opentelemetry = "0.32"

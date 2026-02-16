@@ -26,9 +26,9 @@
 
 use std::{path::Path, sync::Arc};
 
+/// Map implementations and shared map traits.
 pub mod map;
-
-use crate::map::{
+pub use crate::map::{
     base::MapBase,
     codec::{Codec, WincodeCodec},
     error::Error,
@@ -57,7 +57,7 @@ impl<M: MapBase<C = WincodeCodec>> MapBuilder<M, WincodeCodec> {
     pub fn new(path: impl AsRef<str>) -> Self {
         Self {
             path: path.as_ref().to_string(),
-            codec: WincodeCodec::default(),
+            codec: WincodeCodec,
             config: Config::default(),
             scan_on_startup: true,
             _marker: std::marker::PhantomData,
