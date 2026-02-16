@@ -26,6 +26,7 @@
 
 use std::{path::Path, sync::Arc};
 
+/// Map implementations and shared map traits.
 pub mod map;
 pub use crate::map::{
     base::MapBase,

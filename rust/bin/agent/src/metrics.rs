@@ -64,6 +64,7 @@ const C5_INDEGREE: &str = "agent_core_ngt_c5_indegree";
 const C95_OUTDEGREE: &str = "agent_core_ngt_c95_outdegree";
 const C99_OUTDEGREE: &str = "agent_core_ngt_c99_outdegree";
 
+/// Registers OpenTelemetry metrics backed by the ANN service state.
 pub fn register_metrics<S>(service: Arc<RwLock<S>>) -> anyhow::Result<()>
 where
     S: ANN + 'static,

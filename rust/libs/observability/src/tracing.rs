@@ -62,30 +62,36 @@ impl Default for TracingConfig {
 }
 
 impl TracingConfig {
+    /// Creates a tracing configuration with defaults.
     pub fn new() -> Self {
         Self::default()
     }
 
+    /// Enables or disables stdout/stderr output.
     pub fn enable_stdout(mut self, enable: bool) -> Self {
         self.enable_stdout = enable;
         self
     }
 
+    /// Enables or disables JSON output formatting.
     pub fn enable_json(mut self, enable: bool) -> Self {
         self.enable_json = enable;
         self
     }
 
+    /// Enables or disables OpenTelemetry export.
     pub fn enable_otel(mut self, enable: bool) -> Self {
         self.enable_otel = enable;
         self
     }
 
+    /// Sets the log level filter.
     pub fn level(mut self, level: &str) -> Self {
         self.level = level.to_string();
         self
     }
 
+    /// Sets the service name used in tracing.
     pub fn service_name(mut self, name: &str) -> Self {
         self.service_name = name.to_string();
         self

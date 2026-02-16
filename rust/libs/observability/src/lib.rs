@@ -14,9 +14,13 @@
 // limitations under the License.
 //
 
+/// Configuration types for OpenTelemetry exporters.
 pub mod config;
+/// Observability-related helper macros.
 pub mod macros;
+/// OpenTelemetry lifecycle management helpers.
 pub mod observability;
+/// Tracing initialization helpers.
 pub mod tracing;
 
 #[doc(hidden)]

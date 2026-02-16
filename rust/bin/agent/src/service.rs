@@ -14,10 +14,15 @@
 // limitations under the License.
 //
 
+/// Background daemon for periodic index tasks.
 pub mod daemon;
+/// Kubernetes integration for exporting metrics to annotations.
 pub mod k8s;
+/// In-memory store utilities for KVS and vqueue.
 pub mod memstore;
+/// Metadata load/store helpers for indexes.
 pub mod metadata;
+/// Index persistence utilities for save/load and recovery.
 pub mod persistence;
 mod qbg;
 pub use daemon::{DaemonConfig, DaemonHandle, start as start_daemon};

@@ -24,10 +24,12 @@ use url::Url;
 
 use crate::config::Config;
 
+/// Resource key for OpenTelemetry service name.
 pub const SERVICE_NAME: &str = opentelemetry_semantic_conventions::resource::SERVICE_NAME;
 
 /// Observability lifecycle hooks for telemetry exporters.
 pub trait Observability {
+    /// Flushes and shuts down any active exporters.
     fn shutdown(&mut self) -> Result<()>;
 }
 
@@ -39,6 +41,7 @@ pub struct ObservabilityImpl {
 }
 
 impl ObservabilityImpl {
+    /// Creates a new observability instance from configuration.
     pub fn new(cfg: Config) -> Result<ObservabilityImpl, anyhow::Error> {
         let mut obj = ObservabilityImpl {
             config: cfg,

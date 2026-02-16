@@ -24,14 +24,17 @@ use tonic::{Request, Response, Status, Streaming};
 use tonic_types::{ErrorDetails, FieldViolation};
 
 #[macro_export]
+/// Builds a tonic streaming response type for the given item type.
 macro_rules! stream_type {
     ($t:ty) => {
         tokio_stream::wrappers::ReceiverStream<Result<$t, tonic::Status>>
     };
 }
 
+/// Lazily initialized domain name for error details.
 pub static DOMAIN: OnceLock<String> = OnceLock::new();
 
+/// Builds rich gRPC error details for Vald APIs.
 pub fn build_error_details(
     err_msg: impl ToString,
     id: &str,
@@ -58,6 +61,7 @@ pub fn build_error_details(
     err_details
 }
 
+/// Runs a bidirectional stream with bounded concurrency and ordered draining.
 pub async fn bidirectional_stream<Q, R, F, Fut>(
     request_stream: Request<Streaming<Q>>,
     concurrency: usize,

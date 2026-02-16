@@ -14,14 +14,21 @@
 // limitations under the License.
 //
 
+/// Helper constructors for multi-object errors.
 pub trait MultiError {
+    /// Builds an error for UUIDs that already exist.
     fn new_uuid_already_exists(uuids: Vec<String>) -> Error;
+    /// Builds an error for missing object IDs.
     fn new_object_id_not_found(uuids: Vec<String>) -> Error;
+    /// Builds an error for invalid dimension sizes.
     fn new_invalid_dimension_size(current: Vec<String>, limit: Vec<String>) -> Error;
+    /// Builds an error for missing UUIDs.
     fn new_uuid_not_found(uuids: Vec<String>) -> Error;
+    /// Splits a comma-separated UUID list into a vector.
     fn split_uuids(uuids: String) -> Vec<String>;
 }
 
+/// Error types returned by ANN operations.
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("create indexing is in progress")]

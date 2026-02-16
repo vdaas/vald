@@ -15,13 +15,21 @@
 //
 
 mod common;
+/// Flush RPC handlers.
 pub mod flush;
+/// Index RPC handlers.
 pub mod index;
+/// Insert RPC handlers.
 pub mod insert;
+/// Object RPC handlers.
 pub mod object;
+/// Remove RPC handlers.
 pub mod remove;
+/// Search RPC handlers.
 pub mod search;
+/// Update RPC handlers.
 pub mod update;
+/// Upsert RPC handlers.
 pub mod upsert;
 
 use crate::config::AgentConfig;
@@ -51,6 +59,7 @@ pub struct Agent<S: algorithm::ANN + 'static> {
 }
 
 impl<S: algorithm::ANN + 'static> Agent<S> {
+    /// Creates a new agent instance with its service and identity settings.
     pub fn new(
         s: S,
         name: &str,

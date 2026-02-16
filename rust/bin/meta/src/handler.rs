@@ -25,6 +25,7 @@ pub struct Meta {
 }
 
 impl Meta {
+    /// Creates a new metadata store from the given config path.
     pub fn new(cfg_path: &str) -> Result<Self, kv::Error> {
         let cfg = Config::new(cfg_path);
         let store = Arc::new(Store::new(cfg)?);
