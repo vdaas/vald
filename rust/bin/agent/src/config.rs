@@ -22,30 +22,38 @@ use std::path::Path;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AgentConfig {
     #[serde(default)]
+    /// Logging configuration settings.
     pub logging: Logging,
 
     #[serde(default)]
+    /// Observability (tracing/metrics) configuration settings.
     pub observability: Observability,
 
     #[serde(default)]
+    /// Server configuration settings.
     pub server_config: ServerConfig,
 
     #[serde(default)]
+    /// Service configuration settings.
     pub service: Service,
 
     #[serde(default)]
+    /// Background daemon configuration settings.
     pub daemon: Daemon,
 
     #[serde(default)]
+    /// QBG-specific configuration settings.
     pub qbg: QBG,
 }
 
 impl AgentConfig {
+    /// Applies environment-variable expansion to nested configurations.
     pub fn bind(&mut self) -> &mut Self {
         self.qbg.bind();
         self
     }
 
+    /// Validates the agent configuration.
     pub fn validate(&self) -> Result<(), String> {
         self.qbg.validate()?;
         Ok(())
@@ -56,9 +64,11 @@ impl AgentConfig {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Logging {
     #[serde(default = "default_logging_level")]
+    /// Log level (e.g., "info", "debug").
     pub level: String,
 
     #[serde(default)]
+    /// Whether to output JSON-formatted logs.
     pub json: bool,
 }
 
@@ -79,18 +89,23 @@ impl Default for Logging {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Observability {
     #[serde(default)]
+    /// Enables observability features.
     pub enabled: bool,
 
     #[serde(default)]
+    /// OTLP endpoint for tracing/metrics export.
     pub endpoint: String,
 
     #[serde(default = "default_service_name")]
+    /// Service name used in tracing/metrics.
     pub service_name: String,
 
     #[serde(default)]
+    /// Tracing configuration settings.
     pub tracer: Tracer,
 
     #[serde(default)]
+    /// Metrics configuration settings.
     pub meter: Meter,
 }
 
@@ -102,7 +117,7 @@ impl Default for Observability {
     fn default() -> Self {
         Self {
             enabled: false,
-            endpoint: String::new(),
+            endpoint: String::default(),
             service_name: default_service_name(),
             tracer: Tracer::default(),
             meter: Meter::default(),
@@ -113,18 +128,22 @@ impl Default for Observability {
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Tracer {
     #[serde(default)]
+    /// Enables tracing.
     pub enabled: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Meter {
     #[serde(default)]
+    /// Enables metrics.
     pub enabled: bool,
 
     #[serde(default = "default_meter_export_duration_secs")]
+    /// Export interval in seconds.
     pub export_duration_secs: u64,
 
     #[serde(default = "default_meter_export_timeout_secs")]
+    /// Export timeout in seconds.
     pub export_timeout_secs: u64,
 }
 
@@ -150,29 +169,34 @@ impl Default for Meter {
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ServerConfig {
     #[serde(default)]
+    /// Server entries for different protocols.
     pub servers: Vec<Server>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Server {
     #[serde(default)]
+    /// Server name (e.g., "grpc").
     pub name: String,
 
     #[serde(default)]
+    /// Bind host address.
     pub host: String,
 
     #[serde(default)]
+    /// Bind port.
     pub port: u16,
 
     #[serde(default)]
+    /// gRPC-specific server configuration.
     pub grpc: GrpcServerConfig,
 }
 
 impl Default for Server {
     fn default() -> Self {
         Self {
-            name: String::new(),
-            host: String::new(),
+            name: String::default(),
+            host: String::default(),
             port: 0,
             grpc: GrpcServerConfig::default(),
         }
@@ -182,30 +206,39 @@ impl Default for Server {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GrpcServerConfig {
     #[serde(default)]
+    /// Maximum receive message size in bytes.
     pub max_receive_message_size: usize,
 
     #[serde(default)]
+    /// Maximum send message size in bytes.
     pub max_send_message_size: usize,
 
     #[serde(default)]
+    /// Initial stream window size.
     pub initial_window_size: u32,
 
     #[serde(default)]
+    /// Initial connection window size.
     pub initial_conn_window_size: u32,
 
     #[serde(default)]
+    /// Maximum header list size.
     pub max_header_list_size: u32,
 
     #[serde(default)]
+    /// Maximum number of concurrent streams.
     pub max_concurrent_streams: u32,
 
     #[serde(default)]
+    /// Connection timeout duration string.
     pub connection_timeout: String,
 
     #[serde(default)]
+    /// Keepalive configuration.
     pub keepalive: Keepalive,
 
     #[serde(default)]
+    /// Interceptor names.
     pub interceptors: Vec<String>,
 }
 
@@ -218,7 +251,7 @@ impl Default for GrpcServerConfig {
             initial_conn_window_size: 65535,
             max_header_list_size: 8192,
             max_concurrent_streams: 100,
-            connection_timeout: String::new(),
+            connection_timeout: String::default(),
             keepalive: Keepalive::default(),
             interceptors: Vec::new(),
         }
@@ -228,12 +261,15 @@ impl Default for GrpcServerConfig {
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Keepalive {
     #[serde(default)]
+    /// Maximum connection age.
     pub max_conn_age: String,
 
     #[serde(default)]
+    /// Keepalive interval.
     pub time: String,
 
     #[serde(default)]
+    /// Keepalive timeout.
     pub timeout: String,
 }
 
@@ -242,6 +278,7 @@ pub struct Keepalive {
 pub struct Service {
     #[serde(rename = "type")]
     #[serde(default)]
+    /// Service type name.
     pub type_: String,
 }
 
@@ -249,24 +286,31 @@ pub struct Service {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Daemon {
     #[serde(default = "default_daemon_auto_index_check_duration_ms")]
+    /// Auto index check interval in milliseconds.
     pub auto_index_check_duration_ms: u64,
 
     #[serde(default = "default_daemon_auto_save_index_duration_ms")]
+    /// Auto save index interval in milliseconds.
     pub auto_save_index_duration_ms: u64,
 
     #[serde(default = "default_daemon_auto_index_limit_ms")]
+    /// Auto index duration limit in milliseconds.
     pub auto_index_limit_ms: u64,
 
     #[serde(default = "default_daemon_auto_index_length")]
+    /// Auto index batch length limit.
     pub auto_index_length: usize,
 
     #[serde(default = "default_daemon_pool_size")]
+    /// Worker pool size.
     pub pool_size: u32,
 
     #[serde(default = "default_daemon_initial_delay_ms")]
+    /// Initial delay before running background tasks.
     pub initial_delay_ms: u64,
 
     #[serde(default)]
+    /// Enables proactive garbage collection.
     pub enable_proactive_gc: bool,
 }
 
@@ -330,6 +374,7 @@ fn default_delete_buffer_pool_size() -> usize {
 }
 
 impl VQueue {
+    /// Creates a VQueue configuration with default values.
     pub fn new() -> Self {
         Self {
             insert_buffer_pool_size: default_insert_buffer_pool_size(),
@@ -337,6 +382,7 @@ impl VQueue {
         }
     }
 
+    /// Applies environment-variable expansion to string fields.
     pub fn bind(&mut self) -> &mut Self {
         self
     }
@@ -385,6 +431,7 @@ fn default_kvsdb_use_compression() -> bool {
 }
 
 impl KVSDB {
+    /// Creates a KVSDB configuration with default values.
     pub fn new() -> Self {
         Self {
             concurrency: default_kvsdb_concurrency(),
@@ -394,6 +441,7 @@ impl KVSDB {
         }
     }
 
+    /// Applies environment-variable expansion to string fields.
     pub fn bind(&mut self) -> &mut Self {
         self
     }
@@ -646,9 +694,9 @@ impl QBG {
     /// Create a new QBG configuration with default values
     pub fn new() -> Self {
         Self {
-            pod_name: String::new(),
-            namespace: String::new(),
-            index_path: String::new(),
+            pod_name: String::default(),
+            namespace: String::default(),
+            index_path: String::default(),
             dimension: 0,
             extended_dimension: 0,
             number_of_subvectors: default_number_of_subvectors(),
@@ -673,11 +721,11 @@ impl QBG {
             default_pool_size: default_pool_size(),
             default_radius: default_radius(),
             default_epsilon: default_epsilon(),
-            auto_index_duration_limit: String::new(),
-            auto_index_check_duration: String::new(),
-            auto_save_index_duration: String::new(),
+            auto_index_duration_limit: String::default(),
+            auto_index_check_duration: String::default(),
+            auto_save_index_duration: String::default(),
             auto_index_length: 0,
-            initial_delay_max_duration: String::new(),
+            initial_delay_max_duration: String::default(),
             enable_in_memory_mode: false,
             enable_copy_on_write: false,
             vqueue: None,
@@ -686,7 +734,7 @@ impl QBG {
             error_buffer_limit: 0,
             is_readreplica: false,
             enable_export_index_info_to_k8s: false,
-            export_index_info_duration: String::new(),
+            export_index_info_duration: String::default(),
             enable_statistics: false,
         }
     }
@@ -907,7 +955,7 @@ mod tests {
     fn test_qbg_validate_empty_index_path() {
         let qbg = QBG {
             dimension: 128,
-            index_path: String::new(),
+            index_path: String::default(),
             ..QBG::new()
         };
 
