@@ -120,6 +120,12 @@ pub mod property {
         inner: UniquePtr<ffi::Property>,
     }
 
+    impl Default for Property {
+        fn default() -> Self {
+            Self::new()
+        }
+    }
+
     impl Property {
         pub fn new() -> Self {
             let inner = ffi::new_property();

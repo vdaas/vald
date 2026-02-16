@@ -26,9 +26,6 @@ pub mod metadata;
 pub mod persistence;
 mod qbg;
 pub use daemon::{DaemonConfig, DaemonHandle, start as start_daemon};
-pub use k8s::{IndexMetrics, K8sClient, MetricsExporter, Patcher};
-pub use metadata::Metadata;
-pub use persistence::{IndexPaths, PersistenceConfig, PersistenceManager};
 pub use qbg::QBGService;
 
 #[cfg(test)]

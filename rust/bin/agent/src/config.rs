@@ -16,7 +16,6 @@
 
 use serde::{Deserialize, Serialize};
 use std::env;
-use std::path::Path;
 
 /// AgentConfig represents the global configuration for the agent
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -177,6 +176,7 @@ pub struct ServerConfig {
 
 /// Server entry configuration.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Default)]
 pub struct Server {
     #[serde(default)]
     /// Server name (e.g., "grpc").
@@ -195,16 +195,6 @@ pub struct Server {
     pub grpc: GrpcServerConfig,
 }
 
-impl Default for Server {
-    fn default() -> Self {
-        Self {
-            name: String::default(),
-            host: String::default(),
-            port: 0,
-            grpc: GrpcServerConfig::default(),
-        }
-    }
-}
 
 /// gRPC server configuration options.
 #[derive(Debug, Clone, Serialize, Deserialize)]

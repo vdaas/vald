@@ -109,19 +109,17 @@ impl Observability for ObservabilityImpl {
             return Ok(());
         }
 
-        if self.config.meter.enabled {
-            if let Some(ref provider) = self.meter_provider {
+        if self.config.meter.enabled
+            && let Some(ref provider) = self.meter_provider {
                 provider.force_flush()?;
                 provider.shutdown()?;
             }
-        }
 
-        if self.config.tracer.enabled {
-            if let Some(ref provider) = self.tracer_provider {
+        if self.config.tracer.enabled
+            && let Some(ref provider) = self.tracer_provider {
                 provider.force_flush()?;
                 provider.shutdown()?;
             }
-        }
         Ok(())
     }
 }

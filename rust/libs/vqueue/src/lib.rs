@@ -740,8 +740,8 @@ impl Queue for PersistentQueue {
             let result = tokio::task::spawn_blocking(move || {
                 let mut items = Vec::new();
                 for item in iq.iter() {
-                    if let Ok((key, val)) = item {
-                        if let Ok((its, uuid)) = Self::parse_key(&key) {
+                    if let Ok((key, val)) = item
+                        && let Ok((its, uuid)) = Self::parse_key(&key) {
                             // Check if there's a newer delete for this uuid
                             let skip = if let Ok(Some(dts_bytes)) = di.get(uuid.as_bytes()) {
                                 if dts_bytes.len() >= 8 {
@@ -763,7 +763,6 @@ impl Queue for PersistentQueue {
                                 items.push((uuid, vec, its));
                             }
                         }
-                    }
                 }
                 items
             })

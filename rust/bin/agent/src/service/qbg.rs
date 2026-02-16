@@ -167,11 +167,10 @@ impl QBGService {
             .unwrap();
 
         // Initialize temporary directory for Copy-on-Write mode
-        if enable_copy_on_write {
-            if let Err(e) = persistence.mktmp() {
+        if enable_copy_on_write
+            && let Err(e) = persistence.mktmp() {
                 warn!("failed to create temporary directory for CoW: {}", e);
             }
-        }
 
         // Initialize K8s metrics exporter if enabled
         let enable_export_index_info = config.enable_export_index_info_to_k8s;
@@ -235,7 +234,7 @@ impl QBGService {
         vector: Vec<f32>,
         ts: i64,
     ) -> Result<(), Error> {
-        if uuid.len() == 0 {
+        if uuid.is_empty() {
             return Err(Error::UUIDNotFound {
                 uuid: "0".to_string(),
             });
@@ -276,7 +275,7 @@ impl QBGService {
         if self.is_readreplica {
             return Err(Error::WriteOperationToReadReplica {});
         }
-        if uuid.len() == 0 {
+        if uuid.is_empty() {
             return Err(Error::UUIDNotFound {
                 uuid: "0".to_string(),
             });
@@ -332,7 +331,7 @@ impl QBGService {
         if self.is_readreplica {
             return Err(Error::WriteOperationToReadReplica {});
         }
-        if uuid.len() == 0 {
+        if uuid.is_empty() {
             return Err(Error::UUIDNotFound {
                 uuid: "0".to_string(),
             });
@@ -503,7 +502,7 @@ impl ANN for QBGService {
                 // Export metrics to K8s pod annotations
                 if let Some(ref exporter) = self.metrics_exporter {
                     let index_count = self.kvs.len() as u64;
-                    let uncommitted = (self.vq.ivq_len() + self.vq.dvq_len()) as u64;
+                    let uncommitted = (self.vq.ivq_len() + self.vq.dvq_len());
                     let processed_vq = self.processed_vq_count.load(Ordering::SeqCst);
                     let unsaved_exec = self.unsaved_create_index_count.load(Ordering::SeqCst);
                     if let Err(e) = exporter
@@ -574,12 +573,10 @@ impl ANN for QBGService {
                         index_count
                     );
                 }
+            } else if let Err(e) = persistence.save_metadata(&metadata) {
+                warn!("failed to save metadata: {}", e);
             } else {
-                if let Err(e) = persistence.save_metadata(&metadata) {
-                    warn!("failed to save metadata: {}", e);
-                } else {
-                    debug!("saved metadata with index_count={}", index_count);
-                }
+                debug!("saved metadata with index_count={}", index_count);
             }
         }
 
@@ -589,15 +586,12 @@ impl ANN for QBGService {
         }
 
         // For CoW mode, perform the atomic switch after successful save
-        if result.is_ok() {
-            if let Some(ref persistence) = self.persistence {
-                if persistence.is_copy_on_write_enabled() {
-                    if let Err(e) = persistence.move_and_switch_saved_data() {
+        if result.is_ok()
+            && let Some(ref persistence) = self.persistence
+                && persistence.is_copy_on_write_enabled()
+                    && let Err(e) = persistence.move_and_switch_saved_data() {
                         error!("failed to switch CoW data: {}", e);
                     }
-                }
-            }
-        }
 
         self.is_saving.store(false, Ordering::SeqCst);
 
@@ -718,7 +712,7 @@ impl ANN for QBGService {
             .collect();
         let res = search::Response {
             request_id: "".to_string(),
-            results: results,
+            results,
         };
         Ok(res)
     }
@@ -896,11 +890,10 @@ impl ANN for QBGService {
         let index = &self.index;
         memstore::list_object_func(&self.kvs, &self.vq, |uuid, oid, ts| {
             // Get vector from index if oid > 0, otherwise skip (not indexed yet)
-            if oid > 0 {
-                if let Ok(vec) = index.get_object(oid as usize) {
+            if oid > 0
+                && let Ok(vec) = index.get_object(oid as usize) {
                     return f(uuid, vec.to_vec(), ts);
                 }
-            }
             true // continue iteration if vector not available
         })
         .await;
@@ -989,11 +982,10 @@ impl ANN for QBGService {
                     "Creating final index with {} uncommitted changes...",
                     uncommitted
                 );
-                if let Err(e) = self.create_index().await {
-                    if !matches!(e, Error::UncommittedIndexNotFound {}) {
+                if let Err(e) = self.create_index().await
+                    && !matches!(e, Error::UncommittedIndexNotFound {}) {
                         warn!("Failed to create final index: {:?}", e);
                     }
-                }
             }
 
             // Save the index

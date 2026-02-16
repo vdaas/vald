@@ -218,11 +218,10 @@ pub async fn start<T: ANN + 'static>(
                     info!("Daemon shutdown requested, performing final index creation...");
                     // Perform final index creation before shutdown
                     let mut svc = service.write().await;
-                    if let Err(e) = svc.create_index().await {
-                        if !matches!(e, Error::UncommittedIndexNotFound {}) {
+                    if let Err(e) = svc.create_index().await
+                        && !matches!(e, Error::UncommittedIndexNotFound {}) {
                             let _ = error_tx.send(e).await;
                         }
-                    }
                     info!("Daemon shutdown complete");
                     shutdown_complete_clone.notify_waiters();
                     return;
@@ -237,24 +236,22 @@ pub async fn start<T: ANN + 'static>(
                     if !is_flushing && ivq_len >= config.auto_index_length {
                         debug!("Auto index triggered: vqueue len {} >= threshold {}", ivq_len, config.auto_index_length);
                         let mut svc = service.write().await;
-                        if let Err(e) = svc.create_index().await {
-                            if !matches!(e, Error::UncommittedIndexNotFound {}) {
+                        if let Err(e) = svc.create_index().await
+                            && !matches!(e, Error::UncommittedIndexNotFound {}) {
                                 warn!("Auto index creation failed: {:?}", e);
                                 let _ = error_tx.send(e).await;
                             }
-                        }
                     }
                 }
 
                 _ = limit_tick.tick() => {
                     debug!("Index limit reached after {:?}, forcing create and save", start_time.elapsed());
                     let mut svc = service.write().await;
-                    if let Err(e) = svc.create_and_save_index().await {
-                        if !matches!(e, Error::UncommittedIndexNotFound {}) {
+                    if let Err(e) = svc.create_and_save_index().await
+                        && !matches!(e, Error::UncommittedIndexNotFound {}) {
                             warn!("Forced create and save index failed: {:?}", e);
                             let _ = error_tx.send(e).await;
                         }
-                    }
                 }
 
                 _ = save_tick.tick() => {

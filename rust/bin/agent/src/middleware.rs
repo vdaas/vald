@@ -164,9 +164,9 @@ where
                 }
                 Err(e) => {
                     warn!("{}, {:?}, {:?}", RPC_FAILED_MESSAGE, entity, e);
-                    return Err(e);
+                    Err(e)
                 }
-            };
+            }
         })
     }
 }
@@ -248,7 +248,7 @@ where
                         opentelemetry::KeyValue::new(GRPCSTATUS, code),
                     ];
                     latency_histogram
-                        .record((end_nanos - start_nanos) / 1_000_000 as f64, &attributes);
+                        .record((end_nanos - start_nanos) / 1_000_000_f64, &attributes);
                     completed_rpc_cnt.add(1, &attributes);
                     return Ok(res);
                 }
@@ -261,11 +261,11 @@ where
                         ),
                     ];
                     latency_histogram
-                        .record((end_nanos - start_nanos) / 1_000_000 as f64, &attributes);
+                        .record((end_nanos - start_nanos) / 1_000_000_f64, &attributes);
                     completed_rpc_cnt.add(1, &attributes);
-                    return Err(e);
+                    Err(e)
                 }
-            };
+            }
         })
     }
 }

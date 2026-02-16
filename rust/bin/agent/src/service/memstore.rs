@@ -431,8 +431,8 @@ where
     }
 
     // Case 1: Only in vqueue, no kvs data, and timestamp is newer than delete
-    if vqok && !kvok && dts != 0 && dts < ts && (force || its < ts) {
-        if let Some(v) = vec {
+    if vqok && !kvok && dts != 0 && dts < ts && (force || its < ts)
+        && let Some(v) = vec {
             vq.push_insert(uuid, v, Some(ts)).await?;
             // Pop delete since we don't need it anymore
             match vq.pop_delete(uuid).await {
@@ -444,11 +444,10 @@ where
             }
             return Ok(());
         }
-    }
 
     // Case 2: Both in vqueue and kvs
-    if vqok && kvok && dts < ts && (force || (kts < ts && its < ts)) {
-        if let Some(v) = vec {
+    if vqok && kvok && dts < ts && (force || (kts < ts && its < ts))
+        && let Some(v) = vec {
             vq.push_insert(uuid, v, Some(ts)).await?;
             kv.set(uuid.to_string(), oid, ts as u128).await?;
             if dts == 0 {
@@ -457,7 +456,6 @@ where
             }
             return Ok(());
         }
-    }
 
     // Case 3: Not in insert vqueue, but in kvs
     if !vqok && its == 0 && kvok && (force || kts < ts) {
@@ -477,14 +475,12 @@ where
     // Case 4: Insert vqueue found with special conditions
     if !vqok && its != 0 && kvok && (force || kts < ts) {
         kv.set(uuid.to_string(), oid, ts as u128).await?;
-        if vec.is_none() && its > dts {
-            if let Some(f) = get_vector_fn {
-                if let Ok(ovec) = f(oid).await {
+        if vec.is_none() && its > dts
+            && let Some(f) = get_vector_fn
+                && let Ok(ovec) = f(oid).await {
                     vq.push_insert(uuid, ovec, Some(ts)).await?;
                     return Ok(());
                 }
-            }
-        }
         match vq.pop_insert(uuid).await {
             Ok((pvec, pits)) if pits != its => {
                 // Rollback if timestamp changed
