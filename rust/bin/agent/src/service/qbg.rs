@@ -37,6 +37,7 @@ use super::memstore;
 use super::metadata::Metadata;
 use super::persistence::{PersistenceConfig, PersistenceManager};
 
+/// QBG-based ANN service implementation.
 pub struct QBGService {
     path: String,
     index: Index,

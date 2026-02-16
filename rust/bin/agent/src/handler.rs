@@ -38,6 +38,7 @@ use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::{RwLock, mpsc};
 
+/// Agent service wrapper for running the ANN implementation and gRPC server.
 pub struct Agent<S: algorithm::ANN + 'static> {
     s: Arc<RwLock<S>>,
     name: String,

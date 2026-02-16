@@ -125,6 +125,7 @@ impl Default for Observability {
     }
 }
 
+/// Tracing configuration settings.
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Tracer {
     #[serde(default)]
@@ -132,6 +133,7 @@ pub struct Tracer {
     pub enabled: bool,
 }
 
+/// Metrics configuration settings.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Meter {
     #[serde(default)]
@@ -173,6 +175,7 @@ pub struct ServerConfig {
     pub servers: Vec<Server>,
 }
 
+/// Server entry configuration.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Server {
     #[serde(default)]
@@ -203,6 +206,7 @@ impl Default for Server {
     }
 }
 
+/// gRPC server configuration options.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GrpcServerConfig {
     #[serde(default)]
@@ -258,6 +262,7 @@ impl Default for GrpcServerConfig {
     }
 }
 
+/// Keepalive settings for gRPC connections.
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Keepalive {
     #[serde(default)]

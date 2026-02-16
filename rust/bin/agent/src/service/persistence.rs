@@ -123,7 +123,7 @@ impl IndexPaths {
     }
 }
 
-/// Manages index persistence state.
+/// Manages index persistence state and filesystem paths.
 pub struct PersistenceManager {
     config: PersistenceConfig,
     paths: IndexPaths,

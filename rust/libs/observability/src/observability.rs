@@ -26,10 +26,12 @@ use crate::config::Config;
 
 pub const SERVICE_NAME: &str = opentelemetry_semantic_conventions::resource::SERVICE_NAME;
 
+/// Observability lifecycle hooks for telemetry exporters.
 pub trait Observability {
     fn shutdown(&mut self) -> Result<()>;
 }
 
+/// OpenTelemetry-backed observability implementation.
 pub struct ObservabilityImpl {
     config: Config,
     meter_provider: Option<SdkMeterProvider>,

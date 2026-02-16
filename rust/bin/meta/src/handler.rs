@@ -18,6 +18,7 @@ mod meta;
 use kv::*;
 use std::sync::Arc;
 
+/// Metadata store wrapper for the meta service.
 pub struct Meta {
     store: Arc<Store>,
     bucket: Bucket<'static, Raw, Raw>,

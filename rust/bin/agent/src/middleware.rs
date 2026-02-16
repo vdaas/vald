@@ -49,9 +49,11 @@ struct AccessLogGRPCEntity {
     method: String,
 }
 
+/// Layer that wraps services with access logging middleware.
 #[derive(Debug, Clone, Default)]
 pub struct AccessLogMiddlewareLayer {}
 
+/// Layer that wraps services with metrics recording middleware.
 #[derive(Debug, Clone, Default)]
 pub struct MetricMiddlewareLayer {}
 
@@ -71,11 +73,13 @@ impl<S> Layer<S> for MetricMiddlewareLayer {
     }
 }
 
+/// Service wrapper that logs access information for each request.
 #[derive(Debug, Clone)]
 pub struct AccessLogMiddleware<S> {
     inner: S,
 }
 
+/// Service wrapper that records metrics for each request.
 #[derive(Debug, Clone)]
 pub struct MetricMiddleware<S> {
     inner: S,

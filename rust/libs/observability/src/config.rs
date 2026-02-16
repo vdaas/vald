@@ -19,24 +19,36 @@ use std::time::Duration;
 use opentelemetry::KeyValue;
 use opentelemetry_sdk::{self, Resource};
 
+/// OpenTelemetry configuration for tracing and metrics.
 #[derive(Clone, Debug)]
 pub struct Config {
+    /// Enables OpenTelemetry export.
     pub enabled: bool,
+    /// OTLP endpoint for trace/metric export.
     pub endpoint: String,
+    /// Resource attributes applied to all telemetry.
     pub attributes: HashMap<String, String>,
+    /// Tracing configuration.
     pub tracer: Tracer,
+    /// Metrics configuration.
     pub meter: Meter,
 }
 
+/// Tracing configuration settings.
 #[derive(Clone, Debug, Default)]
 pub struct Tracer {
+    /// Enables tracing export.
     pub enabled: bool,
 }
 
+/// Metrics configuration settings.
 #[derive(Clone, Debug)]
 pub struct Meter {
+    /// Enables metrics export.
     pub enabled: bool,
+    /// Metric export interval.
     pub export_duration: Duration,
+    /// Metric export timeout.
     pub export_timeout_duration: Duration,
 }
 
