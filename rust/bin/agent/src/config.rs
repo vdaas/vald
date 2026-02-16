@@ -386,6 +386,7 @@ impl Default for VQueue {
 
 /// KVSDB configuration for bidirectional kv store
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(clippy::upper_case_acronyms)]
 pub struct KVSDB {
     /// Concurrency represents kvsdb range loop processing concurrency
     #[serde(default = "default_kvsdb_concurrency")]
@@ -440,6 +441,7 @@ impl Default for KVSDB {
 
 /// QBG configuration structure
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(clippy::upper_case_acronyms)]
 pub struct QBG {
     /// PodName represent the pod name
     #[serde(default)]

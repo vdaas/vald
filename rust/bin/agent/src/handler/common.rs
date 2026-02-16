@@ -117,7 +117,6 @@ where
     Ok(Response::new(output_stream))
 }
 
-// deepsource-disable-next-line 
 #[cfg(test)]
 mod tests {
     use crate::middleware::{AccessLogMiddlewareLayer, MetricMiddlewareLayer};

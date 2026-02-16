@@ -160,7 +160,7 @@ where
                             .unwrap_or("internal error");
                         warn!("{}, {:?}, {:?}", RPC_FAILED_MESSAGE, entity, message);
                     }
-                    return Ok(res);
+                    Ok(res)
                 }
                 Err(e) => {
                     warn!("{}, {:?}, {:?}", RPC_FAILED_MESSAGE, entity, e);
@@ -250,7 +250,7 @@ where
                     latency_histogram
                         .record((end_nanos - start_nanos) / 1_000_000_f64, &attributes);
                     completed_rpc_cnt.add(1, &attributes);
-                    return Ok(res);
+                    Ok(res)
                 }
                 Err(e) => {
                     let attributes = [
