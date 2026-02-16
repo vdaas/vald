@@ -423,9 +423,10 @@ impl PersistenceManager {
     /// Otherwise, returns the primary path.
     pub fn get_save_path(&self) -> PathBuf {
         if self.config.enable_copy_on_write
-            && let Some(tmp) = self.tmp_path.read().unwrap().as_ref() {
-                return tmp.clone();
-            }
+            && let Some(tmp) = self.tmp_path.read().unwrap().as_ref()
+        {
+            return tmp.clone();
+        }
         self.paths.primary_path.clone()
     }
 
@@ -466,9 +467,10 @@ impl PersistenceManager {
         // Step 1: Move primary (origin) → old (backup)
         // First, remove old backup if it exists
         if self.paths.old_path.exists()
-            && let Err(e) = fs::remove_dir_all(&self.paths.old_path) {
-                warn!("failed to remove old backup directory: {}", e);
-            }
+            && let Err(e) = fs::remove_dir_all(&self.paths.old_path)
+        {
+            warn!("failed to remove old backup directory: {}", e);
+        }
 
         // Move primary to backup (only if primary exists and has content)
         if self.paths.primary_path.exists() {

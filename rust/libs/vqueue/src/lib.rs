@@ -741,28 +741,29 @@ impl Queue for PersistentQueue {
                 let mut items = Vec::new();
                 for item in iq.iter() {
                     if let Ok((key, val)) = item
-                        && let Ok((its, uuid)) = Self::parse_key(&key) {
-                            // Check if there's a newer delete for this uuid
-                            let skip = if let Ok(Some(dts_bytes)) = di.get(uuid.as_bytes()) {
-                                if dts_bytes.len() >= 8 {
-                                    let dts_arr: [u8; 8] =
-                                        dts_bytes[0..8].try_into().unwrap_or_default();
-                                    let dts = i64::from_be_bytes(dts_arr);
-                                    dts >= its
-                                } else {
-                                    false
-                                }
+                        && let Ok((its, uuid)) = Self::parse_key(&key)
+                    {
+                        // Check if there's a newer delete for this uuid
+                        let skip = if let Ok(Some(dts_bytes)) = di.get(uuid.as_bytes()) {
+                            if dts_bytes.len() >= 8 {
+                                let dts_arr: [u8; 8] =
+                                    dts_bytes[0..8].try_into().unwrap_or_default();
+                                let dts = i64::from_be_bytes(dts_arr);
+                                dts >= its
                             } else {
                                 false
-                            };
-                            if skip {
-                                continue;
                             }
-                            // Decode the vector
-                            if let Ok(vec) = wincode::deserialize(&val) {
-                                items.push((uuid, vec, its));
-                            }
+                        } else {
+                            false
+                        };
+                        if skip {
+                            continue;
                         }
+                        // Decode the vector
+                        if let Ok(vec) = wincode::deserialize(&val) {
+                            items.push((uuid, vec, its));
+                        }
+                    }
                 }
                 items
             })

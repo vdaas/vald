@@ -167,10 +167,9 @@ impl QBGService {
             .unwrap();
 
         // Initialize temporary directory for Copy-on-Write mode
-        if enable_copy_on_write
-            && let Err(e) = persistence.mktmp() {
-                warn!("failed to create temporary directory for CoW: {}", e);
-            }
+        if enable_copy_on_write && let Err(e) = persistence.mktmp() {
+            warn!("failed to create temporary directory for CoW: {}", e);
+        }
 
         // Initialize K8s metrics exporter if enabled
         let enable_export_index_info = config.enable_export_index_info_to_k8s;
@@ -588,10 +587,11 @@ impl ANN for QBGService {
         // For CoW mode, perform the atomic switch after successful save
         if result.is_ok()
             && let Some(ref persistence) = self.persistence
-                && persistence.is_copy_on_write_enabled()
-                    && let Err(e) = persistence.move_and_switch_saved_data() {
-                        error!("failed to switch CoW data: {}", e);
-                    }
+            && persistence.is_copy_on_write_enabled()
+            && let Err(e) = persistence.move_and_switch_saved_data()
+        {
+            error!("failed to switch CoW data: {}", e);
+        }
 
         self.is_saving.store(false, Ordering::SeqCst);
 
@@ -891,9 +891,10 @@ impl ANN for QBGService {
         memstore::list_object_func(&self.kvs, &self.vq, |uuid, oid, ts| {
             // Get vector from index if oid > 0, otherwise skip (not indexed yet)
             if oid > 0
-                && let Ok(vec) = index.get_object(oid as usize) {
-                    return f(uuid, vec.to_vec(), ts);
-                }
+                && let Ok(vec) = index.get_object(oid as usize)
+            {
+                return f(uuid, vec.to_vec(), ts);
+            }
             true // continue iteration if vector not available
         })
         .await;
@@ -983,9 +984,10 @@ impl ANN for QBGService {
                     uncommitted
                 );
                 if let Err(e) = self.create_index().await
-                    && !matches!(e, Error::UncommittedIndexNotFound {}) {
-                        warn!("Failed to create final index: {:?}", e);
-                    }
+                    && !matches!(e, Error::UncommittedIndexNotFound {})
+                {
+                    warn!("Failed to create final index: {:?}", e);
+                }
             }
 
             // Save the index

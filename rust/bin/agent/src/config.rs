@@ -175,8 +175,7 @@ pub struct ServerConfig {
 }
 
 /// Server entry configuration.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[derive(Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Server {
     #[serde(default)]
     /// Server name (e.g., "grpc").
@@ -194,7 +193,6 @@ pub struct Server {
     /// gRPC-specific server configuration.
     pub grpc: GrpcServerConfig,
 }
-
 
 /// gRPC server configuration options.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -430,7 +428,7 @@ impl KVSDB {
 
 impl Default for KVSDB {
     fn default() -> Self {
-        Self{
+        Self {
             concurrency: default_kvsdb_concurrency(),
             cache_capacity: default_kvsdb_cache_capacity(),
             compression_factor: default_kvsdb_compression_factor(),
@@ -809,11 +807,13 @@ fn get_actual_value(value: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::io::Write;
     use std::env::temp_dir;
+    use std::io::Write;
     use tempfile::NamedTempFile;
 
-    fn load_config_from_file<P: AsRef<std::path::Path>>(path: P) -> Result<QBG, Box<dyn std::error::Error>> {
+    fn load_config_from_file<P: AsRef<std::path::Path>>(
+        path: P,
+    ) -> Result<QBG, Box<dyn std::error::Error>> {
         let content = std::fs::read_to_string(path)?;
         let mut config: QBG = serde_yaml::from_str(&content)?;
         config.bind();
@@ -993,7 +993,8 @@ mod tests {
     #[test]
     fn test_deserialize_from_yaml_string() {
         let index_path = temp_dir().join("index").to_str().unwrap().to_string();
-        let yaml_str = format!(r#"
+        let yaml_str = format!(
+            r#"
 pod_name: test-pod
 namespace: test-namespace
 index_path: {}
@@ -1018,7 +1019,9 @@ kvsdb:
 enable_copy_on_write: true
 enable_in_memory_mode: true
 is_readreplica: false
-"#, index_path);
+"#,
+            index_path
+        );
 
         let qbg: QBG = serde_yaml::from_str(yaml_str.as_str()).expect("Failed to deserialize");
         assert_eq!(qbg.pod_name, "test-pod");
@@ -1049,10 +1052,13 @@ is_readreplica: false
     fn test_load_config_from_file() {
         let mut file = NamedTempFile::new().expect("Failed to create temp file");
         let index_path = temp_dir().join("index").to_str().unwrap().to_string();
-        let yaml_str = format!(r#"
+        let yaml_str = format!(
+            r#"
 index_path: {}
 dimension: 128
-"#, index_path);
+"#,
+            index_path
+        );
         file.write_all(yaml_str.as_bytes())
             .expect("Failed to write config file");
 

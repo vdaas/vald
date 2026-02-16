@@ -79,9 +79,10 @@ where
         .with_description("Agent NGT index count")
         .with_callback(move |observer| {
             if let Some(service) = svc_index_count.upgrade()
-                && let Ok(s) = service.try_read() {
-                    observer.observe(s.len() as i64, &[]);
-                }
+                && let Ok(s) = service.try_read()
+            {
+                observer.observe(s.len() as i64, &[]);
+            }
         })
         .build();
     let svc_uncommitted_index_count = svc.clone();
@@ -90,10 +91,11 @@ where
         .with_description("Agent NGT uncommitted index count")
         .with_callback(move |observer| {
             if let Some(service) = svc_uncommitted_index_count.upgrade()
-                && let Ok(s) = service.try_read() {
-                    let total = s.insert_vqueue_buffer_len() + s.delete_vqueue_buffer_len();
-                    observer.observe(total as i64, &[]);
-                }
+                && let Ok(s) = service.try_read()
+            {
+                let total = s.insert_vqueue_buffer_len() + s.delete_vqueue_buffer_len();
+                observer.observe(total as i64, &[]);
+            }
         })
         .build();
     let svc_insert_vqueue_count = svc.clone();
@@ -102,9 +104,10 @@ where
         .with_description("Agent NGT insert vqueue count")
         .with_callback(move |observer| {
             if let Some(service) = svc_insert_vqueue_count.upgrade()
-                && let Ok(s) = service.try_read() {
-                    observer.observe(s.insert_vqueue_buffer_len() as i64, &[]);
-                }
+                && let Ok(s) = service.try_read()
+            {
+                observer.observe(s.insert_vqueue_buffer_len() as i64, &[]);
+            }
         })
         .build();
     let svc_delete_vqueue_count = svc.clone();
@@ -113,9 +116,10 @@ where
         .with_description("Agent NGT delete vqueue count")
         .with_callback(move |observer| {
             if let Some(service) = svc_delete_vqueue_count.upgrade()
-                && let Ok(s) = service.try_read() {
-                    observer.observe(s.delete_vqueue_buffer_len() as i64, &[]);
-                }
+                && let Ok(s) = service.try_read()
+            {
+                observer.observe(s.delete_vqueue_buffer_len() as i64, &[]);
+            }
         })
         .build();
     let svc_completed_create_index_total = svc.clone();
@@ -124,9 +128,10 @@ where
         .with_description("The cumulative count of completed create index execution")
         .with_callback(move |observer| {
             if let Some(service) = svc_completed_create_index_total.upgrade()
-                && let Ok(s) = service.try_read() {
-                    observer.observe(s.number_of_create_index_executions() as i64, &[]);
-                }
+                && let Ok(s) = service.try_read()
+            {
+                observer.observe(s.number_of_create_index_executions() as i64, &[]);
+            }
         })
         .build();
     let _executed_proactive_gc_total = meter
@@ -142,9 +147,10 @@ where
         .with_description("Currently indexing or no")
         .with_callback(move |observer| {
             if let Some(service) = svc_is_indexing.upgrade()
-                && let Ok(s) = service.try_read() {
-                    observer.observe(if s.is_indexing() { 1 } else { 0 }, &[]);
-                }
+                && let Ok(s) = service.try_read()
+            {
+                observer.observe(if s.is_indexing() { 1 } else { 0 }, &[]);
+            }
         })
         .build();
     let svc_is_saving = svc.clone();
@@ -153,9 +159,10 @@ where
         .with_description("Currently saving or not")
         .with_callback(move |observer| {
             if let Some(service) = svc_is_saving.upgrade()
-                && let Ok(s) = service.try_read() {
-                    observer.observe(if s.is_saving() { 1 } else { 0 }, &[]);
-                }
+                && let Ok(s) = service.try_read()
+            {
+                observer.observe(if s.is_saving() { 1 } else { 0 }, &[]);
+            }
         })
         .build();
     let svc_broken_index_store_count = svc.clone();
@@ -164,9 +171,10 @@ where
         .with_description("How many broken index generations have been stored")
         .with_callback(move |observer| {
             if let Some(service) = svc_broken_index_store_count.upgrade()
-                && let Ok(s) = service.try_read() {
-                    observer.observe(s.broken_index_count() as i64, &[]);
-                }
+                && let Ok(s) = service.try_read()
+            {
+                observer.observe(s.broken_index_count() as i64, &[]);
+            }
         })
         .build();
 
@@ -178,10 +186,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_median_indegree.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.median_indegree as i64, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.median_indegree as i64, &[]);
+            }
         })
         .build();
     let svc_median_outdegree = svc.clone();
@@ -191,10 +200,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_median_outdegree.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.median_outdegree as i64, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.median_outdegree as i64, &[]);
+            }
         })
         .build();
     let svc_max_number_of_indegree = svc.clone();
@@ -204,10 +214,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_max_number_of_indegree.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.max_number_of_indegree as i64, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.max_number_of_indegree as i64, &[]);
+            }
         })
         .build();
     let svc_max_number_of_outdegree = svc.clone();
@@ -217,10 +228,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_max_number_of_outdegree.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.max_number_of_outdegree as i64, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.max_number_of_outdegree as i64, &[]);
+            }
         })
         .build();
     let svc_min_number_of_indegree = svc.clone();
@@ -230,10 +242,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_min_number_of_indegree.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.min_number_of_indegree as i64, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.min_number_of_indegree as i64, &[]);
+            }
         })
         .build();
     let svc_min_number_of_outdegree = svc.clone();
@@ -243,10 +256,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_min_number_of_outdegree.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.min_number_of_outdegree as i64, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.min_number_of_outdegree as i64, &[]);
+            }
         })
         .build();
     let svc_mode_indegree = svc.clone();
@@ -256,10 +270,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_mode_indegree.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.mode_indegree as i64, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.mode_indegree as i64, &[]);
+            }
         })
         .build();
     let svc_mode_outdegree = svc.clone();
@@ -269,10 +284,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_mode_outdegree.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.mode_outdegree as i64, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.mode_outdegree as i64, &[]);
+            }
         })
         .build();
     let svc_nodes_skipped_for_10_edges = svc.clone();
@@ -282,10 +298,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_nodes_skipped_for_10_edges.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.nodes_skipped_for_10_edges as i64, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.nodes_skipped_for_10_edges as i64, &[]);
+            }
         })
         .build();
     let svc_nodes_skipped_for_indegree_distance = svc.clone();
@@ -295,10 +312,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_nodes_skipped_for_indegree_distance.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.nodes_skipped_for_indegree_distance as i64, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.nodes_skipped_for_indegree_distance as i64, &[]);
+            }
         })
         .build();
     let svc_number_of_edges = svc.clone();
@@ -308,10 +326,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_number_of_edges.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.number_of_edges as i64, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.number_of_edges as i64, &[]);
+            }
         })
         .build();
     let svc_number_of_indexed_objects = svc.clone();
@@ -321,10 +340,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_number_of_indexed_objects.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.number_of_indexed_objects as i64, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.number_of_indexed_objects as i64, &[]);
+            }
         })
         .build();
     let svc_number_of_nodes = svc.clone();
@@ -334,10 +354,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_number_of_nodes.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.number_of_nodes as i64, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.number_of_nodes as i64, &[]);
+            }
         })
         .build();
     let svc_number_of_nodes_without_edges = svc.clone();
@@ -347,10 +368,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_number_of_nodes_without_edges.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.number_of_nodes_without_edges as i64, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.number_of_nodes_without_edges as i64, &[]);
+            }
         })
         .build();
     let svc_number_of_nodes_without_indegree = svc.clone();
@@ -360,10 +382,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_number_of_nodes_without_indegree.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.number_of_nodes_without_indegree as i64, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.number_of_nodes_without_indegree as i64, &[]);
+            }
         })
         .build();
     let svc_number_of_objects = svc.clone();
@@ -373,10 +396,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_number_of_objects.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.number_of_objects as i64, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.number_of_objects as i64, &[]);
+            }
         })
         .build();
     let svc_number_of_removed_objects = svc.clone();
@@ -386,10 +410,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_number_of_removed_objects.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.number_of_removed_objects as i64, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.number_of_removed_objects as i64, &[]);
+            }
         })
         .build();
     let svc_size_of_object_repository = svc.clone();
@@ -399,10 +424,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_size_of_object_repository.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.size_of_object_repository as i64, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.size_of_object_repository as i64, &[]);
+            }
         })
         .build();
     let svc_size_of_refinement_object_repository = svc.clone();
@@ -412,11 +438,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_size_of_refinement_object_repository.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer
-                                .observe(stats.size_of_refinement_object_repository as i64, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.size_of_refinement_object_repository as i64, &[]);
+            }
         })
         .build();
 
@@ -428,10 +454,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_variance_of_indegree.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.variance_of_indegree, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.variance_of_indegree, &[]);
+            }
         })
         .build();
     let svc_variance_of_outdegree = svc.clone();
@@ -441,10 +468,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_variance_of_outdegree.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.variance_of_outdegree, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.variance_of_outdegree, &[]);
+            }
         })
         .build();
     let svc_mean_edge_length = svc.clone();
@@ -454,10 +482,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_mean_edge_length.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.mean_edge_length, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.mean_edge_length, &[]);
+            }
         })
         .build();
     let svc_mean_edge_length_for_10_edges = svc.clone();
@@ -467,10 +496,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_mean_edge_length_for_10_edges.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.mean_edge_length_for_10_edges, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.mean_edge_length_for_10_edges, &[]);
+            }
         })
         .build();
     let svc_mean_indegree_distance_for_10_edges = svc.clone();
@@ -480,10 +510,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_mean_indegree_distance_for_10_edges.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.mean_indegree_distance_for_10_edges, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.mean_indegree_distance_for_10_edges, &[]);
+            }
         })
         .build();
     let svc_mean_number_of_edges_per_node = svc.clone();
@@ -493,10 +524,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_mean_number_of_edges_per_node.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.mean_number_of_edges_per_node, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.mean_number_of_edges_per_node, &[]);
+            }
         })
         .build();
     let svc_c1_indegree = svc.clone();
@@ -506,10 +538,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_c1_indegree.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.c1_indegree, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.c1_indegree, &[]);
+            }
         })
         .build();
     let svc_c5_indegree = svc.clone();
@@ -519,10 +552,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_c5_indegree.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.c5_indegree, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.c5_indegree, &[]);
+            }
         })
         .build();
     let svc_c95_outdegree = svc.clone();
@@ -532,10 +566,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_c95_outdegree.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.c95_outdegree, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.c95_outdegree, &[]);
+            }
         })
         .build();
     let svc_c99_outdegree = svc;
@@ -545,10 +580,11 @@ where
         .with_callback(move |observer| {
             if let Some(service) = svc_c99_outdegree.upgrade()
                 && let Ok(s) = service.try_read()
-                    && s.is_statistics_enabled()
-                        && let Ok(stats) = s.index_statistics() {
-                            observer.observe(stats.c99_outdegree, &[]);
-                        }
+                && s.is_statistics_enabled()
+                && let Ok(stats) = s.index_statistics()
+            {
+                observer.observe(stats.c99_outdegree, &[]);
+            }
         })
         .build();
 
