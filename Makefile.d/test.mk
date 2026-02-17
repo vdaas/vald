@@ -85,6 +85,8 @@ test/internal/tparse: \
 .PHONY: test/pkg/tparse
 ## run tests for pkg and who table
 test/pkg/tparse: \
+	ngt/install \
+	hdf5/install \
 	certs/gen \
 	tparse/install
 	set -euo pipefail
@@ -347,7 +349,10 @@ test/rust/agent:
 
 .PHONY: test/hack
 ## run tests for hack
-test/hack: certs/gen
+test/hack: \
+	ngt/install \
+	hdf5/install \
+	certs/gen
 	GOPRIVATE=$(GOPRIVATE) \
 	go mod vendor -o $(ROOTDIR)/vendor
 	GOPRIVATE=$(GOPRIVATE) \
@@ -364,7 +369,10 @@ test/hack: certs/gen
 
 .PHONY: test/all
 ## run tests for all Go codes
-test/all: certs/gen
+test/all: \
+	ngt/install \
+	hdf5/install \
+	certs/gen
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
@@ -374,7 +382,10 @@ test/all: certs/gen
 
 .PHONY: coverage
 ## calculate coverages
-coverage: certs/gen
+coverage: \
+	ngt/install \
+	hdf5/install \
+	certs/gen
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
