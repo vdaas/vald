@@ -80,20 +80,20 @@ func TestRequest(t *testing.T) {
 				}
 
 				// Unmarshal both got and want to compare as objects, not strings
-				var gotObj map[string]any
-				if err := json.Unmarshal(gotBytes, &gotObj); err != nil {
+				var gotResponse map[string]any
+				if err := json.Unmarshal(gotBytes, &gotResponse); err != nil {
 					return err
 				}
 
 				wantStr := `{"host":"hoge","uri":"uri","url":"http:","method":"GET","proto":"proto","header":{},"transfer_encoding":["trans1"],"remote_addr":"0.0.0.0","content_length":1234,"body":{"name":"vald"},"values":{"version":"1.0.0"}}`
-				var wantObj map[string]any
-				if err := json.Unmarshal([]byte(wantStr), &wantObj); err != nil {
+				var wantResponse map[string]any
+				if err := json.Unmarshal([]byte(wantStr), &wantResponse); err != nil {
 					return err
 				}
 
 				// Deep compare the objects
-				if !reflect.DeepEqual(gotObj, wantObj) {
-					return errors.Errorf("response not equals.\nwant: %v\ngot:  %v", wantObj, gotObj)
+				if !reflect.DeepEqual(gotResponse, wantResponse) {
+					return errors.Errorf("response not equals.\nwant: %v\ngot:  %v", wantResponse, gotResponse)
 				}
 
 				return nil
