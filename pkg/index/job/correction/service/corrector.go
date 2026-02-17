@@ -192,7 +192,19 @@ func (c *correct) Start(ctx context.Context) (err error) {
 			uncommitted = count.GetUncommitted()
 			indexing = count.GetIndexing()
 			saving = count.GetSaving()
-			debugMsg = fmt.Sprintf("agent %s (total index detail = stored: %d, uncommitted: %d, indexing=%t, saving=%t), stream concurrency: %d, processing %d/%d, replicas: size(%d) = addrs%v", addr, stored, uncommitted, indexing, saving, c.streamListConcurrency, corrected, len(agents), len(replicas), replicas)
+			debugMsg = fmt.Sprintf(
+				"agent %s (total index detail = stored: %d, uncommitted: %d, indexing=%t, saving=%t), stream concurrency: %d, processing %d/%d, replicas: size(%d) = addrs%v",
+				addr,
+				stored,
+				uncommitted,
+				indexing,
+				saving,
+				c.streamListConcurrency,
+				corrected,
+				len(agents),
+				len(replicas),
+				replicas,
+			)
 			if stored+uncommitted == 0 {
 				// id no indices in agent skip process
 				log.Warnf("skipping index correction process due to zero index detected for %s", debugMsg)

@@ -80,6 +80,49 @@
     }
   },
   "definitions": {
+    "FilterTarget": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "The target hostname."
+        },
+        "port": {
+          "type": "integer",
+          "format": "int64",
+          "description": "The target port."
+        }
+      },
+      "description": "Represent the target filter server."
+    },
+    "InsertMultiRequest": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/InsertRequest"
+          },
+          "description": "Represent multiple insert request content."
+        }
+      },
+      "description": "Represent the multiple insert request."
+    },
+    "InsertRequest": {
+      "type": "object",
+      "properties": {
+        "vector": {
+          "$ref": "#/definitions/ObjectVector",
+          "description": "The vector to be inserted."
+        },
+        "config": {
+          "$ref": "#/definitions/v1InsertConfig",
+          "description": "The configuration of the insert request."
+        }
+      },
+      "description": "Represent the insert request."
+    },
     "ObjectLocations": {
       "type": "object",
       "properties": {
@@ -162,27 +205,12 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v1FilterTarget"
+            "$ref": "#/definitions/FilterTarget"
           },
           "description": "Represent the filter target configuration."
         }
       },
       "description": "Represent filter configuration."
-    },
-    "v1FilterTarget": {
-      "type": "object",
-      "properties": {
-        "host": {
-          "type": "string",
-          "description": "The target hostname."
-        },
-        "port": {
-          "type": "integer",
-          "format": "int64",
-          "description": "The target port."
-        }
-      },
-      "description": "Represent the target filter server."
     },
     "v1InsertConfig": {
       "type": "object",
@@ -202,34 +230,6 @@
         }
       },
       "description": "Represent insert configurations."
-    },
-    "v1InsertMultiRequest": {
-      "type": "object",
-      "properties": {
-        "requests": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1InsertRequest"
-          },
-          "description": "Represent multiple insert request content."
-        }
-      },
-      "description": "Represent the multiple insert request."
-    },
-    "v1InsertRequest": {
-      "type": "object",
-      "properties": {
-        "vector": {
-          "$ref": "#/definitions/ObjectVector",
-          "description": "The vector to be inserted."
-        },
-        "config": {
-          "$ref": "#/definitions/v1InsertConfig",
-          "description": "The configuration of the insert request."
-        }
-      },
-      "description": "Represent the insert request."
     },
     "v1ObjectLocation": {
       "type": "object",

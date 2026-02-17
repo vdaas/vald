@@ -124,9 +124,17 @@ impl fmt::Display for Error {
                 limit,
             } => {
                 if *limit == "0" {
-                    write!(f, "dimension size {} is invalid, the supporting dimension size must be bigger than 2", current)
+                    write!(
+                        f,
+                        "dimension size {} is invalid, the supporting dimension size must be bigger than 2",
+                        current
+                    )
                 } else {
-                    write!(f, "dimension size {} is invalid, the supporting dimension size must be between 2 ~ {}", current, limit)
+                    write!(
+                        f,
+                        "dimension size {} is invalid, the supporting dimension size must be between 2 ~ {}",
+                        current, limit
+                    )
                 }
             }
             Error::ObjectIDNotFound { uuid } => write!(f, "uuid {}'s object id not found", uuid),

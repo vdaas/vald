@@ -16,10 +16,10 @@
 [package]
 name = "qbg"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
-anyhow = "1.0.100"
+anyhow = "1.0.101"
 cxx = { version = "1.0.194", features = ["c++20"] }
 
 [build-dependencies]
