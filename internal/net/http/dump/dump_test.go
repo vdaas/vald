@@ -16,9 +16,9 @@ package dump
 import (
 	"net/http"
 	"net/url"
+	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
@@ -73,14 +73,27 @@ func TestRequest(t *testing.T) {
 					return errors.Errorf("err is not nil. err: %v", err)
 				}
 
-				b, err := json.Marshal(res)
+				// Marshal the result to JSON
+				gotBytes, err := json.Marshal(res)
 				if err != nil {
 					return err
 				}
 
-				str := `{"host":"hoge","uri":"uri","url":"http:","method":"GET","proto":"proto","header":{},"transfer_encoding":["trans1"],"remote_addr":"0.0.0.0","content_length":1234,"body":{"name":"vald"},"values":{"version":"1.0.0"}}`
-				if got, want := conv.Btoa(b), str; got != want {
-					return errors.Errorf("response not equals. want: %v, got: %v", want, got)
+				// Unmarshal both got and want to compare as objects, not strings
+				var gotObj map[string]any
+				if err := json.Unmarshal(gotBytes, &gotObj); err != nil {
+					return err
+				}
+
+				wantStr := `{"host":"hoge","uri":"uri","url":"http:","method":"GET","proto":"proto","header":{},"transfer_encoding":["trans1"],"remote_addr":"0.0.0.0","content_length":1234,"body":{"name":"vald"},"values":{"version":"1.0.0"}}`
+				var wantObj map[string]any
+				if err := json.Unmarshal([]byte(wantStr), &wantObj); err != nil {
+					return err
+				}
+
+				// Deep compare the objects
+				if !reflect.DeepEqual(gotObj, wantObj) {
+					return errors.Errorf("response not equals.\nwant: %v\ngot:  %v", wantObj, gotObj)
 				}
 
 				return nil
