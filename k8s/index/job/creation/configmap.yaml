@@ -247,6 +247,7 @@ data:
       agent_namespace: "_MY_POD_NAMESPACE_"
       node_name: ""
       concurrency: 1
+      creation_pool_size: 16
       target_addrs: []
       discoverer:
         duration: 500ms

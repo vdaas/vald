@@ -16,10 +16,10 @@
 [package]
 name = "algorithm"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
-anyhow = "1.0.100"
+anyhow = "1.0.101"
 faiss = { version = "0.1.0", path = "../algorithms/faiss" }
 ngt = { version = "0.1.0", path = "../algorithms/ngt" }
 qbg = { version = "0.1.0", path = "../algorithms/qbg" }
