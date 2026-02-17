@@ -143,6 +143,7 @@
 .textlintrc
 .whitesource
 .yamlfmt
+AGENTS.md
 CHANGELOG.md
 CODE_OF_CONDUCT.md
 CONTRIBUTING.md
@@ -1025,11 +1026,6 @@ internal/core/algorithm/ngt/ngt_bench_test.go
 internal/core/algorithm/ngt/ngt_test.go
 internal/core/algorithm/ngt/option.go
 internal/core/algorithm/ngt/option_test.go
-internal/core/algorithm/usearch/doc.go
-internal/core/algorithm/usearch/option.go
-internal/core/algorithm/usearch/option_test.go
-internal/core/algorithm/usearch/usearch.go
-internal/core/algorithm/usearch/usearch_test.go
 internal/db/kvs/bbolt/bbolt.go
 internal/db/kvs/bbolt/bbolt_test.go
 internal/db/kvs/bbolt/doc.go

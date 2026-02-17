@@ -41,23 +41,19 @@ type Storage interface {
 }
 
 type bs struct {
-	eg          errgroup.Group
-	storageType string
-	bucketName  string
-	filename    string
-	suffix      string
-
-	s3Opts        []s3.Option
-	s3SessionOpts []session.Option
-
+	eg                        errgroup.Group
+	compressor                compress.Compressor
+	bucket                    blob.Bucket
+	compressAlgorithm         string
+	suffix                    string
+	filename                  string
+	bucketName                string
+	storageType               string
+	s3Opts                    []s3.Option
+	s3SessionOpts             []session.Option
 	cloudStorageOpts          []cloudstorage.Option
 	cloudStorageURLOpenerOpts []urlopener.Option
-
-	compressAlgorithm string
-	compressionLevel  int
-
-	bucket     blob.Bucket
-	compressor compress.Compressor
+	compressionLevel          int
 }
 
 func New(opts ...Option) (Storage, error) {

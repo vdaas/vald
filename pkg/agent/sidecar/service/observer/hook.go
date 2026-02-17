@@ -26,9 +26,8 @@ import (
 type BackupInfo struct {
 	StartTime time.Time
 	EndTime   time.Time
-	Bytes     int64
-
 	*storage.StorageInfo
+	Bytes int64
 }
 
 type Hook interface {

@@ -33,12 +33,12 @@ func TestWithLZ4Gob(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -101,12 +101,12 @@ func TestWithLZ4CompressionLevel(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {

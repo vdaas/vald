@@ -27,12 +27,12 @@ import (
 func TestRoundTripper_Bind(t *testing.T) {
 	type fields struct {
 		TLSHandshakeTimeout   string
-		MaxIdleConns          int
-		MaxIdleConnsPerHost   int
-		MaxConnsPerHost       int
 		IdleConnTimeout       string
 		ResponseHeaderTimeout string
 		ExpectContinueTimeout string
+		MaxIdleConns          int
+		MaxIdleConnsPerHost   int
+		MaxConnsPerHost       int
 		MaxResponseHeaderSize int64
 		WriteBufferSize       int64
 		ReadBufferSize        int64
@@ -42,12 +42,12 @@ func TestRoundTripper_Bind(t *testing.T) {
 		want *RoundTripper
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *RoundTripper) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *RoundTripper) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -193,12 +193,12 @@ func TestTransport_Bind(t *testing.T) {
 		want *Transport
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, *Transport) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got *Transport) error {
 		if !reflect.DeepEqual(got, w.want) {

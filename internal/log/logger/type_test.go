@@ -29,12 +29,12 @@ func TestType_String(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
-		m          Type
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
+		m          Type
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -131,12 +131,12 @@ func TestAtot(t *testing.T) {
 		want Type
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, Type) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, got Type) error {
 		if !reflect.DeepEqual(got, w.want) {

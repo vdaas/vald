@@ -29,6 +29,7 @@ import (
 )
 
 type CSpellConfig struct {
+	IgnoreWordsMap   map[string][]string `json:"ignoreWordsMap,omitempty"`
 	Version          string              `json:"version"`
 	Language         string              `json:"language"`
 	Import           []string            `json:"import"`
@@ -36,7 +37,6 @@ type CSpellConfig struct {
 	Patterns         []PatternEntry      `json:"patterns,omitempty"`
 	IgnoreRegExpList []string            `json:"ignoreRegExpList,omitempty"`
 	IgnoreWords      []string            `json:"ignoreWords,omitempty"`
-	IgnoreWordsMap   map[string][]string `json:"ignoreWordsMap,omitempty"`
 }
 
 type PatternEntry struct {

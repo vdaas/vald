@@ -116,23 +116,23 @@ package service
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		maxPods         int
-// 		nodes           sync.Map[string, *node.Node]
-// 		nodeMetrics     sync.Map[string, mnode.Node]
-// 		pods            sync.Map[string, *[]pod.Pod]
-// 		podMetrics      sync.Map[string, mpod.Pod]
-// 		services        sync.Map[string, *service.Service]
+// 		eg              errgroup.Group
+// 		der             net.Dialer
+// 		ctrl            k8s.Controller
+// 		podsByName      atomic.Pointer[map[string][]*payload.Info_Pod]
+// 		svcsByName      atomic.Pointer[map[string]*payload.Info_Service]
+// 		nodeByName      atomic.Pointer[map[string]*payload.Info_Node]
 // 		podsByNode      atomic.Pointer[map[string]map[string]map[string][]*payload.Info_Pod]
 // 		podsByNamespace atomic.Pointer[map[string]map[string][]*payload.Info_Pod]
-// 		podsByName      atomic.Pointer[map[string][]*payload.Info_Pod]
-// 		nodeByName      atomic.Pointer[map[string]*payload.Info_Node]
-// 		svcsByName      atomic.Pointer[map[string]*payload.Info_Service]
-// 		ctrl            k8s.Controller
+// 		podMetrics      sync.Map[string, mpod.Pod]
+// 		services        sync.Map[string, *service.Service]
+// 		pods            sync.Map[string, *[]pod.Pod]
+// 		nodeMetrics     sync.Map[string, mnode.Node]
+// 		nodes           sync.Map[string, *node.Node]
 // 		namespace       string
 // 		name            string
+// 		maxPods         int
 // 		csd             time.Duration
-// 		der             net.Dialer
-// 		eg              errgroup.Group
 // 	}
 // 	type want struct {
 // 		want <-chan error
@@ -165,23 +165,23 @@ package service
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           maxPods:0,
-// 		           nodes:nil,
-// 		           nodeMetrics:nil,
-// 		           pods:nil,
-// 		           podMetrics:nil,
-// 		           services:nil,
+// 		           eg:nil,
+// 		           der:nil,
+// 		           ctrl:nil,
+// 		           podsByName:nil,
+// 		           svcsByName:nil,
+// 		           nodeByName:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
-// 		           podsByName:nil,
-// 		           nodeByName:nil,
-// 		           svcsByName:nil,
-// 		           ctrl:nil,
+// 		           podMetrics:nil,
+// 		           services:nil,
+// 		           pods:nil,
+// 		           nodeMetrics:nil,
+// 		           nodes:nil,
 // 		           namespace:"",
 // 		           name:"",
+// 		           maxPods:0,
 // 		           csd:nil,
-// 		           der:nil,
-// 		           eg:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -203,23 +203,23 @@ package service
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           maxPods:0,
-// 		           nodes:nil,
-// 		           nodeMetrics:nil,
-// 		           pods:nil,
-// 		           podMetrics:nil,
-// 		           services:nil,
+// 		           eg:nil,
+// 		           der:nil,
+// 		           ctrl:nil,
+// 		           podsByName:nil,
+// 		           svcsByName:nil,
+// 		           nodeByName:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
-// 		           podsByName:nil,
-// 		           nodeByName:nil,
-// 		           svcsByName:nil,
-// 		           ctrl:nil,
+// 		           podMetrics:nil,
+// 		           services:nil,
+// 		           pods:nil,
+// 		           nodeMetrics:nil,
+// 		           nodes:nil,
 // 		           namespace:"",
 // 		           name:"",
+// 		           maxPods:0,
 // 		           csd:nil,
-// 		           der:nil,
-// 		           eg:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -250,23 +250,23 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			d := &discoverer{
-// 				maxPods:         test.fields.maxPods,
-// 				nodes:           test.fields.nodes,
-// 				nodeMetrics:     test.fields.nodeMetrics,
-// 				pods:            test.fields.pods,
-// 				podMetrics:      test.fields.podMetrics,
-// 				services:        test.fields.services,
+// 				eg:              test.fields.eg,
+// 				der:             test.fields.der,
+// 				ctrl:            test.fields.ctrl,
+// 				podsByName:      test.fields.podsByName,
+// 				svcsByName:      test.fields.svcsByName,
+// 				nodeByName:      test.fields.nodeByName,
 // 				podsByNode:      test.fields.podsByNode,
 // 				podsByNamespace: test.fields.podsByNamespace,
-// 				podsByName:      test.fields.podsByName,
-// 				nodeByName:      test.fields.nodeByName,
-// 				svcsByName:      test.fields.svcsByName,
-// 				ctrl:            test.fields.ctrl,
+// 				podMetrics:      test.fields.podMetrics,
+// 				services:        test.fields.services,
+// 				pods:            test.fields.pods,
+// 				nodeMetrics:     test.fields.nodeMetrics,
+// 				nodes:           test.fields.nodes,
 // 				namespace:       test.fields.namespace,
 // 				name:            test.fields.name,
+// 				maxPods:         test.fields.maxPods,
 // 				csd:             test.fields.csd,
-// 				der:             test.fields.der,
-// 				eg:              test.fields.eg,
 // 			}
 //
 // 			got, err := d.Start(test.args.ctx)
@@ -282,23 +282,23 @@ package service
 // 		req *payload.Discoverer_Request
 // 	}
 // 	type fields struct {
-// 		maxPods         int
-// 		nodes           sync.Map[string, *node.Node]
-// 		nodeMetrics     sync.Map[string, mnode.Node]
-// 		pods            sync.Map[string, *[]pod.Pod]
-// 		podMetrics      sync.Map[string, mpod.Pod]
-// 		services        sync.Map[string, *service.Service]
+// 		eg              errgroup.Group
+// 		der             net.Dialer
+// 		ctrl            k8s.Controller
+// 		podsByName      atomic.Pointer[map[string][]*payload.Info_Pod]
+// 		svcsByName      atomic.Pointer[map[string]*payload.Info_Service]
+// 		nodeByName      atomic.Pointer[map[string]*payload.Info_Node]
 // 		podsByNode      atomic.Pointer[map[string]map[string]map[string][]*payload.Info_Pod]
 // 		podsByNamespace atomic.Pointer[map[string]map[string][]*payload.Info_Pod]
-// 		podsByName      atomic.Pointer[map[string][]*payload.Info_Pod]
-// 		nodeByName      atomic.Pointer[map[string]*payload.Info_Node]
-// 		svcsByName      atomic.Pointer[map[string]*payload.Info_Service]
-// 		ctrl            k8s.Controller
+// 		podMetrics      sync.Map[string, mpod.Pod]
+// 		services        sync.Map[string, *service.Service]
+// 		pods            sync.Map[string, *[]pod.Pod]
+// 		nodeMetrics     sync.Map[string, mnode.Node]
+// 		nodes           sync.Map[string, *node.Node]
 // 		namespace       string
 // 		name            string
+// 		maxPods         int
 // 		csd             time.Duration
-// 		der             net.Dialer
-// 		eg              errgroup.Group
 // 	}
 // 	type want struct {
 // 		wantPods *payload.Info_Pods
@@ -331,23 +331,23 @@ package service
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
-// 		           maxPods:0,
-// 		           nodes:nil,
-// 		           nodeMetrics:nil,
-// 		           pods:nil,
-// 		           podMetrics:nil,
-// 		           services:nil,
+// 		           eg:nil,
+// 		           der:nil,
+// 		           ctrl:nil,
+// 		           podsByName:nil,
+// 		           svcsByName:nil,
+// 		           nodeByName:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
-// 		           podsByName:nil,
-// 		           nodeByName:nil,
-// 		           svcsByName:nil,
-// 		           ctrl:nil,
+// 		           podMetrics:nil,
+// 		           services:nil,
+// 		           pods:nil,
+// 		           nodeMetrics:nil,
+// 		           nodes:nil,
 // 		           namespace:"",
 // 		           name:"",
+// 		           maxPods:0,
 // 		           csd:nil,
-// 		           der:nil,
-// 		           eg:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -369,23 +369,23 @@ package service
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
-// 		           maxPods:0,
-// 		           nodes:nil,
-// 		           nodeMetrics:nil,
-// 		           pods:nil,
-// 		           podMetrics:nil,
-// 		           services:nil,
+// 		           eg:nil,
+// 		           der:nil,
+// 		           ctrl:nil,
+// 		           podsByName:nil,
+// 		           svcsByName:nil,
+// 		           nodeByName:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
-// 		           podsByName:nil,
-// 		           nodeByName:nil,
-// 		           svcsByName:nil,
-// 		           ctrl:nil,
+// 		           podMetrics:nil,
+// 		           services:nil,
+// 		           pods:nil,
+// 		           nodeMetrics:nil,
+// 		           nodes:nil,
 // 		           namespace:"",
 // 		           name:"",
+// 		           maxPods:0,
 // 		           csd:nil,
-// 		           der:nil,
-// 		           eg:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -416,23 +416,23 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			d := &discoverer{
-// 				maxPods:         test.fields.maxPods,
-// 				nodes:           test.fields.nodes,
-// 				nodeMetrics:     test.fields.nodeMetrics,
-// 				pods:            test.fields.pods,
-// 				podMetrics:      test.fields.podMetrics,
-// 				services:        test.fields.services,
+// 				eg:              test.fields.eg,
+// 				der:             test.fields.der,
+// 				ctrl:            test.fields.ctrl,
+// 				podsByName:      test.fields.podsByName,
+// 				svcsByName:      test.fields.svcsByName,
+// 				nodeByName:      test.fields.nodeByName,
 // 				podsByNode:      test.fields.podsByNode,
 // 				podsByNamespace: test.fields.podsByNamespace,
-// 				podsByName:      test.fields.podsByName,
-// 				nodeByName:      test.fields.nodeByName,
-// 				svcsByName:      test.fields.svcsByName,
-// 				ctrl:            test.fields.ctrl,
+// 				podMetrics:      test.fields.podMetrics,
+// 				services:        test.fields.services,
+// 				pods:            test.fields.pods,
+// 				nodeMetrics:     test.fields.nodeMetrics,
+// 				nodes:           test.fields.nodes,
 // 				namespace:       test.fields.namespace,
 // 				name:            test.fields.name,
+// 				maxPods:         test.fields.maxPods,
 // 				csd:             test.fields.csd,
-// 				der:             test.fields.der,
-// 				eg:              test.fields.eg,
 // 			}
 //
 // 			gotPods, err := d.GetPods(test.args.req)
@@ -448,23 +448,23 @@ package service
 // 		req *payload.Discoverer_Request
 // 	}
 // 	type fields struct {
-// 		maxPods         int
-// 		nodes           sync.Map[string, *node.Node]
-// 		nodeMetrics     sync.Map[string, mnode.Node]
-// 		pods            sync.Map[string, *[]pod.Pod]
-// 		podMetrics      sync.Map[string, mpod.Pod]
-// 		services        sync.Map[string, *service.Service]
+// 		eg              errgroup.Group
+// 		der             net.Dialer
+// 		ctrl            k8s.Controller
+// 		podsByName      atomic.Pointer[map[string][]*payload.Info_Pod]
+// 		svcsByName      atomic.Pointer[map[string]*payload.Info_Service]
+// 		nodeByName      atomic.Pointer[map[string]*payload.Info_Node]
 // 		podsByNode      atomic.Pointer[map[string]map[string]map[string][]*payload.Info_Pod]
 // 		podsByNamespace atomic.Pointer[map[string]map[string][]*payload.Info_Pod]
-// 		podsByName      atomic.Pointer[map[string][]*payload.Info_Pod]
-// 		nodeByName      atomic.Pointer[map[string]*payload.Info_Node]
-// 		svcsByName      atomic.Pointer[map[string]*payload.Info_Service]
-// 		ctrl            k8s.Controller
+// 		podMetrics      sync.Map[string, mpod.Pod]
+// 		services        sync.Map[string, *service.Service]
+// 		pods            sync.Map[string, *[]pod.Pod]
+// 		nodeMetrics     sync.Map[string, mnode.Node]
+// 		nodes           sync.Map[string, *node.Node]
 // 		namespace       string
 // 		name            string
+// 		maxPods         int
 // 		csd             time.Duration
-// 		der             net.Dialer
-// 		eg              errgroup.Group
 // 	}
 // 	type want struct {
 // 		wantNodes *payload.Info_Nodes
@@ -497,23 +497,23 @@ package service
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
-// 		           maxPods:0,
-// 		           nodes:nil,
-// 		           nodeMetrics:nil,
-// 		           pods:nil,
-// 		           podMetrics:nil,
-// 		           services:nil,
+// 		           eg:nil,
+// 		           der:nil,
+// 		           ctrl:nil,
+// 		           podsByName:nil,
+// 		           svcsByName:nil,
+// 		           nodeByName:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
-// 		           podsByName:nil,
-// 		           nodeByName:nil,
-// 		           svcsByName:nil,
-// 		           ctrl:nil,
+// 		           podMetrics:nil,
+// 		           services:nil,
+// 		           pods:nil,
+// 		           nodeMetrics:nil,
+// 		           nodes:nil,
 // 		           namespace:"",
 // 		           name:"",
+// 		           maxPods:0,
 // 		           csd:nil,
-// 		           der:nil,
-// 		           eg:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -535,23 +535,23 @@ package service
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
-// 		           maxPods:0,
-// 		           nodes:nil,
-// 		           nodeMetrics:nil,
-// 		           pods:nil,
-// 		           podMetrics:nil,
-// 		           services:nil,
+// 		           eg:nil,
+// 		           der:nil,
+// 		           ctrl:nil,
+// 		           podsByName:nil,
+// 		           svcsByName:nil,
+// 		           nodeByName:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
-// 		           podsByName:nil,
-// 		           nodeByName:nil,
-// 		           svcsByName:nil,
-// 		           ctrl:nil,
+// 		           podMetrics:nil,
+// 		           services:nil,
+// 		           pods:nil,
+// 		           nodeMetrics:nil,
+// 		           nodes:nil,
 // 		           namespace:"",
 // 		           name:"",
+// 		           maxPods:0,
 // 		           csd:nil,
-// 		           der:nil,
-// 		           eg:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -582,23 +582,23 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			d := &discoverer{
-// 				maxPods:         test.fields.maxPods,
-// 				nodes:           test.fields.nodes,
-// 				nodeMetrics:     test.fields.nodeMetrics,
-// 				pods:            test.fields.pods,
-// 				podMetrics:      test.fields.podMetrics,
-// 				services:        test.fields.services,
+// 				eg:              test.fields.eg,
+// 				der:             test.fields.der,
+// 				ctrl:            test.fields.ctrl,
+// 				podsByName:      test.fields.podsByName,
+// 				svcsByName:      test.fields.svcsByName,
+// 				nodeByName:      test.fields.nodeByName,
 // 				podsByNode:      test.fields.podsByNode,
 // 				podsByNamespace: test.fields.podsByNamespace,
-// 				podsByName:      test.fields.podsByName,
-// 				nodeByName:      test.fields.nodeByName,
-// 				svcsByName:      test.fields.svcsByName,
-// 				ctrl:            test.fields.ctrl,
+// 				podMetrics:      test.fields.podMetrics,
+// 				services:        test.fields.services,
+// 				pods:            test.fields.pods,
+// 				nodeMetrics:     test.fields.nodeMetrics,
+// 				nodes:           test.fields.nodes,
 // 				namespace:       test.fields.namespace,
 // 				name:            test.fields.name,
+// 				maxPods:         test.fields.maxPods,
 // 				csd:             test.fields.csd,
-// 				der:             test.fields.der,
-// 				eg:              test.fields.eg,
 // 			}
 //
 // 			gotNodes, err := d.GetNodes(test.args.req)
@@ -614,23 +614,23 @@ package service
 // 		req *payload.Discoverer_Request
 // 	}
 // 	type fields struct {
-// 		maxPods         int
-// 		nodes           sync.Map[string, *node.Node]
-// 		nodeMetrics     sync.Map[string, mnode.Node]
-// 		pods            sync.Map[string, *[]pod.Pod]
-// 		podMetrics      sync.Map[string, mpod.Pod]
-// 		services        sync.Map[string, *service.Service]
+// 		eg              errgroup.Group
+// 		der             net.Dialer
+// 		ctrl            k8s.Controller
+// 		podsByName      atomic.Pointer[map[string][]*payload.Info_Pod]
+// 		svcsByName      atomic.Pointer[map[string]*payload.Info_Service]
+// 		nodeByName      atomic.Pointer[map[string]*payload.Info_Node]
 // 		podsByNode      atomic.Pointer[map[string]map[string]map[string][]*payload.Info_Pod]
 // 		podsByNamespace atomic.Pointer[map[string]map[string][]*payload.Info_Pod]
-// 		podsByName      atomic.Pointer[map[string][]*payload.Info_Pod]
-// 		nodeByName      atomic.Pointer[map[string]*payload.Info_Node]
-// 		svcsByName      atomic.Pointer[map[string]*payload.Info_Service]
-// 		ctrl            k8s.Controller
+// 		podMetrics      sync.Map[string, mpod.Pod]
+// 		services        sync.Map[string, *service.Service]
+// 		pods            sync.Map[string, *[]pod.Pod]
+// 		nodeMetrics     sync.Map[string, mnode.Node]
+// 		nodes           sync.Map[string, *node.Node]
 // 		namespace       string
 // 		name            string
+// 		maxPods         int
 // 		csd             time.Duration
-// 		der             net.Dialer
-// 		eg              errgroup.Group
 // 	}
 // 	type want struct {
 // 		wantSvcs *payload.Info_Services
@@ -663,23 +663,23 @@ package service
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
-// 		           maxPods:0,
-// 		           nodes:nil,
-// 		           nodeMetrics:nil,
-// 		           pods:nil,
-// 		           podMetrics:nil,
-// 		           services:nil,
+// 		           eg:nil,
+// 		           der:nil,
+// 		           ctrl:nil,
+// 		           podsByName:nil,
+// 		           svcsByName:nil,
+// 		           nodeByName:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
-// 		           podsByName:nil,
-// 		           nodeByName:nil,
-// 		           svcsByName:nil,
-// 		           ctrl:nil,
+// 		           podMetrics:nil,
+// 		           services:nil,
+// 		           pods:nil,
+// 		           nodeMetrics:nil,
+// 		           nodes:nil,
 // 		           namespace:"",
 // 		           name:"",
+// 		           maxPods:0,
 // 		           csd:nil,
-// 		           der:nil,
-// 		           eg:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -701,23 +701,23 @@ package service
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
-// 		           maxPods:0,
-// 		           nodes:nil,
-// 		           nodeMetrics:nil,
-// 		           pods:nil,
-// 		           podMetrics:nil,
-// 		           services:nil,
+// 		           eg:nil,
+// 		           der:nil,
+// 		           ctrl:nil,
+// 		           podsByName:nil,
+// 		           svcsByName:nil,
+// 		           nodeByName:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
-// 		           podsByName:nil,
-// 		           nodeByName:nil,
-// 		           svcsByName:nil,
-// 		           ctrl:nil,
+// 		           podMetrics:nil,
+// 		           services:nil,
+// 		           pods:nil,
+// 		           nodeMetrics:nil,
+// 		           nodes:nil,
 // 		           namespace:"",
 // 		           name:"",
+// 		           maxPods:0,
 // 		           csd:nil,
-// 		           der:nil,
-// 		           eg:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -748,23 +748,23 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			d := &discoverer{
-// 				maxPods:         test.fields.maxPods,
-// 				nodes:           test.fields.nodes,
-// 				nodeMetrics:     test.fields.nodeMetrics,
-// 				pods:            test.fields.pods,
-// 				podMetrics:      test.fields.podMetrics,
-// 				services:        test.fields.services,
+// 				eg:              test.fields.eg,
+// 				der:             test.fields.der,
+// 				ctrl:            test.fields.ctrl,
+// 				podsByName:      test.fields.podsByName,
+// 				svcsByName:      test.fields.svcsByName,
+// 				nodeByName:      test.fields.nodeByName,
 // 				podsByNode:      test.fields.podsByNode,
 // 				podsByNamespace: test.fields.podsByNamespace,
-// 				podsByName:      test.fields.podsByName,
-// 				nodeByName:      test.fields.nodeByName,
-// 				svcsByName:      test.fields.svcsByName,
-// 				ctrl:            test.fields.ctrl,
+// 				podMetrics:      test.fields.podMetrics,
+// 				services:        test.fields.services,
+// 				pods:            test.fields.pods,
+// 				nodeMetrics:     test.fields.nodeMetrics,
+// 				nodes:           test.fields.nodes,
 // 				namespace:       test.fields.namespace,
 // 				name:            test.fields.name,
+// 				maxPods:         test.fields.maxPods,
 // 				csd:             test.fields.csd,
-// 				der:             test.fields.der,
-// 				eg:              test.fields.eg,
 // 			}
 //
 // 			gotSvcs, err := d.GetServices(test.args.req)

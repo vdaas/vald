@@ -20,31 +20,23 @@ import "github.com/vdaas/vald/internal/tls"
 
 // TLS represent the TLS configuration for server.
 type TLS struct {
-	// Enable represent the server enable TLS or not.
-	Enabled bool `json:"enabled" yaml:"enabled"`
-
-	// Cert represent the certificate environment variable key used to start server.
+	// Cert represents the certificate file path.
 	Cert string `json:"cert" yaml:"cert"`
-
-	// Key represent the private key environment variable key used to start server.
+	// Key represents the key file path.
 	Key string `json:"key" yaml:"key"`
-
-	// CA represent the CA certificate environment variable key used to start server.
+	// CA represents the CA certificate file path.
 	CA string `json:"ca" yaml:"ca"`
-
-	// CRL represent the Certificate Revocation List file path
+	// CRL represents the CRL file path.
 	CRL string `json:"crl" yaml:"crl"`
-
-	// ServerName represents the tls Server SNI.
+	// ServerName represents the server name.
 	ServerName string `json:"server_name" yaml:"server_name"`
-
-	// ClientAuth represents the tls ClientAuth Type for Server
+	// ClientAuth represents the client authentication type (NoClientCert, RequestClientCert, RequireAnyClientCert, VerifyClientCertIfGiven, RequireAndVerifyClientCert).
 	ClientAuth string `json:"client_auth" yaml:"client_auth"`
-
-	// InsecureSkipVerify represent enable/disable skip SSL certificate verification
+	// Enabled enables TLS.
+	Enabled bool `json:"enabled" yaml:"enabled"`
+	// InsecureSkipVerify enables skipping verification.
 	InsecureSkipVerify bool `json:"insecure_skip_verify" yaml:"insecure_skip_verify"`
-
-	// HotReload represents whether to enable server certificate hot reload feature.
+	// HotReload enables hot reload of certificates.
 	HotReload bool `json:"hot_reload" yaml:"hot_reload"`
 }
 

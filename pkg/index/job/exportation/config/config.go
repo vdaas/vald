@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+// Package config stores all server application settings for index exportation job
 package config
 
 import (
@@ -23,17 +24,17 @@ type GlobalConfig = config.GlobalConfig
 
 // Data represents the application configurations.
 type Data struct {
-	// GlobalConfig represents application base configurations.
-	config.GlobalConfig `json:",inline" yaml:",inline"`
-
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
 
-	// Observability represents observability configurations.
+	// Observability represent observability configurations
 	Observability *config.Observability `json:"observability" yaml:"observability"`
 
-	// Exporter represents auto indexing service configurations.
+	// Exporter represent index exporter configuration
 	Exporter *config.IndexExporter `json:"exporter" yaml:"exporter"`
+
+	// GlobalConfig represent the global configuration
+	config.GlobalConfig `json:",inline" yaml:",inline"`
 }
 
 // NewConfig load configurations from file path.

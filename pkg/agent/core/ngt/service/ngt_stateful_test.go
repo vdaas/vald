@@ -1291,7 +1291,7 @@ func rootCommands(t *testing.T) commands.Commands {
 				t.Fatalf("error: %s", err)
 			}
 
-			ctx := context.Background()
+			ctx := t.Context()
 			ech := n.Start(ctx)
 
 			time.Sleep(time.Second)

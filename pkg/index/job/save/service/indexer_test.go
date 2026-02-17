@@ -43,13 +43,13 @@ func Test_index_Start(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
 		args       args
-		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -65,7 +65,7 @@ func Test_index_Start(t *testing.T) {
 			return test{
 				name: "Success: when there is no error in the save indexing request process",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 				},
 				fields: fields{
 					client: &clientmock.DiscovererClientMock{
@@ -89,7 +89,7 @@ func Test_index_Start(t *testing.T) {
 			return test{
 				name: "Success: when a target addresses (targetAddrs) is given and there are no errors in the save indexing request process",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 				},
 				fields: fields{
 					targetAddrs: []string{
@@ -124,7 +124,7 @@ func Test_index_Start(t *testing.T) {
 			return test{
 				name: "Fail: when there is an error wrapped with gRPC status in the save indexing request process",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 				},
 				fields: fields{
 					client: &clientmock.DiscovererClientMock{
@@ -158,7 +158,7 @@ func Test_index_Start(t *testing.T) {
 			return test{
 				name: "Fail: When the OrderedRangeConcurrent method returns a gRPC client conn not found error",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 				},
 				fields: fields{
 					client: &clientmock.DiscovererClientMock{

@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"slices"
 	"testing"
 
 	"github.com/vdaas/vald/internal/conv"
@@ -49,12 +50,12 @@ func TestIsLocal(t *testing.T) {
 		want bool
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, bool) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -144,13 +145,13 @@ func TestDialContext(t *testing.T) {
 		err      error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		srv        *httptest.Server
 		checkFunc  func(want, Conn, error) error
 		beforeFunc func(*testing.T, *test)
 		afterFunc  func(*testing.T, *test)
+		args       args
+		name       string
 	}
 	defaultCheckFunc := func(w want, gotConn Conn, err error) error {
 		if !errors.Is(err, w.err) {
@@ -172,7 +173,7 @@ func TestDialContext(t *testing.T) {
 				srvContent := "test"
 
 				test.srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					w.WriteHeader(200)
+					w.WriteHeader(http.StatusOK)
 					fmt.Fprint(w, srvContent)
 				}))
 				test.args.addr = test.srv.URL[len("http://"):]
@@ -210,8 +211,7 @@ func TestDialContext(t *testing.T) {
 		test := &tests[i]
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := tt.Context()
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt, test)
 			}
@@ -239,20 +239,20 @@ func TestParse(t *testing.T) {
 		addr string
 	}
 	type want struct {
+		err      error
 		wantHost string
 		wantPort uint16
 		isLocal  bool
 		isV4     bool
 		isV6     bool
-		err      error
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, string, uint16, bool, bool, bool, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		args       args
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, gotHost string, gotPort uint16, gotIsLocal, gotIsV4, gotIsV6 bool, err error) error {
 		if (w.err == nil && err != nil) || (w.err != nil && err == nil) || (err != nil && err.Error() != w.err.Error()) {
@@ -401,17 +401,17 @@ func TestSplitHostPort(t *testing.T) {
 		hostport string
 	}
 	type want struct {
+		err      error
 		wantHost string
 		wantPort uint16
-		err      error
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, string, uint16, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, gotHost string, gotPort uint16, err error) error {
 		if (w.err == nil && err != nil) || (w.err != nil && err == nil) || (err != nil && err.Error() != w.err.Error()) {
@@ -536,22 +536,22 @@ func TestSplitHostPort(t *testing.T) {
 func TestScanPorts(t *testing.T) {
 	t.Parallel()
 	type args struct {
+		host  string
 		start uint16
 		end   uint16
-		host  string
 	}
 	type want struct {
-		wantPorts []uint16
 		err       error
+		wantPorts []uint16
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
-		srvs       []*httptest.Server
 		checkFunc  func(want, []uint16, error) error
 		beforeFunc func(*testing.T, *test)
 		afterFunc  func(*test)
+		args       args
+		name       string
+		srvs       []*httptest.Server
 	}
 	defaultAfterFunc := func(t *test) {
 		for _, s := range t.srvs {
@@ -565,14 +565,11 @@ func TestScanPorts(t *testing.T) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 
-		// count how want want ports exists in got ports
+		// count how want ports exists in got ports
 		cnt := 0
 		for _, wp := range w.wantPorts {
-			for _, gp := range gotPorts {
-				if wp == gp {
-					cnt++
-					break
-				}
+			if slices.Contains(gotPorts, wp) {
+				cnt++
 			}
 		}
 
@@ -590,7 +587,7 @@ func TestScanPorts(t *testing.T) {
 			beforeFunc: func(t *testing.T, test *test) {
 				t.Helper()
 				srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					w.WriteHeader(200)
+					w.WriteHeader(http.StatusOK)
 				}))
 
 				_, p, err := SplitHostPort(srv.URL[len("http://"):])
@@ -620,7 +617,7 @@ func TestScanPorts(t *testing.T) {
 			beforeFunc: func(t *testing.T, test *test) {
 				t.Helper()
 				srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					w.WriteHeader(200)
+					w.WriteHeader(http.StatusOK)
 				}))
 
 				_, p, err := SplitHostPort(srv.URL[len("http://"):])
@@ -650,7 +647,7 @@ func TestScanPorts(t *testing.T) {
 			beforeFunc: func(t *testing.T, test *test) {
 				t.Helper()
 				srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					w.WriteHeader(200)
+					w.WriteHeader(http.StatusOK)
 				}))
 
 				_, p, err := SplitHostPort(srv.URL[len("http://"):])
@@ -686,9 +683,9 @@ func TestScanPorts(t *testing.T) {
 				minPort := uint16(math.MaxUint16)
 				maxPort := uint16(0)
 
-				for i := 0; i < srvNum; i++ {
+				for range srvNum {
 					handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-						w.WriteHeader(200)
+						w.WriteHeader(http.StatusOK)
 					})
 					srv := httptest.NewServer(handler)
 					srvs = append(srvs, srv)
@@ -735,8 +732,7 @@ func TestScanPorts(t *testing.T) {
 		test := &tests[i]
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := tt.Context()
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt, test)
 			}
@@ -766,11 +762,11 @@ func TestLoadLocalIP(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -819,12 +815,12 @@ func TestNetworkTypeFromString(t *testing.T) {
 		want NetworkType
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, NetworkType) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, got NetworkType) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -981,12 +977,12 @@ func TestNetworkType_String(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
-		n          NetworkType
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
+		n          NetworkType
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1121,12 +1117,12 @@ func TestJoinHostPort(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		want       want
+		args       args
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {

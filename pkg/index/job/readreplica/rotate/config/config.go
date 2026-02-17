@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+// Package config stores all server application settings for read replica rotate job
 package config
 
 import (
@@ -23,17 +24,17 @@ type GlobalConfig = config.GlobalConfig
 
 // Data represents the application configurations.
 type Data struct {
-	// GlobalConfig represents application base configurations.
-	config.GlobalConfig `json:",inline" yaml:",inline"`
-
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
 
-	// Observability represents observability configurations.
+	// Observability represent observability configurations
 	Observability *config.Observability `json:"observability" yaml:"observability"`
 
-	// ReadReplicaRotate represents read replica rotate configurations.
+	// ReadReplicaRotate represent read replica rotation configuration
 	ReadReplicaRotate *config.ReadReplicaRotate `json:"rotator" yaml:"rotator"`
+
+	// GlobalConfig represent the global configuration
+	config.GlobalConfig `json:",inline" yaml:",inline"`
 }
 
 // NewConfig loads configurations from the file path.
@@ -45,7 +46,7 @@ func NewConfig(path string) (cfg *Data, err error) {
 	}
 
 	if cfg != nil {
-		_ = cfg.GlobalConfig.Bind()
+		_ = cfg.Bind()
 	} else {
 		return nil, errors.ErrInvalidConfig
 	}

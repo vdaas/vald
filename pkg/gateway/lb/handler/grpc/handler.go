@@ -25,15 +25,15 @@ import (
 )
 
 type server struct {
+	vald.UnimplementedValdServer
 	eg                errgroup.Group
 	gateway           service.Gateway
+	name              string
+	ip                string
 	timeout           time.Duration
 	replica           int
 	streamConcurrency int
 	multiConcurrency  int
-	name              string
-	ip                string
-	vald.UnimplementedValdServer
 }
 
 const apiName = "vald/gateway/lb"

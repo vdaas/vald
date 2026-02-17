@@ -76,7 +76,7 @@ jobs:
           patterns: "**/*.md **/*.md.gotmpl !**/CHANGELOG.md !apis/** !charts/**"
           level: warning
           language: en-US
-          disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES"
+          disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES,UPPERCASE_SENTENCE_START"
           disabled_categories: "TYPOS,TYPOGRAPHY,STYLE"
   textlint:
     timeout-minutes: 30

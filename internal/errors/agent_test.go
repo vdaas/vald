@@ -31,12 +31,12 @@ func TestErrObjectNotFound(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		args       args
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -117,12 +117,12 @@ func TestErrCreateProperty(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -178,11 +178,11 @@ func TestErrIndexNotFound(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -226,11 +226,11 @@ func TestErrIndexLoadTimeout(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -278,12 +278,12 @@ func TestErrInvalidDimensionSize(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -384,12 +384,12 @@ func TestErrInvalidUUID(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -449,12 +449,12 @@ func TestErrDimensionLimitExceed(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -537,12 +537,12 @@ func TestErrIncompatibleDimensionSize(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -608,11 +608,11 @@ func TestErrUnsupportedObjectType(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -656,11 +656,11 @@ func TestErrUnsupportedDistanceType(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -708,12 +708,12 @@ func TestErrFailedToSetDistanceType(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		args       args
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -795,12 +795,12 @@ func TestErrFailedToSetObjectType(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		args       args
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -881,12 +881,12 @@ func TestErrFailedToSetDimension(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -945,12 +945,12 @@ func TestErrFailedToSetCreationEdgeSize(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -1009,12 +1009,12 @@ func TestErrFailedToSetSearchEdgeSize(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -1073,12 +1073,12 @@ func TestErrUncommittedIndexExists(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -1144,11 +1144,11 @@ func TestErrUncommittedIndexNotFound(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -1192,11 +1192,11 @@ func TestErrCAPINotImplemented(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -1243,12 +1243,12 @@ func TestErrUUIDAlreadyExists(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -1307,12 +1307,12 @@ func TestErrUUIDNotFound(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -1380,12 +1380,12 @@ func TestErrObjectIDNotFound(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -1444,12 +1444,12 @@ func TestErrRemoveRequestedBeforeIndexing(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {

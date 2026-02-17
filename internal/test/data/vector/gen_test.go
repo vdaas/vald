@@ -29,17 +29,17 @@ func TestFloat32VectorGenerator(t *testing.T) {
 		dim int
 	}
 	type want struct {
+		err error
 		n   int
 		dim int
-		err error
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(args, want, Float32VectorGeneratorFunc, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		want       want
+		args       args
 	}
 	defaultCheckFunc := func(a args, w want, got Float32VectorGeneratorFunc, err error) error {
 		if !errors.Is(err, w.err) {
@@ -127,17 +127,17 @@ func TestUint8VectorGenerator(t *testing.T) {
 		dim int
 	}
 	type want struct {
+		err error
 		n   int
 		dim int
-		err error
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(args, want, Uint8VectorGeneratorFunc, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		want       want
+		args       args
 	}
 	defaultCheckFunc := func(a args, w want, got Uint8VectorGeneratorFunc, err error) error {
 		if !errors.Is(err, w.err) {
@@ -225,17 +225,17 @@ func TestGenF32Vec(t *testing.T) {
 		dim  int
 	}
 	type want struct {
+		err     error
 		wantLen int
 		wantDim int
-		err     error
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, [][]float32, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		want       want
+		args       args
 	}
 	defaultCheckFunc := func(w want, got [][]float32, err error) error {
 		if !errors.Is(err, w.err) {
@@ -333,17 +333,17 @@ func TestGenUint8Vec(t *testing.T) {
 		dim  int
 	}
 	type want struct {
+		err     error
 		wantLen int
 		wantDim int
-		err     error
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, [][]float32, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		want       want
+		args       args
 	}
 	defaultCheckFunc := func(w want, got [][]float32, err error) error {
 		if !errors.Is(err, w.err) {
@@ -443,12 +443,12 @@ func TestGenSameValueVec(t *testing.T) {
 		want []float32
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, []float32) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		want       want
+		args       args
 	}
 	defaultCheckFunc := func(w want, got []float32) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -565,12 +565,12 @@ func TestConvertVectorsUint8ToFloat32(t *testing.T) {
 		wantRet [][]float32
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, [][]float32) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, gotRet [][]float32) error {
 		if !reflect.DeepEqual(gotRet, w.wantRet) {

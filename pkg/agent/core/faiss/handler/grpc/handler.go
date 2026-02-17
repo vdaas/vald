@@ -34,13 +34,13 @@ type Server interface {
 }
 
 type server struct {
-	name              string
-	ip                string
-	faiss             service.Faiss
-	eg                errgroup.Group
-	streamConcurrency int
 	agent.UnimplementedAgentServer
 	vald.UnimplementedValdServer
+	faiss             service.Faiss
+	eg                errgroup.Group
+	name              string
+	ip                string
+	streamConcurrency int
 }
 
 const (

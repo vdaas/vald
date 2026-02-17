@@ -18,6 +18,7 @@ package config
 
 // BackupManager represents the configuration for backup manager.
 type BackupManager struct {
+	// Client represents the gRPC client configuration.
 	Client *GRPCClient `json:"client" yaml:"client"`
 }
 

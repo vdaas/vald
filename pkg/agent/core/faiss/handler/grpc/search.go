@@ -164,25 +164,25 @@ func (s *server) Search(
 func (s *server) SearchByID(
 	ctx context.Context, req *payload.Search_IDRequest,
 ) (res *payload.Search_Response, err error) {
-	return s.UnimplementedValdServer.UnimplementedSearchServer.SearchByID(ctx, req)
+	return s.UnimplementedSearchServer.SearchByID(ctx, req)
 }
 
 func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error) {
-	return s.UnimplementedValdServer.UnimplementedSearchServer.StreamSearch(stream)
+	return s.UnimplementedSearchServer.StreamSearch(stream)
 }
 
 func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (err error) {
-	return s.UnimplementedValdServer.UnimplementedSearchServer.StreamSearchByID(stream)
+	return s.UnimplementedSearchServer.StreamSearchByID(stream)
 }
 
 func (s *server) MultiSearch(
 	ctx context.Context, reqs *payload.Search_MultiRequest,
 ) (res *payload.Search_Responses, errs error) {
-	return s.UnimplementedValdServer.UnimplementedSearchServer.MultiSearch(ctx, reqs)
+	return s.UnimplementedSearchServer.MultiSearch(ctx, reqs)
 }
 
 func (s *server) MultiSearchByID(
 	ctx context.Context, reqs *payload.Search_MultiIDRequest,
 ) (res *payload.Search_Responses, errs error) {
-	return s.UnimplementedValdServer.UnimplementedSearchServer.MultiSearchByID(ctx, reqs)
+	return s.UnimplementedSearchServer.MultiSearchByID(ctx, reqs)
 }

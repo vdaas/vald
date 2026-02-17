@@ -60,8 +60,7 @@ func NewWithTransport(rt http.RoundTripper, opts ...Option) (*http.Client, error
 		}
 	}
 
-	var err error
-	err = http2.ConfigureTransport(tr.Transport)
+	err := http2.ConfigureTransport(tr.Transport)
 	if err != nil {
 		log.Warnf("Transport is already configured for HTTP2 error: %v", err)
 	}

@@ -55,7 +55,7 @@ func (o *operation) CreateIndex(b *testing.B) {
 	b.ResetTimer()
 	b.Run("CreateIndex", func(b *testing.B) {
 		ctx := b.Context()
-		for i := 0; i < b.N; i++ {
+		for b.Loop() {
 			_, err := o.indexerC.CreateIndex(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)

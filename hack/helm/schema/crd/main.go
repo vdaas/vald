@@ -43,39 +43,29 @@ const (
 var aliases map[string]Schema
 
 type Schema struct {
-	Type        string             `json:"type"                  yaml:"type"`
-	Description string             `json:"description,omitempty" yaml:"description,omitempty"`
-	Properties  map[string]*Schema `json:"properties,omitempty"  yaml:"properties,omitempty"`
-
-	// for object type
-	Required          []string          `json:"required,omitempty"          yaml:"required,omitempty"`
-	MaxProperties     *uint64           `json:"maxProperties,omitempty"     yaml:"maxProperties,omitempty"`
-	MinProperties     *uint64           `json:"minProperties,omitempty"     yaml:"minProperties,omitempty"`
-	DependentRequired map[string]string `json:"dependentRequired,omitempty" yaml:"dependentRequired,omitempty"`
-
-	// for string type
-	Enum      []string `json:"enum,omitempty"      yaml:"enum,omitempty"`
-	Pattern   string   `json:"pattern,omitempty"   yaml:"pattern,omitempty"`
-	MaxLength *uint64  `json:"maxLength,omitempty" yaml:"maxLength,omitempty"`
-	MinLength *uint64  `json:"minLength,omitempty" yaml:"minLength,omitempty"`
-
-	// for array type
-	Items       *Schema `json:"items,omitempty"       yaml:"items,omitempty"`
-	MaxItems    *uint64 `json:"maxItems,omitempty"    yaml:"maxItems,omitempty"`
-	MinItems    *uint64 `json:"minItems,omitempty"    yaml:"minItems,omitempty"`
-	UniqueItems bool    `json:"uniqueItems,omitempty" yaml:"uniqueItems,omitempty"`
-	MaxContains *uint64 `json:"maxContains,omitempty" yaml:"maxContains,omitempty"`
-	MinContains *uint64 `json:"minContains,omitempty" yaml:"minContains,omitempty"`
-
-	// for numeric types
-	MultipleOf       *int64 `json:"multipleOf,omitempty"       yaml:"multipleOf,omitempty"`
-	Maximum          *int64 `json:"maximum,omitempty"          yaml:"maximum,omitempty"`
-	ExclusiveMaximum bool   `json:"exclusiveMaximum,omitempty" yaml:"exclusiveMaximum,omitempty"`
-	Minimum          *int64 `json:"minimum,omitempty"          yaml:"minimum,omitempty"`
-	ExclusiveMinimum bool   `json:"exclusiveMinimum,omitempty" yaml:"exclusiveMinimum,omitempty"`
-
-	// for Kubernetes unknown object type
-	KubernetesPreserveUnknownFields bool `json:"x-kubernetes-preserve-unknown-fields,omitempty" yaml:"x-kubernetes-preserve-unknown-fields,omitempty"`
+	MinLength                       *uint64            `json:"minLength,omitempty"                            yaml:"minLength,omitempty"`
+	MinContains                     *uint64            `json:"minContains,omitempty"                          yaml:"minContains,omitempty"`
+	Properties                      map[string]*Schema `json:"properties,omitempty"                           yaml:"properties,omitempty"`
+	Minimum                         *int64             `json:"minimum,omitempty"                              yaml:"minimum,omitempty"`
+	MaxProperties                   *uint64            `json:"maxProperties,omitempty"                        yaml:"maxProperties,omitempty"`
+	MinProperties                   *uint64            `json:"minProperties,omitempty"                        yaml:"minProperties,omitempty"`
+	DependentRequired               map[string]string  `json:"dependentRequired,omitempty"                    yaml:"dependentRequired,omitempty"`
+	MaxItems                        *uint64            `json:"maxItems,omitempty"                             yaml:"maxItems,omitempty"`
+	Items                           *Schema            `json:"items,omitempty"                                yaml:"items,omitempty"`
+	MaxLength                       *uint64            `json:"maxLength,omitempty"                            yaml:"maxLength,omitempty"`
+	Maximum                         *int64             `json:"maximum,omitempty"                              yaml:"maximum,omitempty"`
+	MultipleOf                      *int64             `json:"multipleOf,omitempty"                           yaml:"multipleOf,omitempty"`
+	MaxContains                     *uint64            `json:"maxContains,omitempty"                          yaml:"maxContains,omitempty"`
+	MinItems                        *uint64            `json:"minItems,omitempty"                             yaml:"minItems,omitempty"`
+	Type                            string             `json:"type"                                           yaml:"type"`
+	Pattern                         string             `json:"pattern,omitempty"                              yaml:"pattern,omitempty"`
+	Description                     string             `json:"description,omitempty"                          yaml:"description,omitempty"`
+	Enum                            []string           `json:"enum,omitempty"                                 yaml:"enum,omitempty"`
+	Required                        []string           `json:"required,omitempty"                             yaml:"required,omitempty"`
+	UniqueItems                     bool               `json:"uniqueItems,omitempty"                          yaml:"uniqueItems,omitempty"`
+	ExclusiveMaximum                bool               `json:"exclusiveMaximum,omitempty"                     yaml:"exclusiveMaximum,omitempty"`
+	ExclusiveMinimum                bool               `json:"exclusiveMinimum,omitempty"                     yaml:"exclusiveMinimum,omitempty"`
+	KubernetesPreserveUnknownFields bool               `json:"x-kubernetes-preserve-unknown-fields,omitempty" yaml:"x-kubernetes-preserve-unknown-fields,omitempty"`
 }
 
 type VSchema struct {
@@ -255,16 +245,16 @@ func newSpec(schemas map[string]*Schema) *Spec {
 func indent(text string, nindent int) string {
 	indent := ""
 
-	for i := 0; i < nindent; i++ {
+	for range nindent {
 		indent += " "
 	}
 
 	if text[len(text)-1:] == "\n" {
-		result := ""
+		var result strings.Builder
 		for _, j := range strings.Split(text[:len(text)-1], "\n") {
-			result += indent + j + "\n"
+			result.WriteString(indent + j + "\n")
 		}
-		return result
+		return result.String()
 	}
 	result := ""
 	for _, j := range strings.Split(strings.TrimRight(text, "\n"), "\n") {

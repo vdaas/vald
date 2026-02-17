@@ -112,9 +112,9 @@ package egress
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		addrs []string
-// 		cl    sync.Map[string, any]
 // 		c     grpc.Client
+// 		cl    sync.Map[string, any]
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		want <-chan error
@@ -147,9 +147,9 @@ package egress
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
-// 		           cl:nil,
 // 		           c:nil,
+// 		           cl:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -171,9 +171,9 @@ package egress
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
-// 		           cl:nil,
 // 		           c:nil,
+// 		           cl:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -204,9 +204,9 @@ package egress
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
-// 				cl:    test.fields.cl,
 // 				c:     test.fields.c,
+// 				cl:    test.fields.cl,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			got, err := c.Start(test.args.ctx)
@@ -222,9 +222,9 @@ package egress
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		addrs []string
-// 		cl    sync.Map[string, any]
 // 		c     grpc.Client
+// 		cl    sync.Map[string, any]
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		err error
@@ -253,9 +253,9 @@ package egress
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
-// 		           cl:nil,
 // 		           c:nil,
+// 		           cl:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -277,9 +277,9 @@ package egress
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
-// 		           cl:nil,
 // 		           c:nil,
+// 		           cl:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -310,9 +310,9 @@ package egress
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
-// 				cl:    test.fields.cl,
 // 				c:     test.fields.c,
+// 				cl:    test.fields.cl,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			err := c.Stop(test.args.ctx)
@@ -325,9 +325,9 @@ package egress
 //
 // func Test_client_GRPCClient(t *testing.T) {
 // 	type fields struct {
-// 		addrs []string
-// 		cl    sync.Map[string, any]
 // 		c     grpc.Client
+// 		cl    sync.Map[string, any]
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		want grpc.Client
@@ -352,9 +352,9 @@ package egress
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           addrs:nil,
-// 		           cl:nil,
 // 		           c:nil,
+// 		           cl:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -373,9 +373,9 @@ package egress
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           addrs:nil,
-// 		           cl:nil,
 // 		           c:nil,
+// 		           cl:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -406,9 +406,9 @@ package egress
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
-// 				cl:    test.fields.cl,
 // 				c:     test.fields.c,
+// 				cl:    test.fields.cl,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			got := c.GRPCClient()
@@ -425,9 +425,9 @@ package egress
 // 		targets []string
 // 	}
 // 	type fields struct {
-// 		addrs []string
-// 		cl    sync.Map[string, any]
 // 		c     grpc.Client
+// 		cl    sync.Map[string, any]
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		want egress.FilterClient
@@ -461,9 +461,9 @@ package egress
 // 		           targets:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
-// 		           cl:nil,
 // 		           c:nil,
+// 		           cl:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -486,9 +486,9 @@ package egress
 // 		           targets:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
-// 		           cl:nil,
 // 		           c:nil,
+// 		           cl:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -519,9 +519,9 @@ package egress
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
-// 				cl:    test.fields.cl,
 // 				c:     test.fields.c,
+// 				cl:    test.fields.cl,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			got, err := c.Target(test.args.ctx, test.args.targets...)
@@ -539,9 +539,9 @@ package egress
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
-// 		cl    sync.Map[string, any]
 // 		c     grpc.Client
+// 		cl    sync.Map[string, any]
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Distance
@@ -576,9 +576,9 @@ package egress
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
-// 		           cl:nil,
 // 		           c:nil,
+// 		           cl:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -602,9 +602,9 @@ package egress
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
-// 		           cl:nil,
 // 		           c:nil,
+// 		           cl:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -635,9 +635,9 @@ package egress
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
-// 				cl:    test.fields.cl,
 // 				c:     test.fields.c,
+// 				cl:    test.fields.cl,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.FilterDistance(test.args.ctx, test.args.in, test.args.opts...)
@@ -655,8 +655,8 @@ package egress
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addr string
 // 		c    grpc.Client
+// 		addr string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Distance
@@ -691,8 +691,8 @@ package egress
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addr:"",
 // 		           c:nil,
+// 		           addr:"",
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -716,8 +716,8 @@ package egress
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addr:"",
 // 		           c:nil,
+// 		           addr:"",
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -748,8 +748,8 @@ package egress
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &specificAddrClient{
-// 				addr: test.fields.addr,
 // 				c:    test.fields.c,
+// 				addr: test.fields.addr,
 // 			}
 //
 // 			gotRes, err := s.FilterDistance(test.args.ctx, test.args.in, test.args.opts...)
@@ -767,8 +767,8 @@ package egress
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Distance
@@ -803,8 +803,8 @@ package egress
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -828,8 +828,8 @@ package egress
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -860,8 +860,8 @@ package egress
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			m := &multipleAddrsClient{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := m.FilterDistance(test.args.ctx, test.args.in, test.args.opts...)
@@ -879,9 +879,9 @@ package egress
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
-// 		cl    sync.Map[string, any]
 // 		c     grpc.Client
+// 		cl    sync.Map[string, any]
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Vector
@@ -916,9 +916,9 @@ package egress
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
-// 		           cl:nil,
 // 		           c:nil,
+// 		           cl:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -942,9 +942,9 @@ package egress
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
-// 		           cl:nil,
 // 		           c:nil,
+// 		           cl:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -975,9 +975,9 @@ package egress
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
-// 				cl:    test.fields.cl,
 // 				c:     test.fields.c,
+// 				cl:    test.fields.cl,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.FilterVector(test.args.ctx, test.args.in, test.args.opts...)
@@ -995,8 +995,8 @@ package egress
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addr string
 // 		c    grpc.Client
+// 		addr string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Vector
@@ -1031,8 +1031,8 @@ package egress
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addr:"",
 // 		           c:nil,
+// 		           addr:"",
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1056,8 +1056,8 @@ package egress
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addr:"",
 // 		           c:nil,
+// 		           addr:"",
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1088,8 +1088,8 @@ package egress
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &specificAddrClient{
-// 				addr: test.fields.addr,
 // 				c:    test.fields.c,
+// 				addr: test.fields.addr,
 // 			}
 //
 // 			gotRes, err := s.FilterVector(test.args.ctx, test.args.in, test.args.opts...)
@@ -1107,8 +1107,8 @@ package egress
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Vector
@@ -1143,8 +1143,8 @@ package egress
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1168,8 +1168,8 @@ package egress
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1200,8 +1200,8 @@ package egress
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			m := &multipleAddrsClient{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := m.FilterVector(test.args.ctx, test.args.in, test.args.opts...)

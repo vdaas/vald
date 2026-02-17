@@ -42,15 +42,15 @@ type Server interface {
 }
 
 type server struct {
-	eg                errgroup.Group
-	gateway           service.Gateway // Mirror gateway client service.
-	mirror            service.Mirror
-	vAddr             string // Vald gateway address (LB gateway).
-	streamConcurrency int
-	name              string
-	ip                string
 	vald.UnimplementedValdServer
 	mirror.UnimplementedMirrorServer
+	eg                errgroup.Group
+	gateway           service.Gateway
+	mirror            service.Mirror
+	vAddr             string
+	name              string
+	ip                string
+	streamConcurrency int
 }
 
 const apiName = "vald/gateway/mirror"

@@ -115,52 +115,52 @@ type Client interface {
 
 // gRPCClient is an implementation of the Client interface.
 type gRPCClient struct {
-	// name is the name of the gRPC client, used for logging.
-	name string
-	// addrs is a set of initial addresses to connect to.
-	addrs map[string]struct{}
-	// poolSize is the number of connections per address in the pool.
-	poolSize uint64
-	// clientCount is the total number of active client connections.
-	clientCount uint64
-	// conns stores the connection pools for each address.
-	conns sync.Map[string, pool.Conn]
-	// hcDur is the duration between health checks.
-	hcDur time.Duration
-	// prDur is the duration between pool rebalances.
-	prDur time.Duration
-	// dialer is the custom net.Dialer.
+	// dialer is the custom dialer interface for establishing network connections.
 	dialer net.Dialer
-	// enablePoolRebalance enables periodic rebalancing of connection pools.
-	enablePoolRebalance bool
-	// disableResolveDNSAddrs stores addresses for which DNS resolution should be disabled.
-	disableResolveDNSAddrs sync.Map[string, bool]
-	// resolveDNS enables DNS resolution for addresses.
-	resolveDNS bool
-	// dopts are the default dial options.
-	dopts []DialOption
-	// copts are the default call options.
-	copts []CallOption
-	// roccd is the reconnection old connection closing duration.
-	roccd string
-	// eg is the error group for managing background goroutines.
+	// eg is the error group for managing the synchronization of background goroutines.
 	eg errgroup.Group
-	// bo is the backoff strategy for retries.
-	bo backoff.Backoff
-	// cb is the circuit breaker.
+	// cb is the circuit breaker used to prevent cascading failures.
 	cb circuitbreaker.CircuitBreaker
-	// gbo is the gRPC backoff configuration.
-	gbo gbackoff.Config
-	// mcd is the minimum connection timeout duration.
-	mcd time.Duration
-	// crl is the connection request list for pending reconnections.
-	crl sync.Map[string, bool]
-	// ech is the error channel for the connection monitor.
-	ech <-chan error
-	// monitorRunning indicates if the connection monitor is running.
-	monitorRunning atomic.Bool
-	// stopMonitor is the function to stop the connection monitor.
+	// bo is the backoff strategy used for retrying failed operations.
+	bo backoff.Backoff
+	// addrs is a set of initial target addresses for the gRPC client.
+	addrs map[string]struct{}
+	// stopMonitor is the cancel function to stop the connection monitor goroutine.
 	stopMonitor context.CancelFunc
+	// ech is the channel for reporting errors from the connection monitor.
+	ech <-chan error
+	// crl is the connection request list used to manage pending reconnection requests.
+	crl sync.Map[string, bool]
+	// disableResolveDNSAddrs stores addresses for which DNS resolution should be explicitly disabled.
+	disableResolveDNSAddrs sync.Map[string, bool]
+	// conns stores the active connection pools for each target address.
+	conns sync.Map[string, pool.Conn]
+	// name is the logical name of the gRPC client, used for logging and tracing.
+	name string
+	// roccd represents the duration to wait before closing old connections during reconnection (Reconnection Old Connection Closing Duration).
+	roccd string
+	// dopts is the list of default dial options applied to new connections.
+	dopts []DialOption
+	// copts is the list of default call options applied to RPC calls.
+	copts []CallOption
+	// gbo is the configuration for gRPC specific backoff strategy.
+	gbo gbackoff.Config
+	// hcDur is the interval duration for periodic health checks of connections.
+	hcDur time.Duration
+	// mcd is the minimum duration for connection timeouts (Minimum Connection Duration).
+	mcd time.Duration
+	// prDur is the interval duration for periodic pool rebalancing.
+	prDur time.Duration
+	// clientCount tracks the total number of active connections managed by this client.
+	clientCount uint64
+	// poolSize specifies the number of connections per pool (per address).
+	poolSize uint64
+	// monitorRunning indicates whether the connection monitor goroutine is currently active.
+	monitorRunning atomic.Bool
+	// resolveDNS indicates whether to resolve DNS for target addresses by default.
+	resolveDNS bool
+	// enablePoolRebalance indicates whether periodic rebalancing of the connection pool is enabled.
+	enablePoolRebalance bool
 }
 
 const (

@@ -15,6 +15,7 @@ package circuitbreaker
 
 import (
 	"context"
+	"maps"
 	"reflect"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -113,9 +114,7 @@ func Metrics(context.Context) (ms map[string]map[State]int64) {
 	ms = make(map[string]map[State]int64, len(metrics))
 	for name, state := range metrics {
 		sts := make(map[State]int64, len(state))
-		for st, cnt := range state {
-			sts[st] = cnt
-		}
+		maps.Copy(sts, state)
 		ms[name] = sts
 	}
 	return ms

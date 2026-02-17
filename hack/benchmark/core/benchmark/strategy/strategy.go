@@ -31,15 +31,15 @@ import (
 type strategy struct {
 	core32    algorithm.Bit32
 	core64    algorithm.Bit64
+	closer    algorithm.Closer
 	initBit32 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit32, algorithm.Closer, error)
 	initBit64 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit64, algorithm.Closer, error)
-	closer    algorithm.Closer
-	propName  string
 	preProp32 func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset) ([]uint, error)
 	preProp64 func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset) ([]uint, error)
-	mode      algorithm.Mode
 	prop32    func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (any, error)
 	prop64    func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (any, error)
+	propName  string
+	mode      algorithm.Mode
 	parallel  bool
 }
 
@@ -143,7 +143,7 @@ func (s *strategy) float32(
 			}
 		})
 	} else {
-		for i := 0; i < b.N; i++ {
+		for b.Loop() {
 			_, err := s.prop32(ctx, b, s.core32, dataset, ids, cnt)
 			if err != nil {
 				b.Error(err)
@@ -176,7 +176,7 @@ func (s *strategy) float64(
 			}
 		})
 	} else {
-		for i := 0; i < b.N; i++ {
+		for b.Loop() {
 			_, err := s.prop64(ctx, b, s.core64, dataset, ids, cnt)
 			if err != nil {
 				b.Error(err)

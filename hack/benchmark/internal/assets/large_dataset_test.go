@@ -131,11 +131,11 @@ package assets
 // 		i int
 // 	}
 // 	type fields struct {
-// 		dataset     *dataset
 // 		train       x1b.BillionScaleVectors
 // 		query       x1b.BillionScaleVectors
-// 		groundTruth [][]int
 // 		distances   x1b.FloatVectors
+// 		dataset     *dataset
+// 		groundTruth [][]int
 // 	}
 // 	type want struct {
 // 		want any
@@ -168,11 +168,11 @@ package assets
 // 		           i:0,
 // 		       },
 // 		       fields: fields {
-// 		           dataset:dataset{},
 // 		           train:nil,
 // 		           query:nil,
-// 		           groundTruth:nil,
 // 		           distances:nil,
+// 		           dataset:dataset{},
+// 		           groundTruth:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -194,11 +194,11 @@ package assets
 // 		           i:0,
 // 		           },
 // 		           fields: fields {
-// 		           dataset:dataset{},
 // 		           train:nil,
 // 		           query:nil,
-// 		           groundTruth:nil,
 // 		           distances:nil,
+// 		           dataset:dataset{},
+// 		           groundTruth:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -229,11 +229,11 @@ package assets
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			d := &largeDataset{
-// 				dataset:     test.fields.dataset,
 // 				train:       test.fields.train,
 // 				query:       test.fields.query,
-// 				groundTruth: test.fields.groundTruth,
 // 				distances:   test.fields.distances,
+// 				dataset:     test.fields.dataset,
+// 				groundTruth: test.fields.groundTruth,
 // 			}
 //
 // 			got, err := d.Train(test.args.i)
@@ -246,11 +246,11 @@ package assets
 //
 // func Test_largeDataset_TrainSize(t *testing.T) {
 // 	type fields struct {
-// 		dataset     *dataset
 // 		train       x1b.BillionScaleVectors
 // 		query       x1b.BillionScaleVectors
-// 		groundTruth [][]int
 // 		distances   x1b.FloatVectors
+// 		dataset     *dataset
+// 		groundTruth [][]int
 // 	}
 // 	type want struct {
 // 		want int
@@ -275,11 +275,11 @@ package assets
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           dataset:dataset{},
 // 		           train:nil,
 // 		           query:nil,
-// 		           groundTruth:nil,
 // 		           distances:nil,
+// 		           dataset:dataset{},
+// 		           groundTruth:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -298,11 +298,11 @@ package assets
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           dataset:dataset{},
 // 		           train:nil,
 // 		           query:nil,
-// 		           groundTruth:nil,
 // 		           distances:nil,
+// 		           dataset:dataset{},
+// 		           groundTruth:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -333,11 +333,11 @@ package assets
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			d := &largeDataset{
-// 				dataset:     test.fields.dataset,
 // 				train:       test.fields.train,
 // 				query:       test.fields.query,
-// 				groundTruth: test.fields.groundTruth,
 // 				distances:   test.fields.distances,
+// 				dataset:     test.fields.dataset,
+// 				groundTruth: test.fields.groundTruth,
 // 			}
 //
 // 			got := d.TrainSize()
@@ -353,11 +353,11 @@ package assets
 // 		i int
 // 	}
 // 	type fields struct {
-// 		dataset     *dataset
 // 		train       x1b.BillionScaleVectors
 // 		query       x1b.BillionScaleVectors
-// 		groundTruth [][]int
 // 		distances   x1b.FloatVectors
+// 		dataset     *dataset
+// 		groundTruth [][]int
 // 	}
 // 	type want struct {
 // 		want any
@@ -390,11 +390,11 @@ package assets
 // 		           i:0,
 // 		       },
 // 		       fields: fields {
-// 		           dataset:dataset{},
 // 		           train:nil,
 // 		           query:nil,
-// 		           groundTruth:nil,
 // 		           distances:nil,
+// 		           dataset:dataset{},
+// 		           groundTruth:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -416,11 +416,11 @@ package assets
 // 		           i:0,
 // 		           },
 // 		           fields: fields {
-// 		           dataset:dataset{},
 // 		           train:nil,
 // 		           query:nil,
-// 		           groundTruth:nil,
 // 		           distances:nil,
+// 		           dataset:dataset{},
+// 		           groundTruth:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -451,11 +451,11 @@ package assets
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			d := &largeDataset{
-// 				dataset:     test.fields.dataset,
 // 				train:       test.fields.train,
 // 				query:       test.fields.query,
-// 				groundTruth: test.fields.groundTruth,
 // 				distances:   test.fields.distances,
+// 				dataset:     test.fields.dataset,
+// 				groundTruth: test.fields.groundTruth,
 // 			}
 //
 // 			got, err := d.Query(test.args.i)
@@ -468,11 +468,11 @@ package assets
 //
 // func Test_largeDataset_QuerySize(t *testing.T) {
 // 	type fields struct {
-// 		dataset     *dataset
 // 		train       x1b.BillionScaleVectors
 // 		query       x1b.BillionScaleVectors
-// 		groundTruth [][]int
 // 		distances   x1b.FloatVectors
+// 		dataset     *dataset
+// 		groundTruth [][]int
 // 	}
 // 	type want struct {
 // 		want int
@@ -497,11 +497,11 @@ package assets
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           dataset:dataset{},
 // 		           train:nil,
 // 		           query:nil,
-// 		           groundTruth:nil,
 // 		           distances:nil,
+// 		           dataset:dataset{},
+// 		           groundTruth:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -520,11 +520,11 @@ package assets
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           dataset:dataset{},
 // 		           train:nil,
 // 		           query:nil,
-// 		           groundTruth:nil,
 // 		           distances:nil,
+// 		           dataset:dataset{},
+// 		           groundTruth:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -555,11 +555,11 @@ package assets
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			d := &largeDataset{
-// 				dataset:     test.fields.dataset,
 // 				train:       test.fields.train,
 // 				query:       test.fields.query,
-// 				groundTruth: test.fields.groundTruth,
 // 				distances:   test.fields.distances,
+// 				dataset:     test.fields.dataset,
+// 				groundTruth: test.fields.groundTruth,
 // 			}
 //
 // 			got := d.QuerySize()
@@ -575,11 +575,11 @@ package assets
 // 		i int
 // 	}
 // 	type fields struct {
-// 		dataset     *dataset
 // 		train       x1b.BillionScaleVectors
 // 		query       x1b.BillionScaleVectors
-// 		groundTruth [][]int
 // 		distances   x1b.FloatVectors
+// 		dataset     *dataset
+// 		groundTruth [][]int
 // 	}
 // 	type want struct {
 // 		want []float32
@@ -612,11 +612,11 @@ package assets
 // 		           i:0,
 // 		       },
 // 		       fields: fields {
-// 		           dataset:dataset{},
 // 		           train:nil,
 // 		           query:nil,
-// 		           groundTruth:nil,
 // 		           distances:nil,
+// 		           dataset:dataset{},
+// 		           groundTruth:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -638,11 +638,11 @@ package assets
 // 		           i:0,
 // 		           },
 // 		           fields: fields {
-// 		           dataset:dataset{},
 // 		           train:nil,
 // 		           query:nil,
-// 		           groundTruth:nil,
 // 		           distances:nil,
+// 		           dataset:dataset{},
+// 		           groundTruth:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -673,11 +673,11 @@ package assets
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			d := &largeDataset{
-// 				dataset:     test.fields.dataset,
 // 				train:       test.fields.train,
 // 				query:       test.fields.query,
-// 				groundTruth: test.fields.groundTruth,
 // 				distances:   test.fields.distances,
+// 				dataset:     test.fields.dataset,
+// 				groundTruth: test.fields.groundTruth,
 // 			}
 //
 // 			got, err := d.Distance(test.args.i)
@@ -690,11 +690,11 @@ package assets
 //
 // func Test_largeDataset_DistanceSize(t *testing.T) {
 // 	type fields struct {
-// 		dataset     *dataset
 // 		train       x1b.BillionScaleVectors
 // 		query       x1b.BillionScaleVectors
-// 		groundTruth [][]int
 // 		distances   x1b.FloatVectors
+// 		dataset     *dataset
+// 		groundTruth [][]int
 // 	}
 // 	type want struct {
 // 		want int
@@ -719,11 +719,11 @@ package assets
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           dataset:dataset{},
 // 		           train:nil,
 // 		           query:nil,
-// 		           groundTruth:nil,
 // 		           distances:nil,
+// 		           dataset:dataset{},
+// 		           groundTruth:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -742,11 +742,11 @@ package assets
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           dataset:dataset{},
 // 		           train:nil,
 // 		           query:nil,
-// 		           groundTruth:nil,
 // 		           distances:nil,
+// 		           dataset:dataset{},
+// 		           groundTruth:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -777,11 +777,11 @@ package assets
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			d := &largeDataset{
-// 				dataset:     test.fields.dataset,
 // 				train:       test.fields.train,
 // 				query:       test.fields.query,
-// 				groundTruth: test.fields.groundTruth,
 // 				distances:   test.fields.distances,
+// 				dataset:     test.fields.dataset,
+// 				groundTruth: test.fields.groundTruth,
 // 			}
 //
 // 			got := d.DistanceSize()
@@ -797,11 +797,11 @@ package assets
 // 		i int
 // 	}
 // 	type fields struct {
-// 		dataset     *dataset
 // 		train       x1b.BillionScaleVectors
 // 		query       x1b.BillionScaleVectors
-// 		groundTruth [][]int
 // 		distances   x1b.FloatVectors
+// 		dataset     *dataset
+// 		groundTruth [][]int
 // 	}
 // 	type want struct {
 // 		want []int
@@ -834,11 +834,11 @@ package assets
 // 		           i:0,
 // 		       },
 // 		       fields: fields {
-// 		           dataset:dataset{},
 // 		           train:nil,
 // 		           query:nil,
-// 		           groundTruth:nil,
 // 		           distances:nil,
+// 		           dataset:dataset{},
+// 		           groundTruth:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -860,11 +860,11 @@ package assets
 // 		           i:0,
 // 		           },
 // 		           fields: fields {
-// 		           dataset:dataset{},
 // 		           train:nil,
 // 		           query:nil,
-// 		           groundTruth:nil,
 // 		           distances:nil,
+// 		           dataset:dataset{},
+// 		           groundTruth:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -895,11 +895,11 @@ package assets
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			d := &largeDataset{
-// 				dataset:     test.fields.dataset,
 // 				train:       test.fields.train,
 // 				query:       test.fields.query,
-// 				groundTruth: test.fields.groundTruth,
 // 				distances:   test.fields.distances,
+// 				dataset:     test.fields.dataset,
+// 				groundTruth: test.fields.groundTruth,
 // 			}
 //
 // 			got, err := d.Neighbor(test.args.i)
@@ -912,11 +912,11 @@ package assets
 //
 // func Test_largeDataset_NeighborSize(t *testing.T) {
 // 	type fields struct {
-// 		dataset     *dataset
 // 		train       x1b.BillionScaleVectors
 // 		query       x1b.BillionScaleVectors
-// 		groundTruth [][]int
 // 		distances   x1b.FloatVectors
+// 		dataset     *dataset
+// 		groundTruth [][]int
 // 	}
 // 	type want struct {
 // 		want int
@@ -941,11 +941,11 @@ package assets
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           dataset:dataset{},
 // 		           train:nil,
 // 		           query:nil,
-// 		           groundTruth:nil,
 // 		           distances:nil,
+// 		           dataset:dataset{},
+// 		           groundTruth:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -964,11 +964,11 @@ package assets
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           dataset:dataset{},
 // 		           train:nil,
 // 		           query:nil,
-// 		           groundTruth:nil,
 // 		           distances:nil,
+// 		           dataset:dataset{},
+// 		           groundTruth:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -999,11 +999,11 @@ package assets
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			d := &largeDataset{
-// 				dataset:     test.fields.dataset,
 // 				train:       test.fields.train,
 // 				query:       test.fields.query,
-// 				groundTruth: test.fields.groundTruth,
 // 				distances:   test.fields.distances,
+// 				dataset:     test.fields.dataset,
+// 				groundTruth: test.fields.groundTruth,
 // 			}
 //
 // 			got := d.NeighborSize()
@@ -1016,11 +1016,11 @@ package assets
 //
 // func Test_largeDataset_Dimension(t *testing.T) {
 // 	type fields struct {
-// 		dataset     *dataset
 // 		train       x1b.BillionScaleVectors
 // 		query       x1b.BillionScaleVectors
-// 		groundTruth [][]int
 // 		distances   x1b.FloatVectors
+// 		dataset     *dataset
+// 		groundTruth [][]int
 // 	}
 // 	type want struct {
 // 		want int
@@ -1045,11 +1045,11 @@ package assets
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           dataset:dataset{},
 // 		           train:nil,
 // 		           query:nil,
-// 		           groundTruth:nil,
 // 		           distances:nil,
+// 		           dataset:dataset{},
+// 		           groundTruth:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1068,11 +1068,11 @@ package assets
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           dataset:dataset{},
 // 		           train:nil,
 // 		           query:nil,
-// 		           groundTruth:nil,
 // 		           distances:nil,
+// 		           dataset:dataset{},
+// 		           groundTruth:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1103,11 +1103,11 @@ package assets
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			d := &largeDataset{
-// 				dataset:     test.fields.dataset,
 // 				train:       test.fields.train,
 // 				query:       test.fields.query,
-// 				groundTruth: test.fields.groundTruth,
 // 				distances:   test.fields.distances,
+// 				dataset:     test.fields.dataset,
+// 				groundTruth: test.fields.groundTruth,
 // 			}
 //
 // 			got := d.Dimension()
@@ -1120,11 +1120,11 @@ package assets
 //
 // func Test_largeDataset_DistanceType(t *testing.T) {
 // 	type fields struct {
-// 		dataset     *dataset
 // 		train       x1b.BillionScaleVectors
 // 		query       x1b.BillionScaleVectors
-// 		groundTruth [][]int
 // 		distances   x1b.FloatVectors
+// 		dataset     *dataset
+// 		groundTruth [][]int
 // 	}
 // 	type want struct {
 // 		want string
@@ -1149,11 +1149,11 @@ package assets
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           dataset:dataset{},
 // 		           train:nil,
 // 		           query:nil,
-// 		           groundTruth:nil,
 // 		           distances:nil,
+// 		           dataset:dataset{},
+// 		           groundTruth:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1172,11 +1172,11 @@ package assets
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           dataset:dataset{},
 // 		           train:nil,
 // 		           query:nil,
-// 		           groundTruth:nil,
 // 		           distances:nil,
+// 		           dataset:dataset{},
+// 		           groundTruth:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1207,11 +1207,11 @@ package assets
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			d := &largeDataset{
-// 				dataset:     test.fields.dataset,
 // 				train:       test.fields.train,
 // 				query:       test.fields.query,
-// 				groundTruth: test.fields.groundTruth,
 // 				distances:   test.fields.distances,
+// 				dataset:     test.fields.dataset,
+// 				groundTruth: test.fields.groundTruth,
 // 			}
 //
 // 			got := d.DistanceType()
@@ -1224,11 +1224,11 @@ package assets
 //
 // func Test_largeDataset_ObjectType(t *testing.T) {
 // 	type fields struct {
-// 		dataset     *dataset
 // 		train       x1b.BillionScaleVectors
 // 		query       x1b.BillionScaleVectors
-// 		groundTruth [][]int
 // 		distances   x1b.FloatVectors
+// 		dataset     *dataset
+// 		groundTruth [][]int
 // 	}
 // 	type want struct {
 // 		want string
@@ -1253,11 +1253,11 @@ package assets
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           dataset:dataset{},
 // 		           train:nil,
 // 		           query:nil,
-// 		           groundTruth:nil,
 // 		           distances:nil,
+// 		           dataset:dataset{},
+// 		           groundTruth:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1276,11 +1276,11 @@ package assets
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           dataset:dataset{},
 // 		           train:nil,
 // 		           query:nil,
-// 		           groundTruth:nil,
 // 		           distances:nil,
+// 		           dataset:dataset{},
+// 		           groundTruth:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1311,11 +1311,11 @@ package assets
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			d := &largeDataset{
-// 				dataset:     test.fields.dataset,
 // 				train:       test.fields.train,
 // 				query:       test.fields.query,
-// 				groundTruth: test.fields.groundTruth,
 // 				distances:   test.fields.distances,
+// 				dataset:     test.fields.dataset,
+// 				groundTruth: test.fields.groundTruth,
 // 			}
 //
 // 			got := d.ObjectType()
@@ -1328,11 +1328,11 @@ package assets
 //
 // func Test_largeDataset_Name(t *testing.T) {
 // 	type fields struct {
-// 		dataset     *dataset
 // 		train       x1b.BillionScaleVectors
 // 		query       x1b.BillionScaleVectors
-// 		groundTruth [][]int
 // 		distances   x1b.FloatVectors
+// 		dataset     *dataset
+// 		groundTruth [][]int
 // 	}
 // 	type want struct {
 // 		want string
@@ -1357,11 +1357,11 @@ package assets
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           dataset:dataset{},
 // 		           train:nil,
 // 		           query:nil,
-// 		           groundTruth:nil,
 // 		           distances:nil,
+// 		           dataset:dataset{},
+// 		           groundTruth:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1380,11 +1380,11 @@ package assets
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           dataset:dataset{},
 // 		           train:nil,
 // 		           query:nil,
-// 		           groundTruth:nil,
 // 		           distances:nil,
+// 		           dataset:dataset{},
+// 		           groundTruth:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1415,11 +1415,11 @@ package assets
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			d := &largeDataset{
-// 				dataset:     test.fields.dataset,
 // 				train:       test.fields.train,
 // 				query:       test.fields.query,
-// 				groundTruth: test.fields.groundTruth,
 // 				distances:   test.fields.distances,
+// 				dataset:     test.fields.dataset,
+// 				groundTruth: test.fields.groundTruth,
 // 			}
 //
 // 			got := d.Name()
