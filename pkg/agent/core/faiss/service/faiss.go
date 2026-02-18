@@ -358,7 +358,7 @@ func (f *faiss) load(ctx context.Context, path string, opts ...core.Option) erro
 	log.Debugf("index path: %s and metadata: %s exists, now starting to load metadata", path, metadataPath)
 	agentMetadata, err := metadata.Load(metadataPath)
 	if err != nil && errors.Is(err, fs.ErrNotExist) || agentMetadata == nil || agentMetadata.Faiss == nil || agentMetadata.Faiss.IndexCount == 0 {
-		err = errors.Wrapf(err, "cannot read metadata from path: %s\tmetadata: %s", path, agentMetadata)
+		err = errors.Wrapf(err, "cannot read metadata from path: %s\tmetadata: %v", path, agentMetadata)
 		return err
 	}
 
