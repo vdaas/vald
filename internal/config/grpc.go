@@ -78,6 +78,7 @@ type DialOption struct {
 type ConnectionPool struct {
 	ResolveDNS           bool   `json:"enable_dns_resolver"     yaml:"enable_dns_resolver"`
 	EnableRebalance      bool   `json:"enable_rebalance"        yaml:"enable_rebalance"`
+	EnableMetrics        bool   `json:"enable_metrics"          yaml:"enable_metrics"`
 	Size                 int    `json:"size"                    yaml:"size"`
 	RebalanceDuration    string `json:"rebalance_duration"      yaml:"rebalance_duration"`
 	OldConnCloseDuration string `json:"old_conn_close_duration" yaml:"old_conn_close_duration"`
@@ -204,6 +205,11 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 			opts = append(opts,
 				grpc.WithEnableConnectionPoolRebalance(g.ConnectionPool.EnableRebalance),
 				grpc.WithConnectionPoolRebalanceDuration(g.ConnectionPool.RebalanceDuration),
+			)
+		}
+		if g.ConnectionPool.EnableMetrics {
+			opts = append(opts,
+				grpc.WithEnableConnectionPoolMetrics(g.ConnectionPool.EnableMetrics),
 			)
 		}
 	}

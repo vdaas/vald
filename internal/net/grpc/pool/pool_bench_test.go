@@ -207,3 +207,42 @@ func BenchmarkParallel_StaticDial(b *testing.B) {
 	})
 	b.StopTimer()
 }
+
+func BenchmarkPool_HighContention(b *testing.B) {
+	defer ListenAndServe(b, "localhost:5002")()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Create pool with small size to force contention
+	poolSize := uint64(2)
+	p, err := New(ctx,
+		WithAddr("localhost:5002"),
+		WithSize(poolSize),
+		WithDialOptions(grpc.WithTransportCredentials(insecure.NewCredentials())),
+	)
+	if err != nil {
+		b.Fatal(err)
+	}
+	p, err = p.Connect(ctx)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	b.StopTimer()
+	b.ResetTimer()
+	b.ReportAllocs()
+	b.StartTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			// Simulate high frequency requests
+			_ = p.Do(ctx, func(c *ClientConn) error {
+				// Simulate short work
+				return nil
+			})
+		}
+	})
+	b.StopTimer()
+}
+
+// NOT IMPLEMENTED BELOW
