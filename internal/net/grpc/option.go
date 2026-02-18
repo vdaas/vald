@@ -51,6 +51,9 @@ var defaultOptions = []Option{
 	WithBackoffMultiplier(gbackoff.DefaultConfig.Multiplier),
 	WithBackoffJitter(gbackoff.DefaultConfig.Jitter),
 	WithMinConnectTimeout("20s"),
+	WithInitialWindowSize(1 << 22),           // 4MB
+	WithInitialConnectionWindowSize(1 << 23), // 8MB
+	WithKeepaliveParams("30s", "5s", true),
 }
 
 func WithAddrs(addrs ...string) Option {

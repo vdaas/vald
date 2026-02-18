@@ -370,19 +370,32 @@ func (p *pool) flush() {
 // If not, it dials a new connection and updates the slot atomically.
 // It also schedules graceful closure of any existing (old) connection.
 func (p *pool) refreshConn(ctx context.Context, idx uint64, pc *poolConn, addr string) error {
-	if pc != nil {
-		state, healthy := p.isHealthy(idx, pc.conn)
-		if pc.addr == addr && healthy {
-			return nil
+	if pc != nil && pc.conn != nil {
+		state := pc.conn.GetState()
+		if pc.addr == addr {
+			switch state {
+			case connectivity.Ready:
+				return nil
+			case connectivity.Idle:
+				pc.conn.Connect()
+				return nil
+			case connectivity.Connecting:
+				return nil
+			case connectivity.TransientFailure:
+				log.Debugf("connection for %s pool %d/%d is in TransientFailure, keeping it to allow retry", addr, idx+1, p.Size())
+				return nil
+			case connectivity.Shutdown:
+				log.Debugf("connection for %s pool %d/%d is Shutdown, will redial", addr, idx+1, p.Size())
+			}
+		} else {
+			log.Debugf("connection for %s pool %d/%d addr mismatch (got %s), will redial", addr, idx+1, p.Size(), pc.addr)
 		}
-		log.Debugf("connection for %s pool %d/%d len %d is unhealthy (state: %s) trying to establish new pool member connection to %s",
-			pc.addr, idx+1, p.Size(), p.Len(), state.String(), addr)
 	} else {
 		log.Debugf("connection pool %d/%d len %d is empty, establish new pool member connection to %s", idx+1, p.Size(), p.Len(), addr)
 	}
 	newConn, err := p.dial(ctx, idx, addr)
 	if err != nil {
-		if pc != nil {
+		if pc != nil && pc.conn != nil {
 			state, healthy := p.isHealthy(idx, pc.conn)
 			if healthy {
 				return nil
@@ -572,8 +585,19 @@ func (p *pool) dial(ctx context.Context, idx uint64, addr string) (*ClientConn, 
 			return nil, err
 		}
 
+		// Don't close immediately if unhealthy, check specific states
 		_, healthy := p.isHealthy(idx, conn)
 		if !healthy {
+			// Only close if it's Shutdown or we really want to enforce strictness.
+			// But NewClient returns Idle usually.
+			// isHealthy returns true for Idle.
+			// If it returns false (TransientFailure, Shutdown), we might want to keep it if it's TransientFailure.
+			state := conn.GetState()
+			if state == connectivity.TransientFailure {
+				// Keep it, let it retry
+				return conn, nil
+			}
+
 			if conn != nil {
 				err = conn.Close()
 				if err != nil {
@@ -604,7 +628,8 @@ func (p *pool) dial(ctx context.Context, idx uint64, addr string) (*ClientConn, 
 }
 
 // getHealthyConn retrieves a healthy connection from the pool using round-robin indexing.
-// It attempts up to poolSize times.
+// It iterates through the connection slots and returns the first healthy connection it finds.
+// If a connection is idle, it triggers a connection attempt but does not wait.
 func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 	if p == nil || p.closing.Load() {
 		return nil, false
@@ -613,28 +638,62 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 	if sz == 0 {
 		return nil, false
 	}
-	var idx uint64
-	for range sz {
-		idx, pc = p.load(p.currentIndex.Add(1) % sz)
-		if pc != nil {
-			state, healthy := p.isHealthy(idx, pc.conn)
-			if healthy {
+
+	// Start from the next index in a round-robin fashion.
+	start := p.currentIndex.Add(1)
+	for i := uint64(0); i < sz; i++ {
+		idx := (start + i) % sz
+		_, pc = p.load(idx)
+
+		if pc != nil && pc.conn != nil {
+			state := pc.conn.GetState()
+			switch state {
+			case connectivity.Ready:
 				return pc, true
-			}
-			log.Debugf("connection for %s pool %d/%d len %d is unhealthy (state: %s) trying to establish new pool member connection to %s",
-				pc.addr, idx+1, p.Size(), p.Len(), state.String(), p.addr)
-		}
-		if err := p.refreshConn(ctx, idx, pc, p.addr); err == nil {
-			if idx, pc = p.load(idx); pc != nil {
-				state, healthy := p.isHealthy(idx, pc.conn)
-				if healthy {
-					return pc, true
-				}
-				log.Debugf("after re-connection for %s pool %d/%d len %d is still unhealthy (state: %s) going to close connection for %s",
-					pc.addr, idx+1, p.Size(), p.Len(), state.String(), p.addr)
+			case connectivity.Idle:
+				// If the connection is idle, trigger a connection attempt but continue searching.
+				// If we don't find a Ready one, we might return this one.
+				pc.conn.Connect()
+				return pc, true
+			case connectivity.Connecting:
+				return pc, true
+			case connectivity.TransientFailure:
+				// Log debug info but continue searching.
+				// We prefer Ready/Idle/Connecting.
+				log.Debugf("connection for %s pool %d/%d (state: %s) is in transient failure", pc.addr, idx+1, state.String())
+			case connectivity.Shutdown:
+				// Skip
 			}
 		}
 	}
+
+	// Second pass: if no healthy connection found, try to refresh empty slots or shutdown connections.
+	for i := uint64(0); i < sz; i++ {
+		idx := (start + i) % sz
+		_, pc = p.load(idx)
+
+		shouldRefresh := false
+		if pc == nil || pc.conn == nil {
+			shouldRefresh = true
+		} else if pc.conn.GetState() == connectivity.Shutdown {
+			shouldRefresh = true
+		}
+
+		if shouldRefresh {
+			if err := p.refreshConn(ctx, idx, pc, p.addr); err == nil {
+				_, pc = p.load(idx)
+				if pc != nil {
+					return pc, true
+				}
+			}
+		} else if pc != nil {
+			// If TransientFailure, return it as a last resort.
+			if pc.conn.GetState() == connectivity.TransientFailure {
+				return pc, true
+			}
+		}
+	}
+
 	return nil, false
 }
 
@@ -851,7 +910,8 @@ func (p *pool) isHealthy(idx uint64, conn *ClientConn) (state connectivity.State
 		conn.Connect()
 		return state, true
 	case connectivity.Shutdown, connectivity.TransientFailure:
-		log.Errorf("gRPC target %s's pool connection %d/%d is unhealthy (state: %s)", conn.Target(), idx+1, p.Size(), state.String())
+		// Changed log level to Debug for TransientFailure to reduce noise
+		log.Debugf("gRPC target %s's pool connection %d/%d is unhealthy (state: %s)", conn.Target(), idx+1, p.Size(), state.String())
 		return state, false
 	default:
 		log.Errorf("gRPC target %s's pool connection %d/%d has unknown state: %s", conn.Target(), idx+1, p.Size(), state.String())
