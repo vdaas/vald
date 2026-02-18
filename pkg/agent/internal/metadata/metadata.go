@@ -31,9 +31,9 @@ const (
 )
 
 type Metadata struct {
-	IsInvalid bool   `json:"is_invalid"      yaml:"is_invalid"`
 	NGT       *NGT   `json:"ngt,omitempty"   yaml:"ngt"`
 	Faiss     *Faiss `json:"faiss,omitempty" yaml:"faiss"`
+	IsInvalid bool   `json:"is_invalid"      yaml:"is_invalid"`
 }
 
 type NGT struct {
@@ -69,7 +69,7 @@ func Load(path string) (meta *Metadata, err error) {
 	}()
 
 	err = json.Decode(f, &meta)
-	if err != nil && err != io.EOF {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return nil, err
 	}
 	return meta, nil

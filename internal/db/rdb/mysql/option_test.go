@@ -44,12 +44,12 @@ func TestWithTimezone(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -116,12 +116,12 @@ func TestWithCharset(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -189,12 +189,12 @@ func TestWithDB(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -262,12 +262,12 @@ func TestWithHost(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -335,12 +335,12 @@ func TestWithPort(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -408,12 +408,12 @@ func TestWithUser(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -484,12 +484,12 @@ func TestWithPass(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -557,12 +557,12 @@ func TestWithName(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -630,12 +630,12 @@ func TestWithInitialPingTimeLimit(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -714,12 +714,12 @@ func TestWithInitialPingDuration(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -798,12 +798,12 @@ func TestWithConnectionLifeTimeLimit(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -882,12 +882,12 @@ func TestWithMaxIdleConns(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -955,12 +955,12 @@ func TestWithMaxOpenConns(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -1028,12 +1028,12 @@ func TestWithTLSConfig(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
+		args       args
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -1106,12 +1106,12 @@ func TestWithDialerFunc(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
+		args       args
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -1186,12 +1186,12 @@ func TestWithDialer(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
+		args       args
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -1266,12 +1266,12 @@ func TestWithEventReceiver(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
+		args       args
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {

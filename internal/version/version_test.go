@@ -28,9 +28,9 @@ func TestCheck(t *testing.T) {
 	}
 
 	type test struct {
-		name string
-		args args
 		want error
+		args args
+		name string
 	}
 
 	tests := []test{

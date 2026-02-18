@@ -20,7 +20,6 @@
 package crud
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"os/exec"
@@ -147,7 +146,7 @@ func sleep(t *testing.T, dur time.Duration) {
 
 func TestE2EInsertOnly(t *testing.T) {
 	t.Cleanup(teardown)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	op, err := operation.New(host, port)
 	if err != nil {
@@ -164,7 +163,7 @@ func TestE2EInsertOnly(t *testing.T) {
 
 func TestE2ESearchOnly(t *testing.T) {
 	t.Cleanup(teardown)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	op, err := operation.New(host, port)
 	if err != nil {
@@ -182,7 +181,7 @@ func TestE2ESearchOnly(t *testing.T) {
 
 func TestE2ELinearSearchOnly(t *testing.T) {
 	t.Cleanup(teardown)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	op, err := operation.New(host, port)
 	if err != nil {
@@ -200,7 +199,7 @@ func TestE2ELinearSearchOnly(t *testing.T) {
 
 func TestE2EUpdateOnly(t *testing.T) {
 	t.Cleanup(teardown)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	op, err := operation.New(host, port)
 	if err != nil {
@@ -216,7 +215,7 @@ func TestE2EUpdateOnly(t *testing.T) {
 }
 
 func TestE2EUpsertOnly(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	op, err := operation.New(host, port)
 	if err != nil {
@@ -235,7 +234,7 @@ func TestE2EUpsertOnly(t *testing.T) {
 
 func TestE2ERemoveOnly(t *testing.T) {
 	t.Cleanup(teardown)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	op, err := operation.New(host, port)
 	if err != nil {
@@ -252,7 +251,7 @@ func TestE2ERemoveOnly(t *testing.T) {
 
 func TestE2ERemoveByTimestampOnly(t *testing.T) {
 	t.Cleanup(teardown)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	op, err := operation.New(host, port)
 	if err != nil {
@@ -268,7 +267,7 @@ func TestE2ERemoveByTimestampOnly(t *testing.T) {
 
 func TestE2EInsertAndSearch(t *testing.T) {
 	t.Cleanup(teardown)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	op, err := operation.New(host, port)
 	if err != nil {
@@ -295,7 +294,7 @@ func TestE2EInsertAndSearch(t *testing.T) {
 
 func TestE2EInsertAndLinearSearch(t *testing.T) {
 	t.Cleanup(teardown)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	op, err := operation.New(host, port)
 	if err != nil {
@@ -322,7 +321,7 @@ func TestE2EInsertAndLinearSearch(t *testing.T) {
 
 func TestE2EStandardCRUD(t *testing.T) {
 	t.Cleanup(teardown)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	op, err := operation.New(host, port)
 	if err != nil {
@@ -426,7 +425,7 @@ func TestE2EStandardCRUD(t *testing.T) {
 
 func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 	t.Cleanup(teardown)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	op, err := operation.New(host, port)
 	if err != nil {
@@ -768,7 +767,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 // It inserts vectors, runs the index correction job, and then removes the vectors.
 func TestE2EIndexJobCorrection(t *testing.T) {
 	t.Cleanup(teardown)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	op, err := operation.New(host, port)
 	if err != nil {
@@ -888,7 +887,7 @@ func TestE2EReadReplica(t *testing.T) {
 		}
 	}
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	op, err := operation.New(host, port)
 	if err != nil {

@@ -29,9 +29,9 @@ import (
 
 func TestNew(t *testing.T) {
 	type test struct {
+		want *logger
 		name string
 		opts []Option
-		want *logger
 	}
 
 	tests := []test{
@@ -74,10 +74,10 @@ func TestSetLevelMode(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
-		args      args
 		field     field
 		checkFunc func(got *logger) error
+		name      string
+		args      args
 	}
 
 	tests := []test{
@@ -314,10 +314,10 @@ func TestSetLogFormat(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
-		args      args
 		field     field
 		checkFunc func(got *logger) error
+		name      string
+		args      args
 	}
 
 	tests := []test{
@@ -388,10 +388,10 @@ func TestInfo(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
-		args      args
 		field     field
+		args      args
 		checkFunc func() error
+		name      string
 	}
 
 	tests := []test{
@@ -450,10 +450,10 @@ func TestInfof(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
-		args      args
 		field     field
 		checkFunc func() error
+		args      args
+		name      string
 	}
 
 	tests := []test{
@@ -521,10 +521,10 @@ func TestDebug(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
-		args      args
 		field     field
+		args      args
 		checkFunc func() error
+		name      string
 	}
 
 	tests := []test{
@@ -583,10 +583,10 @@ func TestDebugf(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
-		args      args
 		field     field
 		checkFunc func() error
+		args      args
+		name      string
 	}
 
 	tests := []test{
@@ -654,10 +654,10 @@ func TestWarn(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
-		args      args
 		field     field
+		args      args
 		checkFunc func() error
+		name      string
 	}
 
 	tests := []test{
@@ -716,10 +716,10 @@ func TestWarnf(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
-		args      args
 		field     field
 		checkFunc func() error
+		args      args
+		name      string
 	}
 
 	tests := []test{
@@ -787,10 +787,10 @@ func TestError(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
-		args      args
 		field     field
+		args      args
 		checkFunc func() error
+		name      string
 	}
 
 	tests := []test{
@@ -849,10 +849,10 @@ func TestErrorf(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
-		args      args
 		field     field
 		checkFunc func() error
+		args      args
+		name      string
 	}
 
 	tests := []test{
@@ -916,10 +916,10 @@ func TestErrorf(t *testing.T) {
 // 		lv level.Level
 // 	}
 // 	type fields struct {
-// 		format format.Format
-// 		level  level.Level
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
+// 		format format.Format
+// 		level  level.Level
 // 	}
 // 	type want struct {
 // 		want *logger
@@ -948,10 +948,10 @@ func TestErrorf(t *testing.T) {
 // 		           lv:nil,
 // 		       },
 // 		       fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -973,10 +973,10 @@ func TestErrorf(t *testing.T) {
 // 		           lv:nil,
 // 		           },
 // 		           fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1007,10 +1007,10 @@ func TestErrorf(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			l := &logger{
-// 				format: test.fields.format,
-// 				level:  test.fields.level,
 // 				retry:  test.fields.retry,
 // 				glg:    test.fields.glg,
+// 				format: test.fields.format,
+// 				level:  test.fields.level,
 // 			}
 //
 // 			got := l.setLevelMode(test.args.lv)
@@ -1026,10 +1026,10 @@ func TestErrorf(t *testing.T) {
 // 		fmt format.Format
 // 	}
 // 	type fields struct {
-// 		format format.Format
-// 		level  level.Level
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
+// 		format format.Format
+// 		level  level.Level
 // 	}
 // 	type want struct {
 // 		want *logger
@@ -1058,10 +1058,10 @@ func TestErrorf(t *testing.T) {
 // 		           fmt:nil,
 // 		       },
 // 		       fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1083,10 +1083,10 @@ func TestErrorf(t *testing.T) {
 // 		           fmt:nil,
 // 		           },
 // 		           fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1117,10 +1117,10 @@ func TestErrorf(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			l := &logger{
-// 				format: test.fields.format,
-// 				level:  test.fields.level,
 // 				retry:  test.fields.retry,
 // 				glg:    test.fields.glg,
+// 				format: test.fields.format,
+// 				level:  test.fields.level,
 // 			}
 //
 // 			got := l.setLogFormat(test.args.fmt)
@@ -1133,10 +1133,10 @@ func TestErrorf(t *testing.T) {
 //
 // func Test_logger_Close(t *testing.T) {
 // 	type fields struct {
-// 		format format.Format
-// 		level  level.Level
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
+// 		format format.Format
+// 		level  level.Level
 // 	}
 // 	type want struct {
 // 		err error
@@ -1161,10 +1161,10 @@ func TestErrorf(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1183,10 +1183,10 @@ func TestErrorf(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1217,10 +1217,10 @@ func TestErrorf(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			l := &logger{
-// 				format: test.fields.format,
-// 				level:  test.fields.level,
 // 				retry:  test.fields.retry,
 // 				glg:    test.fields.glg,
+// 				format: test.fields.format,
+// 				level:  test.fields.level,
 // 			}
 //
 // 			err := l.Close()
@@ -1236,10 +1236,10 @@ func TestErrorf(t *testing.T) {
 // 		vals []any
 // 	}
 // 	type fields struct {
-// 		format format.Format
-// 		level  level.Level
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
+// 		format format.Format
+// 		level  level.Level
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -1263,10 +1263,10 @@ func TestErrorf(t *testing.T) {
 // 		           vals:nil,
 // 		       },
 // 		       fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1288,10 +1288,10 @@ func TestErrorf(t *testing.T) {
 // 		           vals:nil,
 // 		           },
 // 		           fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1322,10 +1322,10 @@ func TestErrorf(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			l := &logger{
-// 				format: test.fields.format,
-// 				level:  test.fields.level,
 // 				retry:  test.fields.retry,
 // 				glg:    test.fields.glg,
+// 				format: test.fields.format,
+// 				level:  test.fields.level,
 // 			}
 //
 // 			l.Info(test.args.vals...)
@@ -1342,10 +1342,10 @@ func TestErrorf(t *testing.T) {
 // 		vals   []any
 // 	}
 // 	type fields struct {
-// 		format format.Format
-// 		level  level.Level
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
+// 		format format.Format
+// 		level  level.Level
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -1370,10 +1370,10 @@ func TestErrorf(t *testing.T) {
 // 		           vals:nil,
 // 		       },
 // 		       fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1396,10 +1396,10 @@ func TestErrorf(t *testing.T) {
 // 		           vals:nil,
 // 		           },
 // 		           fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1430,10 +1430,10 @@ func TestErrorf(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			l := &logger{
-// 				format: test.fields.format,
-// 				level:  test.fields.level,
 // 				retry:  test.fields.retry,
 // 				glg:    test.fields.glg,
+// 				format: test.fields.format,
+// 				level:  test.fields.level,
 // 			}
 //
 // 			l.Infof(test.args.format, test.args.vals...)
@@ -1450,10 +1450,10 @@ func TestErrorf(t *testing.T) {
 // 		details []any
 // 	}
 // 	type fields struct {
-// 		format format.Format
-// 		level  level.Level
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
+// 		format format.Format
+// 		level  level.Level
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -1478,10 +1478,10 @@ func TestErrorf(t *testing.T) {
 // 		           details:nil,
 // 		       },
 // 		       fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1504,10 +1504,10 @@ func TestErrorf(t *testing.T) {
 // 		           details:nil,
 // 		           },
 // 		           fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1538,10 +1538,10 @@ func TestErrorf(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			l := &logger{
-// 				format: test.fields.format,
-// 				level:  test.fields.level,
 // 				retry:  test.fields.retry,
 // 				glg:    test.fields.glg,
+// 				format: test.fields.format,
+// 				level:  test.fields.level,
 // 			}
 //
 // 			l.Infod(test.args.msg, test.args.details...)
@@ -1557,10 +1557,10 @@ func TestErrorf(t *testing.T) {
 // 		vals []any
 // 	}
 // 	type fields struct {
-// 		format format.Format
-// 		level  level.Level
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
+// 		format format.Format
+// 		level  level.Level
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -1584,10 +1584,10 @@ func TestErrorf(t *testing.T) {
 // 		           vals:nil,
 // 		       },
 // 		       fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1609,10 +1609,10 @@ func TestErrorf(t *testing.T) {
 // 		           vals:nil,
 // 		           },
 // 		           fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1643,10 +1643,10 @@ func TestErrorf(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			l := &logger{
-// 				format: test.fields.format,
-// 				level:  test.fields.level,
 // 				retry:  test.fields.retry,
 // 				glg:    test.fields.glg,
+// 				format: test.fields.format,
+// 				level:  test.fields.level,
 // 			}
 //
 // 			l.Debug(test.args.vals...)
@@ -1663,10 +1663,10 @@ func TestErrorf(t *testing.T) {
 // 		vals   []any
 // 	}
 // 	type fields struct {
-// 		format format.Format
-// 		level  level.Level
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
+// 		format format.Format
+// 		level  level.Level
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -1691,10 +1691,10 @@ func TestErrorf(t *testing.T) {
 // 		           vals:nil,
 // 		       },
 // 		       fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1717,10 +1717,10 @@ func TestErrorf(t *testing.T) {
 // 		           vals:nil,
 // 		           },
 // 		           fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1751,10 +1751,10 @@ func TestErrorf(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			l := &logger{
-// 				format: test.fields.format,
-// 				level:  test.fields.level,
 // 				retry:  test.fields.retry,
 // 				glg:    test.fields.glg,
+// 				format: test.fields.format,
+// 				level:  test.fields.level,
 // 			}
 //
 // 			l.Debugf(test.args.format, test.args.vals...)
@@ -1771,10 +1771,10 @@ func TestErrorf(t *testing.T) {
 // 		details []any
 // 	}
 // 	type fields struct {
-// 		format format.Format
-// 		level  level.Level
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
+// 		format format.Format
+// 		level  level.Level
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -1799,10 +1799,10 @@ func TestErrorf(t *testing.T) {
 // 		           details:nil,
 // 		       },
 // 		       fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1825,10 +1825,10 @@ func TestErrorf(t *testing.T) {
 // 		           details:nil,
 // 		           },
 // 		           fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1859,10 +1859,10 @@ func TestErrorf(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			l := &logger{
-// 				format: test.fields.format,
-// 				level:  test.fields.level,
 // 				retry:  test.fields.retry,
 // 				glg:    test.fields.glg,
+// 				format: test.fields.format,
+// 				level:  test.fields.level,
 // 			}
 //
 // 			l.Debugd(test.args.msg, test.args.details...)
@@ -1878,10 +1878,10 @@ func TestErrorf(t *testing.T) {
 // 		vals []any
 // 	}
 // 	type fields struct {
-// 		format format.Format
-// 		level  level.Level
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
+// 		format format.Format
+// 		level  level.Level
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -1905,10 +1905,10 @@ func TestErrorf(t *testing.T) {
 // 		           vals:nil,
 // 		       },
 // 		       fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1930,10 +1930,10 @@ func TestErrorf(t *testing.T) {
 // 		           vals:nil,
 // 		           },
 // 		           fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1964,10 +1964,10 @@ func TestErrorf(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			l := &logger{
-// 				format: test.fields.format,
-// 				level:  test.fields.level,
 // 				retry:  test.fields.retry,
 // 				glg:    test.fields.glg,
+// 				format: test.fields.format,
+// 				level:  test.fields.level,
 // 			}
 //
 // 			l.Warn(test.args.vals...)
@@ -1984,10 +1984,10 @@ func TestErrorf(t *testing.T) {
 // 		vals   []any
 // 	}
 // 	type fields struct {
-// 		format format.Format
-// 		level  level.Level
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
+// 		format format.Format
+// 		level  level.Level
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -2012,10 +2012,10 @@ func TestErrorf(t *testing.T) {
 // 		           vals:nil,
 // 		       },
 // 		       fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2038,10 +2038,10 @@ func TestErrorf(t *testing.T) {
 // 		           vals:nil,
 // 		           },
 // 		           fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2072,10 +2072,10 @@ func TestErrorf(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			l := &logger{
-// 				format: test.fields.format,
-// 				level:  test.fields.level,
 // 				retry:  test.fields.retry,
 // 				glg:    test.fields.glg,
+// 				format: test.fields.format,
+// 				level:  test.fields.level,
 // 			}
 //
 // 			l.Warnf(test.args.format, test.args.vals...)
@@ -2092,10 +2092,10 @@ func TestErrorf(t *testing.T) {
 // 		details []any
 // 	}
 // 	type fields struct {
-// 		format format.Format
-// 		level  level.Level
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
+// 		format format.Format
+// 		level  level.Level
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -2120,10 +2120,10 @@ func TestErrorf(t *testing.T) {
 // 		           details:nil,
 // 		       },
 // 		       fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2146,10 +2146,10 @@ func TestErrorf(t *testing.T) {
 // 		           details:nil,
 // 		           },
 // 		           fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2180,10 +2180,10 @@ func TestErrorf(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			l := &logger{
-// 				format: test.fields.format,
-// 				level:  test.fields.level,
 // 				retry:  test.fields.retry,
 // 				glg:    test.fields.glg,
+// 				format: test.fields.format,
+// 				level:  test.fields.level,
 // 			}
 //
 // 			l.Warnd(test.args.msg, test.args.details...)
@@ -2199,10 +2199,10 @@ func TestErrorf(t *testing.T) {
 // 		vals []any
 // 	}
 // 	type fields struct {
-// 		format format.Format
-// 		level  level.Level
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
+// 		format format.Format
+// 		level  level.Level
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -2226,10 +2226,10 @@ func TestErrorf(t *testing.T) {
 // 		           vals:nil,
 // 		       },
 // 		       fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2251,10 +2251,10 @@ func TestErrorf(t *testing.T) {
 // 		           vals:nil,
 // 		           },
 // 		           fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2285,10 +2285,10 @@ func TestErrorf(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			l := &logger{
-// 				format: test.fields.format,
-// 				level:  test.fields.level,
 // 				retry:  test.fields.retry,
 // 				glg:    test.fields.glg,
+// 				format: test.fields.format,
+// 				level:  test.fields.level,
 // 			}
 //
 // 			l.Error(test.args.vals...)
@@ -2305,10 +2305,10 @@ func TestErrorf(t *testing.T) {
 // 		vals   []any
 // 	}
 // 	type fields struct {
-// 		format format.Format
-// 		level  level.Level
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
+// 		format format.Format
+// 		level  level.Level
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -2333,10 +2333,10 @@ func TestErrorf(t *testing.T) {
 // 		           vals:nil,
 // 		       },
 // 		       fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2359,10 +2359,10 @@ func TestErrorf(t *testing.T) {
 // 		           vals:nil,
 // 		           },
 // 		           fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2393,10 +2393,10 @@ func TestErrorf(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			l := &logger{
-// 				format: test.fields.format,
-// 				level:  test.fields.level,
 // 				retry:  test.fields.retry,
 // 				glg:    test.fields.glg,
+// 				format: test.fields.format,
+// 				level:  test.fields.level,
 // 			}
 //
 // 			l.Errorf(test.args.format, test.args.vals...)
@@ -2413,10 +2413,10 @@ func TestErrorf(t *testing.T) {
 // 		details []any
 // 	}
 // 	type fields struct {
-// 		format format.Format
-// 		level  level.Level
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
+// 		format format.Format
+// 		level  level.Level
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -2441,10 +2441,10 @@ func TestErrorf(t *testing.T) {
 // 		           details:nil,
 // 		       },
 // 		       fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2467,10 +2467,10 @@ func TestErrorf(t *testing.T) {
 // 		           details:nil,
 // 		           },
 // 		           fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2501,10 +2501,10 @@ func TestErrorf(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			l := &logger{
-// 				format: test.fields.format,
-// 				level:  test.fields.level,
 // 				retry:  test.fields.retry,
 // 				glg:    test.fields.glg,
+// 				format: test.fields.format,
+// 				level:  test.fields.level,
 // 			}
 //
 // 			l.Errord(test.args.msg, test.args.details...)
@@ -2520,10 +2520,10 @@ func TestErrorf(t *testing.T) {
 // 		vals []any
 // 	}
 // 	type fields struct {
-// 		format format.Format
-// 		level  level.Level
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
+// 		format format.Format
+// 		level  level.Level
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -2547,10 +2547,10 @@ func TestErrorf(t *testing.T) {
 // 		           vals:nil,
 // 		       },
 // 		       fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2572,10 +2572,10 @@ func TestErrorf(t *testing.T) {
 // 		           vals:nil,
 // 		           },
 // 		           fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2606,10 +2606,10 @@ func TestErrorf(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			l := &logger{
-// 				format: test.fields.format,
-// 				level:  test.fields.level,
 // 				retry:  test.fields.retry,
 // 				glg:    test.fields.glg,
+// 				format: test.fields.format,
+// 				level:  test.fields.level,
 // 			}
 //
 // 			l.Fatal(test.args.vals...)
@@ -2626,10 +2626,10 @@ func TestErrorf(t *testing.T) {
 // 		vals   []any
 // 	}
 // 	type fields struct {
-// 		format format.Format
-// 		level  level.Level
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
+// 		format format.Format
+// 		level  level.Level
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -2654,10 +2654,10 @@ func TestErrorf(t *testing.T) {
 // 		           vals:nil,
 // 		       },
 // 		       fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2680,10 +2680,10 @@ func TestErrorf(t *testing.T) {
 // 		           vals:nil,
 // 		           },
 // 		           fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2714,10 +2714,10 @@ func TestErrorf(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			l := &logger{
-// 				format: test.fields.format,
-// 				level:  test.fields.level,
 // 				retry:  test.fields.retry,
 // 				glg:    test.fields.glg,
+// 				format: test.fields.format,
+// 				level:  test.fields.level,
 // 			}
 //
 // 			l.Fatalf(test.args.format, test.args.vals...)
@@ -2734,10 +2734,10 @@ func TestErrorf(t *testing.T) {
 // 		details []any
 // 	}
 // 	type fields struct {
-// 		format format.Format
-// 		level  level.Level
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
+// 		format format.Format
+// 		level  level.Level
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -2762,10 +2762,10 @@ func TestErrorf(t *testing.T) {
 // 		           details:nil,
 // 		       },
 // 		       fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2788,10 +2788,10 @@ func TestErrorf(t *testing.T) {
 // 		           details:nil,
 // 		           },
 // 		           fields: fields {
-// 		           format:nil,
-// 		           level:nil,
 // 		           retry:nil,
 // 		           glg:nil,
+// 		           format:nil,
+// 		           level:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2822,10 +2822,10 @@ func TestErrorf(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			l := &logger{
-// 				format: test.fields.format,
-// 				level:  test.fields.level,
 // 				retry:  test.fields.retry,
 // 				glg:    test.fields.glg,
+// 				format: test.fields.format,
+// 				level:  test.fields.level,
 // 			}
 //
 // 			l.Fatald(test.args.msg, test.args.details...)

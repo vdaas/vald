@@ -26,21 +26,21 @@ import (
 
 func TestObservability_Bind(t *testing.T) {
 	type fields struct {
-		Enabled bool
 		OTLP    *OTLP
 		Metrics *Metrics
 		Trace   *Trace
+		Enabled bool
 	}
 	type want struct {
 		want *Observability
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, *Observability) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got *Observability) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -203,12 +203,12 @@ func TestOTLPAttribute_Bind(t *testing.T) {
 		want *OTLPAttribute
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *OTLPAttribute) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		fields     fields
+		name       string
 	}
 	defaultCheckFunc := func(w want, got *OTLPAttribute) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -322,14 +322,14 @@ func TestOTLPAttribute_Bind(t *testing.T) {
 //
 // func TestOTLP_Bind(t *testing.T) {
 // 	type fields struct {
-// 		CollectorEndpoint       string
 // 		Attribute               *OTLPAttribute
+// 		CollectorEndpoint       string
 // 		TraceBatchTimeout       string
 // 		TraceExportTimeout      string
-// 		TraceMaxExportBatchSize int
-// 		TraceMaxQueueSize       int
 // 		MetricsExportInterval   string
 // 		MetricsExportTimeout    string
+// 		TraceMaxExportBatchSize int
+// 		TraceMaxQueueSize       int
 // 	}
 // 	type want struct {
 // 		want *OTLP
@@ -354,14 +354,14 @@ func TestOTLPAttribute_Bind(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           CollectorEndpoint:"",
 // 		           Attribute:OTLPAttribute{},
+// 		           CollectorEndpoint:"",
 // 		           TraceBatchTimeout:"",
 // 		           TraceExportTimeout:"",
-// 		           TraceMaxExportBatchSize:0,
-// 		           TraceMaxQueueSize:0,
 // 		           MetricsExportInterval:"",
 // 		           MetricsExportTimeout:"",
+// 		           TraceMaxExportBatchSize:0,
+// 		           TraceMaxQueueSize:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -380,14 +380,14 @@ func TestOTLPAttribute_Bind(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           CollectorEndpoint:"",
 // 		           Attribute:OTLPAttribute{},
+// 		           CollectorEndpoint:"",
 // 		           TraceBatchTimeout:"",
 // 		           TraceExportTimeout:"",
-// 		           TraceMaxExportBatchSize:0,
-// 		           TraceMaxQueueSize:0,
 // 		           MetricsExportInterval:"",
 // 		           MetricsExportTimeout:"",
+// 		           TraceMaxExportBatchSize:0,
+// 		           TraceMaxQueueSize:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -418,14 +418,14 @@ func TestOTLPAttribute_Bind(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			o := &OTLP{
-// 				CollectorEndpoint:       test.fields.CollectorEndpoint,
 // 				Attribute:               test.fields.Attribute,
+// 				CollectorEndpoint:       test.fields.CollectorEndpoint,
 // 				TraceBatchTimeout:       test.fields.TraceBatchTimeout,
 // 				TraceExportTimeout:      test.fields.TraceExportTimeout,
-// 				TraceMaxExportBatchSize: test.fields.TraceMaxExportBatchSize,
-// 				TraceMaxQueueSize:       test.fields.TraceMaxQueueSize,
 // 				MetricsExportInterval:   test.fields.MetricsExportInterval,
 // 				MetricsExportTimeout:    test.fields.MetricsExportTimeout,
+// 				TraceMaxExportBatchSize: test.fields.TraceMaxExportBatchSize,
+// 				TraceMaxQueueSize:       test.fields.TraceMaxQueueSize,
 // 			}
 //
 // 			got := o.Bind()
@@ -526,8 +526,8 @@ func TestOTLPAttribute_Bind(t *testing.T) {
 //
 // func TestMetrics_Bind(t *testing.T) {
 // 	type fields struct {
-// 		EnableVersionInfo bool
 // 		VersionInfoLabels []string
+// 		EnableVersionInfo bool
 // 		EnableMemory      bool
 // 		EnableGoroutine   bool
 // 		EnableCGO         bool
@@ -555,8 +555,8 @@ func TestOTLPAttribute_Bind(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           EnableVersionInfo:false,
 // 		           VersionInfoLabels:nil,
+// 		           EnableVersionInfo:false,
 // 		           EnableMemory:false,
 // 		           EnableGoroutine:false,
 // 		           EnableCGO:false,
@@ -578,8 +578,8 @@ func TestOTLPAttribute_Bind(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           EnableVersionInfo:false,
 // 		           VersionInfoLabels:nil,
+// 		           EnableVersionInfo:false,
 // 		           EnableMemory:false,
 // 		           EnableGoroutine:false,
 // 		           EnableCGO:false,
@@ -613,8 +613,8 @@ func TestOTLPAttribute_Bind(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			m := &Metrics{
-// 				EnableVersionInfo: test.fields.EnableVersionInfo,
 // 				VersionInfoLabels: test.fields.VersionInfoLabels,
+// 				EnableVersionInfo: test.fields.EnableVersionInfo,
 // 				EnableMemory:      test.fields.EnableMemory,
 // 				EnableGoroutine:   test.fields.EnableGoroutine,
 // 				EnableCGO:         test.fields.EnableCGO,

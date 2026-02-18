@@ -36,14 +36,12 @@ type Info interface {
 }
 
 type info struct {
-	baseURL      string // e.g https://github.com/vdaas/vald/tree/main
+	valdReplacer *strings.Replacer
+	rtCaller     func(skip int) (pc uintptr, file string, line int, ok bool)
+	rtFuncForPC  func(pc uintptr) *runtime.Func
+	baseURL      string
 	detail       Detail
 	prepOnce     sync.Once
-	valdReplacer *strings.Replacer
-
-	// runtime functions
-	rtCaller    func(skip int) (pc uintptr, file string, line int, ok bool)
-	rtFuncForPC func(pc uintptr) *runtime.Func
 }
 
 // Detail represents environment information of system and stacktrace information.
@@ -108,7 +106,7 @@ var (
 	once         sync.Once
 	infoProvider Info
 
-	rt = reflect.TypeOf(Detail{})
+	rt = reflect.TypeFor[Detail]()
 
 	rtNumField = rt.NumField()
 	valdRepo   = fmt.Sprintf("github.com/%s/%s", Organization, Repository)
@@ -210,12 +208,11 @@ func (i *info) String() string {
 // String returns summary of Detail object.
 // skipcq: RVV-B0006
 func (d Detail) String() string {
-	// skipcq: RVV-B0006
 	d.Version = log.Bold(d.Version)
-	maxlen, l := 0, 0
+	maxlen := 0
 	rv := reflect.ValueOf(d)
 	info := make(map[string]string, rtNumField)
-	for i := 0; i < rtNumField; i++ {
+	for i := range rtNumField {
 		rtField := rt.Field(i)
 		v := rv.Field(i).Interface()
 		value, ok := v.(string)
@@ -223,7 +220,7 @@ func (d Detail) String() string {
 			sts, ok := v.([]StackTrace)
 			if ok {
 				tag := reps.Replace(rtField.Tag.Get("json"))
-				l = len(tag) + 2
+				l := len(tag) + 2
 				if maxlen < l {
 					maxlen = l
 				}
@@ -240,14 +237,14 @@ func (d Detail) String() string {
 					}
 				}
 				urlFormat := fmt.Sprintf("%%-%ds\t%%-%ds\t", urlMaxLen, fileMaxLen)
-				for i, st := range sts {
-					info[fmt.Sprintf("%s-%03d", tag, i)] = fmt.Sprintf(urlFormat, st.URL, st.File+"#L"+strconv.Itoa(st.Line)) + st.FuncName
+				for j, st := range sts {
+					info[fmt.Sprintf("%s-%03d", tag, j)] = fmt.Sprintf(urlFormat, st.URL, st.File+"#L"+strconv.Itoa(st.Line)) + st.FuncName
 				}
 			} else {
 				strs, ok := v.([]string)
 				if ok {
 					tag := reps.Replace(rtField.Tag.Get("json"))
-					l = len(tag)
+					l := len(tag)
 					if maxlen < l {
 						maxlen = l
 					}
@@ -257,7 +254,7 @@ func (d Detail) String() string {
 			continue
 		}
 		tag := reps.Replace(rtField.Tag.Get("json"))
-		l = len(tag)
+		l := len(tag)
 		if maxlen < l {
 			maxlen = l
 		}
@@ -270,11 +267,11 @@ func (d Detail) String() string {
 		info[tag] = value
 	}
 
-	infoFormat := "%-" + strconv.Itoa(maxlen) + "s ->\t"
-	strs := make([]string, 0, rtNumField)
+	strs := make([]string, 0, len(info))
+	infoFormat := "%-" + strconv.Itoa(maxlen) + "s ->\t%s"
 	for tag, value := range info {
-		if len(tag) != 0 && len(value) != 0 {
-			strs = append(strs, fmt.Sprintf(infoFormat, tag)+value)
+		if tag != "" && value != "" {
+			strs = append(strs, fmt.Sprintf(infoFormat, tag, value))
 		}
 	}
 	slices.Sort(strs)
@@ -346,7 +343,7 @@ func (i info) getDetail() Detail {
 			}
 		case func() bool {
 			idx = strings.Index(file, goSrc)
-			return idx >= 0 && strings.Index(file, valdRepo) >= 0
+			return idx >= 0 && strings.Contains(file, valdRepo)
 		}():
 			url = i.valdReplacer.Replace(file[idx+goSrcLen:])
 		case strings.HasPrefix(file, valdRepo):

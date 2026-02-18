@@ -33,10 +33,10 @@ const (
 )
 
 type logger struct {
-	format format.Format
-	level  level.Level
 	retry  retry.Retry
 	glg    *glg.Glg
+	format format.Format
+	level  level.Level
 }
 
 // New returns a new logger instance.

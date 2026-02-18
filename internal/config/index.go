@@ -18,44 +18,32 @@ package config
 
 // Indexer represents the Indexer configurations.
 type Indexer struct {
-	// AgentPort represent agent port number
-	AgentPort int `json:"agent_port" yaml:"agent_port"`
-
-	// AgentName represent agents meta_name for service discovery
-	AgentName string `json:"agent_name" yaml:"agent_name"`
-
-	// AgentNamespace represent agent namespace location
-	AgentNamespace string `json:"agent_namespace" yaml:"agent_namespace"`
-
-	// AgentDNS represent agents dns A record for service discovery
-	AgentDNS string `json:"agent_dns" yaml:"agent_dns"`
-
-	// Concurrency represents indexing concurrency
-	Concurrency int `json:"concurrency" yaml:"concurrency"`
-
-	// AutoIndexDurationLimit represents auto indexing duration limit
-	AutoIndexDurationLimit string `json:"auto_index_duration_limit" yaml:"auto_index_duration_limit"`
-
-	// AutoSaveIndexDurationLimit represents auto save index duration limit
-	AutoSaveIndexDurationLimit string `json:"auto_save_index_duration_limit" yaml:"auto_save_index_duration_limit"`
-
-	// AutoSaveIndexWaitDuration represents auto save index wait for next duration
-	AutoSaveIndexWaitDuration string `json:"auto_save_index_wait_duration" yaml:"auto_save_index_wait_duration"`
-
-	// AutoIndexCheckDuration represent checking loop duration about auto indexing execution
-	AutoIndexCheckDuration string `json:"auto_index_check_duration" yaml:"auto_index_check_duration"`
-
-	// AutoIndexLength represent minimum auto index length
-	AutoIndexLength uint32 `json:"auto_index_length" yaml:"auto_index_length"`
-
-	// CreationPoolSize represent create index batch pool size
-	CreationPoolSize uint32 `json:"creation_pool_size" yaml:"creation_pool_size"`
-
-	// NodeName represents node name
-	NodeName string `json:"node_name" yaml:"node_name"`
-
-	// Discoverer represent agent discoverer service configuration
+	// Discoverer represents the discoverer client configuration.
 	Discoverer *DiscovererClient `json:"discoverer" yaml:"discoverer"`
+	// AutoSaveIndexDurationLimit represents the auto save index duration limit.
+	AutoSaveIndexDurationLimit string `json:"auto_save_index_duration_limit" yaml:"auto_save_index_duration_limit"`
+	// AgentNamespace represents the agent namespace.
+	AgentNamespace string `json:"agent_namespace" yaml:"agent_namespace"`
+	// AgentDNS represents the agent DNS.
+	AgentDNS string `json:"agent_dns" yaml:"agent_dns"`
+	// AutoIndexDurationLimit represents the auto index duration limit.
+	AutoIndexDurationLimit string `json:"auto_index_duration_limit" yaml:"auto_index_duration_limit"`
+	// AutoSaveIndexWaitDuration represents the auto save index wait duration.
+	AutoSaveIndexWaitDuration string `json:"auto_save_index_wait_duration" yaml:"auto_save_index_wait_duration"`
+	// AutoIndexCheckDuration represents the auto index check duration.
+	AutoIndexCheckDuration string `json:"auto_index_check_duration" yaml:"auto_index_check_duration"`
+	// NodeName represents the node name.
+	NodeName string `json:"node_name" yaml:"node_name"`
+	// AgentName represents the agent name.
+	AgentName string `json:"agent_name" yaml:"agent_name"`
+	// Concurrency represents the concurrency.
+	Concurrency int `json:"concurrency" yaml:"concurrency"`
+	// AgentPort represents the agent port.
+	AgentPort int `json:"agent_port" yaml:"agent_port"`
+	// AutoIndexLength represents the auto index length.
+	AutoIndexLength uint32 `json:"auto_index_length" yaml:"auto_index_length"`
+	// CreationPoolSize represents the creation pool size.
+	CreationPoolSize uint32 `json:"creation_pool_size" yaml:"creation_pool_size"`
 }
 
 // Bind binds the actual data from the Indexer receiver field.

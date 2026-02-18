@@ -36,29 +36,28 @@ func Test_server_Search(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
-		insertNum int
 		req       *payload.Search_Request
+		insertNum int
 	}
 	type fields struct {
+		ngtCfg       *config.NGT
+		overwriteVec [][]float32
+		ngtOpts      []service.Option
 		objectType   request.ObjectType
 		distribution vector.Distribution
-		overwriteVec [][]float32
-
-		ngtCfg  *config.NGT
-		ngtOpts []service.Option
 	}
 	type want struct {
 		resultSize int
 		code       codes.Code
 	}
 	type test struct {
-		name       string
 		args       args
-		fields     fields
-		want       want
 		checkFunc  func(want, *payload.Search_Response, error) error
 		beforeFunc func(*testing.T, context.Context, fields, args) (Server, error)
 		afterFunc  func(args)
+		name       string
+		fields     fields
+		want       want
 	}
 
 	const (
@@ -134,7 +133,7 @@ func Test_server_Search(t *testing.T) {
 		}
 
 		res := make([][]float32, n)
-		for i := 0; i < n; i++ {
+		for i := range n {
 			res[i] = vecs[0]
 		}
 
@@ -768,8 +767,7 @@ func Test_server_Search(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := tt.Context()
 
 			if test.beforeFunc == nil {
 				test.beforeFunc = defaultBeforeFunc
@@ -806,12 +804,12 @@ func Test_server_SearchByID(t *testing.T) {
 		code       codes.Code
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, *payload.Search_Response, error) error
 		beforeFunc func(*testing.T, context.Context, args) (Server, error)
 		afterFunc  func(args)
+		args       args
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
 		if err != nil {
@@ -1111,8 +1109,7 @@ func Test_server_SearchByID(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := tt.Context()
 
 			if test.beforeFunc == nil {
 				test.beforeFunc = defaultBeforeFunc
@@ -1148,13 +1145,13 @@ func Test_server_SearchByID(t *testing.T) {
 // 		stream vald.Search_StreamSearchServer
 // 	}
 // 	type fields struct {
-// 		name                     string
-// 		ip                       string
-// 		ngt                      service.NGT
-// 		eg                       errgroup.Group
-// 		streamConcurrency        int
 // 		UnimplementedAgentServer agent.UnimplementedAgentServer
 // 		UnimplementedValdServer  vald.UnimplementedValdServer
+// 		ngt                      service.NGT
+// 		eg                       errgroup.Group
+// 		name                     string
+// 		ip                       string
+// 		streamConcurrency        int
 // 	}
 // 	type want struct {
 // 		err error
@@ -1183,13 +1180,13 @@ func Test_server_SearchByID(t *testing.T) {
 // 		           stream:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1211,13 +1208,13 @@ func Test_server_SearchByID(t *testing.T) {
 // 		           stream:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1248,13 +1245,13 @@ func Test_server_SearchByID(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				name:                     test.fields.name,
-// 				ip:                       test.fields.ip,
-// 				ngt:                      test.fields.ngt,
-// 				eg:                       test.fields.eg,
-// 				streamConcurrency:        test.fields.streamConcurrency,
 // 				UnimplementedAgentServer: test.fields.UnimplementedAgentServer,
 // 				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
+// 				ngt:                      test.fields.ngt,
+// 				eg:                       test.fields.eg,
+// 				name:                     test.fields.name,
+// 				ip:                       test.fields.ip,
+// 				streamConcurrency:        test.fields.streamConcurrency,
 // 			}
 //
 // 			err := s.StreamSearch(test.args.stream)
@@ -1270,13 +1267,13 @@ func Test_server_SearchByID(t *testing.T) {
 // 		stream vald.Search_StreamSearchByIDServer
 // 	}
 // 	type fields struct {
-// 		name                     string
-// 		ip                       string
-// 		ngt                      service.NGT
-// 		eg                       errgroup.Group
-// 		streamConcurrency        int
 // 		UnimplementedAgentServer agent.UnimplementedAgentServer
 // 		UnimplementedValdServer  vald.UnimplementedValdServer
+// 		ngt                      service.NGT
+// 		eg                       errgroup.Group
+// 		name                     string
+// 		ip                       string
+// 		streamConcurrency        int
 // 	}
 // 	type want struct {
 // 		err error
@@ -1305,13 +1302,13 @@ func Test_server_SearchByID(t *testing.T) {
 // 		           stream:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1333,13 +1330,13 @@ func Test_server_SearchByID(t *testing.T) {
 // 		           stream:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1370,13 +1367,13 @@ func Test_server_SearchByID(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				name:                     test.fields.name,
-// 				ip:                       test.fields.ip,
-// 				ngt:                      test.fields.ngt,
-// 				eg:                       test.fields.eg,
-// 				streamConcurrency:        test.fields.streamConcurrency,
 // 				UnimplementedAgentServer: test.fields.UnimplementedAgentServer,
 // 				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
+// 				ngt:                      test.fields.ngt,
+// 				eg:                       test.fields.eg,
+// 				name:                     test.fields.name,
+// 				ip:                       test.fields.ip,
+// 				streamConcurrency:        test.fields.streamConcurrency,
 // 			}
 //
 // 			err := s.StreamSearchByID(test.args.stream)
@@ -1393,13 +1390,13 @@ func Test_server_SearchByID(t *testing.T) {
 // 		reqs *payload.Search_MultiRequest
 // 	}
 // 	type fields struct {
-// 		name                     string
-// 		ip                       string
-// 		ngt                      service.NGT
-// 		eg                       errgroup.Group
-// 		streamConcurrency        int
 // 		UnimplementedAgentServer agent.UnimplementedAgentServer
 // 		UnimplementedValdServer  vald.UnimplementedValdServer
+// 		ngt                      service.NGT
+// 		eg                       errgroup.Group
+// 		name                     string
+// 		ip                       string
+// 		streamConcurrency        int
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Responses
@@ -1433,13 +1430,13 @@ func Test_server_SearchByID(t *testing.T) {
 // 		           reqs:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1462,13 +1459,13 @@ func Test_server_SearchByID(t *testing.T) {
 // 		           reqs:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1499,13 +1496,13 @@ func Test_server_SearchByID(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				name:                     test.fields.name,
-// 				ip:                       test.fields.ip,
-// 				ngt:                      test.fields.ngt,
-// 				eg:                       test.fields.eg,
-// 				streamConcurrency:        test.fields.streamConcurrency,
 // 				UnimplementedAgentServer: test.fields.UnimplementedAgentServer,
 // 				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
+// 				ngt:                      test.fields.ngt,
+// 				eg:                       test.fields.eg,
+// 				name:                     test.fields.name,
+// 				ip:                       test.fields.ip,
+// 				streamConcurrency:        test.fields.streamConcurrency,
 // 			}
 //
 // 			gotRes, err := s.MultiSearch(test.args.ctx, test.args.reqs)
@@ -1522,13 +1519,13 @@ func Test_server_SearchByID(t *testing.T) {
 // 		reqs *payload.Search_MultiIDRequest
 // 	}
 // 	type fields struct {
-// 		name                     string
-// 		ip                       string
-// 		ngt                      service.NGT
-// 		eg                       errgroup.Group
-// 		streamConcurrency        int
 // 		UnimplementedAgentServer agent.UnimplementedAgentServer
 // 		UnimplementedValdServer  vald.UnimplementedValdServer
+// 		ngt                      service.NGT
+// 		eg                       errgroup.Group
+// 		name                     string
+// 		ip                       string
+// 		streamConcurrency        int
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Responses
@@ -1562,13 +1559,13 @@ func Test_server_SearchByID(t *testing.T) {
 // 		           reqs:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1591,13 +1588,13 @@ func Test_server_SearchByID(t *testing.T) {
 // 		           reqs:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1628,13 +1625,13 @@ func Test_server_SearchByID(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				name:                     test.fields.name,
-// 				ip:                       test.fields.ip,
-// 				ngt:                      test.fields.ngt,
-// 				eg:                       test.fields.eg,
-// 				streamConcurrency:        test.fields.streamConcurrency,
 // 				UnimplementedAgentServer: test.fields.UnimplementedAgentServer,
 // 				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
+// 				ngt:                      test.fields.ngt,
+// 				eg:                       test.fields.eg,
+// 				name:                     test.fields.name,
+// 				ip:                       test.fields.ip,
+// 				streamConcurrency:        test.fields.streamConcurrency,
 // 			}
 //
 // 			gotRes, err := s.MultiSearchByID(test.args.ctx, test.args.reqs)

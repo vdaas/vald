@@ -30,9 +30,9 @@ func TestEncode(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
 		args      args
 		checkFunc func(err error) error
+		name      string
 	}
 
 	tests := []test{
@@ -94,9 +94,9 @@ func TestDecode(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
 		args      args
 		checkFunc func(err error, data map[string]string) error
+		name      string
 	}
 
 	tests := []test{
@@ -171,9 +171,9 @@ func TestMarshalIndent(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
-		args      args
 		checkFunc func(data []byte, err error) error
+		args      args
+		name      string
 	}
 
 	tests := []test{

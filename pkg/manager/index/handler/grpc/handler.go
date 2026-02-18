@@ -26,8 +26,8 @@ import (
 )
 
 type server struct {
-	indexer service.Indexer
 	index.UnimplementedIndexServer
+	indexer service.Indexer
 }
 
 func New(opts ...Option) index.IndexServer {

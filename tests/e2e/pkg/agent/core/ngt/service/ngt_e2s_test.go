@@ -83,7 +83,7 @@ func Test_ngt_parallel_delete_and_insert(t *testing.T) {
 		t.Fatalf("failed to create ngt service: %v", err)
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 
 	n.Start(ctx)

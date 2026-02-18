@@ -60,8 +60,8 @@
         "port": {
           "type": "integer",
           "description": "target cluster port",
-          "maximum": 65535,
-          "minimum": 0
+          "minimum": 0,
+          "maximum": 65535
         }
       },
       "required": ["host", "port"]
