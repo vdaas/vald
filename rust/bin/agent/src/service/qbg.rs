@@ -1488,11 +1488,11 @@ mod tests {
 
         // Insert vectors
         for i in 0..10 {
-            test_svc
+            let res = test_svc
                 .service
                 .insert(format!("uuid-{}", i), gen_random_vector(128))
-                .await
-                .unwrap();
+                .await;
+            assert!(res.is_ok(), "Insert should succeed: {:?}", res.err());
         }
 
         // Note: QBG's HierarchicalKmeans requires many objects for clustering
@@ -1508,17 +1508,22 @@ mod tests {
         let mut test_svc = TestQBGService::new(128).await;
 
         // Insert some vectors
-        for i in 0..50 {
-            test_svc
+        for i in 0..100 {
+            let res = test_svc
                 .service
                 .insert(format!("uuid-{}", i), gen_random_vector(128))
-                .await
-                .unwrap();
+                .await;
+            assert!(res.is_ok(), "Insert should succeed: {:?}", res.err());
         }
 
         // Note: QBG's create_index may fail with HierarchicalKmeans clustering errors
         // when there aren't enough objects. Just verify no panic.
-        let _ = test_svc.service.create_and_save_index().await;
+        let res = test_svc.service.create_and_save_index().await;
+        assert!(
+            res.is_ok(),
+            "Create and save index should succeed or return UncommittedIndexNotFound: {:?}",
+            res.err()
+        );
     }
 
     // ========== Search By ID Tests ==========
@@ -1611,14 +1616,19 @@ mod tests {
         assert_eq!(test_svc.service.number_of_create_index_executions(), 0);
 
         // Insert some vectors and try create_index
-        for i in 0..50 {
-            test_svc
+        for i in 0..100 {
+            let res = test_svc
                 .service
                 .insert(format!("uuid-{}", i), gen_random_vector(128))
-                .await
-                .unwrap();
+                .await;
+            assert!(res.is_ok(), "Insert should succeed: {:?}", res.err());
         }
-        let _ = test_svc.service.create_index().await;
+        let res = test_svc.service.create_index().await;
+        assert!(
+            res.is_ok(),
+            "create_index should succeed or return UncommittedIndexNotFound: {:?}",
+            res.err()
+        );
 
         // Count may be 0 or 1 depending on success/failure
         let count = test_svc.service.number_of_create_index_executions();

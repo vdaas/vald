@@ -173,6 +173,10 @@ pub trait ANN: Send + Sync {
     fn is_saving(&self) -> bool;
     /// Returns the number of indexed objects.
     fn len(&self) -> u32;
+    /// Checks if the index is empty.
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
     /// Returns the total number of create-index executions.
     fn number_of_create_index_executions(&self) -> u64;
     /// Returns the insert vqueue buffer length.

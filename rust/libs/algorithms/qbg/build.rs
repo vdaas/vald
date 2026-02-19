@@ -22,6 +22,7 @@ fn main() -> miette::Result<()> {
         .flag_if_supported("-std=c++20")
         .flag_if_supported("-fopenmp")
         .flag_if_supported("-DNGT_BFLOAT_DISABLED")
+        .flag_if_supported("-march=native")
         .compile("qbg-rs");
 
     println!("cargo:rustc-link-search=native=/usr/local/lib");
