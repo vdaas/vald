@@ -72,7 +72,8 @@ func (s *server) Search(
 		req.GetVector(),
 		req.GetConfig().GetNum(),
 		req.GetConfig().GetEpsilon(),
-		req.GetConfig().GetRadius())
+		req.GetConfig().GetRadius(),
+		req.GetConfig().GetEdgeSize())
 	if err == nil && res == nil {
 		return nil, nil
 	}
@@ -215,7 +216,8 @@ func (s *server) SearchByID(
 		uuid,
 		req.GetConfig().GetNum(),
 		req.GetConfig().GetEpsilon(),
-		req.GetConfig().GetRadius())
+		req.GetConfig().GetRadius(),
+		req.GetConfig().GetEdgeSize())
 	if err == nil && res == nil {
 		return nil, nil
 	}

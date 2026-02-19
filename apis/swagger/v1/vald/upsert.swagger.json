@@ -38,7 +38,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1UpsertRequest"
+              "$ref": "#/definitions/UpsertRequest"
             }
           }
         ],
@@ -71,7 +71,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1UpsertMultiRequest"
+              "$ref": "#/definitions/UpsertMultiRequest"
             }
           }
         ],

@@ -122,7 +122,7 @@ pub mod agent_client {
             self.inner.unary(req, path, codec).await
         }
         /** Represent the saving index RPC.
-         */
+        */
         pub async fn save_index(
             &mut self,
             request: impl tonic::IntoRequest<super::super::super::payload::v1::Empty>,
@@ -141,7 +141,7 @@ pub mod agent_client {
             self.inner.unary(req, path, codec).await
         }
         /** Represent the creating and saving index RPC.
-         */
+        */
         pub async fn create_and_save_index(
             &mut self,
             request: impl tonic::IntoRequest<
@@ -184,7 +184,7 @@ pub mod agent_server {
             tonic::Status,
         >;
         /** Represent the saving index RPC.
-         */
+        */
         async fn save_index(
             &self,
             request: tonic::Request<super::super::super::payload::v1::Empty>,
@@ -193,7 +193,7 @@ pub mod agent_server {
             tonic::Status,
         >;
         /** Represent the creating and saving index RPC.
-         */
+        */
         async fn create_and_save_index(
             &self,
             request: tonic::Request<super::super::super::payload::v1::control::CreateIndexRequest>,

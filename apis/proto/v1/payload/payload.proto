@@ -99,6 +99,8 @@ message Search {
     google.protobuf.FloatValue ratio = 10;
     // Search nprobe.
     uint32 nprobe = 11;
+    // Search edge size
+    int32 edge_size = 12;
   }
 
   // AggregationAlgorithm is enum of each aggregation algorithms

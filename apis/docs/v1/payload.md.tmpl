@@ -2288,6 +2288,7 @@ search is applied. |
     Search.AggregationAlgorithm aggregation_algorithm = 9;
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
+    int32 edge_size = 12;
   }
 {{- end -}}
 
@@ -2307,6 +2308,7 @@ search is applied. |
     | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
     | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
     | nprobe | uint32 |  | Search nprobe. |
+    | edge_size | int32 |  | Search edge size |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Search.IDRequest" }}
