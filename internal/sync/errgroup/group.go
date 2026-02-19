@@ -93,7 +93,9 @@ func Init(ctx context.Context) (egctx context.Context) {
 
 // Get returns the global errgroup instance, initializing it if necessary.
 func Get() Group {
-	Init(context.Background())
+	if instance == nil {
+		Init(context.Background())
+	}
 	return instance
 }
 
