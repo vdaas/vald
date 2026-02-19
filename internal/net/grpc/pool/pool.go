@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// Package pool provied grpc connection pooling functionality for better performance.
+// Package pool provides grpc connection pooling functionality for better performance.
 package pool
 
 import (
@@ -366,7 +366,7 @@ func (p *pool) flush() {
 // refreshConn checks if the connection at slot idx is healthy for the given address.
 // If not, it dials a new connection and updates the slot atomically.
 // It also schedules graceful closure of any existing (old) connection.
-func (p *pool) refreshConn(ctx context.Context, idx uint64, pc *poolConn, addr string) {
+func (p *pool) refreshConn(ctx context.Context, eg errgroup.Group, idx uint64, pc *poolConn, addr string) {
 	if pc != nil && pc.conn != nil {
 		state := pc.conn.GetState()
 		if pc.addr == addr {
@@ -389,8 +389,10 @@ func (p *pool) refreshConn(ctx context.Context, idx uint64, pc *poolConn, addr s
 	} else {
 		log.Debugf("connection pool %d/%d len %d is empty, establish new pool member connection to %s", idx+1, p.Size(), p.Len(), addr)
 	}
-
-	p.errGroup.Go(func() error {
+	if eg == nil {
+		eg = p.errGroup
+	}
+	eg.Go(func() error {
 		newConn, err := p.dial(ctx, idx, addr)
 		if err != nil {
 			if pc != nil && pc.conn != nil {
@@ -465,7 +467,7 @@ func (p *pool) connect(ctx context.Context, ips ...string) (c Conn, err error) {
 	}
 	log.Debugf("Connecting to %s multiple IPs: %v on port %d", p.addr, ips, p.port)
 	err = p.loop(ctx, func(ctx context.Context, idx uint64, pc *poolConn) bool {
-		p.refreshConn(ctx, idx, pc, net.JoinHostPort(ips[idx%uint64(len(ips))], p.port))
+		p.refreshConn(ctx, p.errGroup, idx, pc, net.JoinHostPort(ips[idx%uint64(len(ips))], p.port))
 		return true
 	})
 	if errors.IsNot(err, context.DeadlineExceeded, context.Canceled) {
@@ -483,7 +485,7 @@ func (p *pool) singleTargetConnect(ctx context.Context, addr string) (Conn, erro
 	}
 	log.Debugf("Connecting to single target: %s", addr)
 	err := p.loop(ctx, func(ctx context.Context, idx uint64, pc *poolConn) bool {
-		p.refreshConn(ctx, idx, pc, addr)
+		p.refreshConn(ctx, p.errGroup, idx, pc, addr)
 		return true
 	})
 	if errors.IsNot(err, context.DeadlineExceeded, context.Canceled) {
@@ -637,19 +639,28 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 			}
 		}
 	}
-
+	eg, egctx := errgroup.New(ctx)
 	rc := make([]uint64, 0, sz) // refreshedConnection list
 	// Second pass: if no healthy connection found, try to refresh empty slots or shutdown connections.
 	for i := range sz {
 		idx := (start + i) % sz
 		_, pc = p.load(idx)
 		if pc == nil || pc.conn == nil || pc.conn.GetState() == connectivity.Shutdown {
-			p.refreshConn(ctx, idx, pc, p.addr)
+			p.refreshConn(egctx, p.errGroup, idx, pc, p.addr)
 			rc = append(rc, idx)
 		} else if pc.conn.GetState() == connectivity.TransientFailure {
 			// If TransientFailure, return it as a last resort.
 			return pc, true
 		}
+	}
+
+	if len(rc) == 0 {
+		return nil, false
+	}
+
+	// wait for all refreshConn
+	if err := eg.Wait(); err != nil {
+		return nil, false
 	}
 
 	// Third pass return connected pool conn
@@ -709,7 +720,7 @@ func (p *pool) IsHealthy(ctx context.Context) bool {
 			}
 		} else {
 			// Do not block health check with dial
-			p.refreshConn(ctx, idx, pc, p.addr)
+			p.refreshConn(ctx, p.errGroup, idx, pc, p.addr)
 			// Assume unhealthy if nil for now
 			log.Debugf("nil pool connection detected for %s pool %d/%d len %d is unhealthy", p.addr, idx+1, p.Size(), p.Len())
 		}

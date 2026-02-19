@@ -134,7 +134,7 @@ type gRPCClient struct {
 	dialer net.Dialer
 	// enablePoolRebalance enables periodic rebalancing of connection pools.
 	enablePoolRebalance bool
-	// enablePoolMetrics enables healthhy connection count metrics of connection pools.
+	// enablePoolMetrics enables healthy connection count metrics of connection pools.
 	enablePoolMetrics bool
 	// disableResolveDNSAddrs stores addresses for which DNS resolution should be disabled.
 	disableResolveDNSAddrs sync.Map[string, bool]
@@ -556,7 +556,9 @@ func (g *gRPCClient) RangeConcurrent(
 		return g.Range(sctx, f)
 	}
 	eg, egctx := errgroup.New(sctx)
-	eg.SetLimit(concurrency)
+	if concurrency < 1 {
+		eg.SetLimit(concurrency)
+	}
 	err = g.rangeConns("RangeConcurrent", func(addr string, p pool.Conn) bool {
 		eg.Go(safety.RecoverFunc(func() (err error) {
 			ssctx, sspan := trace.StartSpan(egctx, apiName+"/Client.RangeConcurrent/"+addr)
