@@ -121,28 +121,28 @@ func (s *server) aggregationSearch(
 				return nil
 			default:
 			*/
-				st, ok := status.FromError(err)
-				if !ok {
-					log.Debug(err)
-					return nil
-				}
-				if sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
-				switch st.Code() {
-				case codes.Internal,
-					codes.Unavailable,
-					codes.ResourceExhausted:
-					log.Warn(err)
-					return err
-				case codes.NotFound,
-					codes.Aborted,
-					codes.InvalidArgument:
-					return nil
-				}
+			st, ok := status.FromError(err)
+			if !ok {
 				log.Debug(err)
+				return nil
+			}
+			if sspan != nil {
+				sspan.RecordError(err)
+				sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
+				sspan.SetStatus(trace.StatusError, err.Error())
+			}
+			switch st.Code() {
+			case codes.Internal,
+				codes.Unavailable,
+				codes.ResourceExhausted:
+				log.Warn(err)
+				return err
+			case codes.NotFound,
+				codes.Aborted,
+				codes.InvalidArgument:
+				return nil
+			}
+			log.Debug(err)
 			/*
 			}
 			*/
