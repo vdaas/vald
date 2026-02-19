@@ -94,6 +94,7 @@ func (s *server) aggregationSearch(
 			}
 		}()
 		r, err := f(sctx, fcfg, vc, copts...)
+		/*
 		if err != nil {
 			switch {
 			case errors.Is(err, context.Canceled),
@@ -226,6 +227,10 @@ func (s *server) aggregationSearch(
 					return nil
 				}
 			}
+		}
+		*/
+		if err != nil || r == nil || len(r.GetResults()) == 0 {
+			return nil
 		}
 		aggr.Send(sctx, r)
 		return nil
