@@ -1,4 +1,3 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,235 +13,178 @@
 // limitations under the License.
 //
 
-package pool
+package pool_test
 
 import (
 	"context"
+	"fmt"
+	"runtime"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/discoverer"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/log/level"
-	"github.com/vdaas/vald/internal/net"
-	"github.com/vdaas/vald/internal/sync"
-	"google.golang.org/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/pool"
+	"github.com/vdaas/vald/internal/servers"
+	"github.com/vdaas/vald/internal/servers/server"
+	ggrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-const (
-	DefaultServerAddr = "localhost:5001"
-	DefaultPoolSize   = 4
-)
-
-type server struct {
-	discoverer.DiscovererServer
+type discovererServer struct {
+	discoverer.UnimplementedDiscovererServer
 }
 
-func TestMain(m *testing.M) {
-	testing.Init()
-	log.Init(log.WithLevel(level.ERROR.String()))
-	m.Run()
-}
-
-func (*server) Pods(context.Context, *payload.Discoverer_Request) (*payload.Info_Pods, error) {
-	return &payload.Info_Pods{
-		Pods: []*payload.Info_Pod{
+func (s *discovererServer) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Nodes, error) {
+	return &payload.Info_Nodes{
+		Nodes: []*payload.Info_Node{
 			{
-				Name: "vald is high scalable distributed high-speed approximate nearest neighbor search engine",
+				Name:         "node-1",
+				InternalAddr: "127.0.0.1",
 			},
 		},
 	}, nil
 }
 
-func (*server) Nodes(context.Context, *payload.Discoverer_Request) (*payload.Info_Nodes, error) {
-	return new(payload.Info_Nodes), nil
-}
-
-func ListenAndServe(b *testing.B, addr string) func() {
-	b.Helper()
-	lis, err := net.Listen("tcp", addr)
+func startTestServer(t testing.TB, host string, port uint16) (servers.Listener, string) {
+	t.Helper()
+	addr := fmt.Sprintf("%s:%d", host, port)
+	s, err := server.New(
+		server.WithName("discoverer-grpc"),
+		server.WithServerMode(server.GRPC),
+		server.WithGRPCRegisterar(func(srv *ggrpc.Server) {
+			discoverer.RegisterDiscovererServer(srv, &discovererServer{})
+		}),
+		server.WithHost(host),
+		server.WithPort(port),
+	)
 	if err != nil {
-		b.Error(err)
+		t.Fatalf("failed to create server: %v", err)
 	}
 
-	// skipcq: GO-S0902
-	s := grpc.NewServer()
-	discoverer.RegisterDiscovererServer(s, new(server))
+	l := servers.New(
+		servers.WithServer(s),
+	)
 
-	wg := new(sync.WaitGroup)
-	wg.Add(1)
-
-	go func() {
-		wg.Done()
-		if err := s.Serve(lis); err != nil {
-			b.Error(err)
-		}
-	}()
-
-	wg.Wait()
-	return func() {
-		s.Stop()
-	}
-}
-
-func do(b *testing.B, conn *ClientConn) {
-	b.Helper()
-	_, err := discoverer.NewDiscovererClient(conn).Nodes(context.Background(), new(payload.Discoverer_Request))
-	if err != nil {
-		b.Error(err)
-	}
+	go l.ListenAndServe(context.Background())
+	return l, addr
 }
 
 func Benchmark_ConnPool(b *testing.B) {
-	defer ListenAndServe(b, DefaultServerAddr)()
+	host := "127.0.0.1"
+	port := uint16(9093)
+	l, addr := startTestServer(b, host, port)
+	defer l.Shutdown(context.Background())
+	time.Sleep(100 * time.Millisecond)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	pool, err := New(ctx,
-		WithAddr(DefaultServerAddr),
-		WithSize(DefaultPoolSize),
-		WithDialOptions(grpc.WithTransportCredentials(insecure.NewCredentials())),
+	ctx := context.Background()
+	p, err := pool.New(ctx,
+		pool.WithAddr(addr),
+		pool.WithSize(4),
+		pool.WithDialOptions(ggrpc.WithTransportCredentials(insecure.NewCredentials())),
 	)
 	if err != nil {
-		b.Error(err)
+		b.Fatal(err)
 	}
-	pool, err = pool.Connect(ctx)
-	if err != nil {
-		b.Error(err)
+	if _, err := p.Connect(ctx); err != nil {
+		b.Fatal(err)
 	}
+	time.Sleep(100 * time.Millisecond)
 
-	b.StopTimer()
 	b.ResetTimer()
 	b.ReportAllocs()
-	b.StartTimer()
+
 	for b.Loop() {
-		conn, ok := pool.Get(ctx)
+		conn, ok := p.Get(ctx)
 		if ok {
-			do(b, conn)
+			client := discoverer.NewDiscovererClient(conn)
+			_, err := client.Nodes(ctx, &payload.Discoverer_Request{})
+			if err != nil {
+				b.Errorf("RPC failed: %v", err)
+			}
+		} else {
+			b.Error("failed to get connection from pool")
 		}
 	}
-	b.StopTimer()
-}
-
-func Benchmark_StaticDial(b *testing.B) {
-	defer ListenAndServe(b, DefaultServerAddr)()
-
-	conn, err := grpc.NewClient(DefaultServerAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		b.Error(err)
-	}
-
-	conns := new(sync.Map[string, *grpc.ClientConn])
-	conns.Store(DefaultServerAddr, conn)
-
-	b.StopTimer()
-	b.ResetTimer()
-	b.ReportAllocs()
-	b.StartTimer()
-	for b.Loop() {
-		val, ok := conns.Load(DefaultServerAddr)
-		if ok {
-			do(b, val)
-		}
-	}
-	b.StopTimer()
 }
 
 func BenchmarkParallel_ConnPool(b *testing.B) {
-	defer ListenAndServe(b, DefaultServerAddr)()
+	host := "127.0.0.1"
+	port := uint16(9094)
+	l, addr := startTestServer(b, host, port)
+	defer l.Shutdown(context.Background())
+	time.Sleep(100 * time.Millisecond)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	pool, err := New(ctx,
-		WithAddr(DefaultServerAddr),
-		WithSize(DefaultPoolSize),
-		WithDialOptions(grpc.WithTransportCredentials(insecure.NewCredentials())),
+	ctx := context.Background()
+	p, err := pool.New(ctx,
+		pool.WithAddr(addr),
+		pool.WithSize(uint64(runtime.GOMAXPROCS(0)*2)),
+		pool.WithDialOptions(ggrpc.WithTransportCredentials(insecure.NewCredentials())),
 	)
 	if err != nil {
-		b.Error(err)
+		b.Fatal(err)
 	}
-	pool, err = pool.Connect(ctx)
-	if err != nil {
-		b.Error(err)
+	if _, err := p.Connect(ctx); err != nil {
+		b.Fatal(err)
 	}
+	time.Sleep(100 * time.Millisecond)
 
-	b.StopTimer()
 	b.ResetTimer()
 	b.ReportAllocs()
-	b.StartTimer()
+
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			conn, ok := pool.Get(ctx)
+			conn, ok := p.Get(ctx)
 			if ok {
-				do(b, conn)
+				client := discoverer.NewDiscovererClient(conn)
+				_, err := client.Nodes(ctx, &payload.Discoverer_Request{})
+				if err != nil {
+					b.Errorf("RPC failed: %v", err)
+				}
+			} else {
+				b.Error("failed to get connection from pool")
 			}
 		}
 	})
-	b.StopTimer()
-}
-
-func BenchmarkParallel_StaticDial(b *testing.B) {
-	defer ListenAndServe(b, DefaultServerAddr)()
-
-	conn, err := grpc.NewClient(DefaultServerAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		b.Error(err)
-	}
-
-	conns := new(sync.Map[string, *grpc.ClientConn])
-	conns.Store(DefaultServerAddr, conn)
-
-	b.StopTimer()
-	b.ResetTimer()
-	b.ReportAllocs()
-	b.StartTimer()
-	b.RunParallel(func(pb *testing.PB) {
-		for pb.Next() {
-			val, ok := conns.Load(DefaultServerAddr)
-			if ok {
-				do(b, val)
-			}
-		}
-	})
-	b.StopTimer()
 }
 
 func BenchmarkPool_HighContention(b *testing.B) {
-	defer ListenAndServe(b, "localhost:5002")()
+	host := "127.0.0.1"
+	port := uint16(9095)
+	l, addr := startTestServer(b, host, port)
+	defer l.Shutdown(context.Background())
+	time.Sleep(100 * time.Millisecond)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	// Create pool with small size to force contention
-	poolSize := uint64(2)
-	p, err := New(ctx,
-		WithAddr("localhost:5002"),
-		WithSize(poolSize),
-		WithDialOptions(grpc.WithTransportCredentials(insecure.NewCredentials())),
+	ctx := context.Background()
+	// Small pool size to force contention
+	p, err := pool.New(ctx,
+		pool.WithAddr(addr),
+		pool.WithSize(2),
+		pool.WithDialOptions(ggrpc.WithTransportCredentials(insecure.NewCredentials())),
 	)
 	if err != nil {
 		b.Fatal(err)
 	}
-	p, err = p.Connect(ctx)
-	if err != nil {
+	if _, err := p.Connect(ctx); err != nil {
 		b.Fatal(err)
 	}
+	time.Sleep(100 * time.Millisecond)
 
-	b.StopTimer()
 	b.ResetTimer()
 	b.ReportAllocs()
-	b.StartTimer()
+
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			// Simulate high frequency requests
-			_ = p.Do(ctx, func(c *ClientConn) error {
-				// Simulate short work
-				return nil
-			})
+			conn, ok := p.Get(ctx)
+			if ok {
+				client := discoverer.NewDiscovererClient(conn)
+				_, err := client.Nodes(ctx, &payload.Discoverer_Request{})
+				if err != nil {
+					b.Errorf("RPC failed: %v", err)
+				}
+			} else {
+				b.Error("failed to get connection from pool")
+			}
 		}
 	})
-	b.StopTimer()
 }
-
-// NOT IMPLEMENTED BELOW
