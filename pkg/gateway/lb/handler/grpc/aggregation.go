@@ -94,6 +94,7 @@ func (s *server) aggregationSearch(
 			}
 		}()
 		r, err := f(sctx, fcfg, vc, copts...)
+		/*
 		if err != nil {
 			switch {
 			case errors.Is(err, context.Canceled),
@@ -144,7 +145,9 @@ func (s *server) aggregationSearch(
 			}
 			return nil
 		}
+		*/
 		if r == nil || len(r.GetResults()) == 0 {
+			/*
 			select {
 			case <-sctx.Done():
 				err = status.WrapWithNotFound(fmt.Sprintf("failed to process search request from %s", target),
@@ -160,7 +163,9 @@ func (s *server) aggregationSearch(
 				}
 				return nil
 			default:
+				*/
 				r, err = f(sctx, fcfg, vc, copts...)
+				/*
 				if err != nil {
 					switch {
 					case errors.Is(err, context.Canceled),
@@ -226,6 +231,10 @@ func (s *server) aggregationSearch(
 					return nil
 				}
 			}
+			*/
+		}
+		if err != nil || r == nil || len(r.GetResults()) == 0 {
+			return nil
 		}
 		aggr.Send(sctx, r)
 		return nil
