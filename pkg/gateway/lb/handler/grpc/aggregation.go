@@ -94,6 +94,7 @@ func (s *server) aggregationSearch(
 			}
 		}()
 		r, err := f(sctx, fcfg, vc, copts...)
+		/*
 		if err != nil {
 			switch {
 			case errors.Is(err, context.Canceled),
@@ -118,7 +119,7 @@ func (s *server) aggregationSearch(
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				return nil
-			default:
+			default:*/
 				st, ok := status.FromError(err)
 				if !ok {
 					log.Debug(err)
@@ -142,6 +143,7 @@ func (s *server) aggregationSearch(
 				}
 				log.Debug(err)
 			}
+			/*
 			return nil
 		}
 		if r == nil || len(r.GetResults()) == 0 {
@@ -227,6 +229,7 @@ func (s *server) aggregationSearch(
 				}
 			}
 		}
+		*/
 		aggr.Send(sctx, r)
 		return nil
 	})
