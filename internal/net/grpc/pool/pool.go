@@ -611,13 +611,22 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 	if sz == 0 {
 		return nil, false
 	}
-	var idx uint64
+	var (
+		idx        uint64
+		fallbackPC *poolConn
+	)
 	for range sz {
 		idx, pc = p.load(p.currentIndex.Add(1) % sz)
 		if pc != nil {
 			state, healthy := p.isHealthy(idx, pc.conn)
 			if healthy {
-				return pc, true
+				if state == connectivity.Ready {
+					return pc, true
+				}
+				if fallbackPC == nil {
+					fallbackPC = pc
+				}
+				continue
 			}
 			log.Debugf("connection for %s pool %d/%d len %d is unhealthy (state: %s) trying to establish new pool member connection to %s",
 				pc.addr, idx+1, p.Size(), p.Len(), state.String(), p.addr)
@@ -626,18 +635,25 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 			if idx, pc = p.load(idx); pc != nil {
 				state, healthy := p.isHealthy(idx, pc.conn)
 				if healthy {
-					return pc, true
+					if state == connectivity.Ready {
+						return pc, true
+					}
+					if fallbackPC == nil {
+						fallbackPC = pc
+					}
+				} else {
+					log.Debugf("after re-connection for %s pool %d/%d len %d is still unhealthy (state: %s) going to close connection for %s",
+						pc.addr, idx+1, p.Size(), p.Len(), state.String(), p.addr)
 				}
-				log.Debugf("after re-connection for %s pool %d/%d len %d is still unhealthy (state: %s) going to close connection for %s",
-					pc.addr, idx+1, p.Size(), p.Len(), state.String(), p.addr)
 			}
 		}
+	}
+	if fallbackPC != nil {
+		return fallbackPC, true
 	}
 	return nil, false
 }
 
-// Do executes the provided function using a healthy connection.
-// If an error indicating a closed connection is returned, it attempts to refresh the connection and retries.
 func (p *pool) Do(ctx context.Context, f func(conn *ClientConn) error) (err error) {
 	if p == nil {
 		return errors.ErrGRPCClientConnNotFound("*")
