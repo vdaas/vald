@@ -88,7 +88,7 @@ func (g *gateway) BroadCast(
 		client = g.client.GetClient()
 	}
 
-	return client.RangeConcurrent(fctx, -1, func(ictx context.Context,
+	return client.RangeConcurrent(fctx, g.GetAgentCount(fctx), func(ictx context.Context,
 		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (err error) {
 		select {
