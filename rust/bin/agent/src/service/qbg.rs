@@ -436,7 +436,7 @@ impl ANN for QBGService {
                     }
                     Ok(DrainItem::Insert(uuid, vector)) => {
                         debug!("processing insert for uuid: {}", uuid);
-                        match self.index.insert(&vector) {
+                        match self.index.append(&vector) {
                             Ok(oid) => {
                                 let timestamp =
                                     Utc::now().timestamp_nanos_opt().unwrap_or(0) as u128;
@@ -451,7 +451,7 @@ impl ANN for QBGService {
                             Err(e) => {
                                 error!("failed to insert vector for uuid {}: {}", uuid, e);
                                 // Retry once
-                                if let Ok(oid) = self.index.insert(&vector) {
+                                if let Ok(oid) = self.index.append(&vector) {
                                     let timestamp =
                                         Utc::now().timestamp_nanos_opt().unwrap_or(0) as u128;
                                     if let Err(e) =
@@ -2101,9 +2101,7 @@ mod tests {
             .service
             .update_timestamp(uuid.clone(), new_timestamp, true)
             .await;
-        // The result can be either success or a "newer timestamp exists" error, both are acceptable
-        // since this tests the update_timestamp behavior with already-existing entries
-        let _ = result;
+        assert!(result.is_ok(), "update_timestamp should succeed");
     }
 
     #[tokio::test]
@@ -2134,14 +2132,16 @@ mod tests {
         let vector1 = gen_random_vector(128);
 
         // Insert first vector
-        test_svc
+        let res = test_svc
             .service
             .insert(uuid.clone(), vector1)
             .await
             .unwrap();
+        assert!(res.is_ok(), "Initial insert should succeed");
 
         // Remove it
-        test_svc.service.remove(uuid.clone()).await.unwrap();
+        let res = test_svc.service.remove(uuid.clone()).await;
+        assert!(res.is_ok(), "Remove should succeed");
 
         // Verify it's removed (or at least doesn't exist)
         let (_, exists_after_remove) = test_svc.service.exists(uuid.clone()).await;
@@ -2220,7 +2220,8 @@ mod tests {
                     let uuid = format!("item-{}", i);
                     let vector = gen_random_vector(128);
                     let mut svc = service.lock().await;
-                    let _ = svc.insert(uuid, vector).await;
+                    let res = svc.insert(uuid, vector).await;
+                    assert!(res.is_ok(), "Insert should succeed");
                 }
             });
             handles.push(handle);
@@ -2234,7 +2235,6 @@ mod tests {
                     let uuid = format!("item-{}", i);
                     let svc = service.lock().await;
                     let (_, _exists) = svc.exists(uuid).await;
-                    // Don't assert, just check that operation completes without panic
                 }
             });
             handles.push(handle);
@@ -2261,7 +2261,8 @@ mod tests {
                     let uuid = format!("item-{}", i);
                     let vector = gen_random_vector(128);
                     let mut svc = service.lock().await;
-                    let _ = svc.insert(uuid, vector).await;
+                    let res = svc.insert(uuid, vector).await;
+                    assert!(res.is_ok(), "Insert should succeed");
                 }
             });
             handle.await.unwrap();
@@ -2277,7 +2278,8 @@ mod tests {
                 for i in 0..remove_count {
                     let uuid = format!("item-{}", i);
                     let mut svc = service.lock().await;
-                    let _ = svc.remove(uuid).await;
+                    let res = svc.remove(uuid).await;
+                    assert!(res.is_ok(), "Remove should succeed");
                 }
             });
             handles.push(handle);
@@ -2291,7 +2293,8 @@ mod tests {
                     let uuid = format!("new-item-{}", i);
                     let vector = gen_random_vector(128);
                     let mut svc = service.lock().await;
-                    let _ = svc.insert(uuid, vector).await;
+                    let res = svc.insert(uuid, vector).await;
+                    assert!(res.is_ok(), "Insert should succeed");
                 }
             });
             handles.push(handle);
@@ -2328,7 +2331,8 @@ mod tests {
                     let uuid = format!("insert-{}", i);
                     let vector = gen_random_vector(128);
                     let mut svc = service.lock().await;
-                    let _ = svc.insert(uuid, vector).await;
+                    let res = svc.insert(uuid, vector).await;
+                    assert!(res.is_ok(), "Insert should succeed");
                 }
             });
             handles.push(handle);
@@ -2343,7 +2347,8 @@ mod tests {
                     let uuid = format!("insert-{}", i);
                     let vector = gen_random_vector(128);
                     let mut svc = service.lock().await;
-                    let _ = svc.update(uuid, vector).await;
+                    let res = svc.update(uuid, vector).await;
+                    assert!(res.is_ok(), "Update should succeed");
                 }
             });
             handles.push(handle);
@@ -2436,8 +2441,10 @@ mod tests {
             .service
             .insert_with_time(uuid.clone(), vector, 0)
             .await;
-        // Should succeed or fail depending on implementation
-        let _ = result;
+        assert!(
+            result.is_ok(),
+            "Insert with zero timestamp should succeed"
+        );
     }
 
     #[tokio::test]
@@ -2452,8 +2459,10 @@ mod tests {
             .service
             .insert_with_time(uuid.clone(), vector, -1234567890)
             .await;
-        // Should succeed or fail depending on implementation
-        let _ = result;
+        assert!(
+            result.is_ok(),
+            "Insert with negative timestamp should either succeed or return InvalidTimestamp error"
+        );
     }
 
     #[tokio::test]
@@ -2522,17 +2531,19 @@ mod tests {
         let vector = gen_random_vector(128);
 
         // Single insert
-        test_svc
+        let result = test_svc
             .service
             .insert(uuid.clone(), vector.clone())
-            .await
-            .unwrap();
+            .await;
+        assert!(result.is_ok(), "Insert should succeed");
 
         // Single update (may fail if insert not fully processed yet)
-        let _result = test_svc.service.update(uuid.clone(), vector.clone()).await;
+        let result = test_svc.service.update(uuid.clone(), vector.clone()).await;
+        assert!(result.is_ok(), "Update should succeed");
 
         // Single remove
-        let _result = test_svc.service.remove(uuid.clone()).await;
+        let result = test_svc.service.remove(uuid.clone()).await;
+        assert!(result.is_ok(), "Remove should succeed");
     }
 
     #[tokio::test]
@@ -2555,13 +2566,13 @@ mod tests {
         for i in 0..10 {
             let uuid = format!("search-test-{}", i);
             let vector = gen_random_vector(128);
-            let _ = test_svc.service.insert(uuid, vector).await;
+            let res = test_svc.service.insert(uuid, vector).await;
+            assert!(res.is_ok(), "Insert should succeed");
         }
 
         // Create index for search - wait for it to complete
         let index_result = test_svc.service.create_index().await;
-        // Index may fail with small dataset, which is acceptable
-        let _ = index_result;
+        assert!(index_result.is_ok(), "create_index should succeed before search");
 
         // Only test search if we have indexed data
         let count = test_svc.service.len();
@@ -2570,7 +2581,10 @@ mod tests {
             let search_vec = gen_random_vector(128);
             let result = test_svc.service.search(search_vec, 0, 0.1, 0.0).await;
             // Result handling: k=0 may not be supported, that's OK
-            let _ = result;
+            assert!(
+                result.is_ok(),
+                "Search with k=0 should either succeed with empty results or return InvalidK error"
+            );
         }
     }
 
@@ -2583,12 +2597,12 @@ mod tests {
         let vector2 = gen_random_vector(128);
 
         // First insert
-        test_svc
+        let res = test_svc
             .service
             .insert(uuid.clone(), vector1)
-            .await
-            .unwrap();
-
+            .await;
+        assert!(res.is_ok(), "First insert should succeed");
+re
         // Second insert with same UUID (should fail)
         let result = test_svc.service.insert(uuid, vector2).await;
         assert!(result.is_err(), "Duplicate insert should fail");
@@ -2603,7 +2617,10 @@ mod tests {
         // Remove non-existent UUID
         let result = test_svc.service.remove(uuid).await;
         // May succeed or fail depending on implementation
-        let _ = result;
+        assert!(
+            result.is_ok(),
+            "Remove non-existent UUID should either succeed or fail gracefully"
+        );
     }
 
     #[tokio::test]
@@ -2660,11 +2677,11 @@ mod tests {
         let vector = gen_random_vector(128);
 
         // Insert once
-        test_svc
+        let res = test_svc
             .service
             .insert(uuid.clone(), vector.clone())
-            .await
-            .unwrap();
+            .await;
+        assert!(res.is_ok(), "Initial insert should succeed");
 
         // Get many times
         for _ in 0..100 {
