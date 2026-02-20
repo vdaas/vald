@@ -1347,6 +1347,7 @@ internal/net/dialer_test.go
 internal/net/doc.go
 internal/net/grpc/admin/admin.go
 internal/net/grpc/admin/doc.go
+internal/net/grpc/benchmark_test.go
 internal/net/grpc/client.go
 internal/net/grpc/client_test.go
 internal/net/grpc/codec.go
