@@ -40,7 +40,8 @@ import (
 type Option func(*gRPCClient)
 
 var defaultOptions = []Option{
-	WithConnectionPoolSize(3),
+	WithConnectionPoolSize(10),
+	WithKeepaliveParams("30s", "10s", true),
 	WithEnableConnectionPoolRebalance(false),
 	WithConnectionPoolRebalanceDuration("1h"),
 	WithErrGroup(errgroup.Get()),
@@ -120,6 +121,12 @@ func WithConnectionPoolSize(size int) Option {
 		if size >= 1 {
 			g.poolSize = uint64(size)
 		}
+	}
+}
+
+func WithEnableConnectionPoolMetrics(flg bool) Option {
+	return func(g *gRPCClient) {
+		g.enablePoolMetrics = flg
 	}
 }
 
