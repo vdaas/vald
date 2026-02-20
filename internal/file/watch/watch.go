@@ -37,10 +37,9 @@ type Watcher interface {
 }
 
 type watch struct {
-	w        *fsnotify.Watcher
 	eg       errgroup.Group
+	w        *fsnotify.Watcher
 	dirs     map[string]struct{}
-	mu       sync.RWMutex
 	onChange func(ctx context.Context, name string) error
 	onCreate func(ctx context.Context, name string) error
 	onRename func(ctx context.Context, name string) error
@@ -48,6 +47,7 @@ type watch struct {
 	onWrite  func(ctx context.Context, name string) error
 	onChmod  func(ctx context.Context, name string) error
 	onError  func(ctx context.Context, err error) error
+	mu       sync.RWMutex
 }
 
 // New returns Watcher implementation.

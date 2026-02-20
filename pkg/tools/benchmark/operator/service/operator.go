@@ -59,17 +59,17 @@ const (
 )
 
 type operator struct {
+	eg                 errgroup.Group
+	ctrl               k8s.Controller
+	scenarios          *atomic.Pointer[map[string]*scenario]
+	benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+	jobs               *atomic.Pointer[map[string]string]
 	jobNamespace       string
 	jobImageRepository string
 	jobImageTag        string
 	jobImagePullPolicy string
 	configMapName      string
-	scenarios          *atomic.Pointer[map[string]*scenario]
-	benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-	jobs               *atomic.Pointer[map[string]string]
-	rcd                time.Duration // reconcile check duration
-	eg                 errgroup.Group
-	ctrl               k8s.Controller
+	rcd                time.Duration
 }
 
 // New creates the new scenario struct to handle vald benchmark job scenario.

@@ -35,12 +35,12 @@ func TestNewGob(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, Compressor, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got Compressor, err error) error {
 		if !errors.Is(err, w.err) {
@@ -111,17 +111,17 @@ func Test_gobCompressor_CompressVector(t *testing.T) {
 		transcoder gob.Transcoder
 	}
 	type want struct {
-		want []byte
 		err  error
+		want []byte
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		fields     fields
 		checkFunc  func(want, []byte, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got []byte, err error) error {
 		if !errors.Is(err, w.err) {
@@ -214,16 +214,16 @@ func Test_E2E_gobCompressor_CompressVector(t *testing.T) {
 		vector []float32
 	}
 	type want struct {
-		want []float32
 		err  error
+		want []float32
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, []byte, error, Compressor) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, got []byte, err error, l Compressor) error {
@@ -287,17 +287,17 @@ func Test_gobCompressor_DecompressVector(t *testing.T) {
 		transcoder gob.Transcoder
 	}
 	type want struct {
-		want []float32
 		err  error
+		want []float32
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		fields     fields
 		checkFunc  func(want, []float32, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got []float32, err error) error {
 		if !errors.Is(err, w.err) {
@@ -397,13 +397,13 @@ func Test_gobCompressor_Reader(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
+		want       want
 		args       args
 		fields     fields
-		want       want
 		checkFunc  func(want, io.ReadCloser, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got io.ReadCloser, err error) error {
 		if !errors.Is(err, w.err) {
@@ -479,13 +479,13 @@ func Test_gobCompressor_Writer(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
+		want       want
 		args       args
 		fields     fields
-		want       want
 		checkFunc  func(want, io.WriteCloser, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got io.WriteCloser, err error) error {
 		if !errors.Is(err, w.err) {
@@ -558,17 +558,17 @@ func Test_gobReader_Read(t *testing.T) {
 		decoder gob.Decoder
 	}
 	type want struct {
-		wantN int
 		err   error
+		wantN int
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
 		want       want
 		checkFunc  func(want, int, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, gotN int, err error) error {
 		if !errors.Is(err, w.err) {
@@ -653,12 +653,12 @@ func Test_gobReader_Close(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -717,17 +717,17 @@ func Test_gobWriter_Write(t *testing.T) {
 		encoder gob.Encoder
 	}
 	type want struct {
-		wantN int
 		err   error
+		wantN int
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
 		want       want
 		checkFunc  func(want, int, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, gotN int, err error) error {
 		if !errors.Is(err, w.err) {
@@ -812,12 +812,12 @@ func Test_gobWriter_Close(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {

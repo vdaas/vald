@@ -17,16 +17,16 @@ package config
 //
 // func TestIndexDeleter_Bind(t *testing.T) {
 // 	type fields struct {
+// 		Discoverer       *DiscovererClient
 // 		IndexID          string
-// 		AgentPort        int
 // 		AgentName        string
 // 		AgentNamespace   string
 // 		AgentDNS         string
 // 		NodeName         string
+// 		TargetAddrs      []string
+// 		AgentPort        int
 // 		Concurrency      int
 // 		DeletionPoolSize uint32
-// 		TargetAddrs      []string
-// 		Discoverer       *DiscovererClient
 // 	}
 // 	type want struct {
 // 		want *IndexDeleter
@@ -51,16 +51,16 @@ package config
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           Discoverer:DiscovererClient{},
 // 		           IndexID:"",
-// 		           AgentPort:0,
 // 		           AgentName:"",
 // 		           AgentNamespace:"",
 // 		           AgentDNS:"",
 // 		           NodeName:"",
+// 		           TargetAddrs:nil,
+// 		           AgentPort:0,
 // 		           Concurrency:0,
 // 		           DeletionPoolSize:0,
-// 		           TargetAddrs:nil,
-// 		           Discoverer:DiscovererClient{},
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -79,16 +79,16 @@ package config
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           Discoverer:DiscovererClient{},
 // 		           IndexID:"",
-// 		           AgentPort:0,
 // 		           AgentName:"",
 // 		           AgentNamespace:"",
 // 		           AgentDNS:"",
 // 		           NodeName:"",
+// 		           TargetAddrs:nil,
+// 		           AgentPort:0,
 // 		           Concurrency:0,
 // 		           DeletionPoolSize:0,
-// 		           TargetAddrs:nil,
-// 		           Discoverer:DiscovererClient{},
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -119,16 +119,16 @@ package config
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			ic := &IndexDeleter{
+// 				Discoverer:       test.fields.Discoverer,
 // 				IndexID:          test.fields.IndexID,
-// 				AgentPort:        test.fields.AgentPort,
 // 				AgentName:        test.fields.AgentName,
 // 				AgentNamespace:   test.fields.AgentNamespace,
 // 				AgentDNS:         test.fields.AgentDNS,
 // 				NodeName:         test.fields.NodeName,
+// 				TargetAddrs:      test.fields.TargetAddrs,
+// 				AgentPort:        test.fields.AgentPort,
 // 				Concurrency:      test.fields.Concurrency,
 // 				DeletionPoolSize: test.fields.DeletionPoolSize,
-// 				TargetAddrs:      test.fields.TargetAddrs,
-// 				Discoverer:       test.fields.Discoverer,
 // 			}
 //
 // 			got := ic.Bind()

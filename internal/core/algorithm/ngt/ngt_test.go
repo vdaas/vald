@@ -96,13 +96,13 @@ func TestNew(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name        string
-		args        args
 		want        want
-		comparators []comparator.Option
 		checkFunc   func(want, NGT, error, ...comparator.Option) error
 		beforeFunc  func(args)
 		afterFunc   func(*testing.T, NGT) error
+		name        string
+		args        args
+		comparators []comparator.Option
 	}
 	defaultComparators := append(ngtComparator, comparator.CompareField("idxPath", comparator.Comparer(func(s1, s2 string) bool {
 		return s1 == s2
@@ -266,12 +266,12 @@ func TestLoad(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(context.Context, want, NGT, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, NGT) error
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(_ context.Context, w want, got NGT, err error) error {
 		if !errors.Is(err, w.err) {
@@ -679,8 +679,7 @@ func TestLoad(t *testing.T) {
 					tt.Error(err)
 				}
 			}()
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := tt.Context()
 
 			if err := checkFunc(ctx, test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
@@ -691,21 +690,21 @@ func TestLoad(t *testing.T) {
 
 func Test_gen(t *testing.T) {
 	type args struct {
-		isLoad bool
 		opts   []Option
+		isLoad bool
 	}
 	type want struct {
 		want NGT
 		err  error
 	}
 	type test struct {
-		name        string
-		args        args
 		want        want
-		comparators []comparator.Option
 		checkFunc   func(context.Context, want, NGT, error, ...comparator.Option) error
 		beforeFunc  func(*testing.T, args)
 		afterFunc   func(*testing.T, NGT) error
+		name        string
+		comparators []comparator.Option
+		args        args
 	}
 	defaultComparators := append(ngtComparator, comparator.CompareField("idxPath", comparator.Comparer(func(s1, s2 string) bool {
 		return s1 == s2
@@ -867,8 +866,7 @@ func Test_gen(t *testing.T) {
 					tt.Error(err)
 				}
 			}()
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := tt.Context()
 
 			if err := checkFunc(ctx, test.want, got, err, comparators...); err != nil {
 				tt.Errorf("error = %v", err)
@@ -879,25 +877,25 @@ func Test_gen(t *testing.T) {
 
 func Test_ngt_setup(t *testing.T) {
 	type fields struct {
+		mu                  *sync.RWMutex
 		idxPath             string
-		inMemory            bool
 		bulkInsertChunkSize int
 		objectType          objectType
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
-		mu                  *sync.RWMutex
+		inMemory            bool
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func(*testing.T, NGT) error
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -973,28 +971,28 @@ func Test_ngt_loadOptions(t *testing.T) {
 		opts []Option
 	}
 	type fields struct {
+		mu                  *sync.RWMutex
 		idxPath             string
-		inMemory            bool
 		bulkInsertChunkSize int
 		dimension           int
 		objectType          objectType
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
-		mu                  *sync.RWMutex
+		inMemory            bool
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
-		createFunc func(t *testing.T, fields fields) (NGT, error)
 		want       want
+		createFunc func(t *testing.T, fields fields) (NGT, error)
 		checkFunc  func(want, *ngt, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, NGT) error
+		name       string
+		args       args
+		fields     fields
 	}
 	defaultCreateFunc := func(t *testing.T, fields fields) (NGT, error) {
 		t.Helper()
@@ -1132,29 +1130,29 @@ func Test_ngt_create(t *testing.T) {
 
 func Test_ngt_open(t *testing.T) {
 	type fields struct {
+		mu                  *sync.RWMutex
+		cmu                 *sync.RWMutex
+		smu                 *sync.Mutex
 		idxPath             string
-		inMemory            bool
 		bulkInsertChunkSize int
 		dimension           int
 		objectType          objectType
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
-		mu                  *sync.RWMutex
-		cmu                 *sync.RWMutex
-		smu                 *sync.Mutex
+		inMemory            bool
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
-		fields     fields
-		createFunc func(*testing.T, fields) (NGT, error)
 		want       want
+		createFunc func(*testing.T, fields) (NGT, error)
 		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T, fields)
 		afterFunc  func(*testing.T, NGT) error
+		name       string
+		fields     fields
 	}
 	defaultCreateFunc := func(t *testing.T, fields fields) (NGT, error) {
 		t.Helper()
@@ -1303,25 +1301,25 @@ func Test_ngt_open(t *testing.T) {
 func Test_ngt_loadObjectSpace(t *testing.T) {
 	type fields struct {
 		idxPath             string
-		inMemory            bool
 		bulkInsertChunkSize int
 		dimension           int
 		objectType          objectType
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
+		inMemory            bool
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
-		fields     fields
-		createFunc func(t *testing.T, fields fields) (NGT, error)
 		want       want
+		createFunc func(t *testing.T, fields fields) (NGT, error)
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func(*testing.T, NGT) error
+		name       string
+		fields     fields
 	}
 	defaultCreateFunc := func(t *testing.T, fields fields) (NGT, error) {
 		t.Helper()
@@ -1406,27 +1404,27 @@ func Test_ngt_Search(t *testing.T) {
 	}
 	type fields struct {
 		idxPath             string
-		inMemory            bool
 		bulkInsertChunkSize int
 		dimension           int
 		objectType          objectType
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
+		inMemory            bool
 	}
 	type want struct {
-		want []algorithm.SearchResult
 		err  error
+		want []algorithm.SearchResult
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
-		createFunc func(t *testing.T, fields fields) (NGT, error)
 		want       want
+		createFunc func(t *testing.T, fields fields) (NGT, error)
 		checkFunc  func(want, []algorithm.SearchResult, NGT, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, NGT) error
+		name       string
+		args       args
+		fields     fields
 	}
 	defaultCreateFunc := func(t *testing.T, fields fields) (NGT, error) {
 		t.Helper()
@@ -1472,7 +1470,7 @@ func Test_ngt_Search(t *testing.T) {
 		{
 			name: "return vector id after the same vector inserted (uint8)",
 			args: args{
-				ctx:     context.Background(),
+				ctx:     t.Context(),
 				vec:     []float32{0, 1, 2, 3, 4, 5, 6, 7, 8},
 				size:    5,
 				epsilon: 0,
@@ -1502,7 +1500,7 @@ func Test_ngt_Search(t *testing.T) {
 		{
 			name: "return vector id after the nearby vector inserted (uint8)",
 			args: args{
-				ctx:  context.Background(),
+				ctx:  t.Context(),
 				vec:  []float32{1, 2, 3, 4, 5, 6, 7, 8, 9},
 				size: 5,
 			},
@@ -1530,7 +1528,7 @@ func Test_ngt_Search(t *testing.T) {
 		{
 			name: "return vector ids after insert with multiple vectors (uint8)",
 			args: args{
-				ctx:  context.Background(),
+				ctx:  t.Context(),
 				vec:  []float32{1, 2, 3, 4, 5, 6, 7, 8, 9},
 				size: 5,
 			},
@@ -1564,7 +1562,7 @@ func Test_ngt_Search(t *testing.T) {
 		{
 			name: "return limited result after insert 10 vectors with limited size 3 (uint8)",
 			args: args{
-				ctx:  context.Background(),
+				ctx:  t.Context(),
 				vec:  []float32{1, 2, 3, 4, 5, 6, 7, 8, 9},
 				size: 3,
 			},
@@ -1605,7 +1603,7 @@ func Test_ngt_Search(t *testing.T) {
 		{
 			name: "return most accurate result after insert 10 vectors with limited size 5 (uint8)",
 			args: args{
-				ctx:  context.Background(),
+				ctx:  t.Context(),
 				vec:  []float32{1, 2, 3, 4, 5, 6, 7, 8, 9},
 				size: 5,
 			},
@@ -1649,7 +1647,7 @@ func Test_ngt_Search(t *testing.T) {
 		{
 			name: "return vector id after the same vector inserted (float)",
 			args: args{
-				ctx:     context.Background(),
+				ctx:     t.Context(),
 				vec:     []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
 				size:    5,
 				epsilon: 0,
@@ -1679,7 +1677,7 @@ func Test_ngt_Search(t *testing.T) {
 		{
 			name: "return vector id after the nearby vector inserted (float)",
 			args: args{
-				ctx:  context.Background(),
+				ctx:  t.Context(),
 				vec:  []float32{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.91},
 				size: 5,
 			},
@@ -1707,7 +1705,7 @@ func Test_ngt_Search(t *testing.T) {
 		{
 			name: "return vector ids after insert with multiple vectors (float)",
 			args: args{
-				ctx:  context.Background(),
+				ctx:  t.Context(),
 				vec:  []float32{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9},
 				size: 5,
 			},
@@ -1740,7 +1738,7 @@ func Test_ngt_Search(t *testing.T) {
 		{
 			name: "return limited result after insert 10 vectors with limited size 3 (float)",
 			args: args{
-				ctx:  context.Background(),
+				ctx:  t.Context(),
 				vec:  []float32{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9},
 				size: 3,
 			},
@@ -1781,7 +1779,7 @@ func Test_ngt_Search(t *testing.T) {
 		{
 			name: "return most accurate result after insert 10 vectors with limited size 5 (float)",
 			args: args{
-				ctx:  context.Background(),
+				ctx:  t.Context(),
 				vec:  []float32{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9},
 				size: 5,
 			},
@@ -1825,7 +1823,7 @@ func Test_ngt_Search(t *testing.T) {
 		{
 			name: "return nothing if the search dimension is less than the inserted vector",
 			args: args{
-				ctx:     context.Background(),
+				ctx:     t.Context(),
 				vec:     []float32{0, 1, 2, 3, 4, 5, 6, 7},
 				size:    5,
 				epsilon: 0,
@@ -1853,7 +1851,7 @@ func Test_ngt_Search(t *testing.T) {
 		{
 			name: "return nothing if the search dimension is more than the inserted vector",
 			args: args{
-				ctx:     context.Background(),
+				ctx:     t.Context(),
 				vec:     []float32{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
 				size:    5,
 				epsilon: 0,
@@ -1881,7 +1879,7 @@ func Test_ngt_Search(t *testing.T) {
 		{
 			name: "return  ErrSearchResultEmptyButNoDataStored error if there is no inserted vector",
 			args: args{
-				ctx:  context.Background(),
+				ctx:  t.Context(),
 				vec:  []float32{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9},
 				size: 3,
 			},
@@ -1903,7 +1901,7 @@ func Test_ngt_Search(t *testing.T) {
 			name: "return ErrSearchResultEmptyButNoDataStored error if the context is canceled",
 			args: args{
 				ctx: func() context.Context {
-					ctx, cancel := context.WithCancel(context.Background())
+					ctx, cancel := context.WithCancel(t.Context())
 					defer cancel()
 					return ctx
 				}(),
@@ -1971,27 +1969,27 @@ func Test_ngt_Insert(t *testing.T) {
 	}
 	type fields struct {
 		idxPath             string
-		inMemory            bool
 		bulkInsertChunkSize int
 		dimension           int
 		objectType          objectType
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
+		inMemory            bool
 	}
 	type want struct {
-		want uint
 		err  error
+		want uint
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
-		createFunc func(*testing.T, fields) (NGT, error)
 		want       want
+		createFunc func(*testing.T, fields) (NGT, error)
 		checkFunc  func(context.Context, want, uint, NGT, args, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, NGT) error
+		name       string
+		args       args
+		fields     fields
 	}
 	defaultCreateFunc := func(t *testing.T, fields fields) (NGT, error) {
 		t.Helper()
@@ -2218,8 +2216,7 @@ func Test_ngt_Insert(t *testing.T) {
 			if err != nil {
 				tt.Fatal(err)
 			}
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := tt.Context()
 
 			got, err := n.Insert(test.args.vec)
 			if err := checkFunc(ctx, test.want, got, n, test.args, err); err != nil {
@@ -2240,27 +2237,27 @@ func Test_ngt_InsertCommit(t *testing.T) {
 	}
 	type fields struct {
 		idxPath             string
-		inMemory            bool
 		bulkInsertChunkSize int
 		dimension           int
 		objectType          objectType
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
+		inMemory            bool
 	}
 	type want struct {
-		want uint
 		err  error
+		want uint
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
-		createFunc func(*testing.T, fields) (NGT, error)
 		want       want
+		createFunc func(*testing.T, fields) (NGT, error)
 		checkFunc  func(context.Context, want, uint, NGT, args, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, NGT) error
+		name       string
+		args       args
+		fields     fields
 	}
 	defaultCreateFunc := func(t *testing.T, fields fields) (NGT, error) {
 		t.Helper()
@@ -2483,8 +2480,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 			if err != nil {
 				tt.Fatal(err)
 			}
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := tt.Context()
 
 			got, err := n.InsertCommit(test.args.vec, test.args.poolSize)
 			if err := checkFunc(ctx, test.want, got, n, test.args, err); err != nil {
@@ -2504,27 +2500,27 @@ func Test_ngt_BulkInsert(t *testing.T) {
 	}
 	type fields struct {
 		idxPath             string
-		inMemory            bool
 		bulkInsertChunkSize int
 		dimension           int
 		objectType          objectType
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
+		inMemory            bool
 	}
 	type want struct {
 		want  []uint
 		want1 []error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		createFunc func(*testing.T, fields) (NGT, error)
-		want       want
 		checkFunc  func(context.Context, want, []uint, NGT, fields, args, []error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, NGT) error
+		name       string
+		want       want
+		args       args
+		fields     fields
 	}
 	defaultCreateFunc := func(t *testing.T, fields fields) (NGT, error) {
 		t.Helper()
@@ -2801,8 +2797,7 @@ func Test_ngt_BulkInsert(t *testing.T) {
 					tt.Error(err)
 				}
 			}()
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := tt.Context()
 
 			got, got1 := n.BulkInsert(test.args.vecs)
 			if err := checkFunc(ctx, test.want, got, n, test.fields, test.args, got1); err != nil {
@@ -2819,27 +2814,27 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 	}
 	type fields struct {
 		idxPath             string
-		inMemory            bool
 		bulkInsertChunkSize int
 		dimension           int
 		objectType          objectType
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
+		inMemory            bool
 	}
 	type want struct {
 		want  []uint
 		want1 []error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		createFunc func(*testing.T, fields) (NGT, error)
-		want       want
 		checkFunc  func(context.Context, want, []uint, NGT, fields, args, []error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, NGT) error
+		name       string
+		want       want
+		args       args
+		fields     fields
 	}
 	defaultCreateFunc := func(t *testing.T, fields fields) (NGT, error) {
 		t.Helper()
@@ -3105,8 +3100,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 					tt.Error(err)
 				}
 			}()
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := tt.Context()
 
 			got, got1 := n.BulkInsertCommit(test.args.vecs, test.args.poolSize)
 			if err := checkFunc(ctx, test.want, got, n, test.fields, test.args, got1); err != nil {
@@ -3122,26 +3116,26 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 	}
 	type fields struct {
 		idxPath             string
-		inMemory            bool
 		bulkInsertChunkSize int
 		dimension           int
 		objectType          objectType
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
+		inMemory            bool
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
-		createFunc func(*testing.T, fields) (NGT, error)
 		want       want
+		createFunc func(*testing.T, fields) (NGT, error)
 		checkFunc  func(context.Context, want, NGT, args, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, NGT) error
+		name       string
+		fields     fields
+		args       args
 	}
 	defaultCreateFunc := func(t *testing.T, fields fields) (NGT, error) {
 		t.Helper()
@@ -3368,8 +3362,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 					tt.Error(err)
 				}
 			}()
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := tt.Context()
 
 			err = n.CreateAndSaveIndex(test.args.poolSize)
 			if err := checkFunc(ctx, test.want, n, test.args, err); err != nil {
@@ -3385,26 +3378,26 @@ func Test_ngt_CreateIndex(t *testing.T) {
 	}
 	type fields struct {
 		idxPath             string
-		inMemory            bool
 		bulkInsertChunkSize int
 		dimension           int
 		objectType          objectType
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
+		inMemory            bool
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
-		createFunc func(*testing.T, fields) (NGT, error)
 		want       want
+		createFunc func(*testing.T, fields) (NGT, error)
 		checkFunc  func(context.Context, want, NGT, args, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, NGT) error
+		name       string
+		fields     fields
+		args       args
 	}
 	defaultCreateFunc := func(t *testing.T, fields fields) (NGT, error) {
 		t.Helper()
@@ -3628,8 +3621,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 					tt.Error(err)
 				}
 			}()
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := tt.Context()
 
 			err = n.CreateIndex(test.args.poolSize)
 			if err := checkFunc(ctx, test.want, n, test.args, err); err != nil {
@@ -3645,26 +3637,26 @@ func Test_ngt_SaveIndex(t *testing.T) {
 	}
 	type fields struct {
 		idxPath             string
-		inMemory            bool
 		bulkInsertChunkSize int
 		dimension           int
 		objectType          objectType
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
+		inMemory            bool
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
-		createFunc func(*testing.T, fields) (NGT, error)
 		want       want
+		createFunc func(*testing.T, fields) (NGT, error)
 		checkFunc  func(context.Context, want, NGT, args, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, NGT) error
+		name       string
+		fields     fields
+		args       args
 	}
 	defaultCreateFunc := func(t *testing.T, fields fields) (NGT, error) {
 		t.Helper()
@@ -3884,8 +3876,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 					tt.Error(err)
 				}
 			}()
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := tt.Context()
 
 			err = n.SaveIndex()
 			if err := checkFunc(ctx, test.want, n, test.args, err); err != nil {
@@ -3901,26 +3892,26 @@ func Test_ngt_Remove(t *testing.T) {
 	}
 	type fields struct {
 		idxPath             string
-		inMemory            bool
 		bulkInsertChunkSize int
 		dimension           int
 		objectType          objectType
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
+		inMemory            bool
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
-		createFunc func(t *testing.T, fields fields) (NGT, error)
 		want       want
+		createFunc func(t *testing.T, fields fields) (NGT, error)
 		checkFunc  func(want, NGT, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, NGT) error
+		name       string
+		fields     fields
+		args       args
 	}
 	defaultCreateFunc := func(t *testing.T, fields fields) (NGT, error) {
 		t.Helper()
@@ -4135,26 +4126,26 @@ func Test_ngt_BulkRemove(t *testing.T) {
 	}
 	type fields struct {
 		idxPath             string
-		inMemory            bool
 		bulkInsertChunkSize int
 		dimension           int
 		objectType          objectType
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
+		inMemory            bool
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
-		createFunc func(t *testing.T, fields fields) (NGT, error)
 		want       want
+		createFunc func(t *testing.T, fields fields) (NGT, error)
 		checkFunc  func(want, NGT, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, NGT) error
+		name       string
+		args       args
+		fields     fields
 	}
 	defaultCreateFunc := func(t *testing.T, fields fields) (NGT, error) {
 		t.Helper()
@@ -4459,27 +4450,27 @@ func Test_ngt_GetVector(t *testing.T) {
 	}
 	type fields struct {
 		idxPath             string
-		inMemory            bool
 		bulkInsertChunkSize int
 		dimension           int
 		objectType          objectType
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
+		inMemory            bool
 	}
 	type want struct {
-		want []float32
 		err  error
+		want []float32
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
-		createFunc func(t *testing.T, fields fields) (NGT, error)
 		want       want
+		createFunc func(t *testing.T, fields fields) (NGT, error)
 		checkFunc  func(w want, got []float32, n NGT, err error) error
 		beforeFunc func(args)
 		afterFunc  func(t *testing.T, n NGT) error
+		name       string
+		fields     fields
+		args       args
 	}
 	defaultCreateFunc := func(t *testing.T, fields fields) (NGT, error) {
 		t.Helper()
@@ -4716,7 +4707,7 @@ func Test_ngt_GetVector(t *testing.T) {
 
 // Skip to test this function because of it contains C dependencies in the argument list,
 // and we cannot test it without importing C dependencies, but gotest does not support it.
-// Keep this test function to avoid generating from gotests command
+// Keep this test function to avoid generating from gotests command.
 func Test_ngt_newGoError(t *testing.T) {
 	t.SkipNow()
 }
@@ -4724,23 +4715,23 @@ func Test_ngt_newGoError(t *testing.T) {
 func Test_ngt_Close(t *testing.T) {
 	type fields struct {
 		idxPath             string
-		inMemory            bool
 		bulkInsertChunkSize int
 		dimension           int
 		objectType          objectType
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
+		inMemory            bool
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		createFunc func(t *testing.T, fields fields) (NGT, error)
 		checkFunc  func(want) error
 		beforeFunc func()
 		afterFunc  func(*testing.T, NGT) error
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -4823,13 +4814,13 @@ func Test_ngt_Property(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		createFunc func(t *testing.T, fields fields) (NGT, error)
 		checkFunc  func(want, *Property, error) error
 		beforeFunc func()
 		afterFunc  func(*testing.T, NGT) error
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, prop *Property, err error) error {
 		if !errors.Is(err, w.err) {

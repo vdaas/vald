@@ -48,12 +48,12 @@ func TestNew(t *testing.T) {
 		want Writer
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, Writer) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got Writer) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -145,23 +145,23 @@ func Test_writer_Open(t *testing.T) {
 	type fields struct {
 		eg          errgroup.Group
 		s3manager   s3manager.S3Manager
+		pw          io.WriteCloser
 		service     *s3.S3
+		wg          *sync.WaitGroup
 		bucket      string
 		maxPartSize int64
-		pw          io.WriteCloser
-		wg          *sync.WaitGroup
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		args       args
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -231,22 +231,22 @@ func Test_writer_Open(t *testing.T) {
 func Test_writer_Close(t *testing.T) {
 	type fields struct {
 		eg          errgroup.Group
+		pw          io.WriteCloser
 		service     *s3.S3
+		wg          *sync.WaitGroup
 		bucket      string
 		maxPartSize int64
-		pw          io.WriteCloser
-		wg          *sync.WaitGroup
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -332,24 +332,24 @@ func Test_writer_Write(t *testing.T) {
 	}
 	type fields struct {
 		eg          errgroup.Group
+		pw          io.WriteCloser
 		service     *s3.S3
+		wg          *sync.WaitGroup
 		bucket      string
 		maxPartSize int64
-		pw          io.WriteCloser
-		wg          *sync.WaitGroup
 	}
 	type want struct {
-		wantN int
 		err   error
+		wantN int
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
 		want       want
 		checkFunc  func(want, int, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, gotN int, err error) error {
 		if !errors.Is(err, w.err) {
@@ -444,29 +444,29 @@ func Test_writer_Write(t *testing.T) {
 func Test_writer_upload(t *testing.T) {
 	type args struct {
 		ctx  context.Context
-		key  string
 		body io.Reader
+		key  string
 	}
 	type fields struct {
 		eg          errgroup.Group
 		s3manager   s3manager.S3Manager
+		pw          io.WriteCloser
 		service     *s3.S3
+		wg          *sync.WaitGroup
 		bucket      string
 		maxPartSize int64
-		pw          io.WriteCloser
-		wg          *sync.WaitGroup
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
 		args       args
-		fieldsFunc func(*testing.T) fields
 		want       want
+		fieldsFunc func(*testing.T) fields
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -478,7 +478,7 @@ func Test_writer_upload(t *testing.T) {
 		{
 			name: "returns nil when no error occurs",
 			args: args{
-				ctx:  context.Background(),
+				ctx:  t.Context(),
 				key:  "vald",
 				body: nil,
 			},
@@ -516,7 +516,7 @@ func Test_writer_upload(t *testing.T) {
 		{
 			name: "returns error when upload fails",
 			args: args{
-				ctx:  context.Background(),
+				ctx:  t.Context(),
 				key:  "vald",
 				body: nil,
 			},

@@ -124,10 +124,7 @@ func (s *scale) Record(ctx context.Context, key uint64, rr *RequestResult) {
 		idx = key
 	case TimeScale:
 		// Fix G115: EndedAt.UnixNano() returns int64. Timestamps are positive.
-		t := rr.EndedAt.UnixNano()
-		if t < 0 {
-			t = 0
-		}
+		t := max(rr.EndedAt.UnixNano(), 0)
 		idx = uint64(t) //nolint:gosec // timestamp is checked to be non-negative
 	}
 

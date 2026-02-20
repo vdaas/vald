@@ -111,29 +111,29 @@ package grpc
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		name                   string
-// 		addrs                  map[string]struct{}
-// 		poolSize               uint64
-// 		clientCount            uint64
-// 		conns                  sync.Map[string, pool.Conn]
-// 		hcDur                  time.Duration
-// 		prDur                  time.Duration
 // 		dialer                 net.Dialer
-// 		enablePoolRebalance    bool
+// 		eg                     errgroup.Group
+// 		cb                     circuitbreaker.CircuitBreaker
+// 		bo                     backoff.Backoff
+// 		addrs                  map[string]struct{}
+// 		stopMonitor            context.CancelFunc
+// 		ech                    <-chan error
+// 		crl                    sync.Map[string, bool]
 // 		disableResolveDNSAddrs sync.Map[string, bool]
-// 		resolveDNS             bool
+// 		conns                  sync.Map[string, pool.Conn]
+// 		name                   string
+// 		roccd                  string
 // 		dopts                  []DialOption
 // 		copts                  []CallOption
-// 		roccd                  string
-// 		eg                     errgroup.Group
-// 		bo                     backoff.Backoff
-// 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
+// 		hcDur                  time.Duration
 // 		mcd                    time.Duration
-// 		crl                    sync.Map[string, bool]
-// 		ech                    <-chan error
+// 		prDur                  time.Duration
+// 		clientCount            uint64
+// 		poolSize               uint64
 // 		monitorRunning         atomic.Bool
-// 		stopMonitor            context.CancelFunc
+// 		resolveDNS             bool
+// 		enablePoolRebalance    bool
 // 	}
 // 	type want struct {
 // 		want <-chan error
@@ -166,29 +166,29 @@ package grpc
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -210,29 +210,29 @@ package grpc
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -263,29 +263,29 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
-// 				addrs:                  test.fields.addrs,
-// 				poolSize:               test.fields.poolSize,
-// 				clientCount:            test.fields.clientCount,
-// 				conns:                  test.fields.conns,
-// 				hcDur:                  test.fields.hcDur,
-// 				prDur:                  test.fields.prDur,
 // 				dialer:                 test.fields.dialer,
-// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				eg:                     test.fields.eg,
+// 				cb:                     test.fields.cb,
+// 				bo:                     test.fields.bo,
+// 				addrs:                  test.fields.addrs,
+// 				stopMonitor:            test.fields.stopMonitor,
+// 				ech:                    test.fields.ech,
+// 				crl:                    test.fields.crl,
 // 				disableResolveDNSAddrs: test.fields.disableResolveDNSAddrs,
-// 				resolveDNS:             test.fields.resolveDNS,
+// 				conns:                  test.fields.conns,
+// 				name:                   test.fields.name,
+// 				roccd:                  test.fields.roccd,
 // 				dopts:                  test.fields.dopts,
 // 				copts:                  test.fields.copts,
-// 				roccd:                  test.fields.roccd,
-// 				eg:                     test.fields.eg,
-// 				bo:                     test.fields.bo,
-// 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
+// 				hcDur:                  test.fields.hcDur,
 // 				mcd:                    test.fields.mcd,
-// 				crl:                    test.fields.crl,
-// 				ech:                    test.fields.ech,
+// 				prDur:                  test.fields.prDur,
+// 				clientCount:            test.fields.clientCount,
+// 				poolSize:               test.fields.poolSize,
 // 				monitorRunning:         test.fields.monitorRunning,
-// 				stopMonitor:            test.fields.stopMonitor,
+// 				resolveDNS:             test.fields.resolveDNS,
+// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
 // 			}
 //
 // 			got, err := g.StartConnectionMonitor(test.args.ctx)
@@ -302,29 +302,29 @@ package grpc
 // 		f   func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error
 // 	}
 // 	type fields struct {
-// 		name                   string
-// 		addrs                  map[string]struct{}
-// 		poolSize               uint64
-// 		clientCount            uint64
-// 		conns                  sync.Map[string, pool.Conn]
-// 		hcDur                  time.Duration
-// 		prDur                  time.Duration
 // 		dialer                 net.Dialer
-// 		enablePoolRebalance    bool
+// 		eg                     errgroup.Group
+// 		cb                     circuitbreaker.CircuitBreaker
+// 		bo                     backoff.Backoff
+// 		addrs                  map[string]struct{}
+// 		stopMonitor            context.CancelFunc
+// 		ech                    <-chan error
+// 		crl                    sync.Map[string, bool]
 // 		disableResolveDNSAddrs sync.Map[string, bool]
-// 		resolveDNS             bool
+// 		conns                  sync.Map[string, pool.Conn]
+// 		name                   string
+// 		roccd                  string
 // 		dopts                  []DialOption
 // 		copts                  []CallOption
-// 		roccd                  string
-// 		eg                     errgroup.Group
-// 		bo                     backoff.Backoff
-// 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
+// 		hcDur                  time.Duration
 // 		mcd                    time.Duration
-// 		crl                    sync.Map[string, bool]
-// 		ech                    <-chan error
+// 		prDur                  time.Duration
+// 		clientCount            uint64
+// 		poolSize               uint64
 // 		monitorRunning         atomic.Bool
-// 		stopMonitor            context.CancelFunc
+// 		resolveDNS             bool
+// 		enablePoolRebalance    bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -354,29 +354,29 @@ package grpc
 // 		           f:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -399,29 +399,29 @@ package grpc
 // 		           f:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -452,29 +452,29 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
-// 				addrs:                  test.fields.addrs,
-// 				poolSize:               test.fields.poolSize,
-// 				clientCount:            test.fields.clientCount,
-// 				conns:                  test.fields.conns,
-// 				hcDur:                  test.fields.hcDur,
-// 				prDur:                  test.fields.prDur,
 // 				dialer:                 test.fields.dialer,
-// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				eg:                     test.fields.eg,
+// 				cb:                     test.fields.cb,
+// 				bo:                     test.fields.bo,
+// 				addrs:                  test.fields.addrs,
+// 				stopMonitor:            test.fields.stopMonitor,
+// 				ech:                    test.fields.ech,
+// 				crl:                    test.fields.crl,
 // 				disableResolveDNSAddrs: test.fields.disableResolveDNSAddrs,
-// 				resolveDNS:             test.fields.resolveDNS,
+// 				conns:                  test.fields.conns,
+// 				name:                   test.fields.name,
+// 				roccd:                  test.fields.roccd,
 // 				dopts:                  test.fields.dopts,
 // 				copts:                  test.fields.copts,
-// 				roccd:                  test.fields.roccd,
-// 				eg:                     test.fields.eg,
-// 				bo:                     test.fields.bo,
-// 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
+// 				hcDur:                  test.fields.hcDur,
 // 				mcd:                    test.fields.mcd,
-// 				crl:                    test.fields.crl,
-// 				ech:                    test.fields.ech,
+// 				prDur:                  test.fields.prDur,
+// 				clientCount:            test.fields.clientCount,
+// 				poolSize:               test.fields.poolSize,
 // 				monitorRunning:         test.fields.monitorRunning,
-// 				stopMonitor:            test.fields.stopMonitor,
+// 				resolveDNS:             test.fields.resolveDNS,
+// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
 // 			}
 //
 // 			err := g.Range(test.args.ctx, test.args.f)
@@ -492,29 +492,29 @@ package grpc
 // 		f           func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error
 // 	}
 // 	type fields struct {
-// 		name                   string
-// 		addrs                  map[string]struct{}
-// 		poolSize               uint64
-// 		clientCount            uint64
-// 		conns                  sync.Map[string, pool.Conn]
-// 		hcDur                  time.Duration
-// 		prDur                  time.Duration
 // 		dialer                 net.Dialer
-// 		enablePoolRebalance    bool
+// 		eg                     errgroup.Group
+// 		cb                     circuitbreaker.CircuitBreaker
+// 		bo                     backoff.Backoff
+// 		addrs                  map[string]struct{}
+// 		stopMonitor            context.CancelFunc
+// 		ech                    <-chan error
+// 		crl                    sync.Map[string, bool]
 // 		disableResolveDNSAddrs sync.Map[string, bool]
-// 		resolveDNS             bool
+// 		conns                  sync.Map[string, pool.Conn]
+// 		name                   string
+// 		roccd                  string
 // 		dopts                  []DialOption
 // 		copts                  []CallOption
-// 		roccd                  string
-// 		eg                     errgroup.Group
-// 		bo                     backoff.Backoff
-// 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
+// 		hcDur                  time.Duration
 // 		mcd                    time.Duration
-// 		crl                    sync.Map[string, bool]
-// 		ech                    <-chan error
+// 		prDur                  time.Duration
+// 		clientCount            uint64
+// 		poolSize               uint64
 // 		monitorRunning         atomic.Bool
-// 		stopMonitor            context.CancelFunc
+// 		resolveDNS             bool
+// 		enablePoolRebalance    bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -545,29 +545,29 @@ package grpc
 // 		           f:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -591,29 +591,29 @@ package grpc
 // 		           f:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -644,29 +644,29 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
-// 				addrs:                  test.fields.addrs,
-// 				poolSize:               test.fields.poolSize,
-// 				clientCount:            test.fields.clientCount,
-// 				conns:                  test.fields.conns,
-// 				hcDur:                  test.fields.hcDur,
-// 				prDur:                  test.fields.prDur,
 // 				dialer:                 test.fields.dialer,
-// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				eg:                     test.fields.eg,
+// 				cb:                     test.fields.cb,
+// 				bo:                     test.fields.bo,
+// 				addrs:                  test.fields.addrs,
+// 				stopMonitor:            test.fields.stopMonitor,
+// 				ech:                    test.fields.ech,
+// 				crl:                    test.fields.crl,
 // 				disableResolveDNSAddrs: test.fields.disableResolveDNSAddrs,
-// 				resolveDNS:             test.fields.resolveDNS,
+// 				conns:                  test.fields.conns,
+// 				name:                   test.fields.name,
+// 				roccd:                  test.fields.roccd,
 // 				dopts:                  test.fields.dopts,
 // 				copts:                  test.fields.copts,
-// 				roccd:                  test.fields.roccd,
-// 				eg:                     test.fields.eg,
-// 				bo:                     test.fields.bo,
-// 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
+// 				hcDur:                  test.fields.hcDur,
 // 				mcd:                    test.fields.mcd,
-// 				crl:                    test.fields.crl,
-// 				ech:                    test.fields.ech,
+// 				prDur:                  test.fields.prDur,
+// 				clientCount:            test.fields.clientCount,
+// 				poolSize:               test.fields.poolSize,
 // 				monitorRunning:         test.fields.monitorRunning,
-// 				stopMonitor:            test.fields.stopMonitor,
+// 				resolveDNS:             test.fields.resolveDNS,
+// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
 // 			}
 //
 // 			err := g.RangeConcurrent(test.args.ctx, test.args.concurrency, test.args.f)
@@ -684,29 +684,29 @@ package grpc
 // 		f      func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error
 // 	}
 // 	type fields struct {
-// 		name                   string
-// 		addrs                  map[string]struct{}
-// 		poolSize               uint64
-// 		clientCount            uint64
-// 		conns                  sync.Map[string, pool.Conn]
-// 		hcDur                  time.Duration
-// 		prDur                  time.Duration
 // 		dialer                 net.Dialer
-// 		enablePoolRebalance    bool
+// 		eg                     errgroup.Group
+// 		cb                     circuitbreaker.CircuitBreaker
+// 		bo                     backoff.Backoff
+// 		addrs                  map[string]struct{}
+// 		stopMonitor            context.CancelFunc
+// 		ech                    <-chan error
+// 		crl                    sync.Map[string, bool]
 // 		disableResolveDNSAddrs sync.Map[string, bool]
-// 		resolveDNS             bool
+// 		conns                  sync.Map[string, pool.Conn]
+// 		name                   string
+// 		roccd                  string
 // 		dopts                  []DialOption
 // 		copts                  []CallOption
-// 		roccd                  string
-// 		eg                     errgroup.Group
-// 		bo                     backoff.Backoff
-// 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
+// 		hcDur                  time.Duration
 // 		mcd                    time.Duration
-// 		crl                    sync.Map[string, bool]
-// 		ech                    <-chan error
+// 		prDur                  time.Duration
+// 		clientCount            uint64
+// 		poolSize               uint64
 // 		monitorRunning         atomic.Bool
-// 		stopMonitor            context.CancelFunc
+// 		resolveDNS             bool
+// 		enablePoolRebalance    bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -737,29 +737,29 @@ package grpc
 // 		           f:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -783,29 +783,29 @@ package grpc
 // 		           f:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -836,29 +836,29 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
-// 				addrs:                  test.fields.addrs,
-// 				poolSize:               test.fields.poolSize,
-// 				clientCount:            test.fields.clientCount,
-// 				conns:                  test.fields.conns,
-// 				hcDur:                  test.fields.hcDur,
-// 				prDur:                  test.fields.prDur,
 // 				dialer:                 test.fields.dialer,
-// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				eg:                     test.fields.eg,
+// 				cb:                     test.fields.cb,
+// 				bo:                     test.fields.bo,
+// 				addrs:                  test.fields.addrs,
+// 				stopMonitor:            test.fields.stopMonitor,
+// 				ech:                    test.fields.ech,
+// 				crl:                    test.fields.crl,
 // 				disableResolveDNSAddrs: test.fields.disableResolveDNSAddrs,
-// 				resolveDNS:             test.fields.resolveDNS,
+// 				conns:                  test.fields.conns,
+// 				name:                   test.fields.name,
+// 				roccd:                  test.fields.roccd,
 // 				dopts:                  test.fields.dopts,
 // 				copts:                  test.fields.copts,
-// 				roccd:                  test.fields.roccd,
-// 				eg:                     test.fields.eg,
-// 				bo:                     test.fields.bo,
-// 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
+// 				hcDur:                  test.fields.hcDur,
 // 				mcd:                    test.fields.mcd,
-// 				crl:                    test.fields.crl,
-// 				ech:                    test.fields.ech,
+// 				prDur:                  test.fields.prDur,
+// 				clientCount:            test.fields.clientCount,
+// 				poolSize:               test.fields.poolSize,
 // 				monitorRunning:         test.fields.monitorRunning,
-// 				stopMonitor:            test.fields.stopMonitor,
+// 				resolveDNS:             test.fields.resolveDNS,
+// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
 // 			}
 //
 // 			err := g.OrderedRange(test.args.ctx, test.args.orders, test.args.f)
@@ -877,29 +877,29 @@ package grpc
 // 		f           func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error
 // 	}
 // 	type fields struct {
-// 		name                   string
-// 		addrs                  map[string]struct{}
-// 		poolSize               uint64
-// 		clientCount            uint64
-// 		conns                  sync.Map[string, pool.Conn]
-// 		hcDur                  time.Duration
-// 		prDur                  time.Duration
 // 		dialer                 net.Dialer
-// 		enablePoolRebalance    bool
+// 		eg                     errgroup.Group
+// 		cb                     circuitbreaker.CircuitBreaker
+// 		bo                     backoff.Backoff
+// 		addrs                  map[string]struct{}
+// 		stopMonitor            context.CancelFunc
+// 		ech                    <-chan error
+// 		crl                    sync.Map[string, bool]
 // 		disableResolveDNSAddrs sync.Map[string, bool]
-// 		resolveDNS             bool
+// 		conns                  sync.Map[string, pool.Conn]
+// 		name                   string
+// 		roccd                  string
 // 		dopts                  []DialOption
 // 		copts                  []CallOption
-// 		roccd                  string
-// 		eg                     errgroup.Group
-// 		bo                     backoff.Backoff
-// 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
+// 		hcDur                  time.Duration
 // 		mcd                    time.Duration
-// 		crl                    sync.Map[string, bool]
-// 		ech                    <-chan error
+// 		prDur                  time.Duration
+// 		clientCount            uint64
+// 		poolSize               uint64
 // 		monitorRunning         atomic.Bool
-// 		stopMonitor            context.CancelFunc
+// 		resolveDNS             bool
+// 		enablePoolRebalance    bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -931,29 +931,29 @@ package grpc
 // 		           f:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -978,29 +978,29 @@ package grpc
 // 		           f:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1031,29 +1031,29 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
-// 				addrs:                  test.fields.addrs,
-// 				poolSize:               test.fields.poolSize,
-// 				clientCount:            test.fields.clientCount,
-// 				conns:                  test.fields.conns,
-// 				hcDur:                  test.fields.hcDur,
-// 				prDur:                  test.fields.prDur,
 // 				dialer:                 test.fields.dialer,
-// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				eg:                     test.fields.eg,
+// 				cb:                     test.fields.cb,
+// 				bo:                     test.fields.bo,
+// 				addrs:                  test.fields.addrs,
+// 				stopMonitor:            test.fields.stopMonitor,
+// 				ech:                    test.fields.ech,
+// 				crl:                    test.fields.crl,
 // 				disableResolveDNSAddrs: test.fields.disableResolveDNSAddrs,
-// 				resolveDNS:             test.fields.resolveDNS,
+// 				conns:                  test.fields.conns,
+// 				name:                   test.fields.name,
+// 				roccd:                  test.fields.roccd,
 // 				dopts:                  test.fields.dopts,
 // 				copts:                  test.fields.copts,
-// 				roccd:                  test.fields.roccd,
-// 				eg:                     test.fields.eg,
-// 				bo:                     test.fields.bo,
-// 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
+// 				hcDur:                  test.fields.hcDur,
 // 				mcd:                    test.fields.mcd,
-// 				crl:                    test.fields.crl,
-// 				ech:                    test.fields.ech,
+// 				prDur:                  test.fields.prDur,
+// 				clientCount:            test.fields.clientCount,
+// 				poolSize:               test.fields.poolSize,
 // 				monitorRunning:         test.fields.monitorRunning,
-// 				stopMonitor:            test.fields.stopMonitor,
+// 				resolveDNS:             test.fields.resolveDNS,
+// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
 // 			}
 //
 // 			err := g.OrderedRangeConcurrent(test.args.ctx, test.args.orders, test.args.concurrency, test.args.f)
@@ -1165,29 +1165,29 @@ package grpc
 // 		f   func(ctx context.Context, conn *ClientConn, copts ...CallOption) (any, error)
 // 	}
 // 	type fields struct {
-// 		name                   string
-// 		addrs                  map[string]struct{}
-// 		poolSize               uint64
-// 		clientCount            uint64
-// 		conns                  sync.Map[string, pool.Conn]
-// 		hcDur                  time.Duration
-// 		prDur                  time.Duration
 // 		dialer                 net.Dialer
-// 		enablePoolRebalance    bool
+// 		eg                     errgroup.Group
+// 		cb                     circuitbreaker.CircuitBreaker
+// 		bo                     backoff.Backoff
+// 		addrs                  map[string]struct{}
+// 		stopMonitor            context.CancelFunc
+// 		ech                    <-chan error
+// 		crl                    sync.Map[string, bool]
 // 		disableResolveDNSAddrs sync.Map[string, bool]
-// 		resolveDNS             bool
+// 		conns                  sync.Map[string, pool.Conn]
+// 		name                   string
+// 		roccd                  string
 // 		dopts                  []DialOption
 // 		copts                  []CallOption
-// 		roccd                  string
-// 		eg                     errgroup.Group
-// 		bo                     backoff.Backoff
-// 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
+// 		hcDur                  time.Duration
 // 		mcd                    time.Duration
-// 		crl                    sync.Map[string, bool]
-// 		ech                    <-chan error
+// 		prDur                  time.Duration
+// 		clientCount            uint64
+// 		poolSize               uint64
 // 		monitorRunning         atomic.Bool
-// 		stopMonitor            context.CancelFunc
+// 		resolveDNS             bool
+// 		enablePoolRebalance    bool
 // 	}
 // 	type want struct {
 // 		wantData any
@@ -1221,29 +1221,29 @@ package grpc
 // 		           f:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1266,29 +1266,29 @@ package grpc
 // 		           f:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1319,29 +1319,29 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
-// 				addrs:                  test.fields.addrs,
-// 				poolSize:               test.fields.poolSize,
-// 				clientCount:            test.fields.clientCount,
-// 				conns:                  test.fields.conns,
-// 				hcDur:                  test.fields.hcDur,
-// 				prDur:                  test.fields.prDur,
 // 				dialer:                 test.fields.dialer,
-// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				eg:                     test.fields.eg,
+// 				cb:                     test.fields.cb,
+// 				bo:                     test.fields.bo,
+// 				addrs:                  test.fields.addrs,
+// 				stopMonitor:            test.fields.stopMonitor,
+// 				ech:                    test.fields.ech,
+// 				crl:                    test.fields.crl,
 // 				disableResolveDNSAddrs: test.fields.disableResolveDNSAddrs,
-// 				resolveDNS:             test.fields.resolveDNS,
+// 				conns:                  test.fields.conns,
+// 				name:                   test.fields.name,
+// 				roccd:                  test.fields.roccd,
 // 				dopts:                  test.fields.dopts,
 // 				copts:                  test.fields.copts,
-// 				roccd:                  test.fields.roccd,
-// 				eg:                     test.fields.eg,
-// 				bo:                     test.fields.bo,
-// 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
+// 				hcDur:                  test.fields.hcDur,
 // 				mcd:                    test.fields.mcd,
-// 				crl:                    test.fields.crl,
-// 				ech:                    test.fields.ech,
+// 				prDur:                  test.fields.prDur,
+// 				clientCount:            test.fields.clientCount,
+// 				poolSize:               test.fields.poolSize,
 // 				monitorRunning:         test.fields.monitorRunning,
-// 				stopMonitor:            test.fields.stopMonitor,
+// 				resolveDNS:             test.fields.resolveDNS,
+// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
 // 			}
 //
 // 			gotData, err := g.RoundRobin(test.args.ctx, test.args.f)
@@ -1359,29 +1359,29 @@ package grpc
 // 		f    func(ctx context.Context, conn *ClientConn, copts ...CallOption) (any, error)
 // 	}
 // 	type fields struct {
-// 		name                   string
-// 		addrs                  map[string]struct{}
-// 		poolSize               uint64
-// 		clientCount            uint64
-// 		conns                  sync.Map[string, pool.Conn]
-// 		hcDur                  time.Duration
-// 		prDur                  time.Duration
 // 		dialer                 net.Dialer
-// 		enablePoolRebalance    bool
+// 		eg                     errgroup.Group
+// 		cb                     circuitbreaker.CircuitBreaker
+// 		bo                     backoff.Backoff
+// 		addrs                  map[string]struct{}
+// 		stopMonitor            context.CancelFunc
+// 		ech                    <-chan error
+// 		crl                    sync.Map[string, bool]
 // 		disableResolveDNSAddrs sync.Map[string, bool]
-// 		resolveDNS             bool
+// 		conns                  sync.Map[string, pool.Conn]
+// 		name                   string
+// 		roccd                  string
 // 		dopts                  []DialOption
 // 		copts                  []CallOption
-// 		roccd                  string
-// 		eg                     errgroup.Group
-// 		bo                     backoff.Backoff
-// 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
+// 		hcDur                  time.Duration
 // 		mcd                    time.Duration
-// 		crl                    sync.Map[string, bool]
-// 		ech                    <-chan error
+// 		prDur                  time.Duration
+// 		clientCount            uint64
+// 		poolSize               uint64
 // 		monitorRunning         atomic.Bool
-// 		stopMonitor            context.CancelFunc
+// 		resolveDNS             bool
+// 		enablePoolRebalance    bool
 // 	}
 // 	type want struct {
 // 		wantData any
@@ -1416,29 +1416,29 @@ package grpc
 // 		           f:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1462,29 +1462,29 @@ package grpc
 // 		           f:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1515,29 +1515,29 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
-// 				addrs:                  test.fields.addrs,
-// 				poolSize:               test.fields.poolSize,
-// 				clientCount:            test.fields.clientCount,
-// 				conns:                  test.fields.conns,
-// 				hcDur:                  test.fields.hcDur,
-// 				prDur:                  test.fields.prDur,
 // 				dialer:                 test.fields.dialer,
-// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				eg:                     test.fields.eg,
+// 				cb:                     test.fields.cb,
+// 				bo:                     test.fields.bo,
+// 				addrs:                  test.fields.addrs,
+// 				stopMonitor:            test.fields.stopMonitor,
+// 				ech:                    test.fields.ech,
+// 				crl:                    test.fields.crl,
 // 				disableResolveDNSAddrs: test.fields.disableResolveDNSAddrs,
-// 				resolveDNS:             test.fields.resolveDNS,
+// 				conns:                  test.fields.conns,
+// 				name:                   test.fields.name,
+// 				roccd:                  test.fields.roccd,
 // 				dopts:                  test.fields.dopts,
 // 				copts:                  test.fields.copts,
-// 				roccd:                  test.fields.roccd,
-// 				eg:                     test.fields.eg,
-// 				bo:                     test.fields.bo,
-// 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
+// 				hcDur:                  test.fields.hcDur,
 // 				mcd:                    test.fields.mcd,
-// 				crl:                    test.fields.crl,
-// 				ech:                    test.fields.ech,
+// 				prDur:                  test.fields.prDur,
+// 				clientCount:            test.fields.clientCount,
+// 				poolSize:               test.fields.poolSize,
 // 				monitorRunning:         test.fields.monitorRunning,
-// 				stopMonitor:            test.fields.stopMonitor,
+// 				resolveDNS:             test.fields.resolveDNS,
+// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
 // 			}
 //
 // 			gotData, err := g.Do(test.args.ctx, test.args.addr, test.args.f)
@@ -1556,29 +1556,29 @@ package grpc
 // 		f    func(ctx context.Context, conn *ClientConn, copts ...CallOption) (any, error)
 // 	}
 // 	type fields struct {
-// 		name                   string
-// 		addrs                  map[string]struct{}
-// 		poolSize               uint64
-// 		clientCount            uint64
-// 		conns                  sync.Map[string, pool.Conn]
-// 		hcDur                  time.Duration
-// 		prDur                  time.Duration
 // 		dialer                 net.Dialer
-// 		enablePoolRebalance    bool
+// 		eg                     errgroup.Group
+// 		cb                     circuitbreaker.CircuitBreaker
+// 		bo                     backoff.Backoff
+// 		addrs                  map[string]struct{}
+// 		stopMonitor            context.CancelFunc
+// 		ech                    <-chan error
+// 		crl                    sync.Map[string, bool]
 // 		disableResolveDNSAddrs sync.Map[string, bool]
-// 		resolveDNS             bool
+// 		conns                  sync.Map[string, pool.Conn]
+// 		name                   string
+// 		roccd                  string
 // 		dopts                  []DialOption
 // 		copts                  []CallOption
-// 		roccd                  string
-// 		eg                     errgroup.Group
-// 		bo                     backoff.Backoff
-// 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
+// 		hcDur                  time.Duration
 // 		mcd                    time.Duration
-// 		crl                    sync.Map[string, bool]
-// 		ech                    <-chan error
+// 		prDur                  time.Duration
+// 		clientCount            uint64
+// 		poolSize               uint64
 // 		monitorRunning         atomic.Bool
-// 		stopMonitor            context.CancelFunc
+// 		resolveDNS             bool
+// 		enablePoolRebalance    bool
 // 	}
 // 	type want struct {
 // 		wantRes       any
@@ -1618,29 +1618,29 @@ package grpc
 // 		           f:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1665,29 +1665,29 @@ package grpc
 // 		           f:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1718,29 +1718,29 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
-// 				addrs:                  test.fields.addrs,
-// 				poolSize:               test.fields.poolSize,
-// 				clientCount:            test.fields.clientCount,
-// 				conns:                  test.fields.conns,
-// 				hcDur:                  test.fields.hcDur,
-// 				prDur:                  test.fields.prDur,
 // 				dialer:                 test.fields.dialer,
-// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				eg:                     test.fields.eg,
+// 				cb:                     test.fields.cb,
+// 				bo:                     test.fields.bo,
+// 				addrs:                  test.fields.addrs,
+// 				stopMonitor:            test.fields.stopMonitor,
+// 				ech:                    test.fields.ech,
+// 				crl:                    test.fields.crl,
 // 				disableResolveDNSAddrs: test.fields.disableResolveDNSAddrs,
-// 				resolveDNS:             test.fields.resolveDNS,
+// 				conns:                  test.fields.conns,
+// 				name:                   test.fields.name,
+// 				roccd:                  test.fields.roccd,
 // 				dopts:                  test.fields.dopts,
 // 				copts:                  test.fields.copts,
-// 				roccd:                  test.fields.roccd,
-// 				eg:                     test.fields.eg,
-// 				bo:                     test.fields.bo,
-// 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
+// 				hcDur:                  test.fields.hcDur,
 // 				mcd:                    test.fields.mcd,
-// 				crl:                    test.fields.crl,
-// 				ech:                    test.fields.ech,
+// 				prDur:                  test.fields.prDur,
+// 				clientCount:            test.fields.clientCount,
+// 				poolSize:               test.fields.poolSize,
 // 				monitorRunning:         test.fields.monitorRunning,
-// 				stopMonitor:            test.fields.stopMonitor,
+// 				resolveDNS:             test.fields.resolveDNS,
+// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
 // 			}
 //
 // 			gotRes, gotRetryable, err := g.executeRPC(test.args.ctx, test.args.p, test.args.addr, test.args.f)
@@ -1759,29 +1759,29 @@ package grpc
 // 		f    func(ctx context.Context, conn *ClientConn, copts ...CallOption) (any, error)
 // 	}
 // 	type fields struct {
-// 		name                   string
-// 		addrs                  map[string]struct{}
-// 		poolSize               uint64
-// 		clientCount            uint64
-// 		conns                  sync.Map[string, pool.Conn]
-// 		hcDur                  time.Duration
-// 		prDur                  time.Duration
 // 		dialer                 net.Dialer
-// 		enablePoolRebalance    bool
+// 		eg                     errgroup.Group
+// 		cb                     circuitbreaker.CircuitBreaker
+// 		bo                     backoff.Backoff
+// 		addrs                  map[string]struct{}
+// 		stopMonitor            context.CancelFunc
+// 		ech                    <-chan error
+// 		crl                    sync.Map[string, bool]
 // 		disableResolveDNSAddrs sync.Map[string, bool]
-// 		resolveDNS             bool
+// 		conns                  sync.Map[string, pool.Conn]
+// 		name                   string
+// 		roccd                  string
 // 		dopts                  []DialOption
 // 		copts                  []CallOption
-// 		roccd                  string
-// 		eg                     errgroup.Group
-// 		bo                     backoff.Backoff
-// 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
+// 		hcDur                  time.Duration
 // 		mcd                    time.Duration
-// 		crl                    sync.Map[string, bool]
-// 		ech                    <-chan error
+// 		prDur                  time.Duration
+// 		clientCount            uint64
+// 		poolSize               uint64
 // 		monitorRunning         atomic.Bool
-// 		stopMonitor            context.CancelFunc
+// 		resolveDNS             bool
+// 		enablePoolRebalance    bool
 // 	}
 // 	type want struct {
 // 		wantData any
@@ -1817,29 +1817,29 @@ package grpc
 // 		           f:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1864,29 +1864,29 @@ package grpc
 // 		           f:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1917,29 +1917,29 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
-// 				addrs:                  test.fields.addrs,
-// 				poolSize:               test.fields.poolSize,
-// 				clientCount:            test.fields.clientCount,
-// 				conns:                  test.fields.conns,
-// 				hcDur:                  test.fields.hcDur,
-// 				prDur:                  test.fields.prDur,
 // 				dialer:                 test.fields.dialer,
-// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				eg:                     test.fields.eg,
+// 				cb:                     test.fields.cb,
+// 				bo:                     test.fields.bo,
+// 				addrs:                  test.fields.addrs,
+// 				stopMonitor:            test.fields.stopMonitor,
+// 				ech:                    test.fields.ech,
+// 				crl:                    test.fields.crl,
 // 				disableResolveDNSAddrs: test.fields.disableResolveDNSAddrs,
-// 				resolveDNS:             test.fields.resolveDNS,
+// 				conns:                  test.fields.conns,
+// 				name:                   test.fields.name,
+// 				roccd:                  test.fields.roccd,
 // 				dopts:                  test.fields.dopts,
 // 				copts:                  test.fields.copts,
-// 				roccd:                  test.fields.roccd,
-// 				eg:                     test.fields.eg,
-// 				bo:                     test.fields.bo,
-// 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
+// 				hcDur:                  test.fields.hcDur,
 // 				mcd:                    test.fields.mcd,
-// 				crl:                    test.fields.crl,
-// 				ech:                    test.fields.ech,
+// 				prDur:                  test.fields.prDur,
+// 				clientCount:            test.fields.clientCount,
+// 				poolSize:               test.fields.poolSize,
 // 				monitorRunning:         test.fields.monitorRunning,
-// 				stopMonitor:            test.fields.stopMonitor,
+// 				resolveDNS:             test.fields.resolveDNS,
+// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
 // 			}
 //
 // 			gotData, err := g.do(test.args.ctx, test.args.p, test.args.addr, test.args.f)
@@ -1952,29 +1952,29 @@ package grpc
 //
 // func Test_gRPCClient_GetDialOption(t *testing.T) {
 // 	type fields struct {
-// 		name                   string
-// 		addrs                  map[string]struct{}
-// 		poolSize               uint64
-// 		clientCount            uint64
-// 		conns                  sync.Map[string, pool.Conn]
-// 		hcDur                  time.Duration
-// 		prDur                  time.Duration
 // 		dialer                 net.Dialer
-// 		enablePoolRebalance    bool
+// 		eg                     errgroup.Group
+// 		cb                     circuitbreaker.CircuitBreaker
+// 		bo                     backoff.Backoff
+// 		addrs                  map[string]struct{}
+// 		stopMonitor            context.CancelFunc
+// 		ech                    <-chan error
+// 		crl                    sync.Map[string, bool]
 // 		disableResolveDNSAddrs sync.Map[string, bool]
-// 		resolveDNS             bool
+// 		conns                  sync.Map[string, pool.Conn]
+// 		name                   string
+// 		roccd                  string
 // 		dopts                  []DialOption
 // 		copts                  []CallOption
-// 		roccd                  string
-// 		eg                     errgroup.Group
-// 		bo                     backoff.Backoff
-// 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
+// 		hcDur                  time.Duration
 // 		mcd                    time.Duration
-// 		crl                    sync.Map[string, bool]
-// 		ech                    <-chan error
+// 		prDur                  time.Duration
+// 		clientCount            uint64
+// 		poolSize               uint64
 // 		monitorRunning         atomic.Bool
-// 		stopMonitor            context.CancelFunc
+// 		resolveDNS             bool
+// 		enablePoolRebalance    bool
 // 	}
 // 	type want struct {
 // 		want []DialOption
@@ -1999,29 +1999,29 @@ package grpc
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2040,29 +2040,29 @@ package grpc
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2093,29 +2093,29 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
-// 				addrs:                  test.fields.addrs,
-// 				poolSize:               test.fields.poolSize,
-// 				clientCount:            test.fields.clientCount,
-// 				conns:                  test.fields.conns,
-// 				hcDur:                  test.fields.hcDur,
-// 				prDur:                  test.fields.prDur,
 // 				dialer:                 test.fields.dialer,
-// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				eg:                     test.fields.eg,
+// 				cb:                     test.fields.cb,
+// 				bo:                     test.fields.bo,
+// 				addrs:                  test.fields.addrs,
+// 				stopMonitor:            test.fields.stopMonitor,
+// 				ech:                    test.fields.ech,
+// 				crl:                    test.fields.crl,
 // 				disableResolveDNSAddrs: test.fields.disableResolveDNSAddrs,
-// 				resolveDNS:             test.fields.resolveDNS,
+// 				conns:                  test.fields.conns,
+// 				name:                   test.fields.name,
+// 				roccd:                  test.fields.roccd,
 // 				dopts:                  test.fields.dopts,
 // 				copts:                  test.fields.copts,
-// 				roccd:                  test.fields.roccd,
-// 				eg:                     test.fields.eg,
-// 				bo:                     test.fields.bo,
-// 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
+// 				hcDur:                  test.fields.hcDur,
 // 				mcd:                    test.fields.mcd,
-// 				crl:                    test.fields.crl,
-// 				ech:                    test.fields.ech,
+// 				prDur:                  test.fields.prDur,
+// 				clientCount:            test.fields.clientCount,
+// 				poolSize:               test.fields.poolSize,
 // 				monitorRunning:         test.fields.monitorRunning,
-// 				stopMonitor:            test.fields.stopMonitor,
+// 				resolveDNS:             test.fields.resolveDNS,
+// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
 // 			}
 //
 // 			got := g.GetDialOption()
@@ -2128,29 +2128,29 @@ package grpc
 //
 // func Test_gRPCClient_GetCallOption(t *testing.T) {
 // 	type fields struct {
-// 		name                   string
-// 		addrs                  map[string]struct{}
-// 		poolSize               uint64
-// 		clientCount            uint64
-// 		conns                  sync.Map[string, pool.Conn]
-// 		hcDur                  time.Duration
-// 		prDur                  time.Duration
 // 		dialer                 net.Dialer
-// 		enablePoolRebalance    bool
+// 		eg                     errgroup.Group
+// 		cb                     circuitbreaker.CircuitBreaker
+// 		bo                     backoff.Backoff
+// 		addrs                  map[string]struct{}
+// 		stopMonitor            context.CancelFunc
+// 		ech                    <-chan error
+// 		crl                    sync.Map[string, bool]
 // 		disableResolveDNSAddrs sync.Map[string, bool]
-// 		resolveDNS             bool
+// 		conns                  sync.Map[string, pool.Conn]
+// 		name                   string
+// 		roccd                  string
 // 		dopts                  []DialOption
 // 		copts                  []CallOption
-// 		roccd                  string
-// 		eg                     errgroup.Group
-// 		bo                     backoff.Backoff
-// 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
+// 		hcDur                  time.Duration
 // 		mcd                    time.Duration
-// 		crl                    sync.Map[string, bool]
-// 		ech                    <-chan error
+// 		prDur                  time.Duration
+// 		clientCount            uint64
+// 		poolSize               uint64
 // 		monitorRunning         atomic.Bool
-// 		stopMonitor            context.CancelFunc
+// 		resolveDNS             bool
+// 		enablePoolRebalance    bool
 // 	}
 // 	type want struct {
 // 		want []CallOption
@@ -2175,29 +2175,29 @@ package grpc
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2216,29 +2216,29 @@ package grpc
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2269,29 +2269,29 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
-// 				addrs:                  test.fields.addrs,
-// 				poolSize:               test.fields.poolSize,
-// 				clientCount:            test.fields.clientCount,
-// 				conns:                  test.fields.conns,
-// 				hcDur:                  test.fields.hcDur,
-// 				prDur:                  test.fields.prDur,
 // 				dialer:                 test.fields.dialer,
-// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				eg:                     test.fields.eg,
+// 				cb:                     test.fields.cb,
+// 				bo:                     test.fields.bo,
+// 				addrs:                  test.fields.addrs,
+// 				stopMonitor:            test.fields.stopMonitor,
+// 				ech:                    test.fields.ech,
+// 				crl:                    test.fields.crl,
 // 				disableResolveDNSAddrs: test.fields.disableResolveDNSAddrs,
-// 				resolveDNS:             test.fields.resolveDNS,
+// 				conns:                  test.fields.conns,
+// 				name:                   test.fields.name,
+// 				roccd:                  test.fields.roccd,
 // 				dopts:                  test.fields.dopts,
 // 				copts:                  test.fields.copts,
-// 				roccd:                  test.fields.roccd,
-// 				eg:                     test.fields.eg,
-// 				bo:                     test.fields.bo,
-// 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
+// 				hcDur:                  test.fields.hcDur,
 // 				mcd:                    test.fields.mcd,
-// 				crl:                    test.fields.crl,
-// 				ech:                    test.fields.ech,
+// 				prDur:                  test.fields.prDur,
+// 				clientCount:            test.fields.clientCount,
+// 				poolSize:               test.fields.poolSize,
 // 				monitorRunning:         test.fields.monitorRunning,
-// 				stopMonitor:            test.fields.stopMonitor,
+// 				resolveDNS:             test.fields.resolveDNS,
+// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
 // 			}
 //
 // 			got := g.GetCallOption()
@@ -2304,29 +2304,29 @@ package grpc
 //
 // func Test_gRPCClient_GetBackoff(t *testing.T) {
 // 	type fields struct {
-// 		name                   string
-// 		addrs                  map[string]struct{}
-// 		poolSize               uint64
-// 		clientCount            uint64
-// 		conns                  sync.Map[string, pool.Conn]
-// 		hcDur                  time.Duration
-// 		prDur                  time.Duration
 // 		dialer                 net.Dialer
-// 		enablePoolRebalance    bool
+// 		eg                     errgroup.Group
+// 		cb                     circuitbreaker.CircuitBreaker
+// 		bo                     backoff.Backoff
+// 		addrs                  map[string]struct{}
+// 		stopMonitor            context.CancelFunc
+// 		ech                    <-chan error
+// 		crl                    sync.Map[string, bool]
 // 		disableResolveDNSAddrs sync.Map[string, bool]
-// 		resolveDNS             bool
+// 		conns                  sync.Map[string, pool.Conn]
+// 		name                   string
+// 		roccd                  string
 // 		dopts                  []DialOption
 // 		copts                  []CallOption
-// 		roccd                  string
-// 		eg                     errgroup.Group
-// 		bo                     backoff.Backoff
-// 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
+// 		hcDur                  time.Duration
 // 		mcd                    time.Duration
-// 		crl                    sync.Map[string, bool]
-// 		ech                    <-chan error
+// 		prDur                  time.Duration
+// 		clientCount            uint64
+// 		poolSize               uint64
 // 		monitorRunning         atomic.Bool
-// 		stopMonitor            context.CancelFunc
+// 		resolveDNS             bool
+// 		enablePoolRebalance    bool
 // 	}
 // 	type want struct {
 // 		want backoff.Backoff
@@ -2351,29 +2351,29 @@ package grpc
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2392,29 +2392,29 @@ package grpc
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2445,29 +2445,29 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
-// 				addrs:                  test.fields.addrs,
-// 				poolSize:               test.fields.poolSize,
-// 				clientCount:            test.fields.clientCount,
-// 				conns:                  test.fields.conns,
-// 				hcDur:                  test.fields.hcDur,
-// 				prDur:                  test.fields.prDur,
 // 				dialer:                 test.fields.dialer,
-// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				eg:                     test.fields.eg,
+// 				cb:                     test.fields.cb,
+// 				bo:                     test.fields.bo,
+// 				addrs:                  test.fields.addrs,
+// 				stopMonitor:            test.fields.stopMonitor,
+// 				ech:                    test.fields.ech,
+// 				crl:                    test.fields.crl,
 // 				disableResolveDNSAddrs: test.fields.disableResolveDNSAddrs,
-// 				resolveDNS:             test.fields.resolveDNS,
+// 				conns:                  test.fields.conns,
+// 				name:                   test.fields.name,
+// 				roccd:                  test.fields.roccd,
 // 				dopts:                  test.fields.dopts,
 // 				copts:                  test.fields.copts,
-// 				roccd:                  test.fields.roccd,
-// 				eg:                     test.fields.eg,
-// 				bo:                     test.fields.bo,
-// 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
+// 				hcDur:                  test.fields.hcDur,
 // 				mcd:                    test.fields.mcd,
-// 				crl:                    test.fields.crl,
-// 				ech:                    test.fields.ech,
+// 				prDur:                  test.fields.prDur,
+// 				clientCount:            test.fields.clientCount,
+// 				poolSize:               test.fields.poolSize,
 // 				monitorRunning:         test.fields.monitorRunning,
-// 				stopMonitor:            test.fields.stopMonitor,
+// 				resolveDNS:             test.fields.resolveDNS,
+// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
 // 			}
 //
 // 			got := g.GetBackoff()
@@ -2484,29 +2484,29 @@ package grpc
 // 		disabled bool
 // 	}
 // 	type fields struct {
-// 		name                   string
-// 		addrs                  map[string]struct{}
-// 		poolSize               uint64
-// 		clientCount            uint64
-// 		conns                  sync.Map[string, pool.Conn]
-// 		hcDur                  time.Duration
-// 		prDur                  time.Duration
 // 		dialer                 net.Dialer
-// 		enablePoolRebalance    bool
+// 		eg                     errgroup.Group
+// 		cb                     circuitbreaker.CircuitBreaker
+// 		bo                     backoff.Backoff
+// 		addrs                  map[string]struct{}
+// 		stopMonitor            context.CancelFunc
+// 		ech                    <-chan error
+// 		crl                    sync.Map[string, bool]
 // 		disableResolveDNSAddrs sync.Map[string, bool]
-// 		resolveDNS             bool
+// 		conns                  sync.Map[string, pool.Conn]
+// 		name                   string
+// 		roccd                  string
 // 		dopts                  []DialOption
 // 		copts                  []CallOption
-// 		roccd                  string
-// 		eg                     errgroup.Group
-// 		bo                     backoff.Backoff
-// 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
+// 		hcDur                  time.Duration
 // 		mcd                    time.Duration
-// 		crl                    sync.Map[string, bool]
-// 		ech                    <-chan error
+// 		prDur                  time.Duration
+// 		clientCount            uint64
+// 		poolSize               uint64
 // 		monitorRunning         atomic.Bool
-// 		stopMonitor            context.CancelFunc
+// 		resolveDNS             bool
+// 		enablePoolRebalance    bool
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -2531,29 +2531,29 @@ package grpc
 // 		           disabled:false,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2576,29 +2576,29 @@ package grpc
 // 		           disabled:false,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2629,29 +2629,29 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
-// 				addrs:                  test.fields.addrs,
-// 				poolSize:               test.fields.poolSize,
-// 				clientCount:            test.fields.clientCount,
-// 				conns:                  test.fields.conns,
-// 				hcDur:                  test.fields.hcDur,
-// 				prDur:                  test.fields.prDur,
 // 				dialer:                 test.fields.dialer,
-// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				eg:                     test.fields.eg,
+// 				cb:                     test.fields.cb,
+// 				bo:                     test.fields.bo,
+// 				addrs:                  test.fields.addrs,
+// 				stopMonitor:            test.fields.stopMonitor,
+// 				ech:                    test.fields.ech,
+// 				crl:                    test.fields.crl,
 // 				disableResolveDNSAddrs: test.fields.disableResolveDNSAddrs,
-// 				resolveDNS:             test.fields.resolveDNS,
+// 				conns:                  test.fields.conns,
+// 				name:                   test.fields.name,
+// 				roccd:                  test.fields.roccd,
 // 				dopts:                  test.fields.dopts,
 // 				copts:                  test.fields.copts,
-// 				roccd:                  test.fields.roccd,
-// 				eg:                     test.fields.eg,
-// 				bo:                     test.fields.bo,
-// 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
+// 				hcDur:                  test.fields.hcDur,
 // 				mcd:                    test.fields.mcd,
-// 				crl:                    test.fields.crl,
-// 				ech:                    test.fields.ech,
+// 				prDur:                  test.fields.prDur,
+// 				clientCount:            test.fields.clientCount,
+// 				poolSize:               test.fields.poolSize,
 // 				monitorRunning:         test.fields.monitorRunning,
-// 				stopMonitor:            test.fields.stopMonitor,
+// 				resolveDNS:             test.fields.resolveDNS,
+// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
 // 			}
 //
 // 			g.SetDisableResolveDNSAddr(test.args.addr, test.args.disabled)
@@ -2669,29 +2669,29 @@ package grpc
 // 		dopts []DialOption
 // 	}
 // 	type fields struct {
-// 		name                   string
-// 		addrs                  map[string]struct{}
-// 		poolSize               uint64
-// 		clientCount            uint64
-// 		conns                  sync.Map[string, pool.Conn]
-// 		hcDur                  time.Duration
-// 		prDur                  time.Duration
 // 		dialer                 net.Dialer
-// 		enablePoolRebalance    bool
+// 		eg                     errgroup.Group
+// 		cb                     circuitbreaker.CircuitBreaker
+// 		bo                     backoff.Backoff
+// 		addrs                  map[string]struct{}
+// 		stopMonitor            context.CancelFunc
+// 		ech                    <-chan error
+// 		crl                    sync.Map[string, bool]
 // 		disableResolveDNSAddrs sync.Map[string, bool]
-// 		resolveDNS             bool
+// 		conns                  sync.Map[string, pool.Conn]
+// 		name                   string
+// 		roccd                  string
 // 		dopts                  []DialOption
 // 		copts                  []CallOption
-// 		roccd                  string
-// 		eg                     errgroup.Group
-// 		bo                     backoff.Backoff
-// 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
+// 		hcDur                  time.Duration
 // 		mcd                    time.Duration
-// 		crl                    sync.Map[string, bool]
-// 		ech                    <-chan error
+// 		prDur                  time.Duration
+// 		clientCount            uint64
+// 		poolSize               uint64
 // 		monitorRunning         atomic.Bool
-// 		stopMonitor            context.CancelFunc
+// 		resolveDNS             bool
+// 		enablePoolRebalance    bool
 // 	}
 // 	type want struct {
 // 		wantConn pool.Conn
@@ -2726,29 +2726,29 @@ package grpc
 // 		           dopts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2772,29 +2772,29 @@ package grpc
 // 		           dopts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2825,29 +2825,29 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
-// 				addrs:                  test.fields.addrs,
-// 				poolSize:               test.fields.poolSize,
-// 				clientCount:            test.fields.clientCount,
-// 				conns:                  test.fields.conns,
-// 				hcDur:                  test.fields.hcDur,
-// 				prDur:                  test.fields.prDur,
 // 				dialer:                 test.fields.dialer,
-// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				eg:                     test.fields.eg,
+// 				cb:                     test.fields.cb,
+// 				bo:                     test.fields.bo,
+// 				addrs:                  test.fields.addrs,
+// 				stopMonitor:            test.fields.stopMonitor,
+// 				ech:                    test.fields.ech,
+// 				crl:                    test.fields.crl,
 // 				disableResolveDNSAddrs: test.fields.disableResolveDNSAddrs,
-// 				resolveDNS:             test.fields.resolveDNS,
+// 				conns:                  test.fields.conns,
+// 				name:                   test.fields.name,
+// 				roccd:                  test.fields.roccd,
 // 				dopts:                  test.fields.dopts,
 // 				copts:                  test.fields.copts,
-// 				roccd:                  test.fields.roccd,
-// 				eg:                     test.fields.eg,
-// 				bo:                     test.fields.bo,
-// 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
+// 				hcDur:                  test.fields.hcDur,
 // 				mcd:                    test.fields.mcd,
-// 				crl:                    test.fields.crl,
-// 				ech:                    test.fields.ech,
+// 				prDur:                  test.fields.prDur,
+// 				clientCount:            test.fields.clientCount,
+// 				poolSize:               test.fields.poolSize,
 // 				monitorRunning:         test.fields.monitorRunning,
-// 				stopMonitor:            test.fields.stopMonitor,
+// 				resolveDNS:             test.fields.resolveDNS,
+// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
 // 			}
 //
 // 			gotConn, err := g.Connect(test.args.ctx, test.args.addr, test.args.dopts...)
@@ -2864,29 +2864,29 @@ package grpc
 // 		addr string
 // 	}
 // 	type fields struct {
-// 		name                   string
-// 		addrs                  map[string]struct{}
-// 		poolSize               uint64
-// 		clientCount            uint64
-// 		conns                  sync.Map[string, pool.Conn]
-// 		hcDur                  time.Duration
-// 		prDur                  time.Duration
 // 		dialer                 net.Dialer
-// 		enablePoolRebalance    bool
+// 		eg                     errgroup.Group
+// 		cb                     circuitbreaker.CircuitBreaker
+// 		bo                     backoff.Backoff
+// 		addrs                  map[string]struct{}
+// 		stopMonitor            context.CancelFunc
+// 		ech                    <-chan error
+// 		crl                    sync.Map[string, bool]
 // 		disableResolveDNSAddrs sync.Map[string, bool]
-// 		resolveDNS             bool
+// 		conns                  sync.Map[string, pool.Conn]
+// 		name                   string
+// 		roccd                  string
 // 		dopts                  []DialOption
 // 		copts                  []CallOption
-// 		roccd                  string
-// 		eg                     errgroup.Group
-// 		bo                     backoff.Backoff
-// 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
+// 		hcDur                  time.Duration
 // 		mcd                    time.Duration
-// 		crl                    sync.Map[string, bool]
-// 		ech                    <-chan error
+// 		prDur                  time.Duration
+// 		clientCount            uint64
+// 		poolSize               uint64
 // 		monitorRunning         atomic.Bool
-// 		stopMonitor            context.CancelFunc
+// 		resolveDNS             bool
+// 		enablePoolRebalance    bool
 // 	}
 // 	type want struct {
 // 		want bool
@@ -2916,29 +2916,29 @@ package grpc
 // 		           addr:"",
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2961,29 +2961,29 @@ package grpc
 // 		           addr:"",
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3014,29 +3014,29 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
-// 				addrs:                  test.fields.addrs,
-// 				poolSize:               test.fields.poolSize,
-// 				clientCount:            test.fields.clientCount,
-// 				conns:                  test.fields.conns,
-// 				hcDur:                  test.fields.hcDur,
-// 				prDur:                  test.fields.prDur,
 // 				dialer:                 test.fields.dialer,
-// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				eg:                     test.fields.eg,
+// 				cb:                     test.fields.cb,
+// 				bo:                     test.fields.bo,
+// 				addrs:                  test.fields.addrs,
+// 				stopMonitor:            test.fields.stopMonitor,
+// 				ech:                    test.fields.ech,
+// 				crl:                    test.fields.crl,
 // 				disableResolveDNSAddrs: test.fields.disableResolveDNSAddrs,
-// 				resolveDNS:             test.fields.resolveDNS,
+// 				conns:                  test.fields.conns,
+// 				name:                   test.fields.name,
+// 				roccd:                  test.fields.roccd,
 // 				dopts:                  test.fields.dopts,
 // 				copts:                  test.fields.copts,
-// 				roccd:                  test.fields.roccd,
-// 				eg:                     test.fields.eg,
-// 				bo:                     test.fields.bo,
-// 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
+// 				hcDur:                  test.fields.hcDur,
 // 				mcd:                    test.fields.mcd,
-// 				crl:                    test.fields.crl,
-// 				ech:                    test.fields.ech,
+// 				prDur:                  test.fields.prDur,
+// 				clientCount:            test.fields.clientCount,
+// 				poolSize:               test.fields.poolSize,
 // 				monitorRunning:         test.fields.monitorRunning,
-// 				stopMonitor:            test.fields.stopMonitor,
+// 				resolveDNS:             test.fields.resolveDNS,
+// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
 // 			}
 //
 // 			got := g.IsConnected(test.args.ctx, test.args.addr)
@@ -3053,29 +3053,29 @@ package grpc
 // 		addr string
 // 	}
 // 	type fields struct {
-// 		name                   string
-// 		addrs                  map[string]struct{}
-// 		poolSize               uint64
-// 		clientCount            uint64
-// 		conns                  sync.Map[string, pool.Conn]
-// 		hcDur                  time.Duration
-// 		prDur                  time.Duration
 // 		dialer                 net.Dialer
-// 		enablePoolRebalance    bool
+// 		eg                     errgroup.Group
+// 		cb                     circuitbreaker.CircuitBreaker
+// 		bo                     backoff.Backoff
+// 		addrs                  map[string]struct{}
+// 		stopMonitor            context.CancelFunc
+// 		ech                    <-chan error
+// 		crl                    sync.Map[string, bool]
 // 		disableResolveDNSAddrs sync.Map[string, bool]
-// 		resolveDNS             bool
+// 		conns                  sync.Map[string, pool.Conn]
+// 		name                   string
+// 		roccd                  string
 // 		dopts                  []DialOption
 // 		copts                  []CallOption
-// 		roccd                  string
-// 		eg                     errgroup.Group
-// 		bo                     backoff.Backoff
-// 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
+// 		hcDur                  time.Duration
 // 		mcd                    time.Duration
-// 		crl                    sync.Map[string, bool]
-// 		ech                    <-chan error
+// 		prDur                  time.Duration
+// 		clientCount            uint64
+// 		poolSize               uint64
 // 		monitorRunning         atomic.Bool
-// 		stopMonitor            context.CancelFunc
+// 		resolveDNS             bool
+// 		enablePoolRebalance    bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -3105,29 +3105,29 @@ package grpc
 // 		           addr:"",
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3150,29 +3150,29 @@ package grpc
 // 		           addr:"",
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3203,29 +3203,29 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
-// 				addrs:                  test.fields.addrs,
-// 				poolSize:               test.fields.poolSize,
-// 				clientCount:            test.fields.clientCount,
-// 				conns:                  test.fields.conns,
-// 				hcDur:                  test.fields.hcDur,
-// 				prDur:                  test.fields.prDur,
 // 				dialer:                 test.fields.dialer,
-// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				eg:                     test.fields.eg,
+// 				cb:                     test.fields.cb,
+// 				bo:                     test.fields.bo,
+// 				addrs:                  test.fields.addrs,
+// 				stopMonitor:            test.fields.stopMonitor,
+// 				ech:                    test.fields.ech,
+// 				crl:                    test.fields.crl,
 // 				disableResolveDNSAddrs: test.fields.disableResolveDNSAddrs,
-// 				resolveDNS:             test.fields.resolveDNS,
+// 				conns:                  test.fields.conns,
+// 				name:                   test.fields.name,
+// 				roccd:                  test.fields.roccd,
 // 				dopts:                  test.fields.dopts,
 // 				copts:                  test.fields.copts,
-// 				roccd:                  test.fields.roccd,
-// 				eg:                     test.fields.eg,
-// 				bo:                     test.fields.bo,
-// 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
+// 				hcDur:                  test.fields.hcDur,
 // 				mcd:                    test.fields.mcd,
-// 				crl:                    test.fields.crl,
-// 				ech:                    test.fields.ech,
+// 				prDur:                  test.fields.prDur,
+// 				clientCount:            test.fields.clientCount,
+// 				poolSize:               test.fields.poolSize,
 // 				monitorRunning:         test.fields.monitorRunning,
-// 				stopMonitor:            test.fields.stopMonitor,
+// 				resolveDNS:             test.fields.resolveDNS,
+// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
 // 			}
 //
 // 			err := g.Disconnect(test.args.ctx, test.args.addr)
@@ -3241,29 +3241,29 @@ package grpc
 // 		in0 context.Context
 // 	}
 // 	type fields struct {
-// 		name                   string
-// 		addrs                  map[string]struct{}
-// 		poolSize               uint64
-// 		clientCount            uint64
-// 		conns                  sync.Map[string, pool.Conn]
-// 		hcDur                  time.Duration
-// 		prDur                  time.Duration
 // 		dialer                 net.Dialer
-// 		enablePoolRebalance    bool
+// 		eg                     errgroup.Group
+// 		cb                     circuitbreaker.CircuitBreaker
+// 		bo                     backoff.Backoff
+// 		addrs                  map[string]struct{}
+// 		stopMonitor            context.CancelFunc
+// 		ech                    <-chan error
+// 		crl                    sync.Map[string, bool]
 // 		disableResolveDNSAddrs sync.Map[string, bool]
-// 		resolveDNS             bool
+// 		conns                  sync.Map[string, pool.Conn]
+// 		name                   string
+// 		roccd                  string
 // 		dopts                  []DialOption
 // 		copts                  []CallOption
-// 		roccd                  string
-// 		eg                     errgroup.Group
-// 		bo                     backoff.Backoff
-// 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
+// 		hcDur                  time.Duration
 // 		mcd                    time.Duration
-// 		crl                    sync.Map[string, bool]
-// 		ech                    <-chan error
+// 		prDur                  time.Duration
+// 		clientCount            uint64
+// 		poolSize               uint64
 // 		monitorRunning         atomic.Bool
-// 		stopMonitor            context.CancelFunc
+// 		resolveDNS             bool
+// 		enablePoolRebalance    bool
 // 	}
 // 	type want struct {
 // 		wantAddrs []string
@@ -3292,29 +3292,29 @@ package grpc
 // 		           in0:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3336,29 +3336,29 @@ package grpc
 // 		           in0:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3389,29 +3389,29 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
-// 				addrs:                  test.fields.addrs,
-// 				poolSize:               test.fields.poolSize,
-// 				clientCount:            test.fields.clientCount,
-// 				conns:                  test.fields.conns,
-// 				hcDur:                  test.fields.hcDur,
-// 				prDur:                  test.fields.prDur,
 // 				dialer:                 test.fields.dialer,
-// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				eg:                     test.fields.eg,
+// 				cb:                     test.fields.cb,
+// 				bo:                     test.fields.bo,
+// 				addrs:                  test.fields.addrs,
+// 				stopMonitor:            test.fields.stopMonitor,
+// 				ech:                    test.fields.ech,
+// 				crl:                    test.fields.crl,
 // 				disableResolveDNSAddrs: test.fields.disableResolveDNSAddrs,
-// 				resolveDNS:             test.fields.resolveDNS,
+// 				conns:                  test.fields.conns,
+// 				name:                   test.fields.name,
+// 				roccd:                  test.fields.roccd,
 // 				dopts:                  test.fields.dopts,
 // 				copts:                  test.fields.copts,
-// 				roccd:                  test.fields.roccd,
-// 				eg:                     test.fields.eg,
-// 				bo:                     test.fields.bo,
-// 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
+// 				hcDur:                  test.fields.hcDur,
 // 				mcd:                    test.fields.mcd,
-// 				crl:                    test.fields.crl,
-// 				ech:                    test.fields.ech,
+// 				prDur:                  test.fields.prDur,
+// 				clientCount:            test.fields.clientCount,
+// 				poolSize:               test.fields.poolSize,
 // 				monitorRunning:         test.fields.monitorRunning,
-// 				stopMonitor:            test.fields.stopMonitor,
+// 				resolveDNS:             test.fields.resolveDNS,
+// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
 // 			}
 //
 // 			gotAddrs := g.ConnectedAddrs(test.args.in0)
@@ -3427,29 +3427,29 @@ package grpc
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		name                   string
-// 		addrs                  map[string]struct{}
-// 		poolSize               uint64
-// 		clientCount            uint64
-// 		conns                  sync.Map[string, pool.Conn]
-// 		hcDur                  time.Duration
-// 		prDur                  time.Duration
 // 		dialer                 net.Dialer
-// 		enablePoolRebalance    bool
+// 		eg                     errgroup.Group
+// 		cb                     circuitbreaker.CircuitBreaker
+// 		bo                     backoff.Backoff
+// 		addrs                  map[string]struct{}
+// 		stopMonitor            context.CancelFunc
+// 		ech                    <-chan error
+// 		crl                    sync.Map[string, bool]
 // 		disableResolveDNSAddrs sync.Map[string, bool]
-// 		resolveDNS             bool
+// 		conns                  sync.Map[string, pool.Conn]
+// 		name                   string
+// 		roccd                  string
 // 		dopts                  []DialOption
 // 		copts                  []CallOption
-// 		roccd                  string
-// 		eg                     errgroup.Group
-// 		bo                     backoff.Backoff
-// 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
+// 		hcDur                  time.Duration
 // 		mcd                    time.Duration
-// 		crl                    sync.Map[string, bool]
-// 		ech                    <-chan error
+// 		prDur                  time.Duration
+// 		clientCount            uint64
+// 		poolSize               uint64
 // 		monitorRunning         atomic.Bool
-// 		stopMonitor            context.CancelFunc
+// 		resolveDNS             bool
+// 		enablePoolRebalance    bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -3478,29 +3478,29 @@ package grpc
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3522,29 +3522,29 @@ package grpc
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3575,29 +3575,29 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
-// 				addrs:                  test.fields.addrs,
-// 				poolSize:               test.fields.poolSize,
-// 				clientCount:            test.fields.clientCount,
-// 				conns:                  test.fields.conns,
-// 				hcDur:                  test.fields.hcDur,
-// 				prDur:                  test.fields.prDur,
 // 				dialer:                 test.fields.dialer,
-// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				eg:                     test.fields.eg,
+// 				cb:                     test.fields.cb,
+// 				bo:                     test.fields.bo,
+// 				addrs:                  test.fields.addrs,
+// 				stopMonitor:            test.fields.stopMonitor,
+// 				ech:                    test.fields.ech,
+// 				crl:                    test.fields.crl,
 // 				disableResolveDNSAddrs: test.fields.disableResolveDNSAddrs,
-// 				resolveDNS:             test.fields.resolveDNS,
+// 				conns:                  test.fields.conns,
+// 				name:                   test.fields.name,
+// 				roccd:                  test.fields.roccd,
 // 				dopts:                  test.fields.dopts,
 // 				copts:                  test.fields.copts,
-// 				roccd:                  test.fields.roccd,
-// 				eg:                     test.fields.eg,
-// 				bo:                     test.fields.bo,
-// 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
+// 				hcDur:                  test.fields.hcDur,
 // 				mcd:                    test.fields.mcd,
-// 				crl:                    test.fields.crl,
-// 				ech:                    test.fields.ech,
+// 				prDur:                  test.fields.prDur,
+// 				clientCount:            test.fields.clientCount,
+// 				poolSize:               test.fields.poolSize,
 // 				monitorRunning:         test.fields.monitorRunning,
-// 				stopMonitor:            test.fields.stopMonitor,
+// 				resolveDNS:             test.fields.resolveDNS,
+// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
 // 			}
 //
 // 			err := g.Close(test.args.ctx)
@@ -3614,29 +3614,29 @@ package grpc
 // 		fn     func(addr string, p pool.Conn) bool
 // 	}
 // 	type fields struct {
-// 		name                   string
-// 		addrs                  map[string]struct{}
-// 		poolSize               uint64
-// 		clientCount            uint64
-// 		conns                  sync.Map[string, pool.Conn]
-// 		hcDur                  time.Duration
-// 		prDur                  time.Duration
 // 		dialer                 net.Dialer
-// 		enablePoolRebalance    bool
+// 		eg                     errgroup.Group
+// 		cb                     circuitbreaker.CircuitBreaker
+// 		bo                     backoff.Backoff
+// 		addrs                  map[string]struct{}
+// 		stopMonitor            context.CancelFunc
+// 		ech                    <-chan error
+// 		crl                    sync.Map[string, bool]
 // 		disableResolveDNSAddrs sync.Map[string, bool]
-// 		resolveDNS             bool
+// 		conns                  sync.Map[string, pool.Conn]
+// 		name                   string
+// 		roccd                  string
 // 		dopts                  []DialOption
 // 		copts                  []CallOption
-// 		roccd                  string
-// 		eg                     errgroup.Group
-// 		bo                     backoff.Backoff
-// 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
+// 		hcDur                  time.Duration
 // 		mcd                    time.Duration
-// 		crl                    sync.Map[string, bool]
-// 		ech                    <-chan error
+// 		prDur                  time.Duration
+// 		clientCount            uint64
+// 		poolSize               uint64
 // 		monitorRunning         atomic.Bool
-// 		stopMonitor            context.CancelFunc
+// 		resolveDNS             bool
+// 		enablePoolRebalance    bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -3666,29 +3666,29 @@ package grpc
 // 		           fn:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3711,29 +3711,29 @@ package grpc
 // 		           fn:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           addrs:nil,
-// 		           poolSize:0,
-// 		           clientCount:0,
-// 		           conns:nil,
-// 		           hcDur:nil,
-// 		           prDur:nil,
 // 		           dialer:nil,
-// 		           enablePoolRebalance:false,
+// 		           eg:nil,
+// 		           cb:nil,
+// 		           bo:nil,
+// 		           addrs:nil,
+// 		           stopMonitor:nil,
+// 		           ech:nil,
+// 		           crl:nil,
 // 		           disableResolveDNSAddrs:nil,
-// 		           resolveDNS:false,
+// 		           conns:nil,
+// 		           name:"",
+// 		           roccd:"",
 // 		           dopts:nil,
 // 		           copts:nil,
-// 		           roccd:"",
-// 		           eg:nil,
-// 		           bo:nil,
-// 		           cb:nil,
 // 		           gbo:nil,
+// 		           hcDur:nil,
 // 		           mcd:nil,
-// 		           crl:nil,
-// 		           ech:nil,
+// 		           prDur:nil,
+// 		           clientCount:0,
+// 		           poolSize:0,
 // 		           monitorRunning:nil,
-// 		           stopMonitor:nil,
+// 		           resolveDNS:false,
+// 		           enablePoolRebalance:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3764,29 +3764,29 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
-// 				addrs:                  test.fields.addrs,
-// 				poolSize:               test.fields.poolSize,
-// 				clientCount:            test.fields.clientCount,
-// 				conns:                  test.fields.conns,
-// 				hcDur:                  test.fields.hcDur,
-// 				prDur:                  test.fields.prDur,
 // 				dialer:                 test.fields.dialer,
-// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				eg:                     test.fields.eg,
+// 				cb:                     test.fields.cb,
+// 				bo:                     test.fields.bo,
+// 				addrs:                  test.fields.addrs,
+// 				stopMonitor:            test.fields.stopMonitor,
+// 				ech:                    test.fields.ech,
+// 				crl:                    test.fields.crl,
 // 				disableResolveDNSAddrs: test.fields.disableResolveDNSAddrs,
-// 				resolveDNS:             test.fields.resolveDNS,
+// 				conns:                  test.fields.conns,
+// 				name:                   test.fields.name,
+// 				roccd:                  test.fields.roccd,
 // 				dopts:                  test.fields.dopts,
 // 				copts:                  test.fields.copts,
-// 				roccd:                  test.fields.roccd,
-// 				eg:                     test.fields.eg,
-// 				bo:                     test.fields.bo,
-// 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
+// 				hcDur:                  test.fields.hcDur,
 // 				mcd:                    test.fields.mcd,
-// 				crl:                    test.fields.crl,
-// 				ech:                    test.fields.ech,
+// 				prDur:                  test.fields.prDur,
+// 				clientCount:            test.fields.clientCount,
+// 				poolSize:               test.fields.poolSize,
 // 				monitorRunning:         test.fields.monitorRunning,
-// 				stopMonitor:            test.fields.stopMonitor,
+// 				resolveDNS:             test.fields.resolveDNS,
+// 				enablePoolRebalance:    test.fields.enablePoolRebalance,
 // 			}
 //
 // 			err := g.rangeConns(test.args.action, test.args.fn)

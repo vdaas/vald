@@ -38,13 +38,13 @@ type DiscovererServer interface {
 }
 
 type server struct {
+	discoverer.UnimplementedDiscovererServer
 	dsc    service.Discoverer
-	pgroup singleflight.Group[*payload.Info_Pods]     // pod singleflight group
-	ngroup singleflight.Group[*payload.Info_Nodes]    // node singleflight group
-	sgroup singleflight.Group[*payload.Info_Services] // services singleflight group
+	pgroup singleflight.Group[*payload.Info_Pods]
+	ngroup singleflight.Group[*payload.Info_Nodes]
+	sgroup singleflight.Group[*payload.Info_Services]
 	ip     string
 	name   string
-	discoverer.UnimplementedDiscovererServer
 }
 
 const (

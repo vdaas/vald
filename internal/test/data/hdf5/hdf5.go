@@ -18,6 +18,7 @@
 package hdf5
 
 import (
+	"net/http"
 	"reflect"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -93,11 +94,11 @@ func (key Hdf5Key) String() string {
 }
 
 type data struct {
-	name      DatasetName
 	path      string
 	train     [][]float32
 	test      [][]float32
 	neighbors [][]int
+	name      DatasetName
 }
 
 func New(opts ...Option) (Data, error) {
@@ -223,7 +224,7 @@ func downloadFile(url, path string) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return errors.ErrInvalidStatusCode(resp.StatusCode)
 	}
 
@@ -263,7 +264,7 @@ func ReadDatasetF32(file *hdf5.File, key Hdf5Key) ([][]float32, error) {
 	}
 
 	vecs := make([][]float32, height)
-	for i := 0; i < height; i++ {
+	for i := range height {
 		vecs[i] = rawFloats[i*width : i*width+width]
 	}
 
@@ -292,7 +293,7 @@ func ReadDatasetI32(file *hdf5.File, key Hdf5Key) ([][]int32, error) {
 	}
 
 	vecs := make([][]int32, height)
-	for i := 0; i < height; i++ {
+	for i := range height {
 		vecs[i] = rawFloats[i*width : i*width+width]
 	}
 

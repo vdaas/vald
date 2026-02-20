@@ -24,11 +24,11 @@ func TestErrCollectorNotFound(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {

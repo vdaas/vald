@@ -156,12 +156,12 @@ var (
 	// ErrZeroTimestamp represents an error that the timestamp is zero.
 	ErrZeroTimestamp = New("zero timestamp for index detected")
 
-	// ErrNewerTimestampObjectAlreadyExists represents a function to generate an error that the object is already newer than request
+	// ErrNewerTimestampObjectAlreadyExists represents a function to generate an error that the object is already newer than request.
 	ErrNewerTimestampObjectAlreadyExists = func(uuid string, ts int64) error {
 		return Errorf("uuid %s's object is already newer than requested timestamp %d", uuid, ts)
 	}
 
-	// ErrNothingToBeDoneForUpdate represents a function to generate an error that there is no object to update
+	// ErrNothingToBeDoneForUpdate represents a function to generate an error that there is no object to update.
 	ErrNothingToBeDoneForUpdate = func(uuid string) error {
 		return Errorf("nothing to be done for update uuid %s's object", uuid)
 	}

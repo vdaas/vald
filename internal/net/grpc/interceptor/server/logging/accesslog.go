@@ -38,12 +38,12 @@ const (
 )
 
 type AccessLogEntity struct {
+	Error     error                `json:"error,omitempty"     yaml:"error"`
 	GRPC      *AccessLogGRPCEntity `json:"grpc,omitempty"      yaml:"grpc"`
+	TraceID   string               `json:"traceID,omitempty"   yaml:"traceID"`
 	StartTime int64                `json:"startTime,omitempty" yaml:"startTime"`
 	EndTime   int64                `json:"endTime,omitempty"   yaml:"endTime"`
 	Latency   int64                `json:"latency,omitempty"   yaml:"latency"`
-	TraceID   string               `json:"traceID,omitempty"   yaml:"traceID"`
-	Error     error                `json:"error,omitempty"     yaml:"error"`
 }
 
 type AccessLogGRPCEntity struct {

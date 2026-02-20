@@ -20,10 +20,10 @@ type SearchMetrics struct {
 }
 
 type Metrics struct {
-	BuildTime        int64
 	DatasetName      string
+	Search           []*SearchMetrics
+	BuildTime        int64
 	SearchEdgeSize   int
 	CreationEdgeSize int
 	K                int
-	Search           []*SearchMetrics
 }

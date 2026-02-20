@@ -64,7 +64,7 @@ func initCore(
 }
 
 func BenchmarkNGTSequential_Insert(b *testing.B) {
-	ctx := context.Background()
+	ctx := b.Context()
 	for _, target := range targets {
 		benchmark.New(b,
 			benchmark.WithName(target),
@@ -78,7 +78,7 @@ func BenchmarkNGTSequential_Insert(b *testing.B) {
 }
 
 func BenchmarkNGTParallel_Insert(b *testing.B) {
-	ctx := context.Background()
+	ctx := b.Context()
 	for _, target := range targets {
 		benchmark.New(b,
 			benchmark.WithName(target),
@@ -93,7 +93,7 @@ func BenchmarkNGTParallel_Insert(b *testing.B) {
 }
 
 func BenchmarkNGTSequential_BulkInsert(b *testing.B) {
-	ctx := context.Background()
+	ctx := b.Context()
 	for _, target := range targets {
 		benchmark.New(b,
 			benchmark.WithName(target),
@@ -107,7 +107,7 @@ func BenchmarkNGTSequential_BulkInsert(b *testing.B) {
 }
 
 func BenchmarkNGTParallel_BulkInsert(b *testing.B) {
-	ctx := context.Background()
+	ctx := b.Context()
 	for _, target := range targets {
 		benchmark.New(b,
 			benchmark.WithName(target),
@@ -122,7 +122,7 @@ func BenchmarkNGTParallel_BulkInsert(b *testing.B) {
 }
 
 func BenchmarkNGTSequential_InsertCommit(b *testing.B) {
-	ctx := context.Background()
+	ctx := b.Context()
 	for _, target := range targets {
 		benchmark.New(b,
 			benchmark.WithName(target),
@@ -137,7 +137,7 @@ func BenchmarkNGTSequential_InsertCommit(b *testing.B) {
 }
 
 func BenchmarkNGTParallel_InsertCommit(b *testing.B) {
-	ctx := context.Background()
+	ctx := b.Context()
 	for _, target := range targets {
 		benchmark.New(b,
 			benchmark.WithName(target),
@@ -153,7 +153,7 @@ func BenchmarkNGTParallel_InsertCommit(b *testing.B) {
 }
 
 func BenchmarkNGTSequential_BulkInsertCommit(b *testing.B) {
-	ctx := context.Background()
+	ctx := b.Context()
 	for _, target := range targets {
 		benchmark.New(b,
 			benchmark.WithName(target),
@@ -168,7 +168,7 @@ func BenchmarkNGTSequential_BulkInsertCommit(b *testing.B) {
 }
 
 func BenchmarkNGTParallel_BulkInsertCommit(b *testing.B) {
-	ctx := context.Background()
+	ctx := b.Context()
 	for _, target := range targets {
 		benchmark.New(b,
 			benchmark.WithName(target),
@@ -184,7 +184,7 @@ func BenchmarkNGTParallel_BulkInsertCommit(b *testing.B) {
 }
 
 func BenchmarkNGTSequential_Search(b *testing.B) {
-	ctx := context.Background()
+	ctx := b.Context()
 	for _, target := range targets {
 		benchmark.New(b,
 			benchmark.WithName(target),
@@ -199,7 +199,7 @@ func BenchmarkNGTSequential_Search(b *testing.B) {
 }
 
 func BenchmarkNGTParallel_Search(b *testing.B) {
-	ctx := context.Background()
+	ctx := b.Context()
 	for _, target := range targets {
 		benchmark.New(b,
 			benchmark.WithName(target),
@@ -215,7 +215,7 @@ func BenchmarkNGTParallel_Search(b *testing.B) {
 }
 
 func BenchmarkNGTSequential_Remove(b *testing.B) {
-	ctx := context.Background()
+	ctx := b.Context()
 	for _, target := range targets {
 		benchmark.New(b,
 			benchmark.WithName(target),
@@ -229,7 +229,7 @@ func BenchmarkNGTSequential_Remove(b *testing.B) {
 }
 
 func BenchmarkNGTParallel_Remove(b *testing.B) {
-	ctx := context.Background()
+	ctx := b.Context()
 	for _, target := range targets {
 		benchmark.New(b,
 			benchmark.WithName(target),
@@ -244,7 +244,7 @@ func BenchmarkNGTParallel_Remove(b *testing.B) {
 }
 
 func BenchmarkNGTSequential_GetVector(b *testing.B) {
-	ctx := context.Background()
+	ctx := b.Context()
 	for _, target := range targets {
 		benchmark.New(b,
 			benchmark.WithName(target),
@@ -258,7 +258,7 @@ func BenchmarkNGTSequential_GetVector(b *testing.B) {
 }
 
 func BenchmarkNGTParallel_GetVector(b *testing.B) {
-	ctx := context.Background()
+	ctx := b.Context()
 	for _, target := range targets {
 		benchmark.New(b,
 			benchmark.WithName(target),

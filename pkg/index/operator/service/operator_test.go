@@ -17,7 +17,6 @@
 package service
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -34,17 +33,17 @@ func Test_operator_podOnReconcile(t *testing.T) {
 
 	type want struct {
 		res          k8s.Result
-		createCalled bool
 		err          error
+		createCalled bool
 	}
 	type test struct {
-		name                   string
+		want                   want
 		agentPod               *k8s.Pod
-		readReplicaEnabled     bool
 		readReplicaDeployment  *k8s.Deployment
+		name                   string
 		runningJobs            []k8s.Job
 		rotationJobConcurrency uint
-		want                   want
+		readReplicaEnabled     bool
 	}
 
 	tests := []test{
@@ -319,7 +318,7 @@ func Test_operator_podOnReconcile(t *testing.T) {
 				},
 			}
 
-			res, err := op.podOnReconcile(context.Background(), test.agentPod)
+			res, err := op.podOnReconcile(tt.Context(), test.agentPod)
 			require.Equal(t, test.want.err, err)
 			require.Equal(t, test.want.res, res)
 		})
@@ -439,14 +438,14 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 	type fields struct {
 // 		ctrl                              k8s.Controller
 // 		eg                                errgroup.Group
-// 		namespace                         string
 // 		client                            client.Client
+// 		rotatorJob                        *k8s.Job
+// 		namespace                         string
 // 		rotatorName                       string
 // 		targetReadReplicaIDAnnotationsKey string
-// 		readReplicaEnabled                bool
 // 		readReplicaLabelKey               string
 // 		rotationJobConcurrency            uint
-// 		rotatorJob                        *k8s.Job
+// 		readReplicaEnabled                bool
 // 	}
 // 	type want struct {
 // 		want <-chan error
@@ -481,14 +480,14 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		       fields: fields {
 // 		           ctrl:nil,
 // 		           eg:nil,
-// 		           namespace:"",
 // 		           client:nil,
+// 		           rotatorJob:nil,
+// 		           namespace:"",
 // 		           rotatorName:"",
 // 		           targetReadReplicaIDAnnotationsKey:"",
-// 		           readReplicaEnabled:false,
 // 		           readReplicaLabelKey:"",
 // 		           rotationJobConcurrency:0,
-// 		           rotatorJob:nil,
+// 		           readReplicaEnabled:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -512,14 +511,14 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		           fields: fields {
 // 		           ctrl:nil,
 // 		           eg:nil,
-// 		           namespace:"",
 // 		           client:nil,
+// 		           rotatorJob:nil,
+// 		           namespace:"",
 // 		           rotatorName:"",
 // 		           targetReadReplicaIDAnnotationsKey:"",
-// 		           readReplicaEnabled:false,
 // 		           readReplicaLabelKey:"",
 // 		           rotationJobConcurrency:0,
-// 		           rotatorJob:nil,
+// 		           readReplicaEnabled:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -552,14 +551,14 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 			o := &operator{
 // 				ctrl:                              test.fields.ctrl,
 // 				eg:                                test.fields.eg,
-// 				namespace:                         test.fields.namespace,
 // 				client:                            test.fields.client,
+// 				rotatorJob:                        test.fields.rotatorJob,
+// 				namespace:                         test.fields.namespace,
 // 				rotatorName:                       test.fields.rotatorName,
 // 				targetReadReplicaIDAnnotationsKey: test.fields.targetReadReplicaIDAnnotationsKey,
-// 				readReplicaEnabled:                test.fields.readReplicaEnabled,
 // 				readReplicaLabelKey:               test.fields.readReplicaLabelKey,
 // 				rotationJobConcurrency:            test.fields.rotationJobConcurrency,
-// 				rotatorJob:                        test.fields.rotatorJob,
+// 				readReplicaEnabled:                test.fields.readReplicaEnabled,
 // 			}
 //
 // 			got, err := o.Start(test.args.ctx)
@@ -578,14 +577,14 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 	type fields struct {
 // 		ctrl                              k8s.Controller
 // 		eg                                errgroup.Group
-// 		namespace                         string
 // 		client                            client.Client
+// 		rotatorJob                        *k8s.Job
+// 		namespace                         string
 // 		rotatorName                       string
 // 		targetReadReplicaIDAnnotationsKey string
-// 		readReplicaEnabled                bool
 // 		readReplicaLabelKey               string
 // 		rotationJobConcurrency            uint
-// 		rotatorJob                        *k8s.Job
+// 		readReplicaEnabled                bool
 // 	}
 // 	type want struct {
 // 		wantRequeue bool
@@ -621,14 +620,14 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		       fields: fields {
 // 		           ctrl:nil,
 // 		           eg:nil,
-// 		           namespace:"",
 // 		           client:nil,
+// 		           rotatorJob:nil,
+// 		           namespace:"",
 // 		           rotatorName:"",
 // 		           targetReadReplicaIDAnnotationsKey:"",
-// 		           readReplicaEnabled:false,
 // 		           readReplicaLabelKey:"",
 // 		           rotationJobConcurrency:0,
-// 		           rotatorJob:nil,
+// 		           readReplicaEnabled:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -653,14 +652,14 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		           fields: fields {
 // 		           ctrl:nil,
 // 		           eg:nil,
-// 		           namespace:"",
 // 		           client:nil,
+// 		           rotatorJob:nil,
+// 		           namespace:"",
 // 		           rotatorName:"",
 // 		           targetReadReplicaIDAnnotationsKey:"",
-// 		           readReplicaEnabled:false,
 // 		           readReplicaLabelKey:"",
 // 		           rotationJobConcurrency:0,
-// 		           rotatorJob:nil,
+// 		           readReplicaEnabled:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -693,14 +692,14 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 			o := &operator{
 // 				ctrl:                              test.fields.ctrl,
 // 				eg:                                test.fields.eg,
-// 				namespace:                         test.fields.namespace,
 // 				client:                            test.fields.client,
+// 				rotatorJob:                        test.fields.rotatorJob,
+// 				namespace:                         test.fields.namespace,
 // 				rotatorName:                       test.fields.rotatorName,
 // 				targetReadReplicaIDAnnotationsKey: test.fields.targetReadReplicaIDAnnotationsKey,
-// 				readReplicaEnabled:                test.fields.readReplicaEnabled,
 // 				readReplicaLabelKey:               test.fields.readReplicaLabelKey,
 // 				rotationJobConcurrency:            test.fields.rotationJobConcurrency,
-// 				rotatorJob:                        test.fields.rotatorJob,
+// 				readReplicaEnabled:                test.fields.readReplicaEnabled,
 // 			}
 //
 // 			gotRequeue, err := o.reconcileRotatorJob(test.args.ctx, test.args.pod)
@@ -811,14 +810,14 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 	type fields struct {
 // 		ctrl                              k8s.Controller
 // 		eg                                errgroup.Group
-// 		namespace                         string
 // 		client                            client.Client
+// 		rotatorJob                        *k8s.Job
+// 		namespace                         string
 // 		rotatorName                       string
 // 		targetReadReplicaIDAnnotationsKey string
-// 		readReplicaEnabled                bool
 // 		readReplicaLabelKey               string
 // 		rotationJobConcurrency            uint
-// 		rotatorJob                        *k8s.Job
+// 		readReplicaEnabled                bool
 // 	}
 // 	type want struct {
 // 		wantRq bool
@@ -854,14 +853,14 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		       fields: fields {
 // 		           ctrl:nil,
 // 		           eg:nil,
-// 		           namespace:"",
 // 		           client:nil,
+// 		           rotatorJob:nil,
+// 		           namespace:"",
 // 		           rotatorName:"",
 // 		           targetReadReplicaIDAnnotationsKey:"",
-// 		           readReplicaEnabled:false,
 // 		           readReplicaLabelKey:"",
 // 		           rotationJobConcurrency:0,
-// 		           rotatorJob:nil,
+// 		           readReplicaEnabled:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -886,14 +885,14 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		           fields: fields {
 // 		           ctrl:nil,
 // 		           eg:nil,
-// 		           namespace:"",
 // 		           client:nil,
+// 		           rotatorJob:nil,
+// 		           namespace:"",
 // 		           rotatorName:"",
 // 		           targetReadReplicaIDAnnotationsKey:"",
-// 		           readReplicaEnabled:false,
 // 		           readReplicaLabelKey:"",
 // 		           rotationJobConcurrency:0,
-// 		           rotatorJob:nil,
+// 		           readReplicaEnabled:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -926,14 +925,14 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 			o := &operator{
 // 				ctrl:                              test.fields.ctrl,
 // 				eg:                                test.fields.eg,
-// 				namespace:                         test.fields.namespace,
 // 				client:                            test.fields.client,
+// 				rotatorJob:                        test.fields.rotatorJob,
+// 				namespace:                         test.fields.namespace,
 // 				rotatorName:                       test.fields.rotatorName,
 // 				targetReadReplicaIDAnnotationsKey: test.fields.targetReadReplicaIDAnnotationsKey,
-// 				readReplicaEnabled:                test.fields.readReplicaEnabled,
 // 				readReplicaLabelKey:               test.fields.readReplicaLabelKey,
 // 				rotationJobConcurrency:            test.fields.rotationJobConcurrency,
-// 				rotatorJob:                        test.fields.rotatorJob,
+// 				readReplicaEnabled:                test.fields.readReplicaEnabled,
 // 			}
 //
 // 			gotRq, err := o.createRotationJobOrRequeue(test.args.ctx, test.args.podIdx)
@@ -952,14 +951,14 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 	type fields struct {
 // 		ctrl                              k8s.Controller
 // 		eg                                errgroup.Group
-// 		namespace                         string
 // 		client                            client.Client
+// 		rotatorJob                        *k8s.Job
+// 		namespace                         string
 // 		rotatorName                       string
 // 		targetReadReplicaIDAnnotationsKey string
-// 		readReplicaEnabled                bool
 // 		readReplicaLabelKey               string
 // 		rotationJobConcurrency            uint
-// 		rotatorJob                        *k8s.Job
+// 		readReplicaEnabled                bool
 // 	}
 // 	type want struct {
 // 		want jobReconcileResult
@@ -995,14 +994,14 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		       fields: fields {
 // 		           ctrl:nil,
 // 		           eg:nil,
-// 		           namespace:"",
 // 		           client:nil,
+// 		           rotatorJob:nil,
+// 		           namespace:"",
 // 		           rotatorName:"",
 // 		           targetReadReplicaIDAnnotationsKey:"",
-// 		           readReplicaEnabled:false,
 // 		           readReplicaLabelKey:"",
 // 		           rotationJobConcurrency:0,
-// 		           rotatorJob:nil,
+// 		           readReplicaEnabled:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1027,14 +1026,14 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		           fields: fields {
 // 		           ctrl:nil,
 // 		           eg:nil,
-// 		           namespace:"",
 // 		           client:nil,
+// 		           rotatorJob:nil,
+// 		           namespace:"",
 // 		           rotatorName:"",
 // 		           targetReadReplicaIDAnnotationsKey:"",
-// 		           readReplicaEnabled:false,
 // 		           readReplicaLabelKey:"",
 // 		           rotationJobConcurrency:0,
-// 		           rotatorJob:nil,
+// 		           readReplicaEnabled:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1067,14 +1066,14 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 			o := &operator{
 // 				ctrl:                              test.fields.ctrl,
 // 				eg:                                test.fields.eg,
-// 				namespace:                         test.fields.namespace,
 // 				client:                            test.fields.client,
+// 				rotatorJob:                        test.fields.rotatorJob,
+// 				namespace:                         test.fields.namespace,
 // 				rotatorName:                       test.fields.rotatorName,
 // 				targetReadReplicaIDAnnotationsKey: test.fields.targetReadReplicaIDAnnotationsKey,
-// 				readReplicaEnabled:                test.fields.readReplicaEnabled,
 // 				readReplicaLabelKey:               test.fields.readReplicaLabelKey,
 // 				rotationJobConcurrency:            test.fields.rotationJobConcurrency,
-// 				rotatorJob:                        test.fields.rotatorJob,
+// 				readReplicaEnabled:                test.fields.readReplicaEnabled,
 // 			}
 //
 // 			got, err := o.ensureJobConcurrency(test.args.ctx, test.args.podIdx)
