@@ -18,34 +18,25 @@ package config
 
 // LB represents the configuration for load balancer.
 type LB struct {
-	// AgentPort represent agent port number
-	AgentPort int `json:"agent_port" yaml:"agent_port"`
-
-	// AgentName represent agents meta_name for service discovery
-	AgentName string `json:"agent_name" yaml:"agent_name"`
-
-	// AgentNamespace represent agent namespace location
-	AgentNamespace string `json:"agent_namespace" yaml:"agent_namespace"`
-
-	// AgentDNS represent agents dns A record for service discovery
-	AgentDNS string `json:"agent_dns" yaml:"agent_dns"`
-
-	// NodeName represents node name
-	NodeName string `json:"node_name" yaml:"node_name"`
-
-	// IndexReplica represents index replication count
-	IndexReplica int `json:"index_replica" yaml:"index_replica"`
-
-	// ReadReplicaReplicas represents replica count of read replica Deployment
-	ReadReplicaReplicas uint64 `json:"read_replica_replicas" yaml:"read_replica_replicas"`
-
-	// ReadReplicaClient represents read replica client configuration
+	// ReadReplicaClient represents the read replica client configuration.
 	ReadReplicaClient ReadReplicaClient `json:"read_replica_client" yaml:"read_replica_client"`
-
-	// Discoverer represent agent discoverer service configuration
+	// Discoverer represents the discoverer client configuration.
 	Discoverer *DiscovererClient `json:"discoverer" yaml:"discoverer"`
-
-	// MultiOperationConcurrency
+	// AgentName represents the agent name.
+	AgentName string `json:"agent_name" yaml:"agent_name"`
+	// AgentNamespace represents the agent namespace.
+	AgentNamespace string `json:"agent_namespace" yaml:"agent_namespace"`
+	// AgentDNS represents the agent DNS.
+	AgentDNS string `json:"agent_dns" yaml:"agent_dns"`
+	// NodeName represents the node name.
+	NodeName string `json:"node_name" yaml:"node_name"`
+	// AgentPort represents the agent port.
+	AgentPort int `json:"agent_port" yaml:"agent_port"`
+	// IndexReplica represents the index replica count.
+	IndexReplica int `json:"index_replica" yaml:"index_replica"`
+	// ReadReplicaReplicas represents the read replica replicas count.
+	ReadReplicaReplicas uint64 `json:"read_replica_replicas" yaml:"read_replica_replicas"`
+	// MultiOperationConcurrency represents the multi operation concurrency.
 	MultiOperationConcurrency int `json:"multi_operation_concurrency" yaml:"multi_operation_concurrency"`
 }
 
@@ -64,9 +55,12 @@ func (g *LB) Bind() *LB {
 
 // ReadReplicaClient represents a configuration of grpc client for read replica.
 type ReadReplicaClient struct {
-	Duration           string      `json:"duration"             yaml:"duration"`
-	Client             *GRPCClient `json:"client"               yaml:"client"`
+	// Client represents the gRPC client configuration.
+	Client *GRPCClient `json:"client" yaml:"client"`
+	// AgentClientOptions represents the agent client options.
 	AgentClientOptions *GRPCClient `json:"agent_client_options" yaml:"agent_client_options"`
+	// Duration represents the duration.
+	Duration string `json:"duration" yaml:"duration"`
 }
 
 // Bind binds the actual data from the ReadReplicaClient receiver field.

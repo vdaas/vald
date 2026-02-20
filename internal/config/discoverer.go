@@ -18,19 +18,30 @@ package config
 
 // Discoverer represents the Discoverer configurations.
 type Discoverer struct {
-	Name              string     `json:"name,omitempty"               yaml:"name"`
-	Namespace         string     `json:"namespace,omitempty"          yaml:"namespace"`
-	DiscoveryDuration string     `json:"discovery_duration,omitempty" yaml:"discovery_duration"`
-	Net               *Net       `json:"net,omitempty"                yaml:"net"`
-	Selectors         *Selectors `json:"selectors,omitempty"          yaml:"selectors"`
+	// Net represents the network configuration.
+	Net *Net `json:"net,omitempty" yaml:"net"`
+	// Selectors represents the selector configuration.
+	Selectors *Selectors `json:"selectors,omitempty" yaml:"selectors"`
+	// Name represents the discoverer name.
+	Name string `json:"name,omitempty" yaml:"name"`
+	// Namespace represents the namespace.
+	Namespace string `json:"namespace,omitempty" yaml:"namespace"`
+	// DiscoveryDuration represents the discovery duration.
+	DiscoveryDuration string `json:"discovery_duration,omitempty" yaml:"discovery_duration"`
 }
 
+// Selectors represents the selector configuration.
 type Selectors struct {
-	Pod         *Selector `json:"pod,omitempty"          yaml:"pod"`
-	Node        *Selector `json:"node,omitempty"         yaml:"node"`
+	// Pod represents the pod selector.
+	Pod *Selector `json:"pod,omitempty" yaml:"pod"`
+	// Node represents the node selector.
+	Node *Selector `json:"node,omitempty" yaml:"node"`
+	// NodeMetrics represents the node metrics selector.
 	NodeMetrics *Selector `json:"node_metrics,omitempty" yaml:"node_metrics"`
-	PodMetrics  *Selector `json:"pod_metrics,omitempty"  yaml:"pod_metrics"`
-	Service     *Selector `json:"service,omitempty"      yaml:"service"`
+	// PodMetrics represents the pod metrics selector.
+	PodMetrics *Selector `json:"pod_metrics,omitempty" yaml:"pod_metrics"`
+	// Service represents the service selector.
+	Service *Selector `json:"service,omitempty" yaml:"service"`
 }
 
 func (s *Selectors) GetPodFields() map[string]string {
@@ -103,8 +114,11 @@ func (s *Selectors) GetServiceLabels() map[string]string {
 	return s.Service.GetLabels()
 }
 
+// Selector represents the selector configuration.
 type Selector struct {
+	// Labels represents the labels.
 	Labels map[string]string `json:"labels,omitempty" yaml:"labels"`
+	// Fields represents the fields.
 	Fields map[string]string `json:"fields,omitempty" yaml:"fields"`
 }
 
@@ -122,9 +136,12 @@ func (s *Selector) GetFields() map[string]string {
 	return s.Fields
 }
 
+// ReadReplica represents the read replica configuration.
 type ReadReplica struct {
-	Enabled bool   `json:"enabled,omitempty" yaml:"enabled"`
-	IDKey   string `json:"id_key,omitempty"  yaml:"id_key"`
+	// IDKey represents the ID key.
+	IDKey string `json:"id_key,omitempty" yaml:"id_key"`
+	// Enabled enables read replica.
+	Enabled bool `json:"enabled,omitempty" yaml:"enabled"`
 }
 
 func (r *ReadReplica) GetEnabled() bool {
@@ -207,9 +224,12 @@ func (r *ReadReplica) Bind() *ReadReplica {
 
 // DiscovererClient represents the DiscovererClient configurations.
 type DiscovererClient struct {
-	Duration           string      `json:"duration"             yaml:"duration"`
-	Client             *GRPCClient `json:"client"               yaml:"client"`
+	// Client represents the client configuration.
+	Client *GRPCClient `json:"client" yaml:"client"`
+	// AgentClientOptions represents the agent client options.
 	AgentClientOptions *GRPCClient `json:"agent_client_options" yaml:"agent_client_options"`
+	// Duration represents the duration.
+	Duration string `json:"duration" yaml:"duration"`
 }
 
 // Bind binds the actual data from the DiscovererClient receiver field.

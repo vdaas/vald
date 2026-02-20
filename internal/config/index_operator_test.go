@@ -117,15 +117,15 @@ package config
 //
 // func TestIndexOperator_Bind(t *testing.T) {
 // 	type fields struct {
+// 		JobTemplates                      IndexJobTemplates
 // 		Namespace                         string
 // 		AgentName                         string
 // 		AgentNamespace                    string
 // 		RotatorName                       string
 // 		TargetReadReplicaIDAnnotationsKey string
+// 		ReadReplicaLabelKey               string
 // 		RotationJobConcurrency            uint
 // 		ReadReplicaEnabled                bool
-// 		ReadReplicaLabelKey               string
-// 		JobTemplates                      IndexJobTemplates
 // 	}
 // 	type want struct {
 // 		want *IndexOperator
@@ -150,15 +150,15 @@ package config
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           JobTemplates:IndexJobTemplates{},
 // 		           Namespace:"",
 // 		           AgentName:"",
 // 		           AgentNamespace:"",
 // 		           RotatorName:"",
 // 		           TargetReadReplicaIDAnnotationsKey:"",
+// 		           ReadReplicaLabelKey:"",
 // 		           RotationJobConcurrency:0,
 // 		           ReadReplicaEnabled:false,
-// 		           ReadReplicaLabelKey:"",
-// 		           JobTemplates:IndexJobTemplates{},
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -177,15 +177,15 @@ package config
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           JobTemplates:IndexJobTemplates{},
 // 		           Namespace:"",
 // 		           AgentName:"",
 // 		           AgentNamespace:"",
 // 		           RotatorName:"",
 // 		           TargetReadReplicaIDAnnotationsKey:"",
+// 		           ReadReplicaLabelKey:"",
 // 		           RotationJobConcurrency:0,
 // 		           ReadReplicaEnabled:false,
-// 		           ReadReplicaLabelKey:"",
-// 		           JobTemplates:IndexJobTemplates{},
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -216,15 +216,15 @@ package config
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			ic := &IndexOperator{
+// 				JobTemplates:                      test.fields.JobTemplates,
 // 				Namespace:                         test.fields.Namespace,
 // 				AgentName:                         test.fields.AgentName,
 // 				AgentNamespace:                    test.fields.AgentNamespace,
 // 				RotatorName:                       test.fields.RotatorName,
 // 				TargetReadReplicaIDAnnotationsKey: test.fields.TargetReadReplicaIDAnnotationsKey,
+// 				ReadReplicaLabelKey:               test.fields.ReadReplicaLabelKey,
 // 				RotationJobConcurrency:            test.fields.RotationJobConcurrency,
 // 				ReadReplicaEnabled:                test.fields.ReadReplicaEnabled,
-// 				ReadReplicaLabelKey:               test.fields.ReadReplicaLabelKey,
-// 				JobTemplates:                      test.fields.JobTemplates,
 // 			}
 //
 // 			got := ic.Bind()

@@ -36,14 +36,12 @@ import (
 
 // GlobalConfig represent a application setting data content (config.yaml).
 type GlobalConfig struct {
-	// Version represent configuration file version.
-	Version string `json:"version" yaml:"version"`
-
-	// TZ represent system time location .
-	TZ string `json:"time_zone" yaml:"time_zone"`
-
-	// Log represent log configuration.
+	// Logging represents the logging configuration.
 	Logging *Logging `json:"logging,omitempty" yaml:"logging,omitempty"`
+	// Version represents the configuration file version.
+	Version string `json:"version" yaml:"version"`
+	// TZ represents the system time zone.
+	TZ string `json:"time_zone" yaml:"time_zone"`
 }
 
 const (
@@ -176,7 +174,7 @@ func deepMerge(dst, src reflect.Value, visited map[uintptr]bool, fieldPath strin
 		return errors.ErrNotMatchFieldType(fieldPath, dType, sType)
 	}
 	sKind := src.Kind()
-	if sKind == reflect.Ptr {
+	if sKind == reflect.Pointer {
 		src = src.Elem()
 	}
 	if sKind == reflect.Struct && src.CanAddr() {
@@ -189,7 +187,7 @@ func deepMerge(dst, src reflect.Value, visited map[uintptr]bool, fieldPath strin
 		}
 	}
 	switch dst.Kind() {
-	case reflect.Ptr:
+	case reflect.Pointer:
 		if dst.IsNil() {
 			dst.Set(reflect.New(dst.Type().Elem()))
 		}
@@ -200,7 +198,7 @@ func deepMerge(dst, src reflect.Value, visited map[uintptr]bool, fieldPath strin
 		if dnum != snum {
 			return errors.ErrNotMatchFieldNum(fieldPath, dnum, snum)
 		}
-		for i := 0; i < dnum; i++ {
+		for i := range dnum {
 			dstField := dst.Field(i)
 			if dstField.CanSet() {
 				nf := fmt.Sprintf("%s.%s(%d)", fieldPath, dType.Field(i).Name, i)
@@ -220,7 +218,7 @@ func deepMerge(dst, src reflect.Value, visited map[uintptr]bool, fieldPath strin
 					dst.Set(reflect.AppendSlice(dst, reflect.MakeSlice(dType, diffLen, diffLen)))
 				}
 			}
-			for i := 0; i < srcLen; i++ {
+			for i := range srcLen {
 				nf := fmt.Sprintf("%s[%d]", fieldPath, i)
 				if err = deepMerge(dst.Index(i), src.Index(i), visited, nf); err != nil {
 					return errors.ErrDeepMergeKind(dst.Kind().String(), nf, err)
@@ -232,7 +230,7 @@ func deepMerge(dst, src reflect.Value, visited map[uintptr]bool, fieldPath strin
 		if srcLen != dst.Len() {
 			return errors.ErrNotMatchArrayLength(fieldPath, dst.Len(), srcLen)
 		}
-		for i := 0; i < srcLen; i++ {
+		for i := range srcLen {
 			nf := fmt.Sprintf("%s[%d]", fieldPath, i)
 			if err = deepMerge(dst.Index(i), src.Index(i), visited, nf); err != nil {
 				return errors.ErrDeepMergeKind(dst.Kind().String(), nf, err)

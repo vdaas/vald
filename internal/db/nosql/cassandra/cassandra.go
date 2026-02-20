@@ -106,9 +106,9 @@ type (
 		enableTokenAwareHostPolicy     bool
 	}
 	hostFilter struct {
-		enable    bool
 		dcHost    string
 		whiteList []string
+		enable    bool
 	}
 	// skipcq: SCC-U1000
 	events struct {
@@ -117,53 +117,52 @@ type (
 		DisableSchemaEvents     bool
 	}
 	client struct {
-		hosts                    []string
-		cqlVersion               string
-		protoVersion             int
-		timeout                  time.Duration
-		connectTimeout           time.Duration
-		port                     int
-		keyspace                 string
-		numConns                 int
-		consistency              gocql.Consistency
+		cluster                  ClusterConfig
+		dialer                   gocql.Dialer
+		rawDialer                net.Dialer
+		frameHeaderObserver      FrameHeaderObserver
+		connectObserver          ConnectObserver
+		batchObserver            BatchObserver
+		queryObserver            QueryObserver
 		compressor               gocql.Compressor
-		username                 string
-		password                 string
+		tls                      *tls.Config
+		session                  *gocql.Session
 		authProvider             func(h *gocql.HostInfo) (gocql.Authenticator, error)
+		tlsCAPath                string
+		tlsCertPath              string
+		cqlVersion               string
+		keyspace                 string
+		password                 string
+		tlsKeyPath               string
+		username                 string
+		poolConfig               poolConfig
+		hosts                    []string
+		hostFilter               hostFilter
 		retryPolicy              retryPolicy
 		reconnectionPolicy       reconnectionPolicy
-		poolConfig               poolConfig
-		hostFilter               hostFilter
-		socketKeepalive          time.Duration
-		maxPreparedStmts         int
-		maxRoutingKeyInfo        int
-		pageSize                 int
-		serialConsistency        gocql.SerialConsistency
-		tls                      *tls.Config
-		tlsCertPath              string
-		tlsKeyPath               string
-		tlsCAPath                string
-		enableHostVerification   bool
-		defaultTimestamp         bool
 		reconnectInterval        time.Duration
+		port                     int
+		pageSize                 int
+		socketKeepalive          time.Duration
+		protoVersion             int
+		maxRoutingKeyInfo        int
 		maxWaitSchemaAgreement   time.Duration
-		ignorePeerAddr           bool
-		disableInitialHostLookup bool
-		disableNodeStatusEvents  bool
-		disableTopologyEvents    bool
-		disableSchemaEvents      bool
-		disableSkipMetadata      bool
-		queryObserver            QueryObserver
-		batchObserver            BatchObserver
-		connectObserver          ConnectObserver
-		frameHeaderObserver      FrameHeaderObserver
-		defaultIdempotence       bool
-		rawDialer                net.Dialer
-		dialer                   gocql.Dialer
 		writeCoalesceWaitTime    time.Duration
-
-		cluster ClusterConfig
-		session *gocql.Session
+		timeout                  time.Duration
+		connectTimeout           time.Duration
+		maxPreparedStmts         int
+		numConns                 int
+		consistency              gocql.Consistency
+		serialConsistency        gocql.SerialConsistency
+		disableSkipMetadata      bool
+		disableSchemaEvents      bool
+		disableTopologyEvents    bool
+		defaultIdempotence       bool
+		disableNodeStatusEvents  bool
+		disableInitialHostLookup bool
+		ignorePeerAddr           bool
+		defaultTimestamp         bool
+		enableHostVerification   bool
 	}
 )
 
@@ -375,32 +374,32 @@ func Contains(column string) Cmp {
 
 // WrapErrorWithKeys wraps the cassandra error to Vald internal error.
 func WrapErrorWithKeys(err error, keys ...string) error {
-	switch err {
-	case ErrNotFound:
+	switch {
+	case errors.Is(err, ErrNotFound):
 		return errors.ErrCassandraNotFound(keys...)
-	case ErrUnavailable:
+	case errors.Is(err, ErrUnavailable):
 		return errors.ErrCassandraUnavailable
-	case ErrUnsupported:
+	case errors.Is(err, ErrUnsupported):
 		return err
-	case ErrTooManyStmts:
+	case errors.Is(err, ErrTooManyStmts):
 		return err
-	case ErrUseStmt:
+	case errors.Is(err, ErrUseStmt):
 		return err
-	case ErrSessionClosed:
+	case errors.Is(err, ErrSessionClosed):
 		return err
-	case ErrNoConnections:
+	case errors.Is(err, ErrNoConnections):
 		return err
-	case ErrNoKeyspace:
+	case errors.Is(err, ErrNoKeyspace):
 		return err
-	case ErrKeyspaceDoesNotExist:
+	case errors.Is(err, ErrKeyspaceDoesNotExist):
 		return err
-	case ErrNoMetadata:
+	case errors.Is(err, ErrNoMetadata):
 		return err
-	case ErrNoHosts:
+	case errors.Is(err, ErrNoHosts):
 		return err
-	case ErrNoConnectionsStarted:
+	case errors.Is(err, ErrNoConnectionsStarted):
 		return err
-	case ErrHostQueryFailed:
+	case errors.Is(err, ErrHostQueryFailed):
 		return err
 	default:
 		return err

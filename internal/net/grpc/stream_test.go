@@ -32,21 +32,21 @@ import (
 
 func TestBidirectionalStream(t *testing.T) {
 	type args struct {
-		concurrency int
 		f           func(context.Context, *payload.Insert_Request) (*payload.Object_StreamLocation, error)
 		insertReqs  []*payload.Insert_Request
+		concurrency int
 	}
 	type want struct {
-		rpcResp []*payload.Object_StreamLocation
 		err     error
+		rpcResp []*payload.Object_StreamLocation
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func([]*payload.Object_StreamLocation, want, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
 	}
 
 	const (
@@ -146,8 +146,7 @@ func TestBidirectionalStream(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := tt.Context()
 
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt, test.args)

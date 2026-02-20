@@ -46,23 +46,17 @@ type StorageObserver interface {
 }
 
 type observer struct {
-	w             watch.Watcher
-	dir           string
-	eg            errgroup.Group
-	checkDuration time.Duration
-
-	metadataPath string
-
+	w               watch.Watcher
+	eg              errgroup.Group
+	storage         storage.Storage
+	ch              chan struct{}
+	dir             string
+	metadataPath    string
+	hooks           []Hook
+	checkDuration   time.Duration
 	postStopTimeout time.Duration
-
-	watchEnabled  bool
-	tickerEnabled bool
-
-	storage storage.Storage
-
-	ch chan struct{}
-
-	hooks []Hook
+	watchEnabled    bool
+	tickerEnabled   bool
 }
 
 func New(opts ...Option) (so StorageObserver, err error) {
@@ -413,7 +407,7 @@ func (o *observer) backup(ctx context.Context) (err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/agent-sidecar/service/observer/StorageObserver.backup")
 	if span != nil {
 		span.SetAttributes(
-			attribute.String("storage_type", bi.StorageInfo.Type),
+			attribute.String("storage_type", bi.Type),
 			attribute.String("bucket_name", bi.BucketName),
 			attribute.String("filename", bi.Filename),
 		)

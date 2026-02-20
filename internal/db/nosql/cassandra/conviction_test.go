@@ -31,11 +31,11 @@ func TestNewConvictionPolicy(t *testing.T) {
 		want gocql.ConvictionPolicy
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, gocql.ConvictionPolicy) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got gocql.ConvictionPolicy) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -84,13 +84,13 @@ func Test_convictionPolicy_AddFailure(t *testing.T) {
 		want bool
 	}
 	type test struct {
-		name       string
 		args       args
 		c          *convictionPolicy
-		want       want
 		checkFunc  func(want, bool) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -145,13 +145,13 @@ func Test_convictionPolicy_Reset(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
+		want       want
 		args       args
 		c          *convictionPolicy
-		want       want
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil

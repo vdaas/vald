@@ -29,12 +29,12 @@ func Test_compressAlgorithm_String(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
-		ca         CompressAlgorithm
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
+		ca         CompressAlgorithm
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -117,12 +117,12 @@ func TestAToCompressAlgorithm(t *testing.T) {
 		want CompressAlgorithm
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, CompressAlgorithm) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, got CompressAlgorithm) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -243,12 +243,12 @@ func TestCompressCore_Bind(t *testing.T) {
 		want *CompressCore
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *CompressCore) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *CompressCore) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -362,20 +362,20 @@ func TestCompressCore_Bind(t *testing.T) {
 
 func TestCompressor_Bind(t *testing.T) {
 	type fields struct {
+		QueueCheckDuration string
 		CompressCore       CompressCore
 		ConcurrentLimit    int
-		QueueCheckDuration string
 	}
 	type want struct {
 		want *Compressor
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *Compressor) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *Compressor) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -453,20 +453,20 @@ func TestCompressor_Bind(t *testing.T) {
 
 func TestCompressorRegisterer_Bind(t *testing.T) {
 	type fields struct {
-		ConcurrentLimit    int
-		QueueCheckDuration string
 		Compressor         *BackupManager
+		QueueCheckDuration string
+		ConcurrentLimit    int
 	}
 	type want struct {
 		want *CompressorRegisterer
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *CompressorRegisterer) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *CompressorRegisterer) error {
 		if !reflect.DeepEqual(got, w.want) {

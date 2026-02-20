@@ -69,9 +69,9 @@ func Uint8VectorGenerator(d Distribution) (Uint8VectorGeneratorFunc, error) {
 func genF32Slice(n, dim int, gen func() float32) (ret [][]float32) {
 	ret = make([][]float32, 0, n)
 
-	for i := 0; i < n; i++ {
+	for range n {
 		v := make([]float32, dim)
-		for j := 0; j < dim; j++ {
+		for j := range dim {
 			v[j] = gen()
 		}
 		ret = append(ret, v)
@@ -93,7 +93,7 @@ func NegativeUniformDistributedFloat32VectorGenerator(n, dim int) (vecs [][]floa
 	rvs := UniformDistributedFloat32VectorGenerator(n, right)
 	vecs = make([][]float32, 0, n)
 	// skipcq: GO-S1033
-	for i := 0; i < n; i++ {
+	for i := range n {
 		// skipcq: CRT-D0001
 		vs := append(lvs[i], rvs[i]...)
 		rand.Shuffle(len(vs), func(i, j int) { vs[i], vs[j] = vs[j], vs[i] })
@@ -113,9 +113,9 @@ func GaussianDistributedFloat32VectorGenerator(n, dim int) [][]float32 {
 func genUint8Slice(n, dim int, gen func() uint8) (ret [][]uint8) {
 	ret = make([][]uint8, 0, n)
 
-	for i := 0; i < n; i++ {
+	for range n {
 		v := make([]uint8, dim)
-		for j := 0; j < dim; j++ {
+		for j := range dim {
 			v[j] = gen()
 		}
 		ret = append(ret, v)
@@ -166,7 +166,7 @@ func GenUint8Vec(dist Distribution, num int, dim int) ([][]float32, error) {
 // GenSameValueVec returns a float32 vector filled with value.
 func GenSameValueVec(size int, val float32) []float32 {
 	v := make([]float32, size)
-	for i := 0; i < size; i++ {
+	for i := range size {
 		v[i] = val
 	}
 	return v

@@ -88,7 +88,7 @@ func ListenAndServe(b *testing.B, addr string) func() {
 
 func do(b *testing.B, conn *ClientConn) {
 	b.Helper()
-	_, err := discoverer.NewDiscovererClient(conn).Nodes(context.Background(), new(payload.Discoverer_Request))
+	_, err := discoverer.NewDiscovererClient(conn).Nodes(b.Context(), new(payload.Discoverer_Request))
 	if err != nil {
 		b.Error(err)
 	}
@@ -97,8 +97,7 @@ func do(b *testing.B, conn *ClientConn) {
 func Benchmark_ConnPool(b *testing.B) {
 	defer ListenAndServe(b, DefaultServerAddr)()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := b.Context()
 	pool, err := New(ctx,
 		WithAddr(DefaultServerAddr),
 		WithSize(DefaultPoolSize),
@@ -152,8 +151,7 @@ func Benchmark_StaticDial(b *testing.B) {
 func BenchmarkParallel_ConnPool(b *testing.B) {
 	defer ListenAndServe(b, DefaultServerAddr)()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := b.Context()
 	pool, err := New(ctx,
 		WithAddr(DefaultServerAddr),
 		WithSize(DefaultPoolSize),

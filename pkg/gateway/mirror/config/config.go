@@ -29,16 +29,17 @@ type (
 // Data represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Data struct {
-	config.GlobalConfig `json:",inline" yaml:",inline"`
-
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
 
 	// Observability represent observability configurations
 	Observability *config.Observability `json:"observability" yaml:"observability"`
 
-	// Mirror represent mirror gateway service configuration
+	// Mirror represent gateway mirror configuration
 	Mirror *config.Mirror `json:"gateway" yaml:"gateway"`
+
+	// GlobalConfig represent the global configuration
+	config.GlobalConfig `json:",inline" yaml:",inline"`
 }
 
 // NewConfig load configurations from file path.

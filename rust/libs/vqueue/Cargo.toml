@@ -28,6 +28,10 @@ serde = { version = "1.0", features = ["derive"] }
 bincode = "3.0"
 thiserror = "2.0"
 moka = { version = "0.12", features = ["future"] }
+<<<<<<< HEAD
+=======
+wincode = { version = "0.4.4", features = ["derive"] }
+>>>>>>> 9e5e90386 (Add AGENTS.md for AI Co-Worker standardization (#3473))
 
 
 [dev-dependencies]

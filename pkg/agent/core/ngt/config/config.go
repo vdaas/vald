@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+// Package config stores all server application settings for ngt agent
 package config
 
 import (
@@ -27,8 +28,6 @@ type GlobalConfig = config.GlobalConfig
 // Data represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Data struct {
-	GlobalConfig `json:",inline" yaml:",inline"`
-
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
 
@@ -37,6 +36,9 @@ type Data struct {
 
 	// NGT represent ngt core configuration
 	NGT *config.NGT `json:"ngt" yaml:"ngt"`
+
+	// GlobalConfig represent the global configuration
+	GlobalConfig `json:",inline" yaml:",inline"`
 }
 
 // NewConfig returns the Data struct or error from the given file path.

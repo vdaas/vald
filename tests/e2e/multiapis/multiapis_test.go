@@ -20,7 +20,6 @@
 package multiapis
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"testing"
@@ -139,7 +138,7 @@ func sleep(t *testing.T, dur time.Duration) {
 
 func TestE2EMultiAPIs(t *testing.T) {
 	t.Cleanup(teardown)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	op, err := operation.New(host, port)
 	if err != nil {

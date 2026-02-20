@@ -29,9 +29,9 @@ func TestMain(m *testing.M) {
 func TestHandlerToRestFunc(t *testing.T) {
 	t.Parallel()
 	type test struct {
-		name      string
 		hfn       http.HandlerFunc
 		checkFunc func(Func) error
+		name      string
 	}
 
 	tests := []test{
