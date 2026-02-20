@@ -109,13 +109,13 @@ package grpc
 // 		uuids []string
 // 	}
 // 	type fields struct {
-// 		name                     string
-// 		ip                       string
-// 		faiss                    service.Faiss
-// 		eg                       errgroup.Group
-// 		streamConcurrency        int
 // 		UnimplementedAgentServer agent.UnimplementedAgentServer
 // 		UnimplementedValdServer  vald.UnimplementedValdServer
+// 		faiss                    service.Faiss
+// 		eg                       errgroup.Group
+// 		name                     string
+// 		ip                       string
+// 		streamConcurrency        int
 // 	}
 // 	type want struct {
 // 		wantLocs *payload.Object_Locations
@@ -144,13 +144,13 @@ package grpc
 // 		           uuids:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           faiss:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           faiss:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -172,13 +172,13 @@ package grpc
 // 		           uuids:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           faiss:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           faiss:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -209,13 +209,13 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				name:                     test.fields.name,
-// 				ip:                       test.fields.ip,
-// 				faiss:                    test.fields.faiss,
-// 				eg:                       test.fields.eg,
-// 				streamConcurrency:        test.fields.streamConcurrency,
 // 				UnimplementedAgentServer: test.fields.UnimplementedAgentServer,
 // 				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
+// 				faiss:                    test.fields.faiss,
+// 				eg:                       test.fields.eg,
+// 				name:                     test.fields.name,
+// 				ip:                       test.fields.ip,
+// 				streamConcurrency:        test.fields.streamConcurrency,
 // 			}
 //
 // 			gotLocs := s.newLocations(test.args.uuids...)
@@ -231,13 +231,13 @@ package grpc
 // 		uuid string
 // 	}
 // 	type fields struct {
-// 		name                     string
-// 		ip                       string
-// 		faiss                    service.Faiss
-// 		eg                       errgroup.Group
-// 		streamConcurrency        int
 // 		UnimplementedAgentServer agent.UnimplementedAgentServer
 // 		UnimplementedValdServer  vald.UnimplementedValdServer
+// 		faiss                    service.Faiss
+// 		eg                       errgroup.Group
+// 		name                     string
+// 		ip                       string
+// 		streamConcurrency        int
 // 	}
 // 	type want struct {
 // 		want *payload.Object_Location
@@ -266,13 +266,13 @@ package grpc
 // 		           uuid:"",
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           faiss:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           faiss:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -294,13 +294,13 @@ package grpc
 // 		           uuid:"",
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           faiss:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           faiss:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -331,13 +331,13 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				name:                     test.fields.name,
-// 				ip:                       test.fields.ip,
-// 				faiss:                    test.fields.faiss,
-// 				eg:                       test.fields.eg,
-// 				streamConcurrency:        test.fields.streamConcurrency,
 // 				UnimplementedAgentServer: test.fields.UnimplementedAgentServer,
 // 				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
+// 				faiss:                    test.fields.faiss,
+// 				eg:                       test.fields.eg,
+// 				name:                     test.fields.name,
+// 				ip:                       test.fields.ip,
+// 				streamConcurrency:        test.fields.streamConcurrency,
 // 			}
 //
 // 			got := s.newLocation(test.args.uuid)

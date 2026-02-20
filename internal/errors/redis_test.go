@@ -32,12 +32,12 @@ func TestErrRedisInvalidKVVKPrefix(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		fields     fields
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -119,11 +119,11 @@ func TestErrRedisNotFoundIdentity(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -174,12 +174,12 @@ func TestErrRedisNotFound(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -233,11 +233,11 @@ func TestErrRedisInvalidOption(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -278,19 +278,19 @@ func TestErrRedisInvalidOption(t *testing.T) {
 
 func TestErrRedisGetOperationFailed(t *testing.T) {
 	type fields struct {
-		key string
 		err error
+		key string
 	}
 	type want struct {
 		want error
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -370,19 +370,19 @@ func TestErrRedisGetOperationFailed(t *testing.T) {
 
 func TestErrRedisSetOperationFailed(t *testing.T) {
 	type fields struct {
-		key string
 		err error
+		key string
 	}
 	type want struct {
 		want error
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -462,19 +462,19 @@ func TestErrRedisSetOperationFailed(t *testing.T) {
 
 func TestErrRedisDeleteOperationFailed(t *testing.T) {
 	type fields struct {
-		key string
 		err error
+		key string
 	}
 	type want struct {
 		want error
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -561,12 +561,12 @@ func TestErrInvalidConfigVersion(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		fields     fields
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -649,11 +649,11 @@ func TestErrRedisAddrsNotFound(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -697,11 +697,11 @@ func TestErrRedisConnectionPingFailed(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -748,12 +748,12 @@ func TestRedisNotFoundIdentityError_Error(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
 		fields     fields
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -813,12 +813,12 @@ func TestErrRedisNotFoundIdentityError_Unwrap(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !Is(err, w.err) {
@@ -878,12 +878,12 @@ func TestIsRedisNotFoundError(t *testing.T) {
 		want bool
 	}
 	type test struct {
-		name       string
 		args       args
-		want       want
 		checkFunc  func(want, bool) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {

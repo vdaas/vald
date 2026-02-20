@@ -109,8 +109,8 @@ package grpc
 // 		in1 *payload.Empty
 // 	}
 // 	type fields struct {
-// 		indexer                  service.Indexer
 // 		UnimplementedIndexServer index.UnimplementedIndexServer
+// 		indexer                  service.Indexer
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Info_Index_Count
@@ -144,8 +144,8 @@ package grpc
 // 		           in1:nil,
 // 		       },
 // 		       fields: fields {
-// 		           indexer:nil,
 // 		           UnimplementedIndexServer:nil,
+// 		           indexer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -168,8 +168,8 @@ package grpc
 // 		           in1:nil,
 // 		           },
 // 		           fields: fields {
-// 		           indexer:nil,
 // 		           UnimplementedIndexServer:nil,
+// 		           indexer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -200,8 +200,8 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				indexer:                  test.fields.indexer,
 // 				UnimplementedIndexServer: test.fields.UnimplementedIndexServer,
+// 				indexer:                  test.fields.indexer,
 // 			}
 //
 // 			gotRes, err := s.IndexInfo(test.args.ctx, test.args.in1)
@@ -218,8 +218,8 @@ package grpc
 // 		in1 *payload.Empty
 // 	}
 // 	type fields struct {
-// 		indexer                  service.Indexer
 // 		UnimplementedIndexServer index.UnimplementedIndexServer
+// 		indexer                  service.Indexer
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Info_Index_Detail
@@ -253,8 +253,8 @@ package grpc
 // 		           in1:nil,
 // 		       },
 // 		       fields: fields {
-// 		           indexer:nil,
 // 		           UnimplementedIndexServer:nil,
+// 		           indexer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -277,8 +277,8 @@ package grpc
 // 		           in1:nil,
 // 		           },
 // 		           fields: fields {
-// 		           indexer:nil,
 // 		           UnimplementedIndexServer:nil,
+// 		           indexer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -309,8 +309,8 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				indexer:                  test.fields.indexer,
 // 				UnimplementedIndexServer: test.fields.UnimplementedIndexServer,
+// 				indexer:                  test.fields.indexer,
 // 			}
 //
 // 			gotRes, err := s.IndexDetail(test.args.ctx, test.args.in1)

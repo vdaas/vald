@@ -25,32 +25,32 @@ import (
 
 func TestNGT_Bind(t *testing.T) {
 	type fields struct {
-		IndexPath               string
-		Dimension               int
-		BulkInsertChunkSize     int
-		DistanceType            string
-		ObjectType              string
-		CreationEdgeSize        int
-		SearchEdgeSize          int
-		AutoIndexDurationLimit  string
-		AutoIndexCheckDuration  string
-		AutoSaveIndexDuration   string
-		AutoIndexLength         int
-		InitialDelayMaxDuration string
-		EnableInMemoryMode      bool
 		VQueue                  *VQueue
 		KVSDB                   *KVSDB
+		AutoSaveIndexDuration   string
+		DistanceType            string
+		ObjectType              string
+		AutoIndexDurationLimit  string
+		AutoIndexCheckDuration  string
+		IndexPath               string
+		InitialDelayMaxDuration string
+		CreationEdgeSize        int
+		SearchEdgeSize          int
+		AutoIndexLength         int
+		BulkInsertChunkSize     int
+		Dimension               int
+		EnableInMemoryMode      bool
 	}
 	type want struct {
 		want *NGT
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *NGT) error
 		beforeFunc func(*testing.T)
 		afterFunc  func()
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *NGT) error {
 		if !reflect.DeepEqual(got, w.want) {

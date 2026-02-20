@@ -24,4 +24,4 @@ faiss = { version = "0.1.0", path = "../algorithms/faiss" }
 ngt = { version = "0.1.0", path = "../algorithms/ngt" }
 qbg = { version = "0.1.0", path = "../algorithms/qbg" }
 proto = { version = "0.1.0", path = "../proto" }
-tonic = "0.14.5"
+tonic = "0.14.4"

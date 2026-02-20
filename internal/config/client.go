@@ -18,7 +18,9 @@ package config
 
 // Client represents the Client configurations.
 type Client struct {
-	Net       *Net       `json:"net"       yaml:"net"`
+	// Net represents the network configuration.
+	Net *Net `json:"net" yaml:"net"`
+	// Transport represents the transport configuration.
 	Transport *Transport `json:"transport" yaml:"transport"`
 }
 

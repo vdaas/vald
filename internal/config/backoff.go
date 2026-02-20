@@ -20,13 +20,20 @@ import "github.com/vdaas/vald/internal/backoff"
 
 // Backoff represents the configuration for the internal backoff package.
 type Backoff struct {
-	InitialDuration  string  `json:"initial_duration"   yaml:"initial_duration"`
-	BackoffTimeLimit string  `json:"backoff_time_limit" yaml:"backoff_time_limit"`
-	MaximumDuration  string  `json:"maximum_duration"   yaml:"maximum_duration"`
-	JitterLimit      string  `json:"jitter_limit"       yaml:"jitter_limit"`
-	BackoffFactor    float64 `json:"backoff_factor"     yaml:"backoff_factor"`
-	RetryCount       int     `json:"retry_count"        yaml:"retry_count"`
-	EnableErrorLog   bool    `json:"enable_error_log"   yaml:"enable_error_log"`
+	// InitialDuration represents the initial duration for backoff.
+	InitialDuration string `json:"initial_duration" yaml:"initial_duration"`
+	// BackoffTimeLimit represents the maximum duration for backoff time limit.
+	BackoffTimeLimit string `json:"backoff_time_limit" yaml:"backoff_time_limit"`
+	// MaximumDuration represents the maximum duration for backoff.
+	MaximumDuration string `json:"maximum_duration" yaml:"maximum_duration"`
+	// JitterLimit represents the jitter limit for randomizing delay.
+	JitterLimit string `json:"jitter_limit" yaml:"jitter_limit"`
+	// BackoffFactor represents the backoff factor.
+	BackoffFactor float64 `json:"backoff_factor" yaml:"backoff_factor"`
+	// RetryCount represents the retry count.
+	RetryCount int `json:"retry_count" yaml:"retry_count"`
+	// EnableErrorLog enables error logging.
+	EnableErrorLog bool `json:"enable_error_log" yaml:"enable_error_log"`
 }
 
 // Bind binds the actual data from the Backoff receiver fields.

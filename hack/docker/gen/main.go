@@ -139,7 +139,7 @@ const (
 	rustVersionPath        = versionsPath + "/RUST_VERSION"
 	faissVersionPath       = versionsPath + "/FAISS_VERSION"
 	ngtVersionPath         = versionsPath + "/NGT_VERSION"
-	// usearchVersionPath     = versionsPath + "/USEARCH_VERSION" // TODO Future work
+	// usearchVersionPath     = versionsPath + "/USEARCH_VERSION" // TODO Future work.
 
 	makefilePath    = "Makefile"
 	makefileDirPath = makefilePath + ".d/**"
@@ -301,9 +301,9 @@ ENTRYPOINT ["{{.BinDir}}/{{.AppName}}"]
 
 type (
 	Workflow struct {
+		Jobs Jobs   `yaml:"jobs"`
 		Name string `yaml:"name"`
 		On   On     `yaml:"on"`
-		Jobs Jobs   `yaml:"jobs"`
 	}
 
 	On struct {
@@ -332,10 +332,10 @@ type (
 	}
 
 	Build struct {
-		Uses        string            `yaml:"uses"`
-		With        With              `yaml:"with"`
 		Secrets     map[string]string `yaml:"secrets,omitempty"`
 		Permissions map[string]string `yaml:"permissions"`
+		With        With              `yaml:"with"`
+		Uses        string            `yaml:"uses"`
 	}
 
 	With struct {
@@ -347,13 +347,13 @@ type (
 	Paths []string
 
 	Data struct {
-		AliasImage        bool
-		ConfigExists      bool
-		Year              int
-		ContainerType     ContainerType
+		Arguments         map[string]string
+		Environments      map[string]string
+		RootDir           string
+		BuildPlatforms    string
 		AppName           string
 		BinDir            string
-		BuildPlatforms    string
+		RuntimeTag        string
 		BuildStageName    string
 		BuildUser         string
 		BuilderImage      string
@@ -361,22 +361,22 @@ type (
 		Maintainer        string
 		Name              string
 		PackageDir        string
-		RootDir           string
 		RuntimeImage      string
-		RuntimeTag        string
 		RuntimeUser       string
-		Arguments         map[string]string
-		Environments      map[string]string
+		Preprocess        []string
+		ExtraImages       []string
+		StageFiles        []string
+		RunMounts         []string
 		Entrypoints       []string
 		EnvironmentsSlice []string
 		ExtraCopies       []string
-		ExtraImages       []string
-		ExtraPackages     []string
-		Preprocess        []string
-		PullRequestPaths  []string
 		RunCommands       []string
-		RunMounts         []string
-		StageFiles        []string
+		ExtraPackages     []string
+		PullRequestPaths  []string
+		ContainerType     ContainerType
+		Year              int
+		AliasImage        bool
+		ConfigExists      bool
 	}
 	ContainerType int
 )
@@ -551,7 +551,7 @@ func appendM[K comparable](maps ...map[K]string) map[K]string {
 	return result
 }
 
-// extractVariables efficiently extracts variables from strings
+// extractVariables efficiently extracts variables from strings.
 func extractVariables(value string) []string {
 	var vars []string
 	start := -1
@@ -574,7 +574,7 @@ func extractVariables(value string) []string {
 	return vars
 }
 
-// topologicalSort sorts the elements topologically and ensures that equal-level nodes are sorted by name
+// topologicalSort sorts the elements topologically and ensures that equal-level nodes are sorted by name.
 func topologicalSort(envMap map[string]string) []string {
 	inDegree := make(map[string]int)         // Tracks the in-degree of each node
 	graph := make(map[string][]string)       // Tracks the edges between nodes

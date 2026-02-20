@@ -14,7 +14,6 @@
 package metrics
 
 import (
-	"context"
 	"math/rand/v2"
 	"testing"
 	"time"
@@ -44,7 +43,7 @@ func newBenchmarkCollector(b *testing.B) Collector {
 // It simulates multiple concurrent writers recording request results.
 func BenchmarkCollector_Record(b *testing.B) {
 	c := newBenchmarkCollector(b)
-	ctx := context.Background()
+	ctx := b.Context()
 
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -68,11 +67,11 @@ func BenchmarkCollector_Record(b *testing.B) {
 // The collector is pre-filled with data to ensure the snapshot calculation is non-trivial.
 func BenchmarkCollector_Snapshot(b *testing.B) {
 	c := newBenchmarkCollector(b)
-	ctx := context.Background()
+	ctx := b.Context()
 
 	// Pre-fill with significant data to simulate a running state
 	preFillCount := 100_000
-	for i := 0; i < preFillCount; i++ {
+	for range preFillCount {
 		rr := GetRequestResult()
 		rr.Latency = time.Millisecond + time.Duration(rand.N(int64(100*time.Millisecond)))
 		rr.Status = codes.Code(rand.N(uint32(MaxGRPCCodes)))
@@ -83,7 +82,7 @@ func BenchmarkCollector_Snapshot(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = c.GlobalSnapshot()
 	}
 }
@@ -93,8 +92,7 @@ func BenchmarkCollector_Snapshot(b *testing.B) {
 // This tests lock contention between Record and Snapshot.
 func BenchmarkCollector_Record_WithBackgroundSnapshot(b *testing.B) {
 	c := newBenchmarkCollector(b)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := b.Context()
 
 	// Start a background goroutine that aggressively triggers snapshots
 	go func() {

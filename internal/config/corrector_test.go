@@ -17,17 +17,17 @@ package config
 //
 // func TestCorrector_Bind(t *testing.T) {
 // 	type fields struct {
-// 		AgentPort                       int
+// 		Discoverer                      *DiscovererClient
+// 		Gateway                         *GRPCClient
 // 		AgentName                       string
 // 		AgentNamespace                  string
 // 		AgentDNS                        string
 // 		NodeName                        string
-// 		StreamListConcurrency           int
 // 		KVSBackgroundSyncInterval       string
 // 		KVSBackgroundCompactionInterval string
+// 		AgentPort                       int
+// 		StreamListConcurrency           int
 // 		IndexReplica                    int
-// 		Discoverer                      *DiscovererClient
-// 		Gateway                         *GRPCClient
 // 	}
 // 	type want struct {
 // 		want *Corrector
@@ -52,17 +52,17 @@ package config
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           AgentPort:0,
+// 		           Discoverer:DiscovererClient{},
+// 		           Gateway:GRPCClient{},
 // 		           AgentName:"",
 // 		           AgentNamespace:"",
 // 		           AgentDNS:"",
 // 		           NodeName:"",
-// 		           StreamListConcurrency:0,
 // 		           KVSBackgroundSyncInterval:"",
 // 		           KVSBackgroundCompactionInterval:"",
+// 		           AgentPort:0,
+// 		           StreamListConcurrency:0,
 // 		           IndexReplica:0,
-// 		           Discoverer:DiscovererClient{},
-// 		           Gateway:GRPCClient{},
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -81,17 +81,17 @@ package config
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           AgentPort:0,
+// 		           Discoverer:DiscovererClient{},
+// 		           Gateway:GRPCClient{},
 // 		           AgentName:"",
 // 		           AgentNamespace:"",
 // 		           AgentDNS:"",
 // 		           NodeName:"",
-// 		           StreamListConcurrency:0,
 // 		           KVSBackgroundSyncInterval:"",
 // 		           KVSBackgroundCompactionInterval:"",
+// 		           AgentPort:0,
+// 		           StreamListConcurrency:0,
 // 		           IndexReplica:0,
-// 		           Discoverer:DiscovererClient{},
-// 		           Gateway:GRPCClient{},
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -122,17 +122,17 @@ package config
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &Corrector{
-// 				AgentPort:                       test.fields.AgentPort,
+// 				Discoverer:                      test.fields.Discoverer,
+// 				Gateway:                         test.fields.Gateway,
 // 				AgentName:                       test.fields.AgentName,
 // 				AgentNamespace:                  test.fields.AgentNamespace,
 // 				AgentDNS:                        test.fields.AgentDNS,
 // 				NodeName:                        test.fields.NodeName,
-// 				StreamListConcurrency:           test.fields.StreamListConcurrency,
 // 				KVSBackgroundSyncInterval:       test.fields.KVSBackgroundSyncInterval,
 // 				KVSBackgroundCompactionInterval: test.fields.KVSBackgroundCompactionInterval,
+// 				AgentPort:                       test.fields.AgentPort,
+// 				StreamListConcurrency:           test.fields.StreamListConcurrency,
 // 				IndexReplica:                    test.fields.IndexReplica,
-// 				Discoverer:                      test.fields.Discoverer,
-// 				Gateway:                         test.fields.Gateway,
 // 			}
 //
 // 			got := c.Bind()

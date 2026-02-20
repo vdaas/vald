@@ -19,6 +19,7 @@ package payload
 import (
 	binary "encoding/binary"
 	fmt "fmt"
+	"maps"
 	math "math"
 	unsafe "unsafe"
 
@@ -1888,9 +1889,7 @@ func (m *Info_Labels) CloneVT() *Info_Labels {
 	r := new(Info_Labels)
 	if rhs := m.Labels; rhs != nil {
 		tmpContainer := make(map[string]string, len(rhs))
-		for k, v := range rhs {
-			tmpContainer[k] = v
-		}
+		maps.Copy(tmpContainer, rhs)
 		r.Labels = tmpContainer
 	}
 	if len(m.unknownFields) > 0 {
@@ -1911,9 +1910,7 @@ func (m *Info_Annotations) CloneVT() *Info_Annotations {
 	r := new(Info_Annotations)
 	if rhs := m.Annotations; rhs != nil {
 		tmpContainer := make(map[string]string, len(rhs))
-		for k, v := range rhs {
-			tmpContainer[k] = v
-		}
+		maps.Copy(tmpContainer, rhs)
 		r.Annotations = tmpContainer
 	}
 	if len(m.unknownFields) > 0 {

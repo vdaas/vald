@@ -214,23 +214,23 @@ package pool
 //
 // func Test_pool_init(t *testing.T) {
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -250,23 +250,23 @@ package pool
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -285,23 +285,23 @@ package pool
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -332,23 +332,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			p.init()
@@ -361,23 +361,23 @@ package pool
 //
 // func Test_pool_getSlots(t *testing.T) {
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct {
 // 		want []atomic.Pointer[poolConn]
@@ -402,23 +402,23 @@ package pool
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -437,23 +437,23 @@ package pool
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -484,23 +484,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			got := p.getSlots()
@@ -516,23 +516,23 @@ package pool
 // 		newSize uint64
 // 	}
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -556,23 +556,23 @@ package pool
 // 		           newSize:0,
 // 		       },
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -594,23 +594,23 @@ package pool
 // 		           newSize:0,
 // 		           },
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -641,23 +641,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			p.grow(test.args.newSize)
@@ -673,23 +673,23 @@ package pool
 // 		idx uint64
 // 	}
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct {
 // 		wantRidx uint64
@@ -722,23 +722,23 @@ package pool
 // 		           idx:0,
 // 		       },
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -760,23 +760,23 @@ package pool
 // 		           idx:0,
 // 		           },
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -807,23 +807,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			gotRidx, gotPc := p.load(test.args.idx)
@@ -840,23 +840,23 @@ package pool
 // 		pc  *poolConn
 // 	}
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -881,23 +881,23 @@ package pool
 // 		           pc:poolConn{},
 // 		       },
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -920,23 +920,23 @@ package pool
 // 		           pc:poolConn{},
 // 		           },
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -967,23 +967,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			p.store(test.args.idx, test.args.pc)
@@ -1000,23 +1000,23 @@ package pool
 // 		fn  func(ctx context.Context, idx uint64, pc *poolConn) bool
 // 	}
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -1046,23 +1046,23 @@ package pool
 // 		           fn:nil,
 // 		       },
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1085,23 +1085,23 @@ package pool
 // 		           fn:nil,
 // 		           },
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1132,23 +1132,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			err := p.loop(test.args.ctx, test.args.fn)
@@ -1161,23 +1161,23 @@ package pool
 //
 // func Test_pool_slotCount(t *testing.T) {
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct {
 // 		want uint64
@@ -1202,23 +1202,23 @@ package pool
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1237,23 +1237,23 @@ package pool
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1284,23 +1284,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			got := p.slotCount()
@@ -1313,23 +1313,23 @@ package pool
 //
 // func Test_pool_flush(t *testing.T) {
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -1349,23 +1349,23 @@ package pool
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1384,23 +1384,23 @@ package pool
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1431,23 +1431,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			p.flush()
@@ -1466,23 +1466,23 @@ package pool
 // 		addr string
 // 	}
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -1514,23 +1514,23 @@ package pool
 // 		           addr:"",
 // 		       },
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1555,23 +1555,23 @@ package pool
 // 		           addr:"",
 // 		           },
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1602,23 +1602,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			err := p.refreshConn(test.args.ctx, test.args.idx, test.args.pc, test.args.addr)
@@ -1634,23 +1634,23 @@ package pool
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct {
 // 		want Conn
@@ -1683,23 +1683,23 @@ package pool
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1721,23 +1721,23 @@ package pool
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1768,23 +1768,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			got, err := p.Connect(test.args.ctx)
@@ -1801,23 +1801,23 @@ package pool
 // 		ips []string
 // 	}
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct {
 // 		wantC Conn
@@ -1851,23 +1851,23 @@ package pool
 // 		           ips:nil,
 // 		       },
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1890,23 +1890,23 @@ package pool
 // 		           ips:nil,
 // 		           },
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1937,23 +1937,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			gotC, err := p.connect(test.args.ctx, test.args.ips...)
@@ -1970,23 +1970,23 @@ package pool
 // 		addr string
 // 	}
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct {
 // 		want Conn
@@ -2020,23 +2020,23 @@ package pool
 // 		           addr:"",
 // 		       },
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2059,23 +2059,23 @@ package pool
 // 		           addr:"",
 // 		           },
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2106,23 +2106,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			got, err := p.singleTargetConnect(test.args.ctx, test.args.addr)
@@ -2139,23 +2139,23 @@ package pool
 // 		force bool
 // 	}
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct {
 // 		want Conn
@@ -2189,23 +2189,23 @@ package pool
 // 		           force:false,
 // 		       },
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2228,23 +2228,23 @@ package pool
 // 		           force:false,
 // 		           },
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2275,23 +2275,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			got, err := p.Reconnect(test.args.ctx, test.args.force)
@@ -2307,23 +2307,23 @@ package pool
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -2352,23 +2352,23 @@ package pool
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2390,23 +2390,23 @@ package pool
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2437,23 +2437,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			err := p.Disconnect(test.args.ctx)
@@ -2471,23 +2471,23 @@ package pool
 // 		addr string
 // 	}
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct {
 // 		want *ClientConn
@@ -2522,23 +2522,23 @@ package pool
 // 		           addr:"",
 // 		       },
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2562,23 +2562,23 @@ package pool
 // 		           addr:"",
 // 		           },
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2609,23 +2609,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			got, err := p.dial(test.args.ctx, test.args.idx, test.args.addr)
@@ -2641,23 +2641,23 @@ package pool
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct {
 // 		wantPc *poolConn
@@ -2690,23 +2690,23 @@ package pool
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2728,23 +2728,23 @@ package pool
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2775,23 +2775,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			gotPc, gotOk := p.getHealthyConn(test.args.ctx)
@@ -2808,23 +2808,23 @@ package pool
 // 		f   func(conn *ClientConn) error
 // 	}
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -2854,23 +2854,23 @@ package pool
 // 		           f:nil,
 // 		       },
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2893,23 +2893,23 @@ package pool
 // 		           f:nil,
 // 		           },
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2940,23 +2940,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			err := p.Do(test.args.ctx, test.args.f)
@@ -2972,23 +2972,23 @@ package pool
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct {
 // 		wantConn *ClientConn
@@ -3021,23 +3021,23 @@ package pool
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3059,23 +3059,23 @@ package pool
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3106,23 +3106,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			gotConn, gotOk := p.Get(test.args.ctx)
@@ -3138,23 +3138,23 @@ package pool
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct {
 // 		want bool
@@ -3183,23 +3183,23 @@ package pool
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3221,23 +3221,23 @@ package pool
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3268,23 +3268,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			got := p.IsHealthy(test.args.ctx)
@@ -3297,23 +3297,23 @@ package pool
 //
 // func Test_pool_Len(t *testing.T) {
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct {
 // 		want uint64
@@ -3338,23 +3338,23 @@ package pool
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3373,23 +3373,23 @@ package pool
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3420,23 +3420,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			got := p.Len()
@@ -3449,23 +3449,23 @@ package pool
 //
 // func Test_pool_Size(t *testing.T) {
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct {
 // 		want uint64
@@ -3490,23 +3490,23 @@ package pool
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3525,23 +3525,23 @@ package pool
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3572,23 +3572,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			got := p.Size()
@@ -3601,23 +3601,23 @@ package pool
 //
 // func Test_pool_IsIPConn(t *testing.T) {
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct {
 // 		want bool
@@ -3642,23 +3642,23 @@ package pool
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3677,23 +3677,23 @@ package pool
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3724,23 +3724,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			got := p.IsIPConn()
@@ -3753,23 +3753,23 @@ package pool
 //
 // func Test_pool_String(t *testing.T) {
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct {
 // 		want string
@@ -3794,23 +3794,23 @@ package pool
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3829,23 +3829,23 @@ package pool
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3876,23 +3876,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			got := p.String()
@@ -3908,23 +3908,23 @@ package pool
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct {
 // 		want []string
@@ -3957,23 +3957,23 @@ package pool
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3995,23 +3995,23 @@ package pool
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4042,23 +4042,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			got, err := p.lookupIPAddr(test.args.ctx)
@@ -4074,23 +4074,23 @@ package pool
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct {
 // 		wantPort uint16
@@ -4123,23 +4123,23 @@ package pool
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4161,23 +4161,23 @@ package pool
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4208,23 +4208,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			gotPort, err := p.scanGRPCPort(test.args.ctx)
@@ -4326,23 +4326,23 @@ package pool
 // 		conn *ClientConn
 // 	}
 // 	type fields struct {
+// 		errGroup          errgroup.Group
+// 		bo                backoff.Backoff
+// 		dnsHash           atomic.Pointer[string]
 // 		connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
-// 		startPort         uint16
-// 		endPort           uint16
 // 		host              string
-// 		port              uint16
 // 		addr              string
-// 		isIPAddr          bool
-// 		enableDNSLookup   bool
+// 		dialOpts          []DialOption
+// 		oldConnCloseDelay time.Duration
 // 		poolSize          atomic.Uint64
 // 		currentIndex      atomic.Uint64
-// 		dialOpts          []DialOption
 // 		dialTimeout       time.Duration
-// 		oldConnCloseDelay time.Duration
-// 		bo                backoff.Backoff
-// 		errGroup          errgroup.Group
-// 		dnsHash           atomic.Pointer[string]
 // 		closing           atomic.Bool
+// 		port              uint16
+// 		endPort           uint16
+// 		startPort         uint16
+// 		enableDNSLookup   bool
+// 		isIPAddr          bool
 // 	}
 // 	type want struct {
 // 		wantState   connectivity.State
@@ -4376,23 +4376,23 @@ package pool
 // 		           conn:nil,
 // 		       },
 // 		       fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4415,23 +4415,23 @@ package pool
 // 		           conn:nil,
 // 		           },
 // 		           fields: fields {
+// 		           errGroup:nil,
+// 		           bo:nil,
+// 		           dnsHash:nil,
 // 		           connSlots:nil,
-// 		           startPort:0,
-// 		           endPort:0,
 // 		           host:"",
-// 		           port:0,
 // 		           addr:"",
-// 		           isIPAddr:false,
-// 		           enableDNSLookup:false,
+// 		           dialOpts:nil,
+// 		           oldConnCloseDelay:nil,
 // 		           poolSize:nil,
 // 		           currentIndex:nil,
-// 		           dialOpts:nil,
 // 		           dialTimeout:nil,
-// 		           oldConnCloseDelay:nil,
-// 		           bo:nil,
-// 		           errGroup:nil,
-// 		           dnsHash:nil,
 // 		           closing:nil,
+// 		           port:0,
+// 		           endPort:0,
+// 		           startPort:0,
+// 		           enableDNSLookup:false,
+// 		           isIPAddr:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4462,23 +4462,23 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &pool{
+// 				errGroup:          test.fields.errGroup,
+// 				bo:                test.fields.bo,
+// 				dnsHash:           test.fields.dnsHash,
 // 				connSlots:         test.fields.connSlots,
-// 				startPort:         test.fields.startPort,
-// 				endPort:           test.fields.endPort,
 // 				host:              test.fields.host,
-// 				port:              test.fields.port,
 // 				addr:              test.fields.addr,
-// 				isIPAddr:          test.fields.isIPAddr,
-// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				dialOpts:          test.fields.dialOpts,
+// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
 // 				poolSize:          test.fields.poolSize,
 // 				currentIndex:      test.fields.currentIndex,
-// 				dialOpts:          test.fields.dialOpts,
 // 				dialTimeout:       test.fields.dialTimeout,
-// 				oldConnCloseDelay: test.fields.oldConnCloseDelay,
-// 				bo:                test.fields.bo,
-// 				errGroup:          test.fields.errGroup,
-// 				dnsHash:           test.fields.dnsHash,
 // 				closing:           test.fields.closing,
+// 				port:              test.fields.port,
+// 				endPort:           test.fields.endPort,
+// 				startPort:         test.fields.startPort,
+// 				enableDNSLookup:   test.fields.enableDNSLookup,
+// 				isIPAddr:          test.fields.isIPAddr,
 // 			}
 //
 // 			gotState, gotHealthy := p.isHealthy(test.args.idx, test.args.conn)

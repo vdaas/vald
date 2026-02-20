@@ -182,11 +182,11 @@ func main() {
 	mu := sync.Mutex{}
 
 	type result struct {
+		errLinks map[string]int
 		url      string
 		count    int
 		success  int
 		fail     int
-		errLinks map[string]int
 	}
 	// result for each file path
 	res := map[string]result{}

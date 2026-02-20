@@ -20,10 +20,10 @@ package v1
 // 		out *ValdMirrorTarget
 // 	}
 // 	type fields struct {
+// 		Status     MirrorTargetStatus
 // 		TypeMeta   metav1.TypeMeta
 // 		ObjectMeta metav1.ObjectMeta
 // 		Spec       MirrorTargetSpec
-// 		Status     MirrorTargetStatus
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -47,10 +47,10 @@ package v1
 // 		           out:ValdMirrorTarget{},
 // 		       },
 // 		       fields: fields {
+// 		           Status:MirrorTargetStatus{},
 // 		           TypeMeta:nil,
 // 		           ObjectMeta:nil,
 // 		           Spec:MirrorTargetSpec{},
-// 		           Status:MirrorTargetStatus{},
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -72,10 +72,10 @@ package v1
 // 		           out:ValdMirrorTarget{},
 // 		           },
 // 		           fields: fields {
+// 		           Status:MirrorTargetStatus{},
 // 		           TypeMeta:nil,
 // 		           ObjectMeta:nil,
 // 		           Spec:MirrorTargetSpec{},
-// 		           Status:MirrorTargetStatus{},
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -106,10 +106,10 @@ package v1
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			in := &ValdMirrorTarget{
+// 				Status:     test.fields.Status,
 // 				TypeMeta:   test.fields.TypeMeta,
 // 				ObjectMeta: test.fields.ObjectMeta,
 // 				Spec:       test.fields.Spec,
-// 				Status:     test.fields.Status,
 // 			}
 //
 // 			in.DeepCopyInto(test.args.out)
@@ -122,10 +122,10 @@ package v1
 //
 // func TestValdMirrorTarget_DeepCopy(t *testing.T) {
 // 	type fields struct {
+// 		Status     MirrorTargetStatus
 // 		TypeMeta   metav1.TypeMeta
 // 		ObjectMeta metav1.ObjectMeta
 // 		Spec       MirrorTargetSpec
-// 		Status     MirrorTargetStatus
 // 	}
 // 	type want struct {
 // 		want *ValdMirrorTarget
@@ -150,10 +150,10 @@ package v1
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           Status:MirrorTargetStatus{},
 // 		           TypeMeta:nil,
 // 		           ObjectMeta:nil,
 // 		           Spec:MirrorTargetSpec{},
-// 		           Status:MirrorTargetStatus{},
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -172,10 +172,10 @@ package v1
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           Status:MirrorTargetStatus{},
 // 		           TypeMeta:nil,
 // 		           ObjectMeta:nil,
 // 		           Spec:MirrorTargetSpec{},
-// 		           Status:MirrorTargetStatus{},
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -206,10 +206,10 @@ package v1
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			in := &ValdMirrorTarget{
+// 				Status:     test.fields.Status,
 // 				TypeMeta:   test.fields.TypeMeta,
 // 				ObjectMeta: test.fields.ObjectMeta,
 // 				Spec:       test.fields.Spec,
-// 				Status:     test.fields.Status,
 // 			}
 //
 // 			got := in.DeepCopy()
@@ -222,10 +222,10 @@ package v1
 //
 // func TestValdMirrorTarget_DeepCopyObject(t *testing.T) {
 // 	type fields struct {
+// 		Status     MirrorTargetStatus
 // 		TypeMeta   metav1.TypeMeta
 // 		ObjectMeta metav1.ObjectMeta
 // 		Spec       MirrorTargetSpec
-// 		Status     MirrorTargetStatus
 // 	}
 // 	type want struct {
 // 		want runtime.Object
@@ -250,10 +250,10 @@ package v1
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           Status:MirrorTargetStatus{},
 // 		           TypeMeta:nil,
 // 		           ObjectMeta:nil,
 // 		           Spec:MirrorTargetSpec{},
-// 		           Status:MirrorTargetStatus{},
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -272,10 +272,10 @@ package v1
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           Status:MirrorTargetStatus{},
 // 		           TypeMeta:nil,
 // 		           ObjectMeta:nil,
 // 		           Spec:MirrorTargetSpec{},
-// 		           Status:MirrorTargetStatus{},
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -306,10 +306,10 @@ package v1
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			in := &ValdMirrorTarget{
+// 				Status:     test.fields.Status,
 // 				TypeMeta:   test.fields.TypeMeta,
 // 				ObjectMeta: test.fields.ObjectMeta,
 // 				Spec:       test.fields.Spec,
-// 				Status:     test.fields.Status,
 // 			}
 //
 // 			got := in.DeepCopyObject()

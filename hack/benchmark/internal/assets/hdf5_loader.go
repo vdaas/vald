@@ -27,9 +27,9 @@ func loadFloat32(dset *hdf5.Dataset, npoints, row, dim int) (any, error) {
 	}
 
 	vec := make([][]float32, row)
-	for i := 0; i < row; i++ {
+	for i := range row {
 		vec[i] = make([]float32, dim)
-		for j := 0; j < dim; j++ {
+		for j := range dim {
 			vec[i][j] = v[i*dim+j]
 		}
 	}
@@ -43,9 +43,9 @@ func loadInt(dset *hdf5.Dataset, npoints, row, dim int) (any, error) {
 	}
 
 	vec := make([][]int, row)
-	for i := 0; i < row; i++ {
+	for i := range row {
 		vec[i] = make([]int, dim)
-		for j := 0; j < dim; j++ {
+		for j := range dim {
 			vec[i][j] = int(v[i*dim+j])
 		}
 	}

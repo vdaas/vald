@@ -50,12 +50,12 @@ func TestNewServer(t *testing.T) {
 		want *Server
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *Server) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got *Server) error {
 		if diff := comparator.Diff(w.want, got, serverComparer...); diff != "" {
@@ -118,12 +118,12 @@ func TestCreds(t *testing.T) {
 		want ServerOption
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, ServerOption) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got ServerOption) error {
 		if got == nil {
@@ -178,12 +178,12 @@ func TestKeepaliveParams(t *testing.T) {
 		want ServerOption
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, ServerOption) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got ServerOption) error {
 		if got == nil {
@@ -240,12 +240,12 @@ func TestMaxRecvMsgSize(t *testing.T) {
 		want ServerOption
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, ServerOption) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got ServerOption) error {
 		if got == nil {
@@ -300,12 +300,12 @@ func TestMaxSendMsgSize(t *testing.T) {
 		want ServerOption
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, ServerOption) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got ServerOption) error {
 		if got == nil {
@@ -360,12 +360,12 @@ func TestInitialWindowSize(t *testing.T) {
 		want ServerOption
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, ServerOption) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got ServerOption) error {
 		if got == nil {
@@ -420,12 +420,12 @@ func TestInitialConnWindowSize(t *testing.T) {
 		want ServerOption
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, ServerOption) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got ServerOption) error {
 		if got == nil {
@@ -480,12 +480,12 @@ func TestReadBufferSize(t *testing.T) {
 		want ServerOption
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, ServerOption) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got ServerOption) error {
 		if got == nil {
@@ -540,12 +540,12 @@ func TestWriteBufferSize(t *testing.T) {
 		want ServerOption
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, ServerOption) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got ServerOption) error {
 		if got == nil {
@@ -600,12 +600,12 @@ func TestConnectionTimeout(t *testing.T) {
 		want ServerOption
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, ServerOption) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got ServerOption) error {
 		if got == nil {
@@ -660,12 +660,12 @@ func TestMaxHeaderListSize(t *testing.T) {
 		want ServerOption
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, ServerOption) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got ServerOption) error {
 		if got == nil {
@@ -720,12 +720,12 @@ func TestHeaderTableSize(t *testing.T) {
 		want ServerOption
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, ServerOption) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got ServerOption) error {
 		if got == nil {
@@ -780,12 +780,12 @@ func TestKeepaliveEnforcementPolicy(t *testing.T) {
 		want ServerOption
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, ServerOption) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got ServerOption) error {
 		if got == nil {

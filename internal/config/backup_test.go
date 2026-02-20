@@ -32,12 +32,12 @@ func TestBackupManager_Bind(t *testing.T) {
 		want *BackupManager
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, *BackupManager) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got *BackupManager) error {
 		if !reflect.DeepEqual(got, w.want) {

@@ -98,75 +98,57 @@ type (
 	}
 
 	ngt struct {
-		// instances
-		core core.NGT
-		eg   errgroup.Group
-		kvs  kvs.BidiMap
-		fmu  sync.Mutex
-		fmap map[string]int64 // failure map for index
-		vq   vqueue.Queue
-
-		// statuses
-		indexing  atomic.Value
-		flushing  atomic.Bool
-		saving    atomic.Value
-		cimu      sync.Mutex // create index mutex
-		lastNocie uint64     // last number of create index execution this value prevent unnecessary saveindex.
-
-		// counters
-		nocie uint64        // number of create index execution
-		nogce uint64        // number of proactive GC execution
-		wfci  uint64        // wait for create indexing
-		nobic uint64        // number of broken index count
-		nopvq atomic.Uint64 // number of processed vq number
-
-		// parameters
-		cfg  *config.NGT
-		opts []Option
-
-		// configurations
-		inMem bool // in-memory mode
-		dim   int  // dimension size
-		alen  int  // auto indexing length
-
-		lim  time.Duration // auto indexing time limit
-		dur  time.Duration // auto indexing check duration
-		sdur time.Duration // auto save index check duration
-
-		minLit    time.Duration // minimum load index timeout
-		maxLit    time.Duration // maximum load index timeout
-		litFactor time.Duration // load index timeout factor
-
-		enableProactiveGC bool // if this value is true, agent component will purge GC memory more proactive
-		enableCopyOnWrite bool // if this value is true, agent component will write backup file using Copy on Write and saves old files to the old directory
-
-		podName      string
-		podNamespace string
-		path         string       // index path
-		smu          sync.Mutex   // save index lock
-		tmpPath      atomic.Value // temporary index path for Copy on Write
-		oldPath      string       // old volume path
-		basePath     string       // index base directory for CoW
-		brokenPath   string       // backup broken index path
-		cowmu        sync.Mutex   // copy on write move lock
-
-		poolSize uint32  // default pool size
-		radius   float32 // default radius
-		epsilon  float32 // default epsilon
-
-		idelay time.Duration // initial delay duration
-		dcd    bool          // disable commit daemon
-
-		kvsdbConcurrency int // kvsdb concurrency
-		historyLimit     int // the maximum generation number of broken index backup
-
+		core                    core.NGT
+		tmpPath                 atomic.Value
+		kvs                     kvs.BidiMap
+		saving                  atomic.Value
+		eg                      errgroup.Group
+		vq                      vqueue.Queue
+		indexing                atomic.Value
+		patcher                 client.Patcher
+		fmap                    map[string]int64
+		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+		cfg                     *config.NGT
+		basePath                string
+		brokenPath              string
+		oldPath                 string
+		podName                 string
+		path                    string
+		podNamespace            string
+		opts                    []Option
+		nogce                   uint64
+		kvsdbConcurrency        int
+		alen                    int
+		lim                     time.Duration
+		dur                     time.Duration
+		sdur                    time.Duration
+		minLit                  time.Duration
+		maxLit                  time.Duration
+		litFactor               time.Duration
+		exportIndexInfoDuration time.Duration
+		historyLimit            int
+		dim                     int
+		nopvq                   atomic.Uint64
+		nobic                   uint64
+		idelay                  time.Duration
+		wfci                    uint64
+		nocie                   uint64
+		lastNocie               uint64
+		cowmu                   sync.Mutex
+		smu                     sync.Mutex
+		cimu                    sync.Mutex
+		fmu                     sync.Mutex
+		flushing                atomic.Bool
+		poolSize                uint32
+		radius                  float32
+		epsilon                 float32
+		dcd                     bool
 		isReadReplica           bool
 		enableExportIndexInfo   bool
-		exportIndexInfoDuration time.Duration
-		patcher                 client.Patcher
-
-		enableStatistics bool
-		statisticsCache  atomic.Pointer[payload.Info_Index_Statistics]
+		enableProactiveGC       bool
+		enableCopyOnWrite       bool
+		enableStatistics        bool
+		inMem                   bool
 	}
 
 	contextSaveIndexTimeKey string
@@ -225,7 +207,7 @@ func newNGT(cfg *config.NGT, opts ...Option) (n *ngt, err error) {
 
 	// prepare directories to store index only when it not in-memory mode
 	if !n.inMem {
-		ctx := context.Background()
+		ctx := context.TODO()
 		err = n.prepareFolders(ctx)
 		if err != nil {
 			return nil, err
@@ -304,11 +286,9 @@ func migrate(ctx context.Context, path string) (err error) {
 		return nil
 	}
 	od := filepath.Join(path, originIndexDirName)
-	for _, file := range files {
-		if file == od {
-			// origin folder exists. meaning already migrated
-			return nil
-		}
+	if slices.Contains(files, od) {
+		// origin folder exists. meaning already migrated
+		return nil
 	}
 
 	// at this point, there is something in the path, but there is no `path/origin`, which means migration is required
@@ -432,7 +412,7 @@ func (n *ngt) load(ctx context.Context, path string, opts ...core.Option) (err e
 	log.Debugf("index path: %s and metadata: %s exists, now starting to load metadata", path, metadataPath)
 	agentMetadata, err := metadata.Load(metadataPath)
 	if err != nil && errors.Is(err, fs.ErrNotExist) || agentMetadata == nil || agentMetadata.NGT == nil || agentMetadata.NGT.IndexCount == 0 {
-		err = errors.Wrapf(err, "cannot read metadata from path: %s\tmetadata: %s", path, agentMetadata)
+		err = errors.Wrapf(err, "cannot read metadata from path: %s\tmetadata: %v", path, agentMetadata)
 		return err
 	}
 	kvsFilePath := file.Join(path, kvsFileName)
@@ -700,7 +680,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 		return err
 	}
 
-	ctx := context.Background()
+	ctx := context.TODO()
 	err = n.load(ctx, n.path, opts...)
 	var current uint64
 	if err != nil {
@@ -948,7 +928,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 					err = n.exportMetricsOnTick(ctx)
 				}
 			}
-			if err != nil && err != errors.ErrUncommittedIndexNotFound {
+			if err != nil && !errors.Is(err, errors.ErrUncommittedIndexNotFound) {
 				ech <- err
 				runtime.Gosched()
 				err = nil
@@ -1836,7 +1816,7 @@ func (n *ngt) moveAndSwitchSavedData(ctx context.Context) (err error) {
 	log.Debug("start move and switch saved data operation for copy on write")
 	err = file.MoveDir(ctx, n.path, n.oldPath)
 	if err != nil {
-		log.Warnf("failed to backup backup data from %s to %s error: %v", n.path, n.oldPath, err)
+		log.Warnf("failed to backup data from %s to %s error: %v", n.path, n.oldPath, err)
 	}
 	path := n.tmpPath.Load().(string)
 	err = file.MoveDir(ctx, path, n.path)

@@ -41,24 +41,24 @@ import (
 )
 
 type server struct {
-	eg                errgroup.Group
-	defaultVectorizer string
-	defaultFilters    []string
-	name              string
-	ip                string
+	vald.UnimplementedValdServerWithFilter
 	ingress           ingress.Client
 	egress            egress.Client
 	gateway           client.Client
-	copts             []grpc.CallOption
-	streamConcurrency int
+	eg                errgroup.Group
 	Vectorizer        string
+	defaultVectorizer string
+	name              string
+	ip                string
+	copts             []grpc.CallOption
 	DistanceFilters   []string
 	ObjectFilters     []string
 	SearchFilters     []string
 	InsertFilters     []string
 	UpdateFilters     []string
 	UpsertFilters     []string
-	vald.UnimplementedValdServerWithFilter
+	defaultFilters    []string
+	streamConcurrency int
 }
 
 const apiName = "vald/gateway-filter"
@@ -2212,7 +2212,7 @@ func (s *server) Insert(
 	c, err := s.ingress.Target(ctx, addrs...)
 	if err != nil {
 		err = status.WrapWithUnavailable(
-			fmt.Sprintf(vald.InsertRPCName+" API ingress filter filter targets %v not found", addrs), err,
+			fmt.Sprintf(vald.InsertRPCName+" API ingress filter targets %v not found", addrs), err,
 			&errdetails.RequestInfo{
 				RequestId:   req.GetVector().GetId(),
 				ServingData: errdetails.Serialize(req),
@@ -2450,7 +2450,7 @@ func (s *server) Update(
 	c, err := s.ingress.Target(ctx, addrs...)
 	if err != nil {
 		err = status.WrapWithUnavailable(
-			fmt.Sprintf(vald.UpdateRPCName+" API ingress filter filter targets %v not found", addrs), err,
+			fmt.Sprintf(vald.UpdateRPCName+" API ingress filter targets %v not found", addrs), err,
 			&errdetails.RequestInfo{
 				RequestId:   req.GetVector().GetId(),
 				ServingData: errdetails.Serialize(req),
@@ -2682,7 +2682,7 @@ func (s *server) Upsert(
 	c, err := s.ingress.Target(ctx, addrs...)
 	if err != nil {
 		err = status.WrapWithUnavailable(
-			fmt.Sprintf(vald.UpsertRPCName+" API ingress filter filter targets %v not found", addrs), err,
+			fmt.Sprintf(vald.UpsertRPCName+" API ingress filter targets %v not found", addrs), err,
 			&errdetails.RequestInfo{
 				RequestId:   req.GetVector().GetId(),
 				ServingData: errdetails.Serialize(req),
