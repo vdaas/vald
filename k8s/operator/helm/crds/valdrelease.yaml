@@ -2264,6 +2264,8 @@ spec:
                               properties:
                                 enable_dns_resolver:
                                   type: boolean
+                                enable_metrics:
+                                  type: boolean
                                 enable_rebalance:
                                   type: boolean
                                 old_conn_close_duration:
@@ -4333,6 +4335,8 @@ spec:
                                       properties:
                                         enable_dns_resolver:
                                           type: boolean
+                                        enable_metrics:
+                                          type: boolean
                                         enable_rebalance:
                                           type: boolean
                                         old_conn_close_duration:
@@ -4570,6 +4574,8 @@ spec:
                                   properties:
                                     enable_dns_resolver:
                                       type: boolean
+                                    enable_metrics:
+                                      type: boolean
                                     enable_rebalance:
                                       type: boolean
                                     old_conn_close_duration:
@@ -4799,6 +4805,8 @@ spec:
                                     connection_pool:
                                       properties:
                                         enable_dns_resolver:
+                                          type: boolean
+                                        enable_metrics:
                                           type: boolean
                                         enable_rebalance:
                                           type: boolean
@@ -5976,6 +5984,8 @@ spec:
                                       properties:
                                         enable_dns_resolver:
                                           type: boolean
+                                        enable_metrics:
+                                          type: boolean
                                         enable_rebalance:
                                           type: boolean
                                         old_conn_close_duration:
@@ -6203,6 +6213,8 @@ spec:
                                     connection_pool:
                                       properties:
                                         enable_dns_resolver:
+                                          type: boolean
+                                        enable_metrics:
                                           type: boolean
                                         enable_rebalance:
                                           type: boolean
@@ -6433,6 +6445,8 @@ spec:
                                     connection_pool:
                                       properties:
                                         enable_dns_resolver:
+                                          type: boolean
+                                        enable_metrics:
                                           type: boolean
                                         enable_rebalance:
                                           type: boolean
@@ -7609,6 +7623,8 @@ spec:
                                 connection_pool:
                                   properties:
                                     enable_dns_resolver:
+                                      type: boolean
+                                    enable_metrics:
                                       type: boolean
                                     enable_rebalance:
                                       type: boolean
@@ -8898,6 +8914,8 @@ spec:
                                       properties:
                                         enable_dns_resolver:
                                           type: boolean
+                                        enable_metrics:
+                                          type: boolean
                                         enable_rebalance:
                                           type: boolean
                                         old_conn_close_duration:
@@ -9125,6 +9143,8 @@ spec:
                                     connection_pool:
                                       properties:
                                         enable_dns_resolver:
+                                          type: boolean
+                                        enable_metrics:
                                           type: boolean
                                         enable_rebalance:
                                           type: boolean
@@ -9363,6 +9383,8 @@ spec:
                                 connection_pool:
                                   properties:
                                     enable_dns_resolver:
+                                      type: boolean
+                                    enable_metrics:
                                       type: boolean
                                     enable_rebalance:
                                       type: boolean
@@ -10382,6 +10404,8 @@ spec:
                                       properties:
                                         enable_dns_resolver:
                                           type: boolean
+                                        enable_metrics:
+                                          type: boolean
                                         enable_rebalance:
                                           type: boolean
                                         old_conn_close_duration:
@@ -10609,6 +10633,8 @@ spec:
                                     connection_pool:
                                       properties:
                                         enable_dns_resolver:
+                                          type: boolean
+                                        enable_metrics:
                                           type: boolean
                                         enable_rebalance:
                                           type: boolean
@@ -11633,6 +11659,8 @@ spec:
                                       properties:
                                         enable_dns_resolver:
                                           type: boolean
+                                        enable_metrics:
+                                          type: boolean
                                         enable_rebalance:
                                           type: boolean
                                         old_conn_close_duration:
@@ -11860,6 +11888,8 @@ spec:
                                     connection_pool:
                                       properties:
                                         enable_dns_resolver:
+                                          type: boolean
+                                        enable_metrics:
                                           type: boolean
                                         enable_rebalance:
                                           type: boolean
@@ -12875,6 +12905,8 @@ spec:
                                       properties:
                                         enable_dns_resolver:
                                           type: boolean
+                                        enable_metrics:
+                                          type: boolean
                                         enable_rebalance:
                                           type: boolean
                                         old_conn_close_duration:
@@ -13102,6 +13134,8 @@ spec:
                                     connection_pool:
                                       properties:
                                         enable_dns_resolver:
+                                          type: boolean
+                                        enable_metrics:
                                           type: boolean
                                         enable_rebalance:
                                           type: boolean
@@ -15158,6 +15192,8 @@ spec:
                                       properties:
                                         enable_dns_resolver:
                                           type: boolean
+                                        enable_metrics:
+                                          type: boolean
                                         enable_rebalance:
                                           type: boolean
                                         old_conn_close_duration:
@@ -15385,6 +15421,8 @@ spec:
                                     connection_pool:
                                       properties:
                                         enable_dns_resolver:
+                                          type: boolean
+                                        enable_metrics:
                                           type: boolean
                                         enable_rebalance:
                                           type: boolean
