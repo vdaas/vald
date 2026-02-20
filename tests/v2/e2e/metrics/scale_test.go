@@ -17,7 +17,6 @@
 package metrics
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -41,7 +40,7 @@ func TestScale_Record_And_Reset(t *testing.T) {
 			return nil, err
 		}
 		for _, r := range args.records {
-			s.Record(context.Background(), 0, r)
+			s.Record(t.Context(), 0, r)
 		}
 		return s.Snapshot(), nil
 	}, []test.Case[*ScaleSnapshot, args]{
@@ -104,7 +103,7 @@ func TestScale_Concurrency(t *testing.T) {
 				for j := 0; j < args.loops; j++ {
 					// Use fake times that increment to force wrapping
 					now := start.Add(time.Duration(offset+j) * time.Second)
-					s.Record(context.Background(), 0, &RequestResult{
+					s.Record(t.Context(), 0, &RequestResult{
 						EndedAt: now,
 					})
 				}
@@ -156,10 +155,10 @@ func TestScale_Merge(t *testing.T) {
 		}
 
 		for _, r := range args.s1Recs {
-			s1.Record(context.Background(), 0, r)
+			s1.Record(t.Context(), 0, r)
 		}
 		for _, r := range args.s2Recs {
-			s2.Record(context.Background(), 0, r)
+			s2.Record(t.Context(), 0, r)
 		}
 
 		if err := s1.Merge(s2); err != nil {
@@ -222,11 +221,11 @@ func TestScale_Clone(t *testing.T) {
 			return nil, err
 		}
 		for _, r := range rr {
-			s1.Record(context.Background(), 0, r)
+			s1.Record(t.Context(), 0, r)
 		}
 		s2 := s1.Clone()
 		// Modify s1
-		s1.Record(context.Background(), 0, &RequestResult{EndedAt: time.Unix(0, 0)})
+		s1.Record(t.Context(), 0, &RequestResult{EndedAt: time.Unix(0, 0)})
 		return s2.Snapshot(), nil
 	}, []test.Case[*ScaleSnapshot, []*RequestResult]{
 		{
@@ -262,7 +261,7 @@ func TestScale_RingBuffer_WrapAndReset(t *testing.T) {
 			return nil, err
 		}
 		for _, r := range args.records {
-			s.Record(context.Background(), 0, r)
+			s.Record(t.Context(), 0, r)
 		}
 		return s.Snapshot(), nil
 	}, []test.Case[*ScaleSnapshot, args]{
@@ -342,7 +341,7 @@ func TestScale_RingBuffer_WrapAndReset(t *testing.T) {
 
 func BenchmarkScale_Record(b *testing.B) {
 	s, _ := newScale("bench", uint64(time.Second), 10, 0, TimeScale, nil, nil, nil)
-	ctx := context.Background()
+	ctx := b.Context()
 	b.ResetTimer()
 	b.ReportAllocs()
 	b.RunParallel(func(pb *testing.PB) {

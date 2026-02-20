@@ -53,8 +53,8 @@ func TestSerialize(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		args args
 		want string
+		args args
 	}{
 		// TODO: Add test cases.
 	}
@@ -73,9 +73,9 @@ func TestAnyToErrorDetail(t *testing.T) {
 		a *types.Any
 	}
 	tests := []struct {
-		name string
-		args args
 		want proto.Message
+		args args
+		name string
 	}{
 		// TODO: Add test cases.
 	}
@@ -94,9 +94,9 @@ func TestDebugInfoFromInfoDetail(t *testing.T) {
 		v *info.Detail
 	}
 	tests := []struct {
-		name string
 		args args
 		want *DebugInfo
+		name string
 	}{
 		// TODO: Add test cases.
 	}
@@ -113,8 +113,8 @@ func TestDebugInfoFromInfoDetail(t *testing.T) {
 //
 // func TestDetail_MarshalJSON(t *testing.T) {
 // 	type fields struct {
-// 		TypeURL string
 // 		Message proto.Message
+// 		TypeURL string
 // 	}
 // 	type want struct {
 // 		wantBody []byte
@@ -143,8 +143,8 @@ func TestDebugInfoFromInfoDetail(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           TypeURL:"",
 // 		           Message:nil,
+// 		           TypeURL:"",
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -163,8 +163,8 @@ func TestDebugInfoFromInfoDetail(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           TypeURL:"",
 // 		           Message:nil,
+// 		           TypeURL:"",
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -195,8 +195,8 @@ func TestDebugInfoFromInfoDetail(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			d := &Detail{
-// 				TypeURL: test.fields.TypeURL,
 // 				Message: test.fields.Message,
+// 				TypeURL: test.fields.TypeURL,
 // 			}
 //
 // 			gotBody, err := d.MarshalJSON()

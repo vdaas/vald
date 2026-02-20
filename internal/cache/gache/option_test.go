@@ -34,12 +34,12 @@ func TestDefaultOptions(t *testing.T) {
 		want *cache[any]
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, *cache[any]) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, got *cache[any]) error {
@@ -101,12 +101,12 @@ func TestWithGache(t *testing.T) {
 		want *T
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, want *T) error {
@@ -174,12 +174,12 @@ func TestWithExpiredHook(t *testing.T) {
 		want *T
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, want *T) error {
@@ -253,12 +253,12 @@ func TestWithExpireDuration(t *testing.T) {
 		want *T
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, want *T) error {
@@ -325,12 +325,12 @@ func TestWithExpireCheckDuration(t *testing.T) {
 		want *T
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, want *T) error {
 		if !reflect.DeepEqual(want, w.want) {

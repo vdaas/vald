@@ -112,13 +112,13 @@ package grpc
 // 		in0 context.Context
 // 	}
 // 	type fields struct {
+// 		UnimplementedDiscovererServer discoverer.UnimplementedDiscovererServer
 // 		dsc                           service.Discoverer
 // 		pgroup                        singleflight.Group[*payload.Info_Pods]
 // 		ngroup                        singleflight.Group[*payload.Info_Nodes]
 // 		sgroup                        singleflight.Group[*payload.Info_Services]
 // 		ip                            string
 // 		name                          string
-// 		UnimplementedDiscovererServer discoverer.UnimplementedDiscovererServer
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -142,13 +142,13 @@ package grpc
 // 		           in0:nil,
 // 		       },
 // 		       fields: fields {
+// 		           UnimplementedDiscovererServer:nil,
 // 		           dsc:nil,
 // 		           pgroup:nil,
 // 		           ngroup:nil,
 // 		           sgroup:nil,
 // 		           ip:"",
 // 		           name:"",
-// 		           UnimplementedDiscovererServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -170,13 +170,13 @@ package grpc
 // 		           in0:nil,
 // 		           },
 // 		           fields: fields {
+// 		           UnimplementedDiscovererServer:nil,
 // 		           dsc:nil,
 // 		           pgroup:nil,
 // 		           ngroup:nil,
 // 		           sgroup:nil,
 // 		           ip:"",
 // 		           name:"",
-// 		           UnimplementedDiscovererServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -207,13 +207,13 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
+// 				UnimplementedDiscovererServer: test.fields.UnimplementedDiscovererServer,
 // 				dsc:                           test.fields.dsc,
 // 				pgroup:                        test.fields.pgroup,
 // 				ngroup:                        test.fields.ngroup,
 // 				sgroup:                        test.fields.sgroup,
 // 				ip:                            test.fields.ip,
 // 				name:                          test.fields.name,
-// 				UnimplementedDiscovererServer: test.fields.UnimplementedDiscovererServer,
 // 			}
 //
 // 			s.Start(test.args.in0)
@@ -230,13 +230,13 @@ package grpc
 // 		req *payload.Discoverer_Request
 // 	}
 // 	type fields struct {
+// 		UnimplementedDiscovererServer discoverer.UnimplementedDiscovererServer
 // 		dsc                           service.Discoverer
 // 		pgroup                        singleflight.Group[*payload.Info_Pods]
 // 		ngroup                        singleflight.Group[*payload.Info_Nodes]
 // 		sgroup                        singleflight.Group[*payload.Info_Services]
 // 		ip                            string
 // 		name                          string
-// 		UnimplementedDiscovererServer discoverer.UnimplementedDiscovererServer
 // 	}
 // 	type want struct {
 // 		want *payload.Info_Pods
@@ -270,13 +270,13 @@ package grpc
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
+// 		           UnimplementedDiscovererServer:nil,
 // 		           dsc:nil,
 // 		           pgroup:nil,
 // 		           ngroup:nil,
 // 		           sgroup:nil,
 // 		           ip:"",
 // 		           name:"",
-// 		           UnimplementedDiscovererServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -299,13 +299,13 @@ package grpc
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
+// 		           UnimplementedDiscovererServer:nil,
 // 		           dsc:nil,
 // 		           pgroup:nil,
 // 		           ngroup:nil,
 // 		           sgroup:nil,
 // 		           ip:"",
 // 		           name:"",
-// 		           UnimplementedDiscovererServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -336,13 +336,13 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
+// 				UnimplementedDiscovererServer: test.fields.UnimplementedDiscovererServer,
 // 				dsc:                           test.fields.dsc,
 // 				pgroup:                        test.fields.pgroup,
 // 				ngroup:                        test.fields.ngroup,
 // 				sgroup:                        test.fields.sgroup,
 // 				ip:                            test.fields.ip,
 // 				name:                          test.fields.name,
-// 				UnimplementedDiscovererServer: test.fields.UnimplementedDiscovererServer,
 // 			}
 //
 // 			got, err := s.Pods(test.args.ctx, test.args.req)
@@ -359,13 +359,13 @@ package grpc
 // 		req *payload.Discoverer_Request
 // 	}
 // 	type fields struct {
+// 		UnimplementedDiscovererServer discoverer.UnimplementedDiscovererServer
 // 		dsc                           service.Discoverer
 // 		pgroup                        singleflight.Group[*payload.Info_Pods]
 // 		ngroup                        singleflight.Group[*payload.Info_Nodes]
 // 		sgroup                        singleflight.Group[*payload.Info_Services]
 // 		ip                            string
 // 		name                          string
-// 		UnimplementedDiscovererServer discoverer.UnimplementedDiscovererServer
 // 	}
 // 	type want struct {
 // 		want *payload.Info_Nodes
@@ -399,13 +399,13 @@ package grpc
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
+// 		           UnimplementedDiscovererServer:nil,
 // 		           dsc:nil,
 // 		           pgroup:nil,
 // 		           ngroup:nil,
 // 		           sgroup:nil,
 // 		           ip:"",
 // 		           name:"",
-// 		           UnimplementedDiscovererServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -428,13 +428,13 @@ package grpc
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
+// 		           UnimplementedDiscovererServer:nil,
 // 		           dsc:nil,
 // 		           pgroup:nil,
 // 		           ngroup:nil,
 // 		           sgroup:nil,
 // 		           ip:"",
 // 		           name:"",
-// 		           UnimplementedDiscovererServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -465,13 +465,13 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
+// 				UnimplementedDiscovererServer: test.fields.UnimplementedDiscovererServer,
 // 				dsc:                           test.fields.dsc,
 // 				pgroup:                        test.fields.pgroup,
 // 				ngroup:                        test.fields.ngroup,
 // 				sgroup:                        test.fields.sgroup,
 // 				ip:                            test.fields.ip,
 // 				name:                          test.fields.name,
-// 				UnimplementedDiscovererServer: test.fields.UnimplementedDiscovererServer,
 // 			}
 //
 // 			got, err := s.Nodes(test.args.ctx, test.args.req)
@@ -488,13 +488,13 @@ package grpc
 // 		req *payload.Discoverer_Request
 // 	}
 // 	type fields struct {
+// 		UnimplementedDiscovererServer discoverer.UnimplementedDiscovererServer
 // 		dsc                           service.Discoverer
 // 		pgroup                        singleflight.Group[*payload.Info_Pods]
 // 		ngroup                        singleflight.Group[*payload.Info_Nodes]
 // 		sgroup                        singleflight.Group[*payload.Info_Services]
 // 		ip                            string
 // 		name                          string
-// 		UnimplementedDiscovererServer discoverer.UnimplementedDiscovererServer
 // 	}
 // 	type want struct {
 // 		want *payload.Info_Services
@@ -528,13 +528,13 @@ package grpc
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
+// 		           UnimplementedDiscovererServer:nil,
 // 		           dsc:nil,
 // 		           pgroup:nil,
 // 		           ngroup:nil,
 // 		           sgroup:nil,
 // 		           ip:"",
 // 		           name:"",
-// 		           UnimplementedDiscovererServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -557,13 +557,13 @@ package grpc
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
+// 		           UnimplementedDiscovererServer:nil,
 // 		           dsc:nil,
 // 		           pgroup:nil,
 // 		           ngroup:nil,
 // 		           sgroup:nil,
 // 		           ip:"",
 // 		           name:"",
-// 		           UnimplementedDiscovererServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -594,13 +594,13 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
+// 				UnimplementedDiscovererServer: test.fields.UnimplementedDiscovererServer,
 // 				dsc:                           test.fields.dsc,
 // 				pgroup:                        test.fields.pgroup,
 // 				ngroup:                        test.fields.ngroup,
 // 				sgroup:                        test.fields.sgroup,
 // 				ip:                            test.fields.ip,
 // 				name:                          test.fields.name,
-// 				UnimplementedDiscovererServer: test.fields.UnimplementedDiscovererServer,
 // 			}
 //
 // 			got, err := s.Services(test.args.ctx, test.args.req)

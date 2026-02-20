@@ -57,11 +57,6 @@ var (
 		return Wrap(err, "backoff timeout by limitation")
 	}
 
-	// ErrInvalidTypeConversion represents a function to generate an error that type conversion fails due to an invalid input type.
-	ErrInvalidTypeConversion = func(i any, tgt any) error {
-		return Errorf("invalid type conversion %v to %v", reflect.TypeOf(i), reflect.TypeOf(tgt))
-	}
-
 	// ErrLoggingRetry represents a function to generate an error that failing to output logs and retrying to output.
 	ErrLoggingRetry = func(err error, ref reflect.Value) error {
 		var str string

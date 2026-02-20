@@ -20,7 +20,6 @@
 package sidecar
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"testing"
@@ -112,7 +111,7 @@ func sleep(t *testing.T, dur time.Duration) {
 }
 
 func TestE2EForSidecar(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	op, err := operation.New(host, port)
 	if err != nil {

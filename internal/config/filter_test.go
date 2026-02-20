@@ -34,12 +34,12 @@ func TestEgressFilter_Bind(t *testing.T) {
 		want *EgressFilter
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *EgressFilter) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *EgressFilter) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -171,12 +171,12 @@ func TestIngressFilter_Bind(t *testing.T) {
 		want *IngressFilter
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *IngressFilter) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *IngressFilter) error {
 		if !reflect.DeepEqual(got, w.want) {

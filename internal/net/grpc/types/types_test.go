@@ -37,12 +37,12 @@ func TestUnmarshalAny(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {

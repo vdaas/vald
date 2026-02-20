@@ -20,8 +20,8 @@ import "github.com/vdaas/vald/internal/net/http/rest"
 
 // Route struct.
 type Route struct {
-	Name        string
-	Methods     []string
-	Pattern     string
 	HandlerFunc rest.Func
+	Name        string
+	Pattern     string
+	Methods     []string
 }

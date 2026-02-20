@@ -33,7 +33,7 @@ import (
 	"github.com/vdaas/vald/internal/strings"
 )
 
-// CgroupMode represents the cgroup version
+// CgroupMode represents the cgroup version.
 type CgroupMode int
 
 const (
@@ -46,7 +46,7 @@ const (
 	cgroupBasePath = "/sys/fs/cgroup"
 )
 
-// CgroupMetrics holds raw values directly read from cgroup files
+// CgroupMetrics holds raw values directly read from cgroup files.
 type CgroupMetrics struct {
 	Mode CgroupMode
 
@@ -58,7 +58,7 @@ type CgroupMetrics struct {
 	CPUPeriodUs   uint64 // 0 if unknown
 }
 
-// CgroupStats holds calculated resource usage statistics ready for use
+// CgroupStats holds calculated resource usage statistics ready for use.
 type CgroupStats struct {
 	CPULimitCores    float64
 	CPUUsageCores    float64
@@ -135,7 +135,7 @@ func measureCgroupStats(ctx context.Context) (*CgroupStats, error) {
 	return &cgroupStats, nil
 }
 
-// readCgroupMetrics reads raw memory & CPU metrics depending on cgroup mode
+// readCgroupMetrics reads raw memory & CPU metrics depending on cgroup mode.
 func readCgroupMetrics() (metrics *CgroupMetrics, err error) {
 	switch detectCgroupMode() {
 	case CGV2:
@@ -147,7 +147,7 @@ func readCgroupMetrics() (metrics *CgroupMetrics, err error) {
 	}
 }
 
-// detectCgroupMode inspects /sys/fs/cgroup to detect cgroups mode
+// detectCgroupMode inspects /sys/fs/cgroup to detect cgroups mode.
 func detectCgroupMode() CgroupMode {
 	// cgroups v2 unified mount has cgroup.controllers
 	if file.Exists(file.Join(cgroupBasePath, "cgroup.controllers")) {
@@ -170,7 +170,7 @@ func detectCgroupMode() CgroupMode {
 	return CGV1
 }
 
-// readCgroupV2Metrics reads cgroups v2 raw metrics
+// readCgroupV2Metrics reads cgroups v2 raw metrics.
 func readCgroupV2Metrics() (metrics *CgroupMetrics, err error) {
 	// TODO: The current implementation directly uses /sys/fs/cgroup, but in some environments,
 	// the cgroup namespace may not be separated per pod, resulting in reading values for the
@@ -255,7 +255,7 @@ func readCgroupV2Metrics() (metrics *CgroupMetrics, err error) {
 	return metrics, nil
 }
 
-// readCgroupV1Metrics reads cgroups v1 raw metrics
+// readCgroupV1Metrics reads cgroups v1 raw metrics.
 func readCgroupV1Metrics() (metrics *CgroupMetrics, err error) {
 	var memUsage uint64
 	data, err := file.ReadFile(file.Join(cgroupBasePath, "memory", "memory.usage_in_bytes"))
@@ -349,10 +349,7 @@ func calculateCPUUsageCores(
 
 	dtNano := deltaTime.Nanoseconds()
 	if dtNano > 0 {
-		dtUsage := int64(m2.CPUUsageNano) - int64(m1.CPUUsageNano)
-		if dtUsage < 0 {
-			dtUsage = 0
-		}
+		dtUsage := max(int64(m2.CPUUsageNano)-int64(m1.CPUUsageNano), 0)
 
 		calculatedStats.CPUUsageCores = float64(dtUsage) / float64(dtNano)
 	}

@@ -14,7 +14,6 @@
 package bbolt_test
 
 import (
-	"context"
 	"path/filepath"
 	"testing"
 
@@ -30,8 +29,8 @@ func TestNew(t *testing.T) {
 	t.Parallel()
 
 	type test struct {
-		name     string
 		testfunc func(t *testing.T)
+		name     string
 	}
 
 	tests := []test{
@@ -89,8 +88,8 @@ func Test_bbolt_GetSetClose(t *testing.T) {
 	t.Parallel()
 
 	type test struct {
-		name     string
 		testfunc func(t *testing.T)
+		name     string
 	}
 
 	setup := func(t *testing.T) (b bbolt.Bbolt, file string) {
@@ -191,7 +190,7 @@ func Test_bbolt_AsyncSet(t *testing.T) {
 		"key5": "val5",
 	}
 
-	eg, _ := errgroup.New(context.Background())
+	eg, _ := errgroup.New(t.Context())
 	for k, v := range kv {
 		b.AsyncSet(eg, []byte(k), []byte(v))
 	}

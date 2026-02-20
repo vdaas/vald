@@ -65,7 +65,7 @@ func GenSameVecMultiInsertReq(
 	req := &payload.Insert_MultiRequest{
 		Requests: make([]*payload.Insert_Request, num),
 	}
-	for i := 0; i < num; i++ {
+	for i := range num {
 		req.Requests[i] = &payload.Insert_Request{
 			Vector: &payload.Object_Vector{
 				Id:     "uuid-" + strconv.Itoa(i+1),
