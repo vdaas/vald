@@ -665,8 +665,8 @@ func (n *ngt) Search(
 		*(*C.float)(unsafe.Pointer(&epsilon)),
 		*(*C.float)(unsafe.Pointer(&radius)),
 		results,
-		ne.err,
-		C.int(edgeSize))
+		C.int(edgeSize),
+		ne.err)
 	vec = nil
 	if ret == ErrorCode {
 		n.rUnlock(true)
