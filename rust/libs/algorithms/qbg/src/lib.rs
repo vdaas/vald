@@ -100,7 +100,7 @@ pub mod ffi {
             k: usize,
             radius: f32,
             epsilon: f32,
-        ) -> UniquePtr<CxxVector<SearchResult>>;
+        ) -> Result<UniquePtr<CxxVector<SearchResult>>>;
         fn get_object(self: &Index, id: usize) -> Result<*mut f32>;
         fn get_dimension(self: &Index) -> Result<usize>;
     }
@@ -383,7 +383,7 @@ pub mod index {
             epsilon: f32,
         ) -> Result<Vec<(u32, f32)>, cxx::Exception> {
             let index = self.inner.as_ref().unwrap();
-            let mut search_results = index.search(v, k, radius, epsilon);
+            let mut search_results = index.search(v, k, radius, epsilon)?;
             Ok(search_results
                 .pin_mut()
                 .into_iter()
@@ -488,7 +488,7 @@ mod tests {
         // Search
         println!("search the index for the specified query...");
         let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
-        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON);
+        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON)?;
         let ids: Vec<u32> = search_results
             .pin_mut()
             .into_iter()
@@ -505,7 +505,7 @@ mod tests {
         // Remove
         index.pin_mut().remove(1).unwrap();
         let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
-        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON);
+        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON)?;
         let ids: Vec<u32> = search_results
             .pin_mut()
             .into_iter()
@@ -571,7 +571,7 @@ mod tests {
 
         // Search
         let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
-        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON);
+        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON)?;
         let ids: Vec<u32> = search_results
             .pin_mut()
             .into_iter()
@@ -588,7 +588,7 @@ mod tests {
         // Remove
         index.pin_mut().remove(1).unwrap();
         let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
-        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON);
+        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON)?;
         let ids: Vec<u32> = search_results
             .pin_mut()
             .into_iter()
@@ -658,36 +658,41 @@ mod tests {
         println!("append objects...");
         for i in 0..100 {
             let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|x| (x + i) as f32).collect();
-            let id = index.append(vec.as_slice()).unwrap();
-            assert_eq!((i + 1) as i32, id)
+            let res = index.append(vec.as_slice());
+            assert!(res.is_ok(), "append failed: {:?}", res.err());
+            assert_eq!((i + 1) as i32, res.unwrap())
         }
-        index.save_index().unwrap();
-        index.close_index();
 
         // Build
         println!("building the index...");
-        index.build_index(&path, &mut p).unwrap();
-        index.open_index(&path, true).unwrap();
+        let res = index.build_index(&path, &mut p);
+        assert!(res.is_ok(), "build_index failed: {:?}", res.err());
+        let res = index.open_index(&path, true);
+        assert!(res.is_ok(), "open_index failed: {:?}", res.err());
 
         // Insert
         for i in 0..100 {
             let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|x| (x + i) as f32).collect();
-            let id = index.insert(vec.as_slice()).unwrap();
-            assert_eq!((i + 1 + 100) as i32, id)
+            let res = index.insert(vec.as_slice());
+            assert!(res.is_ok(), "insert failed: {:?}", res.err());
+            assert_eq!((i + 1 + 100) as i32, res.unwrap());
         }
 
         // Get Object
-        let vec = index.get_object(1).unwrap();
-        println!("vec:\n\t{:?}", vec);
-
+        let res = index.get_object(1);
+        assert!(res.is_ok(), "get_object failed: {:?}", res.err());
+        
         // Get Dimension
-        let dim = index.get_dimension().unwrap();
-        println!("dimension:\n\t{:?}", dim);
+        let res = index.get_dimension();
+        assert!(res.is_ok(), "get_dimension failed: {:?}", res.err());
+        assert!(res.unwrap() > 0, "dimension should be greater than 0");
 
         // Search
         println!("search the index for the specified query...");
         let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
-        let search_results = index.search(vec.as_slice(), K, RADIUS, EPSILON).unwrap();
+        let res = index.search(vec.as_slice(), K, RADIUS, EPSILON);
+        assert!(res.is_ok(), "search failed: {:?}", res.err());
+        let search_results = res.unwrap();
         let ids: Vec<u32> = search_results.iter().map(|s| s.0).collect();
         let distances: Vec<f32> = search_results.iter().map(|s| s.1).collect();
         println!("search results:\n\t{:?}", search_results);
@@ -695,15 +700,14 @@ mod tests {
         println!("distances:\n\t{:?}", distances);
 
         // Remove
-        index.remove(1).unwrap();
+        let res = index.remove(1);
+        assert!(res.is_ok(), "remove failed: {:?}", res.err());
         let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
-        let search_results = index.search(vec.as_slice(), K, RADIUS, EPSILON).unwrap();
-        let ids: Vec<u32> = search_results.iter().map(|s| s.0).collect();
-        let distances: Vec<f32> = search_results.iter().map(|s| s.1).collect();
-        println!("search results:\n\t{:?}", search_results);
-        println!("ids:\n\t{:?}", ids);
-        println!("distances:\n\t{:?}", distances);
-
+        let res = index.search(vec.as_slice(), K, RADIUS, EPSILON);
+        assert!(res.is_ok(), "search failed: {:?}", res.err());
+        let search_results = res.unwrap();
+        assert!(!search_results.is_empty(), "search results should not be empty");
+        
         index.close_index();
 
         Ok(())
