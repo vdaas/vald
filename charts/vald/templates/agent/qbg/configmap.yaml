@@ -37,6 +37,19 @@ data:
     server_config:
       {{- $servers := dict "Values" $agent.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}
+      healths:
+        liveness:
+          enabled: true
+          port: 3000
+          host: 0.0.0.0
+        readiness:
+          enabled: true
+          port: 3001
+          host: 0.0.0.0
+        startup:
+          enabled: true
+          port: 3001
+          host: 0.0.0.0
     observability:
       {{- $observability := dict "Values" $agent.observability "default" .Values.defaults.observability }}
       {{- include "vald.observability" $observability | nindent 6 }}

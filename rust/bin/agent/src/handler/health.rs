@@ -1,25 +1,27 @@
-use axum::{
-    Json,
-    extract::State,
-    http::StatusCode,
-    response::IntoResponse,
-    routing::get,
-    Router,
-};
+use axum::{Json, Router, extract::State, http::StatusCode, response::IntoResponse, routing::get};
 use serde_json::json;
 use std::sync::Arc;
 
 /// Health check handler
 pub async fn liveness() -> impl IntoResponse {
-    (StatusCode::OK, Json(json!({ "status": "ok", "mode": "liveness" })))
+    (
+        StatusCode::OK,
+        Json(json!({ "status": "ok", "mode": "liveness" })),
+    )
 }
 
 pub async fn readiness() -> impl IntoResponse {
-    (StatusCode::OK, Json(json!({ "status": "ok", "mode": "readiness" })))
+    (
+        StatusCode::OK,
+        Json(json!({ "status": "ok", "mode": "readiness" })),
+    )
 }
 
 pub async fn startup() -> impl IntoResponse {
-    (StatusCode::OK, Json(json!({ "status": "ok", "mode": "startup" })))
+    (
+        StatusCode::OK,
+        Json(json!({ "status": "ok", "mode": "startup" })),
+    )
 }
 
 pub fn router() -> Router {
