@@ -14,9 +14,12 @@
 // limitations under the License.
 //
 
-use agent::config::{AgentConfig, GrpcServerConfig, Keepalive, Logging, Observability, QBG, Server, ServerConfig, Service};
+use agent::config::{
+    AgentConfig, GrpcServerConfig, Keepalive, Logging, Observability, QBG, Server, ServerConfig,
+    Service,
+};
 use proto::core::v1::agent_client::AgentClient;
-use proto::payload::v1::{control, insert, object, remove, search, update, upsert, Empty};
+use proto::payload::v1::{Empty, control, insert, object, remove, search, update, upsert};
 use proto::vald::v1::index_client::IndexClient;
 use proto::vald::v1::insert_client::InsertClient;
 use proto::vald::v1::object_client::ObjectClient;
@@ -60,7 +63,7 @@ async fn test_qbg_agent_integration() {
             json: false,
         },
         observability: Observability {
-            enabled: true, // Enable to test that it doesn't crash
+            enabled: true,                                 // Enable to test that it doesn't crash
             endpoint: "http://127.0.0.1:4317".to_string(), // Dummy endpoint
             service_name: "test-agent".to_string(),
             ..Default::default()
@@ -90,7 +93,7 @@ async fn test_qbg_agent_integration() {
             index_path: index_path.to_str().unwrap().to_string(),
             // Ensure bulk insert works with small batches
             bulk_insert_chunk_size: 10,
-            number_of_subvectors: 64, 
+            number_of_subvectors: 64,
             number_of_blobs: 10, // Explicitly set blobs
             number_of_objects: 200,
             hierarchical_clustering_init_mode: 1,
@@ -166,16 +169,18 @@ async fn test_qbg_agent_integration() {
     let create_index_res = agent_client
         .create_index(control::CreateIndexRequest { pool_size: 16 })
         .await;
-    assert!(create_index_res.is_ok(), "CreateIndex failed, response: {:?}", create_index_res);
+    assert!(
+        create_index_res.is_ok(),
+        "CreateIndex failed, response: {:?}",
+        create_index_res
+    );
 
     // Wait for indexing to potentially complete (async)
     sleep(Duration::from_secs(2)).await;
 
     // 8. Verify Exists (before index build)
     println!("Testing Exists...");
-    let exists_req = object::Id {
-        id: ids[0].clone(),
-    };
+    let exists_req = object::Id { id: ids[0].clone() };
     let exists_res = object_client.exists(exists_req).await.unwrap().into_inner();
     assert_eq!(exists_res.id, ids[0]);
 
@@ -183,7 +188,7 @@ async fn test_qbg_agent_integration() {
     println!("Testing Observability verification...");
     let stats_res = index_client.index_statistics(Empty {}).await;
     assert!(stats_res.is_ok(), "IndexStatistics failed");
-    
+
     // Check Index Info/Property (QBG returns Unsupported, so we skip assert success or verify unsupported)
     // let prop_res = index_client.index_property(Empty {}).await;
     // assert!(prop_res.is_ok(), "IndexProperty failed");
@@ -222,9 +227,12 @@ async fn test_qbg_agent_integration() {
         let response = res.into_inner();
         // Verify results
         if !response.results.is_empty() {
-             assert_eq!(response.results[0].id, ids[0], "Top result should be the query vector itself");
+            assert_eq!(
+                response.results[0].id, ids[0],
+                "Top result should be the query vector itself"
+            );
         } else {
-             println!("Search returned empty results (expected for empty graph issue)");
+            println!("Search returned empty results (expected for empty graph issue)");
         }
     }
 
@@ -268,23 +276,30 @@ async fn test_qbg_agent_integration() {
     assert!(remove_res.is_ok(), "Remove failed");
 
     // Verify removed
-    let _exists_check = object_client.exists(object::Id { id: ids[2].clone() }).await;
+    let _exists_check = object_client
+        .exists(object::Id { id: ids[2].clone() })
+        .await;
     // We expect error or not found logic here, but let's check search as primary validation of removal effect
-    
+
     let search_removed_req = search::Request {
         vector: vectors[2].clone(),
-        config: Some(search::Config { num: 1, ..Default::default() }),
+        config: Some(search::Config {
+            num: 1,
+            ..Default::default()
+        }),
     };
     if let Ok(res) = search_client.search(search_removed_req).await {
         let search_removed_res = res.into_inner();
         // Top result should NOT be ids[2] (or distance should be large / filtered)
         if !search_removed_res.results.is_empty() {
-            assert_ne!(search_removed_res.results[0].id, ids[2], "Removed object found in search");
+            assert_ne!(
+                search_removed_res.results[0].id, ids[2],
+                "Removed object found in search"
+            );
         }
     } else {
         println!("Search failed during remove verification (expected due to graph issue)");
     }
-
 
     println!("Integration test completed successfully.");
 }

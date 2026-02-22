@@ -64,6 +64,42 @@ pub async fn serve(config: AgentConfig) -> Result<(), Box<dyn std::error::Error>
     // Start the daemon for automatic indexing and saving
     agent.start(&config).await;
 
+    // Start health servers
+    let health_servers = vec![
+        &config.server_config.healths.liveness,
+        &config.server_config.healths.readiness,
+        &config.server_config.healths.startup,
+    ];
+
+    let mut bind_addrs = std::collections::HashSet::new();
+    for s in health_servers {
+        if s.enabled {
+            let host = if s.host.is_empty() {
+                "0.0.0.0"
+            } else {
+                &s.host
+            };
+            bind_addrs.insert(format!("{}:{}", host, s.port));
+        }
+    }
+
+    for addr in bind_addrs {
+        info!("Starting health server at {}", addr);
+        let addr_clone = addr.clone();
+        tokio::spawn(async move {
+            match tokio::net::TcpListener::bind(&addr_clone).await {
+                Ok(listener) => {
+                    if let Err(e) = axum::serve(listener, handler::health::router()).await {
+                        error!("Health server error on {}: {}", addr_clone, e);
+                    }
+                }
+                Err(e) => {
+                    error!("Failed to bind health server on {}: {}", addr_clone, e);
+                }
+            }
+        });
+    }
+
     // Register NGT metrics if metering is enabled
     if config.observability.enabled && config.observability.meter.enabled {
         if let Err(e) = metrics::register_metrics(agent.service()) {

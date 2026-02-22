@@ -15,6 +15,8 @@
 //
 
 mod common;
+/// Health Check handlers.
+pub mod health;
 /// Flush RPC handlers.
 pub mod flush;
 /// Index RPC handlers.
