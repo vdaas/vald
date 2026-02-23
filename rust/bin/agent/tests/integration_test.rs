@@ -15,7 +15,8 @@
 //
 
 use agent::config::{
-    AgentConfig, GrpcServerConfig, Healths, Keepalive, Logging, Observability, QBG, Server, ServerConfig, Service
+    AgentConfig, GrpcServerConfig, Healths, Keepalive, Logging, Observability, QBG, Server,
+    ServerConfig, Service,
 };
 use proto::core::v1::agent_client::AgentClient;
 use proto::payload::v1::{Empty, control, insert, object, remove, search, update, upsert};

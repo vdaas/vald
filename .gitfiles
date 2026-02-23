@@ -62,6 +62,7 @@
 .github/helm/values/values-mirror-01.yaml
 .github/helm/values/values-mirror-02.yaml
 .github/helm/values/values-profile.yaml
+.github/helm/values/values-qbg.yaml
 .github/helm/values/values-readreplica.yaml
 .github/issue_label_bot.yaml
 .github/kubelinter.yaml
@@ -430,6 +431,7 @@ charts/vald/templates/agent/networkpolicy.yaml
 charts/vald/templates/agent/ngt/configmap.yaml
 charts/vald/templates/agent/pdb.yaml
 charts/vald/templates/agent/priorityclass.yaml
+charts/vald/templates/agent/qbg/configmap.yaml
 charts/vald/templates/agent/serviceaccount.yaml
 charts/vald/templates/agent/sidecar/configmap.yaml
 charts/vald/templates/agent/sidecar/svc.yaml
@@ -2280,6 +2282,7 @@ rust/bin/agent/src/config.rs
 rust/bin/agent/src/handler.rs
 rust/bin/agent/src/handler/common.rs
 rust/bin/agent/src/handler/flush.rs
+rust/bin/agent/src/handler/health.rs
 rust/bin/agent/src/handler/index.rs
 rust/bin/agent/src/handler/insert.rs
 rust/bin/agent/src/handler/object.rs
@@ -2287,6 +2290,7 @@ rust/bin/agent/src/handler/remove.rs
 rust/bin/agent/src/handler/search.rs
 rust/bin/agent/src/handler/update.rs
 rust/bin/agent/src/handler/upsert.rs
+rust/bin/agent/src/lib.rs
 rust/bin/agent/src/main.rs
 rust/bin/agent/src/metrics.rs
 rust/bin/agent/src/middleware.rs
@@ -2297,6 +2301,7 @@ rust/bin/agent/src/service/memstore.rs
 rust/bin/agent/src/service/metadata.rs
 rust/bin/agent/src/service/persistence.rs
 rust/bin/agent/src/service/qbg.rs
+rust/bin/agent/tests/integration_test.rs
 rust/bin/meta/Cargo.toml
 rust/bin/meta/src/handler.rs
 rust/bin/meta/src/handler/meta.rs
@@ -2389,6 +2394,7 @@ tests/v2/e2e/assets/readreplica.yaml
 tests/v2/e2e/assets/rollout.yaml
 tests/v2/e2e/assets/stream_crud.yaml
 tests/v2/e2e/assets/unary_crud.yaml
+tests/v2/e2e/assets/unary_crud_qbg.yaml
 tests/v2/e2e/config/config.go
 tests/v2/e2e/config/enums.go
 tests/v2/e2e/crud/agent_test.go
