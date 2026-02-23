@@ -17,6 +17,8 @@
 mod common;
 /// Flush RPC handlers.
 pub mod flush;
+/// Health Check handlers.
+pub mod health;
 /// Index RPC handlers.
 pub mod index;
 /// Insert RPC handlers.
@@ -33,8 +35,8 @@ pub mod update;
 pub mod upsert;
 
 use crate::config::AgentConfig;
-use crate::{middleware, serve};
 use crate::service::{DaemonConfig, DaemonHandle, start_daemon};
+use crate::{middleware, serve};
 use proto::{
     core::v1::agent_server,
     vald::v1::{

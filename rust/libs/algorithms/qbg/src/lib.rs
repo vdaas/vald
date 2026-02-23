@@ -681,7 +681,7 @@ mod tests {
         // Get Object
         let res = index.get_object(1);
         assert!(res.is_ok(), "get_object failed: {:?}", res.err());
-        
+
         // Get Dimension
         let res = index.get_dimension();
         assert!(res.is_ok(), "get_dimension failed: {:?}", res.err());
@@ -706,8 +706,11 @@ mod tests {
         let res = index.search(vec.as_slice(), K, RADIUS, EPSILON);
         assert!(res.is_ok(), "search failed: {:?}", res.err());
         let search_results = res.unwrap();
-        assert!(!search_results.is_empty(), "search results should not be empty");
-        
+        assert!(
+            !search_results.is_empty(),
+            "search results should not be empty"
+        );
+
         index.close_index();
 
         Ok(())

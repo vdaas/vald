@@ -172,6 +172,42 @@ pub struct ServerConfig {
     #[serde(default)]
     /// Server entries for different protocols.
     pub servers: Vec<Server>,
+
+    #[serde(default)]
+    /// Health check server configuration.
+    pub healths: Healths,
+}
+
+/// Health check servers configuration.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct Healths {
+    #[serde(default)]
+    /// Liveness probe configuration.
+    pub liveness: HealthServerConfig,
+
+    #[serde(default)]
+    /// Readiness probe configuration.
+    pub readiness: HealthServerConfig,
+
+    #[serde(default)]
+    /// Startup probe configuration.
+    pub startup: HealthServerConfig,
+}
+
+/// Individual health server configuration.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct HealthServerConfig {
+    #[serde(default)]
+    /// Enables the health server.
+    pub enabled: bool,
+
+    #[serde(default)]
+    /// Bind host address.
+    pub host: String,
+
+    #[serde(default)]
+    /// Bind port.
+    pub port: u16,
 }
 
 /// Server entry configuration.
