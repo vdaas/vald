@@ -33,8 +33,8 @@ func NewGridMap() *GridMap {
 }
 
 func (g *GridMap) IsFree(x, y, w, h uint32) bool {
-	for dy := uint32(0); dy < h; dy++ {
-		for dx := uint32(0); dx < w; dx++ {
+	for dy := range h {
+		for dx := range w {
 			if g.data[y+dy] != nil && g.data[y+dy][x+dx] {
 				return false
 			}
@@ -44,12 +44,12 @@ func (g *GridMap) IsFree(x, y, w, h uint32) bool {
 }
 
 func (g *GridMap) Reserve(x, y, w, h uint32) {
-	for dy := uint32(0); dy < h; dy++ {
+	for dy := range h {
 		row := y + dy
 		if g.data[row] == nil {
 			g.data[row] = make(map[uint32]bool)
 		}
-		for dx := uint32(0); dx < w; dx++ {
+		for dx := range w {
 			g.data[row][x+dx] = true
 		}
 	}

@@ -31,12 +31,12 @@ func TestErrCassandraInvalidConsistencyType(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -92,11 +92,11 @@ func TestErrCassandraNotFoundIdentity(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -142,11 +142,11 @@ func TestErrCassandraUnavailableIdentity(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -192,11 +192,11 @@ func TestErrCassandraUnavailable(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -245,12 +245,12 @@ func TestErrCassandraNotFound(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -326,19 +326,19 @@ func TestErrCassandraNotFound(t *testing.T) {
 
 func TestErrCassandraGetOperationFailed(t *testing.T) {
 	type args struct {
-		key string
 		err error
+		key string
 	}
 	type want struct {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -413,19 +413,19 @@ func TestErrCassandraGetOperationFailed(t *testing.T) {
 
 func TestErrCassandraSetOperationFailed(t *testing.T) {
 	type args struct {
-		key string
 		err error
+		key string
 	}
 	type want struct {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -500,19 +500,19 @@ func TestErrCassandraSetOperationFailed(t *testing.T) {
 
 func TestErrCassandraDeleteOperationFailed(t *testing.T) {
 	type args struct {
-		key string
 		err error
+		key string
 	}
 	type want struct {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -587,19 +587,19 @@ func TestErrCassandraDeleteOperationFailed(t *testing.T) {
 
 func TestErrCassandraHostDownDetected(t *testing.T) {
 	type args struct {
-		nodeInfo string
 		err      error
+		nodeInfo string
 	}
 	type want struct {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -675,20 +675,20 @@ func TestErrCassandraHostDownDetected(t *testing.T) {
 func TestErrCassandraFailedToCreateSession(t *testing.T) {
 	type args struct {
 		err        error
+		cqlVersion string
 		hosts      []string
 		port       int
-		cqlVersion string
 	}
 	type want struct {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -804,12 +804,12 @@ func TestCassandraNotFoundIdentityError_Error(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
 		fields     fields
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -862,12 +862,12 @@ func TestCassandraNotFoundIdentityError_Unwrap(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !Is(err, w.err) {
@@ -941,12 +941,12 @@ func TestIsCassandraNotFoundError(t *testing.T) {
 		want bool
 	}
 	type test struct {
-		name       string
 		args       args
-		want       want
 		checkFunc  func(want, bool) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1005,12 +1005,12 @@ func TestCassandraUnavailableIdentityError_Error(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
 		fields     fields
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1063,12 +1063,12 @@ func TestCassandraUnavailableIdentityError_Unwrap(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !Is(err, w.err) {
@@ -1142,12 +1142,12 @@ func TestIsCassandraUnavailableError(t *testing.T) {
 		want bool
 	}
 	type test struct {
-		name       string
 		args       args
-		want       want
 		checkFunc  func(want, bool) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {

@@ -27,7 +27,7 @@ const (
 
 // SearchResult is struct for comfortable use in Go.
 type SearchResult struct {
+	Error    error
 	ID       uint32
 	Distance float32
-	Error    error
 }

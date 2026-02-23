@@ -28,9 +28,9 @@ import (
 
 func TestWithHost(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		host      string
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -76,9 +76,9 @@ func TestWithHost(t *testing.T) {
 
 func TestWithPort(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		port      uint16
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -124,9 +124,9 @@ func TestWithPort(t *testing.T) {
 
 func TestWithName(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		srvName   string
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -173,9 +173,9 @@ func TestWithName(t *testing.T) {
 
 func TestWithErrorGroup(t *testing.T) {
 	type test struct {
-		name      string
 		eg        errgroup.Group
 		checkFunc func(opt Option) error
+		name      string
 	}
 
 	tests := []test{
@@ -223,9 +223,9 @@ func TestWithErrorGroup(t *testing.T) {
 
 func TestWithPreStartFunc(t *testing.T) {
 	type test struct {
-		name      string
 		fn        func() error
 		checkFunc func(opt Option) error
+		name      string
 	}
 
 	tests := []test{
@@ -277,9 +277,9 @@ func TestWithPreStartFunc(t *testing.T) {
 
 func TestWithPreStopFunc(t *testing.T) {
 	type test struct {
-		name      string
 		fn        func() error
 		checkFunc func(opt Option) error
+		name      string
 	}
 
 	tests := []test{
@@ -331,9 +331,9 @@ func TestWithPreStopFunc(t *testing.T) {
 
 func TestWithProbeWaitTime(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		dur       string
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -393,9 +393,9 @@ func TestWithProbeWaitTime(t *testing.T) {
 
 func TestWithShutdownDuration(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		dur       string
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -455,9 +455,9 @@ func TestWithShutdownDuration(t *testing.T) {
 
 func TestWithReadHeaderTimeout(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		dur       string
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -517,9 +517,9 @@ func TestWithReadHeaderTimeout(t *testing.T) {
 
 func TestWithReadTimeout(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		dur       string
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -579,9 +579,9 @@ func TestWithReadTimeout(t *testing.T) {
 
 func TestWithWriteTimeout(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		dur       string
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -641,9 +641,9 @@ func TestWithWriteTimeout(t *testing.T) {
 
 func TestWithIdleTimeout(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		dur       string
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -703,9 +703,9 @@ func TestWithIdleTimeout(t *testing.T) {
 
 func TestWithListenConfig(t *testing.T) {
 	type test struct {
-		name      string
 		lc        *net.ListenConfig
 		checkFunc func(opt Option) error
+		name      string
 	}
 
 	tests := []test{
@@ -756,9 +756,9 @@ func TestWithListenConfig(t *testing.T) {
 
 func TestWithServerMode(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		m         ServerMode
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -820,9 +820,9 @@ func TestWithServerMode(t *testing.T) {
 
 func TestWithTLSConfig(t *testing.T) {
 	type test struct {
-		name      string
 		cfg       *tls.Config
 		checkFunc func(opt Option) error
+		name      string
 	}
 
 	tests := []test{
@@ -877,9 +877,9 @@ func TestWithHTTPHandler(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
 		handler   http.Handler
 		checkFunc func(opt Option) error
+		name      string
 	}
 
 	tests := []test{
@@ -929,9 +929,9 @@ func TestWithHTTPHandler(t *testing.T) {
 
 func TestWithHTTPServer(t *testing.T) {
 	type test struct {
-		name      string
 		srv       *http.Server
 		checkFunc func(opt Option) error
+		name      string
 	}
 
 	tests := []test{
@@ -981,9 +981,9 @@ func TestWithHTTPServer(t *testing.T) {
 
 func TestWithGRPCServer(t *testing.T) {
 	type test struct {
-		name      string
 		srv       *grpc.Server
 		checkFunc func(opt Option) error
+		name      string
 	}
 
 	tests := []test{
@@ -1033,9 +1033,9 @@ func TestWithGRPCServer(t *testing.T) {
 
 func TestWithGRPCOption(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		opts      []grpc.ServerOption
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -1085,9 +1085,9 @@ func TestWithGRPCOption(t *testing.T) {
 
 func TestWithGRPCRegisterar(t *testing.T) {
 	type test struct {
-		name      string
 		fn        func(*grpc.Server)
 		checkFunc func(opt Option) error
+		name      string
 	}
 
 	tests := []test{
@@ -1140,8 +1140,8 @@ func TestWithGRPCRegisterar(t *testing.T) {
 
 func TestWithEnableRestart(t *testing.T) {
 	type test struct {
-		name      string
 		checkFunc func(opt Option) error
+		name      string
 	}
 
 	tests := []test{
@@ -1171,8 +1171,8 @@ func TestWithEnableRestart(t *testing.T) {
 
 func TestWithDisableRestart(t *testing.T) {
 	type test struct {
-		name      string
 		checkFunc func(opt Option) error
+		name      string
 	}
 
 	tests := []test{
@@ -1202,9 +1202,9 @@ func TestWithDisableRestart(t *testing.T) {
 
 func TestWithGRPCMaxReceiveMessageSize(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		size      int
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -1284,9 +1284,9 @@ func TestWithGRPCMaxReceiveMessageSize(t *testing.T) {
 
 func TestWithGRPCMaxSendMessageSize(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		size      int
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -1366,9 +1366,9 @@ func TestWithGRPCMaxSendMessageSize(t *testing.T) {
 
 func TestWithGRPCInitialWindowSize(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		size      int
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -1448,9 +1448,9 @@ func TestWithGRPCInitialWindowSize(t *testing.T) {
 
 func TestWithGRPCInitialConnWindowSize(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		size      int
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -1530,9 +1530,9 @@ func TestWithGRPCInitialConnWindowSize(t *testing.T) {
 
 func TestWithGRPCKeepaliveMaxConnIdle(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		max       string
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -1598,9 +1598,9 @@ func TestWithGRPCKeepaliveMaxConnIdle(t *testing.T) {
 
 func TestWithGRPCKeepaliveMaxConnAge(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		max       string
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -1666,9 +1666,9 @@ func TestWithGRPCKeepaliveMaxConnAge(t *testing.T) {
 
 func TestWithGRPCKeepaliveMaxConnAgeGrace(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		max       string
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -1734,9 +1734,9 @@ func TestWithGRPCKeepaliveMaxConnAgeGrace(t *testing.T) {
 
 func TestWithGRPCKeepaliveTime(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		dur       string
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -1802,9 +1802,9 @@ func TestWithGRPCKeepaliveTime(t *testing.T) {
 
 func TestWithGRPCKeepaliveTimeout(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		dur       string
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -1870,9 +1870,9 @@ func TestWithGRPCKeepaliveTimeout(t *testing.T) {
 
 func TestWithGRPCWriteBufferSize(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		size      int
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -1952,9 +1952,9 @@ func TestWithGRPCWriteBufferSize(t *testing.T) {
 
 func TestWithGRPCReadBufferSize(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		size      int
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -2034,9 +2034,9 @@ func TestWithGRPCReadBufferSize(t *testing.T) {
 
 func TestWithGRPCConnectionTimeout(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		to        string
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -2102,9 +2102,9 @@ func TestWithGRPCConnectionTimeout(t *testing.T) {
 
 func TestWithGRPCMaxHeaderListSize(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		size      uint32
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -2152,9 +2152,9 @@ func TestWithGRPCMaxHeaderListSize(t *testing.T) {
 
 func TestWithGRPCHeaderTableSize(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		size      uint32
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -2202,9 +2202,9 @@ func TestWithGRPCHeaderTableSize(t *testing.T) {
 
 func TestWithGRPCInterceptors(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		names     []string
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -2287,8 +2287,8 @@ func TestWithGRPCInterceptors(t *testing.T) {
 
 func TestDefaultOption(t *testing.T) {
 	type test struct {
-		name      string
 		checkFunc func(opts []Option) error
+		name      string
 	}
 
 	tests := []test{
@@ -2336,9 +2336,9 @@ func TestDefaultHealthServerOption(t *testing.T) {
 	}
 
 	type test struct {
+		checkFunc func(opts []Option) error
 		name      string
 		args      args
-		checkFunc func(opts []Option) error
 	}
 
 	tests := []test{

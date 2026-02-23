@@ -20,12 +20,18 @@ import "github.com/vdaas/vald/internal/net"
 
 // Meta represents the configurations for vald meta.
 type Meta struct {
-	Host                      string      `json:"host"                         yaml:"host"`
-	Port                      uint16      `json:"port"                         yaml:"port"`
-	Client                    *GRPCClient `json:"client"                       yaml:"client"`
-	EnableCache               bool        `json:"enable_cache"                 yaml:"enable_cache"`
-	CacheExpiration           string      `json:"cache_expiration"             yaml:"cache_expiration"`
-	ExpiredCacheCheckDuration string      `json:"expired_cache_check_duration" yaml:"expired_cache_check_duration"`
+	// Client represents the gRPC client configuration.
+	Client *GRPCClient `json:"client" yaml:"client"`
+	// Host represents the host.
+	Host string `json:"host" yaml:"host"`
+	// CacheExpiration represents the cache expiration duration.
+	CacheExpiration string `json:"cache_expiration" yaml:"cache_expiration"`
+	// ExpiredCacheCheckDuration represents the expired cache check duration.
+	ExpiredCacheCheckDuration string `json:"expired_cache_check_duration" yaml:"expired_cache_check_duration"`
+	// Port represents the port number.
+	Port uint16 `json:"port" yaml:"port"`
+	// EnableCache enables cache.
+	EnableCache bool `json:"enable_cache" yaml:"enable_cache"`
 }
 
 // Bind binds the actual data from Meta receiver fields.

@@ -34,12 +34,12 @@ func TestWithNameByString(t *testing.T) {
 		obj data
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want want, got data) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		args       args
+		want       want
 	}
 
 	// Uncomment this block if the option returns an error, otherwise delete it
@@ -138,14 +138,11 @@ func TestWithName(t *testing.T) {
 		// err error
 	}
 	type test struct {
-		name string
-		args args
-		want want
-		// Use the first line if the option returns an error. otherwise use the second line
-		// checkFunc  func(want, *T, error) error
-		// checkFunc  func(want, *T) error
+		want       want
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
 	}
 
 	// Uncomment this block if the option returns an error, otherwise delete it
@@ -268,14 +265,11 @@ func TestWithFilePath(t *testing.T) {
 		// err error
 	}
 	type test struct {
-		name string
-		args args
-		want want
-		// Use the first line if the option returns an error. otherwise use the second line
-		// checkFunc  func(want, *T, error) error
-		// checkFunc  func(want, *T) error
+		want       want
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
 	}
 
 	// Uncomment this block if the option returns an error, otherwise delete it

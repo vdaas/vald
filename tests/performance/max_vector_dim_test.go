@@ -15,7 +15,6 @@ package performance
 
 import (
 	"bufio"
-	"context"
 	"flag"
 	"strconv"
 	"testing"
@@ -91,7 +90,7 @@ func TestMain(m *testing.M) {
 // Test for investigation of max dimension size for agent handler.
 func TestMaxDimInsert(t *testing.T) {
 	t.Helper()
-	eg, ctx := errgroup.New(context.Background())
+	eg, ctx := errgroup.New(t.Context())
 	mu := sync.Mutex{}
 	// Get the above the limit of bit (2~32)
 	bits := make([]int, 0, maxBit-1)
@@ -194,7 +193,7 @@ func TestMaxDimInsert(t *testing.T) {
 func TestMaxDimInsertGRPC(t *testing.T) {
 	// MaxUint64 cannot be used due to overflows
 	t.Helper()
-	eg, ctx := errgroup.New(context.Background())
+	eg, ctx := errgroup.New(t.Context())
 	mu := sync.Mutex{}
 	// Get the above the limit of bit (2~32)
 	bits := make([]int, 0, maxBit-1)

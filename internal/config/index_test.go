@@ -26,28 +26,28 @@ import (
 
 func TestIndexer_Bind(t *testing.T) {
 	type fields struct {
-		AgentPort              int
+		Discoverer             *DiscovererClient
 		AgentName              string
 		AgentNamespace         string
 		AgentDNS               string
-		Concurrency            int
 		AutoIndexDurationLimit string
 		AutoIndexCheckDuration string
+		NodeName               string
+		AgentPort              int
+		Concurrency            int
 		AutoIndexLength        uint32
 		CreationPoolSize       uint32
-		NodeName               string
-		Discoverer             *DiscovererClient
 	}
 	type want struct {
 		want *Indexer
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *Indexer) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *Indexer) error {
 		if !reflect.DeepEqual(got, w.want) {

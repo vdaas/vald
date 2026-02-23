@@ -167,11 +167,11 @@ func (s *server) Update(
 }
 
 func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error) {
-	return s.UnimplementedValdServer.UnimplementedUpdateServer.StreamUpdate(stream)
+	return s.UnimplementedUpdateServer.StreamUpdate(stream)
 }
 
 func (s *server) MultiUpdate(
 	ctx context.Context, reqs *payload.Update_MultiRequest,
 ) (res *payload.Object_Locations, err error) {
-	return s.UnimplementedValdServer.UnimplementedUpdateServer.MultiUpdate(ctx, reqs)
+	return s.UnimplementedUpdateServer.MultiUpdate(ctx, reqs)
 }

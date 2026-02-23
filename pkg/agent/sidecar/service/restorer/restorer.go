@@ -42,14 +42,12 @@ type Restorer interface {
 }
 
 type restorer struct {
-	dir string
-	eg  errgroup.Group
-
-	storage storage.Storage
-
-	backoffEnabled bool
-	backoffOpts    []backoff.Option
+	eg             errgroup.Group
+	storage        storage.Storage
 	bo             backoff.Backoff
+	dir            string
+	backoffOpts    []backoff.Option
+	backoffEnabled bool
 }
 
 func New(opts ...Option) (Restorer, error) {
@@ -273,7 +271,4 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 			}
 		}
 	}
-
-	log.Infof("finished to restore directory %s finished", r.dir)
-	return nil
 }

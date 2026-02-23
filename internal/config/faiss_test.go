@@ -17,26 +17,26 @@ package config
 //
 // func TestFaiss_Bind(t *testing.T) {
 // 	type fields struct {
-// 		IndexPath               string
-// 		Dimension               int
-// 		Nlist                   int
-// 		M                       int
-// 		NbitsPerIdx             int
-// 		MethodType              string
-// 		MetricType              string
-// 		EnableInMemoryMode      bool
-// 		AutoIndexCheckDuration  string
-// 		AutoSaveIndexDuration   string
-// 		AutoIndexDurationLimit  string
-// 		AutoIndexLength         int
-// 		InitialDelayMaxDuration string
-// 		MinLoadIndexTimeout     string
-// 		MaxLoadIndexTimeout     string
-// 		LoadIndexTimeoutFactor  string
-// 		EnableProactiveGC       bool
-// 		EnableCopyOnWrite       bool
 // 		VQueue                  *VQueue
 // 		KVSDB                   *KVSDB
+// 		AutoIndexDurationLimit  string
+// 		InitialDelayMaxDuration string
+// 		LoadIndexTimeoutFactor  string
+// 		MethodType              string
+// 		MetricType              string
+// 		MaxLoadIndexTimeout     string
+// 		AutoIndexCheckDuration  string
+// 		AutoSaveIndexDuration   string
+// 		IndexPath               string
+// 		MinLoadIndexTimeout     string
+// 		AutoIndexLength         int
+// 		M                       int
+// 		NbitsPerIdx             int
+// 		Nlist                   int
+// 		Dimension               int
+// 		EnableInMemoryMode      bool
+// 		EnableProactiveGC       bool
+// 		EnableCopyOnWrite       bool
 // 	}
 // 	type want struct {
 // 		want *Faiss
@@ -61,26 +61,26 @@ package config
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           IndexPath:"",
-// 		           Dimension:0,
-// 		           Nlist:0,
-// 		           M:0,
-// 		           NbitsPerIdx:0,
-// 		           MethodType:"",
-// 		           MetricType:"",
-// 		           EnableInMemoryMode:false,
-// 		           AutoIndexCheckDuration:"",
-// 		           AutoSaveIndexDuration:"",
-// 		           AutoIndexDurationLimit:"",
-// 		           AutoIndexLength:0,
-// 		           InitialDelayMaxDuration:"",
-// 		           MinLoadIndexTimeout:"",
-// 		           MaxLoadIndexTimeout:"",
-// 		           LoadIndexTimeoutFactor:"",
-// 		           EnableProactiveGC:false,
-// 		           EnableCopyOnWrite:false,
 // 		           VQueue:VQueue{},
 // 		           KVSDB:KVSDB{},
+// 		           AutoIndexDurationLimit:"",
+// 		           InitialDelayMaxDuration:"",
+// 		           LoadIndexTimeoutFactor:"",
+// 		           MethodType:"",
+// 		           MetricType:"",
+// 		           MaxLoadIndexTimeout:"",
+// 		           AutoIndexCheckDuration:"",
+// 		           AutoSaveIndexDuration:"",
+// 		           IndexPath:"",
+// 		           MinLoadIndexTimeout:"",
+// 		           AutoIndexLength:0,
+// 		           M:0,
+// 		           NbitsPerIdx:0,
+// 		           Nlist:0,
+// 		           Dimension:0,
+// 		           EnableInMemoryMode:false,
+// 		           EnableProactiveGC:false,
+// 		           EnableCopyOnWrite:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -99,26 +99,26 @@ package config
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           IndexPath:"",
-// 		           Dimension:0,
-// 		           Nlist:0,
-// 		           M:0,
-// 		           NbitsPerIdx:0,
-// 		           MethodType:"",
-// 		           MetricType:"",
-// 		           EnableInMemoryMode:false,
-// 		           AutoIndexCheckDuration:"",
-// 		           AutoSaveIndexDuration:"",
-// 		           AutoIndexDurationLimit:"",
-// 		           AutoIndexLength:0,
-// 		           InitialDelayMaxDuration:"",
-// 		           MinLoadIndexTimeout:"",
-// 		           MaxLoadIndexTimeout:"",
-// 		           LoadIndexTimeoutFactor:"",
-// 		           EnableProactiveGC:false,
-// 		           EnableCopyOnWrite:false,
 // 		           VQueue:VQueue{},
 // 		           KVSDB:KVSDB{},
+// 		           AutoIndexDurationLimit:"",
+// 		           InitialDelayMaxDuration:"",
+// 		           LoadIndexTimeoutFactor:"",
+// 		           MethodType:"",
+// 		           MetricType:"",
+// 		           MaxLoadIndexTimeout:"",
+// 		           AutoIndexCheckDuration:"",
+// 		           AutoSaveIndexDuration:"",
+// 		           IndexPath:"",
+// 		           MinLoadIndexTimeout:"",
+// 		           AutoIndexLength:0,
+// 		           M:0,
+// 		           NbitsPerIdx:0,
+// 		           Nlist:0,
+// 		           Dimension:0,
+// 		           EnableInMemoryMode:false,
+// 		           EnableProactiveGC:false,
+// 		           EnableCopyOnWrite:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -149,26 +149,26 @@ package config
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &Faiss{
-// 				IndexPath:               test.fields.IndexPath,
-// 				Dimension:               test.fields.Dimension,
-// 				Nlist:                   test.fields.Nlist,
-// 				M:                       test.fields.M,
-// 				NbitsPerIdx:             test.fields.NbitsPerIdx,
-// 				MethodType:              test.fields.MethodType,
-// 				MetricType:              test.fields.MetricType,
-// 				EnableInMemoryMode:      test.fields.EnableInMemoryMode,
-// 				AutoIndexCheckDuration:  test.fields.AutoIndexCheckDuration,
-// 				AutoSaveIndexDuration:   test.fields.AutoSaveIndexDuration,
-// 				AutoIndexDurationLimit:  test.fields.AutoIndexDurationLimit,
-// 				AutoIndexLength:         test.fields.AutoIndexLength,
-// 				InitialDelayMaxDuration: test.fields.InitialDelayMaxDuration,
-// 				MinLoadIndexTimeout:     test.fields.MinLoadIndexTimeout,
-// 				MaxLoadIndexTimeout:     test.fields.MaxLoadIndexTimeout,
-// 				LoadIndexTimeoutFactor:  test.fields.LoadIndexTimeoutFactor,
-// 				EnableProactiveGC:       test.fields.EnableProactiveGC,
-// 				EnableCopyOnWrite:       test.fields.EnableCopyOnWrite,
 // 				VQueue:                  test.fields.VQueue,
 // 				KVSDB:                   test.fields.KVSDB,
+// 				AutoIndexDurationLimit:  test.fields.AutoIndexDurationLimit,
+// 				InitialDelayMaxDuration: test.fields.InitialDelayMaxDuration,
+// 				LoadIndexTimeoutFactor:  test.fields.LoadIndexTimeoutFactor,
+// 				MethodType:              test.fields.MethodType,
+// 				MetricType:              test.fields.MetricType,
+// 				MaxLoadIndexTimeout:     test.fields.MaxLoadIndexTimeout,
+// 				AutoIndexCheckDuration:  test.fields.AutoIndexCheckDuration,
+// 				AutoSaveIndexDuration:   test.fields.AutoSaveIndexDuration,
+// 				IndexPath:               test.fields.IndexPath,
+// 				MinLoadIndexTimeout:     test.fields.MinLoadIndexTimeout,
+// 				AutoIndexLength:         test.fields.AutoIndexLength,
+// 				M:                       test.fields.M,
+// 				NbitsPerIdx:             test.fields.NbitsPerIdx,
+// 				Nlist:                   test.fields.Nlist,
+// 				Dimension:               test.fields.Dimension,
+// 				EnableInMemoryMode:      test.fields.EnableInMemoryMode,
+// 				EnableProactiveGC:       test.fields.EnableProactiveGC,
+// 				EnableCopyOnWrite:       test.fields.EnableCopyOnWrite,
 // 			}
 //
 // 			got := f.Bind()

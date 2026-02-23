@@ -113,17 +113,17 @@ package service
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		client                 discoverer.Client
 // 		eg                     errgroup.Group
-// 		creationPoolSize       uint32
-// 		indexDuration          time.Duration
-// 		indexDurationLimit     time.Duration
+// 		client                 discoverer.Client
+// 		shouldSaveList         sync.Map[string, bool]
+// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		createIndexConcurrency int
 // 		saveIndexDuration      time.Duration
 // 		saveIndexDurationLimit time.Duration
-// 		shouldSaveList         sync.Map[string, bool]
-// 		createIndexConcurrency int
+// 		indexDurationLimit     time.Duration
+// 		indexDuration          time.Duration
 // 		saveIndexConcurrency   int
-// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		creationPoolSize       uint32
 // 		indexing               atomic.Bool
 // 		saving                 atomic.Bool
 // 		minUncommitted         uint32
@@ -161,17 +161,17 @@ package service
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           client:nil,
 // 		           eg:nil,
-// 		           creationPoolSize:0,
-// 		           indexDuration:nil,
-// 		           indexDurationLimit:nil,
+// 		           client:nil,
+// 		           shouldSaveList:nil,
+// 		           indexInfos:nil,
+// 		           createIndexConcurrency:0,
 // 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           shouldSaveList:nil,
-// 		           createIndexConcurrency:0,
+// 		           indexDurationLimit:nil,
+// 		           indexDuration:nil,
 // 		           saveIndexConcurrency:0,
-// 		           indexInfos:nil,
+// 		           creationPoolSize:0,
 // 		           indexing:nil,
 // 		           saving:nil,
 // 		           minUncommitted:0,
@@ -198,17 +198,17 @@ package service
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           client:nil,
 // 		           eg:nil,
-// 		           creationPoolSize:0,
-// 		           indexDuration:nil,
-// 		           indexDurationLimit:nil,
+// 		           client:nil,
+// 		           shouldSaveList:nil,
+// 		           indexInfos:nil,
+// 		           createIndexConcurrency:0,
 // 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           shouldSaveList:nil,
-// 		           createIndexConcurrency:0,
+// 		           indexDurationLimit:nil,
+// 		           indexDuration:nil,
 // 		           saveIndexConcurrency:0,
-// 		           indexInfos:nil,
+// 		           creationPoolSize:0,
 // 		           indexing:nil,
 // 		           saving:nil,
 // 		           minUncommitted:0,
@@ -244,17 +244,17 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			idx := &index{
-// 				client:                 test.fields.client,
 // 				eg:                     test.fields.eg,
-// 				creationPoolSize:       test.fields.creationPoolSize,
-// 				indexDuration:          test.fields.indexDuration,
-// 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				client:                 test.fields.client,
+// 				shouldSaveList:         test.fields.shouldSaveList,
+// 				indexInfos:             test.fields.indexInfos,
+// 				createIndexConcurrency: test.fields.createIndexConcurrency,
 // 				saveIndexDuration:      test.fields.saveIndexDuration,
 // 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
-// 				shouldSaveList:         test.fields.shouldSaveList,
-// 				createIndexConcurrency: test.fields.createIndexConcurrency,
+// 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				indexDuration:          test.fields.indexDuration,
 // 				saveIndexConcurrency:   test.fields.saveIndexConcurrency,
-// 				indexInfos:             test.fields.indexInfos,
+// 				creationPoolSize:       test.fields.creationPoolSize,
 // 				indexing:               test.fields.indexing,
 // 				saving:                 test.fields.saving,
 // 				minUncommitted:         test.fields.minUncommitted,
@@ -276,17 +276,17 @@ package service
 // 		enableLowIndexSkip bool
 // 	}
 // 	type fields struct {
-// 		client                 discoverer.Client
 // 		eg                     errgroup.Group
-// 		creationPoolSize       uint32
-// 		indexDuration          time.Duration
-// 		indexDurationLimit     time.Duration
+// 		client                 discoverer.Client
+// 		shouldSaveList         sync.Map[string, bool]
+// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		createIndexConcurrency int
 // 		saveIndexDuration      time.Duration
 // 		saveIndexDurationLimit time.Duration
-// 		shouldSaveList         sync.Map[string, bool]
-// 		createIndexConcurrency int
+// 		indexDurationLimit     time.Duration
+// 		indexDuration          time.Duration
 // 		saveIndexConcurrency   int
-// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		creationPoolSize       uint32
 // 		indexing               atomic.Bool
 // 		saving                 atomic.Bool
 // 		minUncommitted         uint32
@@ -321,17 +321,17 @@ package service
 // 		           enableLowIndexSkip:false,
 // 		       },
 // 		       fields: fields {
-// 		           client:nil,
 // 		           eg:nil,
-// 		           creationPoolSize:0,
-// 		           indexDuration:nil,
-// 		           indexDurationLimit:nil,
+// 		           client:nil,
+// 		           shouldSaveList:nil,
+// 		           indexInfos:nil,
+// 		           createIndexConcurrency:0,
 // 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           shouldSaveList:nil,
-// 		           createIndexConcurrency:0,
+// 		           indexDurationLimit:nil,
+// 		           indexDuration:nil,
 // 		           saveIndexConcurrency:0,
-// 		           indexInfos:nil,
+// 		           creationPoolSize:0,
 // 		           indexing:nil,
 // 		           saving:nil,
 // 		           minUncommitted:0,
@@ -359,17 +359,17 @@ package service
 // 		           enableLowIndexSkip:false,
 // 		           },
 // 		           fields: fields {
-// 		           client:nil,
 // 		           eg:nil,
-// 		           creationPoolSize:0,
-// 		           indexDuration:nil,
-// 		           indexDurationLimit:nil,
+// 		           client:nil,
+// 		           shouldSaveList:nil,
+// 		           indexInfos:nil,
+// 		           createIndexConcurrency:0,
 // 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           shouldSaveList:nil,
-// 		           createIndexConcurrency:0,
+// 		           indexDurationLimit:nil,
+// 		           indexDuration:nil,
 // 		           saveIndexConcurrency:0,
-// 		           indexInfos:nil,
+// 		           creationPoolSize:0,
 // 		           indexing:nil,
 // 		           saving:nil,
 // 		           minUncommitted:0,
@@ -405,17 +405,17 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			idx := &index{
-// 				client:                 test.fields.client,
 // 				eg:                     test.fields.eg,
-// 				creationPoolSize:       test.fields.creationPoolSize,
-// 				indexDuration:          test.fields.indexDuration,
-// 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				client:                 test.fields.client,
+// 				shouldSaveList:         test.fields.shouldSaveList,
+// 				indexInfos:             test.fields.indexInfos,
+// 				createIndexConcurrency: test.fields.createIndexConcurrency,
 // 				saveIndexDuration:      test.fields.saveIndexDuration,
 // 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
-// 				shouldSaveList:         test.fields.shouldSaveList,
-// 				createIndexConcurrency: test.fields.createIndexConcurrency,
+// 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				indexDuration:          test.fields.indexDuration,
 // 				saveIndexConcurrency:   test.fields.saveIndexConcurrency,
-// 				indexInfos:             test.fields.indexInfos,
+// 				creationPoolSize:       test.fields.creationPoolSize,
 // 				indexing:               test.fields.indexing,
 // 				saving:                 test.fields.saving,
 // 				minUncommitted:         test.fields.minUncommitted,
@@ -437,17 +437,17 @@ package service
 // 		force bool
 // 	}
 // 	type fields struct {
-// 		client                 discoverer.Client
 // 		eg                     errgroup.Group
-// 		creationPoolSize       uint32
-// 		indexDuration          time.Duration
-// 		indexDurationLimit     time.Duration
+// 		client                 discoverer.Client
+// 		shouldSaveList         sync.Map[string, bool]
+// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		createIndexConcurrency int
 // 		saveIndexDuration      time.Duration
 // 		saveIndexDurationLimit time.Duration
-// 		shouldSaveList         sync.Map[string, bool]
-// 		createIndexConcurrency int
+// 		indexDurationLimit     time.Duration
+// 		indexDuration          time.Duration
 // 		saveIndexConcurrency   int
-// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		creationPoolSize       uint32
 // 		indexing               atomic.Bool
 // 		saving                 atomic.Bool
 // 		minUncommitted         uint32
@@ -482,17 +482,17 @@ package service
 // 		           force:false,
 // 		       },
 // 		       fields: fields {
-// 		           client:nil,
 // 		           eg:nil,
-// 		           creationPoolSize:0,
-// 		           indexDuration:nil,
-// 		           indexDurationLimit:nil,
+// 		           client:nil,
+// 		           shouldSaveList:nil,
+// 		           indexInfos:nil,
+// 		           createIndexConcurrency:0,
 // 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           shouldSaveList:nil,
-// 		           createIndexConcurrency:0,
+// 		           indexDurationLimit:nil,
+// 		           indexDuration:nil,
 // 		           saveIndexConcurrency:0,
-// 		           indexInfos:nil,
+// 		           creationPoolSize:0,
 // 		           indexing:nil,
 // 		           saving:nil,
 // 		           minUncommitted:0,
@@ -520,17 +520,17 @@ package service
 // 		           force:false,
 // 		           },
 // 		           fields: fields {
-// 		           client:nil,
 // 		           eg:nil,
-// 		           creationPoolSize:0,
-// 		           indexDuration:nil,
-// 		           indexDurationLimit:nil,
+// 		           client:nil,
+// 		           shouldSaveList:nil,
+// 		           indexInfos:nil,
+// 		           createIndexConcurrency:0,
 // 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           shouldSaveList:nil,
-// 		           createIndexConcurrency:0,
+// 		           indexDurationLimit:nil,
+// 		           indexDuration:nil,
 // 		           saveIndexConcurrency:0,
-// 		           indexInfos:nil,
+// 		           creationPoolSize:0,
 // 		           indexing:nil,
 // 		           saving:nil,
 // 		           minUncommitted:0,
@@ -566,17 +566,17 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			idx := &index{
-// 				client:                 test.fields.client,
 // 				eg:                     test.fields.eg,
-// 				creationPoolSize:       test.fields.creationPoolSize,
-// 				indexDuration:          test.fields.indexDuration,
-// 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				client:                 test.fields.client,
+// 				shouldSaveList:         test.fields.shouldSaveList,
+// 				indexInfos:             test.fields.indexInfos,
+// 				createIndexConcurrency: test.fields.createIndexConcurrency,
 // 				saveIndexDuration:      test.fields.saveIndexDuration,
 // 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
-// 				shouldSaveList:         test.fields.shouldSaveList,
-// 				createIndexConcurrency: test.fields.createIndexConcurrency,
+// 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				indexDuration:          test.fields.indexDuration,
 // 				saveIndexConcurrency:   test.fields.saveIndexConcurrency,
-// 				indexInfos:             test.fields.indexInfos,
+// 				creationPoolSize:       test.fields.creationPoolSize,
 // 				indexing:               test.fields.indexing,
 // 				saving:                 test.fields.saving,
 // 				minUncommitted:         test.fields.minUncommitted,
@@ -597,17 +597,17 @@ package service
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		client                 discoverer.Client
 // 		eg                     errgroup.Group
-// 		creationPoolSize       uint32
-// 		indexDuration          time.Duration
-// 		indexDurationLimit     time.Duration
+// 		client                 discoverer.Client
+// 		shouldSaveList         sync.Map[string, bool]
+// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		createIndexConcurrency int
 // 		saveIndexDuration      time.Duration
 // 		saveIndexDurationLimit time.Duration
-// 		shouldSaveList         sync.Map[string, bool]
-// 		createIndexConcurrency int
+// 		indexDurationLimit     time.Duration
+// 		indexDuration          time.Duration
 // 		saveIndexConcurrency   int
-// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		creationPoolSize       uint32
 // 		indexing               atomic.Bool
 // 		saving                 atomic.Bool
 // 		minUncommitted         uint32
@@ -641,17 +641,17 @@ package service
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           client:nil,
 // 		           eg:nil,
-// 		           creationPoolSize:0,
-// 		           indexDuration:nil,
-// 		           indexDurationLimit:nil,
+// 		           client:nil,
+// 		           shouldSaveList:nil,
+// 		           indexInfos:nil,
+// 		           createIndexConcurrency:0,
 // 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           shouldSaveList:nil,
-// 		           createIndexConcurrency:0,
+// 		           indexDurationLimit:nil,
+// 		           indexDuration:nil,
 // 		           saveIndexConcurrency:0,
-// 		           indexInfos:nil,
+// 		           creationPoolSize:0,
 // 		           indexing:nil,
 // 		           saving:nil,
 // 		           minUncommitted:0,
@@ -678,17 +678,17 @@ package service
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           client:nil,
 // 		           eg:nil,
-// 		           creationPoolSize:0,
-// 		           indexDuration:nil,
-// 		           indexDurationLimit:nil,
+// 		           client:nil,
+// 		           shouldSaveList:nil,
+// 		           indexInfos:nil,
+// 		           createIndexConcurrency:0,
 // 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           shouldSaveList:nil,
-// 		           createIndexConcurrency:0,
+// 		           indexDurationLimit:nil,
+// 		           indexDuration:nil,
 // 		           saveIndexConcurrency:0,
-// 		           indexInfos:nil,
+// 		           creationPoolSize:0,
 // 		           indexing:nil,
 // 		           saving:nil,
 // 		           minUncommitted:0,
@@ -724,17 +724,17 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			idx := &index{
-// 				client:                 test.fields.client,
 // 				eg:                     test.fields.eg,
-// 				creationPoolSize:       test.fields.creationPoolSize,
-// 				indexDuration:          test.fields.indexDuration,
-// 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				client:                 test.fields.client,
+// 				shouldSaveList:         test.fields.shouldSaveList,
+// 				indexInfos:             test.fields.indexInfos,
+// 				createIndexConcurrency: test.fields.createIndexConcurrency,
 // 				saveIndexDuration:      test.fields.saveIndexDuration,
 // 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
-// 				shouldSaveList:         test.fields.shouldSaveList,
-// 				createIndexConcurrency: test.fields.createIndexConcurrency,
+// 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				indexDuration:          test.fields.indexDuration,
 // 				saveIndexConcurrency:   test.fields.saveIndexConcurrency,
-// 				indexInfos:             test.fields.indexInfos,
+// 				creationPoolSize:       test.fields.creationPoolSize,
 // 				indexing:               test.fields.indexing,
 // 				saving:                 test.fields.saving,
 // 				minUncommitted:         test.fields.minUncommitted,
@@ -752,17 +752,17 @@ package service
 //
 // func Test_index_IsIndexing(t *testing.T) {
 // 	type fields struct {
-// 		client                 discoverer.Client
 // 		eg                     errgroup.Group
-// 		creationPoolSize       uint32
-// 		indexDuration          time.Duration
-// 		indexDurationLimit     time.Duration
+// 		client                 discoverer.Client
+// 		shouldSaveList         sync.Map[string, bool]
+// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		createIndexConcurrency int
 // 		saveIndexDuration      time.Duration
 // 		saveIndexDurationLimit time.Duration
-// 		shouldSaveList         sync.Map[string, bool]
-// 		createIndexConcurrency int
+// 		indexDurationLimit     time.Duration
+// 		indexDuration          time.Duration
 // 		saveIndexConcurrency   int
-// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		creationPoolSize       uint32
 // 		indexing               atomic.Bool
 // 		saving                 atomic.Bool
 // 		minUncommitted         uint32
@@ -792,17 +792,17 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           client:nil,
 // 		           eg:nil,
-// 		           creationPoolSize:0,
-// 		           indexDuration:nil,
-// 		           indexDurationLimit:nil,
+// 		           client:nil,
+// 		           shouldSaveList:nil,
+// 		           indexInfos:nil,
+// 		           createIndexConcurrency:0,
 // 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           shouldSaveList:nil,
-// 		           createIndexConcurrency:0,
+// 		           indexDurationLimit:nil,
+// 		           indexDuration:nil,
 // 		           saveIndexConcurrency:0,
-// 		           indexInfos:nil,
+// 		           creationPoolSize:0,
 // 		           indexing:nil,
 // 		           saving:nil,
 // 		           minUncommitted:0,
@@ -826,17 +826,17 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           client:nil,
 // 		           eg:nil,
-// 		           creationPoolSize:0,
-// 		           indexDuration:nil,
-// 		           indexDurationLimit:nil,
+// 		           client:nil,
+// 		           shouldSaveList:nil,
+// 		           indexInfos:nil,
+// 		           createIndexConcurrency:0,
 // 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           shouldSaveList:nil,
-// 		           createIndexConcurrency:0,
+// 		           indexDurationLimit:nil,
+// 		           indexDuration:nil,
 // 		           saveIndexConcurrency:0,
-// 		           indexInfos:nil,
+// 		           creationPoolSize:0,
 // 		           indexing:nil,
 // 		           saving:nil,
 // 		           minUncommitted:0,
@@ -872,17 +872,17 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			idx := &index{
-// 				client:                 test.fields.client,
 // 				eg:                     test.fields.eg,
-// 				creationPoolSize:       test.fields.creationPoolSize,
-// 				indexDuration:          test.fields.indexDuration,
-// 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				client:                 test.fields.client,
+// 				shouldSaveList:         test.fields.shouldSaveList,
+// 				indexInfos:             test.fields.indexInfos,
+// 				createIndexConcurrency: test.fields.createIndexConcurrency,
 // 				saveIndexDuration:      test.fields.saveIndexDuration,
 // 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
-// 				shouldSaveList:         test.fields.shouldSaveList,
-// 				createIndexConcurrency: test.fields.createIndexConcurrency,
+// 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				indexDuration:          test.fields.indexDuration,
 // 				saveIndexConcurrency:   test.fields.saveIndexConcurrency,
-// 				indexInfos:             test.fields.indexInfos,
+// 				creationPoolSize:       test.fields.creationPoolSize,
 // 				indexing:               test.fields.indexing,
 // 				saving:                 test.fields.saving,
 // 				minUncommitted:         test.fields.minUncommitted,
@@ -900,17 +900,17 @@ package service
 //
 // func Test_index_IsSaving(t *testing.T) {
 // 	type fields struct {
-// 		client                 discoverer.Client
 // 		eg                     errgroup.Group
-// 		creationPoolSize       uint32
-// 		indexDuration          time.Duration
-// 		indexDurationLimit     time.Duration
+// 		client                 discoverer.Client
+// 		shouldSaveList         sync.Map[string, bool]
+// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		createIndexConcurrency int
 // 		saveIndexDuration      time.Duration
 // 		saveIndexDurationLimit time.Duration
-// 		shouldSaveList         sync.Map[string, bool]
-// 		createIndexConcurrency int
+// 		indexDurationLimit     time.Duration
+// 		indexDuration          time.Duration
 // 		saveIndexConcurrency   int
-// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		creationPoolSize       uint32
 // 		indexing               atomic.Bool
 // 		saving                 atomic.Bool
 // 		minUncommitted         uint32
@@ -940,17 +940,17 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           client:nil,
 // 		           eg:nil,
-// 		           creationPoolSize:0,
-// 		           indexDuration:nil,
-// 		           indexDurationLimit:nil,
+// 		           client:nil,
+// 		           shouldSaveList:nil,
+// 		           indexInfos:nil,
+// 		           createIndexConcurrency:0,
 // 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           shouldSaveList:nil,
-// 		           createIndexConcurrency:0,
+// 		           indexDurationLimit:nil,
+// 		           indexDuration:nil,
 // 		           saveIndexConcurrency:0,
-// 		           indexInfos:nil,
+// 		           creationPoolSize:0,
 // 		           indexing:nil,
 // 		           saving:nil,
 // 		           minUncommitted:0,
@@ -974,17 +974,17 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           client:nil,
 // 		           eg:nil,
-// 		           creationPoolSize:0,
-// 		           indexDuration:nil,
-// 		           indexDurationLimit:nil,
+// 		           client:nil,
+// 		           shouldSaveList:nil,
+// 		           indexInfos:nil,
+// 		           createIndexConcurrency:0,
 // 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           shouldSaveList:nil,
-// 		           createIndexConcurrency:0,
+// 		           indexDurationLimit:nil,
+// 		           indexDuration:nil,
 // 		           saveIndexConcurrency:0,
-// 		           indexInfos:nil,
+// 		           creationPoolSize:0,
 // 		           indexing:nil,
 // 		           saving:nil,
 // 		           minUncommitted:0,
@@ -1020,17 +1020,17 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			idx := &index{
-// 				client:                 test.fields.client,
 // 				eg:                     test.fields.eg,
-// 				creationPoolSize:       test.fields.creationPoolSize,
-// 				indexDuration:          test.fields.indexDuration,
-// 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				client:                 test.fields.client,
+// 				shouldSaveList:         test.fields.shouldSaveList,
+// 				indexInfos:             test.fields.indexInfos,
+// 				createIndexConcurrency: test.fields.createIndexConcurrency,
 // 				saveIndexDuration:      test.fields.saveIndexDuration,
 // 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
-// 				shouldSaveList:         test.fields.shouldSaveList,
-// 				createIndexConcurrency: test.fields.createIndexConcurrency,
+// 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				indexDuration:          test.fields.indexDuration,
 // 				saveIndexConcurrency:   test.fields.saveIndexConcurrency,
-// 				indexInfos:             test.fields.indexInfos,
+// 				creationPoolSize:       test.fields.creationPoolSize,
 // 				indexing:               test.fields.indexing,
 // 				saving:                 test.fields.saving,
 // 				minUncommitted:         test.fields.minUncommitted,
@@ -1048,17 +1048,17 @@ package service
 //
 // func Test_index_NumberOfUUIDs(t *testing.T) {
 // 	type fields struct {
-// 		client                 discoverer.Client
 // 		eg                     errgroup.Group
-// 		creationPoolSize       uint32
-// 		indexDuration          time.Duration
-// 		indexDurationLimit     time.Duration
+// 		client                 discoverer.Client
+// 		shouldSaveList         sync.Map[string, bool]
+// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		createIndexConcurrency int
 // 		saveIndexDuration      time.Duration
 // 		saveIndexDurationLimit time.Duration
-// 		shouldSaveList         sync.Map[string, bool]
-// 		createIndexConcurrency int
+// 		indexDurationLimit     time.Duration
+// 		indexDuration          time.Duration
 // 		saveIndexConcurrency   int
-// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		creationPoolSize       uint32
 // 		indexing               atomic.Bool
 // 		saving                 atomic.Bool
 // 		minUncommitted         uint32
@@ -1088,17 +1088,17 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           client:nil,
 // 		           eg:nil,
-// 		           creationPoolSize:0,
-// 		           indexDuration:nil,
-// 		           indexDurationLimit:nil,
+// 		           client:nil,
+// 		           shouldSaveList:nil,
+// 		           indexInfos:nil,
+// 		           createIndexConcurrency:0,
 // 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           shouldSaveList:nil,
-// 		           createIndexConcurrency:0,
+// 		           indexDurationLimit:nil,
+// 		           indexDuration:nil,
 // 		           saveIndexConcurrency:0,
-// 		           indexInfos:nil,
+// 		           creationPoolSize:0,
 // 		           indexing:nil,
 // 		           saving:nil,
 // 		           minUncommitted:0,
@@ -1122,17 +1122,17 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           client:nil,
 // 		           eg:nil,
-// 		           creationPoolSize:0,
-// 		           indexDuration:nil,
-// 		           indexDurationLimit:nil,
+// 		           client:nil,
+// 		           shouldSaveList:nil,
+// 		           indexInfos:nil,
+// 		           createIndexConcurrency:0,
 // 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           shouldSaveList:nil,
-// 		           createIndexConcurrency:0,
+// 		           indexDurationLimit:nil,
+// 		           indexDuration:nil,
 // 		           saveIndexConcurrency:0,
-// 		           indexInfos:nil,
+// 		           creationPoolSize:0,
 // 		           indexing:nil,
 // 		           saving:nil,
 // 		           minUncommitted:0,
@@ -1168,17 +1168,17 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			idx := &index{
-// 				client:                 test.fields.client,
 // 				eg:                     test.fields.eg,
-// 				creationPoolSize:       test.fields.creationPoolSize,
-// 				indexDuration:          test.fields.indexDuration,
-// 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				client:                 test.fields.client,
+// 				shouldSaveList:         test.fields.shouldSaveList,
+// 				indexInfos:             test.fields.indexInfos,
+// 				createIndexConcurrency: test.fields.createIndexConcurrency,
 // 				saveIndexDuration:      test.fields.saveIndexDuration,
 // 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
-// 				shouldSaveList:         test.fields.shouldSaveList,
-// 				createIndexConcurrency: test.fields.createIndexConcurrency,
+// 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				indexDuration:          test.fields.indexDuration,
 // 				saveIndexConcurrency:   test.fields.saveIndexConcurrency,
-// 				indexInfos:             test.fields.indexInfos,
+// 				creationPoolSize:       test.fields.creationPoolSize,
 // 				indexing:               test.fields.indexing,
 // 				saving:                 test.fields.saving,
 // 				minUncommitted:         test.fields.minUncommitted,
@@ -1196,17 +1196,17 @@ package service
 //
 // func Test_index_NumberOfUncommittedUUIDs(t *testing.T) {
 // 	type fields struct {
-// 		client                 discoverer.Client
 // 		eg                     errgroup.Group
-// 		creationPoolSize       uint32
-// 		indexDuration          time.Duration
-// 		indexDurationLimit     time.Duration
+// 		client                 discoverer.Client
+// 		shouldSaveList         sync.Map[string, bool]
+// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		createIndexConcurrency int
 // 		saveIndexDuration      time.Duration
 // 		saveIndexDurationLimit time.Duration
-// 		shouldSaveList         sync.Map[string, bool]
-// 		createIndexConcurrency int
+// 		indexDurationLimit     time.Duration
+// 		indexDuration          time.Duration
 // 		saveIndexConcurrency   int
-// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		creationPoolSize       uint32
 // 		indexing               atomic.Bool
 // 		saving                 atomic.Bool
 // 		minUncommitted         uint32
@@ -1236,17 +1236,17 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           client:nil,
 // 		           eg:nil,
-// 		           creationPoolSize:0,
-// 		           indexDuration:nil,
-// 		           indexDurationLimit:nil,
+// 		           client:nil,
+// 		           shouldSaveList:nil,
+// 		           indexInfos:nil,
+// 		           createIndexConcurrency:0,
 // 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           shouldSaveList:nil,
-// 		           createIndexConcurrency:0,
+// 		           indexDurationLimit:nil,
+// 		           indexDuration:nil,
 // 		           saveIndexConcurrency:0,
-// 		           indexInfos:nil,
+// 		           creationPoolSize:0,
 // 		           indexing:nil,
 // 		           saving:nil,
 // 		           minUncommitted:0,
@@ -1270,17 +1270,17 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           client:nil,
 // 		           eg:nil,
-// 		           creationPoolSize:0,
-// 		           indexDuration:nil,
-// 		           indexDurationLimit:nil,
+// 		           client:nil,
+// 		           shouldSaveList:nil,
+// 		           indexInfos:nil,
+// 		           createIndexConcurrency:0,
 // 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           shouldSaveList:nil,
-// 		           createIndexConcurrency:0,
+// 		           indexDurationLimit:nil,
+// 		           indexDuration:nil,
 // 		           saveIndexConcurrency:0,
-// 		           indexInfos:nil,
+// 		           creationPoolSize:0,
 // 		           indexing:nil,
 // 		           saving:nil,
 // 		           minUncommitted:0,
@@ -1316,17 +1316,17 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			idx := &index{
-// 				client:                 test.fields.client,
 // 				eg:                     test.fields.eg,
-// 				creationPoolSize:       test.fields.creationPoolSize,
-// 				indexDuration:          test.fields.indexDuration,
-// 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				client:                 test.fields.client,
+// 				shouldSaveList:         test.fields.shouldSaveList,
+// 				indexInfos:             test.fields.indexInfos,
+// 				createIndexConcurrency: test.fields.createIndexConcurrency,
 // 				saveIndexDuration:      test.fields.saveIndexDuration,
 // 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
-// 				shouldSaveList:         test.fields.shouldSaveList,
-// 				createIndexConcurrency: test.fields.createIndexConcurrency,
+// 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				indexDuration:          test.fields.indexDuration,
 // 				saveIndexConcurrency:   test.fields.saveIndexConcurrency,
-// 				indexInfos:             test.fields.indexInfos,
+// 				creationPoolSize:       test.fields.creationPoolSize,
 // 				indexing:               test.fields.indexing,
 // 				saving:                 test.fields.saving,
 // 				minUncommitted:         test.fields.minUncommitted,
@@ -1344,17 +1344,17 @@ package service
 //
 // func Test_index_LoadIndexDetail(t *testing.T) {
 // 	type fields struct {
-// 		client                 discoverer.Client
 // 		eg                     errgroup.Group
-// 		creationPoolSize       uint32
-// 		indexDuration          time.Duration
-// 		indexDurationLimit     time.Duration
+// 		client                 discoverer.Client
+// 		shouldSaveList         sync.Map[string, bool]
+// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		createIndexConcurrency int
 // 		saveIndexDuration      time.Duration
 // 		saveIndexDurationLimit time.Duration
-// 		shouldSaveList         sync.Map[string, bool]
-// 		createIndexConcurrency int
+// 		indexDurationLimit     time.Duration
+// 		indexDuration          time.Duration
 // 		saveIndexConcurrency   int
-// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		creationPoolSize       uint32
 // 		indexing               atomic.Bool
 // 		saving                 atomic.Bool
 // 		minUncommitted         uint32
@@ -1384,17 +1384,17 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           client:nil,
 // 		           eg:nil,
-// 		           creationPoolSize:0,
-// 		           indexDuration:nil,
-// 		           indexDurationLimit:nil,
+// 		           client:nil,
+// 		           shouldSaveList:nil,
+// 		           indexInfos:nil,
+// 		           createIndexConcurrency:0,
 // 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           shouldSaveList:nil,
-// 		           createIndexConcurrency:0,
+// 		           indexDurationLimit:nil,
+// 		           indexDuration:nil,
 // 		           saveIndexConcurrency:0,
-// 		           indexInfos:nil,
+// 		           creationPoolSize:0,
 // 		           indexing:nil,
 // 		           saving:nil,
 // 		           minUncommitted:0,
@@ -1418,17 +1418,17 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           client:nil,
 // 		           eg:nil,
-// 		           creationPoolSize:0,
-// 		           indexDuration:nil,
-// 		           indexDurationLimit:nil,
+// 		           client:nil,
+// 		           shouldSaveList:nil,
+// 		           indexInfos:nil,
+// 		           createIndexConcurrency:0,
 // 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           shouldSaveList:nil,
-// 		           createIndexConcurrency:0,
+// 		           indexDurationLimit:nil,
+// 		           indexDuration:nil,
 // 		           saveIndexConcurrency:0,
-// 		           indexInfos:nil,
+// 		           creationPoolSize:0,
 // 		           indexing:nil,
 // 		           saving:nil,
 // 		           minUncommitted:0,
@@ -1464,17 +1464,17 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			idx := &index{
-// 				client:                 test.fields.client,
 // 				eg:                     test.fields.eg,
-// 				creationPoolSize:       test.fields.creationPoolSize,
-// 				indexDuration:          test.fields.indexDuration,
-// 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				client:                 test.fields.client,
+// 				shouldSaveList:         test.fields.shouldSaveList,
+// 				indexInfos:             test.fields.indexInfos,
+// 				createIndexConcurrency: test.fields.createIndexConcurrency,
 // 				saveIndexDuration:      test.fields.saveIndexDuration,
 // 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
-// 				shouldSaveList:         test.fields.shouldSaveList,
-// 				createIndexConcurrency: test.fields.createIndexConcurrency,
+// 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				indexDuration:          test.fields.indexDuration,
 // 				saveIndexConcurrency:   test.fields.saveIndexConcurrency,
-// 				indexInfos:             test.fields.indexInfos,
+// 				creationPoolSize:       test.fields.creationPoolSize,
 // 				indexing:               test.fields.indexing,
 // 				saving:                 test.fields.saving,
 // 				minUncommitted:         test.fields.minUncommitted,

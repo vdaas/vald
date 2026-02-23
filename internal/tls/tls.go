@@ -62,22 +62,19 @@ var (
 // credentials holds TLS settings for server and client
 // including certificate paths, CA bundle, and hot reload policies.
 type credentials struct {
-	cfg        *Config
-	cert       string
-	key        string
-	ca         string
-	sn         string
-	insecure   bool
-	clientAuth tls.ClientAuthType
-	// hotReload toggles per-handshake reload using GetCertificate.
-	hotReload bool
-	// certPtr keeps the latest loaded certificate.
-	certPtr atomic.Pointer[tls.Certificate]
-	// crl path and atomic revoked serial set
-	crl           string
-	revoked       map[string]struct{}
 	crlNextUpdate time.Time
+	certPtr       atomic.Pointer[tls.Certificate]
+	revoked       map[string]struct{}
+	cfg           *Config
+	crl           string
+	sn            string
+	ca            string
+	key           string
+	cert          string
+	clientAuth    tls.ClientAuthType
 	crlMu         sync.RWMutex
+	insecure      bool
+	hotReload     bool
 }
 
 // loadCRL reads a single PEM encoded CRL file and returns revoked serial set.

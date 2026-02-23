@@ -69,11 +69,11 @@ jobs:
     needs:
       - build-linux
     steps:
-      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: artifacts-linux
           path: tmp/linux
-      - uses: shogo82148/actions-upload-release-asset@59cbc563d11314e48122193f8fe5cdda62ea6cf9 # v1.9.1
+      - uses: shogo82148/actions-upload-release-asset@8f6863c6c894ba46f9e676ef5cccec4752723c1e # v1.9.2
         with:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: tmp/linux/vald-*.zip

@@ -30,13 +30,13 @@ func TestLogger_Debug(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fieldsFunc func(*testing.T) fields
 		want       want
+		fieldsFunc func(*testing.T) fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -110,13 +110,13 @@ func TestLogger_Debugf(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fieldsFunc func(*testing.T) fields
 		want       want
+		fieldsFunc func(*testing.T) fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -191,13 +191,13 @@ func TestLogger_Info(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fieldsFunc func(*testing.T) fields
 		want       want
+		fieldsFunc func(*testing.T) fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -271,13 +271,13 @@ func TestLogger_Infof(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fieldsFunc func(*testing.T) fields
 		want       want
+		fieldsFunc func(*testing.T) fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -352,13 +352,13 @@ func TestLogger_Warn(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fieldsFunc func(*testing.T) fields
 		want       want
+		fieldsFunc func(*testing.T) fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -432,13 +432,13 @@ func TestLogger_Warnf(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fieldsFunc func(*testing.T) fields
 		want       want
+		fieldsFunc func(*testing.T) fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -513,13 +513,13 @@ func TestLogger_Error(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fieldsFunc func(*testing.T) fields
 		want       want
+		fieldsFunc func(*testing.T) fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -593,13 +593,13 @@ func TestLogger_Errorf(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fieldsFunc func(*testing.T) fields
 		want       want
+		fieldsFunc func(*testing.T) fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -674,13 +674,13 @@ func TestLogger_Fatal(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fieldsFunc func(*testing.T) fields
 		want       want
+		fieldsFunc func(*testing.T) fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -754,13 +754,13 @@ func TestLogger_Fatalf(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fieldsFunc func(*testing.T) fields
 		want       want
+		fieldsFunc func(*testing.T) fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil

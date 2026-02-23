@@ -112,12 +112,12 @@ package restorer
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		dir            string
 // 		eg             errgroup.Group
 // 		storage        storage.Storage
-// 		backoffEnabled bool
-// 		backoffOpts    []backoff.Option
 // 		bo             backoff.Backoff
+// 		dir            string
+// 		backoffOpts    []backoff.Option
+// 		backoffEnabled bool
 // 	}
 // 	type want struct {
 // 		want <-chan error
@@ -150,12 +150,12 @@ package restorer
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           dir:"",
 // 		           eg:nil,
 // 		           storage:nil,
-// 		           backoffEnabled:false,
-// 		           backoffOpts:nil,
 // 		           bo:nil,
+// 		           dir:"",
+// 		           backoffOpts:nil,
+// 		           backoffEnabled:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -177,12 +177,12 @@ package restorer
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           dir:"",
 // 		           eg:nil,
 // 		           storage:nil,
-// 		           backoffEnabled:false,
-// 		           backoffOpts:nil,
 // 		           bo:nil,
+// 		           dir:"",
+// 		           backoffOpts:nil,
+// 		           backoffEnabled:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -213,12 +213,12 @@ package restorer
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			r := &restorer{
-// 				dir:            test.fields.dir,
 // 				eg:             test.fields.eg,
 // 				storage:        test.fields.storage,
-// 				backoffEnabled: test.fields.backoffEnabled,
-// 				backoffOpts:    test.fields.backoffOpts,
 // 				bo:             test.fields.bo,
+// 				dir:            test.fields.dir,
+// 				backoffOpts:    test.fields.backoffOpts,
+// 				backoffEnabled: test.fields.backoffEnabled,
 // 			}
 //
 // 			got, err := r.Start(test.args.ctx)
@@ -234,12 +234,12 @@ package restorer
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		dir            string
 // 		eg             errgroup.Group
 // 		storage        storage.Storage
-// 		backoffEnabled bool
-// 		backoffOpts    []backoff.Option
 // 		bo             backoff.Backoff
+// 		dir            string
+// 		backoffOpts    []backoff.Option
+// 		backoffEnabled bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -268,12 +268,12 @@ package restorer
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           dir:"",
 // 		           eg:nil,
 // 		           storage:nil,
-// 		           backoffEnabled:false,
-// 		           backoffOpts:nil,
 // 		           bo:nil,
+// 		           dir:"",
+// 		           backoffOpts:nil,
+// 		           backoffEnabled:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -295,12 +295,12 @@ package restorer
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           dir:"",
 // 		           eg:nil,
 // 		           storage:nil,
-// 		           backoffEnabled:false,
-// 		           backoffOpts:nil,
 // 		           bo:nil,
+// 		           dir:"",
+// 		           backoffOpts:nil,
+// 		           backoffEnabled:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -331,12 +331,12 @@ package restorer
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			r := &restorer{
-// 				dir:            test.fields.dir,
 // 				eg:             test.fields.eg,
 // 				storage:        test.fields.storage,
-// 				backoffEnabled: test.fields.backoffEnabled,
-// 				backoffOpts:    test.fields.backoffOpts,
 // 				bo:             test.fields.bo,
+// 				dir:            test.fields.dir,
+// 				backoffOpts:    test.fields.backoffOpts,
+// 				backoffEnabled: test.fields.backoffEnabled,
 // 			}
 //
 // 			err := r.PreStop(test.args.ctx)
@@ -352,12 +352,12 @@ package restorer
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		dir            string
 // 		eg             errgroup.Group
 // 		storage        storage.Storage
-// 		backoffEnabled bool
-// 		backoffOpts    []backoff.Option
 // 		bo             backoff.Backoff
+// 		dir            string
+// 		backoffOpts    []backoff.Option
+// 		backoffEnabled bool
 // 	}
 // 	type want struct {
 // 		want <-chan error
@@ -390,12 +390,12 @@ package restorer
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           dir:"",
 // 		           eg:nil,
 // 		           storage:nil,
-// 		           backoffEnabled:false,
-// 		           backoffOpts:nil,
 // 		           bo:nil,
+// 		           dir:"",
+// 		           backoffOpts:nil,
+// 		           backoffEnabled:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -417,12 +417,12 @@ package restorer
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           dir:"",
 // 		           eg:nil,
 // 		           storage:nil,
-// 		           backoffEnabled:false,
-// 		           backoffOpts:nil,
 // 		           bo:nil,
+// 		           dir:"",
+// 		           backoffOpts:nil,
+// 		           backoffEnabled:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -453,12 +453,12 @@ package restorer
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			r := &restorer{
-// 				dir:            test.fields.dir,
 // 				eg:             test.fields.eg,
 // 				storage:        test.fields.storage,
-// 				backoffEnabled: test.fields.backoffEnabled,
-// 				backoffOpts:    test.fields.backoffOpts,
 // 				bo:             test.fields.bo,
+// 				dir:            test.fields.dir,
+// 				backoffOpts:    test.fields.backoffOpts,
+// 				backoffEnabled: test.fields.backoffEnabled,
 // 			}
 //
 // 			got, err := r.startRestore(test.args.ctx)
@@ -474,12 +474,12 @@ package restorer
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		dir            string
 // 		eg             errgroup.Group
 // 		storage        storage.Storage
-// 		backoffEnabled bool
-// 		backoffOpts    []backoff.Option
 // 		bo             backoff.Backoff
+// 		dir            string
+// 		backoffOpts    []backoff.Option
+// 		backoffEnabled bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -508,12 +508,12 @@ package restorer
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           dir:"",
 // 		           eg:nil,
 // 		           storage:nil,
-// 		           backoffEnabled:false,
-// 		           backoffOpts:nil,
 // 		           bo:nil,
+// 		           dir:"",
+// 		           backoffOpts:nil,
+// 		           backoffEnabled:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -535,12 +535,12 @@ package restorer
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           dir:"",
 // 		           eg:nil,
 // 		           storage:nil,
-// 		           backoffEnabled:false,
-// 		           backoffOpts:nil,
 // 		           bo:nil,
+// 		           dir:"",
+// 		           backoffOpts:nil,
+// 		           backoffEnabled:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -571,12 +571,12 @@ package restorer
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			r := &restorer{
-// 				dir:            test.fields.dir,
 // 				eg:             test.fields.eg,
 // 				storage:        test.fields.storage,
-// 				backoffEnabled: test.fields.backoffEnabled,
-// 				backoffOpts:    test.fields.backoffOpts,
 // 				bo:             test.fields.bo,
+// 				dir:            test.fields.dir,
+// 				backoffOpts:    test.fields.backoffOpts,
+// 				backoffEnabled: test.fields.backoffEnabled,
 // 			}
 //
 // 			err := r.restore(test.args.ctx)

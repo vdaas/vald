@@ -24,8 +24,8 @@ func BenchmarkRecoverFunc(b *testing.B) {
 		fn func() error
 	}
 	type test struct {
-		name string
 		args args
+		name string
 	}
 	tests := []test{
 		{
@@ -57,8 +57,8 @@ func BenchmarkRecoverWithoutPanicFunc(b *testing.B) {
 		fn func() error
 	}
 	type test struct {
-		name string
 		args args
+		name string
 	}
 	tests := []test{
 		{

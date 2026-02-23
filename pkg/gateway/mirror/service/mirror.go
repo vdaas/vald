@@ -63,13 +63,13 @@ func NewMirrorClient(conn *grpc.ClientConn) MirrorClient {
 }
 
 type mirr struct {
-	addrs         sync.Map[string, any]    // List of all connected addresses
-	selfMirrTgts  []*payload.Mirror_Target // Targets of self mirror gateway
-	selfMirrAddrs sync.Map[string, any]    // List of self Mirror gateway addresses
-	gwAddrs       sync.Map[string, any]    // List of Vald gateway (LB gateway) addresses
 	eg            errgroup.Group
-	registerDur   time.Duration
 	gateway       Gateway
+	addrs         sync.Map[string, any]
+	selfMirrAddrs sync.Map[string, any]
+	gwAddrs       sync.Map[string, any]
+	selfMirrTgts  []*payload.Mirror_Target
+	registerDur   time.Duration
 }
 
 // NewMirror creates the Mirror object with optional configuration options.

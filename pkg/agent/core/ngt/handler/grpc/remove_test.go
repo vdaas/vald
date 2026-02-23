@@ -41,16 +41,16 @@ func Test_server_Remove(t *testing.T) {
 		removeID string
 	}
 	type want struct {
-		code     codes.Code
 		wantUUID string
+		code     codes.Code
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, *payload.Object_Location, error) error
 		beforeFunc func(*testing.T, context.Context, args) (Server, error)
 		afterFunc  func(args)
+		args       args
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Object_Location, err error) error {
 		if err != nil {
@@ -338,8 +338,7 @@ func Test_server_Remove(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := tt.Context()
 
 			if test.beforeFunc == nil {
 				test.beforeFunc = defaultBeforeFunc
@@ -378,12 +377,12 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 		wantLen int
 	}
 	type test struct {
-		name       string
 		args       args
-		want       want
 		checkFunc  func(want, *payload.Object_Locations, error) error
 		beforeFunc func(context.Context, args) (Server, func(context.Context) error, error)
 		afterFunc  func(args)
+		name       string
+		want       want
 	}
 
 	defaultCheckFunc := func(w want, gotLocs *payload.Object_Locations, err error) error {
@@ -630,7 +629,7 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 		},
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	t.Cleanup(func() { cancel() })
 
 	for _, tc := range tests {
@@ -672,19 +671,19 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 
 func Test_timestampOpsFunc(t *testing.T) {
 	type args struct {
-		timestamp int64
 		ts        []*payload.Remove_Timestamp
+		timestamp int64
 	}
 	type want struct {
 		want bool
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, bool) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if got != w.want {
@@ -774,19 +773,19 @@ func Test_timestampOpsFunc(t *testing.T) {
 
 func Test_timestampOpFunc(t *testing.T) {
 	type args struct {
-		timestamp int64
 		ts        *payload.Remove_Timestamp
+		timestamp int64
 	}
 	type want struct {
 		want bool
 	}
 	type test struct {
-		name       string
 		args       args
-		want       want
 		checkFunc  func(want, bool) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if got != w.want {
@@ -998,13 +997,13 @@ func Test_timestampOpFunc(t *testing.T) {
 // 		stream vald.Remove_StreamRemoveServer
 // 	}
 // 	type fields struct {
-// 		name                     string
-// 		ip                       string
-// 		ngt                      service.NGT
-// 		eg                       errgroup.Group
-// 		streamConcurrency        int
 // 		UnimplementedAgentServer agent.UnimplementedAgentServer
 // 		UnimplementedValdServer  vald.UnimplementedValdServer
+// 		ngt                      service.NGT
+// 		eg                       errgroup.Group
+// 		name                     string
+// 		ip                       string
+// 		streamConcurrency        int
 // 	}
 // 	type want struct {
 // 		err error
@@ -1033,13 +1032,13 @@ func Test_timestampOpFunc(t *testing.T) {
 // 		           stream:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1061,13 +1060,13 @@ func Test_timestampOpFunc(t *testing.T) {
 // 		           stream:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1098,13 +1097,13 @@ func Test_timestampOpFunc(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				name:                     test.fields.name,
-// 				ip:                       test.fields.ip,
-// 				ngt:                      test.fields.ngt,
-// 				eg:                       test.fields.eg,
-// 				streamConcurrency:        test.fields.streamConcurrency,
 // 				UnimplementedAgentServer: test.fields.UnimplementedAgentServer,
 // 				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
+// 				ngt:                      test.fields.ngt,
+// 				eg:                       test.fields.eg,
+// 				name:                     test.fields.name,
+// 				ip:                       test.fields.ip,
+// 				streamConcurrency:        test.fields.streamConcurrency,
 // 			}
 //
 // 			err := s.StreamRemove(test.args.stream)
@@ -1121,13 +1120,13 @@ func Test_timestampOpFunc(t *testing.T) {
 // 		reqs *payload.Remove_MultiRequest
 // 	}
 // 	type fields struct {
-// 		name                     string
-// 		ip                       string
-// 		ngt                      service.NGT
-// 		eg                       errgroup.Group
-// 		streamConcurrency        int
 // 		UnimplementedAgentServer agent.UnimplementedAgentServer
 // 		UnimplementedValdServer  vald.UnimplementedValdServer
+// 		ngt                      service.NGT
+// 		eg                       errgroup.Group
+// 		name                     string
+// 		ip                       string
+// 		streamConcurrency        int
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Locations
@@ -1161,13 +1160,13 @@ func Test_timestampOpFunc(t *testing.T) {
 // 		           reqs:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1190,13 +1189,13 @@ func Test_timestampOpFunc(t *testing.T) {
 // 		           reqs:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1227,13 +1226,13 @@ func Test_timestampOpFunc(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				name:                     test.fields.name,
-// 				ip:                       test.fields.ip,
-// 				ngt:                      test.fields.ngt,
-// 				eg:                       test.fields.eg,
-// 				streamConcurrency:        test.fields.streamConcurrency,
 // 				UnimplementedAgentServer: test.fields.UnimplementedAgentServer,
 // 				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
+// 				ngt:                      test.fields.ngt,
+// 				eg:                       test.fields.eg,
+// 				name:                     test.fields.name,
+// 				ip:                       test.fields.ip,
+// 				streamConcurrency:        test.fields.streamConcurrency,
 // 			}
 //
 // 			gotRes, err := s.MultiRemove(test.args.ctx, test.args.reqs)

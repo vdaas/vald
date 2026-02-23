@@ -19,6 +19,7 @@ package client
 import (
 	"context"
 	"fmt"
+	"maps"
 
 	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 	"github.com/vdaas/vald/internal/errors"
@@ -33,7 +34,6 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	applycorev1 "k8s.io/client-go/applyconfigurations/core/v1"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	cli "sigs.k8s.io/controller-runtime/pkg/client"
@@ -260,9 +260,7 @@ func (s *patcher) ApplyPodAnnotations(
 	if annotations == nil {
 		annotations = make(map[string]string)
 	}
-	for k, v := range entries {
-		annotations[k] = v
-	}
+	maps.Copy(annotations, entries)
 	expectPod := applycorev1.Pod(name, namespace).
 		WithAnnotations(annotations)
 
@@ -280,6 +278,6 @@ func (s *patcher) ApplyPodAnnotations(
 	patch := &unstructured.Unstructured{Object: obj}
 	return s.client.Patch(ctx, patch, cli.Apply, &cli.PatchOptions{
 		FieldManager: s.fieldManager,
-		Force:        ptr.To(true),
+		Force:        new(true),
 	})
 }

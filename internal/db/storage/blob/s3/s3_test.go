@@ -51,12 +51,12 @@ func TestNew(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, blob.Bucket, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got blob.Bucket, err error) error {
 		if !errors.Is(err, w.err) {
@@ -306,13 +306,13 @@ func Test_client_Open(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
 		args       args
-		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -324,7 +324,7 @@ func Test_client_Open(t *testing.T) {
 		{
 			name: "returns nil",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 			},
 			want: want{
 				err: nil,
@@ -374,12 +374,12 @@ func Test_client_Close(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -433,25 +433,25 @@ func Test_client_Reader(t *testing.T) {
 	}
 	type fields struct {
 		eg          errgroup.Group
+		reader      reader.Reader
+		writer      writer.Writer
 		session     *session.Session
 		service     *s3.S3
 		bucket      string
 		maxPartSize int64
-		reader      reader.Reader
-		writer      writer.Writer
 	}
 	type want struct {
 		want io.ReadCloser
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
 		checkFunc  func(want, io.ReadCloser, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		args       args
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got io.ReadCloser, err error) error {
 		if !errors.Is(err, w.err) {
@@ -476,7 +476,7 @@ func Test_client_Reader(t *testing.T) {
 			return test{
 				name: "returns opened reader and nil when open method of reader success",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					key: "key",
 				},
 				fields: fields{
@@ -512,7 +512,7 @@ func Test_client_Reader(t *testing.T) {
 			return test{
 				name: "returns opened reader and error from the open method of reader",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					key: "key",
 				},
 				fields: fields{
@@ -577,25 +577,25 @@ func Test_client_Writer(t *testing.T) {
 	}
 	type fields struct {
 		eg          errgroup.Group
+		reader      reader.Reader
+		writer      writer.Writer
 		session     *session.Session
 		service     *s3.S3
 		bucket      string
 		maxPartSize int64
-		reader      reader.Reader
-		writer      writer.Writer
 	}
 	type want struct {
 		want io.WriteCloser
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
 		checkFunc  func(want, io.WriteCloser, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		args       args
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got io.WriteCloser, err error) error {
 		if !errors.Is(err, w.err) {
@@ -618,7 +618,7 @@ func Test_client_Writer(t *testing.T) {
 			return test{
 				name: "returns opened writer and nil when open method of writer success",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					key: "key",
 				},
 				fields: fields{
@@ -654,7 +654,7 @@ func Test_client_Writer(t *testing.T) {
 			return test{
 				name: "returns opened writer and error from the open method of writer",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					key: "key",
 				},
 				fields: fields{

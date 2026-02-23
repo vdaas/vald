@@ -22,23 +22,23 @@ package service
 // 	}
 // 	type fields struct {
 // 		eg                 errgroup.Group
-// 		dataset            *config.BenchmarkDataset
-// 		meta               grpc.MD
-// 		jobType            jobType
-// 		jobFunc            func(context.Context, chan error) error
+// 		limiter            rate.Limiter
+// 		k8sClient          client.Client
+// 		hdf5               hdf5.Data
+// 		client             vald.Client
 // 		insertConfig       *config.InsertConfig
 // 		updateConfig       *config.UpdateConfig
 // 		upsertConfig       *config.UpsertConfig
 // 		searchConfig       *config.SearchConfig
 // 		removeConfig       *config.RemoveConfig
 // 		objectConfig       *config.ObjectConfig
-// 		client             vald.Client
-// 		hdf5               hdf5.Data
-// 		beforeJobName      string
+// 		jobFunc            func(context.Context, chan error) error
+// 		dataset            *config.BenchmarkDataset
+// 		meta               grpc.MD
 // 		beforeJobNamespace string
-// 		k8sClient          client.Client
+// 		beforeJobName      string
 // 		beforeJobDur       time.Duration
-// 		limiter            rate.Limiter
+// 		jobType            jobType
 // 		rps                int
 // 		concurrencyLimit   int
 // 		timeout            time.Duration
@@ -73,23 +73,23 @@ package service
 // 		       },
 // 		       fields: fields {
 // 		           eg:nil,
-// 		           dataset:nil,
-// 		           meta:nil,
-// 		           jobType:nil,
-// 		           jobFunc:nil,
+// 		           limiter:nil,
+// 		           k8sClient:nil,
+// 		           hdf5:nil,
+// 		           client:nil,
 // 		           insertConfig:nil,
 // 		           updateConfig:nil,
 // 		           upsertConfig:nil,
 // 		           searchConfig:nil,
 // 		           removeConfig:nil,
 // 		           objectConfig:nil,
-// 		           client:nil,
-// 		           hdf5:nil,
-// 		           beforeJobName:"",
+// 		           jobFunc:nil,
+// 		           dataset:nil,
+// 		           meta:nil,
 // 		           beforeJobNamespace:"",
-// 		           k8sClient:nil,
+// 		           beforeJobName:"",
 // 		           beforeJobDur:nil,
-// 		           limiter:nil,
+// 		           jobType:nil,
 // 		           rps:0,
 // 		           concurrencyLimit:0,
 // 		           timeout:nil,
@@ -117,23 +117,23 @@ package service
 // 		           },
 // 		           fields: fields {
 // 		           eg:nil,
-// 		           dataset:nil,
-// 		           meta:nil,
-// 		           jobType:nil,
-// 		           jobFunc:nil,
+// 		           limiter:nil,
+// 		           k8sClient:nil,
+// 		           hdf5:nil,
+// 		           client:nil,
 // 		           insertConfig:nil,
 // 		           updateConfig:nil,
 // 		           upsertConfig:nil,
 // 		           searchConfig:nil,
 // 		           removeConfig:nil,
 // 		           objectConfig:nil,
-// 		           client:nil,
-// 		           hdf5:nil,
-// 		           beforeJobName:"",
+// 		           jobFunc:nil,
+// 		           dataset:nil,
+// 		           meta:nil,
 // 		           beforeJobNamespace:"",
-// 		           k8sClient:nil,
+// 		           beforeJobName:"",
 // 		           beforeJobDur:nil,
-// 		           limiter:nil,
+// 		           jobType:nil,
 // 		           rps:0,
 // 		           concurrencyLimit:0,
 // 		           timeout:nil,
@@ -169,23 +169,23 @@ package service
 // 			}
 // 			j := &job{
 // 				eg:                 test.fields.eg,
-// 				dataset:            test.fields.dataset,
-// 				meta:               test.fields.meta,
-// 				jobType:            test.fields.jobType,
-// 				jobFunc:            test.fields.jobFunc,
+// 				limiter:            test.fields.limiter,
+// 				k8sClient:          test.fields.k8sClient,
+// 				hdf5:               test.fields.hdf5,
+// 				client:             test.fields.client,
 // 				insertConfig:       test.fields.insertConfig,
 // 				updateConfig:       test.fields.updateConfig,
 // 				upsertConfig:       test.fields.upsertConfig,
 // 				searchConfig:       test.fields.searchConfig,
 // 				removeConfig:       test.fields.removeConfig,
 // 				objectConfig:       test.fields.objectConfig,
-// 				client:             test.fields.client,
-// 				hdf5:               test.fields.hdf5,
-// 				beforeJobName:      test.fields.beforeJobName,
+// 				jobFunc:            test.fields.jobFunc,
+// 				dataset:            test.fields.dataset,
+// 				meta:               test.fields.meta,
 // 				beforeJobNamespace: test.fields.beforeJobNamespace,
-// 				k8sClient:          test.fields.k8sClient,
+// 				beforeJobName:      test.fields.beforeJobName,
 // 				beforeJobDur:       test.fields.beforeJobDur,
-// 				limiter:            test.fields.limiter,
+// 				jobType:            test.fields.jobType,
 // 				rps:                test.fields.rps,
 // 				concurrencyLimit:   test.fields.concurrencyLimit,
 // 				timeout:            test.fields.timeout,
@@ -207,23 +207,23 @@ package service
 // 	}
 // 	type fields struct {
 // 		eg                 errgroup.Group
-// 		dataset            *config.BenchmarkDataset
-// 		meta               grpc.MD
-// 		jobType            jobType
-// 		jobFunc            func(context.Context, chan error) error
+// 		limiter            rate.Limiter
+// 		k8sClient          client.Client
+// 		hdf5               hdf5.Data
+// 		client             vald.Client
 // 		insertConfig       *config.InsertConfig
 // 		updateConfig       *config.UpdateConfig
 // 		upsertConfig       *config.UpsertConfig
 // 		searchConfig       *config.SearchConfig
 // 		removeConfig       *config.RemoveConfig
 // 		objectConfig       *config.ObjectConfig
-// 		client             vald.Client
-// 		hdf5               hdf5.Data
-// 		beforeJobName      string
+// 		jobFunc            func(context.Context, chan error) error
+// 		dataset            *config.BenchmarkDataset
+// 		meta               grpc.MD
 // 		beforeJobNamespace string
-// 		k8sClient          client.Client
+// 		beforeJobName      string
 // 		beforeJobDur       time.Duration
-// 		limiter            rate.Limiter
+// 		jobType            jobType
 // 		rps                int
 // 		concurrencyLimit   int
 // 		timeout            time.Duration
@@ -258,23 +258,23 @@ package service
 // 		       },
 // 		       fields: fields {
 // 		           eg:nil,
-// 		           dataset:nil,
-// 		           meta:nil,
-// 		           jobType:nil,
-// 		           jobFunc:nil,
+// 		           limiter:nil,
+// 		           k8sClient:nil,
+// 		           hdf5:nil,
+// 		           client:nil,
 // 		           insertConfig:nil,
 // 		           updateConfig:nil,
 // 		           upsertConfig:nil,
 // 		           searchConfig:nil,
 // 		           removeConfig:nil,
 // 		           objectConfig:nil,
-// 		           client:nil,
-// 		           hdf5:nil,
-// 		           beforeJobName:"",
+// 		           jobFunc:nil,
+// 		           dataset:nil,
+// 		           meta:nil,
 // 		           beforeJobNamespace:"",
-// 		           k8sClient:nil,
+// 		           beforeJobName:"",
 // 		           beforeJobDur:nil,
-// 		           limiter:nil,
+// 		           jobType:nil,
 // 		           rps:0,
 // 		           concurrencyLimit:0,
 // 		           timeout:nil,
@@ -302,23 +302,23 @@ package service
 // 		           },
 // 		           fields: fields {
 // 		           eg:nil,
-// 		           dataset:nil,
-// 		           meta:nil,
-// 		           jobType:nil,
-// 		           jobFunc:nil,
+// 		           limiter:nil,
+// 		           k8sClient:nil,
+// 		           hdf5:nil,
+// 		           client:nil,
 // 		           insertConfig:nil,
 // 		           updateConfig:nil,
 // 		           upsertConfig:nil,
 // 		           searchConfig:nil,
 // 		           removeConfig:nil,
 // 		           objectConfig:nil,
-// 		           client:nil,
-// 		           hdf5:nil,
-// 		           beforeJobName:"",
+// 		           jobFunc:nil,
+// 		           dataset:nil,
+// 		           meta:nil,
 // 		           beforeJobNamespace:"",
-// 		           k8sClient:nil,
+// 		           beforeJobName:"",
 // 		           beforeJobDur:nil,
-// 		           limiter:nil,
+// 		           jobType:nil,
 // 		           rps:0,
 // 		           concurrencyLimit:0,
 // 		           timeout:nil,
@@ -354,23 +354,23 @@ package service
 // 			}
 // 			j := &job{
 // 				eg:                 test.fields.eg,
-// 				dataset:            test.fields.dataset,
-// 				meta:               test.fields.meta,
-// 				jobType:            test.fields.jobType,
-// 				jobFunc:            test.fields.jobFunc,
+// 				limiter:            test.fields.limiter,
+// 				k8sClient:          test.fields.k8sClient,
+// 				hdf5:               test.fields.hdf5,
+// 				client:             test.fields.client,
 // 				insertConfig:       test.fields.insertConfig,
 // 				updateConfig:       test.fields.updateConfig,
 // 				upsertConfig:       test.fields.upsertConfig,
 // 				searchConfig:       test.fields.searchConfig,
 // 				removeConfig:       test.fields.removeConfig,
 // 				objectConfig:       test.fields.objectConfig,
-// 				client:             test.fields.client,
-// 				hdf5:               test.fields.hdf5,
-// 				beforeJobName:      test.fields.beforeJobName,
+// 				jobFunc:            test.fields.jobFunc,
+// 				dataset:            test.fields.dataset,
+// 				meta:               test.fields.meta,
 // 				beforeJobNamespace: test.fields.beforeJobNamespace,
-// 				k8sClient:          test.fields.k8sClient,
+// 				beforeJobName:      test.fields.beforeJobName,
 // 				beforeJobDur:       test.fields.beforeJobDur,
-// 				limiter:            test.fields.limiter,
+// 				jobType:            test.fields.jobType,
 // 				rps:                test.fields.rps,
 // 				concurrencyLimit:   test.fields.concurrencyLimit,
 // 				timeout:            test.fields.timeout,
