@@ -15,7 +15,8 @@
 //
 
 use agent::config::{
-    AgentConfig, GrpcServerConfig, Healths, Keepalive, Logging, Observability, QBG, Server, ServerConfig, Service
+    AgentConfig, GrpcServerConfig, Keepalive, Logging, Observability, QBG, Server, ServerConfig,
+    Service,
 };
 use proto::core::v1::agent_client::AgentClient;
 use proto::payload::v1::{Empty, control, insert, object, remove, search, update, upsert};
@@ -82,7 +83,7 @@ async fn test_qbg_agent_integration() {
                     ..Default::default()
                 },
             }],
-            healths: Healths::default(),
+            healths: Default::default(),
         },
         service: Service {
             type_: "qbg".to_string(),

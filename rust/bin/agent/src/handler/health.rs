@@ -1,5 +1,6 @@
-use axum::{Json, Router, http::StatusCode, response::IntoResponse, routing::get};
+use axum::{Json, Router, extract::State, http::StatusCode, response::IntoResponse, routing::get};
 use serde_json::json;
+use std::sync::Arc;
 
 /// Health check handler
 pub async fn liveness() -> impl IntoResponse {
@@ -9,7 +10,6 @@ pub async fn liveness() -> impl IntoResponse {
     )
 }
 
-/// Readiness check handler
 pub async fn readiness() -> impl IntoResponse {
     (
         StatusCode::OK,
@@ -17,7 +17,6 @@ pub async fn readiness() -> impl IntoResponse {
     )
 }
 
-/// Startup check handler
 pub async fn startup() -> impl IntoResponse {
     (
         StatusCode::OK,
@@ -25,7 +24,6 @@ pub async fn startup() -> impl IntoResponse {
     )
 }
 
-/// Create and configure the health check router
 pub fn router() -> Router {
     Router::new()
         .route("/liveness", get(liveness))

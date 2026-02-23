@@ -1,0 +1,22 @@
+   Compiling qbg v0.1.0 (/app/rust/libs/algorithms/qbg)
+   Compiling ngt v0.1.0 (/app/rust/libs/algorithms/ngt)
+   Compiling opentelemetry-semantic-conventions v0.31.0
+   Compiling cpufeatures v0.3.0
+   Compiling pathdiff v0.2.3
+   Compiling faiss v0.1.0 (/app/rust/libs/algorithms/faiss)
+   Compiling config v0.15.19
+   Compiling observability v0.1.0 (/app/rust/libs/observability)
+   Compiling chacha20 v0.10.0
+   Compiling kube v3.0.1
+   Compiling vqueue v0.1.0 (/app/rust/libs/vqueue)
+   Compiling kvs v0.1.0 (/app/rust/libs/kvs)
+   Compiling gethostname v1.1.0
+   Compiling tonic-types v0.14.4
+   Compiling flexi_logger v0.31.8
+   Compiling rand v0.10.0
+   Compiling rand_distr v0.6.0
+   Compiling tempfile v3.25.0
+error: could not find native static library `ngt`, perhaps an -L flag is missing?
+
+error: could not compile `ngt` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
