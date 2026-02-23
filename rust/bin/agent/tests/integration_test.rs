@@ -83,6 +83,7 @@ async fn test_qbg_agent_integration() {
                     ..Default::default()
                 },
             }],
+            healths: Default::default(),
         },
         service: Service {
             type_: "qbg".to_string(),

@@ -198,7 +198,14 @@ server_config:
             .build()
             .unwrap();
 
-        settings.try_deserialize().unwrap()
+        let mut config: AgentConfig = settings.try_deserialize().unwrap();
+        // Since deserialization might use defaults for missing fields, and `healths` might not be in the YAML,
+        // it should be handled by `#[serde(default)]` in `config.rs`.
+        // However, if we manually constructed AgentConfig in any test (which we didn't in this file), we'd need to fix it.
+        // The `create_test_config` function uses `try_deserialize`, which respects `#[serde(default)]`.
+        // So no manual change needed for `create_test_config` return value if `config.rs` has defaults.
+        // But checking `config.rs`, `ServerConfig` derives `Default`.
+        config
     }
 
     #[test]
