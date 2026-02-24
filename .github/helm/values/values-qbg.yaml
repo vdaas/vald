@@ -53,9 +53,9 @@ agent:
     auto_index_length: 100
     initial_delay_max_duration: "3m"
     bulk_insert_chunk_size: 10
-    data_type: "Float"
-    internal_data_type: "Float"
-    distance_type: "L2"
+    data_type: "float"
+    internal_data_type: "float"
+    distance_type: "l2"
     enable_in_memory_mode: true
 discoverer:
   minReplicas: 1
