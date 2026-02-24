@@ -15,10 +15,34 @@
 //
 #![cfg_attr(test, allow(missing_docs))]
 
+/// Agent configuration module.
+///
+/// This module contains the configuration structures and parsers for the Vald agent,
+/// including server settings, observability options, and service-specific configurations.
 pub mod config;
+
+/// Request handler module.
+///
+/// This module implements the gRPC handlers for agent operations,
+/// including health checks and service handlers for vector operations.
 pub mod handler;
+
+/// Metrics collection module.
+///
+/// This module provides observability metrics for the agent,
+/// integrating with OpenTelemetry for exporting performance and operational metrics.
 pub mod metrics;
+
+/// Middleware module.
+///
+/// This module contains middleware components such as interceptors for access logging,
+/// metrics collection, and request/response processing.
 pub mod middleware;
+
+/// Service implementation module.
+///
+/// This module contains the core service implementations for different algorithms (e.g., QBG),
+/// providing the underlying vector indexing and search functionality.
 pub mod service;
 
 use crate::config::AgentConfig;

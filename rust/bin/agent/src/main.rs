@@ -14,19 +14,15 @@
 // limitations under the License.
 //
 
-use agent::config::AgentConfig;
-use agent::serve;
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let settings = ::config::Config::builder()
         .add_source(::config::File::with_name("/etc/server/config.yaml"))
-        .build()
-        .unwrap();
+        .build()?;
 
-    let mut config: AgentConfig = settings.try_deserialize().unwrap();
+    let mut config: agent::config::AgentConfig = settings.try_deserialize()?;
     config.bind();
     config.validate()?;
 
-    serve(config).await
+    agent::serve(config).await
 }

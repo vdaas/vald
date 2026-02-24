@@ -128,7 +128,7 @@ async fn search<S: algorithm::ANN>(
                     debug!("{:?}", status);
                     status
                 }
-                Error::IncompatibleDimensionSize { got: _, want: _ } => {
+                Error::IncompatibleDimensionSize { .. } => {
                     let err_details = build_error_details(
                         err,
                         &config.request_id,
@@ -291,7 +291,7 @@ impl<S: algorithm::ANN + 'static> search_server::Search for super::Agent<S> {
                         debug!("{:?}", status);
                         status
                     }
-                    Error::ObjectIDNotFound { uuid: _ } => {
+                    Error::ObjectIDNotFound { .. } => {
                         let err_details = build_error_details(
                             err,
                             &config.request_id,
@@ -632,10 +632,7 @@ impl<S: algorithm::ANN + 'static> search_server::Search for super::Agent<S> {
                         debug!("{:?}", status);
                         status
                     }
-                    Error::Unsupported {
-                        method: _,
-                        algorithm: _,
-                    } => {
+                    Error::Unsupported { .. } => {
                         let err_details = build_error_details(
                             err,
                             &config.request_id,
@@ -780,7 +777,7 @@ impl<S: algorithm::ANN + 'static> search_server::Search for super::Agent<S> {
                         debug!("{:?}", status);
                         status
                     }
-                    Error::ObjectIDNotFound { uuid: _ } => {
+                    Error::ObjectIDNotFound { .. } => {
                         let err_details = build_error_details(
                             err,
                             &config.request_id,
@@ -797,10 +794,7 @@ impl<S: algorithm::ANN + 'static> search_server::Search for super::Agent<S> {
                         debug!("{:?}", status);
                         status
                     }
-                    Error::Unsupported {
-                        method: _,
-                        algorithm: _,
-                    } => {
+                    Error::Unsupported { .. } => {
                         let err_details = build_error_details(
                             err,
                             &config.request_id,

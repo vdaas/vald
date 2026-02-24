@@ -112,7 +112,7 @@ pub(crate) async fn update<S: algorithm::ANN>(
                     warn!("{:?}", status);
                     status
                 }
-                Error::ObjectIDNotFound { uuid: _ } => {
+                Error::ObjectIDNotFound { .. } => {
                     let err_details = build_error_details(
                         err,
                         &uuid,
@@ -129,7 +129,7 @@ pub(crate) async fn update<S: algorithm::ANN>(
                     warn!("{:?}", status);
                     status
                 }
-                Error::UUIDNotFound { uuid: _ } => {
+                Error::UUIDNotFound { .. } => {
                     let err_details = build_error_details(
                         err,
                         &uuid,
@@ -149,7 +149,7 @@ pub(crate) async fn update<S: algorithm::ANN>(
                     warn!("{:?}", status);
                     status
                 }
-                Error::UUIDAlreadyExists { uuid: _ } => {
+                Error::UUIDAlreadyExists { .. } => {
                     let err_details = build_error_details(
                         err,
                         &uuid,
@@ -335,10 +335,7 @@ impl<S: algorithm::ANN + 'static> update_server::Update for super::Agent<S> {
                             warn!("{:?}", status);
                             status
                         }
-                        Error::InvalidDimensionSize {
-                            current: _,
-                            limit: _,
-                        } => {
+                        Error::InvalidDimensionSize { .. } => {
                             let err_details = build_error_details(
                                 &err,
                                 &uuids.join(","),
@@ -500,7 +497,7 @@ impl<S: algorithm::ANN + 'static> update_server::Update for super::Agent<S> {
                         warn!("{:?}", status);
                         status
                     }
-                    Error::ObjectIDNotFound { uuid: _ } => {
+                    Error::ObjectIDNotFound { .. } => {
                         let err_details = build_error_details(
                             err,
                             uuid,
@@ -517,10 +514,7 @@ impl<S: algorithm::ANN + 'static> update_server::Update for super::Agent<S> {
                         warn!("{:?}", status);
                         status
                     }
-                    Error::NewerTimestampAlreadyExists {
-                        uuid: _,
-                        timestamp: _,
-                    } => {
+                    Error::NewerTimestampAlreadyExists { .. } => {
                         let err_details = build_error_details(
                             err,
                             uuid,

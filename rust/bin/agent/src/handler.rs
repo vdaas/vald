@@ -36,7 +36,7 @@ pub mod upsert;
 
 use crate::config::AgentConfig;
 use crate::service::{DaemonConfig, DaemonHandle, start_daemon};
-use crate::{middleware, serve};
+use crate::middleware;
 use proto::{
     core::v1::agent_server,
     vald::v1::{
@@ -330,7 +330,7 @@ mod tests {
         ) -> impl std::future::Future<Output = Result<search::Response, Error>> + Send {
             async move {
                 Ok(search::Response {
-                    request_id: String::new(),
+                    request_id: String::default(),
                     results: (0..num)
                         .map(|i| object::Distance {
                             id: format!("result-{}", i),
@@ -350,7 +350,7 @@ mod tests {
         ) -> impl std::future::Future<Output = Result<search::Response, Error>> + Send {
             async move {
                 Ok(search::Response {
-                    request_id: String::new(),
+                    request_id: String::default(),
                     results: (0..num)
                         .map(|i| object::Distance {
                             id: format!("result-{}", i),
@@ -623,7 +623,7 @@ mod tests {
         let request2 = tonic::Request::new(insert::Request {
             vector: Some(object::Vector {
                 id: "duplicate-uuid".to_string(),
-                vector: vector,
+                vector,
                 timestamp: 0,
             }),
             config: Some(insert::Config::default()),

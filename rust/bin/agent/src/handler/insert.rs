@@ -93,7 +93,7 @@ pub(super) async fn insert<S: algorithm::ANN>(
                     warn!("{:?}", status);
                     status
                 }
-                Error::UUIDAlreadyExists { uuid: _ } => {
+                Error::UUIDAlreadyExists { .. } => {
                     let err_details = build_error_details(
                         err,
                         &vec.id,
@@ -110,7 +110,7 @@ pub(super) async fn insert<S: algorithm::ANN>(
                     warn!("{:?}", status);
                     status
                 }
-                Error::UUIDNotFound { uuid: _ } => {
+                Error::UUIDNotFound { .. } => {
                     let err_details = build_error_details(
                         err,
                         &vec.id,
@@ -295,7 +295,7 @@ impl<S: algorithm::ANN + 'static> insert_server::Insert for super::Agent<S> {
                         warn!("{:?}", status);
                         status
                     }
-                    Error::UUIDNotFound { uuid: _ } => {
+                    Error::UUIDNotFound { .. } => {
                         let err_details = build_error_details(
                             err,
                             &uuids.join(", "),

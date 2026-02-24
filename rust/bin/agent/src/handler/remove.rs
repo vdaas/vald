@@ -91,7 +91,7 @@ async fn remove<S: algorithm::ANN>(
                         warn!("{:?}", status);
                         status
                     }
-                    Error::ObjectIDNotFound { uuid: _ } => {
+                    Error::ObjectIDNotFound { .. } => {
                         let status = Status::with_error_details(
                             Code::NotFound,
                             format!("Remove API uuid {} not found", uuid),
@@ -100,7 +100,7 @@ async fn remove<S: algorithm::ANN>(
                         warn!("{:?}", status);
                         status
                     }
-                    Error::UUIDNotFound { uuid: _ } => {
+                    Error::UUIDNotFound { .. } => {
                         err_details
                             .set_bad_request(vec![tonic_types::FieldViolation::new("id", err_msg)]);
                         let status = Status::with_error_details(
@@ -346,7 +346,7 @@ impl<S: algorithm::ANN + 'static> remove_server::Remove for super::Agent<S> {
                             warn!("{:?}", status);
                             status
                         }
-                        Error::UUIDNotFound { uuid: _ } => {
+                        Error::UUIDNotFound { .. } => {
                             let err_details = build_error_details(
                                 err,
                                 &uuids.join(","),

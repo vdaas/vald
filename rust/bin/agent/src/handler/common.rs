@@ -306,15 +306,15 @@ mod tests {
             &self,
             _: Request<list::Request>,
         ) -> Result<Response<Self::StreamListObjectStream>, Status> {
-            todo!()
+            Err(Status::unimplemented("stream_list_object is not implemented"))
         }
 
         async fn exists(&self, _: Request<Id>) -> Result<Response<Id>, Status> {
-            todo!()
+            Err(Status::unimplemented("exists is not implemented"))
         }
 
         async fn get_object(&self, _: Request<VectorRequest>) -> Result<Response<Vector>, Status> {
-            todo!()
+            Err(Status::unimplemented("get_object is not implemented"))
         }
 
         async fn stream_get_object(
@@ -332,7 +332,7 @@ mod tests {
             &self,
             _: Request<TimestampRequest>,
         ) -> Result<Response<Timestamp>, Status> {
-            todo!()
+            Err(Status::unimplemented("get_timestamp is not implemented"))
         }
     }
 
