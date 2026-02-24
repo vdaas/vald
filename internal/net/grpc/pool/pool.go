@@ -114,42 +114,48 @@ func (pc *poolConn) Close(ctx context.Context, delay time.Duration) error {
 // pool implements the Conn interface.
 // It stores connection slots in a lock-free manner using an atomic.Value.
 type pool struct {
-	// errGroup is used for managing asynchronous tasks such as graceful connection closure.
-	errGroup errgroup.Group
-	// bo is the backoff strategy for dialing retries.
-	bo backoff.Backoff
-	// dnsHash stores the hash of resolved IP addresses to detect DNS changes.
-	dnsHash atomic.Pointer[string]
 	// connSlots holds the atomic pointer to the slice of connection slots (poolConn).
 	connSlots atomic.Pointer[[]atomic.Pointer[poolConn]]
-	// host is the target hostname or IP address.
-	host string
-	// addr is the full target address (host:port).
-	addr string
-	// dialOpts contains the gRPC dial options used when creating new connections.
-	dialOpts []DialOption
-	// oldConnCloseDelay is the duration to wait before closing an old connection after a new one is established.
-	oldConnCloseDelay time.Duration
-	// poolSize is the configured number of connections in the pool.
-	poolSize atomic.Uint64
 	// currentIndex tracks the current index for round-robin connection selection.
 	currentIndex atomic.Uint64
-	// dialTimeout is the timeout duration for establishing a new connection.
-	dialTimeout time.Duration
+	// poolSize is the configured number of connections in the pool.
+	poolSize atomic.Uint64
 	// closing indicates whether the pool is currently being closed.
 	closing atomic.Bool
-	// port is the target port number.
-	port uint16
-	// endPort is the ending port number for port scanning range.
-	endPort uint16
-	// startPort is the starting port number for port scanning range.
-	startPort uint16
+
 	// enableDNSLookup indicates whether DNS lookup is enabled for the target host.
 	enableDNSLookup bool
 	// isIPAddr indicates whether the target address is a raw IP address (no DNS lookup needed).
 	isIPAddr bool
 	// enableMetrics enables connection pool metrics
 	enableMetrics bool // Whether to enable metrics collection.
+
+	// port is the target port number.
+	port uint16
+	// endPort is the ending port number for port scanning range.
+	endPort uint16
+	// startPort is the starting port number for port scanning range.
+	startPort uint16
+
+	// oldConnCloseDelay is the duration to wait before closing an old connection after a new one is established.
+	oldConnCloseDelay time.Duration
+	// dialTimeout is the timeout duration for establishing a new connection.
+	dialTimeout time.Duration
+
+	// addr is the full target address (host:port).
+	addr string
+	// host is the target hostname or IP address.
+	host string
+
+	// dnsHash stores the hash of resolved IP addresses to detect DNS changes.
+	dnsHash atomic.Pointer[string]
+
+	// bo is the backoff strategy for dialing retries.
+	bo backoff.Backoff
+	// errGroup is used for managing asynchronous tasks such as graceful connection closure.
+	errGroup errgroup.Group
+	// dialOpts contains the gRPC dial options used when creating new connections.
+	dialOpts []DialOption
 }
 
 // Default pool size.
@@ -325,8 +331,21 @@ func (p *pool) store(idx uint64, pc *poolConn) {
 func (p *pool) loop(
 	ctx context.Context, fn func(ctx context.Context, idx uint64, pc *poolConn) bool,
 ) (err error) {
+	if p == nil {
+		return errors.ErrGRPCPoolConnectionNotFound
+	}
+	slotsPtr := p.connSlots.Load()
+	if slotsPtr == nil {
+		return errors.ErrGRPCPoolConnectionNotFound
+	}
+	slots := *slotsPtr
+	sz := uint64(len(slots))
+	if sz == 0 {
+		return errors.ErrGRPCPoolConnectionNotFound
+	}
+
 	var count uint64
-	for idx := range p.poolSize.Load() {
+	for idx := range sz {
 		select {
 		case <-ctx.Done():
 			err = ctx.Err()
@@ -336,8 +355,8 @@ func (p *pool) loop(
 			return nil
 		default:
 			count++
-			ridx, pc := p.load(idx)
-			if !fn(ctx, ridx, pc) {
+			pc := slots[idx].Load()
+			if !fn(ctx, idx, pc) {
 				return nil
 			}
 		}
@@ -625,14 +644,21 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 	if p == nil || p.closing.Load() {
 		return nil, false
 	}
-	sz := p.Size()
+
+	slotsPtr := p.connSlots.Load()
+	if slotsPtr == nil {
+		return nil, false
+	}
+	slots := *slotsPtr
+	sz := uint64(len(slots))
 	if sz == 0 {
 		return nil, false
 	}
+
 	start := p.currentIndex.Add(1)
 	for i := range sz {
 		idx := (start + i) % sz
-		_, pc = p.load(idx)
+		pc = slots[idx].Load()
 
 		if pc != nil && pc.conn != nil {
 			state := pc.conn.GetState()
@@ -659,7 +685,7 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 	// Second pass: if no healthy connection found, try to refresh empty slots or shutdown connections.
 	for i := range sz {
 		idx := (start + i) % sz
-		_, pc = p.load(idx)
+		pc = slots[idx].Load()
 		if pc == nil || pc.conn == nil || pc.conn.GetState() == connectivity.Shutdown {
 			p.refreshConn(egctx, eg, idx, pc, p.addr)
 			rc = append(rc, idx)
@@ -680,6 +706,7 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 
 	// Third pass return connected pool conn
 	for _, idx := range rc {
+		// we should reload the connection from the pool, because the connection might be updated by refreshConn
 		_, pc = p.load(idx)
 		if pc != nil && pc.conn != nil && pc.conn.GetState() != connectivity.Shutdown {
 			return pc, true
@@ -715,8 +742,32 @@ func (p *pool) Get(ctx context.Context) (conn *ClientConn, ok bool) {
 // For IP-based connections, all slots must be healthy; otherwise, at least one healthy slot is acceptable.
 // Global metrics are updated accordingly.
 func (p *pool) IsHealthy(ctx context.Context) bool {
+	if p == nil {
+		return false
+	}
+	slotsPtr := p.connSlots.Load()
+	if slotsPtr == nil {
+		return false
+	}
+	slots := *slotsPtr
+	sz := uint64(len(slots))
+	if sz == 0 {
+		return false
+	}
+
 	healthyCount := uint64(0)
-	err := p.loop(ctx, func(ctx context.Context, idx uint64, pc *poolConn) bool {
+	for idx := range sz {
+		select {
+		case <-ctx.Done():
+			log.Debugf("health check loop for addr=%s returned error: %v", p.addr, ctx.Err())
+			if p.isIPAddr {
+				return healthyCount == sz
+			}
+			return healthyCount > 0
+		default:
+		}
+
+		pc := slots[idx].Load()
 		if pc != nil && pc.conn != nil {
 			state, healthy := p.isHealthy(idx, pc.conn)
 			if healthy {
@@ -731,28 +782,25 @@ func (p *pool) IsHealthy(ctx context.Context) bool {
 				}
 			} else {
 				log.Debugf("unhealthy connection detected for %s pool %d/%d len %d is unhealthy (state: %s)",
-					pc.addr, idx+1, p.Size(), p.Len(), state.String())
+					pc.addr, idx+1, p.Size(), sz, state.String())
 			}
 		} else {
 			// Do not block health check with dial
 			p.refreshConn(ctx, p.errGroup, idx, pc, p.addr)
 			// Assume unhealthy if nil for now
-			log.Debugf("nil pool connection detected for %s pool %d/%d len %d is unhealthy", p.addr, idx+1, p.Size(), p.Len())
+			log.Debugf("nil pool connection detected for %s pool %d/%d len %d is unhealthy", p.addr, idx+1, p.Size(), sz)
 		}
-		return true
-	})
+	}
+
 	if p.enableMetrics {
 		metrics.Store(p.addr, healthyCount)
 	}
-	if err != nil {
-		log.Debugf("health check loop for addr=%s returned error: %v", p.addr, err)
-	}
 	if healthyCount == 0 {
-		log.Warnf("no connection pool member is healthy for addr=%s size=%d, len=%d", p.addr, p.Size(), p.Len())
+		log.Warnf("no connection pool member is healthy for addr=%s size=%d, len=%d", p.addr, p.Size(), sz)
 		return false
 	}
 	if p.isIPAddr {
-		return healthyCount == p.slotCount()
+		return healthyCount == sz
 	}
 	return healthyCount > 0
 }
