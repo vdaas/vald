@@ -59,12 +59,12 @@ var (
 				Id:        id,
 				Vector:    vec,
 				Timestamp: ts,
+				Metadata: metadata,
 			},
 			Config: &payload.Insert_Config{
 				Timestamp:            ts,
 				SkipStrictExistCheck: skip,
 			},
-			Metadata: metadata,
 		}
 	}
 	insertMultipleRequest newMultiRequest[*payload.Insert_Request, *payload.Insert_MultiRequest] = func(t *testing.T, reqs ...*payload.Insert_Request) *payload.Insert_MultiRequest {
@@ -99,12 +99,12 @@ var (
 				Id:        id,
 				Vector:    vec,
 				Timestamp: ts,
+				Metadata: metadata,
 			},
 			Config: &payload.Update_Config{
 				Timestamp:            ts,
 				SkipStrictExistCheck: skip,
 			},
-			Metadata: metadata,
 		}
 	}
 	updateMultipleRequest newMultiRequest[*payload.Update_Request, *payload.Update_MultiRequest] = func(t *testing.T, reqs ...*payload.Update_Request) *payload.Update_MultiRequest {
@@ -139,12 +139,12 @@ var (
 				Id:        id,
 				Vector:    vec,
 				Timestamp: ts,
+				Metadata: metadata,
 			},
 			Config: &payload.Upsert_Config{
 				Timestamp:            ts,
 				SkipStrictExistCheck: skip,
 			},
-			Metadata: metadata,
 		}
 	}
 	upsertMultipleRequest newMultiRequest[*payload.Upsert_Request, *payload.Upsert_MultiRequest] = func(t *testing.T, reqs ...*payload.Upsert_Request) *payload.Upsert_MultiRequest {
