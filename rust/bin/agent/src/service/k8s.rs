@@ -288,6 +288,7 @@ mod tests {
     use super::*;
     use std::sync::Mutex;
 
+    
     struct MockPatcher {
         applied: Mutex<Vec<HashMap<String, String>>>,
     }

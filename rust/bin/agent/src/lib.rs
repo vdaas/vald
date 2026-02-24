@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+#![cfg_attr(test, allow(missing_docs))]
 
 pub mod config;
 pub mod handler;
