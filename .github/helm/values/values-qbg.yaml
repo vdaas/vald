@@ -42,7 +42,7 @@ agent:
       cpu: 100m
       memory: 50Mi
   image:
-    repository: vdaas/vald-agent-qbg
+    repository: vdaas/vald-agent
     tag: nightly
   qbg:
     dimension: 784
@@ -53,7 +53,9 @@ agent:
     auto_index_length: 100
     initial_delay_max_duration: "3m"
     bulk_insert_chunk_size: 10
-    distance_type: 1 # L2
+    data_type: "Float"
+    internal_data_type: "Float"
+    distance_type: "L2"
     enable_in_memory_mode: true
 discoverer:
   minReplicas: 1

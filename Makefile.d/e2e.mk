@@ -24,6 +24,11 @@ e2e:
 e2e/v2:
 	$(call run-v2-e2e-crud-test,-run TestE2EStrategy)
 
+.PHONY: e2e/v2/qbg
+## run e2e with QBG
+e2e/v2/qbg:
+	$(call run-v2-e2e-qbg-test,-run TestE2EStrategy)
+
 .PHONY: e2e/faiss
 ## run e2e/faiss
 e2e/faiss:
@@ -208,6 +213,36 @@ e2e/v2/actions/run/unary/crud: \
 	kubectl wait --for=condition=ContainersReady pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	kubectl get pods
 	$(MAKE) E2E_CONFIG="$(E2E_CONFIG_DIR)/unary_crud.yaml" \
+		E2E_TIMEOUT=30m \
+		E2E_PARALLELISM="4" \
+		E2E_INSERT_COUNT="10000" \
+		E2E_EXPECTED_INDEX="30000" \
+		E2E_QPS="30" \
+		E2E_SEARCH_COUNT="10" \
+		E2E_UPDATE_COUNT="100" \
+		E2E_BULK_SIZE="10" \
+		e2e/v2
+	$(MAKE) k8s/vald/delete
+	$(MAKE) k3d/delete
+
+.PHONY: e2e/v2/actions/run/unary/crud/qbg
+## run GitHub Actions E2E/V2 test (Unary CRUD with QBG)
+e2e/v2/actions/run/unary/crud/qbg: \
+	hack/benchmark/assets/dataset/$(E2E_DATASET_NAME) \
+	k3d/restart
+	sleep 10
+	kubectl wait -n kube-system --for=condition=Available deployment/metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
+	sleep 2
+	kubectl wait -n kube-system --for=condition=Ready pod -l k8s-app=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
+	kubectl wait -n kube-system --for=condition=ContainersReady pod -l k8s-app=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
+	$(MAKE) k8s/vald/deploy \
+	VERSION=$(VERSION) \
+	HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-qbg.yaml
+	sleep 10
+	kubectl wait --for=condition=Ready pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
+	kubectl wait --for=condition=ContainersReady pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
+	kubectl get pods
+	$(MAKE) E2E_CONFIG="$(E2E_CONFIG_DIR)/unary_crud_qbg.yaml" \
 		E2E_TIMEOUT=30m \
 		E2E_PARALLELISM="4" \
 		E2E_INSERT_COUNT="10000" \

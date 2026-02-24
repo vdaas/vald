@@ -193,6 +193,36 @@ define run-v2-e2e-crud-test
 	-config $(E2E_CONFIG)
 endef
 
+define run-v2-e2e-qbg-test
+	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
+	CGO_CFLAGS="$(CGO_CFLAGS)" \
+	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
+	E2E_ADDR="$(E2E_BIND_HOST):$(E2E_BIND_PORT)" \
+	E2E_BIND_HOST="$(E2E_BIND_HOST)" \
+	E2E_BIND_PORT="$(E2E_BIND_PORT)" \
+	E2E_TARGET_NAMESPACE="$(E2E_TARGET_NAMESPACE)" \
+	E2E_TARGET_NAME="$(E2E_TARGET_NAME)" \
+	E2E_DATASET_PATH="$(ROOTDIR)/hack/benchmark/assets/dataset/$(E2E_DATASET_NAME)" \
+	E2E_PARALLELISM="$(E2E_PARALLELISM)" \
+	E2E_INSERT_COUNT="$(E2E_INSERT_COUNT)" \
+	E2E_QPS="$(E2E_QPS)" \
+	E2E_SEARCH_COUNT="$(E2E_SEARCH_COUNT)" \
+	E2E_UPDATE_COUNT="$(E2E_UPDATE_COUNT)" \
+	E2E_BULK_SIZE="$(E2E_BULK_SIZE)" \
+	E2E_EXPECTED_INDEX="$(E2E_EXPECTED_INDEX)" \
+	go test \
+	-race \
+	-v \
+	-mod=readonly \
+	$1 \
+	$(ROOTDIR)/tests/v2/e2e/crud \
+	-tags "e2e" \
+	-timeout $(E2E_TIMEOUT) \
+	-config $(E2E_CONFIG_DIR)/unary_crud_qbg.yaml
+endef
+
 define run-e2e-crud-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \

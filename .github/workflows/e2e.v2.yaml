@@ -65,6 +65,7 @@ jobs:
             const baseInclude = [
               { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "null" },
               { scenario: "unary_crud",  deployment: "helm-chart", cluster: "k3d", environment: "null" },
+              { scenario: "unary_crud_qbg", deployment: "helm-chart", cluster: "k3d", environment: "qbg" },
               { scenario: "multi_crud",  deployment: "helm-chart", cluster: "k3d", environment: "null" },
               { scenario: "rollout",     deployment: "helm-chart", cluster: "k3d", environment: "null" },
               { scenario: "stream_crud", deployment: "helm-operator", cluster: "k3d", environment: "null" },
@@ -146,12 +147,22 @@ jobs:
         if: ${{ matrix.environment == 'management' }}
         run: |
           echo "HELM_EXTRA_OPTIONS=\"--values .github/helm/values/values-index-management-jobs.yaml\"" >> $GITHUB_ENV
+      - name: Set values file for deployment
+        if: ${{ matrix.deployment == 'helm-chart' && matrix.environment != 'mirror' && matrix.scenario != 'readreplica' }}
+        run: |
+          if [[ "${{ matrix.environment }}" == "profile" ]]; then
+            echo "VALUES_FILE=values-profile.yaml" >> $GITHUB_ENV
+          elif [[ "${{ matrix.environment }}" == "qbg" ]]; then
+            echo "VALUES_FILE=values-qbg.yaml" >> $GITHUB_ENV
+          else
+            echo "VALUES_FILE=values-lb.yaml" >> $GITHUB_ENV
+          fi
       - name: Deploy Vald by Helm Chart
         if: ${{ matrix.deployment == 'helm-chart' && matrix.environment != 'mirror' && matrix.scenario != 'readreplica' }}
         uses: ./.github/actions/e2e-deploy-vald
         with:
           helm_extra_options: "${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}"
-          values: .github/helm/values/values-${{ 'profile' == matrix.environment && matrix.environment || 'lb' }}.yaml
+          values: .github/helm/values/${{ env.VALUES_FILE }}
           wait_for_selector: "app=vald-lb-gateway"
       - name: Deploy Vald Read Replica
         if: ${{ 'readreplica' == matrix.scenario }}

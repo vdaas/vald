@@ -20,11 +20,11 @@ use serde::{Deserialize, Serialize};
 pub enum ObjectType {
     #[serde(rename = "None", alias = "none")]
     None,
-    #[serde(rename = "Uint8", alias = "uint8", alias = "u8", alias = "U8")]
+    #[serde(rename = "uint8", alias = "Uint8", alias = "u8", alias = "U8")]
     Uint8,
-    #[serde(rename = "Float", alias = "float", alias = "f32", alias = "F32")]
+    #[serde(rename = "float", alias = "Float", alias = "f32", alias = "F32")]
     Float,
-    #[serde(rename = "Float16", alias = "float16", alias = "f16", alias = "F16")]
+    #[serde(rename = "float16", alias = "Float16", alias = "f16", alias = "F16")]
     Float16,
 }
 
@@ -54,13 +54,13 @@ impl From<ObjectType> for ffi::ObjectType {
 pub enum DataType {
     #[serde(rename = "None", alias = "none")]
     None,
-    #[serde(rename = "Uint8", alias = "uint8", alias = "u8", alias = "U8")]
+    #[serde(rename = "uint8", alias = "Uint8", alias = "u8", alias = "U8")]
     Uint8,
-    #[serde(rename = "Float", alias = "float", alias = "f32", alias = "F32")]
+    #[serde(rename = "float", alias = "Float", alias = "f32", alias = "F32")]
     Float,
-    #[serde(rename = "Float16", alias = "float16", alias = "f16", alias = "F16")]
+    #[serde(rename = "float16", alias = "Float16", alias = "f16", alias = "F16")]
     Float16,
-    #[serde(rename = "Any", alias = "any")]
+    #[serde(rename = "any", alias = "Any")]
     Any,
 }
 
@@ -92,31 +92,48 @@ impl From<DataType> for ffi::DataType {
 pub enum DistanceType {
     #[serde(rename = "None", alias = "none")]
     None,
-    #[serde(rename = "L1", alias = "l1")]
+    #[serde(rename = "l1", alias = "L1")]
     L1,
-    #[serde(rename = "L2", alias = "l2")]
+    #[serde(rename = "l2", alias = "L2")]
     L2,
-    #[serde(rename = "Hamming", alias = "hamming")]
+    #[serde(rename = "hamming", alias = "Hamming", alias = "ham")]
     Hamming,
-    #[serde(rename = "Angle", alias = "angle", alias = "angular", alias = "ang")]
+    #[serde(rename = "angle", alias = "Angle", alias = "ang")]
     Angle,
-    #[serde(rename = "Cosine", alias = "cosine", alias = "cos")]
+    #[serde(rename = "cosine", alias = "Cosine", alias = "cos")]
     Cosine,
-    #[serde(rename = "NormalizedAngle", alias = "normalized_angle", alias = "normalizedangle", alias = "normalized_ang", alias = "normalizedangular")]
+    #[serde(
+        rename = "normalizedangle",
+        alias = "NormalizedAngle",
+        alias = "normang",
+        alias = "NormAng"
+    )]
     NormalizedAngle,
-    #[serde(rename = "NormalizedCosine", alias = "normalized_cosine", alias = "normalizedcosine", alias = "normalized_cos")]
+    #[serde(
+        rename = "normalizedcosine",
+        alias = "NormalizedCosine",
+        alias = "normcos",
+        alias = "NormCos"
+    )]
     NormalizedCosine,
-    #[serde(rename = "Jaccard", alias = "jaccard")]
+        #[serde(rename = "jaccard", alias = "Jaccard", alias = "jac")]
     Jaccard,
-    #[serde(rename = "SparseJaccard", alias = "sparse_jaccard")]
+    #[serde(rename = "sparsejaccard", alias = "SparseJaccard", alias = "spjac")]
     SparseJaccard,
-    #[serde(rename = "NormalizedL2", alias = "normalized_l2")]
+    #[serde(rename = "normalizedl2", alias = "NormalizedL2", alias = "norml2")]
     NormalizedL2,
-    #[serde(rename = "InnerProduct", alias = "inner_product", alias = "inner", alias = "ip", alias = "dot_product", alias = "dot", alias = "dp")]
+    #[serde(
+        rename = "innerproduct",
+        alias = "InnerProduct",
+        alias = "ip",
+        alias = "dotproduct",
+        alias = "DotProduct",
+        alias = "dp"
+    )]
     InnerProduct,
-    #[serde(rename = "Poincare", alias = "poincare")]
+    #[serde(rename = "poincare", alias = "Poincare", alias = "poinc")]
     Poincare,
-    #[serde(rename = "Lorentz", alias = "lorentz")]
+    #[serde(rename = "lorentz", alias = "Lorentz", alias = "loren")]
     Lorentz,
 }
 
@@ -795,7 +812,15 @@ mod tests {
     fn test_property() -> Result<()> {
         let mut p = Property::new();
         p.init_qbg_construction_parameters();
-        p.set_qbg_construction_parameters(1, 1, 1, 1, ffi::DataType::Float, ffi::ObjectType::Float, ffi::DistanceType::L2);
+        p.set_qbg_construction_parameters(
+            1,
+            1,
+            1,
+            1,
+            ffi::DataType::Float,
+            ffi::ObjectType::Float,
+            ffi::DistanceType::L2,
+        );
         p.set_extended_dimension(1);
         p.set_dimension(1);
         p.set_number_of_subvectors(1);
