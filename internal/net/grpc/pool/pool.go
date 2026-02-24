@@ -116,6 +116,8 @@ func (pc *poolConn) Close(ctx context.Context, delay time.Duration) error {
 type pool struct {
 	// connSlots holds the atomic pointer to the slice of connection slots (poolConn).
 	connSlots atomic.Pointer[[]atomic.Pointer[poolConn]]
+	// dials stores the atomic pointer to the slice of atomic bools indicating dialing status per slot.
+	dials atomic.Pointer[[]atomic.Bool]
 	// currentIndex tracks the current index for round-robin connection selection.
 	currentIndex atomic.Uint64
 	// poolSize is the configured number of connections in the pool.
@@ -263,6 +265,8 @@ func (p *pool) init() {
 	}
 	slots := make([]atomic.Pointer[poolConn], size)
 	p.connSlots.Store(&slots)
+	dials := make([]atomic.Bool, size)
+	p.dials.Store(&dials)
 }
 
 // getSlots returns the current connection slots slice.
@@ -277,7 +281,9 @@ func (p *pool) getSlots() []atomic.Pointer[poolConn] {
 func (p *pool) grow(newSize uint64) {
 	oldSlots := p.getSlots()
 	newSlots := make([]atomic.Pointer[poolConn], newSize)
+	newDials := make([]atomic.Bool, newSize)
 	if oldSlots == nil {
+		p.dials.Store(&newDials)
 		p.connSlots.Store(&newSlots)
 		p.poolSize.Store(newSize)
 		return
@@ -287,6 +293,7 @@ func (p *pool) grow(newSize uint64) {
 		return
 	}
 	copy(newSlots, oldSlots)
+	p.dials.Store(&newDials)
 	p.connSlots.Store(&newSlots)
 	p.poolSize.Store(newSize)
 }
@@ -413,10 +420,25 @@ func (p *pool) refreshConn(
 	} else {
 		log.Debugf("connection pool %d/%d len %d is empty, establish new pool member connection to %s", idx+1, p.Size(), p.Len(), addr)
 	}
+
+	dialsPtr := p.dials.Load()
+	if dialsPtr == nil {
+		return
+	}
+	dials := *dialsPtr
+	if idx >= uint64(len(dials)) {
+		return
+	}
+
+	if !dials[idx].CompareAndSwap(false, true) {
+		return
+	}
+
 	if eg == nil {
 		eg = p.errGroup
 	}
 	eg.Go(func() error {
+		defer dials[idx].Store(false)
 		newConn, err := p.dial(ctx, idx, addr)
 		if err != nil {
 			if pc != nil && pc.conn != nil {
@@ -428,11 +450,14 @@ func (p *pool) refreshConn(
 					pc.addr, idx+1, p.Size(), p.Len(), state.String(), addr)
 
 				if pc.conn != nil {
-					log.Debugf("closing unhealthy connection pool %d/%d len %d for addr: %s", idx+1, p.Size(), p.Len(), pc.addr)
-					err := pc.Close(ctx, p.oldConnCloseDelay)
-					if err != nil {
-						log.Errorf("failed to close connection pool %d/%d addr = %s\terror = %v", idx+1, p.Size(), pc.addr, err)
-					}
+					p.errGroup.Go(func() error {
+						log.Debugf("closing unhealthy connection pool %d/%d len %d for addr: %s", idx+1, p.Size(), p.Len(), pc.addr)
+						err := pc.Close(context.WithoutCancel(ctx), p.oldConnCloseDelay)
+						if err != nil {
+							log.Errorf("failed to close connection pool %d/%d addr = %s\terror = %v", idx+1, p.Size(), pc.addr, err)
+						}
+						return nil
+					})
 					return nil
 				}
 			}
@@ -448,11 +473,14 @@ func (p *pool) refreshConn(
 		p.store(idx, &poolConn{conn: newConn, addr: addr})
 
 		if pc != nil && pc.conn != nil {
-			log.Debugf("closing unhealthy connection pool %d/%d len %d for addr: %s", idx+1, p.Size(), p.Len(), pc.addr)
-			err := pc.Close(ctx, p.oldConnCloseDelay)
-			if err != nil {
-				log.Errorf("failed to close connection pool %d/%d addr = %s\terror = %v", idx+1, p.Size(), pc.addr, err)
-			}
+			p.errGroup.Go(func() error {
+				log.Debugf("closing unhealthy connection pool %d/%d len %d for addr: %s", idx+1, p.Size(), p.Len(), pc.addr)
+				err := pc.Close(context.WithoutCancel(ctx), p.oldConnCloseDelay)
+				if err != nil {
+					log.Errorf("failed to close connection pool %d/%d addr = %s\terror = %v", idx+1, p.Size(), pc.addr, err)
+				}
+				return nil
+			})
 		}
 		return nil
 	})
