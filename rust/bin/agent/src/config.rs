@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+use qbg::{DataType, DistanceType, ObjectType};
 use serde::{Deserialize, Serialize};
 use std::env;
 
@@ -507,15 +508,15 @@ pub struct QBG {
 
     /// InternalDataType represent the internal data type (1 for float32, 2 for uint8)
     #[serde(default = "default_internal_data_type")]
-    pub internal_data_type: i32,
+    pub internal_data_type: DataType,
 
     /// DataType represent the data type (1 for float32, 2 for uint8)
     #[serde(default = "default_data_type")]
-    pub data_type: i32,
+    pub data_type: ObjectType,
 
     /// DistanceType represent the distance type
     #[serde(default = "default_distance_type")]
-    pub distance_type: i32,
+    pub distance_type: DistanceType,
 
     /// HierarchicalClusteringInitMode represent hierarchical clustering init mode
     #[serde(default = "default_hierarchical_clustering_init_mode")]
@@ -651,16 +652,16 @@ fn default_number_of_subvectors() -> usize {
     1
 }
 
-fn default_internal_data_type() -> i32 {
-    1 // float32
+fn default_internal_data_type() -> DataType {
+    DataType::Float
 }
 
-fn default_data_type() -> i32 {
-    1 // float32
+fn default_data_type() -> ObjectType {
+    ObjectType::Float
 }
 
-fn default_distance_type() -> i32 {
-    1 // L2
+fn default_distance_type() -> DistanceType {
+    DistanceType::L2
 }
 
 fn default_hierarchical_clustering_init_mode() -> i32 {
@@ -754,21 +755,6 @@ impl QBG {
 
         if self.number_of_subvectors == 0 {
             return Err("number_of_subvectors must be greater than 0".to_string());
-        }
-
-        // Validate data types (1 for float32, 2 for uint8)
-        if !(self.internal_data_type == 1 || self.internal_data_type == 2) {
-            return Err(format!(
-                "invalid internal_data_type: {} (must be 1 or 2)",
-                self.internal_data_type
-            ));
-        }
-
-        if !(self.data_type == 1 || self.data_type == 2) {
-            return Err(format!(
-                "invalid data_type: {} (must be 1 or 2)",
-                self.data_type
-            ));
         }
 
         Ok(())
@@ -974,34 +960,6 @@ mod tests {
     }
 
     #[test]
-    fn test_qbg_validate_invalid_internal_data_type() {
-        let qbg = QBG {
-            dimension: 128,
-            index_path: temp_dir().join("index").to_str().unwrap().to_string(),
-            internal_data_type: 3,
-            ..QBG::default()
-        };
-
-        let result = qbg.validate();
-        assert!(result.is_err());
-        assert!(result.unwrap_err().contains("invalid internal_data_type"));
-    }
-
-    #[test]
-    fn test_qbg_validate_invalid_data_type() {
-        let qbg = QBG {
-            dimension: 128,
-            index_path: temp_dir().join("index").to_str().unwrap().to_string(),
-            data_type: 99,
-            ..QBG::default()
-        };
-
-        let result = qbg.validate();
-        assert!(result.is_err());
-        assert!(result.unwrap_err().contains("invalid data_type"));
-    }
-
-    #[test]
     fn test_get_actual_value_no_env_var() {
         let value = "simple_value";
         let result = get_actual_value(value);
@@ -1038,9 +996,9 @@ dimension: 256
 extended_dimension: 512
 number_of_subvectors: 4
 number_of_blobs: 8
-internal_data_type: 1
-data_type: 1
-distance_type: 1
+internal_data_type: float
+data_type: float
+distance_type: L2
 bulk_insert_chunk_size: 50
 rotation_iteration: 3000
 subvector_iteration: 500
@@ -1067,9 +1025,9 @@ is_readreplica: false
         assert_eq!(qbg.extended_dimension, 512);
         assert_eq!(qbg.number_of_subvectors, 4);
         assert_eq!(qbg.number_of_blobs, 8);
-        assert_eq!(qbg.internal_data_type, 1);
-        assert_eq!(qbg.data_type, 1);
-        assert_eq!(qbg.distance_type, 1);
+        assert_eq!(qbg.internal_data_type, DataType::Float);
+        assert_eq!(qbg.data_type, ObjectType::Float);
+        assert_eq!(qbg.distance_type, DistanceType::L2);
         assert_eq!(qbg.bulk_insert_chunk_size, 50);
         assert_eq!(qbg.rotation_iteration, 3000);
         assert_eq!(qbg.subvector_iteration, 500);
@@ -1140,15 +1098,11 @@ dimension: 128
     #[test]
     fn test_qbg_validate_data_types() {
         // Valid data types
-        for dt in &[1, 2] {
-            let qbg = QBG {
-                dimension: 128,
-                index_path: temp_dir().join("index").to_str().unwrap().to_string(),
-                data_type: *dt,
-                internal_data_type: *dt,
-                ..QBG::default()
-            };
-            assert!(qbg.validate().is_ok(), "Failed for data_type: {}", dt);
-        }
+        let qbg = QBG {
+            dimension: 128,
+            index_path: temp_dir().join("index").to_str().unwrap().to_string(),
+            ..QBG::default()
+        };
+        assert!(qbg.validate().is_ok(), "Failed for data_type");
     }
 }

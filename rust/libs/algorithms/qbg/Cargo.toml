@@ -21,6 +21,7 @@ edition = "2024"
 [dependencies]
 anyhow = "1.0.102"
 cxx = { version = "1.0.194", features = ["c++20"] }
+serde = { version = "1.0.228", features = ["derive"] }
 
 [build-dependencies]
 cxx-build = "1.0.194"

@@ -45,18 +45,18 @@ void Property::set_qbg_construction_parameters(
     rust::usize dimension,
     rust::usize number_of_subvectors,
     rust::usize number_of_blobs,
-    rust::i32 internal_data_type,
-    rust::i32 data_type,
-    rust::i32 distance_type)
+    const DataType internal_data_type,
+    const ObjectType data_type,
+    const DistanceType distance_type)
 {
     qbg_initialize_construction_parameters(qbg_construction_parameters);
     qbg_construction_parameters->extended_dimension = extended_dimension;
     qbg_construction_parameters->dimension = dimension;
     qbg_construction_parameters->number_of_subvectors = number_of_subvectors;
     qbg_construction_parameters->number_of_blobs = number_of_blobs;
-    qbg_construction_parameters->internal_data_type = internal_data_type;
-    qbg_construction_parameters->data_type = data_type;
-    qbg_construction_parameters->distance_type = distance_type;
+    qbg_construction_parameters->internal_data_type = static_cast<NGTQ::DataType>(internal_data_type);
+    qbg_construction_parameters->data_type = static_cast<ObjectFile::DataType>(data_type);
+    qbg_construction_parameters->distance_type = static_cast<NGTQ::DistanceType>(distance_type);
 }
 
 void Property::set_extended_dimension(rust::usize extended_dimension)
@@ -79,19 +79,19 @@ void Property::set_number_of_blobs(rust::usize number_of_blobs)
     qbg_construction_parameters->number_of_blobs = number_of_blobs;
 }
 
-void Property::set_internal_data_type(rust::i32 internal_data_type)
+void Property::set_internal_data_type(const DataType internal_data_type)
 {
-    qbg_construction_parameters->internal_data_type = internal_data_type;
+    qbg_construction_parameters->internal_data_type = static_cast<NGTQ::DataType>(internal_data_type);
 }
 
-void Property::set_data_type(rust::i32 data_type)
+void Property::set_data_type(const ObjectType data_type)
 {
-    qbg_construction_parameters->data_type = data_type;
+    qbg_construction_parameters->data_type = static_cast<ObjectFile::DataType>(data_type);
 }
 
-void Property::set_distance_type(rust::i32 distance_type)
+void Property::set_distance_type(const DistanceType distance_type)
 {
-    qbg_construction_parameters->distance_type = distance_type;
+    qbg_construction_parameters->distance_type = static_cast<NGTQ::DistanceType>(distance_type);
 }
 
 QBGBuildParameters *Property::get_qbg_build_parameters()

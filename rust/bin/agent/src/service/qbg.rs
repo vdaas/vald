@@ -105,9 +105,9 @@ impl QBGService {
             config.dimension,
             config.number_of_subvectors,
             config.number_of_blobs,
-            config.internal_data_type,
-            config.data_type,
-            config.distance_type,
+            config.internal_data_type.into(),
+            config.data_type.into(),
+            config.distance_type.into(),
         );
         property.init_qbg_build_parameters();
         property.set_qbg_build_parameters(
@@ -1079,11 +1079,11 @@ mod tests {
                 .unwrap()
                 .set_default("qbg.number_of_blobs", 0_i64)
                 .unwrap()
-                .set_default("qbg.distance_type", 1_i64)
-                .unwrap() // L2
-                .set_default("qbg.data_type", 1_i64)
-                .unwrap() // Float
-                .set_default("qbg.internal_data_type", 1_i64)
+                .set_default("qbg.distance_type", "L2")
+                .unwrap()
+                .set_default("qbg.data_type", "Float")
+                .unwrap()
+                .set_default("qbg.internal_data_type", "Float")
                 .unwrap()
                 .set_default("qbg.is_readreplica", is_read_replica)
                 .unwrap()
@@ -1118,11 +1118,11 @@ mod tests {
                 .unwrap()
                 .set_default("qbg.number_of_blobs", 0_i64)
                 .unwrap()
-                .set_default("qbg.distance_type", 1_i64)
+                .set_default("qbg.distance_type", "L2")
                 .unwrap()
-                .set_default("qbg.data_type", 1_i64)
+                .set_default("qbg.data_type", "Float")
                 .unwrap()
-                .set_default("qbg.internal_data_type", 1_i64)
+                .set_default("qbg.internal_data_type", "Float")
                 .unwrap()
                 .set_default("qbg.is_readreplica", true)
                 .unwrap()
