@@ -43,7 +43,6 @@ agent:
       memory: 50Mi
   image:
     repository: vdaas/vald-agent
-    tag: nightly
   qbg:
     dimension: 784
     index_path: "/var/lib/vald/index"
@@ -77,6 +76,6 @@ manager:
       auto_index_check_duration: 30s
       auto_index_length: 1000
     corrector:
-      enabled: true
+      enabled: false
       suspend: true
       schedule: "1 2 3 4 5"
