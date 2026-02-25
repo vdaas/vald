@@ -60,6 +60,8 @@ DEFAULT_BUILDKIT_SYFT_SCANNER_IMAGE = $(GHCRORG)/$(BUILDKIT_SYFT_SCANNER_IMAGE):
 
 VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
 
+VERSION_RELEASE_DIR ?= $(eval VERSION_RELEASE_DIR := $(shell cat versions/VALD_VERSION | sed -E "s/v([0-9]+)\.([0-9]+)\..*/v\1-\2/"))$(VERSION_RELEASE_DIR)
+
 NGT_REPO = github.com/yahoojapan/NGT
 
 TEST_NOT_IMPL_PLACEHOLDER = NOT IMPLEMENTED BELOW
@@ -1007,15 +1009,28 @@ files/cspell: \
 	cspell/install
 	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then cspell "$(ROOTDIR)/.gitfiles" --show-suggestions $(CSPELL_EXTRA_OPTIONS); fi
 
-.PHONY: changelog/update
-## update changelog
-changelog/update:
+.PHONY: changelog/update/origin
+## update original changelog
+changelog/update/origin:
 	echo "# CHANGELOG" > $(TEMP_DIR)/CHANGELOG.md
 	echo "" >> $(TEMP_DIR)/CHANGELOG.md
 	$(MAKE) -s changelog/next/print >> $(TEMP_DIR)/CHANGELOG.md
 	echo "" >> $(TEMP_DIR)/CHANGELOG.md
 	tail -n +2 $(ROOTDIR)/CHANGELOG.md >> $(TEMP_DIR)/CHANGELOG.md
 	mv -f $(TEMP_DIR)/CHANGELOG.md $(ROOTDIR)/CHANGELOG.md
+
+.PHONY: changelog/update/minor
+## update changelog minor directory
+changelog/update/minor:
+	mkdir -p release/$(VERSION_RELEASE_DIR)
+	echo "# CHANGELOG $(VERSION_RELEASE_DIR).x" > $(TEMP_DIR)/CHANGELOG.md
+	echo "" >> $(TEMP_DIR)/CHANGELOG.md
+	$(MAKE) -s changelog/next/print >> $(TEMP_DIR)/CHANGELOG.md
+	echo "" >> $(TEMP_DIR)/CHANGELOG.md
+	if [ -f $(ROOTDIR)/release/$(VERSION_RELEASE_DIR)/CHANGELOG.md ]; then \
+	  tail -n +2 $(ROOTDIR)/release/$(VERSION_RELEASE_DIR)/CHANGELOG.md >> $(TEMP_DIR)/CHANGELOG.md; \
+	fi
+	mv -f $(TEMP_DIR)/CHANGELOG.md $(ROOTDIR)/release/$(VERSION_RELEASE_DIR)/CHANGELOG.md
 
 .PHONY: changelog/next/print
 ## print next changelog entry
