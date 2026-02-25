@@ -1023,6 +1023,7 @@ Represent search configuration.
 | aggregation_algorithm | [Search.AggregationAlgorithm](#payload-v1-Search-AggregationAlgorithm) |       | Aggregation Algorithm                        |
 | ratio                 | [google.protobuf.FloatValue](#google-protobuf-FloatValue)              |       | Search ratio for agent return result number. |
 | nprobe                | [uint32](#uint32)                                                      |       | Search nprobe.                               |
+| edge_size             | [int32](#int32)                                                        |       | Search edge size                             |
 
 <a name="payload-v1-Search-IDRequest"></a>
 

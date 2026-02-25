@@ -44,7 +44,7 @@ type (
 	// NGT is core interface.
 	NGT interface {
 		// Search returns search result as []algorithm.SearchResult
-		Search(ctx context.Context, vec []float32, size int, epsilon, radius float32) ([]algorithm.SearchResult, error)
+		Search(ctx context.Context, vec []float32, size int, epsilon, radius float32, edgeSize int32) ([]algorithm.SearchResult, error)
 
 		// Linear Search returns linear search result as []algorithm.SearchResult
 		LinearSearch(ctx context.Context, vec []float32, size int) ([]algorithm.SearchResult, error)
@@ -710,7 +710,7 @@ func (n *ngt) loadObjectSpace() error {
 // - Uses a read lock to allow concurrent searches while blocking writes (like Insert/Remove).
 // - Calls CGO (C.ngt_search_index_as_float) which requires careful memory management for the results object.
 func (n *ngt) Search(
-	ctx context.Context, vec []float32, size int, epsilon, radius float32,
+	ctx context.Context, vec []float32, size int, epsilon, radius float32, edgeSize int32,
 ) (result []algorithm.SearchResult, err error) {
 	if len(vec) != int(n.dimension) {
 		return nil, errors.ErrIncompatibleDimensionSize(len(vec), int(n.dimension))
@@ -740,6 +740,7 @@ func (n *ngt) Search(
 		*(*C.float)(unsafe.Pointer(&epsilon)),
 		*(*C.float)(unsafe.Pointer(&radius)),
 		results,
+		C.int(edgeSize),
 		ne.err)
 	vec = nil
 	if ret == ErrorCode {

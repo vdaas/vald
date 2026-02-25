@@ -37,7 +37,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1DiscovererRequest"
+              "$ref": "#/definitions/DiscovererRequest"
             }
           }
         ],
@@ -69,7 +69,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1DiscovererRequest"
+              "$ref": "#/definitions/DiscovererRequest"
             }
           }
         ],
@@ -101,7 +101,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1DiscovererRequest"
+              "$ref": "#/definitions/DiscovererRequest"
             }
           }
         ],
