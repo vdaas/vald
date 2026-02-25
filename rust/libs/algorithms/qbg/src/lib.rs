@@ -116,7 +116,7 @@ pub enum DistanceType {
         alias = "NormCos"
     )]
     NormalizedCosine,
-        #[serde(rename = "jaccard", alias = "Jaccard", alias = "jac")]
+    #[serde(rename = "jaccard", alias = "Jaccard", alias = "jac")]
     Jaccard,
     #[serde(rename = "sparsejaccard", alias = "SparseJaccard", alias = "spjac")]
     SparseJaccard,

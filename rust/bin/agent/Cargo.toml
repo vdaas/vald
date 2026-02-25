@@ -27,7 +27,7 @@ kvs = { version = "0.1.0", path = "../../libs/kvs" }
 observability = { version = "0.1.0", path = "../../libs/observability" }
 anyhow = "1.0.102"
 async-trait = "0.1"
-chrono = "0.4.43"
+chrono = "0.4.44"
 config = "0.15.19"
 flexi_logger = "0.31"
 futures = "0.3.32"

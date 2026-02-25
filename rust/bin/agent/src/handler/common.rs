@@ -306,7 +306,9 @@ mod tests {
             &self,
             _: Request<list::Request>,
         ) -> Result<Response<Self::StreamListObjectStream>, Status> {
-            Err(Status::unimplemented("stream_list_object is not implemented"))
+            Err(Status::unimplemented(
+                "stream_list_object is not implemented",
+            ))
         }
 
         async fn exists(&self, _: Request<Id>) -> Result<Response<Id>, Status> {
