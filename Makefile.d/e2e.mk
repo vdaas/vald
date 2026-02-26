@@ -201,10 +201,11 @@ e2e/actions/run/stream/crud/skip: \
 e2e/v2/actions/run/unary/crud: \
 	hack/benchmark/assets/dataset/$(E2E_DATASET_NAME) \
 	k3d/restart
+	sleep 10
 	kubectl wait -n kube-system --for=condition=Available deployment/metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	sleep 2
-	kubectl wait -n kube-system --for=condition=Ready pod -l app.kubernetes.io/name=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	kubectl wait -n kube-system --for=condition=ContainersReady pod -l app.kubernetes.io/name=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
+	kubectl wait -n kube-system --for=condition=Ready pod -l k8s-app=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
+	kubectl wait -n kube-system --for=condition=ContainersReady pod -l k8s-app=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	$(MAKE) k8s/vald/deploy \
 	VERSION=$(VERSION) \
 	HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-lb.yaml

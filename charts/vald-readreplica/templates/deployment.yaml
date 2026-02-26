@@ -15,6 +15,9 @@
 #
 {{- $values := .Values -}}
 {{- $agent := .Values.agent -}}
+{{- $algorithmConfig := index $agent (lower $agent.algorithm) -}}
+{{- $enableInMemoryMode := $algorithmConfig.enable_in_memory_mode -}}
+{{- $indexPath := $algorithmConfig.index_path -}}
 {{- $readreplica := .Values.agent.readreplica -}}
 {{- $defaults := .Values.defaults -}}
 {{- $release := .Release -}}
@@ -112,15 +115,15 @@ spec:
           volumeMounts:
             - name: {{ $readreplica.name }}-config
               mountPath: /etc/server/
-            {{- if not $agent.ngt.enable_in_memory_mode }}
-            {{- if $agent.ngt.index_path }}
+            {{- if not $enableInMemoryMode }}
+            {{- if $indexPath }}
             {{- if $agent.persistentVolume.enabled }}
             - name: {{ $readreplica.volume_name }}
-              mountPath: {{ dir $agent.ngt.index_path }}
+              mountPath: {{ dir $indexPath }}
               mountPropagation: {{ $agent.persistentVolume.mountPropagation }}
             {{- else }}
             - name: {{ $agent.name }}-local
-              mountPath: {{ dir $agent.ngt.index_path }}
+              mountPath: {{ dir $indexPath }}
             {{- end }}
             {{- end }}
             {{- end }}

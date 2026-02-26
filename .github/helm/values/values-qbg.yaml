@@ -55,7 +55,7 @@ agent:
     data_type: "float"
     internal_data_type: "float"
     distance_type: "l2"
-    enable_in_memory_mode: true
+    enable_in_memory_mode: false
 discoverer:
   minReplicas: 1
   hpa:

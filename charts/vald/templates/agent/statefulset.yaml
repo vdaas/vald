@@ -14,6 +14,9 @@
 # limitations under the License.
 #
 {{- $agent := .Values.agent -}}
+{{- $algorithmConfig := index $agent (lower $agent.algorithm) -}}
+{{- $enableInMemoryMode := $algorithmConfig.enable_in_memory_mode -}}
+{{- $indexPath := $algorithmConfig.index_path -}}
 {{- if and $agent.enabled (eq $agent.kind "StatefulSet") }}
 apiVersion: apps/v1
 kind: StatefulSet
@@ -101,17 +104,15 @@ spec:
           volumeMounts:
             - name: {{ $agent.sidecar.name }}-config
               mountPath: /etc/server/
-            {{- if eq $agent.algorithm "ngt" }}
-            {{- if not $agent.ngt.enable_in_memory_mode }}
-            {{- if $agent.ngt.index_path }}
+            {{- if not $enableInMemoryMode }}
+            {{- if $indexPath }}
             {{- if $agent.persistentVolume.enabled }}
             - name: {{ $agent.name }}-pvc
-              mountPath: {{ dir $agent.ngt.index_path }}
+              mountPath: {{ dir $indexPath }}
               mountPropagation: {{ $agent.persistentVolume.mountPropagation }}
             {{- else }}
             - name: {{ $agent.name }}-local
-              mountPath: {{ dir $agent.ngt.index_path }}
-            {{- end }}
+              mountPath: {{ dir $indexPath }}
             {{- end }}
             {{- end }}
             {{- end }}
@@ -147,15 +148,15 @@ spec:
           volumeMounts:
             - name: {{ $agent.name }}-config
               mountPath: /etc/server/
-            {{- if not $agent.ngt.enable_in_memory_mode }}
-            {{- if $agent.ngt.index_path }}
+            {{- if not $enableInMemoryMode }}
+            {{- if $indexPath }}
             {{- if $agent.persistentVolume.enabled }}
             - name: {{ $agent.name }}-pvc
-              mountPath: {{ dir $agent.ngt.index_path }}
+              mountPath: {{ dir $indexPath }}
               mountPropagation: {{ $agent.persistentVolume.mountPropagation }}
             {{- else }}
             - name: {{ $agent.name }}-local
-              mountPath: {{ dir $agent.ngt.index_path }}
+              mountPath: {{ dir $indexPath }}
             {{- end }}
             {{- end }}
             {{- end }}
@@ -185,15 +186,15 @@ spec:
           volumeMounts:
             - name: {{ $agent.sidecar.name }}-config
               mountPath: /etc/server/
-            {{- if not $agent.ngt.enable_in_memory_mode }}
-            {{- if $agent.ngt.index_path }}
+            {{- if not $enableInMemoryMode }}
+            {{- if $indexPath }}
             {{- if $agent.persistentVolume.enabled }}
             - name: {{ $agent.name }}-pvc
-              mountPath: {{ dir $agent.ngt.index_path }}
+              mountPath: {{ dir $indexPath }}
               mountPropagation: {{ $agent.persistentVolume.mountPropagation }}
             {{- else }}
             - name: {{ $agent.name }}-local
-              mountPath: {{ dir $agent.ngt.index_path }}
+              mountPath: {{ dir $indexPath }}
             {{- end }}
             {{- end }}
             {{- end }}
@@ -223,8 +224,8 @@ spec:
             defaultMode: 420
             name: {{ $agent.sidecar.name }}-config
         {{- end }}
-        {{- if not $agent.ngt.enable_in_memory_mode }}
-        {{- if $agent.ngt.index_path }}
+        {{- if not $enableInMemoryMode }}
+        {{- if $indexPath }}
         {{- if not $agent.persistentVolume.enabled }}
         - name: {{ $agent.name }}-local
           emptyDir: {}
@@ -250,8 +251,8 @@ spec:
       priorityClassName: {{ .Release.Namespace }}-{{ $agent.name }}-priority
       {{- end }}
       {{- end }}
-  {{- if not $agent.ngt.enable_in_memory_mode }}
-  {{- if $agent.ngt.index_path }}
+  {{- if not $enableInMemoryMode }}
+  {{- if $indexPath }}
   {{- if $agent.persistentVolume.enabled }}
   volumeClaimTemplates:
     - metadata:
