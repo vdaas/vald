@@ -23,12 +23,12 @@ edition = "2024"
 [dependencies]
 algorithm = { version = "0.1.0", path = "../../libs/algorithm" }
 qbg = { version = "0.1.0", path = "../../libs/algorithms/qbg" }
-anyhow = "1.0.101"
+anyhow = "1.0.102"
 cargo = "0.94.0"
-chrono = "0.4.43"
+chrono = "0.4.44"
 config = "0.15.19"
 flexi_logger = "0.31"
-futures = "0.3.31"
+futures = "0.3.32"
 http = "1.4.0"
 log = "0.4"
 opentelemetry = { version = "0.31.0" }
@@ -37,8 +37,8 @@ prost-types = "0.14.3"
 proto = { version = "0.1.0", path = "../../libs/proto" }
 tokio = { version = "1.49.0", features = ["full"] }
 tokio-stream = { version = "0.1.18", features = ["full"] }
-tonic = "0.14.3"
-tonic-types = "0.14.3"
+tonic = "0.14.5"
+tonic-types = "0.14.5"
 tower = "0.5.3"
 
 [dev-dependencies]

@@ -554,7 +554,7 @@ pub mod update {
         #[prost(bool, tag = "3")]
         pub force: bool,
         /// The metadata is related to the request vector.
-        #[prost(bytes="vec", optional, tag="4")]
+        #[prost(bytes = "vec", optional, tag = "4")]
         pub metadata: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
     }
     impl ::prost::Name for TimestampRequest {
@@ -951,7 +951,7 @@ pub mod object {
         #[prost(float, tag = "2")]
         pub distance: f32,
         /// The metadata is related to the request vector.
-        #[prost(bytes="vec", optional, tag="3")]
+        #[prost(bytes = "vec", optional, tag = "3")]
         pub metadata: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
     }
     impl ::prost::Name for Distance {
@@ -1037,7 +1037,7 @@ pub mod object {
         #[prost(int64, tag = "3")]
         pub timestamp: i64,
         /// The metadata is related to the request vector.
-        #[prost(bytes="vec", optional, tag="4")]
+        #[prost(bytes = "vec", optional, tag = "4")]
         pub metadata: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
     }
     impl ::prost::Name for Vector {

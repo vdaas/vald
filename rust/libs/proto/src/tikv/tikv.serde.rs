@@ -2174,10 +2174,7 @@ impl<'de> serde::Deserialize<'de> for EpochNotMatch {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[
-            "current_regions",
-            "currentRegions",
-        ];
+        const FIELDS: &[&str] = &["current_regions", "currentRegions"];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -2206,7 +2203,9 @@ impl<'de> serde::Deserialize<'de> for EpochNotMatch {
                         E: serde::de::Error,
                     {
                         match value {
-                            "currentRegions" | "current_regions" => Ok(GeneratedField::CurrentRegions),
+                            "currentRegions" | "current_regions" => {
+                                Ok(GeneratedField::CurrentRegions)
+                            }
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -5679,11 +5678,7 @@ impl<'de> serde::Deserialize<'de> for NotLeader {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[
-            "region_id",
-            "regionId",
-            "leader",
-        ];
+        const FIELDS: &[&str] = &["region_id", "regionId", "leader"];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {

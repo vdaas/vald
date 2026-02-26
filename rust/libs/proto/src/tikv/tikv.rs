@@ -22,7 +22,7 @@ pub struct NotLeader {
     #[prost(uint64, tag = "1")]
     pub region_id: u64,
     /// Region leader of the requested region
-    #[prost(message, optional, tag="2")]
+    #[prost(message, optional, tag = "2")]
     pub leader: ::core::option::Option<super::metapb::Peer>,
 }
 impl ::prost::Name for NotLeader {
@@ -181,7 +181,7 @@ impl ::prost::Name for KeyNotInRegion {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct EpochNotMatch {
     /// Available regions that may be siblings of the requested one.
-    #[prost(message, repeated, tag="1")]
+    #[prost(message, repeated, tag = "1")]
     pub current_regions: ::prost::alloc::vec::Vec<super::metapb::Region2>,
 }
 impl ::prost::Name for EpochNotMatch {
@@ -737,11 +737,11 @@ impl ::prost::Name for RawBatchDeleteResponse {
 pub struct Context {
     #[prost(uint64, tag = "1")]
     pub region_id: u64,
-    #[prost(message, optional, tag="2")]
+    #[prost(message, optional, tag = "2")]
     pub region_epoch: ::core::option::Option<super::metapb::RegionEpoch>,
-    #[prost(message, optional, tag="3")]
+    #[prost(message, optional, tag = "3")]
     pub peer: ::core::option::Option<super::metapb::Peer>,
-    #[prost(uint64, tag="5")]
+    #[prost(uint64, tag = "5")]
     pub term: u64,
     #[prost(enumeration = "CommandPri", tag = "6")]
     pub priority: i32,

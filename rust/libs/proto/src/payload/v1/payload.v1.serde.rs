@@ -6919,11 +6919,7 @@ impl<'de> serde::Deserialize<'de> for object::Distance {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[
-            "id",
-            "distance",
-            "metadata",
-        ];
+        const FIELDS: &[&str] = &["id", "distance", "metadata"];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -8511,12 +8507,7 @@ impl<'de> serde::Deserialize<'de> for object::Vector {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[
-            "id",
-            "vector",
-            "timestamp",
-            "metadata",
-        ];
+        const FIELDS: &[&str] = &["id", "vector", "timestamp", "metadata"];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -11622,7 +11613,8 @@ impl serde::Serialize for update::TimestampRequest {
         if self.metadata.is_some() {
             len += 1;
         }
-        let mut struct_ser = serializer.serialize_struct("payload.v1.Update.TimestampRequest", len)?;
+        let mut struct_ser =
+            serializer.serialize_struct("payload.v1.Update.TimestampRequest", len)?;
         if !self.id.is_empty() {
             struct_ser.serialize_field("id", &self.id)?;
         }
@@ -11649,12 +11641,7 @@ impl<'de> serde::Deserialize<'de> for update::TimestampRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[
-            "id",
-            "timestamp",
-            "force",
-            "metadata",
-        ];
+        const FIELDS: &[&str] = &["id", "timestamp", "force", "metadata"];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {

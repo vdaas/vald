@@ -212,6 +212,8 @@ apis/grpc/v1/rpc/errdetails/error_details.pb.json.go
 apis/grpc/v1/rpc/errdetails/error_details_vtproto.pb.go
 apis/grpc/v1/rpc/stats/stats.pb.go
 apis/grpc/v1/rpc/stats/stats_vtproto.pb.go
+apis/grpc/v1/tikv/errorpb.pb.go
+apis/grpc/v1/tikv/kvrpcpb.pb.go
 apis/grpc/v1/vald/filter.pb.go
 apis/grpc/v1/vald/filter_vtproto.pb.go
 apis/grpc/v1/vald/flush.pb.go
@@ -263,6 +265,7 @@ apis/swagger/v1/mirror/mirror.swagger.json
 apis/swagger/v1/payload/payload.swagger.json
 apis/swagger/v1/rpc/errdetails/error_details.swagger.json
 apis/swagger/v1/rpc/stats/stats.swagger.json
+apis/swagger/v1/tikv/tikvpb.swagger.json
 apis/swagger/v1/vald/filter.swagger.json
 apis/swagger/v1/vald/flush.swagger.json
 apis/swagger/v1/vald/index.swagger.json
@@ -2423,6 +2426,7 @@ tests/v2/e2e/assets/readreplica.yaml
 tests/v2/e2e/assets/rollout.yaml
 tests/v2/e2e/assets/stream_crud.yaml
 tests/v2/e2e/assets/unary_crud.yaml
+tests/v2/e2e/assets/unary_crud_meta.yaml
 tests/v2/e2e/config/config.go
 tests/v2/e2e/config/enums.go
 tests/v2/e2e/crud/agent_test.go

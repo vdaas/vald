@@ -19,10 +19,10 @@ pub mod tikv_client {
         dead_code,
         missing_docs,
         clippy::wildcard_imports,
-        clippy::let_unit_value,
+        clippy::let_unit_value
     )]
-    use tonic::codegen::*;
     use tonic::codegen::http::Uri;
+    use tonic::codegen::*;
     #[derive(Debug, Clone)]
     pub struct TikvClient<T> {
         inner: tonic::client::Grpc<T>,
@@ -53,22 +53,18 @@ pub mod tikv_client {
             let inner = tonic::client::Grpc::with_origin(inner, origin);
             Self { inner }
         }
-        pub fn with_interceptor<F>(
-            inner: T,
-            interceptor: F,
-        ) -> TikvClient<InterceptedService<T, F>>
+        pub fn with_interceptor<F>(inner: T, interceptor: F) -> TikvClient<InterceptedService<T, F>>
         where
             F: tonic::service::Interceptor,
             T::ResponseBody: Default,
             T: tonic::codegen::Service<
-                http::Request<tonic::body::Body>,
-                Response = http::Response<
-                    <T as tonic::client::GrpcService<tonic::body::Body>>::ResponseBody,
+                    http::Request<tonic::body::Body>,
+                    Response = http::Response<
+                        <T as tonic::client::GrpcService<tonic::body::Body>>::ResponseBody,
+                    >,
                 >,
-            >,
-            <T as tonic::codegen::Service<
-                http::Request<tonic::body::Body>,
-            >>::Error: Into<StdError> + std::marker::Send + std::marker::Sync,
+            <T as tonic::codegen::Service<http::Request<tonic::body::Body>>>::Error:
+                Into<StdError> + std::marker::Send + std::marker::Sync,
         {
             TikvClient::new(InterceptedService::new(inner, interceptor))
         }
@@ -107,22 +103,16 @@ pub mod tikv_client {
         pub async fn raw_get(
             &mut self,
             request: impl tonic::IntoRequest<super::super::tikv::RawGetRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::super::tikv::RawGetResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::super::tikv::RawGetResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/tikvpb.Tikv/RawGet");
             let mut req = request.into_request();
-            req.extensions_mut().insert(GrpcMethod::new("tikvpb.Tikv", "RawGet"));
+            req.extensions_mut()
+                .insert(GrpcMethod::new("tikvpb.Tikv", "RawGet"));
             self.inner.unary(req, path, codec).await
         }
         ///
@@ -133,40 +123,30 @@ pub mod tikv_client {
             tonic::Response<super::super::tikv::RawBatchGetResponse>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/tikvpb.Tikv/RawBatchGet");
             let mut req = request.into_request();
-            req.extensions_mut().insert(GrpcMethod::new("tikvpb.Tikv", "RawBatchGet"));
+            req.extensions_mut()
+                .insert(GrpcMethod::new("tikvpb.Tikv", "RawBatchGet"));
             self.inner.unary(req, path, codec).await
         }
         ///
         pub async fn raw_put(
             &mut self,
             request: impl tonic::IntoRequest<super::super::tikv::RawPutRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::super::tikv::RawPutResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::super::tikv::RawPutResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/tikvpb.Tikv/RawPut");
             let mut req = request.into_request();
-            req.extensions_mut().insert(GrpcMethod::new("tikvpb.Tikv", "RawPut"));
+            req.extensions_mut()
+                .insert(GrpcMethod::new("tikvpb.Tikv", "RawPut"));
             self.inner.unary(req, path, codec).await
         }
         ///
@@ -177,18 +157,14 @@ pub mod tikv_client {
             tonic::Response<super::super::tikv::RawBatchPutResponse>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/tikvpb.Tikv/RawBatchPut");
             let mut req = request.into_request();
-            req.extensions_mut().insert(GrpcMethod::new("tikvpb.Tikv", "RawBatchPut"));
+            req.extensions_mut()
+                .insert(GrpcMethod::new("tikvpb.Tikv", "RawBatchPut"));
             self.inner.unary(req, path, codec).await
         }
         ///
@@ -199,18 +175,14 @@ pub mod tikv_client {
             tonic::Response<super::super::tikv::RawDeleteResponse>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/tikvpb.Tikv/RawDelete");
             let mut req = request.into_request();
-            req.extensions_mut().insert(GrpcMethod::new("tikvpb.Tikv", "RawDelete"));
+            req.extensions_mut()
+                .insert(GrpcMethod::new("tikvpb.Tikv", "RawDelete"));
             self.inner.unary(req, path, codec).await
         }
         ///
@@ -221,18 +193,11 @@ pub mod tikv_client {
             tonic::Response<super::super::tikv::RawBatchDeleteResponse>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic_prost::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/tikvpb.Tikv/RawBatchDelete",
-            );
+            let path = http::uri::PathAndQuery::from_static("/tikvpb.Tikv/RawBatchDelete");
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(GrpcMethod::new("tikvpb.Tikv", "RawBatchDelete"));
@@ -247,7 +212,7 @@ pub mod tikv_server {
         dead_code,
         missing_docs,
         clippy::wildcard_imports,
-        clippy::let_unit_value,
+        clippy::let_unit_value
     )]
     use tonic::codegen::*;
     /// Generated trait containing gRPC methods that should be implemented for use with TikvServer.
@@ -257,10 +222,7 @@ pub mod tikv_server {
         async fn raw_get(
             &self,
             request: tonic::Request<super::super::tikv::RawGetRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::super::tikv::RawGetResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::super::tikv::RawGetResponse>, tonic::Status>;
         ///
         async fn raw_batch_get(
             &self,
@@ -273,10 +235,7 @@ pub mod tikv_server {
         async fn raw_put(
             &self,
             request: tonic::Request<super::super::tikv::RawPutRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::super::tikv::RawPutResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::super::tikv::RawPutResponse>, tonic::Status>;
         ///
         async fn raw_batch_put(
             &self,
@@ -323,10 +282,7 @@ pub mod tikv_server {
                 max_encoding_message_size: None,
             }
         }
-        pub fn with_interceptor<F>(
-            inner: T,
-            interceptor: F,
-        ) -> InterceptedService<Self, F>
+        pub fn with_interceptor<F>(inner: T, interceptor: F) -> InterceptedService<Self, F>
         where
             F: tonic::service::Interceptor,
         {
@@ -381,23 +337,15 @@ pub mod tikv_server {
                 "/tikvpb.Tikv/RawGet" => {
                     #[allow(non_camel_case_types)]
                     struct RawGetSvc<T: Tikv>(pub Arc<T>);
-                    impl<
-                        T: Tikv,
-                    > tonic::server::UnaryService<super::super::tikv::RawGetRequest>
-                    for RawGetSvc<T> {
+                    impl<T: Tikv> tonic::server::UnaryService<super::super::tikv::RawGetRequest> for RawGetSvc<T> {
                         type Response = super::super::tikv::RawGetResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::super::tikv::RawGetRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Tikv>::raw_get(&inner, request).await
-                            };
+                            let fut = async move { <T as Tikv>::raw_get(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -426,25 +374,19 @@ pub mod tikv_server {
                 "/tikvpb.Tikv/RawBatchGet" => {
                     #[allow(non_camel_case_types)]
                     struct RawBatchGetSvc<T: Tikv>(pub Arc<T>);
-                    impl<
-                        T: Tikv,
-                    > tonic::server::UnaryService<super::super::tikv::RawBatchGetRequest>
-                    for RawBatchGetSvc<T> {
+                    impl<T: Tikv>
+                        tonic::server::UnaryService<super::super::tikv::RawBatchGetRequest>
+                        for RawBatchGetSvc<T>
+                    {
                         type Response = super::super::tikv::RawBatchGetResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
-                            request: tonic::Request<
-                                super::super::tikv::RawBatchGetRequest,
-                            >,
+                            request: tonic::Request<super::super::tikv::RawBatchGetRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Tikv>::raw_batch_get(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Tikv>::raw_batch_get(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -473,23 +415,15 @@ pub mod tikv_server {
                 "/tikvpb.Tikv/RawPut" => {
                     #[allow(non_camel_case_types)]
                     struct RawPutSvc<T: Tikv>(pub Arc<T>);
-                    impl<
-                        T: Tikv,
-                    > tonic::server::UnaryService<super::super::tikv::RawPutRequest>
-                    for RawPutSvc<T> {
+                    impl<T: Tikv> tonic::server::UnaryService<super::super::tikv::RawPutRequest> for RawPutSvc<T> {
                         type Response = super::super::tikv::RawPutResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::super::tikv::RawPutRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Tikv>::raw_put(&inner, request).await
-                            };
+                            let fut = async move { <T as Tikv>::raw_put(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -518,25 +452,19 @@ pub mod tikv_server {
                 "/tikvpb.Tikv/RawBatchPut" => {
                     #[allow(non_camel_case_types)]
                     struct RawBatchPutSvc<T: Tikv>(pub Arc<T>);
-                    impl<
-                        T: Tikv,
-                    > tonic::server::UnaryService<super::super::tikv::RawBatchPutRequest>
-                    for RawBatchPutSvc<T> {
+                    impl<T: Tikv>
+                        tonic::server::UnaryService<super::super::tikv::RawBatchPutRequest>
+                        for RawBatchPutSvc<T>
+                    {
                         type Response = super::super::tikv::RawBatchPutResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
-                            request: tonic::Request<
-                                super::super::tikv::RawBatchPutRequest,
-                            >,
+                            request: tonic::Request<super::super::tikv::RawBatchPutRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Tikv>::raw_batch_put(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Tikv>::raw_batch_put(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -565,23 +493,17 @@ pub mod tikv_server {
                 "/tikvpb.Tikv/RawDelete" => {
                     #[allow(non_camel_case_types)]
                     struct RawDeleteSvc<T: Tikv>(pub Arc<T>);
-                    impl<
-                        T: Tikv,
-                    > tonic::server::UnaryService<super::super::tikv::RawDeleteRequest>
-                    for RawDeleteSvc<T> {
+                    impl<T: Tikv> tonic::server::UnaryService<super::super::tikv::RawDeleteRequest>
+                        for RawDeleteSvc<T>
+                    {
                         type Response = super::super::tikv::RawDeleteResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::super::tikv::RawDeleteRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Tikv>::raw_delete(&inner, request).await
-                            };
+                            let fut = async move { <T as Tikv>::raw_delete(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -610,26 +532,19 @@ pub mod tikv_server {
                 "/tikvpb.Tikv/RawBatchDelete" => {
                     #[allow(non_camel_case_types)]
                     struct RawBatchDeleteSvc<T: Tikv>(pub Arc<T>);
-                    impl<
-                        T: Tikv,
-                    > tonic::server::UnaryService<
-                        super::super::tikv::RawBatchDeleteRequest,
-                    > for RawBatchDeleteSvc<T> {
+                    impl<T: Tikv>
+                        tonic::server::UnaryService<super::super::tikv::RawBatchDeleteRequest>
+                        for RawBatchDeleteSvc<T>
+                    {
                         type Response = super::super::tikv::RawBatchDeleteResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
-                            request: tonic::Request<
-                                super::super::tikv::RawBatchDeleteRequest,
-                            >,
+                            request: tonic::Request<super::super::tikv::RawBatchDeleteRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Tikv>::raw_batch_delete(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Tikv>::raw_batch_delete(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -655,25 +570,19 @@ pub mod tikv_server {
                     };
                     Box::pin(fut)
                 }
-                _ => {
-                    Box::pin(async move {
-                        let mut response = http::Response::new(
-                            tonic::body::Body::default(),
-                        );
-                        let headers = response.headers_mut();
-                        headers
-                            .insert(
-                                tonic::Status::GRPC_STATUS,
-                                (tonic::Code::Unimplemented as i32).into(),
-                            );
-                        headers
-                            .insert(
-                                http::header::CONTENT_TYPE,
-                                tonic::metadata::GRPC_CONTENT_TYPE,
-                            );
-                        Ok(response)
-                    })
-                }
+                _ => Box::pin(async move {
+                    let mut response = http::Response::new(tonic::body::Body::default());
+                    let headers = response.headers_mut();
+                    headers.insert(
+                        tonic::Status::GRPC_STATUS,
+                        (tonic::Code::Unimplemented as i32).into(),
+                    );
+                    headers.insert(
+                        http::header::CONTENT_TYPE,
+                        tonic::metadata::GRPC_CONTENT_TYPE,
+                    );
+                    Ok(response)
+                }),
             }
         }
     }

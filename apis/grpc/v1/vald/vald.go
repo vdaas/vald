@@ -225,19 +225,19 @@ func RegisterValdServerWithFilter(s *grpc.Server, srv ServerWithFilter) {
 
 func NewValdClient(conn *grpc.ClientConn) Client {
 	return &client{
-		FlushClient:  NewFlushClient(conn),
-		IndexClient:  NewIndexClient(conn),
-		InsertClient: NewInsertClient(conn),
+		FlushClient:              NewFlushClient(conn),
+		IndexClient:              NewIndexClient(conn),
+		InsertClient:             NewInsertClient(conn),
 		InsertWithMetadataClient: NewInsertWithMetadataClient(conn),
-		ObjectClient: NewObjectClient(conn),
+		ObjectClient:             NewObjectClient(conn),
 		ObjectWithMetadataClient: NewObjectWithMetadataClient(conn),
-		RemoveClient: NewRemoveClient(conn),
+		RemoveClient:             NewRemoveClient(conn),
 		RemoveWithMetadataClient: NewRemoveWithMetadataClient(conn),
-		SearchClient: NewSearchClient(conn),
+		SearchClient:             NewSearchClient(conn),
 		SearchWithMetadataClient: NewSearchWithMetadataClient(conn),
-		UpdateClient: NewUpdateClient(conn),
+		UpdateClient:             NewUpdateClient(conn),
 		UpdateWithMetadataClient: NewUpdateWithMetadataClient(conn),
-		UpsertClient: NewUpsertClient(conn),
+		UpsertClient:             NewUpsertClient(conn),
 		UpsertWithMetadataClient: NewUpsertWithMetadataClient(conn),
 	}
 }

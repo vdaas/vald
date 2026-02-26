@@ -53,13 +53,7 @@ impl<'de> serde::Deserialize<'de> for Peer {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[
-            "id",
-            "store_id",
-            "storeId",
-            "is_witness",
-            "isWitness",
-        ];
+        const FIELDS: &[&str] = &["id", "store_id", "storeId", "is_witness", "isWitness"];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -77,7 +71,10 @@ impl<'de> serde::Deserialize<'de> for Peer {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                    fn expecting(
+                        &self,
+                        formatter: &mut std::fmt::Formatter<'_>,
+                    ) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -106,8 +103,8 @@ impl<'de> serde::Deserialize<'de> for Peer {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<Peer, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
+            where
+                V: serde::de::MapAccess<'de>,
             {
                 let mut id__ = None;
                 let mut store_id__ = None;
@@ -118,17 +115,19 @@ impl<'de> serde::Deserialize<'de> for Peer {
                             if id__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("id"));
                             }
-                            id__ = 
-                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
-                            ;
+                            id__ = Some(
+                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
+                                    .0,
+                            );
                         }
                         GeneratedField::StoreId => {
                             if store_id__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("storeId"));
                             }
-                            store_id__ = 
-                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
-                            ;
+                            store_id__ = Some(
+                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
+                                    .0,
+                            );
                         }
                         GeneratedField::IsWitness => {
                             if is_witness__.is_some() {
@@ -186,12 +185,18 @@ impl serde::Serialize for Region2 {
         if !self.start_key.is_empty() {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field("startKey", pbjson::private::base64::encode(&self.start_key).as_str())?;
+            struct_ser.serialize_field(
+                "startKey",
+                pbjson::private::base64::encode(&self.start_key).as_str(),
+            )?;
         }
         if !self.end_key.is_empty() {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field("endKey", pbjson::private::base64::encode(&self.end_key).as_str())?;
+            struct_ser.serialize_field(
+                "endKey",
+                pbjson::private::base64::encode(&self.end_key).as_str(),
+            )?;
         }
         if let Some(v) = self.region_epoch.as_ref() {
             struct_ser.serialize_field("regionEpoch", v)?;
@@ -205,7 +210,10 @@ impl serde::Serialize for Region2 {
         if self.flashback_start_ts != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field("flashbackStartTs", ToString::to_string(&self.flashback_start_ts).as_str())?;
+            struct_ser.serialize_field(
+                "flashbackStartTs",
+                ToString::to_string(&self.flashback_start_ts).as_str(),
+            )?;
         }
         struct_ser.end()
     }
@@ -251,7 +259,10 @@ impl<'de> serde::Deserialize<'de> for Region2 {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                    fn expecting(
+                        &self,
+                        formatter: &mut std::fmt::Formatter<'_>,
+                    ) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -266,8 +277,12 @@ impl<'de> serde::Deserialize<'de> for Region2 {
                             "endKey" | "end_key" => Ok(GeneratedField::EndKey),
                             "regionEpoch" | "region_epoch" => Ok(GeneratedField::RegionEpoch),
                             "peers" => Ok(GeneratedField::Peers),
-                            "isInFlashback" | "is_in_flashback" => Ok(GeneratedField::IsInFlashback),
-                            "flashbackStartTs" | "flashback_start_ts" => Ok(GeneratedField::FlashbackStartTs),
+                            "isInFlashback" | "is_in_flashback" => {
+                                Ok(GeneratedField::IsInFlashback)
+                            }
+                            "flashbackStartTs" | "flashback_start_ts" => {
+                                Ok(GeneratedField::FlashbackStartTs)
+                            }
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -284,8 +299,8 @@ impl<'de> serde::Deserialize<'de> for Region2 {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<Region2, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
+            where
+                V: serde::de::MapAccess<'de>,
             {
                 let mut id__ = None;
                 let mut start_key__ = None;
@@ -300,25 +315,28 @@ impl<'de> serde::Deserialize<'de> for Region2 {
                             if id__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("id"));
                             }
-                            id__ = 
-                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
-                            ;
+                            id__ = Some(
+                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
+                                    .0,
+                            );
                         }
                         GeneratedField::StartKey => {
                             if start_key__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("startKey"));
                             }
-                            start_key__ = 
-                                Some(map_.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
-                            ;
+                            start_key__ = Some(
+                                map_.next_value::<::pbjson::private::BytesDeserialize<_>>()?
+                                    .0,
+                            );
                         }
                         GeneratedField::EndKey => {
                             if end_key__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("endKey"));
                             }
-                            end_key__ = 
-                                Some(map_.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
-                            ;
+                            end_key__ = Some(
+                                map_.next_value::<::pbjson::private::BytesDeserialize<_>>()?
+                                    .0,
+                            );
                         }
                         GeneratedField::RegionEpoch => {
                             if region_epoch__.is_some() {
@@ -342,9 +360,10 @@ impl<'de> serde::Deserialize<'de> for Region2 {
                             if flashback_start_ts__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("flashbackStartTs"));
                             }
-                            flashback_start_ts__ = 
-                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
-                            ;
+                            flashback_start_ts__ = Some(
+                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
+                                    .0,
+                            );
                         }
                     }
                 }
@@ -396,11 +415,7 @@ impl<'de> serde::Deserialize<'de> for RegionEpoch {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[
-            "conf_ver",
-            "confVer",
-            "version",
-        ];
+        const FIELDS: &[&str] = &["conf_ver", "confVer", "version"];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -417,7 +432,10 @@ impl<'de> serde::Deserialize<'de> for RegionEpoch {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                    fn expecting(
+                        &self,
+                        formatter: &mut std::fmt::Formatter<'_>,
+                    ) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -445,8 +463,8 @@ impl<'de> serde::Deserialize<'de> for RegionEpoch {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<RegionEpoch, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
+            where
+                V: serde::de::MapAccess<'de>,
             {
                 let mut conf_ver__ = None;
                 let mut version__ = None;
@@ -456,17 +474,19 @@ impl<'de> serde::Deserialize<'de> for RegionEpoch {
                             if conf_ver__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("confVer"));
                             }
-                            conf_ver__ = 
-                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
-                            ;
+                            conf_ver__ = Some(
+                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
+                                    .0,
+                            );
                         }
                         GeneratedField::Version => {
                             if version__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("version"));
                             }
-                            version__ = 
-                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
-                            ;
+                            version__ = Some(
+                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
+                                    .0,
+                            );
                         }
                     }
                 }
@@ -530,8 +550,9 @@ impl serde::Serialize for Store {
             struct_ser.serialize_field("address", &self.address)?;
         }
         if self.state != 0 {
-            let v = StoreState::try_from(self.state)
-                .map_err(|_| serde::ser::Error::custom(format!("Invalid variant {}", self.state)))?;
+            let v = StoreState::try_from(self.state).map_err(|_| {
+                serde::ser::Error::custom(format!("Invalid variant {}", self.state))
+            })?;
             struct_ser.serialize_field("state", &v)?;
         }
         if !self.version.is_empty() {
@@ -549,7 +570,10 @@ impl serde::Serialize for Store {
         if self.start_timestamp != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field("startTimestamp", ToString::to_string(&self.start_timestamp).as_str())?;
+            struct_ser.serialize_field(
+                "startTimestamp",
+                ToString::to_string(&self.start_timestamp).as_str(),
+            )?;
         }
         if !self.deploy_path.is_empty() {
             struct_ser.serialize_field("deployPath", &self.deploy_path)?;
@@ -557,7 +581,10 @@ impl serde::Serialize for Store {
         if self.last_heartbeat != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field("lastHeartbeat", ToString::to_string(&self.last_heartbeat).as_str())?;
+            struct_ser.serialize_field(
+                "lastHeartbeat",
+                ToString::to_string(&self.last_heartbeat).as_str(),
+            )?;
         }
         if self.physically_destroyed {
             struct_ser.serialize_field("physicallyDestroyed", &self.physically_destroyed)?;
@@ -616,7 +643,10 @@ impl<'de> serde::Deserialize<'de> for Store {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                    fn expecting(
+                        &self,
+                        formatter: &mut std::fmt::Formatter<'_>,
+                    ) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -633,10 +663,14 @@ impl<'de> serde::Deserialize<'de> for Store {
                             "peerAddress" | "peer_address" => Ok(GeneratedField::PeerAddress),
                             "statusAddress" | "status_address" => Ok(GeneratedField::StatusAddress),
                             "gitHash" | "git_hash" => Ok(GeneratedField::GitHash),
-                            "startTimestamp" | "start_timestamp" => Ok(GeneratedField::StartTimestamp),
+                            "startTimestamp" | "start_timestamp" => {
+                                Ok(GeneratedField::StartTimestamp)
+                            }
                             "deployPath" | "deploy_path" => Ok(GeneratedField::DeployPath),
                             "lastHeartbeat" | "last_heartbeat" => Ok(GeneratedField::LastHeartbeat),
-                            "physicallyDestroyed" | "physically_destroyed" => Ok(GeneratedField::PhysicallyDestroyed),
+                            "physicallyDestroyed" | "physically_destroyed" => {
+                                Ok(GeneratedField::PhysicallyDestroyed)
+                            }
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -653,8 +687,8 @@ impl<'de> serde::Deserialize<'de> for Store {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<Store, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
+            where
+                V: serde::de::MapAccess<'de>,
             {
                 let mut id__ = None;
                 let mut address__ = None;
@@ -673,9 +707,10 @@ impl<'de> serde::Deserialize<'de> for Store {
                             if id__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("id"));
                             }
-                            id__ = 
-                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
-                            ;
+                            id__ = Some(
+                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
+                                    .0,
+                            );
                         }
                         GeneratedField::Address => {
                             if address__.is_some() {
@@ -717,9 +752,10 @@ impl<'de> serde::Deserialize<'de> for Store {
                             if start_timestamp__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("startTimestamp"));
                             }
-                            start_timestamp__ = 
-                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
-                            ;
+                            start_timestamp__ = Some(
+                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
+                                    .0,
+                            );
                         }
                         GeneratedField::DeployPath => {
                             if deploy_path__.is_some() {
@@ -731,13 +767,16 @@ impl<'de> serde::Deserialize<'de> for Store {
                             if last_heartbeat__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("lastHeartbeat"));
                             }
-                            last_heartbeat__ = 
-                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
-                            ;
+                            last_heartbeat__ = Some(
+                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
+                                    .0,
+                            );
                         }
                         GeneratedField::PhysicallyDestroyed => {
                             if physically_destroyed__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("physicallyDestroyed"));
+                                return Err(serde::de::Error::duplicate_field(
+                                    "physicallyDestroyed",
+                                ));
                             }
                             physically_destroyed__ = Some(map_.next_value()?);
                         }
@@ -781,11 +820,7 @@ impl<'de> serde::Deserialize<'de> for StoreState {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[
-            "Up",
-            "Offline",
-            "Tombstone",
-        ];
+        const FIELDS: &[&str] = &["Up", "Offline", "Tombstone"];
 
         struct GeneratedVisitor;
 
