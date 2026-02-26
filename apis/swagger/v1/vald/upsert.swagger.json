@@ -80,6 +80,21 @@
     }
   },
   "definitions": {
+    "FilterTarget": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "The target hostname."
+        },
+        "port": {
+          "type": "integer",
+          "format": "int64",
+          "description": "The target port."
+        }
+      },
+      "description": "Represent the target filter server."
+    },
     "ObjectLocations": {
       "type": "object",
       "properties": {
@@ -120,6 +135,34 @@
         }
       },
       "description": "Represent a vector."
+    },
+    "UpsertMultiRequest": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/UpsertRequest"
+          },
+          "description": "Represent the multiple upsert request content."
+        }
+      },
+      "description": "Represent mthe ultiple upsert request."
+    },
+    "UpsertRequest": {
+      "type": "object",
+      "properties": {
+        "vector": {
+          "$ref": "#/definitions/ObjectVector",
+          "description": "The vector to be upserted."
+        },
+        "config": {
+          "$ref": "#/definitions/v1UpsertConfig",
+          "description": "The configuration of the upsert request."
+        }
+      },
+      "description": "Represent the upsert request."
     },
     "protobufAny": {
       "type": "object",
@@ -162,27 +205,12 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v1FilterTarget"
+            "$ref": "#/definitions/FilterTarget"
           },
           "description": "Represent the filter target configuration."
         }
       },
       "description": "Represent filter configuration."
-    },
-    "v1FilterTarget": {
-      "type": "object",
-      "properties": {
-        "host": {
-          "type": "string",
-          "description": "The target hostname."
-        },
-        "port": {
-          "type": "integer",
-          "format": "int64",
-          "description": "The target port."
-        }
-      },
-      "description": "Represent the target filter server."
     },
     "v1ObjectLocation": {
       "type": "object",
@@ -227,34 +255,6 @@
         }
       },
       "description": "Represent the upsert configuration."
-    },
-    "v1UpsertMultiRequest": {
-      "type": "object",
-      "properties": {
-        "requests": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1UpsertRequest"
-          },
-          "description": "Represent the multiple upsert request content."
-        }
-      },
-      "description": "Represent mthe ultiple upsert request."
-    },
-    "v1UpsertRequest": {
-      "type": "object",
-      "properties": {
-        "vector": {
-          "$ref": "#/definitions/ObjectVector",
-          "description": "The vector to be upserted."
-        },
-        "config": {
-          "$ref": "#/definitions/v1UpsertConfig",
-          "description": "The configuration of the upsert request."
-        }
-      },
-      "description": "Represent the upsert request."
     }
   }
 }

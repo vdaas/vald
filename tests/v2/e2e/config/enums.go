@@ -29,8 +29,11 @@ const (
 	OpLinearSearchByID OperationType = "linear_search_by_id"
 
 	OpInsert            OperationType = "insert"
+	OpInsertMeta        OperationType = "insert_meta"
 	OpUpdate            OperationType = "update"
+	OpUpdateMeta        OperationType = "update_meta"
 	OpUpsert            OperationType = "upsert"
+	OpUpsertMeta        OperationType = "upsert_meta"
 	OpRemove            OperationType = "remove"
 	OpRemoveByTimestamp OperationType = "remove_by_timestamp"
 

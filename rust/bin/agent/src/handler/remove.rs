@@ -86,7 +86,11 @@ async fn remove(
                             &resource_name,
                             None,
                         );
-                        let status = Status::with_error_details(Code::Aborted, "Remove API aborted to process remove request due to flushing indices is in progress", err_details);
+                        let status = Status::with_error_details(
+                            Code::Aborted,
+                            "Remove API aborted to process remove request due to flushing indices is in progress",
+                            err_details,
+                        );
                         warn!("{:?}", status);
                         status
                     }
@@ -258,7 +262,11 @@ impl remove_server::Remove for super::Agent {
                                 &resource_name,
                                 None,
                             );
-                            let status = Status::with_error_details(Code::Aborted, "MultiRemove API aborted to process remove request due to flushing indices is in progress", err_details);
+                            let status = Status::with_error_details(
+                                Code::Aborted,
+                                "MultiRemove API aborted to process remove request due to flushing indices is in progress",
+                                err_details,
+                            );
                             warn!("{:?}", status);
                             status
                         }

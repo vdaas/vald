@@ -278,6 +278,21 @@
     }
   },
   "definitions": {
+    "FilterTarget": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "The target hostname."
+        },
+        "port": {
+          "type": "integer",
+          "format": "int64",
+          "description": "The target port."
+        }
+      },
+      "description": "Represent the target filter server."
+    },
     "ObjectDistance": {
       "type": "object",
       "properties": {
@@ -338,6 +353,56 @@
       },
       "description": "Represent the multiple search by ID request."
     },
+    "SearchMultiRequest": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/SearchRequest"
+          },
+          "description": "Represent the multiple search request content."
+        }
+      },
+      "description": "Represent the multiple search request."
+    },
+    "SearchRequest": {
+      "type": "object",
+      "properties": {
+        "vector": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
+          },
+          "description": "The vector to be searched."
+        },
+        "config": {
+          "$ref": "#/definitions/v1SearchConfig",
+          "description": "The configuration of the search request."
+        }
+      },
+      "description": "Represent a search request."
+    },
+    "SearchResponse": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string",
+          "description": "The unique request ID."
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/ObjectDistance"
+          },
+          "description": "Search results."
+        }
+      },
+      "description": "Represent a search response."
+    },
     "SearchResponses": {
       "type": "object",
       "properties": {
@@ -345,7 +410,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v1SearchResponse"
+            "$ref": "#/definitions/SearchResponse"
           },
           "description": "Represent the multiple search response content."
         }
@@ -393,27 +458,12 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v1FilterTarget"
+            "$ref": "#/definitions/FilterTarget"
           },
           "description": "Represent the filter target configuration."
         }
       },
       "description": "Represent filter configuration."
-    },
-    "v1FilterTarget": {
-      "type": "object",
-      "properties": {
-        "host": {
-          "type": "string",
-          "description": "The target hostname."
-        },
-        "port": {
-          "type": "integer",
-          "format": "int64",
-          "description": "The target port."
-        }
-      },
-      "description": "Represent the target filter server."
     },
     "v1SearchConfig": {
       "type": "object",
@@ -471,56 +521,6 @@
         }
       },
       "description": "Represent search configuration."
-    },
-    "v1SearchMultiRequest": {
-      "type": "object",
-      "properties": {
-        "requests": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1SearchRequest"
-          },
-          "description": "Represent the multiple search request content."
-        }
-      },
-      "description": "Represent the multiple search request."
-    },
-    "v1SearchRequest": {
-      "type": "object",
-      "properties": {
-        "vector": {
-          "type": "array",
-          "items": {
-            "type": "number",
-            "format": "float"
-          },
-          "description": "The vector to be searched."
-        },
-        "config": {
-          "$ref": "#/definitions/v1SearchConfig",
-          "description": "The configuration of the search request."
-        }
-      },
-      "description": "Represent a search request."
-    },
-    "v1SearchResponse": {
-      "type": "object",
-      "properties": {
-        "requestId": {
-          "type": "string",
-          "description": "The unique request ID."
-        },
-        "results": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/ObjectDistance"
-          },
-          "description": "Search results."
-        }
-      },
-      "description": "Represent a search response."
     }
   }
 }

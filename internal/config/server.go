@@ -66,9 +66,9 @@ type Server struct {
 
 // HTTP represents the configuration for HTTP.
 type HTTP struct {
-	HTTP2 *HTTP2 `json:"http2"               yaml:"http2"`
+	HTTP2 *HTTP2 `json:"http2" yaml:"http2"`
 	// ShutdownDuration represents the duration for the http server to shutdown.
-	ShutdownDuration string `json:"shutdown_duration"   yaml:"shutdown_duration"`
+	ShutdownDuration string `json:"shutdown_duration" yaml:"shutdown_duration"`
 	// HandlerTimeout represents the timeout duration for http handlers.
 	HandlerTimeout    string `json:"handler_timeout"     yaml:"handler_timeout"`
 	IdleTimeout       string `json:"idle_timeout"        yaml:"idle_timeout"`
@@ -330,13 +330,13 @@ func (s *Server) Opts() []server.Option {
 
 			if s.GRPC.EnableReflection {
 				opts = append(opts,
-					server.WithGRPCRegistFunc(func(srv *grpc.Server) {
+					server.WithGRPCRegisterar(func(srv *grpc.Server) {
 						reflection.Register(srv)
 					}))
 			}
 			if s.GRPC.EnableAdmin || s.GRPC.EnableChannelz {
 				opts = append(opts,
-					server.WithGRPCRegistFunc(func(srv *grpc.Server) {
+					server.WithGRPCRegisterar(func(srv *grpc.Server) {
 						admin.Register(srv)
 					}))
 			}

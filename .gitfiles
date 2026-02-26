@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 .all-contributorsrc
+.coderabbit.yaml
 .commit_template
 .cspell.json
 .curlrc
@@ -139,6 +140,7 @@
 .gitignore
 .golangci.json
 .prh.yaml
+.semgrepignore
 .textlintrc
 .whitesource
 .yamlfmt
@@ -210,6 +212,8 @@ apis/grpc/v1/rpc/errdetails/error_details.pb.json.go
 apis/grpc/v1/rpc/errdetails/error_details_vtproto.pb.go
 apis/grpc/v1/rpc/stats/stats.pb.go
 apis/grpc/v1/rpc/stats/stats_vtproto.pb.go
+apis/grpc/v1/tikv/errorpb.pb.go
+apis/grpc/v1/tikv/kvrpcpb.pb.go
 apis/grpc/v1/vald/filter.pb.go
 apis/grpc/v1/vald/filter_vtproto.pb.go
 apis/grpc/v1/vald/flush.pb.go
@@ -261,6 +265,7 @@ apis/swagger/v1/mirror/mirror.swagger.json
 apis/swagger/v1/payload/payload.swagger.json
 apis/swagger/v1/rpc/errdetails/error_details.swagger.json
 apis/swagger/v1/rpc/stats/stats.swagger.json
+apis/swagger/v1/tikv/tikvpb.swagger.json
 apis/swagger/v1/vald/filter.swagger.json
 apis/swagger/v1/vald/flush.swagger.json
 apis/swagger/v1/vald/index.swagger.json
@@ -530,6 +535,7 @@ charts/vald/values/vald-backup-via-pv-and-s3.yaml
 charts/vald/values/vald-backup-via-pv.yaml
 charts/vald/values/vald-backup-via-s3.yaml
 charts/vald/values/vald-in-memory-mode-no-backup.yaml
+checkmake.ini
 cmd/agent/core/faiss/doc.go
 cmd/agent/core/faiss/main.go
 cmd/agent/core/faiss/main_test.go
@@ -2387,6 +2393,7 @@ rust/libs/proto/wkt.proto
 rust/libs/vqueue/Cargo.toml
 rust/libs/vqueue/src/lib.rs
 rust/rust-toolchain.toml
+semgrep.yaml
 tests/chaos/chart/.helmignore
 tests/chaos/chart/Chart.yaml
 tests/chaos/chart/README.md
@@ -2419,6 +2426,7 @@ tests/v2/e2e/assets/readreplica.yaml
 tests/v2/e2e/assets/rollout.yaml
 tests/v2/e2e/assets/stream_crud.yaml
 tests/v2/e2e/assets/unary_crud.yaml
+tests/v2/e2e/assets/unary_crud_meta.yaml
 tests/v2/e2e/config/config.go
 tests/v2/e2e/config/enums.go
 tests/v2/e2e/crud/agent_test.go
@@ -2463,6 +2471,7 @@ tests/v2/e2e/metrics/testdata/AsJSON.golden
 tests/v2/e2e/metrics/testdata/AsString.golden
 tests/v2/e2e/metrics/testdata/AsTSV.golden
 tests/v2/e2e/metrics/testdata/AsYAML.golden
+trivy.yaml
 versions/BUF_VERSION
 versions/BUSYBOX_VERSION
 versions/CHAOS_MESH_VERSION

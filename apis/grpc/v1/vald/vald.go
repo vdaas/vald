@@ -65,11 +65,17 @@ type Client interface {
 	FlushClient
 	IndexClient
 	InsertClient
+	InsertWithMetadataClient
 	ObjectClient
+	ObjectWithMetadataClient
 	RemoveClient
+	RemoveWithMetadataClient
 	SearchClient
+	SearchWithMetadataClient
 	UpdateClient
+	UpdateWithMetadataClient
 	UpsertClient
+	UpsertWithMetadataClient
 }
 
 type ClientWithFilter interface {
@@ -94,59 +100,88 @@ const (
 )
 
 const (
-	InsertRPCName             = "Insert"
-	StreamInsertRPCName       = "StreamInsert"
-	MultiInsertRPCName        = "MultiInsert"
-	InsertObjectRPCName       = "InsertObject"
-	StreamInsertObjectRPCName = "StreamInsertObject"
-	MultiInsertObjectRPCName  = "MultiInsertObject"
+	InsertRPCName                   = "Insert"
+	InsertWithMetadataRPCName       = "InsertWithMetadata"
+	StreamInsertRPCName             = "StreamInsert"
+	StreamInsertWithMetadataRPCName = "StreamInsertWithMetadata"
+	MultiInsertRPCName              = "MultiInsert"
+	MultiInsertWithMetadataRPCName  = "MultiInsertWithMetadata"
+	InsertObjectRPCName             = "InsertObject"
+	StreamInsertObjectRPCName       = "StreamInsertObject"
+	MultiInsertObjectRPCName        = "MultiInsertObject"
 
-	UpdateRPCName             = "Update"
-	StreamUpdateRPCName       = "StreamUpdate"
-	MultiUpdateRPCName        = "MultiUpdate"
-	UpdateObjectRPCName       = "UpdateObject"
-	StreamUpdateObjectRPCName = "StreamUpdateObject"
-	MultiUpdateObjectRPCName  = "MultiUpdateObject"
-	UpdateTimestampRPCName    = "UpdateTimestamp"
+	UpdateRPCName                      = "Update"
+	UpdateWithMetadataRPCName          = "UpdateWithMetadata"
+	StreamUpdateRPCName                = "StreamUpdate"
+	StreamUpdateWithMetadataRPCName    = "StreamUpdateWithMetadata"
+	MultiUpdateRPCName                 = "MultiUpdate"
+	MultiUpdateWithMetadataRPCName     = "MultiUpdateWithMetadata"
+	UpdateObjectRPCName                = "UpdateObject"
+	StreamUpdateObjectRPCName          = "StreamUpdateObject"
+	MultiUpdateObjectRPCName           = "MultiUpdateObject"
+	UpdateTimestampRPCName             = "UpdateTimestamp"
+	UpdateTimestampWithMetadataRPCName = "UpdateTimestampWithMetadata"
 
-	UpsertRPCName             = "Upsert"
-	StreamUpsertRPCName       = "StreamUpsert"
-	MultiUpsertRPCName        = "MultiUpsert"
-	UpsertObjectRPCName       = "UpsertObject"
-	StreamUpsertObjectRPCName = "StreamUpsertObject"
-	MultiUpsertObjectRPCName  = "MultiUpsertObject"
+	UpsertRPCName                   = "Upsert"
+	UpsertWithMetadataRPCName       = "UpsertWithMetadata"
+	StreamUpsertRPCName             = "StreamUpsert"
+	StreamUpsertWithMetadataRPCName = "StreamUpsertWithMetadata"
+	MultiUpsertRPCName              = "MultiUpsert"
+	MultiUpsertWithMetadataRPCName  = "MultiUpsertWithMetadata"
+	UpsertObjectRPCName             = "UpsertObject"
+	StreamUpsertObjectRPCName       = "StreamUpsertObject"
+	MultiUpsertObjectRPCName        = "MultiUpsertObject"
 
-	SearchRPCName                   = "Search"
-	SearchByIDRPCName               = "SearchByID"
-	StreamSearchRPCName             = "StreamSearch"
-	StreamSearchByIDRPCName         = "StreamSearchByID"
-	MultiSearchRPCName              = "MultiSearch"
-	MultiSearchByIDRPCName          = "MultiSearchByID"
-	LinearSearchRPCName             = "LinearSearch"
-	LinearSearchByIDRPCName         = "LinearSearchByID"
-	StreamLinearSearchRPCName       = "StreamLinearSearch"
-	StreamLinearSearchByIDRPCName   = "StreamLinearSearchByID"
-	MultiLinearSearchRPCName        = "MultiLinearSearch"
-	MultiLinearSearchByIDRPCName    = "MultiLinearSearchByID"
-	SearchObjectRPCName             = "SearchObject"
-	MultiSearchObjectRPCName        = "MultiSearchObject"
-	LinearSearchObjectRPCName       = "LinearSearchObject"
-	MultiLinearSearchObjectRPCName  = "MultiLinearSearchObject"
-	StreamLinearSearchObjectRPCName = "StreamLinearSearchObject"
-	StreamSearchObjectRPCName       = "StreamSearchObject"
+	SearchRPCName                             = "Search"
+	SearchWithMetadataRPCName                 = "SearchWithMetadata"
+	SearchByIDRPCName                         = "SearchByID"
+	SearchByIDWithMetadataRPCName             = "SearchByIDWithMetadata"
+	StreamSearchRPCName                       = "StreamSearch"
+	StreamSearchWithMetadataRPCName           = "StreamSearchWithMetadata"
+	StreamSearchByIDRPCName                   = "StreamSearchByID"
+	StreamSearchByIDWithMetadataRPCName       = "StreamSearchByIDWithMetadata"
+	MultiSearchRPCName                        = "MultiSearch"
+	MultiSearchWithMetadataRPCName            = "MultiSearchWithMetadata"
+	MultiSearchByIDRPCName                    = "MultiSearchByID"
+	MultiSearchByIDWithMetadataRPCName        = "MultiSearchByIDWithMetadata"
+	LinearSearchRPCName                       = "LinearSearch"
+	LinearSearchWithMetadataRPCName           = "LinearSearchWithMetadata"
+	LinearSearchByIDRPCName                   = "LinearSearchByID"
+	LinearSearchByIDWithMetadataRPCName       = "LinearSearchByIDWithMetadata"
+	StreamLinearSearchRPCName                 = "StreamLinearSearch"
+	StreamLinearSearchWithMetadataRPCName     = "StreamLinearSearchWithMetadata"
+	StreamLinearSearchByIDRPCName             = "StreamLinearSearchByID"
+	StreamLinearSearchByIDWithMetadataRPCName = "StreamLinearSearchByIDWithMetadata"
+	MultiLinearSearchRPCName                  = "MultiLinearSearch"
+	MultiLinearSearchWithMetadataRPCName      = "MultiLinearSearchWithMetadata"
+	MultiLinearSearchByIDRPCName              = "MultiLinearSearchByID"
+	MultiLinearSearchByIDWithMetadataRPCName  = "MultiLinearSearchByIDWithMetadata"
+	SearchObjectRPCName                       = "SearchObject"
+	MultiSearchObjectRPCName                  = "MultiSearchObject"
+	LinearSearchObjectRPCName                 = "LinearSearchObject"
+	MultiLinearSearchObjectRPCName            = "MultiLinearSearchObject"
+	StreamLinearSearchObjectRPCName           = "StreamLinearSearchObject"
+	StreamSearchObjectRPCName                 = "StreamSearchObject"
 
-	RemoveRPCName            = "Remove"
-	StreamRemoveRPCName      = "StreamRemove"
-	MultiRemoveRPCName       = "MultiRemove"
-	RemoveByTimestampRPCName = "RemoveByTimestamp"
+	RemoveRPCName                        = "Remove"
+	RemoveWithMetadataRPCName            = "RemoveWithMetadata"
+	StreamRemoveRPCName                  = "StreamRemove"
+	StreamRemoveWithMetadataRPCName      = "StreamRemoveWithMetadata"
+	MultiRemoveRPCName                   = "MultiRemove"
+	MultiRemoveWithMetadataRPCName       = "MultiRemoveWithMetadata"
+	RemoveByTimestampRPCName             = "RemoveByTimestamp"
+	RemoveByTimestampWithMetadataRPCName = "RemoveByTimestampWithMetadata"
 
 	FlushRPCName = "Flush"
 
-	ExistsRPCName           = "Exists"
-	GetObjectRPCName        = "GetObject"
-	GetTimestampRPCName     = "GetTimestamp"
-	StreamGetObjectRPCName  = "StreamGetObject"
-	StreamListObjectRPCName = "StreamListObject"
+	ExistsRPCName                       = "Exists"
+	GetObjectRPCName                    = "GetObject"
+	GetObjectWithMetadataRPCName        = "GetObjectWithMetadata"
+	GetTimestampRPCName                 = "GetTimestamp"
+	StreamGetObjectRPCName              = "StreamGetObject"
+	StreamGetObjectWithMetadataRPCName  = "StreamGetObjectWithMetadata"
+	StreamListObjectRPCName             = "StreamListObject"
+	StreamListObjectWithMetadataRPCName = "StreamListObjectWithMetadata"
 
 	IndexInfoRPCName             = "IndexInfo"
 	IndexDetailRPCName           = "IndexDetail"
@@ -159,11 +194,17 @@ type client struct {
 	FlushClient
 	IndexClient
 	InsertClient
+	InsertWithMetadataClient
 	ObjectClient
+	ObjectWithMetadataClient
 	RemoveClient
+	RemoveWithMetadataClient
 	SearchClient
+	SearchWithMetadataClient
 	UpdateClient
+	UpdateWithMetadataClient
 	UpsertClient
+	UpsertWithMetadataClient
 }
 
 func RegisterValdServer(s *grpc.Server, srv Server) {
@@ -184,13 +225,19 @@ func RegisterValdServerWithFilter(s *grpc.Server, srv ServerWithFilter) {
 
 func NewValdClient(conn *grpc.ClientConn) Client {
 	return &client{
-		FlushClient:  NewFlushClient(conn),
-		IndexClient:  NewIndexClient(conn),
-		InsertClient: NewInsertClient(conn),
-		ObjectClient: NewObjectClient(conn),
-		RemoveClient: NewRemoveClient(conn),
-		SearchClient: NewSearchClient(conn),
-		UpdateClient: NewUpdateClient(conn),
-		UpsertClient: NewUpsertClient(conn),
+		FlushClient:              NewFlushClient(conn),
+		IndexClient:              NewIndexClient(conn),
+		InsertClient:             NewInsertClient(conn),
+		InsertWithMetadataClient: NewInsertWithMetadataClient(conn),
+		ObjectClient:             NewObjectClient(conn),
+		ObjectWithMetadataClient: NewObjectWithMetadataClient(conn),
+		RemoveClient:             NewRemoveClient(conn),
+		RemoveWithMetadataClient: NewRemoveWithMetadataClient(conn),
+		SearchClient:             NewSearchClient(conn),
+		SearchWithMetadataClient: NewSearchWithMetadataClient(conn),
+		UpdateClient:             NewUpdateClient(conn),
+		UpdateWithMetadataClient: NewUpdateWithMetadataClient(conn),
+		UpsertClient:             NewUpsertClient(conn),
+		UpsertWithMetadataClient: NewUpsertWithMetadataClient(conn),
 	}
 }

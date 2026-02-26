@@ -16,7 +16,7 @@
 [package]
 name = "observability"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -29,5 +29,5 @@ serde_json = { version="1.0.149" }
 opentelemetry-semantic-conventions = { version = "0.31.0"}
 scopeguard = { version = "1.2.0"}
 paste = {version = "1.0.15"}
-anyhow = { version = "1.0.100"}
+anyhow = { version = "1.0.102"}
 url = { version = "2.5.8"}
