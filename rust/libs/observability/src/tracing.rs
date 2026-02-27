@@ -193,6 +193,11 @@ pub fn init_tracing(
         }
     }
 
+    if let Some(provider) = &tracer_provider {
+        global::set_text_map_propagator(TraceContextPropagator::new());
+        global::set_tracer_provider(provider.clone());
+    }
+    
     Ok(tracer_provider)
 }
 
@@ -213,9 +218,6 @@ fn init_otel_tracer(cfg: &Config) -> Result<SdkTracerProvider> {
         .with_resource(Resource::from(cfg))
         .with_id_generator(trace::RandomIdGenerator::default())
         .build();
-
-    global::set_text_map_propagator(TraceContextPropagator::new());
-    global::set_tracer_provider(provider.clone());
 
     Ok(provider)
 }
