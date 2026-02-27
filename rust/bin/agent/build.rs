@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -26,8 +26,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .canonicalize()
         .unwrap_or(manifest_dir.clone());
 
-    println!("cargo:rerun-if-changed={}", repo_root.join("versions/NGT_VERSION").display());
-    println!("cargo:rerun-if-changed={}", repo_root.join("versions/VALD_VERSION").display());
+    println!(
+        "cargo:rerun-if-changed={}",
+        repo_root.join("versions/NGT_VERSION").display()
+    );
+    println!(
+        "cargo:rerun-if-changed={}",
+        repo_root.join("versions/VALD_VERSION").display()
+    );
 
     println!("cargo:rustc-env=VALD_REPO_ROOT={}", repo_root.display());
 
@@ -76,11 +82,7 @@ fn command_output(cmd: &str, args: &[&str], current_dir: &PathBuf) -> Option<Str
         return None;
     }
     let value = String::from_utf8_lossy(&output.stdout).trim().to_string();
-    if value.is_empty() {
-        None
-    } else {
-        Some(value)
-    }
+    if value.is_empty() { None } else { Some(value) }
 }
 
 fn read_cpu_flags(path: &str) -> Option<String> {

@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -23,12 +23,9 @@ const SERVER_NAME: &str = "agent qbg";
 const STACK_TRACE_LIMIT: usize = 4;
 
 pub fn is_version_request(args: &[String]) -> bool {
-    args.iter().skip(1).any(|arg| {
-        matches!(
-            arg.as_str(),
-            "-version" | "--version" | "-v" | "-V"
-        )
-    })
+    args.iter()
+        .skip(1)
+        .any(|arg| matches!(arg.as_str(), "-version" | "--version" | "-v" | "-V"))
 }
 
 pub fn print_version_info() {
@@ -38,7 +35,11 @@ pub fn print_version_info() {
 fn build_version_output() -> String {
     let mut info = BTreeMap::new();
 
-    insert_value(&mut info, "algorithm info", option_env!("VALD_ALGORITHM_INFO"));
+    insert_value(
+        &mut info,
+        "algorithm info",
+        option_env!("VALD_ALGORITHM_INFO"),
+    );
     insert_value_owned(
         &mut info,
         "build cpu info flags",

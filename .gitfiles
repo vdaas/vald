@@ -2274,6 +2274,7 @@ renovate.json
 rust/Cargo.lock
 rust/Cargo.toml
 rust/bin/agent/Cargo.toml
+rust/bin/agent/build.rs
 rust/bin/agent/src/config.rs
 rust/bin/agent/src/handler.rs
 rust/bin/agent/src/handler/common.rs
@@ -2297,6 +2298,7 @@ rust/bin/agent/src/service/memstore.rs
 rust/bin/agent/src/service/metadata.rs
 rust/bin/agent/src/service/persistence.rs
 rust/bin/agent/src/service/qbg.rs
+rust/bin/agent/src/version.rs
 rust/bin/agent/tests/integration_test.rs
 rust/bin/meta/Cargo.toml
 rust/bin/meta/src/handler.rs

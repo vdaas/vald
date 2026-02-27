@@ -29,7 +29,7 @@ observability = { version = "0.1.0", path = "../../libs/observability" }
 anyhow = "1.0.102"
 async-trait = "0.1"
 chrono = "0.4.44"
-backtrace = "0.3.75"
+backtrace = "0.3.76"
 clap = { version = "4.5", features = ["derive"] }
 config = "0.15.19"
 flexi_logger = "0.31"
