@@ -63,8 +63,8 @@
         },
         "algorithm": {
           "type": "string",
-          "description": "agent algorithm type. it should be `ngt` or `faiss`.",
-          "enum": ["ngt", "faiss"]
+          "description": "agent algorithm type. it should be `ngt`, `faiss` or `qbg`.",
+          "enum": ["ngt", "faiss", "qbg"]
         },
         "annotations": {
           "type": "object",
@@ -622,6 +622,250 @@
         "progressDeadlineSeconds": {
           "type": "integer",
           "description": "progress deadline seconds"
+        },
+        "qbg": {
+          "type": "object",
+          "properties": {
+            "auto_index_check_duration": {
+              "type": "string",
+              "description": "check duration of automatic indexing"
+            },
+            "auto_index_duration_limit": {
+              "type": "string",
+              "description": "limit duration of automatic indexing"
+            },
+            "auto_index_length": {
+              "type": "integer",
+              "description": "number of cache to trigger automatic indexing",
+              "minimum": 0
+            },
+            "auto_save_index_duration": {
+              "type": "string",
+              "description": "duration of automatic save index"
+            },
+            "broken_index_history_limit": {
+              "type": "integer",
+              "description": "maximum number of broken index generations to backup",
+              "minimum": 0
+            },
+            "bulk_insert_chunk_size": {
+              "type": "integer",
+              "description": "bulk insert chunk size",
+              "minimum": 1
+            },
+            "data_type": {
+              "type": "string",
+              "description": "data type.",
+              "enum": ["float", "float16", "uint8"]
+            },
+            "default_epsilon": {
+              "type": "number",
+              "description": "default epsilon used for search"
+            },
+            "default_pool_size": {
+              "type": "integer",
+              "description": "default create index batch pool size",
+              "minimum": 0
+            },
+            "default_radius": {
+              "type": "number",
+              "description": "default radius used for search"
+            },
+            "dimension": {
+              "type": "integer",
+              "description": "vector dimension",
+              "minimum": 1
+            },
+            "distance_type": {
+              "type": "string",
+              "description": "distance type. it should be `l1`, `l2`, `angle`, `hamming`, `cosine`, `poincare`, `lorentz`, `jaccard`, `sparsejaccard`, `normalizedangle` or `normalizedcosine` or `innerproduct`.",
+              "enum": [
+                "l1",
+                "l2",
+                "ang",
+                "angle",
+                "ham",
+                "hamming",
+                "cos",
+                "cosine",
+                "poincare",
+                "poinc",
+                "lorentz",
+                "loren",
+                "jac",
+                "jaccard",
+                "spjac",
+                "sparsejaccard",
+                "norml2",
+                "normalizedl2",
+                "normang",
+                "normalizedangle",
+                "normcos",
+                "normalizedcosine",
+                "dotproduct",
+                "innerproduct",
+                "dp",
+                "ip"
+              ]
+            },
+            "enable_copy_on_write": {
+              "type": "boolean",
+              "description": "enable copy on write saving for more stable backup"
+            },
+            "enable_export_index_info_to_k8s": {
+              "type": "boolean",
+              "description": "enable export index info to k8s"
+            },
+            "enable_in_memory_mode": {
+              "type": "boolean",
+              "description": "in-memory mode enabled"
+            },
+            "enable_statistics": {
+              "type": "boolean",
+              "description": "enable index statistics loading"
+            },
+            "error_buffer_limit": {
+              "type": "integer",
+              "description": "maximum number of core qbg error buffer pool size limit",
+              "minimum": 1
+            },
+            "export_index_info_duration": {
+              "type": "string",
+              "description": "duration of exporting index info"
+            },
+            "extended_dimension": {
+              "type": "integer",
+              "description": "extended dimension",
+              "minimum": 0
+            },
+            "hierarchical_clustering_init_mode": {
+              "type": "integer",
+              "description": "hierarchical clustering init mode"
+            },
+            "index_path": {
+              "type": "string",
+              "description": "path to index data"
+            },
+            "initial_delay_max_duration": {
+              "type": "string",
+              "description": "maximum duration for initial delay"
+            },
+            "internal_data_type": {
+              "type": "string",
+              "description": "internal data type.",
+              "enum": ["float", "float16", "uint8"]
+            },
+            "is_readreplica": {
+              "type": "boolean",
+              "description": "whether the qbg is read replica or not"
+            },
+            "kvsdb": {
+              "type": "object",
+              "properties": {
+                "cache_capacity": {
+                  "type": "integer",
+                  "description": "kvsdb cache capacity"
+                },
+                "compression_factor": {
+                  "type": "integer",
+                  "description": "kvsdb compression factor"
+                },
+                "concurrency": {
+                  "type": "integer",
+                  "description": "kvsdb processing concurrency"
+                },
+                "use_compression": {
+                  "type": "boolean",
+                  "description": "enable kvsdb compression"
+                }
+              }
+            },
+            "namespace": {
+              "type": "string",
+              "description": "namespace of myself"
+            },
+            "number_of_blobs": {
+              "type": "integer",
+              "description": "number of blobs",
+              "minimum": 0
+            },
+            "number_of_first_clusters": {
+              "type": "integer",
+              "description": "number of first clusters",
+              "minimum": 0
+            },
+            "number_of_first_objects": {
+              "type": "integer",
+              "description": "number of first objects",
+              "minimum": 0
+            },
+            "number_of_matrices": {
+              "type": "integer",
+              "description": "number of matrices",
+              "minimum": 0
+            },
+            "number_of_objects": {
+              "type": "integer",
+              "description": "total number of objects",
+              "minimum": 0
+            },
+            "number_of_second_clusters": {
+              "type": "integer",
+              "description": "number of second clusters",
+              "minimum": 0
+            },
+            "number_of_second_objects": {
+              "type": "integer",
+              "description": "number of second objects",
+              "minimum": 0
+            },
+            "number_of_subvectors": {
+              "type": "integer",
+              "description": "number of subvectors",
+              "minimum": 1
+            },
+            "number_of_third_clusters": {
+              "type": "integer",
+              "description": "number of third clusters",
+              "minimum": 0
+            },
+            "optimization_clustering_init_mode": {
+              "type": "integer",
+              "description": "optimization clustering init mode"
+            },
+            "pod_name": {
+              "type": "string",
+              "description": "pod name of myself"
+            },
+            "repositioning": {
+              "type": "boolean",
+              "description": "enable repositioning"
+            },
+            "rotation": { "type": "boolean", "description": "enable rotation" },
+            "rotation_iteration": {
+              "type": "integer",
+              "description": "rotation iteration count",
+              "minimum": 0
+            },
+            "subvector_iteration": {
+              "type": "integer",
+              "description": "subvector iteration count",
+              "minimum": 0
+            },
+            "vqueue": {
+              "type": "object",
+              "properties": {
+                "delete_buffer_pool_size": {
+                  "type": "integer",
+                  "description": "delete slice pool buffer size"
+                },
+                "insert_buffer_pool_size": {
+                  "type": "integer",
+                  "description": "insert slice pool buffer size"
+                }
+              }
+            }
+          }
         },
         "readreplica": {
           "type": "object",

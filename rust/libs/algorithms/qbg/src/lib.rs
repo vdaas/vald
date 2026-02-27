@@ -13,8 +13,209 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ObjectType {
+    #[serde(rename = "None", alias = "none")]
+    None,
+    #[serde(rename = "uint8", alias = "Uint8", alias = "u8", alias = "U8")]
+    Uint8,
+    #[serde(rename = "float", alias = "Float", alias = "f32", alias = "F32")]
+    Float,
+    #[serde(rename = "float16", alias = "Float16", alias = "f16", alias = "F16")]
+    Float16,
+}
+
+impl From<ffi::ObjectType> for ObjectType {
+    fn from(value: ffi::ObjectType) -> Self {
+        match value {
+            ffi::ObjectType::Uint8 => ObjectType::Uint8,
+            ffi::ObjectType::Float => ObjectType::Float,
+            ffi::ObjectType::Float16 => ObjectType::Float16,
+            _ => ObjectType::None,
+        }
+    }
+}
+
+impl From<ObjectType> for ffi::ObjectType {
+    fn from(value: ObjectType) -> Self {
+        match value {
+            ObjectType::Uint8 => ffi::ObjectType::Uint8,
+            ObjectType::Float => ffi::ObjectType::Float,
+            ObjectType::Float16 => ffi::ObjectType::Float16,
+            _ => ffi::ObjectType::None,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DataType {
+    #[serde(rename = "None", alias = "none")]
+    None,
+    #[serde(rename = "uint8", alias = "Uint8", alias = "u8", alias = "U8")]
+    Uint8,
+    #[serde(rename = "float", alias = "Float", alias = "f32", alias = "F32")]
+    Float,
+    #[serde(rename = "float16", alias = "Float16", alias = "f16", alias = "F16")]
+    Float16,
+    #[serde(rename = "any", alias = "Any")]
+    Any,
+}
+
+impl From<ffi::DataType> for DataType {
+    fn from(value: ffi::DataType) -> Self {
+        match value {
+            ffi::DataType::Uint8 => DataType::Uint8,
+            ffi::DataType::Float => DataType::Float,
+            ffi::DataType::Float16 => DataType::Float16,
+            ffi::DataType::Any => DataType::Any,
+            _ => DataType::None,
+        }
+    }
+}
+
+impl From<DataType> for ffi::DataType {
+    fn from(value: DataType) -> Self {
+        match value {
+            DataType::Uint8 => ffi::DataType::Uint8,
+            DataType::Float => ffi::DataType::Float,
+            DataType::Float16 => ffi::DataType::Float16,
+            DataType::Any => ffi::DataType::Any,
+            _ => ffi::DataType::None,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DistanceType {
+    #[serde(rename = "None", alias = "none")]
+    None,
+    #[serde(rename = "l1", alias = "L1")]
+    L1,
+    #[serde(rename = "l2", alias = "L2")]
+    L2,
+    #[serde(rename = "hamming", alias = "Hamming", alias = "ham")]
+    Hamming,
+    #[serde(rename = "angle", alias = "Angle", alias = "ang")]
+    Angle,
+    #[serde(rename = "cosine", alias = "Cosine", alias = "cos")]
+    Cosine,
+    #[serde(
+        rename = "normalizedangle",
+        alias = "NormalizedAngle",
+        alias = "normang",
+        alias = "NormAng"
+    )]
+    NormalizedAngle,
+    #[serde(
+        rename = "normalizedcosine",
+        alias = "NormalizedCosine",
+        alias = "normcos",
+        alias = "NormCos"
+    )]
+    NormalizedCosine,
+    #[serde(rename = "jaccard", alias = "Jaccard", alias = "jac")]
+    Jaccard,
+    #[serde(rename = "sparsejaccard", alias = "SparseJaccard", alias = "spjac")]
+    SparseJaccard,
+    #[serde(rename = "normalizedl2", alias = "NormalizedL2", alias = "norml2")]
+    NormalizedL2,
+    #[serde(
+        rename = "innerproduct",
+        alias = "InnerProduct",
+        alias = "ip",
+        alias = "dotproduct",
+        alias = "DotProduct",
+        alias = "dp"
+    )]
+    InnerProduct,
+    #[serde(rename = "poincare", alias = "Poincare", alias = "poinc")]
+    Poincare,
+    #[serde(rename = "lorentz", alias = "Lorentz", alias = "loren")]
+    Lorentz,
+}
+
+impl From<ffi::DistanceType> for DistanceType {
+    fn from(value: ffi::DistanceType) -> Self {
+        match value {
+            ffi::DistanceType::L1 => DistanceType::L1,
+            ffi::DistanceType::L2 => DistanceType::L2,
+            ffi::DistanceType::Hamming => DistanceType::Hamming,
+            ffi::DistanceType::Angle => DistanceType::Angle,
+            ffi::DistanceType::Cosine => DistanceType::Cosine,
+            ffi::DistanceType::NormalizedAngle => DistanceType::NormalizedAngle,
+            ffi::DistanceType::NormalizedCosine => DistanceType::NormalizedCosine,
+            ffi::DistanceType::Jaccard => DistanceType::Jaccard,
+            ffi::DistanceType::SparseJaccard => DistanceType::SparseJaccard,
+            ffi::DistanceType::NormalizedL2 => DistanceType::NormalizedL2,
+            ffi::DistanceType::InnerProduct => DistanceType::InnerProduct,
+            ffi::DistanceType::Poincare => DistanceType::Poincare,
+            ffi::DistanceType::Lorentz => DistanceType::Lorentz,
+            _ => DistanceType::None,
+        }
+    }
+}
+
+impl From<DistanceType> for ffi::DistanceType {
+    fn from(value: DistanceType) -> Self {
+        match value {
+            DistanceType::L1 => ffi::DistanceType::L1,
+            DistanceType::L2 => ffi::DistanceType::L2,
+            DistanceType::Hamming => ffi::DistanceType::Hamming,
+            DistanceType::Angle => ffi::DistanceType::Angle,
+            DistanceType::Cosine => ffi::DistanceType::Cosine,
+            DistanceType::NormalizedAngle => ffi::DistanceType::NormalizedAngle,
+            DistanceType::NormalizedCosine => ffi::DistanceType::NormalizedCosine,
+            DistanceType::Jaccard => ffi::DistanceType::Jaccard,
+            DistanceType::SparseJaccard => ffi::DistanceType::SparseJaccard,
+            DistanceType::NormalizedL2 => ffi::DistanceType::NormalizedL2,
+            DistanceType::InnerProduct => ffi::DistanceType::InnerProduct,
+            DistanceType::Poincare => ffi::DistanceType::Poincare,
+            DistanceType::Lorentz => ffi::DistanceType::Lorentz,
+            _ => ffi::DistanceType::None,
+        }
+    }
+}
+
 #[cxx::bridge]
 pub mod ffi {
+    #[repr(i32)]
+    enum ObjectType {
+        Uint8 = 0,
+        Float = 1,
+        Float16 = 2,
+        None = 99,
+    }
+
+    #[repr(i32)]
+    enum DataType {
+        Uint8 = 0,
+        Float = 1,
+        Float16 = 2,
+        None = 99,
+        Any = 100,
+    }
+
+    #[repr(i32)]
+    enum DistanceType {
+        None = -1,
+        L1 = 0,
+        L2 = 1,
+        Hamming = 2,
+        Angle = 3,
+        Cosine = 4,
+        NormalizedAngle = 5,
+        NormalizedCosine = 6,
+        Jaccard = 7,
+        SparseJaccard = 8,
+        NormalizedL2 = 9,
+        InnerProduct = 10,
+        Poincare = 100,
+        Lorentz = 101,
+    }
+
     unsafe extern "C++" {
         include!("qbg/src/input.h");
 
@@ -27,17 +228,17 @@ pub mod ffi {
             dimension: usize,
             number_of_subvectors: usize,
             number_of_blobs: usize,
-            internal_data_type: i32,
-            data_type: i32,
-            distance_type: i32,
+            internal_data_type: DataType,
+            data_type: ObjectType,
+            distance_type: DistanceType,
         );
         fn set_extended_dimension(self: Pin<&mut Property>, extended_dimension: usize);
         fn set_dimension(self: Pin<&mut Property>, dimension: usize);
         fn set_number_of_subvectors(self: Pin<&mut Property>, number_of_subvectors: usize);
         fn set_number_of_blobs(self: Pin<&mut Property>, number_of_blobs: usize);
-        fn set_internal_data_type(self: Pin<&mut Property>, internal_data_type: i32);
-        fn set_data_type(self: Pin<&mut Property>, data_type: i32);
-        fn set_distance_type(self: Pin<&mut Property>, distance_type: i32);
+        fn set_internal_data_type(self: Pin<&mut Property>, internal_data_type: DataType);
+        fn set_data_type(self: Pin<&mut Property>, data_type: ObjectType);
+        fn set_distance_type(self: Pin<&mut Property>, distance_type: DistanceType);
         fn init_qbg_build_parameters(self: Pin<&mut Property>);
         fn set_qbg_build_parameters(
             self: Pin<&mut Property>,
@@ -100,7 +301,7 @@ pub mod ffi {
             k: usize,
             radius: f32,
             epsilon: f32,
-        ) -> UniquePtr<CxxVector<SearchResult>>;
+        ) -> Result<UniquePtr<CxxVector<SearchResult>>>;
         fn get_object(self: &Index, id: usize) -> Result<*mut f32>;
         fn get_dimension(self: &Index) -> Result<usize>;
     }
@@ -118,6 +319,12 @@ pub mod property {
 
     pub struct Property {
         inner: UniquePtr<ffi::Property>,
+    }
+
+    impl Default for Property {
+        fn default() -> Self {
+            Self::new()
+        }
     }
 
     impl Property {
@@ -140,9 +347,9 @@ pub mod property {
             dimension: usize,
             number_of_subvectors: usize,
             number_of_blobs: usize,
-            internal_data_type: i32,
-            data_type: i32,
-            distance_type: i32,
+            internal_data_type: ffi::DataType,
+            data_type: ffi::ObjectType,
+            distance_type: ffi::DistanceType,
         ) {
             self.inner.pin_mut().set_qbg_construction_parameters(
                 extended_dimension,
@@ -175,17 +382,17 @@ pub mod property {
             self.inner.pin_mut().set_number_of_blobs(number_of_blobs)
         }
 
-        pub fn set_internal_data_type(&mut self, internal_data_type: i32) {
+        pub fn set_internal_data_type(&mut self, internal_data_type: ffi::DataType) {
             self.inner
                 .pin_mut()
                 .set_internal_data_type(internal_data_type)
         }
 
-        pub fn set_data_type(&mut self, data_type: i32) {
+        pub fn set_data_type(&mut self, data_type: ffi::ObjectType) {
             self.inner.pin_mut().set_data_type(data_type)
         }
 
-        pub fn set_distance_type(&mut self, distance_type: i32) {
+        pub fn set_distance_type(&mut self, distance_type: ffi::DistanceType) {
             self.inner.pin_mut().set_distance_type(distance_type)
         }
 
@@ -377,7 +584,7 @@ pub mod index {
             epsilon: f32,
         ) -> Result<Vec<(u32, f32)>, cxx::Exception> {
             let index = self.inner.as_ref().unwrap();
-            let mut search_results = index.search(v, k, radius, epsilon);
+            let mut search_results = index.search(v, k, radius, epsilon)?;
             Ok(search_results
                 .pin_mut()
                 .into_iter()
@@ -404,6 +611,7 @@ pub mod index {
 mod tests {
     use crate::{ffi, index::Index, property::Property};
     use anyhow::Result;
+    use tempfile::tempdir;
 
     const DIMENSION: usize = 128;
     const K: usize = 30;
@@ -414,16 +622,17 @@ mod tests {
     fn test_ffi_qbg() -> Result<()> {
         // New
         println!("create an empty index...");
-        let path: String = "index".to_string();
+        let temp_dir = tempdir()?;
+        let path = temp_dir.path().join("index").to_string_lossy().to_string();
         let mut p = ffi::new_property();
         ////////// Test Setter //////////
         p.pin_mut().set_extended_dimension(1);
         p.pin_mut().set_dimension(1);
         p.pin_mut().set_number_of_subvectors(1);
         p.pin_mut().set_number_of_blobs(1);
-        p.pin_mut().set_internal_data_type(1);
-        p.pin_mut().set_data_type(1);
-        p.pin_mut().set_distance_type(1);
+        p.pin_mut().set_internal_data_type(ffi::DataType::Float);
+        p.pin_mut().set_data_type(ffi::ObjectType::Float);
+        p.pin_mut().set_distance_type(ffi::DistanceType::L2);
         p.pin_mut().set_hierarchical_clustering_init_mode(1);
         p.pin_mut().set_number_of_first_objects(1);
         p.pin_mut().set_number_of_first_clusters(1);
@@ -480,7 +689,7 @@ mod tests {
         // Search
         println!("search the index for the specified query...");
         let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
-        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON);
+        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON)?;
         let ids: Vec<u32> = search_results
             .pin_mut()
             .into_iter()
@@ -497,7 +706,7 @@ mod tests {
         // Remove
         index.pin_mut().remove(1).unwrap();
         let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
-        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON);
+        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON)?;
         let ids: Vec<u32> = search_results
             .pin_mut()
             .into_iter()
@@ -518,8 +727,32 @@ mod tests {
 
     #[test]
     fn test_ffi_qbg_prebuilt() -> Result<()> {
-        // New
-        let path = "index".to_string();
+        // First create an index for this test
+        let temp_dir = tempdir()?;
+        let path = temp_dir.path().join("index").to_string_lossy().to_string();
+
+        // Create and build a fresh index
+        let mut p = ffi::new_property();
+        p.pin_mut().init_qbg_construction_parameters();
+        p.pin_mut().set_dimension(DIMENSION);
+        p.pin_mut().set_number_of_subvectors(64);
+        p.pin_mut().set_number_of_blobs(0);
+        p.pin_mut().init_qbg_build_parameters();
+        p.pin_mut().set_number_of_objects(500);
+        let mut index = ffi::new_index(&path, p.pin_mut())?;
+
+        // Append some objects
+        for i in 0..100 {
+            let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|x| (x + i) as f32).collect();
+            index.pin_mut().append(vec.as_slice())?;
+        }
+        index.pin_mut().save_index()?;
+        index.pin_mut().close_index();
+
+        // Build the index
+        index.pin_mut().build_index(&path, p.pin_mut())?;
+
+        // Now test with prebuilt index
         let mut index = ffi::new_prebuilt_index(&path, true).unwrap();
 
         // Insert
@@ -539,7 +772,7 @@ mod tests {
 
         // Search
         let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
-        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON);
+        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON)?;
         let ids: Vec<u32> = search_results
             .pin_mut()
             .into_iter()
@@ -556,7 +789,7 @@ mod tests {
         // Remove
         index.pin_mut().remove(1).unwrap();
         let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
-        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON);
+        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON)?;
         let ids: Vec<u32> = search_results
             .pin_mut()
             .into_iter()
@@ -579,14 +812,22 @@ mod tests {
     fn test_property() -> Result<()> {
         let mut p = Property::new();
         p.init_qbg_construction_parameters();
-        p.set_qbg_construction_parameters(1, 1, 1, 1, 1, 1, 1);
+        p.set_qbg_construction_parameters(
+            1,
+            1,
+            1,
+            1,
+            ffi::DataType::Float,
+            ffi::ObjectType::Float,
+            ffi::DistanceType::L2,
+        );
         p.set_extended_dimension(1);
         p.set_dimension(1);
         p.set_number_of_subvectors(1);
         p.set_number_of_blobs(1);
-        p.set_internal_data_type(1);
-        p.set_data_type(1);
-        p.set_distance_type(1);
+        p.set_internal_data_type(ffi::DataType::Float);
+        p.set_data_type(ffi::ObjectType::Float);
+        p.set_distance_type(ffi::DistanceType::L2);
         p.init_qbg_build_parameters();
         p.set_qbg_build_parameters(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, true, false);
         p.set_hierarchical_clustering_init_mode(1);
@@ -611,7 +852,8 @@ mod tests {
     fn test_index() -> Result<()> {
         // New
         println!("create an empty index...");
-        let path: String = "index".to_string();
+        let temp_dir = tempdir()?;
+        let path = temp_dir.path().join("index").to_string_lossy().to_string();
         let mut p = Property::new();
         p.init_qbg_construction_parameters();
         p.set_dimension(DIMENSION);
@@ -625,36 +867,41 @@ mod tests {
         println!("append objects...");
         for i in 0..100 {
             let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|x| (x + i) as f32).collect();
-            let id = index.append(vec.as_slice()).unwrap();
-            assert_eq!((i + 1) as i32, id)
+            let res = index.append(vec.as_slice());
+            assert!(res.is_ok(), "append failed: {:?}", res.err());
+            assert_eq!((i + 1) as i32, res.unwrap())
         }
-        index.save_index().unwrap();
-        index.close_index();
 
         // Build
         println!("building the index...");
-        index.build_index(&path, &mut p).unwrap();
-        index.open_index(&path, true).unwrap();
+        let res = index.build_index(&path, &mut p);
+        assert!(res.is_ok(), "build_index failed: {:?}", res.err());
+        let res = index.open_index(&path, true);
+        assert!(res.is_ok(), "open_index failed: {:?}", res.err());
 
         // Insert
         for i in 0..100 {
             let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|x| (x + i) as f32).collect();
-            let id = index.insert(vec.as_slice()).unwrap();
-            assert_eq!((i + 1 + 100) as i32, id)
+            let res = index.insert(vec.as_slice());
+            assert!(res.is_ok(), "insert failed: {:?}", res.err());
+            assert_eq!((i + 1 + 100) as i32, res.unwrap());
         }
 
         // Get Object
-        let vec = index.get_object(1).unwrap();
-        println!("vec:\n\t{:?}", vec);
+        let res = index.get_object(1);
+        assert!(res.is_ok(), "get_object failed: {:?}", res.err());
 
         // Get Dimension
-        let dim = index.get_dimension().unwrap();
-        println!("dimension:\n\t{:?}", dim);
+        let res = index.get_dimension();
+        assert!(res.is_ok(), "get_dimension failed: {:?}", res.err());
+        assert!(res.unwrap() > 0, "dimension should be greater than 0");
 
         // Search
         println!("search the index for the specified query...");
         let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
-        let search_results = index.search(vec.as_slice(), K, RADIUS, EPSILON).unwrap();
+        let res = index.search(vec.as_slice(), K, RADIUS, EPSILON);
+        assert!(res.is_ok(), "search failed: {:?}", res.err());
+        let search_results = res.unwrap();
         let ids: Vec<u32> = search_results.iter().map(|s| s.0).collect();
         let distances: Vec<f32> = search_results.iter().map(|s| s.1).collect();
         println!("search results:\n\t{:?}", search_results);
@@ -662,14 +909,16 @@ mod tests {
         println!("distances:\n\t{:?}", distances);
 
         // Remove
-        index.remove(1).unwrap();
+        let res = index.remove(1);
+        assert!(res.is_ok(), "remove failed: {:?}", res.err());
         let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
-        let search_results = index.search(vec.as_slice(), K, RADIUS, EPSILON).unwrap();
-        let ids: Vec<u32> = search_results.iter().map(|s| s.0).collect();
-        let distances: Vec<f32> = search_results.iter().map(|s| s.1).collect();
-        println!("search results:\n\t{:?}", search_results);
-        println!("ids:\n\t{:?}", ids);
-        println!("distances:\n\t{:?}", distances);
+        let res = index.search(vec.as_slice(), K, RADIUS, EPSILON);
+        assert!(res.is_ok(), "search failed: {:?}", res.err());
+        let search_results = res.unwrap();
+        assert!(
+            !search_results.is_empty(),
+            "search results should not be empty"
+        );
 
         index.close_index();
 

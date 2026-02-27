@@ -685,7 +685,7 @@ func main() {
 			AppName:       agent,
 			PackageDir:    agent + "/core/" + agent,
 			ContainerType: Rust,
-			RuntimeImage:  "gcr.io/distroless/cc-debian12",
+			RuntimeImage:  "gcr.io/distroless/cc-debian13",
 			ExtraPackages: append(clangBuildDeps,
 				append(ngtBuildDeps, rustBuildDeps...)...),
 			Preprocess: []string{

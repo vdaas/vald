@@ -27,8 +27,8 @@ use tonic_types::StatusExt;
 
 use super::common::{bidirectional_stream, build_error_details};
 
-pub(super) async fn insert(
-    s: Arc<RwLock<dyn algorithm::ANN>>,
+pub(super) async fn insert<S: algorithm::ANN>(
+    s: Arc<RwLock<S>>,
     resource_type: &str,
     api_name: &str,
     name: &str,
@@ -39,132 +39,125 @@ pub(super) async fn insert(
         Some(cfg) => cfg,
         None => return Err(Status::invalid_argument("Missing configuration in request")),
     };
-    let hostname = cargo::util::hostname()?;
-    let domain = hostname.to_str().unwrap();
-    {
-        let mut s = s.write().await;
-        let vec = match request.vector.clone() {
-            Some(v) => v,
-            None => return Err(Status::invalid_argument("Missing vector in request")),
+    let mut s = s.write().await;
+    let vec = match request.vector.clone() {
+        Some(v) => v,
+        None => return Err(Status::invalid_argument("Missing vector in request")),
+    };
+    if vec.vector.len() != s.get_dimension_size() {
+        let err = Error::IncompatibleDimensionSize {
+            got: vec.vector.len(),
+            want: s.get_dimension_size(),
         };
-        if vec.vector.len() != s.get_dimension_size() {
-            let err = Error::IncompatibleDimensionSize {
-                got: vec.vector.len(),
-                want: s.get_dimension_size(),
-            };
+        let resource_type = format!("{}/qbg.Insert", resource_type);
+        let resource_name = format!("{}: {}({})", api_name, name, ip);
+        let err_details = build_error_details(
+            err,
+            &vec.id,
+            request.encode_to_vec(),
+            &resource_type,
+            &resource_name,
+            Some("vector dimension size"),
+        );
+        let status = Status::with_error_details(
+            Code::InvalidArgument,
+            "Insert API Incombatible Dimension Size detedted",
+            err_details,
+        );
+        warn!("{:?}", status);
+        return Err(status);
+    }
+    let result = s
+        .insert_with_time(vec.id.clone(), vec.vector.clone(), config.timestamp)
+        .await;
+    match result {
+        Err(err) => {
             let resource_type = format!("{}/qbg.Insert", resource_type);
             let resource_name = format!("{}: {}({})", api_name, name, ip);
-            let err_details = build_error_details(
-                err,
-                domain,
-                &vec.id,
-                request.encode_to_vec(),
-                &resource_type,
-                &resource_name,
-                Some("vector dimension size"),
-            );
-            let status = Status::with_error_details(
-                Code::InvalidArgument,
-                "Insert API Incombatible Dimension Size detedted",
-                err_details,
-            );
-            warn!("{:?}", status);
-            return Err(status);
+            let request_bytes = request.encode_to_vec();
+            let status = match err {
+                Error::FlushingIsInProgress {} => {
+                    let err_details = build_error_details(
+                        err,
+                        &vec.id,
+                        request_bytes,
+                        &resource_type,
+                        &resource_name,
+                        None,
+                    );
+                    let status = Status::with_error_details(
+                        Code::Aborted,
+                        "Insert API aborted to process insert request due to flushing indices is in progress",
+                        err_details,
+                    );
+                    warn!("{:?}", status);
+                    status
+                }
+                Error::UUIDAlreadyExists { .. } => {
+                    let err_details = build_error_details(
+                        err,
+                        &vec.id,
+                        request_bytes,
+                        &resource_type,
+                        &resource_name,
+                        None,
+                    );
+                    let status = Status::with_error_details(
+                        Code::AlreadyExists,
+                        format!("Insert API uuid {} already exists", vec.id),
+                        err_details,
+                    );
+                    warn!("{:?}", status);
+                    status
+                }
+                Error::UUIDNotFound { .. } => {
+                    let err_details = build_error_details(
+                        err,
+                        &vec.id,
+                        request_bytes,
+                        &resource_type,
+                        &resource_name,
+                        Some("uuid"),
+                    );
+                    let status = Status::with_error_details(
+                        Code::InvalidArgument,
+                        format!(
+                            "Insert API invalid id: \"{}\" or vector: {:?} was given",
+                            vec.id, vec.vector
+                        ),
+                        err_details,
+                    );
+                    warn!("{:?}", status);
+                    status
+                }
+                _ => {
+                    let err_details = build_error_details(
+                        err,
+                        &vec.id,
+                        request_bytes,
+                        &resource_type,
+                        &resource_name,
+                        None,
+                    );
+                    Status::with_error_details(
+                        Code::Unknown,
+                        "failed to parse Insert gRPC error response",
+                        err_details,
+                    )
+                }
+            };
+            Err(status)
         }
-        let result = s.insert(vec.id.clone(), vec.vector.clone(), config.timestamp);
-        match result {
-            Err(err) => {
-                let resource_type = format!("{}/qbg.Insert", resource_type);
-                let resource_name = format!("{}: {}({})", api_name, name, ip);
-                let request_bytes = request.encode_to_vec();
-                let status = match err {
-                    Error::FlushingIsInProgress {} => {
-                        let err_details = build_error_details(
-                            err,
-                            domain,
-                            &vec.id,
-                            request_bytes,
-                            &resource_type,
-                            &resource_name,
-                            None,
-                        );
-                        let status = Status::with_error_details(
-                            Code::Aborted,
-                            "Insert API aborted to process insert request due to flushing indices is in progress",
-                            err_details,
-                        );
-                        warn!("{:?}", status);
-                        status
-                    }
-                    Error::UUIDAlreadyExists { uuid: _ } => {
-                        let err_details = build_error_details(
-                            err,
-                            domain,
-                            &vec.id,
-                            request_bytes,
-                            &resource_type,
-                            &resource_name,
-                            None,
-                        );
-                        let status = Status::with_error_details(
-                            Code::AlreadyExists,
-                            format!("Insert API uuid {} already exists", vec.id),
-                            err_details,
-                        );
-                        warn!("{:?}", status);
-                        status
-                    }
-                    Error::UUIDNotFound { uuid: _ } => {
-                        let err_details = build_error_details(
-                            err,
-                            domain,
-                            &vec.id,
-                            request_bytes,
-                            &resource_type,
-                            &resource_name,
-                            Some("uuid"),
-                        );
-                        let status = Status::with_error_details(
-                            Code::InvalidArgument,
-                            format!(
-                                "Insert API invalid id: \"{}\" or vector: {:?} was given",
-                                vec.id, vec.vector
-                            ),
-                            err_details,
-                        );
-                        warn!("{:?}", status);
-                        status
-                    }
-                    _ => {
-                        let err_details = build_error_details(
-                            err,
-                            domain,
-                            &vec.id,
-                            request_bytes,
-                            &resource_type,
-                            &resource_name,
-                            None,
-                        );
-                        Status::with_error_details(
-                            Code::Unknown,
-                            "failed to parse Insert gRPC error response",
-                            err_details,
-                        )
-                    }
-                };
-                Err(status)
-            }
-            Ok(()) => Ok(object::Location {
-                name: name.to_owned(),
-                uuid: vec.id,
-                ips: vec![ip.to_owned()],
-            }),
-        }
+        Ok(()) => Ok(object::Location {
+            name: name.to_owned(),
+            uuid: vec.id,
+            ips: vec![ip.to_owned()],
+        }),
     }
 }
 
 #[tonic::async_trait]
-impl insert_server::Insert for super::Agent {
+impl<S: algorithm::ANN + 'static> insert_server::Insert for super::Agent<S> {
     async fn insert(
         &self,
         request: tonic::Request<insert::Request>,
@@ -226,138 +219,129 @@ impl insert_server::Insert for super::Agent {
     ) -> std::result::Result<tonic::Response<object::Locations>, tonic::Status> {
         info!("Recieved a request from {:?}", request.remote_addr());
         let mreq = request.get_ref();
-        let hostname = cargo::util::hostname()?;
-        let domain = hostname.to_str().unwrap();
         let mut uuids: Vec<String> = Vec::new();
         let mut vmap = HashMap::new();
-        {
-            let mut s = self.s.write().await;
-            for req in mreq.requests.clone() {
-                let vec = match req.vector.clone() {
-                    Some(v) => v,
-                    None => return Err(Status::invalid_argument("Missing vector in request")),
+        let mut s = self.s.write().await;
+        for req in mreq.requests.clone() {
+            let vec = match req.vector.clone() {
+                Some(v) => v,
+                None => return Err(Status::invalid_argument("Missing vector in request")),
+            };
+            if vec.vector.len() != s.get_dimension_size() {
+                let err = Error::IncompatibleDimensionSize {
+                    got: vec.vector.len(),
+                    want: s.get_dimension_size(),
                 };
-                if vec.vector.len() != s.get_dimension_size() {
-                    let err = Error::IncompatibleDimensionSize {
-                        got: vec.vector.len(),
-                        want: s.get_dimension_size(),
-                    };
-                    let resource_type = format!("{}/qbg.MultiInsert", self.resource_type);
-                    let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
-                    let err_details = build_error_details(
-                        err,
-                        domain,
-                        &vec.id,
-                        mreq.encode_to_vec(),
-                        &resource_type,
-                        &resource_name,
-                        Some("vector dimension size"),
-                    );
-                    let status = Status::with_error_details(
-                        Code::InvalidArgument,
-                        "MultiInsert API Incombatible Dimension Size detedted",
-                        err_details,
-                    );
-                    warn!("{:?}", status);
-                    return Err(status);
-                }
-                uuids.push(vec.id.clone());
-                vmap.insert(vec.id, vec.vector);
+                let resource_type = format!("{}/qbg.MultiInsert", self.resource_type);
+                let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
+                let err_details = build_error_details(
+                    err,
+                    &vec.id,
+                    mreq.encode_to_vec(),
+                    &resource_type,
+                    &resource_name,
+                    Some("vector dimension size"),
+                );
+                let status = Status::with_error_details(
+                    Code::InvalidArgument,
+                    "MultiInsert API Incombatible Dimension Size detedted",
+                    err_details,
+                );
+                warn!("{:?}", status);
+                return Err(status);
             }
-            let result = s.insert_multiple(vmap);
-            match result {
-                Err(err) => {
-                    let resource_type = format!("{}/qbg.MultiInsert", self.resource_type);
-                    let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
-                    let request_bytes = mreq.encode_to_vec();
-                    let status = match err {
-                        Error::FlushingIsInProgress {} => {
-                            let err_details = build_error_details(
-                                err,
-                                domain,
-                                &uuids.join(", "),
-                                request_bytes,
-                                &resource_type,
-                                &resource_name,
-                                None,
-                            );
-                            let status = Status::with_error_details(
-                                Code::Aborted,
-                                "MultiInsert API aborted to process insert request due to flushing indices is in progress",
-                                err_details,
-                            );
-                            warn!("{:?}", status);
-                            status
-                        }
-                        Error::UUIDAlreadyExists { ref uuid } => {
-                            let err_details = build_error_details(
-                                &err,
-                                domain,
-                                uuid,
-                                request_bytes,
-                                &resource_type,
-                                &resource_name,
-                                None,
-                            );
-                            let uuids = Error::split_uuids(uuid.to_string());
-                            let status = Status::with_error_details(
-                                Code::AlreadyExists,
-                                format!("MultiInsert API uuids {:?} already exists", uuids),
-                                err_details,
-                            );
-                            warn!("{:?}", status);
-                            status
-                        }
-                        Error::UUIDNotFound { uuid: _ } => {
-                            let err_details = build_error_details(
-                                err,
-                                domain,
-                                &uuids.join(", "),
-                                request_bytes,
-                                &resource_type,
-                                &resource_name,
-                                Some("uuid"),
-                            );
-                            let status = Status::with_error_details(
-                                Code::InvalidArgument,
-                                format!("MultiInsert API invalid uuids \"{:?}\" detected", uuids),
-                                err_details,
-                            );
-                            warn!("{:?}", status);
-                            status
-                        }
-                        _ => {
-                            let err_details = build_error_details(
-                                err,
-                                domain,
-                                &uuids.join(", "),
-                                request_bytes,
-                                &resource_type,
-                                &resource_name,
-                                None,
-                            );
-                            let status = Status::with_error_details(
-                                Code::Internal,
-                                "MultiInsert API failed",
-                                err_details,
-                            );
-                            error!("{:?}", status);
-                            status
-                        }
-                    };
-                    Err(status)
-                }
-                Ok(()) => Ok(tonic::Response::new(object::Locations {
-                    locations: uuids
-                        .iter()
-                        .map(|x| object::Location {
-                            name: self.name.clone(),
-                            uuid: x.to_string(),
-                            ips: vec![self.ip.clone()],
-                        })
-                        .collect(),
-                })),
+            uuids.push(vec.id.clone());
+            vmap.insert(vec.id, vec.vector);
+        }
+        let result = s.insert_multiple(vmap).await;
+        match result {
+            Err(err) => {
+                let resource_type = format!("{}/qbg.MultiInsert", self.resource_type);
+                let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
+                let request_bytes = mreq.encode_to_vec();
+                let status = match err {
+                    Error::FlushingIsInProgress {} => {
+                        let err_details = build_error_details(
+                            err,
+                            &uuids.join(", "),
+                            request_bytes,
+                            &resource_type,
+                            &resource_name,
+                            None,
+                        );
+                        let status = Status::with_error_details(
+                            Code::Aborted,
+                            "MultiInsert API aborted to process insert request due to flushing indices is in progress",
+                            err_details,
+                        );
+                        warn!("{:?}", status);
+                        status
+                    }
+                    Error::UUIDAlreadyExists { ref uuid } => {
+                        let err_details = build_error_details(
+                            &err,
+                            uuid,
+                            request_bytes,
+                            &resource_type,
+                            &resource_name,
+                            None,
+                        );
+                        let uuids = Error::split_uuids(uuid.to_string());
+                        let status = Status::with_error_details(
+                            Code::AlreadyExists,
+                            format!("MultiInsert API uuids {:?} already exists", uuids),
+                            err_details,
+                        );
+                        warn!("{:?}", status);
+                        status
+                    }
+                    Error::UUIDNotFound { .. } => {
+                        let err_details = build_error_details(
+                            err,
+                            &uuids.join(", "),
+                            request_bytes,
+                            &resource_type,
+                            &resource_name,
+                            Some("uuid"),
+                        );
+                        let status = Status::with_error_details(
+                            Code::InvalidArgument,
+                            format!("MultiInsert API invalid uuids \"{:?}\" detected", uuids),
+                            err_details,
+                        );
+                        warn!("{:?}", status);
+                        status
+                    }
+                    _ => {
+                        let err_details = build_error_details(
+                            err,
+                            &uuids.join(", "),
+                            request_bytes,
+                            &resource_type,
+                            &resource_name,
+                            None,
+                        );
+                        let status = Status::with_error_details(
+                            Code::Internal,
+                            "MultiInsert API failed",
+                            err_details,
+                        );
+                        error!("{:?}", status);
+                        status
+                    }
+                };
+                Err(status)
             }
+            Ok(()) => Ok(tonic::Response::new(object::Locations {
+                locations: uuids
+                    .iter()
+                    .map(|x| object::Location {
+                        name: self.name.clone(),
+                        uuid: x.to_string(),
+                        ips: vec![self.ip.clone()],
+                    })
+                    .collect(),
+            })),
         }
     }
 }

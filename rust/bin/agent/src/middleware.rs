@@ -49,9 +49,11 @@ struct AccessLogGRPCEntity {
     method: String,
 }
 
+/// Layer that wraps services with access logging middleware.
 #[derive(Debug, Clone, Default)]
 pub struct AccessLogMiddlewareLayer {}
 
+/// Layer that wraps services with metrics recording middleware.
 #[derive(Debug, Clone, Default)]
 pub struct MetricMiddlewareLayer {}
 
@@ -71,11 +73,13 @@ impl<S> Layer<S> for MetricMiddlewareLayer {
     }
 }
 
+/// Service wrapper that logs access information for each request.
 #[derive(Debug, Clone)]
 pub struct AccessLogMiddleware<S> {
     inner: S,
 }
 
+/// Service wrapper that records metrics for each request.
 #[derive(Debug, Clone)]
 pub struct MetricMiddleware<S> {
     inner: S,
@@ -156,13 +160,13 @@ where
                             .unwrap_or("internal error");
                         warn!("{}, {:?}, {:?}", RPC_FAILED_MESSAGE, entity, message);
                     }
-                    return Ok(res);
+                    Ok(res)
                 }
                 Err(e) => {
                     warn!("{}, {:?}, {:?}", RPC_FAILED_MESSAGE, entity, e);
-                    return Err(e);
+                    Err(e)
                 }
-            };
+            }
         })
     }
 }
@@ -244,9 +248,9 @@ where
                         opentelemetry::KeyValue::new(GRPCSTATUS, code),
                     ];
                     latency_histogram
-                        .record((end_nanos - start_nanos) / 1_000_000 as f64, &attributes);
+                        .record((end_nanos - start_nanos) / 1_000_000_f64, &attributes);
                     completed_rpc_cnt.add(1, &attributes);
-                    return Ok(res);
+                    Ok(res)
                 }
                 Err(e) => {
                     let attributes = [
@@ -257,11 +261,11 @@ where
                         ),
                     ];
                     latency_histogram
-                        .record((end_nanos - start_nanos) / 1_000_000 as f64, &attributes);
+                        .record((end_nanos - start_nanos) / 1_000_000_f64, &attributes);
                     completed_rpc_cnt.add(1, &attributes);
-                    return Err(e);
+                    Err(e)
                 }
-            };
+            }
         })
     }
 }

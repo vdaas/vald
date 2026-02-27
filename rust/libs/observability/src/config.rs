@@ -19,57 +19,76 @@ use std::time::Duration;
 use opentelemetry::KeyValue;
 use opentelemetry_sdk::{self, Resource};
 
+/// OpenTelemetry configuration for tracing and metrics.
 #[derive(Clone, Debug)]
 pub struct Config {
+    /// Enables OpenTelemetry export.
     pub enabled: bool,
+    /// OTLP endpoint for trace/metric export.
     pub endpoint: String,
+    /// Resource attributes applied to all telemetry.
     pub attributes: HashMap<String, String>,
+    /// Tracing configuration.
     pub tracer: Tracer,
+    /// Metrics configuration.
     pub meter: Meter,
 }
 
+/// Tracing configuration settings.
 #[derive(Clone, Debug, Default)]
 pub struct Tracer {
+    /// Enables tracing export.
     pub enabled: bool,
 }
 
+/// Metrics configuration settings.
 #[derive(Clone, Debug)]
 pub struct Meter {
+    /// Enables metrics export.
     pub enabled: bool,
+    /// Metric export interval.
     pub export_duration: Duration,
+    /// Metric export timeout.
     pub export_timeout_duration: Duration,
 }
 
 impl Config {
+    /// Creates a configuration with default values.
     pub fn new() -> Self {
         Self::default()
     }
 
+    /// Sets whether OpenTelemetry export is enabled.
     pub fn enabled(mut self, enabled: bool) -> Self {
         self.enabled = enabled;
         self
     }
 
+    /// Sets the OTLP endpoint.
     pub fn endpoint(mut self, endpoint: &str) -> Self {
         self.endpoint = endpoint.to_string();
         self
     }
 
+    /// Sets resource attributes for exporters.
     pub fn attributes(mut self, attrs: HashMap<String, String>) -> Self {
         self.attributes = attrs;
         self
     }
 
+    /// Adds a single resource attribute.
     pub fn attribute(mut self, key: &str, value: &str) -> Self {
         self.attributes.insert(key.to_string(), value.to_string());
         self
     }
 
+    /// Sets the tracing configuration.
     pub fn tracer(mut self, cfg: Tracer) -> Self {
         self.tracer = cfg;
         self
     }
 
+    /// Sets the metrics configuration.
     pub fn meter(mut self, cfg: Meter) -> Self {
         self.meter = cfg;
         self
@@ -100,10 +119,12 @@ impl From<&Config> for Resource {
 }
 
 impl Tracer {
+    /// Creates a tracing configuration with default values.
     pub fn new() -> Self {
         Tracer::default()
     }
 
+    /// Enables or disables tracing export.
     pub fn enabled(mut self, enabled: bool) -> Self {
         self.enabled = enabled;
         self
@@ -111,20 +132,24 @@ impl Tracer {
 }
 
 impl Meter {
+    /// Creates a metrics configuration with default values.
     pub fn new() -> Self {
         Meter::default()
     }
 
+    /// Enables or disables metrics export.
     pub fn enabled(mut self, enabled: bool) -> Self {
         self.enabled = enabled;
         self
     }
 
+    /// Sets the metrics export interval.
     pub fn export_duration(mut self, dur: Duration) -> Self {
         self.export_duration = dur;
         self
     }
 
+    /// Sets the metrics export timeout.
     pub fn export_timeout_duration(mut self, dur: Duration) -> Self {
         self.export_timeout_duration = dur;
         self

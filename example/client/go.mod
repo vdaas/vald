@@ -11,11 +11,11 @@ replace (
 )
 
 require (
-	github.com/kpango/fuid v0.0.0-00010101000000-000000000000
-	github.com/kpango/glg v1.6.14
+	github.com/kpango/fuid v0.0.0-20221203053508-503b5ad89aa1
+	github.com/kpango/glg v1.6.15
 	github.com/vdaas/vald-client-go v1.7.17
-	gonum.org/v1/hdf5 v0.0.0-00010101000000-000000000000
-	google.golang.org/grpc v1.71.0
+	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
+	google.golang.org/grpc v1.78.0
 )
 
 require (

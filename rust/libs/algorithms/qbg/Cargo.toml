@@ -19,11 +19,13 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-anyhow = "1.0.101"
+anyhow = "1.0.102"
 cxx = { version = "1.0.194", features = ["c++20"] }
+serde = { version = "1.0.228", features = ["derive"] }
 
 [build-dependencies]
 cxx-build = "1.0.194"
 miette = { version = "7.6.0", features = ["fancy"] }
 
 [dev-dependencies]
+tempfile = "3.26"

@@ -22,13 +22,16 @@ fn main() -> miette::Result<()> {
         .flag_if_supported("-std=c++20")
         .flag_if_supported("-fopenmp")
         .flag_if_supported("-DNGT_BFLOAT_DISABLED")
+        .flag_if_supported("-march=native")
         .compile("qbg-rs");
 
     println!("cargo:rustc-link-search=native=/usr/local/lib");
+    println!("cargo:rustc-link-search=native=/usr/lib/x86_64-linux-gnu");
+    println!("cargo:rustc-link-search=native=/usr/lib/gcc/x86_64-linux-gnu/13");
     println!("cargo:rustc-link-lib=static=ngt");
-    println!("cargo:rustc-link-lib=blas");
-    println!("cargo:rustc-link-lib=lapack");
-    println!("cargo:rustc-link-lib=dylib=gomp");
+    println!("cargo:rustc-link-lib=static=blas");
+    println!("cargo:rustc-link-lib=static=gfortran");
+    println!("cargo:rustc-link-lib=static=gomp");
     println!("cargo:rerun-if-changed=src/*");
 
     Ok(())

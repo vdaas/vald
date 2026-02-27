@@ -20,6 +20,10 @@
 #include "NGT/NGTQ/QuantizedGraph.h"
 #include "rust/cxx.h"
 
+enum class DataType;
+enum class ObjectType;
+enum class DistanceType;
+
 struct SearchResult
 {
     rust::u32 id;
@@ -44,16 +48,16 @@ public:
         rust::usize,
         rust::usize,
         rust::usize,
-        rust::i32,
-        rust::i32,
-        rust::i32);
+        const DataType,
+        const ObjectType,
+        const DistanceType);
     void set_extended_dimension(rust::usize);
     void set_dimension(rust::usize);
     void set_number_of_subvectors(rust::usize);
     void set_number_of_blobs(rust::usize);
-    void set_internal_data_type(rust::i32);
-    void set_data_type(rust::i32);
-    void set_distance_type(rust::i32);
+    void set_internal_data_type(const DataType);
+    void set_data_type(const ObjectType);
+    void set_distance_type(const DistanceType);
     QBGBuildParameters *get_qbg_build_parameters();
     void init_qbg_build_parameters();
     void set_qbg_build_parameters(
