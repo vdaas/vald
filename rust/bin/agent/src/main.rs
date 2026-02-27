@@ -15,8 +15,34 @@
 //
 #![cfg_attr(test, allow(missing_docs))]
 
+use clap::Parser;
+
+mod version;
+
+#[derive(Parser, Debug)]
+#[command(name = "agent")]
+#[command(about = "Vald Agent - Vector Search Engine", long_about = None)]
+struct Args {
+    /// Print version information
+    #[arg(short, long)]
+    version: bool,
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let raw_args: Vec<String> = std::env::args().collect();
+    if version::is_version_request(&raw_args) {
+        version::print_version_info();
+        return Ok(());
+    }
+
+    let args = Args::parse();
+
+    if args.version {
+        version::print_version_info();
+        return Ok(());
+    }
+
     let settings = ::config::Config::builder()
         .add_source(::config::File::with_name("/etc/server/config.yaml"))
         .build()?;
@@ -27,3 +53,4 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     agent::serve(config).await
 }
+
