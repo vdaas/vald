@@ -20,14 +20,20 @@ e2e:
 	$(call run-e2e-crud-test,-run TestE2EStandardCRUD)
 
 .PHONY: e2e/v2
-## run e2e
-e2e/v2:
-	$(call run-v2-e2e-crud-test,-run TestE2EStrategy)
+## run e2e/v2
+e2e/v2: \
+	e2e/v2/ngt \
+	e2e/v2/qbg
+
+.PHONY: e2e/v2/ngt
+## run e2e/v2 with NGT
+e2e/v2/ngt:
+	$(call run-v2-e2e-crud-test,-run TestE2EStrategy,$(E2E_CONFIG))
 
 .PHONY: e2e/v2/qbg
-## run e2e with QBG
+## run e2e/v2 with QBG
 e2e/v2/qbg:
-	$(call run-v2-e2e-qbg-test,-run TestE2EStrategy)
+	$(call run-v2-e2e-crud-test,-run TestE2EStrategy,"$(E2E_CONFIG_DIR)/unary_crud_qbg.yaml")
 
 .PHONY: e2e/faiss
 ## run e2e/faiss

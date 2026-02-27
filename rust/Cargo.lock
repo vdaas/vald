@@ -2004,7 +2004,6 @@ dependencies = [
 name = "observability"
 version = "0.1.0"
 dependencies = [
- "anyhow",
  "opentelemetry",
  "opentelemetry-otlp",
  "opentelemetry-semantic-conventions",
@@ -2012,6 +2011,7 @@ dependencies = [
  "paste",
  "scopeguard",
  "serde_json",
+ "thiserror 2.0.18",
  "tokio",
  "tracing",
  "tracing-opentelemetry",

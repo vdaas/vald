@@ -16,6 +16,8 @@
 
 /// Configuration types for OpenTelemetry exporters.
 pub mod config;
+/// Error types for observability operations.
+pub mod error;
 /// Observability-related helper macros.
 pub mod macros;
 /// OpenTelemetry lifecycle management helpers.

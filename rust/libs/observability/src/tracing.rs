@@ -19,7 +19,6 @@
 //! This module provides integration between the `tracing` crate and OpenTelemetry,
 //! allowing spans and events from `tracing` to be exported to OpenTelemetry backends.
 
-use anyhow::Result;
 use opentelemetry::global;
 use opentelemetry::trace::TracerProvider;
 use opentelemetry_otlp::{SpanExporter, WithExportConfig};
@@ -33,6 +32,7 @@ use tracing_subscriber::util::SubscriberInitExt;
 use url::Url;
 
 use crate::config::Config;
+use crate::error::{ObservabilityError, Result};
 
 /// Configuration for tracing initialization.
 #[derive(Clone, Debug)]
@@ -147,7 +147,7 @@ pub fn init_tracing(
                 .with(tracing_subscriber::fmt::layer().json())
                 .with(OpenTelemetryLayer::new(tracer))
                 .try_init()
-                .map_err(|e| anyhow::anyhow!("failed to initialize tracing subscriber: {}", e))?;
+                .map_err(|e| ObservabilityError::TracingInit(Box::new(e)))?
         }
         // stdout + json (no otel)
         (true, true, None) => {
@@ -155,7 +155,7 @@ pub fn init_tracing(
                 .with(env_filter)
                 .with(tracing_subscriber::fmt::layer().json())
                 .try_init()
-                .map_err(|e| anyhow::anyhow!("failed to initialize tracing subscriber: {}", e))?;
+                .map_err(|e| ObservabilityError::TracingInit(Box::new(e)))?
         }
         // stdout + text + otel
         (true, false, Some(provider)) => {
@@ -165,7 +165,7 @@ pub fn init_tracing(
                 .with(tracing_subscriber::fmt::layer())
                 .with(OpenTelemetryLayer::new(tracer))
                 .try_init()
-                .map_err(|e| anyhow::anyhow!("failed to initialize tracing subscriber: {}", e))?;
+                .map_err(|e| ObservabilityError::TracingInit(Box::new(e)))?
         }
         // stdout + text (no otel)
         (true, false, None) => {
@@ -173,7 +173,7 @@ pub fn init_tracing(
                 .with(env_filter)
                 .with(tracing_subscriber::fmt::layer())
                 .try_init()
-                .map_err(|e| anyhow::anyhow!("failed to initialize tracing subscriber: {}", e))?;
+                .map_err(|e| ObservabilityError::TracingInit(Box::new(e)))?
         }
         // no stdout + otel only
         (false, _, Some(provider)) => {
@@ -182,14 +182,14 @@ pub fn init_tracing(
                 .with(env_filter)
                 .with(OpenTelemetryLayer::new(tracer))
                 .try_init()
-                .map_err(|e| anyhow::anyhow!("failed to initialize tracing subscriber: {}", e))?;
+                .map_err(|e| ObservabilityError::TracingInit(Box::new(e)))?
         }
         // no output at all
         (false, _, None) => {
             tracing_subscriber::registry()
                 .with(env_filter)
                 .try_init()
-                .map_err(|e| anyhow::anyhow!("failed to initialize tracing subscriber: {}", e))?;
+                .map_err(|e| ObservabilityError::TracingInit(Box::new(e)))?
         }
     }
 
