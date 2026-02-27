@@ -150,13 +150,11 @@ pub fn init_tracing(
                 .map_err(|e| ObservabilityError::TracingInit(Box::new(e)))?
         }
         // stdout + json (no otel)
-        (true, true, None) => {
-            tracing_subscriber::registry()
-                .with(env_filter)
-                .with(tracing_subscriber::fmt::layer().json())
-                .try_init()
-                .map_err(|e| ObservabilityError::TracingInit(Box::new(e)))?
-        }
+        (true, true, None) => tracing_subscriber::registry()
+            .with(env_filter)
+            .with(tracing_subscriber::fmt::layer().json())
+            .try_init()
+            .map_err(|e| ObservabilityError::TracingInit(Box::new(e)))?,
         // stdout + text + otel
         (true, false, Some(provider)) => {
             let tracer = provider.tracer(tracing_config.service_name.clone());
@@ -168,13 +166,11 @@ pub fn init_tracing(
                 .map_err(|e| ObservabilityError::TracingInit(Box::new(e)))?
         }
         // stdout + text (no otel)
-        (true, false, None) => {
-            tracing_subscriber::registry()
-                .with(env_filter)
-                .with(tracing_subscriber::fmt::layer())
-                .try_init()
-                .map_err(|e| ObservabilityError::TracingInit(Box::new(e)))?
-        }
+        (true, false, None) => tracing_subscriber::registry()
+            .with(env_filter)
+            .with(tracing_subscriber::fmt::layer())
+            .try_init()
+            .map_err(|e| ObservabilityError::TracingInit(Box::new(e)))?,
         // no stdout + otel only
         (false, _, Some(provider)) => {
             let tracer = provider.tracer(tracing_config.service_name.clone());
@@ -185,19 +181,17 @@ pub fn init_tracing(
                 .map_err(|e| ObservabilityError::TracingInit(Box::new(e)))?
         }
         // no output at all
-        (false, _, None) => {
-            tracing_subscriber::registry()
-                .with(env_filter)
-                .try_init()
-                .map_err(|e| ObservabilityError::TracingInit(Box::new(e)))?
-        }
+        (false, _, None) => tracing_subscriber::registry()
+            .with(env_filter)
+            .try_init()
+            .map_err(|e| ObservabilityError::TracingInit(Box::new(e)))?,
     }
 
     if let Some(provider) = &tracer_provider {
         global::set_text_map_propagator(TraceContextPropagator::new());
         global::set_tracer_provider(provider.clone());
     }
-    
+
     Ok(tracer_provider)
 }
 

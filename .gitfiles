@@ -2331,6 +2331,7 @@ rust/libs/kvs/src/map/types.rs
 rust/libs/kvs/src/map/unidirectional_map.rs
 rust/libs/observability/Cargo.toml
 rust/libs/observability/src/config.rs
+rust/libs/observability/src/error.rs
 rust/libs/observability/src/lib.rs
 rust/libs/observability/src/macros.rs
 rust/libs/observability/src/observability.rs
