@@ -18,25 +18,21 @@ package grpc
 
 import (
 	"runtime"
-	"time"
 
 	"github.com/vdaas/vald/internal/client/v1/client/meta"
+	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/sync/errgroup"
-	"github.com/vdaas/vald/internal/timeutil"
-	"github.com/vdaas/vald/pkg/gateway/lb/service"
 )
 
 type Option func(*server)
 
 var defaultOptions = []Option{
 	WithErrGroup(errgroup.Get()),
-	WithReplicationCount(3),
 	WithStreamConcurrency(runtime.GOMAXPROCS(-1) * 10),
 	WithMultiConcurrency(runtime.GOMAXPROCS(-1) * 10),
-	WithTimeout("5s"),
 	WithName(func() string {
 		name, err := os.Hostname()
 		if err != nil {
@@ -65,10 +61,18 @@ func WithName(name string) Option {
 	}
 }
 
-func WithGateway(g service.Gateway) Option {
+func WithValdClient(g vald.Client) Option {
 	return func(s *server) {
 		if g != nil {
 			s.gateway = g
+		}
+	}
+}
+
+func WithMetadataClient(mc meta.MetadataClient) Option {
+	return func(s *server) {
+		if mc != nil {
+			s.metadataClient = mc
 		}
 	}
 }
@@ -77,24 +81,6 @@ func WithErrGroup(eg errgroup.Group) Option {
 	return func(s *server) {
 		if eg != nil {
 			s.eg = eg
-		}
-	}
-}
-
-func WithTimeout(dur string) Option {
-	return func(s *server) {
-		d, err := timeutil.Parse(dur)
-		if err != nil {
-			d = time.Second * 10
-		}
-		s.timeout = d
-	}
-}
-
-func WithReplicationCount(rep int) Option {
-	return func(s *server) {
-		if rep > 0 {
-			s.replica = rep
 		}
 	}
 }
@@ -111,14 +97,6 @@ func WithMultiConcurrency(c int) Option {
 	return func(s *server) {
 		if c > 1 {
 			s.multiConcurrency = c
-		}
-	}
-}
-
-func WithMetadataClient(meta meta.MetadataClient) Option {
-	return func(s *server) {
-		if meta != nil {
-			s.metadataClient = meta
 		}
 	}
 }

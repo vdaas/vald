@@ -20,20 +20,22 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
+	"github.com/vdaas/vald/internal/client/v1/client/meta"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/gateway/lb/service"
 )
 
 type server struct {
-	vald.UnimplementedValdServer
 	eg                errgroup.Group
 	gateway           service.Gateway
-	name              string
-	ip                string
+	metadataClient    meta.MetadataClient
 	timeout           time.Duration
 	replica           int
 	streamConcurrency int
 	multiConcurrency  int
+	name              string
+	ip                string
+	vald.UnimplementedValdServerWithMetadata
 }
 
 const apiName = "vald/gateway/lb"
