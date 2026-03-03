@@ -23,6 +23,8 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/client/v1/client/meta"
 	client "github.com/vdaas/vald/internal/client/v1/client/vald"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -988,7 +990,16 @@ func (s *server) StreamListObject(
 	for {
 		res, err := client.Recv()
 		if err != nil {
-			return nil
+			if errors.Is(err, io.EOF) {
+				return nil
+			}
+			st, _ := status.FromError(err)
+			if st != nil && span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			return err
 		}
 		if err := stream.Send(res); err != nil {
 			return err

@@ -21,6 +21,8 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -132,7 +134,16 @@ func (s *server) StreamListObjectWithMetadata(
 	for {
 		res, err := client.Recv()
 		if err != nil {
-			return nil
+			if errors.Is(err, io.EOF) {
+				return nil
+			}
+			st, _ := status.FromError(err)
+			if st != nil && span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			return err
 		}
 		vec := res.GetVector()
 		if vec != nil && vec.GetId() != "" {
