@@ -290,7 +290,7 @@ spec:
             {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
         pathType: {{ $lb.ingress.pathType }}
       {{- end }}
-      {{- if or $filterReflectionEnabled $lbReflectionEnabled }}
+      {{- if or $filterReflectionEnabled $metaReflectionEnabled $lbReflectionEnabled }}
       - path: "/grpc.reflection.v1alpha.ServerReflection/ServerReflectionInfo"
         {{- if $filterReflectionEnabled }}
         backend:
@@ -298,6 +298,12 @@ spec:
             name: {{ $filter.name }}
             {{- include "vald.ingressPort" (dict "Values" $filter.ingress) | nindent 12 }}
         pathType: {{ $filter.ingress.pathType }}
+        {{- else if $metaReflectionEnabled }}
+        backend:
+          service:
+            name: {{ $meta.name }}
+            {{- include "vald.ingressPort" (dict "Values" $meta.ingress) | nindent 12 }}
+        pathType: {{ $meta.ingress.pathType }}
         {{- else }}
         backend:
           service:
@@ -312,6 +318,12 @@ spec:
             name: {{ $filter.name }}
             {{- include "vald.ingressPort" (dict "Values" $filter.ingress) | nindent 12 }}
         pathType: {{ $filter.ingress.pathType }}
+        {{- else if $metaReflectionEnabled }}
+        backend:
+          service:
+            name: {{ $meta.name }}
+            {{- include "vald.ingressPort" (dict "Values" $meta.ingress) | nindent 12 }}
+        pathType: {{ $meta.ingress.pathType }}
         {{- else }}
         backend:
           service:

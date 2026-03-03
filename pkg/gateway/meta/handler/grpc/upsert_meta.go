@@ -47,7 +47,7 @@ func (s *server) UpsertWithMetadata(
 	if err != nil {
 		return loc, err
 	}
-	err = s.metadataClient.Put(ctx, []byte(req.Vector.Id), req.Vector.Metadata)
+	err = s.metadataClient.Put(ctx, []byte(req.GetVector().GetId()), req.GetVector().GetMetadata())
 	if err != nil {
 		st, _ := status.FromError(err)
 		if st != nil && span != nil {

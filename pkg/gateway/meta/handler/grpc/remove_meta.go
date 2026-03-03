@@ -47,7 +47,7 @@ func (s *server) RemoveWithMetadata(
 	if err != nil {
 		return locs, err
 	}
-	err = s.metadataClient.Delete(ctx, []byte(req.Id.Id))
+	err = s.metadataClient.Delete(ctx, []byte(req.GetId().GetId()))
 	if err != nil {
 		st, _ := status.FromError(err)
 		if st != nil && span != nil {

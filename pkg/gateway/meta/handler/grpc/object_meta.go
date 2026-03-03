@@ -39,7 +39,7 @@ func (s *server) GetObjectWithMetadata(
 	if err != nil {
 		return vec, err
 	}
-	meta, err := s.metadataClient.Get(ctx, []byte(req.Id.Id))
+	meta, err := s.metadataClient.Get(ctx, []byte(req.GetId().GetId()))
 	if err != nil {
 		st, _ := status.FromError(err)
 		if st != nil && span != nil {
