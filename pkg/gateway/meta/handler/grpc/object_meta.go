@@ -135,11 +135,18 @@ func (s *server) StreamListObjectWithMetadata(
 			return nil
 		}
 		vec := res.GetVector()
-		if vec != nil && vec.Id != "" {
-			meta, merr := s.metadataClient.Get(ctx, []byte(vec.Id))
-			if merr == nil {
-				vec.Metadata = meta
+		if vec != nil && vec.GetId() != "" {
+			meta, merr := s.metadataClient.Get(ctx, []byte(vec.GetId()))
+			if merr != nil {
+				st, _ := status.FromError(merr)
+				if st != nil && span != nil {
+					span.RecordError(merr)
+					span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
+					span.SetStatus(trace.StatusError, merr.Error())
+				}
+				return merr
 			}
+			vec.Metadata = meta
 		}
 		if err := stream.Send(res); err != nil {
 			return err

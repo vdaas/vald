@@ -267,7 +267,7 @@ func (s *server) StreamSearchByIDWithMetadata(
 func (s *server) MultiSearchWithMetadata(
 	ctx context.Context, reqs *payload.Search_MultiRequest,
 ) (res *payload.Search_Responses, errs error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.MultiSearchRPCName), apiName+"/"+vald.MultiSearchRPCName)
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.MultiSearchRPCName+vald.MetadataSpanName), apiName+"/"+vald.MultiSearchRPCName+vald.MetadataSpanName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -414,32 +414,61 @@ func (s *server) LinearSearchWithMetadata(
 		}
 		return nil, err
 	}
-	results := res.GetResults()
-	if len(results) > 0 {
-		var mu sync.Mutex
-		var wg sync.WaitGroup
-		for i, r := range results {
-			idx, result := i, r
-			wg.Add(1)
-			s.eg.Go(safety.RecoverFunc(func() error {
-				defer wg.Done()
-				meta, merr := s.metadataClient.Get(ctx, []byte(result.GetId()))
-				if merr == nil {
-					mu.Lock()
-					results[idx].Metadata = meta
-					mu.Unlock()
+
+	var wg sync.WaitGroup
+	var mu, emu sync.Mutex
+	var errs error
+	for i, dis := range res.GetResults() {
+		idx, id := i, dis.GetId()
+		wg.Add(1)
+		s.eg.Go(safety.RecoverFunc(func() error {
+			defer wg.Done()
+			ti := "errgroup.Go/id-" + strconv.Itoa(idx)
+			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, ti), apiName+"/Metadata/"+ti)
+			defer func() {
+				if sspan != nil {
+					sspan.End()
 				}
+			}()
+			meta, err := s.metadataClient.Get(ctx, []byte(id))
+			if err != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
+					sspan.RecordError(err)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
+					sspan.SetStatus(trace.StatusError, err.Error())
+				}
+				emu.Lock()
+				if errs != nil {
+					errs = errors.Join(errs, err)
+				} else {
+					errs = err
+				}
+				emu.Unlock()
 				return nil
-			}))
+			}
+			mu.Lock()
+			res.Results[idx].Metadata = meta
+			mu.Unlock()
+			return nil
+		}))
+	}
+	wg.Wait()
+	if errs != nil {
+		st, _ := status.FromError(errs)
+		if st != nil && span != nil {
+			span.RecordError(errs)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
+			span.SetStatus(trace.StatusError, errs.Error())
 		}
-		wg.Wait()
+		return res, errs
 	}
 	return res, nil
 }
 
 func (s *server) LinearSearchByIDWithMetadata(
 	ctx context.Context, req *payload.Search_IDRequest,
-) (res *payload.Search_Response, errs error) {
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(
 		grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.LinearSearchByIDRPCName+vald.MetadataSpanName),
 		apiName+"/"+vald.LinearSearchByIDRPCName+vald.MetadataSpanName,
@@ -449,7 +478,7 @@ func (s *server) LinearSearchByIDWithMetadata(
 			span.End()
 		}
 	}()
-	res, err := s.gateway.LinearSearchByID(ctx, req, s.copts...)
+	res, err = s.gateway.LinearSearchByID(ctx, req, s.copts...)
 	if err != nil {
 		st, _ := status.FromError(err)
 		if st != nil && span != nil {
@@ -459,26 +488,46 @@ func (s *server) LinearSearchByIDWithMetadata(
 		}
 		return nil, err
 	}
-	results := res.GetResults()
-	if len(results) > 0 {
-		var mu sync.Mutex
-		var wg sync.WaitGroup
-		for i, r := range results {
-			idx, result := i, r
-			wg.Add(1)
-			s.eg.Go(safety.RecoverFunc(func() error {
-				defer wg.Done()
-				meta, merr := s.metadataClient.Get(ctx, []byte(result.GetId()))
-				if merr == nil {
-					mu.Lock()
-					results[idx].Metadata = meta
-					mu.Unlock()
+
+	var wg sync.WaitGroup
+	var mu, emu sync.Mutex
+	var errs error
+	for i, dis := range res.GetResults() {
+		idx, id := i, dis.GetId()
+		wg.Add(1)
+		s.eg.Go(safety.RecoverFunc(func() error {
+			defer wg.Done()
+			ti := "errgroup.Go/id-" + strconv.Itoa(idx)
+			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, ti), apiName+"/Metadata/"+ti)
+			defer func() {
+				if sspan != nil {
+					sspan.End()
 				}
+			}()
+			meta, err := s.metadataClient.Get(ctx, []byte(id))
+			if err != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
+					sspan.RecordError(err)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
+					sspan.SetStatus(trace.StatusError, err.Error())
+				}
+				emu.Lock()
+				if errs != nil {
+					errs = errors.Join(errs, err)
+				} else {
+					errs = err
+				}
+				emu.Unlock()
 				return nil
-			}))
-		}
-		wg.Wait()
+			}
+			mu.Lock()
+			res.Results[idx].Metadata = meta
+			mu.Unlock()
+			return nil
+		}))
 	}
+	wg.Wait()
 	if errs != nil {
 		st, _ := status.FromError(errs)
 		if st != nil && span != nil {
