@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package usecase represents gateway meta DMG usecase layer
+// Package usecase represents gateway meta usecase layer
 package usecase
