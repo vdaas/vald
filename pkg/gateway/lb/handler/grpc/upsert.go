@@ -111,7 +111,12 @@ func (s *server) Upsert(
 				}
 			}
 		} else if conv.F32stos(vec.GetVector()) == conv.F32stos(req.GetVector().GetVector()) {
-			err = status.WrapWithAlreadyExists(vald.GetObjectRPCName+" API for "+vald.UpsertRPCName+" API ID = "+uuid+"'s same vector data already exists", errors.ErrSameVectorAlreadyExists(uuid, vec.GetVector(), req.GetVector().GetVector()), reqInfo, resInfo)
+			err = status.WrapWithAlreadyExists(
+				vald.GetObjectRPCName+" API for "+vald.UpsertRPCName+" API ID = "+uuid+"'s same vector data already exists",
+				errors.ErrSameVectorAlreadyExists(uuid, vec.GetVector(), req.GetVector().GetVector()),
+				reqInfo,
+				resInfo,
+			)
 			attrs = trace.StatusCodeAlreadyExists(err.Error())
 		}
 		if err != nil {

@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-.github/workflows/dockers-gateway-meta-image.yaml
 .all-contributorsrc
 .commit_template
 .cspell.json
@@ -98,6 +97,7 @@
 .github/workflows/dockers-example-client-image.yaml
 .github/workflows/dockers-gateway-filter-image.yaml
 .github/workflows/dockers-gateway-lb-image.yaml
+.github/workflows/dockers-gateway-meta-image.yaml
 .github/workflows/dockers-gateway-mirror-image.yaml
 .github/workflows/dockers-helm-operator-image.yaml
 .github/workflows/dockers-image-scan.yaml
