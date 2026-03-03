@@ -58,6 +58,7 @@ const (
 	gateway             = "gateway"
 	gatewayFilter       = gateway + "-filter"
 	gatewayLb           = gateway + "-lb"
+	gatewayMeta         = gateway + "-meta"
 	gatewayMirror       = gateway + "-mirror"
 	helmOperator        = "helm-operator"
 	index               = "index"
@@ -708,6 +709,10 @@ func main() {
 		vald + "-" + gatewayFilter: {
 			AppName:    "filter",
 			PackageDir: "gateway/filter",
+		},
+		vald + "-" + gatewayMeta: {
+			AppName:    "meta",
+			PackageDir: "gateway/meta",
 		},
 		vald + "-" + gatewayMirror: {
 			AppName:    "mirror",

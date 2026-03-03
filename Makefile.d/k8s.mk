@@ -125,6 +125,7 @@ k8s/vald/manifests:
 	--set discoverer.image.repository=$(CRORG)/$(DISCOVERER_IMAGE) \
 	--set gateway.filter.image.repository=$(CRORG)/$(FILTER_GATEWAY_IMAGE) \
 	--set gateway.lb.image.repository=$(CRORG)/$(LB_GATEWAY_IMAGE) \
+	--set gateway.meta.image.repository=$(CRORG)/$(META_GATEWAY_IMAGE) \
 	--set gateway.mirror.image.repository=$(CRORG)/$(MIRROR_GATEWAY_IMAGE) \
 	--set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
 	--set manager.index.creator.image.repository=$(CRORG)/$(INDEX_CREATION_IMAGE) \

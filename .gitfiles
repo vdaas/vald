@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+.github/workflows/dockers-gateway-meta-image.yaml
 .all-contributorsrc
 .commit_template
 .cspell.json
@@ -454,6 +455,15 @@ charts/vald/templates/gateway/lb/pdb.yaml
 charts/vald/templates/gateway/lb/priorityclass.yaml
 charts/vald/templates/gateway/lb/serviceaccount.yaml
 charts/vald/templates/gateway/lb/svc.yaml
+charts/vald/templates/gateway/meta/configmap.yaml
+charts/vald/templates/gateway/meta/daemonset.yaml
+charts/vald/templates/gateway/meta/deployment.yaml
+charts/vald/templates/gateway/meta/hpa.yaml
+charts/vald/templates/gateway/meta/networkpolicy.yaml
+charts/vald/templates/gateway/meta/pdb.yaml
+charts/vald/templates/gateway/meta/priorityclass.yaml
+charts/vald/templates/gateway/meta/serviceaccount.yaml
+charts/vald/templates/gateway/meta/svc.yaml
 charts/vald/templates/gateway/mirror/clusterrole.yaml
 charts/vald/templates/gateway/mirror/clusterrolebinding.yaml
 charts/vald/templates/gateway/mirror/configmap.yaml
@@ -558,6 +568,9 @@ cmd/gateway/lb/doc.go
 cmd/gateway/lb/main.go
 cmd/gateway/lb/main_test.go
 cmd/gateway/lb/sample.yaml
+cmd/gateway/meta/doc.go
+cmd/gateway/meta/main.go
+cmd/gateway/meta/sample.yaml
 cmd/gateway/mirror/doc.go
 cmd/gateway/mirror/main.go
 cmd/gateway/mirror/main_test.go
@@ -631,6 +644,7 @@ dockers/gateway/filter/Dockerfile
 dockers/gateway/filter/README.md
 dockers/gateway/lb/Dockerfile
 dockers/gateway/lb/README.md
+dockers/gateway/meta/Dockerfile
 dockers/gateway/mirror/Dockerfile
 dockers/index/job/correction/Dockerfile
 dockers/index/job/creation/Dockerfile
@@ -2085,6 +2099,26 @@ pkg/gateway/lb/service/option_test.go
 pkg/gateway/lb/usecase/doc.go
 pkg/gateway/lb/usecase/vald.go
 pkg/gateway/lb/usecase/vald_test.go
+pkg/gateway/meta/config/config.go
+pkg/gateway/meta/config/doc.go
+pkg/gateway/meta/handler/doc.go
+pkg/gateway/meta/handler/grpc/doc.go
+pkg/gateway/meta/handler/grpc/handler.go
+pkg/gateway/meta/handler/grpc/insert_meta.go
+pkg/gateway/meta/handler/grpc/object_meta.go
+pkg/gateway/meta/handler/grpc/option.go
+pkg/gateway/meta/handler/grpc/remove_meta.go
+pkg/gateway/meta/handler/grpc/search_meta.go
+pkg/gateway/meta/handler/grpc/update_meta.go
+pkg/gateway/meta/handler/grpc/upsert_meta.go
+pkg/gateway/meta/handler/rest/doc.go
+pkg/gateway/meta/handler/rest/handler.go
+pkg/gateway/meta/handler/rest/option.go
+pkg/gateway/meta/router/doc.go
+pkg/gateway/meta/router/option.go
+pkg/gateway/meta/router/router.go
+pkg/gateway/meta/usecase/doc.go
+pkg/gateway/meta/usecase/vald.go
 pkg/gateway/mirror/README.md
 pkg/gateway/mirror/config/config.go
 pkg/gateway/mirror/config/config_test.go
