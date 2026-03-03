@@ -1143,7 +1143,11 @@ spec:
                                 - VerifyIfGiven
                                 - RequireAndVerify
                               type: string
+                            crl:
+                              type: string
                             enabled:
+                              type: boolean
+                            hot_reload:
                               type: boolean
                             insecure_skip_verify:
                               type: boolean
@@ -1162,13 +1166,8 @@ spec:
                           type: object
                           x-kubernetes-preserve-unknown-fields: true
                       type: object
-                    serviceAccount:
-                      properties:
-                        enabled:
-                          type: boolean
-                        name:
-                          type: string
-                      type: object
+                    serviceAccountName:
+                      type: string
                     serviceType:
                       enum:
                         - ClusterIP
@@ -1322,7 +1321,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -2141,7 +2144,11 @@ spec:
                                     - VerifyIfGiven
                                     - RequireAndVerify
                                   type: string
+                                crl:
+                                  type: string
                                 enabled:
+                                  type: boolean
+                                hot_reload:
                                   type: boolean
                                 insecure_skip_verify:
                                   type: boolean
@@ -2378,7 +2385,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -2422,7 +2433,11 @@ spec:
                                     - VerifyIfGiven
                                     - RequireAndVerify
                                   type: string
+                                crl:
+                                  type: string
                                 enabled:
+                                  type: boolean
+                                hot_reload:
                                   type: boolean
                                 insecure_skip_verify:
                                   type: boolean
@@ -3148,7 +3163,11 @@ spec:
                                 - VerifyIfGiven
                                 - RequireAndVerify
                               type: string
+                            crl:
+                              type: string
                             enabled:
+                              type: boolean
+                            hot_reload:
                               type: boolean
                             insecure_skip_verify:
                               type: boolean
@@ -3295,7 +3314,11 @@ spec:
                                     - VerifyIfGiven
                                     - RequireAndVerify
                                   type: string
+                                crl:
+                                  type: string
                                 enabled:
+                                  type: boolean
+                                hot_reload:
                                   type: boolean
                                 insecure_skip_verify:
                                   type: boolean
@@ -4137,7 +4160,11 @@ spec:
                                 - VerifyIfGiven
                                 - RequireAndVerify
                               type: string
+                            crl:
+                              type: string
                             enabled:
+                              type: boolean
+                            hot_reload:
                               type: boolean
                             insecure_skip_verify:
                               type: boolean
@@ -4156,13 +4183,8 @@ spec:
                           type: object
                           x-kubernetes-preserve-unknown-fields: true
                       type: object
-                    serviceAccount:
-                      properties:
-                        enabled:
-                          type: boolean
-                        name:
-                          type: string
-                      type: object
+                    serviceAccountName:
+                      type: string
                     serviceType:
                       enum:
                         - ClusterIP
@@ -4432,7 +4454,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -4476,7 +4502,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -4661,7 +4691,11 @@ spec:
                                                 - VerifyIfGiven
                                                 - RequireAndVerify
                                               type: string
+                                            crl:
+                                              type: string
                                             enabled:
+                                              type: boolean
+                                            hot_reload:
                                               type: boolean
                                             insecure_skip_verify:
                                               type: boolean
@@ -4705,7 +4739,11 @@ spec:
                                         - VerifyIfGiven
                                         - RequireAndVerify
                                       type: string
+                                    crl:
+                                      type: string
                                     enabled:
+                                      type: boolean
+                                    hot_reload:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
@@ -4883,7 +4921,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -4927,7 +4969,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -5757,7 +5803,11 @@ spec:
                                     - VerifyIfGiven
                                     - RequireAndVerify
                                   type: string
+                                crl:
+                                  type: string
                                 enabled:
+                                  type: boolean
+                                hot_reload:
                                   type: boolean
                                 insecure_skip_verify:
                                   type: boolean
@@ -5776,13 +5826,8 @@ spec:
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
                           type: object
-                        serviceAccount:
-                          properties:
-                            enabled:
-                              type: boolean
-                            name:
-                              type: string
-                          type: object
+                        serviceAccountName:
+                          type: string
                         serviceType:
                           enum:
                             - ClusterIP
@@ -6052,7 +6097,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -6096,7 +6145,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -6272,7 +6325,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -6316,7 +6373,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -6494,7 +6555,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -6538,7 +6603,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -7358,7 +7427,11 @@ spec:
                                     - VerifyIfGiven
                                     - RequireAndVerify
                                   type: string
+                                crl:
+                                  type: string
                                 enabled:
+                                  type: boolean
+                                hot_reload:
                                   type: boolean
                                 insecure_skip_verify:
                                   type: boolean
@@ -7377,13 +7450,1168 @@ spec:
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
                           type: object
-                        serviceAccount:
+                        serviceAccountName:
+                          type: string
+                        serviceType:
+                          enum:
+                            - ClusterIP
+                            - LoadBalancer
+                            - NodePort
+                          type: string
+                        terminationGracePeriodSeconds:
+                          minimum: 0
+                          type: integer
+                        time_zone:
+                          type: string
+                        tolerations:
+                          items:
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                          type: array
+                        topologySpreadConstraints:
+                          items:
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                          type: array
+                        unhealthyPodEvictionPolicy:
+                          enum:
+                            - AlwaysAllow
+                            - IfHealthyBudget
+                          type: string
+                        version:
+                          pattern: ^v[0-9]+\.[0-9]+\.[0-9]$
+                          type: string
+                        volumeMounts:
+                          items:
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                          type: array
+                        volumes:
+                          items:
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                          type: array
+                      type: object
+                    meta:
+                      properties:
+                        affinity:
+                          properties:
+                            nodeAffinity:
+                              properties:
+                                preferredDuringSchedulingIgnoredDuringExecution:
+                                  items:
+                                    type: object
+                                    x-kubernetes-preserve-unknown-fields: true
+                                  type: array
+                                requiredDuringSchedulingIgnoredDuringExecution:
+                                  properties:
+                                    nodeSelectorTerms:
+                                      items:
+                                        type: object
+                                        x-kubernetes-preserve-unknown-fields: true
+                                      type: array
+                                  type: object
+                              type: object
+                            podAffinity:
+                              properties:
+                                preferredDuringSchedulingIgnoredDuringExecution:
+                                  items:
+                                    type: object
+                                    x-kubernetes-preserve-unknown-fields: true
+                                  type: array
+                                requiredDuringSchedulingIgnoredDuringExecution:
+                                  items:
+                                    type: object
+                                    x-kubernetes-preserve-unknown-fields: true
+                                  type: array
+                              type: object
+                            podAntiAffinity:
+                              properties:
+                                preferredDuringSchedulingIgnoredDuringExecution:
+                                  items:
+                                    type: object
+                                    x-kubernetes-preserve-unknown-fields: true
+                                  type: array
+                                requiredDuringSchedulingIgnoredDuringExecution:
+                                  items:
+                                    type: object
+                                    x-kubernetes-preserve-unknown-fields: true
+                                  type: array
+                              type: object
+                          type: object
+                        annotations:
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                        enabled:
+                          type: boolean
+                        env:
+                          items:
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                          type: array
+                        externalTrafficPolicy:
+                          type: string
+                        gateway_config:
+                          properties:
+                            gateway_client:
+                              properties:
+                                addrs:
+                                  items:
+                                    type: string
+                                  type: array
+                                backoff:
+                                  properties:
+                                    backoff_factor:
+                                      type: number
+                                    backoff_time_limit:
+                                      type: string
+                                    enable_error_log:
+                                      type: boolean
+                                    initial_duration:
+                                      type: string
+                                    jitter_limit:
+                                      type: string
+                                    maximum_duration:
+                                      type: string
+                                    retry_count:
+                                      type: integer
+                                  type: object
+                                call_option:
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
+                                circuit_breaker:
+                                  properties:
+                                    closed_error_rate:
+                                      type: number
+                                    closed_refresh_timeout:
+                                      type: string
+                                    half_open_error_rate:
+                                      type: number
+                                    min_samples:
+                                      type: integer
+                                    open_timeout:
+                                      type: string
+                                  type: object
+                                connection_pool:
+                                  properties:
+                                    enable_dns_resolver:
+                                      type: boolean
+                                    enable_rebalance:
+                                      type: boolean
+                                    old_conn_close_duration:
+                                      type: string
+                                    rebalance_duration:
+                                      type: string
+                                    size:
+                                      type: integer
+                                  type: object
+                                content_subtype:
+                                  type: string
+                                dial_option:
+                                  properties:
+                                    authority:
+                                      type: string
+                                    backoff_base_delay:
+                                      type: string
+                                    backoff_jitter:
+                                      type: number
+                                    backoff_max_delay:
+                                      type: string
+                                    backoff_multiplier:
+                                      type: number
+                                    disable_retry:
+                                      type: boolean
+                                    enable_backoff:
+                                      type: boolean
+                                    idle_timeout:
+                                      type: string
+                                    initial_connection_window_size:
+                                      type: integer
+                                    initial_window_size:
+                                      type: integer
+                                    insecure:
+                                      type: boolean
+                                    interceptors:
+                                      items:
+                                        enum:
+                                          - TraceInterceptor
+                                          - MetricInterceptor
+                                        type: string
+                                      type: array
+                                    keepalive:
+                                      properties:
+                                        permit_without_stream:
+                                          type: boolean
+                                        time:
+                                          type: string
+                                        timeout:
+                                          type: string
+                                      type: object
+                                    max_call_attempts:
+                                      type: integer
+                                    max_header_list_size:
+                                      type: integer
+                                    max_msg_size:
+                                      type: integer
+                                    min_connection_timeout:
+                                      type: string
+                                    net:
+                                      properties:
+                                        dialer:
+                                          properties:
+                                            dual_stack_enabled:
+                                              type: boolean
+                                            keepalive:
+                                              type: string
+                                            timeout:
+                                              type: string
+                                          type: object
+                                        dns:
+                                          properties:
+                                            cache_enabled:
+                                              type: boolean
+                                            cache_expiration:
+                                              type: string
+                                            refresh_duration:
+                                              type: string
+                                          type: object
+                                        network:
+                                          enum:
+                                            - tcp
+                                            - udp
+                                            - unix
+                                          type: string
+                                        socket_option:
+                                          properties:
+                                            ip_recover_destination_addr:
+                                              type: boolean
+                                            ip_transparent:
+                                              type: boolean
+                                            reuse_addr:
+                                              type: boolean
+                                            reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
+                                              type: boolean
+                                          type: object
+                                        tls:
+                                          properties:
+                                            ca:
+                                              type: string
+                                            cert:
+                                              type: string
+                                            client_auth:
+                                              enum:
+                                                - Auto
+                                                - None
+                                                - Request
+                                                - RequireAny
+                                                - VerifyIfGiven
+                                                - RequireAndVerify
+                                              type: string
+                                            crl:
+                                              type: string
+                                            enabled:
+                                              type: boolean
+                                            hot_reload:
+                                              type: boolean
+                                            insecure_skip_verify:
+                                              type: boolean
+                                            key:
+                                              type: string
+                                            server_name:
+                                              type: string
+                                          type: object
+                                      type: object
+                                    read_buffer_size:
+                                      type: integer
+                                    shared_write_buffer:
+                                      type: boolean
+                                    timeout:
+                                      type: string
+                                    user_agent:
+                                      type: string
+                                    write_buffer_size:
+                                      type: integer
+                                  type: object
+                                health_check_duration:
+                                  type: string
+                                max_recv_msg_size:
+                                  type: integer
+                                max_retry_rpc_buffer_size:
+                                  type: integer
+                                max_send_msg_size:
+                                  type: integer
+                                tls:
+                                  properties:
+                                    ca:
+                                      type: string
+                                    cert:
+                                      type: string
+                                    client_auth:
+                                      enum:
+                                        - Auto
+                                        - None
+                                        - Request
+                                        - RequireAny
+                                        - VerifyIfGiven
+                                        - RequireAndVerify
+                                      type: string
+                                    crl:
+                                      type: string
+                                    enabled:
+                                      type: boolean
+                                    hot_reload:
+                                      type: boolean
+                                    insecure_skip_verify:
+                                      type: boolean
+                                    key:
+                                      type: string
+                                    server_name:
+                                      type: string
+                                  type: object
+                                wait_for_ready:
+                                  type: boolean
+                              type: object
+                            metadata_store:
+                              properties:
+                                addrs:
+                                  items:
+                                    type: string
+                                  type: array
+                              type: object
+                          type: object
+                        hpa:
                           properties:
                             enabled:
                               type: boolean
-                            name:
+                            targetCPUUtilizationPercentage:
+                              type: integer
+                          type: object
+                        image:
+                          properties:
+                            pullPolicy:
+                              enum:
+                                - Always
+                                - Never
+                                - IfNotPresent
+                              type: string
+                            repository:
+                              type: string
+                            tag:
                               type: string
                           type: object
+                        ingress:
+                          properties:
+                            annotations:
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
+                            defaultBackend:
+                              properties:
+                                enabled:
+                                  type: boolean
+                              type: object
+                            enabled:
+                              type: boolean
+                            host:
+                              type: string
+                            pathType:
+                              type: string
+                            servicePort:
+                              type: string
+                            tls:
+                              items:
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
+                              type: array
+                          type: object
+                        initContainers:
+                          items:
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                          type: array
+                        internalTrafficPolicy:
+                          type: string
+                        kind:
+                          enum:
+                            - Deployment
+                            - DaemonSet
+                          type: string
+                        logging:
+                          properties:
+                            format:
+                              enum:
+                                - raw
+                                - json
+                              type: string
+                            level:
+                              enum:
+                                - debug
+                                - info
+                                - warn
+                                - error
+                                - fatal
+                              type: string
+                            logger:
+                              enum:
+                                - glg
+                                - zap
+                              type: string
+                          type: object
+                        maxReplicas:
+                          minimum: 0
+                          type: integer
+                        maxUnavailable:
+                          type: string
+                        minReplicas:
+                          minimum: 0
+                          type: integer
+                        name:
+                          type: string
+                        nodeName:
+                          type: string
+                        nodeSelector:
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                        observability:
+                          properties:
+                            enabled:
+                              type: boolean
+                            metrics:
+                              properties:
+                                enable_cgo:
+                                  type: boolean
+                                enable_goroutine:
+                                  type: boolean
+                                enable_memory:
+                                  type: boolean
+                                enable_version_info:
+                                  type: boolean
+                                version_info_labels:
+                                  items:
+                                    enum:
+                                      - vald_version
+                                      - server_name
+                                      - git_commit
+                                      - build_time
+                                      - go_version
+                                      - go_os
+                                      - go_arch
+                                      - cgo_enabled
+                                      - algorithm_info
+                                      - build_cpu_info_flags
+                                    type: string
+                                  type: array
+                              type: object
+                            otlp:
+                              properties:
+                                attribute:
+                                  properties:
+                                    namespace:
+                                      type: string
+                                    node_name:
+                                      type: string
+                                    pod_name:
+                                      type: string
+                                    service_name:
+                                      type: string
+                                  type: object
+                                collector_endpoint:
+                                  type: string
+                                metrics_export_interval:
+                                  type: string
+                                metrics_export_timeout:
+                                  type: string
+                                trace_batch_timeout:
+                                  type: string
+                                trace_export_timeout:
+                                  type: string
+                                trace_max_export_batch_size:
+                                  type: integer
+                                trace_max_queue_size:
+                                  type: integer
+                              type: object
+                            trace:
+                              properties:
+                                enabled:
+                                  type: boolean
+                              type: object
+                          type: object
+                        podAnnotations:
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                        podPriority:
+                          properties:
+                            enabled:
+                              type: boolean
+                            value:
+                              type: integer
+                          type: object
+                        podSecurityContext:
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                        progressDeadlineSeconds:
+                          type: integer
+                        resources:
+                          properties:
+                            limits:
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
+                            requests:
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
+                          type: object
+                        revisionHistoryLimit:
+                          minimum: 0
+                          type: integer
+                        rollingUpdate:
+                          properties:
+                            maxSurge:
+                              type: string
+                            maxUnavailable:
+                              type: string
+                          type: object
+                        securityContext:
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                        server_config:
+                          properties:
+                            full_shutdown_duration:
+                              type: string
+                            healths:
+                              properties:
+                                liveness:
+                                  properties:
+                                    enabled:
+                                      type: boolean
+                                    host:
+                                      type: string
+                                    livenessProbe:
+                                      properties:
+                                        failureThreshold:
+                                          type: integer
+                                        httpGet:
+                                          properties:
+                                            path:
+                                              type: string
+                                            port:
+                                              type: string
+                                            scheme:
+                                              type: string
+                                          type: object
+                                        initialDelaySeconds:
+                                          type: integer
+                                        periodSeconds:
+                                          type: integer
+                                        successThreshold:
+                                          type: integer
+                                        timeoutSeconds:
+                                          type: integer
+                                      type: object
+                                    port:
+                                      maximum: 65535
+                                      minimum: 0
+                                      type: integer
+                                    server:
+                                      properties:
+                                        http:
+                                          properties:
+                                            handler_timeout:
+                                              type: string
+                                            http2:
+                                              properties:
+                                                enabled:
+                                                  type: boolean
+                                                handler_limit:
+                                                  type: integer
+                                                max_concurrent_streams:
+                                                  type: integer
+                                                max_decoder_header_table_size:
+                                                  type: integer
+                                                max_encoder_header_table_size:
+                                                  type: integer
+                                                max_read_frame_size:
+                                                  type: integer
+                                                max_upload_buffer_per_connection:
+                                                  type: integer
+                                                max_upload_buffer_per_stream:
+                                                  type: integer
+                                                permit_prohibited_cipher_suites:
+                                                  type: boolean
+                                              type: object
+                                            idle_timeout:
+                                              type: string
+                                            read_header_timeout:
+                                              type: string
+                                            read_timeout:
+                                              type: string
+                                            shutdown_duration:
+                                              type: string
+                                            write_timeout:
+                                              type: string
+                                          type: object
+                                        mode:
+                                          type: string
+                                        network:
+                                          enum:
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
+                                          type: string
+                                        probe_wait_time:
+                                          type: string
+                                        restart:
+                                          type: boolean
+                                        socket_option:
+                                          properties:
+                                            ip_recover_destination_addr:
+                                              type: boolean
+                                            ip_transparent:
+                                              type: boolean
+                                            reuse_addr:
+                                              type: boolean
+                                            reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
+                                              type: boolean
+                                          type: object
+                                        socket_path:
+                                          type: string
+                                      type: object
+                                    servicePort:
+                                      maximum: 65535
+                                      minimum: 0
+                                      type: integer
+                                  type: object
+                                readiness:
+                                  properties:
+                                    enabled:
+                                      type: boolean
+                                    host:
+                                      type: string
+                                    port:
+                                      maximum: 65535
+                                      minimum: 0
+                                      type: integer
+                                    readinessProbe:
+                                      properties:
+                                        failureThreshold:
+                                          type: integer
+                                        httpGet:
+                                          properties:
+                                            path:
+                                              type: string
+                                            port:
+                                              type: string
+                                            scheme:
+                                              type: string
+                                          type: object
+                                        initialDelaySeconds:
+                                          type: integer
+                                        periodSeconds:
+                                          type: integer
+                                        successThreshold:
+                                          type: integer
+                                        timeoutSeconds:
+                                          type: integer
+                                      type: object
+                                    server:
+                                      properties:
+                                        http:
+                                          properties:
+                                            handler_timeout:
+                                              type: string
+                                            http2:
+                                              properties:
+                                                enabled:
+                                                  type: boolean
+                                                handler_limit:
+                                                  type: integer
+                                                max_concurrent_streams:
+                                                  type: integer
+                                                max_decoder_header_table_size:
+                                                  type: integer
+                                                max_encoder_header_table_size:
+                                                  type: integer
+                                                max_read_frame_size:
+                                                  type: integer
+                                                max_upload_buffer_per_connection:
+                                                  type: integer
+                                                max_upload_buffer_per_stream:
+                                                  type: integer
+                                                permit_prohibited_cipher_suites:
+                                                  type: boolean
+                                              type: object
+                                            idle_timeout:
+                                              type: string
+                                            read_header_timeout:
+                                              type: string
+                                            read_timeout:
+                                              type: string
+                                            shutdown_duration:
+                                              type: string
+                                            write_timeout:
+                                              type: string
+                                          type: object
+                                        mode:
+                                          type: string
+                                        network:
+                                          enum:
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
+                                          type: string
+                                        probe_wait_time:
+                                          type: string
+                                        restart:
+                                          type: boolean
+                                        socket_option:
+                                          properties:
+                                            ip_recover_destination_addr:
+                                              type: boolean
+                                            ip_transparent:
+                                              type: boolean
+                                            reuse_addr:
+                                              type: boolean
+                                            reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
+                                              type: boolean
+                                          type: object
+                                        socket_path:
+                                          type: string
+                                      type: object
+                                    servicePort:
+                                      maximum: 65535
+                                      minimum: 0
+                                      type: integer
+                                  type: object
+                                startup:
+                                  properties:
+                                    enabled:
+                                      type: boolean
+                                    port:
+                                      maximum: 65535
+                                      minimum: 0
+                                      type: integer
+                                    startupProbe:
+                                      properties:
+                                        failureThreshold:
+                                          type: integer
+                                        httpGet:
+                                          properties:
+                                            path:
+                                              type: string
+                                            port:
+                                              type: string
+                                            scheme:
+                                              type: string
+                                          type: object
+                                        initialDelaySeconds:
+                                          type: integer
+                                        periodSeconds:
+                                          type: integer
+                                        successThreshold:
+                                          type: integer
+                                        timeoutSeconds:
+                                          type: integer
+                                      type: object
+                                  type: object
+                              type: object
+                            metrics:
+                              properties:
+                                pprof:
+                                  properties:
+                                    enabled:
+                                      type: boolean
+                                    host:
+                                      type: string
+                                    port:
+                                      maximum: 65535
+                                      minimum: 0
+                                      type: integer
+                                    server:
+                                      properties:
+                                        http:
+                                          properties:
+                                            handler_timeout:
+                                              type: string
+                                            http2:
+                                              properties:
+                                                enabled:
+                                                  type: boolean
+                                                handler_limit:
+                                                  type: integer
+                                                max_concurrent_streams:
+                                                  type: integer
+                                                max_decoder_header_table_size:
+                                                  type: integer
+                                                max_encoder_header_table_size:
+                                                  type: integer
+                                                max_read_frame_size:
+                                                  type: integer
+                                                max_upload_buffer_per_connection:
+                                                  type: integer
+                                                max_upload_buffer_per_stream:
+                                                  type: integer
+                                                permit_prohibited_cipher_suites:
+                                                  type: boolean
+                                              type: object
+                                            idle_timeout:
+                                              type: string
+                                            read_header_timeout:
+                                              type: string
+                                            read_timeout:
+                                              type: string
+                                            shutdown_duration:
+                                              type: string
+                                            write_timeout:
+                                              type: string
+                                          type: object
+                                        mode:
+                                          type: string
+                                        network:
+                                          enum:
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
+                                          type: string
+                                        probe_wait_time:
+                                          type: string
+                                        restart:
+                                          type: boolean
+                                        socket_option:
+                                          properties:
+                                            ip_recover_destination_addr:
+                                              type: boolean
+                                            ip_transparent:
+                                              type: boolean
+                                            reuse_addr:
+                                              type: boolean
+                                            reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
+                                              type: boolean
+                                          type: object
+                                        socket_path:
+                                          type: string
+                                      type: object
+                                    servicePort:
+                                      maximum: 65535
+                                      minimum: 0
+                                      type: integer
+                                  type: object
+                              type: object
+                            servers:
+                              properties:
+                                grpc:
+                                  properties:
+                                    enabled:
+                                      type: boolean
+                                    host:
+                                      type: string
+                                    port:
+                                      maximum: 65535
+                                      minimum: 0
+                                      type: integer
+                                    server:
+                                      properties:
+                                        grpc:
+                                          properties:
+                                            bidirectional_stream_concurrency:
+                                              type: integer
+                                            connection_timeout:
+                                              type: string
+                                            enable_admin:
+                                              type: boolean
+                                            enable_channelz:
+                                              type: boolean
+                                            enable_reflection:
+                                              type: boolean
+                                            header_table_size:
+                                              type: integer
+                                            initial_conn_window_size:
+                                              type: integer
+                                            initial_window_size:
+                                              type: integer
+                                            interceptors:
+                                              items:
+                                                enum:
+                                                  - RecoverInterceptor
+                                                  - AccessLogInterceptor
+                                                  - TraceInterceptor
+                                                  - MetricInterceptor
+                                                type: string
+                                              type: array
+                                            keepalive:
+                                              properties:
+                                                max_conn_age:
+                                                  type: string
+                                                max_conn_age_grace:
+                                                  type: string
+                                                max_conn_idle:
+                                                  type: string
+                                                min_time:
+                                                  type: string
+                                                permit_without_stream:
+                                                  type: boolean
+                                                time:
+                                                  type: string
+                                                timeout:
+                                                  type: string
+                                              type: object
+                                            max_concurrent_streams:
+                                              type: integer
+                                            max_header_list_size:
+                                              type: integer
+                                            max_receive_message_size:
+                                              type: integer
+                                            max_send_message_size:
+                                              type: integer
+                                            num_stream_workers:
+                                              type: integer
+                                            read_buffer_size:
+                                              type: integer
+                                            shared_write_buffer:
+                                              type: boolean
+                                            wait_for_handlers:
+                                              type: boolean
+                                            write_buffer_size:
+                                              type: integer
+                                          type: object
+                                        mode:
+                                          type: string
+                                        network:
+                                          enum:
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
+                                          type: string
+                                        probe_wait_time:
+                                          type: string
+                                        restart:
+                                          type: boolean
+                                        socket_option:
+                                          properties:
+                                            ip_recover_destination_addr:
+                                              type: boolean
+                                            ip_transparent:
+                                              type: boolean
+                                            reuse_addr:
+                                              type: boolean
+                                            reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
+                                              type: boolean
+                                          type: object
+                                        socket_path:
+                                          type: string
+                                      type: object
+                                    servicePort:
+                                      maximum: 65535
+                                      minimum: 0
+                                      type: integer
+                                  type: object
+                                rest:
+                                  properties:
+                                    enabled:
+                                      type: boolean
+                                    host:
+                                      type: string
+                                    port:
+                                      maximum: 65535
+                                      minimum: 0
+                                      type: integer
+                                    server:
+                                      properties:
+                                        http:
+                                          properties:
+                                            handler_timeout:
+                                              type: string
+                                            http2:
+                                              properties:
+                                                enabled:
+                                                  type: boolean
+                                                handler_limit:
+                                                  type: integer
+                                                max_concurrent_streams:
+                                                  type: integer
+                                                max_decoder_header_table_size:
+                                                  type: integer
+                                                max_encoder_header_table_size:
+                                                  type: integer
+                                                max_read_frame_size:
+                                                  type: integer
+                                                max_upload_buffer_per_connection:
+                                                  type: integer
+                                                max_upload_buffer_per_stream:
+                                                  type: integer
+                                                permit_prohibited_cipher_suites:
+                                                  type: boolean
+                                              type: object
+                                            idle_timeout:
+                                              type: string
+                                            read_header_timeout:
+                                              type: string
+                                            read_timeout:
+                                              type: string
+                                            shutdown_duration:
+                                              type: string
+                                            write_timeout:
+                                              type: string
+                                          type: object
+                                        mode:
+                                          type: string
+                                        network:
+                                          enum:
+                                            - tcp
+                                            - tcp4
+                                            - tcp6
+                                            - udp
+                                            - udp4
+                                            - udp6
+                                            - unix
+                                            - unixgram
+                                            - unixpacket
+                                          type: string
+                                        probe_wait_time:
+                                          type: string
+                                        restart:
+                                          type: boolean
+                                        socket_option:
+                                          properties:
+                                            ip_recover_destination_addr:
+                                              type: boolean
+                                            ip_transparent:
+                                              type: boolean
+                                            reuse_addr:
+                                              type: boolean
+                                            reuse_port:
+                                              type: boolean
+                                            tcp_cork:
+                                              type: boolean
+                                            tcp_defer_accept:
+                                              type: boolean
+                                            tcp_fast_open:
+                                              type: boolean
+                                            tcp_no_delay:
+                                              type: boolean
+                                            tcp_quick_ack:
+                                              type: boolean
+                                          type: object
+                                        socket_path:
+                                          type: string
+                                      type: object
+                                    servicePort:
+                                      maximum: 65535
+                                      minimum: 0
+                                      type: integer
+                                  type: object
+                              type: object
+                            tls:
+                              properties:
+                                ca:
+                                  type: string
+                                cert:
+                                  type: string
+                                client_auth:
+                                  enum:
+                                    - Auto
+                                    - None
+                                    - Request
+                                    - RequireAny
+                                    - VerifyIfGiven
+                                    - RequireAndVerify
+                                  type: string
+                                crl:
+                                  type: string
+                                enabled:
+                                  type: boolean
+                                hot_reload:
+                                  type: boolean
+                                insecure_skip_verify:
+                                  type: boolean
+                                key:
+                                  type: string
+                                server_name:
+                                  type: string
+                              type: object
+                          type: object
+                        service:
+                          properties:
+                            annotations:
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
+                            labels:
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
+                          type: object
+                        serviceAccountName:
+                          type: string
                         serviceType:
                           enum:
                             - ClusterIP
@@ -7663,7 +8891,11 @@ spec:
                                                 - VerifyIfGiven
                                                 - RequireAndVerify
                                               type: string
+                                            crl:
+                                              type: string
                                             enabled:
+                                              type: boolean
+                                            hot_reload:
                                               type: boolean
                                             insecure_skip_verify:
                                               type: boolean
@@ -7707,7 +8939,11 @@ spec:
                                         - VerifyIfGiven
                                         - RequireAndVerify
                                       type: string
+                                    crl:
+                                      type: string
                                     enabled:
+                                      type: boolean
+                                    hot_reload:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
@@ -7791,7 +9027,11 @@ spec:
                                         - VerifyIfGiven
                                         - RequireAndVerify
                                       type: string
+                                    crl:
+                                      type: string
                                     enabled:
+                                      type: boolean
+                                    hot_reload:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
@@ -8606,7 +9846,11 @@ spec:
                                     - VerifyIfGiven
                                     - RequireAndVerify
                                   type: string
+                                crl:
+                                  type: string
                                 enabled:
+                                  type: boolean
+                                hot_reload:
                                   type: boolean
                                 insecure_skip_verify:
                                   type: boolean
@@ -8625,13 +9869,8 @@ spec:
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
                           type: object
-                        serviceAccount:
-                          properties:
-                            enabled:
-                              type: boolean
-                            name:
-                              type: string
-                          type: object
+                        serviceAccountName:
+                          type: string
                         serviceType:
                           enum:
                             - ClusterIP
@@ -8940,7 +10179,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -8984,7 +10227,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -9160,7 +10407,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -9204,7 +10455,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -9390,7 +10645,11 @@ spec:
                                                 - VerifyIfGiven
                                                 - RequireAndVerify
                                               type: string
+                                            crl:
+                                              type: string
                                             enabled:
+                                              type: boolean
+                                            hot_reload:
                                               type: boolean
                                             insecure_skip_verify:
                                               type: boolean
@@ -9434,7 +10693,11 @@ spec:
                                         - VerifyIfGiven
                                         - RequireAndVerify
                                       type: string
+                                    crl:
+                                      type: string
                                     enabled:
+                                      type: boolean
+                                    hot_reload:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
@@ -10146,7 +11409,11 @@ spec:
                                         - VerifyIfGiven
                                         - RequireAndVerify
                                       type: string
+                                    crl:
+                                      type: string
                                     enabled:
+                                      type: boolean
+                                    hot_reload:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
@@ -10156,6 +11423,8 @@ spec:
                                       type: string
                                   type: object
                               type: object
+                            serviceAccountName:
+                              type: string
                             startingDeadlineSeconds:
                               type: integer
                             stream_list_concurrency:
@@ -10394,7 +11663,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -10438,7 +11711,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -10614,7 +11891,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -10658,7 +11939,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -11376,7 +12661,11 @@ spec:
                                         - VerifyIfGiven
                                         - RequireAndVerify
                                       type: string
+                                    crl:
+                                      type: string
                                     enabled:
+                                      type: boolean
+                                    hot_reload:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
@@ -11386,6 +12675,8 @@ spec:
                                       type: string
                                   type: object
                               type: object
+                            serviceAccountName:
+                              type: string
                             startingDeadlineSeconds:
                               type: integer
                             suspend:
@@ -11623,7 +12914,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -11667,7 +12962,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -11843,7 +13142,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -11887,7 +13190,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -12607,7 +13914,11 @@ spec:
                                         - VerifyIfGiven
                                         - RequireAndVerify
                                       type: string
+                                    crl:
+                                      type: string
                                     enabled:
+                                      type: boolean
+                                    hot_reload:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
@@ -12617,6 +13928,8 @@ spec:
                                       type: string
                                   type: object
                               type: object
+                            serviceAccountName:
+                              type: string
                             startingDeadlineSeconds:
                               type: integer
                             suspend:
@@ -12843,7 +14156,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -12887,7 +14204,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -13063,7 +14384,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -13107,7 +14432,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -13279,6 +14608,20 @@ spec:
                             annotations:
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
+                            clusterRole:
+                              properties:
+                                enabled:
+                                  type: boolean
+                                name:
+                                  type: string
+                              type: object
+                            clusterRoleBinding:
+                              properties:
+                                enabled:
+                                  type: boolean
+                                name:
+                                  type: string
+                              type: object
                             enabled:
                               type: boolean
                             env:
@@ -14051,7 +15394,11 @@ spec:
                                         - VerifyIfGiven
                                         - RequireAndVerify
                                       type: string
+                                    crl:
+                                      type: string
                                     enabled:
+                                      type: boolean
+                                    hot_reload:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
@@ -14061,6 +15408,8 @@ spec:
                                       type: string
                                   type: object
                               type: object
+                            serviceAccountName:
+                              type: string
                             terminationGracePeriodSeconds:
                               minimum: 0
                               type: integer
@@ -14825,7 +16174,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -14835,13 +16188,8 @@ spec:
                                           type: string
                                       type: object
                                   type: object
-                                serviceAccount:
-                                  properties:
-                                    enabled:
-                                      type: boolean
-                                    name:
-                                      type: string
-                                  type: object
+                                serviceAccountName:
+                                  type: string
                                 target_read_replica_id_annotations_key:
                                   type: string
                                 ttlSecondsAfterFinished:
@@ -15091,7 +16439,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -15135,7 +16487,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -15311,7 +16667,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -15355,7 +16715,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -16073,7 +17437,11 @@ spec:
                                         - VerifyIfGiven
                                         - RequireAndVerify
                                       type: string
+                                    crl:
+                                      type: string
                                     enabled:
+                                      type: boolean
+                                    hot_reload:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
@@ -16083,6 +17451,8 @@ spec:
                                       type: string
                                   type: object
                               type: object
+                            serviceAccountName:
+                              type: string
                             startingDeadlineSeconds:
                               type: integer
                             suspend:
@@ -16710,7 +18080,11 @@ spec:
                                     - VerifyIfGiven
                                     - RequireAndVerify
                                   type: string
+                                crl:
+                                  type: string
                                 enabled:
+                                  type: boolean
+                                hot_reload:
                                   type: boolean
                                 insecure_skip_verify:
                                   type: boolean
@@ -16729,6 +18103,8 @@ spec:
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
                           type: object
+                        serviceAccountName:
+                          type: string
                         serviceType:
                           enum:
                             - ClusterIP
@@ -16769,5 +18145,112 @@ spec:
                             x-kubernetes-preserve-unknown-fields: true
                           type: array
                       type: object
+                  type: object
+                tidbCluster:
+                  properties:
+                    discovery:
+                      properties:
+                        baseImage:
+                          type: string
+                        limits:
+                          properties:
+                            cpu:
+                              type: string
+                            memory:
+                              type: string
+                          type: object
+                        replicas:
+                          type: integer
+                        requests:
+                          properties:
+                            cpu:
+                              type: string
+                            memory:
+                              type: string
+                          type: object
+                        version:
+                          type: string
+                      type: object
+                    enabled:
+                      type: boolean
+                    name:
+                      type: string
+                    pd:
+                      properties:
+                        baseImage:
+                          type: string
+                        config:
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                        limits:
+                          properties:
+                            cpu:
+                              type: string
+                            memory:
+                              type: string
+                          type: object
+                        replicas:
+                          type: integer
+                        requests:
+                          properties:
+                            cpu:
+                              type: string
+                            memory:
+                              type: string
+                            storage:
+                              type: string
+                          type: object
+                      type: object
+                    tidb:
+                      properties:
+                        baseImage:
+                          type: string
+                        limits:
+                          properties:
+                            cpu:
+                              type: string
+                            memory:
+                              type: string
+                          type: object
+                        replicas:
+                          type: integer
+                        requests:
+                          properties:
+                            cpu:
+                              type: string
+                            memory:
+                              type: string
+                          type: object
+                      type: object
+                    tikv:
+                      properties:
+                        baseImage:
+                          type: string
+                        config:
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                        limits:
+                          properties:
+                            cpu:
+                              type: string
+                            memory:
+                              type: string
+                          type: object
+                        replicas:
+                          type: integer
+                        requests:
+                          properties:
+                            cpu:
+                              type: string
+                            memory:
+                              type: string
+                            storage:
+                              type: string
+                          type: object
+                      type: object
+                    timezone:
+                      type: string
+                    version:
+                      type: string
                   type: object
               type: object
