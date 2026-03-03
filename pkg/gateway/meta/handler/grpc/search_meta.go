@@ -267,7 +267,7 @@ func (s *server) StreamSearchByIDWithMetadata(
 func (s *server) MultiSearchWithMetadata(
 	ctx context.Context, reqs *payload.Search_MultiRequest,
 ) (res *payload.Search_Responses, errs error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.MultiSearchRPCName), apiName+"/"+vald.MultiSearchRPCName)
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.MultiSearchRPCName+vald.MetadataSpanName), apiName+"/"+vald.MultiSearchRPCName+vald.MetadataSpanName)
 	defer func() {
 		if span != nil {
 			span.End()
