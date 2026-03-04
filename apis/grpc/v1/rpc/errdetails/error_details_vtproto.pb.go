@@ -19,7 +19,6 @@ package errdetails
 
 import (
 	fmt "fmt"
-	"maps"
 	unsafe "unsafe"
 
 	protohelpers "github.com/planetscale/vtprotobuf/protohelpers"
@@ -46,7 +45,9 @@ func (m *ErrorInfo) CloneVT() *ErrorInfo {
 	r.Domain = m.Domain
 	if rhs := m.Metadata; rhs != nil {
 		tmpContainer := make(map[string]string, len(rhs))
-		maps.Copy(tmpContainer, rhs)
+		for k, v := range rhs {
+			tmpContainer[k] = v
+		}
 		r.Metadata = tmpContainer
 	}
 	if len(m.unknownFields) > 0 {

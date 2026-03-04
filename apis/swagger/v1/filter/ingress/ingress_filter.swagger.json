@@ -112,6 +112,11 @@
           "type": "string",
           "format": "int64",
           "description": "timestamp represents when this vector inserted."
+        },
+        "metadata": {
+          "type": "string",
+          "format": "byte",
+          "description": "The metadata is related to the request vector."
         }
       },
       "description": "Represent a vector."

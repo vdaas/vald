@@ -82,8 +82,6 @@ go/deps:
 	cp $(ROOTDIR)/hack/go.mod.default $(ROOTDIR)/go.mod
 	sed -i "s/#.*//" $(ROOTDIR)/go.mod
 	GOTOOLCHAIN=go$(GO_VERSION) GOPRIVATE=$(GOPRIVATE) go mod tidy
-	GOTOOLCHAIN=go$(GO_VERSION) go get -u all 2>/dev/null || true
-	GOTOOLCHAIN=go$(GO_VERSION) go get -u ./... 2>/dev/null || true
 
 .PHONY: go/example/deps
 ## install Go package dependencies
