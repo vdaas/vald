@@ -23,7 +23,6 @@
 //! The implementation uses `sled` as its underlying persistent storage engine to leverage
 //! its robust transactional capabilities, ensuring data consistency.
 use async_trait::async_trait;
-use bincode::config::{self, Configuration};
 use sled::{
     Tree,
     transaction::{
@@ -45,11 +44,6 @@ use thiserror::Error;
 use tokio::sync::mpsc;
 use tokio_stream::{Stream, wrappers::ReceiverStream};
 
-/// A performance-oriented bincode configuration.
-const BINCODE_CONFIG: Configuration = config::standard()
-    .with_little_endian()
-    .with_variable_int_encoding();
-
 /// Error type representing possible failures for queue operations.
 #[derive(Debug, Error)]
 pub enum QueueError {
@@ -61,10 +55,10 @@ pub enum QueueError {
     Sled(#[from] sled::Error),
     /// Error returned for serialization failures.
     #[error("Codec encode error: {0}")]
-    Encode(#[from] bincode::error::EncodeError),
+    Encode(#[from] wincode::error::WriteError),
     /// Error returned for deserialization failures.
     #[error("Codec decode error: {0}")]
-    Decode(#[from] bincode::error::DecodeError),
+    Decode(#[from] wincode::error::ReadError),
     /// Error returned for internal Tokio task failures.
     #[error("Internal Tokio task error")]
     Internal(#[from] tokio::task::JoinError),
@@ -299,7 +293,7 @@ impl PersistentQueue {
                         deletes.remove(&uuid);
                     }
                 }
-                let (vec, _) = bincode::decode_from_slice(&val, BINCODE_CONFIG)?;
+                let vec = wincode::deserialize(&val)?;
                 final_items.push((its, DrainItem::Insert(uuid, vec)));
             }
             // Step 3: Collect the remaining valid deletes.
@@ -406,7 +400,7 @@ impl Queue for PersistentQueue {
         vector: Vec<f32>,
         timestamp: Option<i64>,
     ) -> Result<(), QueueError> {
-        let value = bincode::encode_to_vec(&vector, BINCODE_CONFIG)?;
+        let value = wincode::serialize(&vector)?;
         self.push_internal(
             uuid.as_ref(),
             timestamp,
