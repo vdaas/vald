@@ -35,6 +35,16 @@ type ServerWithFilter interface {
 	FilterServer
 }
 
+type ServerWithMetadata interface {
+	Server
+	SearchWithMetadataServer
+	InsertWithMetadataServer
+	ObjectWithMetadataServer
+	RemoveWithMetadataServer
+	UpdateWithMetadataServer
+	UpsertWithMetadataServer
+}
+
 type UnimplementedValdServer struct {
 	UnimplementedFlushServer
 	UnimplementedIndexServer
@@ -180,6 +190,16 @@ func RegisterValdServer(s *grpc.Server, srv Server) {
 func RegisterValdServerWithFilter(s *grpc.Server, srv ServerWithFilter) {
 	RegisterValdServer(s, srv)
 	RegisterFilterServer(s, srv)
+}
+
+func RegisterValdServerWithMetadata(s *grpc.Server, srv ServerWithMetadata) {
+	RegisterValdServer(s, srv)
+	RegisterSearchWithMetadataServer(s, srv)
+	RegisterInsertWithMetadataServer(s, srv)
+	RegisterObjectWithMetadataServer(s, srv)
+	RegisterRemoveWithMetadataServer(s, srv)
+	RegisterUpdateWithMetadataServer(s, srv)
+	RegisterUpsertWithMetadataServer(s, srv)
 }
 
 func NewValdClient(conn *grpc.ClientConn) Client {
