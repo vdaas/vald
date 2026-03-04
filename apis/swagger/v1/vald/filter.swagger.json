@@ -84,7 +84,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1SearchResponse"
+              "$ref": "#/definitions/SearchResponse"
             }
           },
           "default": {

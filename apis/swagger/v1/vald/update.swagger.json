@@ -38,7 +38,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1UpdateRequest"
+              "$ref": "#/definitions/UpdateRequest"
             }
           }
         ],
@@ -71,7 +71,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1UpdateMultiRequest"
+              "$ref": "#/definitions/UpdateMultiRequest"
             }
           }
         ],
@@ -103,7 +103,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1UpdateTimestampRequest"
+              "$ref": "#/definitions/UpdateTimestampRequest"
             }
           }
         ],
@@ -159,6 +159,11 @@
           "type": "string",
           "format": "int64",
           "description": "timestamp represents when this vector inserted."
+        },
+        "metadata": {
+          "type": "string",
+          "format": "byte",
+          "description": "The metadata is related to the request vector."
         }
       },
       "description": "Represent a vector."
@@ -206,6 +211,11 @@
         "force": {
           "type": "boolean",
           "description": "force represents forcefully update the timestamp."
+        },
+        "metadata": {
+          "type": "string",
+          "format": "byte",
+          "description": "The metadata is related to the request vector."
         }
       },
       "description": "Represent a vector meta data."
@@ -267,7 +277,7 @@
         },
         "uuid": {
           "type": "string",
-          "description": "The UUID of the vector."
+          "description": "The UUID of the vector.\nTODO(v2): Use id to unify names."
         },
         "ips": {
           "type": "array",
