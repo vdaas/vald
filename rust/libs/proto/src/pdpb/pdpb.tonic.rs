@@ -19,10 +19,10 @@ pub mod pd_client {
         dead_code,
         missing_docs,
         clippy::wildcard_imports,
-        clippy::let_unit_value,
+        clippy::let_unit_value
     )]
-    use tonic::codegen::*;
     use tonic::codegen::http::Uri;
+    use tonic::codegen::*;
     #[derive(Debug, Clone)]
     pub struct PdClient<T> {
         inner: tonic::client::Grpc<T>,
@@ -53,22 +53,18 @@ pub mod pd_client {
             let inner = tonic::client::Grpc::with_origin(inner, origin);
             Self { inner }
         }
-        pub fn with_interceptor<F>(
-            inner: T,
-            interceptor: F,
-        ) -> PdClient<InterceptedService<T, F>>
+        pub fn with_interceptor<F>(inner: T, interceptor: F) -> PdClient<InterceptedService<T, F>>
         where
             F: tonic::service::Interceptor,
             T::ResponseBody: Default,
             T: tonic::codegen::Service<
-                http::Request<tonic::body::Body>,
-                Response = http::Response<
-                    <T as tonic::client::GrpcService<tonic::body::Body>>::ResponseBody,
+                    http::Request<tonic::body::Body>,
+                    Response = http::Response<
+                        <T as tonic::client::GrpcService<tonic::body::Body>>::ResponseBody,
+                    >,
                 >,
-            >,
-            <T as tonic::codegen::Service<
-                http::Request<tonic::body::Body>,
-            >>::Error: Into<StdError> + std::marker::Send + std::marker::Sync,
+            <T as tonic::codegen::Service<http::Request<tonic::body::Body>>>::Error:
+                Into<StdError> + std::marker::Send + std::marker::Sync,
         {
             PdClient::new(InterceptedService::new(inner, interceptor))
         }
@@ -106,64 +102,46 @@ pub mod pd_client {
         pub async fn get_cluster_info(
             &mut self,
             request: impl tonic::IntoRequest<super::GetClusterInfoRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::GetClusterInfoResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::GetClusterInfoResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/pdpb.PD/GetClusterInfo");
             let mut req = request.into_request();
-            req.extensions_mut().insert(GrpcMethod::new("pdpb.PD", "GetClusterInfo"));
+            req.extensions_mut()
+                .insert(GrpcMethod::new("pdpb.PD", "GetClusterInfo"));
             self.inner.unary(req, path, codec).await
         }
         pub async fn get_all_stores(
             &mut self,
             request: impl tonic::IntoRequest<super::GetAllStoresRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::GetAllStoresResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::GetAllStoresResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/pdpb.PD/GetAllStores");
             let mut req = request.into_request();
-            req.extensions_mut().insert(GrpcMethod::new("pdpb.PD", "GetAllStores"));
+            req.extensions_mut()
+                .insert(GrpcMethod::new("pdpb.PD", "GetAllStores"));
             self.inner.unary(req, path, codec).await
         }
         pub async fn batch_scan_regions(
             &mut self,
             request: impl tonic::IntoRequest<super::BatchScanRegionsRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::BatchScanRegionsResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::BatchScanRegionsResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/pdpb.PD/BatchScanRegions");
             let mut req = request.into_request();
-            req.extensions_mut().insert(GrpcMethod::new("pdpb.PD", "BatchScanRegions"));
+            req.extensions_mut()
+                .insert(GrpcMethod::new("pdpb.PD", "BatchScanRegions"));
             self.inner.unary(req, path, codec).await
         }
     }
@@ -175,7 +153,7 @@ pub mod pd_server {
         dead_code,
         missing_docs,
         clippy::wildcard_imports,
-        clippy::let_unit_value,
+        clippy::let_unit_value
     )]
     use tonic::codegen::*;
     /// Generated trait containing gRPC methods that should be implemented for use with PdServer.
@@ -184,24 +162,15 @@ pub mod pd_server {
         async fn get_cluster_info(
             &self,
             request: tonic::Request<super::GetClusterInfoRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::GetClusterInfoResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::GetClusterInfoResponse>, tonic::Status>;
         async fn get_all_stores(
             &self,
             request: tonic::Request<super::GetAllStoresRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::GetAllStoresResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::GetAllStoresResponse>, tonic::Status>;
         async fn batch_scan_regions(
             &self,
             request: tonic::Request<super::BatchScanRegionsRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::BatchScanRegionsResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::BatchScanRegionsResponse>, tonic::Status>;
     }
     #[derive(Debug)]
     pub struct PdServer<T> {
@@ -224,10 +193,7 @@ pub mod pd_server {
                 max_encoding_message_size: None,
             }
         }
-        pub fn with_interceptor<F>(
-            inner: T,
-            interceptor: F,
-        ) -> InterceptedService<Self, F>
+        pub fn with_interceptor<F>(inner: T, interceptor: F) -> InterceptedService<Self, F>
         where
             F: tonic::service::Interceptor,
         {
@@ -282,21 +248,16 @@ pub mod pd_server {
                 "/pdpb.PD/GetClusterInfo" => {
                     #[allow(non_camel_case_types)]
                     struct GetClusterInfoSvc<T: Pd>(pub Arc<T>);
-                    impl<T: Pd> tonic::server::UnaryService<super::GetClusterInfoRequest>
-                    for GetClusterInfoSvc<T> {
+                    impl<T: Pd> tonic::server::UnaryService<super::GetClusterInfoRequest> for GetClusterInfoSvc<T> {
                         type Response = super::GetClusterInfoResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::GetClusterInfoRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Pd>::get_cluster_info(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Pd>::get_cluster_info(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -325,21 +286,16 @@ pub mod pd_server {
                 "/pdpb.PD/GetAllStores" => {
                     #[allow(non_camel_case_types)]
                     struct GetAllStoresSvc<T: Pd>(pub Arc<T>);
-                    impl<T: Pd> tonic::server::UnaryService<super::GetAllStoresRequest>
-                    for GetAllStoresSvc<T> {
+                    impl<T: Pd> tonic::server::UnaryService<super::GetAllStoresRequest> for GetAllStoresSvc<T> {
                         type Response = super::GetAllStoresResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::GetAllStoresRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Pd>::get_all_stores(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Pd>::get_all_stores(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -368,23 +324,16 @@ pub mod pd_server {
                 "/pdpb.PD/BatchScanRegions" => {
                     #[allow(non_camel_case_types)]
                     struct BatchScanRegionsSvc<T: Pd>(pub Arc<T>);
-                    impl<
-                        T: Pd,
-                    > tonic::server::UnaryService<super::BatchScanRegionsRequest>
-                    for BatchScanRegionsSvc<T> {
+                    impl<T: Pd> tonic::server::UnaryService<super::BatchScanRegionsRequest> for BatchScanRegionsSvc<T> {
                         type Response = super::BatchScanRegionsResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::BatchScanRegionsRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Pd>::batch_scan_regions(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Pd>::batch_scan_regions(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -410,25 +359,19 @@ pub mod pd_server {
                     };
                     Box::pin(fut)
                 }
-                _ => {
-                    Box::pin(async move {
-                        let mut response = http::Response::new(
-                            tonic::body::Body::default(),
-                        );
-                        let headers = response.headers_mut();
-                        headers
-                            .insert(
-                                tonic::Status::GRPC_STATUS,
-                                (tonic::Code::Unimplemented as i32).into(),
-                            );
-                        headers
-                            .insert(
-                                http::header::CONTENT_TYPE,
-                                tonic::metadata::GRPC_CONTENT_TYPE,
-                            );
-                        Ok(response)
-                    })
-                }
+                _ => Box::pin(async move {
+                    let mut response = http::Response::new(tonic::body::Body::default());
+                    let headers = response.headers_mut();
+                    headers.insert(
+                        tonic::Status::GRPC_STATUS,
+                        (tonic::Code::Unimplemented as i32).into(),
+                    );
+                    headers.insert(
+                        http::header::CONTENT_TYPE,
+                        tonic::metadata::GRPC_CONTENT_TYPE,
+                    );
+                    Ok(response)
+                }),
             }
         }
     }
