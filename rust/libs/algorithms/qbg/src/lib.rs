@@ -14,8 +14,85 @@
 // limitations under the License.
 //
 
+//! QBG (Query-by-Graph) ANN Algorithm Wrapper for Vald.
+//!
+//! This library provides a **Rust wrapper for the C++ QBG library**, enabling high-performance
+//! approximate nearest neighbor (ANN) search with graph-based indexing. The wrapper abstracts
+//! the complexity of C++ FFI while maintaining full access to QBG's performance optimizations
+//! and advanced configuration options.
+//!
+//! # What is QBG?
+//!
+//! QBG (Query-by-Graph) is an efficient ANN algorithm that:
+//! - Uses hierarchical clustering and graph-based indexing
+//! - Supports multiple distance metrics (L1, L2, Hamming, Angle, Cosine)
+//! - Handles various data types (uint8, float, float16)
+//! - Provides fast approximate search with configurable accuracy/speed tradeoffs
+//! - Optimizes for AVX-512 and AVX-2 CPU instructions for maximum performance
+//!
+//! # C++ Integration
+//!
+//! This crate wraps the C++ QBG implementation from the `qbg-sys` crate, which provides:
+//! - Safe FFI bindings to the QBG C++ library
+//! - Memory management and pointer handling
+//! - Support for prebuilt and freshly created indexes
+//! - Atomic operations for thread-safe updates
+//!
+//! # Core Components
+//!
+//! - **`Index`** - The main entry point for QBG operations (create, search, insert, etc.)
+//! - **`Property`** - Configuration for index construction (dimension, clustering parameters, etc.)
+//! - **`ObjectType` / `DataType` / `DistanceType`** - Enums for type safety and serialization
+//! - **`Result`** - Error handling wrapper around QBG operations
+//!
+//! # Safety Considerations
+//!
+//! Every `unsafe` block in this library is documented with `// SAFETY:` comments explaining:
+//! - Why unsafe code is necessary (C++ interop, memory management)
+//! - How memory safety is guaranteed
+//! - What invariants must be upheld
+//!
+//! # Example Usage
+//!
+//! ```ignore
+//! use qbg::Index;
+//! use qbg::Property;
+//!
+//! // Create or load an index
+//! let mut property = Property::new();
+//! property.set_qbg_construction_parameters(
+//!     512,      // extended_dimension
+//!     512,      // dimension
+//!     8,        // number_of_subvectors
+//!     10000,    // number_of_blobs
+//!     ObjectType::Float,
+//!     DataType::Float,
+//!     DistanceType::L2,
+//! );
+//!
+//! let index = Index::new("path/to/index", &mut property)?;
+//!
+//! // Insert vectors
+//! let vector = vec![0.1, 0.2, 0.3, /* ... */];
+//! index.insert(0, &vector)?;
+//!
+//! // Search
+//! let results = index.search(&vector, 10)?;
+//! ```
+
 use serde::{Deserialize, Serialize};
 
+/// Data type for internal vector representation in the index.
+///
+/// This enum specifies how vector components are represented in the quantized index structure.
+/// It affects memory usage, precision, and computational efficiency.
+///
+/// # Variants
+///
+/// * `None` - Invalid or uninitialized state
+/// * `Uint8` - 8-bit unsigned integer quantization. Provides maximum compression but lowest precision.
+/// * `Float` - 32-bit floating-point. Full precision but higher memory usage.
+/// * `Float16` - 16-bit half-precision floating-point. Good balance between precision and compression.
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ObjectType {
     #[serde(rename = "None", alias = "none")]
@@ -50,6 +127,18 @@ impl From<ObjectType> for ffi::ObjectType {
     }
 }
 
+/// Data type for the input vectors before quantization.
+///
+/// This enum specifies the original format of the vectors provided to the index.
+/// The index will handle type conversion and quantization as needed.
+///
+/// # Variants
+///
+/// * `None` - Invalid or uninitialized state
+/// * `Uint8` - 8-bit unsigned integer vectors. Useful for binary/categorical data.
+/// * `Float` - 32-bit floating-point vectors. Standard format for most applications.
+/// * `Float16` - 16-bit half-precision floating-point vectors.
+/// * `Any` - Accept vectors in any supported format. Useful for flexible implementations.
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DataType {
     #[serde(rename = "None", alias = "none")]
@@ -88,6 +177,37 @@ impl From<DataType> for ffi::DataType {
     }
 }
 
+/// Distance metric for approximate nearest neighbor search.
+///
+/// This enum specifies the distance metric used to measure similarity between vectors.
+/// Different metrics are appropriate for different types of data and use cases.
+///
+/// # Metrics
+///
+/// ## Euclidean and L-norms
+/// * `L1` - Manhattan distance (sum of absolute differences)
+/// * `L2` - Euclidean distance. Most common metric for continuous data.
+/// * `NormalizedL2` - L2 distance normalized by vector magnitude
+///
+/// ## Angular distances
+/// * `Angle` - Angular distance. Useful for directional similarity.
+/// * `Cosine` - Cosine similarity distance. Good for high-dimensional data.
+/// * `NormalizedAngle` - Normalized angular distance
+/// * `NormalizedCosine` - Normalized cosine similarity distance
+///
+/// ## Hamming and Jaccard distances
+/// * `Hamming` - Hamming distance for binary/categorical vectors.
+/// * `Jaccard` - Jaccard distance for set similarity.
+/// * `SparseJaccard` - Optimized Jaccard for sparse vectors.
+///
+/// ## Inner product
+/// * `InnerProduct` - Inner product distance. Optimized for dot product similarity. Common aliases: `DotProduct`, `dp`.
+///
+/// ## Hyperbolic distances
+/// * `Poincare` - Poincare distance for hyperbolic geometry
+/// * `Lorentz` - Lorentz distance for Lorentz model
+///
+/// * `None` - Invalid or uninitialized state
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DistanceType {
     #[serde(rename = "None", alias = "none")]
@@ -179,6 +299,29 @@ impl From<DistanceType> for ffi::DistanceType {
     }
 }
 
+/// C++ Foreign Function Interface (FFI) bindings for QBG.
+///
+/// This module defines the low-level C++ FFI bindings using the `cxx` crate.
+/// It provides direct mapping between Rust and C++ types and function calls.
+///
+/// # C++ Library Integration
+///
+/// The `ffi` module is generated from C++ code and provides:
+/// - C++ type definitions (`Property`, `Index`) as opaque types
+/// - C++ function wrappers (`new_index`, `new_prebuilt_index`, etc.)
+/// - Enum mappings for data types and distance metrics
+/// - Raw FFI calls that are wrapped by higher-level modules
+///
+/// # Safety
+///
+/// All items in this module should be considered `unsafe` to use directly.
+/// Use the higher-level wrappers in `property` and `index` modules instead,
+/// which provide safe abstractions and proper error handling.
+///
+/// # Memory Management
+///
+/// Objects like `Property` and `Index` are owned via `UniquePtr<T>`, which ensures
+/// automatic deallocation when dropped, preventing memory leaks from C++ allocations.
 #[cxx::bridge]
 pub mod ffi {
     #[repr(i32)]
@@ -312,6 +455,24 @@ unsafe impl Send for ffi::Property {}
 unsafe impl Sync for ffi::Index {}
 unsafe impl Send for ffi::Index {}
 
+/// Configuration management for QBG index construction.
+///
+/// This module provides the `Property` struct, which wraps the C++ QBG property configuration.
+/// It allows users to set construction parameters (dimension, clustering, quantization) and
+/// build parameters (hierarchical clustering, optimization) before creating or modifying an index.
+///
+/// # C++ Binding
+///
+/// Property wraps `ffi::Property`, which is a UniquePtr to the underlying C++ property object.
+/// All configuration is delegated directly to the C++ implementation for consistency.
+///
+/// # Usage Pattern
+///
+/// Properties must be configured before index creation:
+/// 1. Create a Property instance via `Property::new()`
+/// 2. Initialize construction parameters with `init_qbg_construction_parameters()`
+/// 3. Set construction parameters with `set_qbg_construction_parameters()`
+/// 4. Pass to `Index::new()` to create the index
 pub mod property {
     use super::ffi;
     use cxx::UniquePtr;
@@ -328,19 +489,41 @@ pub mod property {
     }
 
     impl Property {
+        /// Creates a new Property instance with default C++ configuration.
+        ///
+        /// This initializes the underlying C++ property object which can be configured
+        /// before using it to create or modify a QBG index.
         pub fn new() -> Self {
             let inner = ffi::new_property();
             Property { inner }
         }
 
+        /// Gets a mutable reference to the underlying C++ Property object.
+        ///
+        /// This is used internally when passing the property to C++ functions.
+        /// Users should typically use the typed setter methods instead.
         pub fn get_property(&mut self) -> Pin<&mut ffi::Property> {
             self.inner.pin_mut()
         }
 
+        /// Initializes QBG construction parameters to default values.
+        ///
+        /// Must be called before setting construction parameters.
         pub fn init_qbg_construction_parameters(&mut self) {
             self.inner.pin_mut().init_qbg_construction_parameters()
         }
 
+        /// Sets all QBG construction parameters at once.
+        ///
+        /// # Arguments
+        ///
+        /// * `extended_dimension` - The extended vector dimension (usually equal to or greater than dimension)
+        /// * `dimension` - The actual vector dimension
+        /// * `number_of_subvectors` - Number of subvectors for quantization (typically 8-256)
+        /// * `number_of_blobs` - Number of blobs in the graph. 0 means automatic.
+        /// * `internal_data_type` - Data type for internal index storage (Float, Uint8, Float16)
+        /// * `data_type` - Input vector data type (ObjectType)
+        /// * `distance_type` - Distance metric to use for similarity measurement
         pub fn set_qbg_construction_parameters(
             &mut self,
             extended_dimension: usize,
@@ -362,44 +545,72 @@ pub mod property {
             )
         }
 
+        /// Sets the extended vector dimension.
+        ///
+        /// The extended dimension is used for preprocessing and can be larger than
+        /// the actual data dimension.
         pub fn set_extended_dimension(&mut self, extended_dimension: usize) {
             self.inner
                 .pin_mut()
                 .set_extended_dimension(extended_dimension)
         }
 
+        /// Sets the actual vector dimension.
+        ///
+        /// This should typically equal or be less than extended_dimension.
         pub fn set_dimension(&mut self, dimension: usize) {
             self.inner.pin_mut().set_dimension(dimension)
         }
 
+        /// Sets the number of subvectors for quantization.
+        ///
+        /// Higher values increase precision but also increase memory and computation.
+        /// Typical values: 8, 16, 32, 64, 128, 256
         pub fn set_number_of_subvectors(&mut self, number_of_subvectors: usize) {
             self.inner
                 .pin_mut()
                 .set_number_of_subvectors(number_of_subvectors)
         }
 
+        /// Sets the number of blobs in the graph structure.
+        ///
+        /// A blob is a cluster of vectors. 0 means automatic calculation.
         pub fn set_number_of_blobs(&mut self, number_of_blobs: usize) {
             self.inner.pin_mut().set_number_of_blobs(number_of_blobs)
         }
 
+        /// Sets the internal data type for index storage.
+        ///
+        /// This determines how vectors are quantized and stored internally.
         pub fn set_internal_data_type(&mut self, internal_data_type: ffi::DataType) {
             self.inner
                 .pin_mut()
                 .set_internal_data_type(internal_data_type)
         }
 
+        /// Sets the input vector data type.
+        ///
+        /// This specifies the format of vectors provided to the index.
         pub fn set_data_type(&mut self, data_type: ffi::ObjectType) {
             self.inner.pin_mut().set_data_type(data_type)
         }
 
+        /// Sets the distance metric for similarity measurement.
         pub fn set_distance_type(&mut self, distance_type: ffi::DistanceType) {
             self.inner.pin_mut().set_distance_type(distance_type)
         }
 
+        /// Initializes QBG build parameters to default values.
+        ///
+        /// Must be called before setting build parameters.
         pub fn init_qbg_build_parameters(&mut self) {
             self.inner.pin_mut().init_qbg_build_parameters()
         }
 
+        /// Sets all QBG build parameters at once.
+        ///
+        /// Build parameters control the index construction process including clustering
+        /// hierarchy and rotation/optimization settings.
         pub fn set_qbg_build_parameters(
             &mut self,
             hierarchical_clustering_init_mode: i32,
@@ -435,6 +646,7 @@ pub mod property {
             )
         }
 
+        /// Sets the initialization mode for hierarchical clustering.
         pub fn set_hierarchical_clustering_init_mode(
             &mut self,
             hierarchical_clustering_init_mode: i32,
@@ -444,48 +656,56 @@ pub mod property {
                 .set_hierarchical_clustering_init_mode(hierarchical_clustering_init_mode)
         }
 
+        /// Sets the number of objects in the first clustering level.
         pub fn set_number_of_first_objects(&mut self, number_of_first_objects: usize) {
             self.inner
                 .pin_mut()
                 .set_number_of_first_objects(number_of_first_objects)
         }
 
+        /// Sets the number of clusters in the first clustering level.
         pub fn set_number_of_first_clusters(&mut self, number_of_first_clusters: usize) {
             self.inner
                 .pin_mut()
                 .set_number_of_first_clusters(number_of_first_clusters)
         }
 
+        /// Sets the number of objects in the second clustering level.
         pub fn set_number_of_second_objects(&mut self, number_of_second_objects: usize) {
             self.inner
                 .pin_mut()
                 .set_number_of_second_objects(number_of_second_objects)
         }
 
+        /// Sets the number of clusters in the second clustering level.
         pub fn set_number_of_second_clusters(&mut self, number_of_second_clusters: usize) {
             self.inner
                 .pin_mut()
                 .set_number_of_second_clusters(number_of_second_clusters)
         }
 
+        /// Sets the number of clusters in the third clustering level.
         pub fn set_number_of_third_clusters(&mut self, number_of_third_clusters: usize) {
             self.inner
                 .pin_mut()
                 .set_number_of_third_clusters(number_of_third_clusters)
         }
 
+        /// Sets the total number of objects to consider in clustering.
         pub fn set_number_of_objects(&mut self, number_of_objects: usize) {
             self.inner
                 .pin_mut()
                 .set_number_of_objects(number_of_objects)
         }
 
+        /// Sets the number of subvectors for build parameters.
         pub fn set_number_of_subvectors_for_bp(&mut self, number_of_subvectors: usize) {
             self.inner
                 .pin_mut()
                 .set_number_of_subvectors_for_bp(number_of_subvectors)
         }
 
+        /// Sets the initialization mode for optimization clustering.
         pub fn set_optimization_clustering_init_mode(
             &mut self,
             optimization_clustering_init_mode: i32,
@@ -495,34 +715,69 @@ pub mod property {
                 .set_optimization_clustering_init_mode(optimization_clustering_init_mode)
         }
 
+        /// Sets the number of iterations for rotation optimization.
+        ///
+        /// More iterations increase rotation quality but also increase build time.
         pub fn set_rotation_iteration(&mut self, rotation_iteration: usize) {
             self.inner
                 .pin_mut()
                 .set_rotation_iteration(rotation_iteration)
         }
 
+        /// Sets the number of iterations for subvector optimization.
         pub fn set_subvector_iteration(&mut self, subvector_iteration: usize) {
             self.inner
                 .pin_mut()
                 .set_subvector_iteration(subvector_iteration)
         }
 
+        /// Sets the number of rotation matrices.
         pub fn set_number_of_matrices(&mut self, number_of_matrices: usize) {
             self.inner
                 .pin_mut()
                 .set_number_of_matrices(number_of_matrices)
         }
 
+        /// Enables or disables rotation during index construction.
+        ///
+        /// Rotation can improve search quality for certain data distributions.
         pub fn set_rotation(&mut self, rotation: bool) {
             self.inner.pin_mut().set_rotation(rotation)
         }
 
+        /// Enables or disables repositioning during index construction.
         pub fn set_repositioning(&mut self, repositioning: bool) {
             self.inner.pin_mut().set_repositioning(repositioning)
         }
     }
 }
 
+/// QBG Index operations and search functionality.
+///
+/// This module provides the `Index` struct, which is the main interface for all QBG operations.
+/// It wraps the C++ QBG index implementation and provides safe Rust abstractions for:
+/// - Creating new indexes
+/// - Loading prebuilt indexes from disk
+/// - Inserting, updating, and removing vectors
+/// - Searching for approximate nearest neighbors
+/// - Saving and closing indexes
+///
+/// # C++ Binding
+///
+/// Index wraps `ffi::Index`, which is a UniquePtr to the underlying C++ index object.
+/// All heavy lifting is performed by the C++ implementation, which uses optimized SIMD
+/// instructions (AVX-512/AVX-2) for maximum performance.
+///
+/// # Memory Safety
+///
+/// The Index holds ownership of the C++ index object via UniquePtr, ensuring automatic
+/// cleanup when the Index is dropped. This prevents memory leaks and dangling pointers.
+///
+/// # Thread Safety
+///
+/// Index implements Send and Sync, but users must ensure proper synchronization when
+/// sharing index access across threads, as the C++ implementation may not be internally
+/// thread-safe for concurrent modifications.
 pub mod index {
     use super::ffi;
     use super::property;
@@ -534,20 +789,63 @@ pub mod index {
     }
 
     impl Index {
+        /// Creates a new QBG index at the specified path.
+        ///
+        /// This constructs a new index from scratch using the provided property configuration.
+        /// The index is built using the parameters specified in the Property object.
+        ///
+        /// # Arguments
+        ///
+        /// * `path` - File system path where the index will be stored
+        /// * `p` - Property object containing index configuration
+        ///
+        /// # Returns
+        ///
+        /// A new Index instance or an error if index creation fails.
         pub fn new(path: &String, p: &mut property::Property) -> Result<Self, cxx::Exception> {
             let inner = ffi::new_index(path, p.get_property())?;
             Ok(Index { inner })
         }
 
+        /// Opens a prebuilt index from disk.
+        ///
+        /// This loads an existing index that was previously saved. Use this when you have
+        /// an index file already built and want to perform search operations.
+        ///
+        /// # Arguments
+        ///
+        /// * `path` - File system path to the existing index
+        /// * `p` - Whether the index is prebuilt (typically true for loading existing indexes)
+        ///
+        /// # Returns
+        ///
+        /// An Index instance wrapping the loaded index, or an error if loading fails.
         pub fn new_prebuilt(path: &String, p: bool) -> Result<Self, cxx::Exception> {
             let inner = ffi::new_prebuilt_index(path, p)?;
             Ok(Index { inner })
         }
 
+        /// Opens or reopens an index from disk.
+        ///
+        /// This allows switching which index file is being used by the current Index instance.
+        ///
+        /// # Arguments
+        ///
+        /// * `path` - File system path to the index
+        /// * `prebuilt` - Whether the index should be treated as prebuilt
         pub fn open_index(&mut self, path: &String, prebuilt: bool) -> Result<(), cxx::Exception> {
             self.inner.pin_mut().open_index(path, prebuilt)
         }
 
+        /// Rebuilds the index with new parameters.
+        ///
+        /// This is useful when you want to recreate or optimize an index with different
+        /// clustering or optimization parameters.
+        ///
+        /// # Arguments
+        ///
+        /// * `path` - File system path for the rebuilt index
+        /// * `p` - Property object with new construction parameters
         pub fn build_index(
             &mut self,
             path: &String,
@@ -556,26 +854,78 @@ pub mod index {
             self.inner.pin_mut().build_index(path, p.get_property())
         }
 
+        /// Saves the current index state to disk.
+        ///
+        /// This persists all vectors and internal structures to the index file.
+        /// Should be called after performing insert/update/delete operations to ensure
+        /// changes are not lost.
         pub fn save_index(&mut self) -> Result<(), cxx::Exception> {
             self.inner.pin_mut().save_index()
         }
 
+        /// Closes the index and frees associated resources.
+        ///
+        /// After calling this, the Index should not be used for further operations.
         pub fn close_index(&mut self) {
             self.inner.pin_mut().close_index()
         }
 
+        /// Appends a vector to the index and returns its assigned ID.
+        ///
+        /// This assigns a new sequential ID to the vector. Use this when you want
+        /// the system to assign IDs automatically.
+        ///
+        /// # Arguments
+        ///
+        /// * `v` - Vector data with dimension matching the index configuration
+        ///
+        /// # Returns
+        ///
+        /// The auto-assigned object ID or an error if the operation fails.
         pub fn append(&mut self, v: &[f32]) -> Result<i32, cxx::Exception> {
             self.inner.pin_mut().append(v)
         }
 
+        /// Inserts a vector into the index.
+        ///
+        /// Similar to append but may have different semantics depending on the C++ implementation.
+        ///
+        /// # Arguments
+        ///
+        /// * `v` - Vector data with dimension matching the index configuration
+        ///
+        /// # Returns
+        ///
+        /// The assigned object ID or an error if the operation fails.
         pub fn insert(&mut self, v: &[f32]) -> Result<i32, cxx::Exception> {
             self.inner.pin_mut().insert(v)
         }
 
+        /// Removes a vector from the index by its object ID.
+        ///
+        /// This marks the vector as deleted and removes it from search results.
+        ///
+        /// # Arguments
+        ///
+        /// * `id` - Object ID of the vector to remove
         pub fn remove(&mut self, id: usize) -> Result<(), cxx::Exception> {
             self.inner.pin_mut().remove(id)
         }
 
+        /// Searches for approximate nearest neighbors.
+        ///
+        /// Performs an ANN search and returns the k nearest neighbors within the search radius.
+        ///
+        /// # Arguments
+        ///
+        /// * `v` - Query vector with dimension matching the index configuration
+        /// * `k` - Number of nearest neighbors to return
+        /// * `radius` - Maximum search radius (0.0 means no radius limit)
+        /// * `epsilon` - Search accuracy parameter (higher values = faster but less accurate)
+        ///
+        /// # Returns
+        ///
+        /// A vector of (object_id, distance) tuples for the found neighbors.
         pub fn search(
             &self,
             v: &[f32],
@@ -592,6 +942,15 @@ pub mod index {
                 .collect())
         }
 
+        /// Retrieves a vector from the index by its object ID.
+        ///
+        /// # Arguments
+        ///
+        /// * `id` - Object ID of the vector to retrieve
+        ///
+        /// # Returns
+        ///
+        /// A slice containing the vector data with dimension matching the index configuration.
         pub fn get_object(&self, id: usize) -> Result<&[f32], cxx::Exception> {
             let dim = self.inner.get_dimension()?;
             match self.inner.get_object(id) {
@@ -600,6 +959,11 @@ pub mod index {
             }
         }
 
+        /// Returns the vector dimension configured for this index.
+        ///
+        /// # Returns
+        ///
+        /// The dimension size (number of elements per vector) or an error if the query fails.
         pub fn get_dimension(&self) -> Result<usize, cxx::Exception> {
             let index = self.inner.as_ref().unwrap();
             index.get_dimension()
