@@ -40,7 +40,7 @@ mod tests {
         dim: usize,
     }
 
-     // skipcq: RS-W1065
+    // skipcq: RS-W1065
     impl algorithm::ANN for _MockService {
         // Async search operations
         async fn search(
@@ -63,7 +63,7 @@ mod tests {
             _epsilon: f32,
             _radius: f32,
         ) -> Result<search::Response, Error> {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         async fn linear_search(
