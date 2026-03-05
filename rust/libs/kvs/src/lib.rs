@@ -24,7 +24,7 @@
 //! The implementation uses `sled` as its underlying persistent storage engine to leverage
 //! its robust transactional capabilities, ensuring data consistency for bidirectional mappings.
 
-use std::{path::Path, sync::Arc};
+use std::sync::Arc;
 
 /// Map implementations and shared map traits.
 pub mod map;
@@ -140,7 +140,7 @@ impl<M: MapBase<C = C>, C: Codec> MapBuilder<M, C> {
         }
 
         let db = tokio::task::spawn_blocking(move || {
-            self.config.path(Path::new(&self.path)).open()
+            self.config.path(&self.path).open()
         }).await??;
 
         let map = Arc::new(M::new(db, self.scan_on_startup, self.codec)?);
