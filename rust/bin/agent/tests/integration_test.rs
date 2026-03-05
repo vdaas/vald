@@ -103,7 +103,7 @@ async fn test_qbg_agent_integration() {
             enable_statistics: true, // Enable stats for verification
             ..Default::default()
         },
-        daemon: Default::default(),
+        daemon: agent::config::Daemon::default(),
     };
 
     // 2. Start Agent in background

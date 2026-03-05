@@ -968,7 +968,8 @@ mod tests {
 
     #[test]
     fn test_get_actual_value_with_env_var() {
-        let existing = match env::var("HOME") {
+        let home = env::var("HOME");
+        let existing = match home {
             Ok(value) => value,
             Err(_) => return,
         };

@@ -146,12 +146,12 @@ mod tests {
     };
 
     #[derive(Clone)]
-    pub struct MockBody {
+    struct MockBody {
         data: VecDeque<Bytes>,
     }
 
     impl MockBody {
-        pub fn new(data: Vec<impl Message>) -> Self {
+        fn new(data: Vec<impl Message>) -> Self {
             let mut queue: VecDeque<Bytes> = VecDeque::with_capacity(16);
             for msg in data {
                 let buf = Self::encode(msg);
@@ -161,7 +161,7 @@ mod tests {
             MockBody { data: queue }
         }
 
-        pub fn is_empty(&self) -> bool {
+        fn is_empty(&self) -> bool {
             self.data.is_empty()
         }
 
@@ -213,10 +213,10 @@ mod tests {
     }
 
     #[derive(Debug, Clone, Default)]
-    pub struct ProstDecoder<U>(PhantomData<U>);
+    struct ProstDecoder<U>(PhantomData<U>);
 
     impl<U> ProstDecoder<U> {
-        pub fn new() -> Self {
+        fn new() -> Self {
             Self(PhantomData)
         }
     }

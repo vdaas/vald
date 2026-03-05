@@ -40,6 +40,7 @@ mod tests {
         dim: usize,
     }
 
+    // deepsource-ignore: RS-W1065
     impl algorithm::ANN for _MockService {
         // Async search operations
         async fn search(

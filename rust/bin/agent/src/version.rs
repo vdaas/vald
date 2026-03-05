@@ -22,12 +22,92 @@ use std::env;
 const SERVER_NAME: &str = "agent qbg";
 const STACK_TRACE_LIMIT: usize = 4;
 
+/// Checks if the command-line arguments contain a version request.
+///
+/// This function examines the provided arguments to determine whether the user
+/// has requested version information via common version flags.
+///
+/// # Arguments
+///
+/// * `args` - A slice of command-line arguments (typically `std::env::args().collect()`)
+///
+/// # Supported Flags
+///
+/// The function recognizes the following version request flags:
+/// * `-version` - Long form flag (hyphen)
+/// * `--version` - Long form flag (double hyphen)
+/// * `-v` - Short form flag (lowercase)
+/// * `-V` - Short form flag (uppercase)
+///
+/// # Returns
+///
+/// Returns `true` if any of the supported version flags are found in the arguments
+/// (excluding the first argument which is typically the binary name), `false` otherwise.
+///
+/// # Examples
+///
+/// ```ignore
+/// let args = vec!["agent".to_string(), "--version".to_string()];
+/// assert!(is_version_request(&args));
+///
+/// let args = vec!["agent".to_string(), "-v".to_string()];
+/// assert!(is_version_request(&args));
+///
+/// let args = vec!["agent".to_string(), "search".to_string()];
+/// assert!(!is_version_request(&args));
+/// ```
 pub fn is_version_request(args: &[String]) -> bool {
     args.iter()
         .skip(1)
         .any(|arg| matches!(arg.as_str(), "-version" | "--version" | "-v" | "-V"))
 }
 
+/// Prints comprehensive version and runtime information.
+///
+/// This function constructs and prints a detailed version report containing:
+/// - Build-time information (version, git commit, build time, CPU flags)
+/// - Runtime environment (Go architecture, OS, CPU cores, Rust version)
+/// - Algorithm and configuration details (algorithm info, CGO settings)
+/// - Stack trace information for debugging purposes
+///
+/// The output is formatted with aligned key-value pairs and includes a timestamp
+/// of when the information was printed. All information is printed to stdout.
+///
+/// # Output Format
+///
+/// The output includes:
+/// ```text
+/// YYYY-MM-DD HH:MM:SS     [INFO]:
+/// key-name             -> value
+/// algorithm info       -> <value>
+/// build cpu info flags -> <value>
+/// ...
+/// ```
+///
+/// # Information Included
+///
+/// Key information items printed include:
+/// - `algorithm info` - Details about the indexing algorithm
+/// - `build cpu info flags` - CPU optimization flags used during build
+/// - `build time` - When the binary was compiled
+/// - `cgo call` / `cgo enabled` - C interop settings
+/// - `git commit` - Source code commit hash
+/// - `go arch` - Target architecture (e.g., amd64, arm64)
+/// - `go os` - Target operating system
+/// - `go version` / `rustc version` - Rust compiler version
+/// - `vald version` - Vald release version
+/// - Stack trace information for context
+///
+/// # Usage
+///
+/// Typically called in the main function when a version request flag is detected:
+///
+/// ```ignore
+/// if is_version_request(&args) {
+///     print_version_info();
+///     std::process::exit(0);
+/// }
+/// ```
 pub fn print_version_info() {
     println!("{}", build_version_output());
 }
@@ -111,8 +191,7 @@ fn insert_value_owned(map: &mut BTreeMap<String, String>, key: &str, value: Opti
 
 fn available_parallelism() -> usize {
     std::thread::available_parallelism()
-        .map(|n| n.get())
-        .unwrap_or(1)
+        .map_or(1, |n| n.get())
 }
 
 fn format_cpu_flags(flags: &str) -> Option<String> {

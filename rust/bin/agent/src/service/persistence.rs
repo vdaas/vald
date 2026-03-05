@@ -41,32 +41,72 @@ const ORIGIN_INDEX_DIR_NAME: &str = "origin";
 const BROKEN_INDEX_DIR_NAME: &str = "broken";
 
 /// Errors that can occur during persistence operations.
+///
+/// This enum represents all possible errors that can occur when loading, saving,
+/// or managing index files on disk. It provides detailed context for each failure
+/// scenario to aid in debugging and error recovery.
 #[derive(Debug, Error)]
 pub enum PersistenceError {
+    /// The index file could not be found at the expected path.
+    ///
+    /// This error occurs when attempting to load an index file that does not exist
+    /// at any of the search paths (primary, backup, etc.).
     #[error("index file not found: {0}")]
     IndexFileNotFound(String),
 
+    /// The metadata file could not be found at the expected path.
+    ///
+    /// This error occurs when the index file exists but the accompanying metadata
+    /// file is missing, which is required for index validation and versioning.
     #[error("metadata file not found: {0}")]
     MetadataNotFound(String),
 
+    /// The index file exists but is corrupted or invalid.
+    ///
+    /// This error occurs when the index file cannot be parsed or loaded due to
+    /// corruption, version mismatch, or invalid data format.
     #[error("invalid index: {0}")]
     InvalidIndex(String),
 
+    /// Loading the index took longer than the configured timeout.
+    ///
+    /// This error occurs when the index load operation exceeds the time limit,
+    /// which may indicate a very large index, slow disk, or system resource issues.
     #[error("index load timeout")]
     LoadTimeout,
 
+    /// Failed to create or prepare the required directory structure.
+    ///
+    /// This error occurs when the persistence layer cannot create the necessary
+    /// directories (origin, backup, broken) for index storage.
     #[error("failed to prepare folders: {0}")]
     PrepareFoldersFailed(String),
 
+    /// Failed to backup a broken index before attempting recovery.
+    ///
+    /// This error occurs when moving or copying a corrupted index to the broken
+    /// index directory fails, which is a safety mechanism before recovery attempts.
     #[error("failed to backup broken index: {0}")]
     BackupFailed(String),
 
+    /// Failed to save the index to disk.
+    ///
+    /// This error occurs when writing the index file or metadata to disk fails,
+    /// which may be due to insufficient permissions, disk space, or I/O errors.
     #[error("failed to save index: {0}")]
     SaveFailed(String),
 
+    /// An underlying I/O operation failed.
+    ///
+    /// This error wraps standard library I/O errors that occur during file
+    /// operations such as read, write, rename, or remove.
     #[error("io error: {0}")]
     IoError(#[from] std::io::Error),
 
+    /// An error occurred while processing index metadata.
+    ///
+    /// This error wraps metadata-specific errors such as serialization failures,
+    /// version validation errors, or schema mismatches.
     #[error("metadata error: {0}")]
     MetadataError(#[from] metadata::MetadataError),
 }
@@ -475,8 +515,7 @@ impl PersistenceManager {
         // Move primary to backup (only if primary exists and has content)
         if self.paths.primary_path.exists() {
             let has_content = fs::read_dir(&self.paths.primary_path)
-                .map(|mut d| d.next().is_some())
-                .unwrap_or(false);
+                .map_or(false, |mut d| d.next().is_some());
 
             if has_content {
                 if let Err(e) = move_dir(&self.paths.primary_path, &self.paths.old_path) {

@@ -14,17 +14,17 @@
 // limitations under the License.
 //
 
-use std::env;
 use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR")?);
+    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR")?;
+    let manifest_dir = PathBuf::from(manifest_dir);
     let repo_root = manifest_dir
         .join("../../..")
         .canonicalize()
-        .unwrap_or(manifest_dir.clone());
+        .unwrap_or_else(|_| { manifest_dir.clone() });
 
     println!(
         "cargo:rerun-if-changed={}",
@@ -89,10 +89,8 @@ fn read_cpu_flags(path: &str) -> Option<String> {
     let contents = fs::read_to_string(path).ok()?;
     for line in contents.lines() {
         if let Some(rest) = line.strip_prefix("flags") {
-            let mut parts = rest.splitn(2, ':');
-            let _ = parts.next();
-            let flags = parts.next()?.trim();
-            if !flags.is_empty() {
+            let (_, flags) = rest.split_once(':')?;
+            if !flags.trim().is_empty() {
                 return Some(flags.to_string());
             }
         }

@@ -61,6 +61,40 @@ pub struct QBGService {
 }
 
 impl QBGService {
+    /// Creates a new QBG-based ANN service instance.
+    ///
+    /// This constructor performs the following initialization steps:
+    /// 1. Configures the index path and persistence layer
+    /// 2. Prepares storage directories (origin, backup, broken)
+    /// 3. Attempts to load an existing index from disk, or creates a new one
+    /// 4. Backs up any broken index files for recovery
+    /// 5. Initializes QBG construction and build parameters from config
+    /// 6. Sets up the vector queue (vq) for async insert/update operations
+    /// 7. Initializes the bidirectional UUID<->ObjectID mapping (KVS)
+    /// 8. Configures Copy-on-Write mode if enabled
+    /// 9. Sets up Kubernetes metrics exporter if configured
+    ///
+    /// # Arguments
+    ///
+    /// * `config` - QBG configuration containing all parameters for index construction,
+    ///              persistence, optimization, and operational behavior.
+    ///
+    /// # Panics
+    ///
+    /// This function may panic if:
+    /// * Index creation fails with an invalid configuration
+    /// * VQueue or KVS initialization fails due to file system errors
+    ///
+    /// # Read-Replica Mode
+    ///
+    /// When `config.is_readreplica` is true, the service operates in read-only mode,
+    /// rejecting all write operations (insert, update, delete).
+    ///
+    /// # Persistence
+    ///
+    /// The function attempts to load an existing index if found. If loading fails,
+    /// it creates a fresh index. Broken indexes are automatically backed up to the
+    /// broken index directory before recovery attempts.
     pub async fn new(config: &QBG) -> Self {
         let path = if config.index_path.is_empty() {
             "index".to_string()
@@ -174,8 +208,10 @@ impl QBGService {
         // Initialize K8s metrics exporter if enabled
         let enable_export_index_info = config.enable_export_index_info_to_k8s;
         let metrics_exporter = if enable_export_index_info {
-            let pod_name = std::env::var("MY_POD_NAME").unwrap_or_default();
-            let pod_namespace = std::env::var("MY_POD_NAMESPACE").unwrap_or_default();
+            let pod_name = std::env::var("MY_POD_NAME");
+            let pod_name = pod_name.unwrap_or_default();
+            let pod_namespace = std::env::var("MY_POD_NAMESPACE");
+            let pod_namespace = pod_namespace.unwrap_or_default();
 
             if pod_name.is_empty() || pod_namespace.is_empty() {
                 warn!("K8s metrics export enabled but MY_POD_NAME or MY_POD_NAMESPACE not set");
