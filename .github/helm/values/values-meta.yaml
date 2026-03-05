@@ -30,6 +30,15 @@ gateway:
         memory: 50Mi
     gateway_config:
       index_replica: 3
+  meta:
+    enabled: true
+    minReplicas: 1
+    hpa:
+      enabled: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 50Mi
 agent:
   minReplicas: 3
   maxReplicas: 10
