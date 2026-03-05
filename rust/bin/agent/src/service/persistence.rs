@@ -514,8 +514,8 @@ impl PersistenceManager {
 
         // Move primary to backup (only if primary exists and has content)
         if self.paths.primary_path.exists() {
-            let has_content = fs::read_dir(&self.paths.primary_path)
-                .map_or(false, |mut d| d.next().is_some());
+            let has_content =
+                fs::read_dir(&self.paths.primary_path).map_or(false, |mut d| d.next().is_some());
 
             if has_content {
                 if let Err(e) = move_dir(&self.paths.primary_path, &self.paths.old_path) {

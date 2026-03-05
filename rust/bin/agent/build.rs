@@ -20,13 +20,12 @@ use std::process::Command;
 
 const CARGO_MANIFEST_DIR: &str = "CARGO_MANIFEST_DIR";
 
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let manifest_dir = PathBuf::from(std::env::var(CARGO_MANIFEST_DIR)?);
     let repo_root = manifest_dir
         .join("../../..")
         .canonicalize()
-        .unwrap_or_else(|_| { manifest_dir.clone() });
+        .unwrap_or_else(|_| manifest_dir.clone());
 
     println!(
         "cargo:rerun-if-changed={}",

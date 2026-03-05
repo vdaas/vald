@@ -190,8 +190,7 @@ fn insert_value_owned(map: &mut BTreeMap<String, String>, key: &str, value: Opti
 }
 
 fn available_parallelism() -> usize {
-    std::thread::available_parallelism()
-        .map_or(1, |n| n.get())
+    std::thread::available_parallelism().map_or(1, |n| n.get())
 }
 
 fn format_cpu_flags(flags: &str) -> Option<String> {

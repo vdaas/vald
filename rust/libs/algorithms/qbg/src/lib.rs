@@ -571,7 +571,7 @@ pub mod property {
     impl Default for Property {
         fn default() -> Self {
             Property {
-                inner: ffi::new_property()
+                inner: ffi::new_property(),
             }
         }
     }
@@ -583,7 +583,7 @@ pub mod property {
         /// before using it to create or modify a QBG index.
         pub fn new() -> Self {
             Property {
-                inner: ffi::new_property()
+                inner: ffi::new_property(),
             }
         }
 

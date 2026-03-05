@@ -131,19 +131,41 @@ where
     let svc = Arc::downgrade(&service);
 
     // Basic Metrics
-    register_basic_gauge!(meter, svc, INDEX_COUNT,
-        "Agent NGT index count", |s| s.len() as i64);
-    register_basic_gauge!(meter, svc, UNCOMMITTED_INDEX_COUNT,
-        "Agent NGT uncommitted index count", |s| {
-            (s.insert_vqueue_buffer_len() + s.delete_vqueue_buffer_len()) as i64
-        });
-    register_basic_gauge!(meter, svc, INSERT_VQUEUE_COUNT,
-        "Agent NGT insert vqueue count", |s| s.insert_vqueue_buffer_len() as i64);
-    register_basic_gauge!(meter, svc, DELETE_VQUEUE_COUNT,
-        "Agent NGT delete vqueue count", |s| s.delete_vqueue_buffer_len() as i64);
-    register_basic_gauge!(meter, svc, COMPLETED_CREATE_INDEX_TOTAL,
+    register_basic_gauge!(
+        meter,
+        svc,
+        INDEX_COUNT,
+        "Agent NGT index count",
+        |s| s.len() as i64
+    );
+    register_basic_gauge!(
+        meter,
+        svc,
+        UNCOMMITTED_INDEX_COUNT,
+        "Agent NGT uncommitted index count",
+        |s| { (s.insert_vqueue_buffer_len() + s.delete_vqueue_buffer_len()) as i64 }
+    );
+    register_basic_gauge!(
+        meter,
+        svc,
+        INSERT_VQUEUE_COUNT,
+        "Agent NGT insert vqueue count",
+        |s| s.insert_vqueue_buffer_len() as i64
+    );
+    register_basic_gauge!(
+        meter,
+        svc,
+        DELETE_VQUEUE_COUNT,
+        "Agent NGT delete vqueue count",
+        |s| s.delete_vqueue_buffer_len() as i64
+    );
+    register_basic_gauge!(
+        meter,
+        svc,
+        COMPLETED_CREATE_INDEX_TOTAL,
         "The cumulative count of completed create index execution",
-        |s| s.number_of_create_index_executions() as i64);
+        |s| s.number_of_create_index_executions() as i64
+    );
     meter
         .i64_observable_gauge(EXECUTED_PROACTIVE_GC_TOTAL)
         .with_description("The cumulative count of proactive GC execution")
@@ -151,41 +173,200 @@ where
             observer.observe(0_i64, &[]);
         })
         .build();
-    register_basic_gauge!(meter, svc, IS_INDEXING,
-        "Currently indexing or no", |s| if s.is_indexing() { 1 } else { 0 });
-    register_basic_gauge!(meter, svc, IS_SAVING,
-        "Currently saving or not", |s| if s.is_saving() { 1 } else { 0 });
-    register_basic_gauge!(meter, svc, BROKEN_INDEX_STORE_COUNT,
-        "How many broken index generations have been stored", |s| s.broken_index_count() as i64);
+    register_basic_gauge!(
+        meter,
+        svc,
+        IS_INDEXING,
+        "Currently indexing or no",
+        |s| if s.is_indexing() { 1 } else { 0 }
+    );
+    register_basic_gauge!(
+        meter,
+        svc,
+        IS_SAVING,
+        "Currently saving or not",
+        |s| if s.is_saving() { 1 } else { 0 }
+    );
+    register_basic_gauge!(
+        meter,
+        svc,
+        BROKEN_INDEX_STORE_COUNT,
+        "How many broken index generations have been stored",
+        |s| s.broken_index_count() as i64
+    );
 
     // Statistics Metrics (Int64)
-    register_stats_gauge_i64!(meter, svc, MEDIAN_INDEGREE, "Median indegree of nodes", median_indegree);
-    register_stats_gauge_i64!(meter, svc, MEDIAN_OUTDEGREE, "Median outdegree of nodes", median_outdegree);
-    register_stats_gauge_i64!(meter, svc, MAX_NUMBER_OF_INDEGREE, "Maximum number of indegree", max_number_of_indegree);
-    register_stats_gauge_i64!(meter, svc, MAX_NUMBER_OF_OUTDEGREE, "Maximum number of outdegree", max_number_of_outdegree);
-    register_stats_gauge_i64!(meter, svc, MIN_NUMBER_OF_INDEGREE, "Minimum number of indegree", min_number_of_indegree);
-    register_stats_gauge_i64!(meter, svc, MIN_NUMBER_OF_OUTDEGREE, "Minimum number of outdegree", min_number_of_outdegree);
+    register_stats_gauge_i64!(
+        meter,
+        svc,
+        MEDIAN_INDEGREE,
+        "Median indegree of nodes",
+        median_indegree
+    );
+    register_stats_gauge_i64!(
+        meter,
+        svc,
+        MEDIAN_OUTDEGREE,
+        "Median outdegree of nodes",
+        median_outdegree
+    );
+    register_stats_gauge_i64!(
+        meter,
+        svc,
+        MAX_NUMBER_OF_INDEGREE,
+        "Maximum number of indegree",
+        max_number_of_indegree
+    );
+    register_stats_gauge_i64!(
+        meter,
+        svc,
+        MAX_NUMBER_OF_OUTDEGREE,
+        "Maximum number of outdegree",
+        max_number_of_outdegree
+    );
+    register_stats_gauge_i64!(
+        meter,
+        svc,
+        MIN_NUMBER_OF_INDEGREE,
+        "Minimum number of indegree",
+        min_number_of_indegree
+    );
+    register_stats_gauge_i64!(
+        meter,
+        svc,
+        MIN_NUMBER_OF_OUTDEGREE,
+        "Minimum number of outdegree",
+        min_number_of_outdegree
+    );
     register_stats_gauge_i64!(meter, svc, MODE_INDEGREE, "Mode of indegree", mode_indegree);
-    register_stats_gauge_i64!(meter, svc, MODE_OUTDEGREE, "Mode of outdegree", mode_outdegree);
-    register_stats_gauge_i64!(meter, svc, NODES_SKIPPED_FOR_10_EDGES, "Nodes skipped for 10 edges", nodes_skipped_for_10_edges);
-    register_stats_gauge_i64!(meter, svc, NODES_SKIPPED_FOR_INDEGREE_DISTANCE, "Nodes skipped for indegree distance", nodes_skipped_for_indegree_distance);
-    register_stats_gauge_i64!(meter, svc, NUMBER_OF_EDGES, "Number of edges", number_of_edges);
-    register_stats_gauge_i64!(meter, svc, NUMBER_OF_INDEXED_OBJECTS, "Number of indexed objects", number_of_indexed_objects);
-    register_stats_gauge_i64!(meter, svc, NUMBER_OF_NODES, "Number of nodes", number_of_nodes);
-    register_stats_gauge_i64!(meter, svc, NUMBER_OF_NODES_WITHOUT_EDGES, "Number of nodes without edges", number_of_nodes_without_edges);
-    register_stats_gauge_i64!(meter, svc, NUMBER_OF_NODES_WITHOUT_INDEGREE, "Number of nodes without indegree", number_of_nodes_without_indegree);
-    register_stats_gauge_i64!(meter, svc, NUMBER_OF_OBJECTS, "Number of objects", number_of_objects);
-    register_stats_gauge_i64!(meter, svc, NUMBER_OF_REMOVED_OBJECTS, "Number of removed objects", number_of_removed_objects);
-    register_stats_gauge_i64!(meter, svc, SIZE_OF_OBJECT_REPOSITORY, "Size of object repository", size_of_object_repository);
-    register_stats_gauge_i64!(meter, svc, SIZE_OF_REFINEMENT_OBJECT_REPOSITORY, "Size of refinement object repository", size_of_refinement_object_repository);
+    register_stats_gauge_i64!(
+        meter,
+        svc,
+        MODE_OUTDEGREE,
+        "Mode of outdegree",
+        mode_outdegree
+    );
+    register_stats_gauge_i64!(
+        meter,
+        svc,
+        NODES_SKIPPED_FOR_10_EDGES,
+        "Nodes skipped for 10 edges",
+        nodes_skipped_for_10_edges
+    );
+    register_stats_gauge_i64!(
+        meter,
+        svc,
+        NODES_SKIPPED_FOR_INDEGREE_DISTANCE,
+        "Nodes skipped for indegree distance",
+        nodes_skipped_for_indegree_distance
+    );
+    register_stats_gauge_i64!(
+        meter,
+        svc,
+        NUMBER_OF_EDGES,
+        "Number of edges",
+        number_of_edges
+    );
+    register_stats_gauge_i64!(
+        meter,
+        svc,
+        NUMBER_OF_INDEXED_OBJECTS,
+        "Number of indexed objects",
+        number_of_indexed_objects
+    );
+    register_stats_gauge_i64!(
+        meter,
+        svc,
+        NUMBER_OF_NODES,
+        "Number of nodes",
+        number_of_nodes
+    );
+    register_stats_gauge_i64!(
+        meter,
+        svc,
+        NUMBER_OF_NODES_WITHOUT_EDGES,
+        "Number of nodes without edges",
+        number_of_nodes_without_edges
+    );
+    register_stats_gauge_i64!(
+        meter,
+        svc,
+        NUMBER_OF_NODES_WITHOUT_INDEGREE,
+        "Number of nodes without indegree",
+        number_of_nodes_without_indegree
+    );
+    register_stats_gauge_i64!(
+        meter,
+        svc,
+        NUMBER_OF_OBJECTS,
+        "Number of objects",
+        number_of_objects
+    );
+    register_stats_gauge_i64!(
+        meter,
+        svc,
+        NUMBER_OF_REMOVED_OBJECTS,
+        "Number of removed objects",
+        number_of_removed_objects
+    );
+    register_stats_gauge_i64!(
+        meter,
+        svc,
+        SIZE_OF_OBJECT_REPOSITORY,
+        "Size of object repository",
+        size_of_object_repository
+    );
+    register_stats_gauge_i64!(
+        meter,
+        svc,
+        SIZE_OF_REFINEMENT_OBJECT_REPOSITORY,
+        "Size of refinement object repository",
+        size_of_refinement_object_repository
+    );
 
     // Statistics Metrics (Float64)
-    register_stats_gauge_f64!(meter, svc, VARIANCE_OF_INDEGREE, "Variance of indegree", variance_of_indegree);
-    register_stats_gauge_f64!(meter, svc, VARIANCE_OF_OUTDEGREE, "Variance of outdegree", variance_of_outdegree);
-    register_stats_gauge_f64!(meter, svc, MEAN_EDGE_LENGTH, "Mean edge length", mean_edge_length);
-    register_stats_gauge_f64!(meter, svc, MEAN_EDGE_LENGTH_FOR_10_EDGES, "Mean edge length for 10 edges", mean_edge_length_for_10_edges);
-    register_stats_gauge_f64!(meter, svc, MEAN_INDEGREE_DISTANCE_FOR_10_EDGES, "Mean indegree distance for 10 edges", mean_indegree_distance_for_10_edges);
-    register_stats_gauge_f64!(meter, svc, MEAN_NUMBER_OF_EDGES_PER_NODE, "Mean number of edges per node", mean_number_of_edges_per_node);
+    register_stats_gauge_f64!(
+        meter,
+        svc,
+        VARIANCE_OF_INDEGREE,
+        "Variance of indegree",
+        variance_of_indegree
+    );
+    register_stats_gauge_f64!(
+        meter,
+        svc,
+        VARIANCE_OF_OUTDEGREE,
+        "Variance of outdegree",
+        variance_of_outdegree
+    );
+    register_stats_gauge_f64!(
+        meter,
+        svc,
+        MEAN_EDGE_LENGTH,
+        "Mean edge length",
+        mean_edge_length
+    );
+    register_stats_gauge_f64!(
+        meter,
+        svc,
+        MEAN_EDGE_LENGTH_FOR_10_EDGES,
+        "Mean edge length for 10 edges",
+        mean_edge_length_for_10_edges
+    );
+    register_stats_gauge_f64!(
+        meter,
+        svc,
+        MEAN_INDEGREE_DISTANCE_FOR_10_EDGES,
+        "Mean indegree distance for 10 edges",
+        mean_indegree_distance_for_10_edges
+    );
+    register_stats_gauge_f64!(
+        meter,
+        svc,
+        MEAN_NUMBER_OF_EDGES_PER_NODE,
+        "Mean number of edges per node",
+        mean_number_of_edges_per_node
+    );
     register_stats_gauge_f64!(meter, svc, C1_INDEGREE, "C1 indegree", c1_indegree);
     register_stats_gauge_f64!(meter, svc, C5_INDEGREE, "C5 indegree", c5_indegree);
     register_stats_gauge_f64!(meter, svc, C95_OUTDEGREE, "C95 outdegree", c95_outdegree);
