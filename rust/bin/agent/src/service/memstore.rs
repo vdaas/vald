@@ -370,6 +370,179 @@ where
     }
 }
 
+/// Resolved state from vqueue and kvs for `update_timestamp` operations.
+struct UpdateState {
+    vec: Option<Vec<f32>>,
+    its: i64,
+    dts: i64,
+    vqok: bool,
+    oid: u32,
+    kts: i64,
+    kvok: bool,
+}
+
+/// Resolves the current state of a UUID in both vqueue and kvs.
+async fn resolve_update_state<Q: Queue>(
+    kv: &Arc<KvsMap>,
+    vq: &Q,
+    uuid: &str,
+) -> Result<UpdateState, MemstoreError> {
+    let (vec, its, dts, vqok) = match vq.get_vector_with_timestamp(uuid).await {
+        Ok((v, i, d, exists)) => (v, i, d, exists || i > 0 || d > 0),
+        Err(QueueError::NotFound(_)) => (None, 0, 0, false),
+        Err(e) => return Err(MemstoreError::VQueue(e)),
+    };
+    let (oid, kts, kvok) = match kv.get(uuid).await {
+        Ok((o, t)) => (o, t as i64, true),
+        Err(_) => (0, 0, false),
+    };
+    Ok(UpdateState {
+        vec,
+        its,
+        dts,
+        vqok,
+        oid,
+        kts,
+        kvok,
+    })
+}
+
+/// Pops a delete entry from vqueue and rolls back if the timestamp changed concurrently.
+async fn pop_delete_with_rollback<Q: Queue>(
+    vq: &Q,
+    uuid: &str,
+    expected_dts: i64,
+) -> Result<(), MemstoreError> {
+    if let Ok(pdts) = vq.pop_delete(uuid).await {
+        if pdts != expected_dts {
+            vq.push_delete(uuid, Some(pdts)).await?;
+        }
+    }
+    Ok(())
+}
+
+/// Pops an insert entry from vqueue and rolls back if the timestamp changed concurrently.
+async fn pop_insert_with_rollback<Q: Queue>(
+    vq: &Q,
+    uuid: &str,
+    expected_its: i64,
+) -> Result<(), MemstoreError> {
+    if let Ok((pvec, pits)) = vq.pop_insert(uuid).await {
+        if pits != expected_its {
+            vq.push_insert(uuid, pvec, Some(pits)).await?;
+        }
+    }
+    Ok(())
+}
+
+/// Case 1: Only in vqueue (no kvs data), timestamp is newer than delete.
+/// Returns `Ok(true)` if the update was handled.
+async fn try_update_vqueue_only<Q: Queue>(
+    vq: &Q,
+    uuid: &str,
+    ts: i64,
+    force: bool,
+    st: &mut UpdateState,
+) -> Result<bool, MemstoreError> {
+    if !st.vqok || st.kvok || st.dts == 0 || st.dts >= ts {
+        return Ok(false);
+    }
+    if !force && st.its >= ts {
+        return Ok(false);
+    }
+    let Some(v) = st.vec.take() else {
+        return Ok(false);
+    };
+    vq.push_insert(uuid, v, Some(ts)).await?;
+    pop_delete_with_rollback(vq, uuid, st.dts).await?;
+    Ok(true)
+}
+
+/// Case 2: Both in vqueue and kvs.
+/// Returns `Ok(true)` if the update was handled.
+async fn try_update_both<Q: Queue>(
+    kv: &Arc<KvsMap>,
+    vq: &Q,
+    uuid: &str,
+    ts: i64,
+    force: bool,
+    st: &mut UpdateState,
+) -> Result<bool, MemstoreError> {
+    if !st.vqok || !st.kvok || st.dts >= ts {
+        return Ok(false);
+    }
+    if !force && (st.kts >= ts || st.its >= ts) {
+        return Ok(false);
+    }
+    let Some(v) = st.vec.take() else {
+        return Ok(false);
+    };
+    vq.push_insert(uuid, v, Some(ts)).await?;
+    kv.set(uuid.to_string(), st.oid, ts as u128).await?;
+    if st.dts == 0 {
+        vq.push_delete(uuid, Some(ts - 1)).await?;
+    }
+    Ok(true)
+}
+
+/// Case 3: Not in insert vqueue, but in kvs.
+/// Returns `Ok(true)` if the update was handled.
+async fn try_update_kvs_only<Q: Queue>(
+    kv: &Arc<KvsMap>,
+    vq: &Q,
+    uuid: &str,
+    ts: i64,
+    force: bool,
+    st: &UpdateState,
+) -> Result<bool, MemstoreError> {
+    if st.vqok || st.its != 0 || !st.kvok {
+        return Ok(false);
+    }
+    if !force && st.kts >= ts {
+        return Ok(false);
+    }
+    kv.set(uuid.to_string(), st.oid, ts as u128).await?;
+    if st.dts != 0 && (force || st.dts < ts) {
+        pop_delete_with_rollback(vq, uuid, st.dts).await?;
+    }
+    Ok(true)
+}
+
+/// Case 4: Insert vqueue found with special conditions.
+/// Returns `Ok(true)` if the update was handled.
+async fn try_update_kvs_with_stale_insert<Q, F, Fut>(
+    kv: &Arc<KvsMap>,
+    vq: &Q,
+    uuid: &str,
+    ts: i64,
+    force: bool,
+    st: &UpdateState,
+    get_vector_fn: Option<F>,
+) -> Result<bool, MemstoreError>
+where
+    Q: Queue,
+    F: FnOnce(u32) -> Fut,
+    Fut: std::future::Future<Output = Result<Vec<f32>, MemstoreError>>,
+{
+    if st.vqok || st.its == 0 || !st.kvok {
+        return Ok(false);
+    }
+    if !force && st.kts >= ts {
+        return Ok(false);
+    }
+    kv.set(uuid.to_string(), st.oid, ts as u128).await?;
+    if st.vec.is_none() && st.its > st.dts {
+        if let Some(f) = get_vector_fn {
+            if let Ok(ovec) = f(st.oid).await {
+                vq.push_insert(uuid, ovec, Some(ts)).await?;
+                return Ok(true);
+            }
+        }
+    }
+    pop_insert_with_rollback(vq, uuid, st.its).await?;
+    Ok(true)
+}
+
 /// Updates the timestamp of an object in the memstore.
 ///
 /// # Arguments
@@ -404,26 +577,12 @@ where
         return Err(MemstoreError::ZeroTimestamp);
     }
 
-    // Read vqueue data
-    let vq_result = vq.get_vector_with_timestamp(uuid).await;
-    let (vec, its, dts, vqok) = match vq_result {
-        Ok((v, i, d, exists)) => (v, i, d, exists || i > 0 || d > 0),
-        Err(QueueError::NotFound(_)) => (None, 0, 0, false),
-        Err(e) => return Err(MemstoreError::VQueue(e)),
-    };
+    let mut st = resolve_update_state(kv, vq, uuid).await?;
 
-    // Read kvs data
-    let kv_result = kv.get(uuid).await;
-    let (oid, kts, kvok) = match kv_result {
-        Ok((o, t)) => (o, t as i64, true),
-        Err(_) => (0, 0, false),
-    };
-
-    if !vqok && !kvok {
+    if !st.vqok && !st.kvok {
         return Err(MemstoreError::ObjectNotFound(uuid.to_string()));
     }
-
-    if !force && (ts <= kts || ts <= its) {
+    if !force && (ts <= st.kts || ts <= st.its) {
         return Err(MemstoreError::NewerTimestampObjectAlreadyExists(
             uuid.to_string(),
             ts,
@@ -431,74 +590,19 @@ where
     }
 
     // Case 1: Only in vqueue, no kvs data, and timestamp is newer than delete
-    if vqok
-        && !kvok
-        && dts != 0
-        && dts < ts
-        && (force || its < ts)
-        && let Some(v) = vec
-    {
-        vq.push_insert(uuid, v, Some(ts)).await?;
-        // Pop delete since we don't need it anymore
-        match vq.pop_delete(uuid).await {
-            Ok(pdts) if pdts != dts => {
-                // Rollback if timestamp changed
-                vq.push_delete(uuid, Some(pdts)).await?;
-            }
-            _ => {}
-        }
+    if try_update_vqueue_only(vq, uuid, ts, force, &mut st).await? {
         return Ok(());
     }
-
     // Case 2: Both in vqueue and kvs
-    if vqok
-        && kvok
-        && dts < ts
-        && (force || (kts < ts && its < ts))
-        && let Some(v) = vec
-    {
-        vq.push_insert(uuid, v, Some(ts)).await?;
-        kv.set(uuid.to_string(), oid, ts as u128).await?;
-        if dts == 0 {
-            // Add delete vqueue for update
-            vq.push_delete(uuid, Some(ts - 1)).await?;
-        }
+    if try_update_both(kv, vq, uuid, ts, force, &mut st).await? {
         return Ok(());
     }
-
     // Case 3: Not in insert vqueue, but in kvs
-    if !vqok && its == 0 && kvok && (force || kts < ts) {
-        kv.set(uuid.to_string(), oid, ts as u128).await?;
-        if dts != 0 && (force || dts < ts) {
-            match vq.pop_delete(uuid).await {
-                Ok(pdts) if pdts != dts => {
-                    // Rollback if timestamp changed
-                    vq.push_delete(uuid, Some(pdts)).await?;
-                }
-                _ => {}
-            }
-        }
+    if try_update_kvs_only(kv, vq, uuid, ts, force, &st).await? {
         return Ok(());
     }
-
     // Case 4: Insert vqueue found with special conditions
-    if !vqok && its != 0 && kvok && (force || kts < ts) {
-        kv.set(uuid.to_string(), oid, ts as u128).await?;
-        if vec.is_none()
-            && its > dts
-            && let Some(f) = get_vector_fn
-            && let Ok(ovec) = f(oid).await
-        {
-            vq.push_insert(uuid, ovec, Some(ts)).await?;
-            return Ok(());
-        }
-        match vq.pop_insert(uuid).await {
-            Ok((pvec, pits)) if pits != its => {
-                // Rollback if timestamp changed
-                vq.push_insert(uuid, pvec, Some(pits)).await?;
-            }
-            _ => {}
-        }
+    if try_update_kvs_with_stale_insert(kv, vq, uuid, ts, force, &st, get_vector_fn).await? {
         return Ok(());
     }
 

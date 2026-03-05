@@ -64,6 +64,64 @@ const C5_INDEGREE: &str = "agent_core_ngt_c5_indegree";
 const C95_OUTDEGREE: &str = "agent_core_ngt_c95_outdegree";
 const C99_OUTDEGREE: &str = "agent_core_ngt_c99_outdegree";
 
+/// Registers an i64 observable gauge that reads a value from the ANN service.
+macro_rules! register_basic_gauge {
+    ($meter:expr, $svc:expr, $name:expr, $desc:expr, |$s:ident| $value:expr) => {{
+        let svc = $svc.clone();
+        $meter
+            .i64_observable_gauge($name)
+            .with_description($desc)
+            .with_callback(move |observer| {
+                if let Some(service) = svc.upgrade()
+                    && let Ok($s) = service.try_read()
+                {
+                    observer.observe($value, &[]);
+                }
+            })
+            .build();
+    }};
+}
+
+/// Registers an i64 observable gauge backed by a field from `index_statistics()`.
+macro_rules! register_stats_gauge_i64 {
+    ($meter:expr, $svc:expr, $name:expr, $desc:expr, $field:ident) => {{
+        let svc = $svc.clone();
+        $meter
+            .i64_observable_gauge($name)
+            .with_description($desc)
+            .with_callback(move |observer| {
+                if let Some(service) = svc.upgrade()
+                    && let Ok(s) = service.try_read()
+                    && s.is_statistics_enabled()
+                    && let Ok(stats) = s.index_statistics()
+                {
+                    observer.observe(stats.$field as i64, &[]);
+                }
+            })
+            .build();
+    }};
+}
+
+/// Registers an f64 observable gauge backed by a field from `index_statistics()`.
+macro_rules! register_stats_gauge_f64 {
+    ($meter:expr, $svc:expr, $name:expr, $desc:expr, $field:ident) => {{
+        let svc = $svc.clone();
+        $meter
+            .f64_observable_gauge($name)
+            .with_description($desc)
+            .with_callback(move |observer| {
+                if let Some(service) = svc.upgrade()
+                    && let Ok(s) = service.try_read()
+                    && s.is_statistics_enabled()
+                    && let Ok(stats) = s.index_statistics()
+                {
+                    observer.observe(stats.$field, &[]);
+                }
+            })
+            .build();
+    }};
+}
+
 /// Registers OpenTelemetry metrics backed by the ANN service state.
 pub fn register_metrics<S>(service: Arc<RwLock<S>>) -> anyhow::Result<()>
 where
@@ -73,520 +131,65 @@ where
     let svc = Arc::downgrade(&service);
 
     // Basic Metrics
-    let svc_index_count = svc.clone();
-    let _index_count = meter
-        .i64_observable_gauge(INDEX_COUNT)
-        .with_description("Agent NGT index count")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_index_count.upgrade()
-                && let Ok(s) = service.try_read()
-            {
-                observer.observe(s.len() as i64, &[]);
-            }
-        })
-        .build();
-    let svc_uncommitted_index_count = svc.clone();
-    let _uncommitted_index_count = meter
-        .i64_observable_gauge(UNCOMMITTED_INDEX_COUNT)
-        .with_description("Agent NGT uncommitted index count")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_uncommitted_index_count.upgrade()
-                && let Ok(s) = service.try_read()
-            {
-                let total = s.insert_vqueue_buffer_len() + s.delete_vqueue_buffer_len();
-                observer.observe(total as i64, &[]);
-            }
-        })
-        .build();
-    let svc_insert_vqueue_count = svc.clone();
-    let _insert_vqueue_count = meter
-        .i64_observable_gauge(INSERT_VQUEUE_COUNT)
-        .with_description("Agent NGT insert vqueue count")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_insert_vqueue_count.upgrade()
-                && let Ok(s) = service.try_read()
-            {
-                observer.observe(s.insert_vqueue_buffer_len() as i64, &[]);
-            }
-        })
-        .build();
-    let svc_delete_vqueue_count = svc.clone();
-    let _delete_vqueue_count = meter
-        .i64_observable_gauge(DELETE_VQUEUE_COUNT)
-        .with_description("Agent NGT delete vqueue count")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_delete_vqueue_count.upgrade()
-                && let Ok(s) = service.try_read()
-            {
-                observer.observe(s.delete_vqueue_buffer_len() as i64, &[]);
-            }
-        })
-        .build();
-    let svc_completed_create_index_total = svc.clone();
-    let _completed_create_index_total = meter
-        .i64_observable_gauge(COMPLETED_CREATE_INDEX_TOTAL)
-        .with_description("The cumulative count of completed create index execution")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_completed_create_index_total.upgrade()
-                && let Ok(s) = service.try_read()
-            {
-                observer.observe(s.number_of_create_index_executions() as i64, &[]);
-            }
-        })
-        .build();
-    let _executed_proactive_gc_total = meter
+    register_basic_gauge!(meter, svc, INDEX_COUNT,
+        "Agent NGT index count", |s| s.len() as i64);
+    register_basic_gauge!(meter, svc, UNCOMMITTED_INDEX_COUNT,
+        "Agent NGT uncommitted index count", |s| {
+            (s.insert_vqueue_buffer_len() + s.delete_vqueue_buffer_len()) as i64
+        });
+    register_basic_gauge!(meter, svc, INSERT_VQUEUE_COUNT,
+        "Agent NGT insert vqueue count", |s| s.insert_vqueue_buffer_len() as i64);
+    register_basic_gauge!(meter, svc, DELETE_VQUEUE_COUNT,
+        "Agent NGT delete vqueue count", |s| s.delete_vqueue_buffer_len() as i64);
+    register_basic_gauge!(meter, svc, COMPLETED_CREATE_INDEX_TOTAL,
+        "The cumulative count of completed create index execution",
+        |s| s.number_of_create_index_executions() as i64);
+    meter
         .i64_observable_gauge(EXECUTED_PROACTIVE_GC_TOTAL)
         .with_description("The cumulative count of proactive GC execution")
         .with_callback(|observer| {
             observer.observe(0_i64, &[]);
         })
         .build();
-    let svc_is_indexing = svc.clone();
-    let _is_indexing = meter
-        .i64_observable_gauge(IS_INDEXING)
-        .with_description("Currently indexing or no")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_is_indexing.upgrade()
-                && let Ok(s) = service.try_read()
-            {
-                observer.observe(if s.is_indexing() { 1 } else { 0 }, &[]);
-            }
-        })
-        .build();
-    let svc_is_saving = svc.clone();
-    let _is_saving = meter
-        .i64_observable_gauge(IS_SAVING)
-        .with_description("Currently saving or not")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_is_saving.upgrade()
-                && let Ok(s) = service.try_read()
-            {
-                observer.observe(if s.is_saving() { 1 } else { 0 }, &[]);
-            }
-        })
-        .build();
-    let svc_broken_index_store_count = svc.clone();
-    let _broken_index_store_count = meter
-        .i64_observable_gauge(BROKEN_INDEX_STORE_COUNT)
-        .with_description("How many broken index generations have been stored")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_broken_index_store_count.upgrade()
-                && let Ok(s) = service.try_read()
-            {
-                observer.observe(s.broken_index_count() as i64, &[]);
-            }
-        })
-        .build();
+    register_basic_gauge!(meter, svc, IS_INDEXING,
+        "Currently indexing or no", |s| if s.is_indexing() { 1 } else { 0 });
+    register_basic_gauge!(meter, svc, IS_SAVING,
+        "Currently saving or not", |s| if s.is_saving() { 1 } else { 0 });
+    register_basic_gauge!(meter, svc, BROKEN_INDEX_STORE_COUNT,
+        "How many broken index generations have been stored", |s| s.broken_index_count() as i64);
 
     // Statistics Metrics (Int64)
-    let svc_median_indegree = svc.clone();
-    let _median_indegree = meter
-        .i64_observable_gauge(MEDIAN_INDEGREE)
-        .with_description("Median indegree of nodes")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_median_indegree.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.median_indegree as i64, &[]);
-            }
-        })
-        .build();
-    let svc_median_outdegree = svc.clone();
-    let _median_outdegree = meter
-        .i64_observable_gauge(MEDIAN_OUTDEGREE)
-        .with_description("Median outdegree of nodes")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_median_outdegree.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.median_outdegree as i64, &[]);
-            }
-        })
-        .build();
-    let svc_max_number_of_indegree = svc.clone();
-    let _max_number_of_indegree = meter
-        .i64_observable_gauge(MAX_NUMBER_OF_INDEGREE)
-        .with_description("Maximum number of indegree")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_max_number_of_indegree.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.max_number_of_indegree as i64, &[]);
-            }
-        })
-        .build();
-    let svc_max_number_of_outdegree = svc.clone();
-    let _max_number_of_outdegree = meter
-        .i64_observable_gauge(MAX_NUMBER_OF_OUTDEGREE)
-        .with_description("Maximum number of outdegree")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_max_number_of_outdegree.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.max_number_of_outdegree as i64, &[]);
-            }
-        })
-        .build();
-    let svc_min_number_of_indegree = svc.clone();
-    let _min_number_of_indegree = meter
-        .i64_observable_gauge(MIN_NUMBER_OF_INDEGREE)
-        .with_description("Minimum number of indegree")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_min_number_of_indegree.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.min_number_of_indegree as i64, &[]);
-            }
-        })
-        .build();
-    let svc_min_number_of_outdegree = svc.clone();
-    let _min_number_of_outdegree = meter
-        .i64_observable_gauge(MIN_NUMBER_OF_OUTDEGREE)
-        .with_description("Minimum number of outdegree")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_min_number_of_outdegree.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.min_number_of_outdegree as i64, &[]);
-            }
-        })
-        .build();
-    let svc_mode_indegree = svc.clone();
-    let _mode_indegree = meter
-        .i64_observable_gauge(MODE_INDEGREE)
-        .with_description("Mode of indegree")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_mode_indegree.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.mode_indegree as i64, &[]);
-            }
-        })
-        .build();
-    let svc_mode_outdegree = svc.clone();
-    let _mode_outdegree = meter
-        .i64_observable_gauge(MODE_OUTDEGREE)
-        .with_description("Mode of outdegree")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_mode_outdegree.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.mode_outdegree as i64, &[]);
-            }
-        })
-        .build();
-    let svc_nodes_skipped_for_10_edges = svc.clone();
-    let _nodes_skipped_for_10_edges = meter
-        .i64_observable_gauge(NODES_SKIPPED_FOR_10_EDGES)
-        .with_description("Nodes skipped for 10 edges")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_nodes_skipped_for_10_edges.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.nodes_skipped_for_10_edges as i64, &[]);
-            }
-        })
-        .build();
-    let svc_nodes_skipped_for_indegree_distance = svc.clone();
-    let _nodes_skipped_for_indegree_distance = meter
-        .i64_observable_gauge(NODES_SKIPPED_FOR_INDEGREE_DISTANCE)
-        .with_description("Nodes skipped for indegree distance")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_nodes_skipped_for_indegree_distance.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.nodes_skipped_for_indegree_distance as i64, &[]);
-            }
-        })
-        .build();
-    let svc_number_of_edges = svc.clone();
-    let _number_of_edges = meter
-        .i64_observable_gauge(NUMBER_OF_EDGES)
-        .with_description("Number of edges")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_number_of_edges.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.number_of_edges as i64, &[]);
-            }
-        })
-        .build();
-    let svc_number_of_indexed_objects = svc.clone();
-    let _number_of_indexed_objects = meter
-        .i64_observable_gauge(NUMBER_OF_INDEXED_OBJECTS)
-        .with_description("Number of indexed objects")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_number_of_indexed_objects.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.number_of_indexed_objects as i64, &[]);
-            }
-        })
-        .build();
-    let svc_number_of_nodes = svc.clone();
-    let _number_of_nodes = meter
-        .i64_observable_gauge(NUMBER_OF_NODES)
-        .with_description("Number of nodes")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_number_of_nodes.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.number_of_nodes as i64, &[]);
-            }
-        })
-        .build();
-    let svc_number_of_nodes_without_edges = svc.clone();
-    let _number_of_nodes_without_edges = meter
-        .i64_observable_gauge(NUMBER_OF_NODES_WITHOUT_EDGES)
-        .with_description("Number of nodes without edges")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_number_of_nodes_without_edges.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.number_of_nodes_without_edges as i64, &[]);
-            }
-        })
-        .build();
-    let svc_number_of_nodes_without_indegree = svc.clone();
-    let _number_of_nodes_without_indegree = meter
-        .i64_observable_gauge(NUMBER_OF_NODES_WITHOUT_INDEGREE)
-        .with_description("Number of nodes without indegree")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_number_of_nodes_without_indegree.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.number_of_nodes_without_indegree as i64, &[]);
-            }
-        })
-        .build();
-    let svc_number_of_objects = svc.clone();
-    let _number_of_objects = meter
-        .i64_observable_gauge(NUMBER_OF_OBJECTS)
-        .with_description("Number of objects")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_number_of_objects.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.number_of_objects as i64, &[]);
-            }
-        })
-        .build();
-    let svc_number_of_removed_objects = svc.clone();
-    let _number_of_removed_objects = meter
-        .i64_observable_gauge(NUMBER_OF_REMOVED_OBJECTS)
-        .with_description("Number of removed objects")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_number_of_removed_objects.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.number_of_removed_objects as i64, &[]);
-            }
-        })
-        .build();
-    let svc_size_of_object_repository = svc.clone();
-    let _size_of_object_repository = meter
-        .i64_observable_gauge(SIZE_OF_OBJECT_REPOSITORY)
-        .with_description("Size of object repository")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_size_of_object_repository.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.size_of_object_repository as i64, &[]);
-            }
-        })
-        .build();
-    let svc_size_of_refinement_object_repository = svc.clone();
-    let _size_of_refinement_object_repository = meter
-        .i64_observable_gauge(SIZE_OF_REFINEMENT_OBJECT_REPOSITORY)
-        .with_description("Size of refinement object repository")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_size_of_refinement_object_repository.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.size_of_refinement_object_repository as i64, &[]);
-            }
-        })
-        .build();
+    register_stats_gauge_i64!(meter, svc, MEDIAN_INDEGREE, "Median indegree of nodes", median_indegree);
+    register_stats_gauge_i64!(meter, svc, MEDIAN_OUTDEGREE, "Median outdegree of nodes", median_outdegree);
+    register_stats_gauge_i64!(meter, svc, MAX_NUMBER_OF_INDEGREE, "Maximum number of indegree", max_number_of_indegree);
+    register_stats_gauge_i64!(meter, svc, MAX_NUMBER_OF_OUTDEGREE, "Maximum number of outdegree", max_number_of_outdegree);
+    register_stats_gauge_i64!(meter, svc, MIN_NUMBER_OF_INDEGREE, "Minimum number of indegree", min_number_of_indegree);
+    register_stats_gauge_i64!(meter, svc, MIN_NUMBER_OF_OUTDEGREE, "Minimum number of outdegree", min_number_of_outdegree);
+    register_stats_gauge_i64!(meter, svc, MODE_INDEGREE, "Mode of indegree", mode_indegree);
+    register_stats_gauge_i64!(meter, svc, MODE_OUTDEGREE, "Mode of outdegree", mode_outdegree);
+    register_stats_gauge_i64!(meter, svc, NODES_SKIPPED_FOR_10_EDGES, "Nodes skipped for 10 edges", nodes_skipped_for_10_edges);
+    register_stats_gauge_i64!(meter, svc, NODES_SKIPPED_FOR_INDEGREE_DISTANCE, "Nodes skipped for indegree distance", nodes_skipped_for_indegree_distance);
+    register_stats_gauge_i64!(meter, svc, NUMBER_OF_EDGES, "Number of edges", number_of_edges);
+    register_stats_gauge_i64!(meter, svc, NUMBER_OF_INDEXED_OBJECTS, "Number of indexed objects", number_of_indexed_objects);
+    register_stats_gauge_i64!(meter, svc, NUMBER_OF_NODES, "Number of nodes", number_of_nodes);
+    register_stats_gauge_i64!(meter, svc, NUMBER_OF_NODES_WITHOUT_EDGES, "Number of nodes without edges", number_of_nodes_without_edges);
+    register_stats_gauge_i64!(meter, svc, NUMBER_OF_NODES_WITHOUT_INDEGREE, "Number of nodes without indegree", number_of_nodes_without_indegree);
+    register_stats_gauge_i64!(meter, svc, NUMBER_OF_OBJECTS, "Number of objects", number_of_objects);
+    register_stats_gauge_i64!(meter, svc, NUMBER_OF_REMOVED_OBJECTS, "Number of removed objects", number_of_removed_objects);
+    register_stats_gauge_i64!(meter, svc, SIZE_OF_OBJECT_REPOSITORY, "Size of object repository", size_of_object_repository);
+    register_stats_gauge_i64!(meter, svc, SIZE_OF_REFINEMENT_OBJECT_REPOSITORY, "Size of refinement object repository", size_of_refinement_object_repository);
 
     // Statistics Metrics (Float64)
-    let svc_variance_of_indegree = svc.clone();
-    let _variance_of_indegree = meter
-        .f64_observable_gauge(VARIANCE_OF_INDEGREE)
-        .with_description("Variance of indegree")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_variance_of_indegree.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.variance_of_indegree, &[]);
-            }
-        })
-        .build();
-    let svc_variance_of_outdegree = svc.clone();
-    let _variance_of_outdegree = meter
-        .f64_observable_gauge(VARIANCE_OF_OUTDEGREE)
-        .with_description("Variance of outdegree")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_variance_of_outdegree.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.variance_of_outdegree, &[]);
-            }
-        })
-        .build();
-    let svc_mean_edge_length = svc.clone();
-    let _mean_edge_length = meter
-        .f64_observable_gauge(MEAN_EDGE_LENGTH)
-        .with_description("Mean edge length")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_mean_edge_length.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.mean_edge_length, &[]);
-            }
-        })
-        .build();
-    let svc_mean_edge_length_for_10_edges = svc.clone();
-    let _mean_edge_length_for_10_edges = meter
-        .f64_observable_gauge(MEAN_EDGE_LENGTH_FOR_10_EDGES)
-        .with_description("Mean edge length for 10 edges")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_mean_edge_length_for_10_edges.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.mean_edge_length_for_10_edges, &[]);
-            }
-        })
-        .build();
-    let svc_mean_indegree_distance_for_10_edges = svc.clone();
-    let _mean_indegree_distance_for_10_edges = meter
-        .f64_observable_gauge(MEAN_INDEGREE_DISTANCE_FOR_10_EDGES)
-        .with_description("Mean indegree distance for 10 edges")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_mean_indegree_distance_for_10_edges.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.mean_indegree_distance_for_10_edges, &[]);
-            }
-        })
-        .build();
-    let svc_mean_number_of_edges_per_node = svc.clone();
-    let _mean_number_of_edges_per_node = meter
-        .f64_observable_gauge(MEAN_NUMBER_OF_EDGES_PER_NODE)
-        .with_description("Mean number of edges per node")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_mean_number_of_edges_per_node.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.mean_number_of_edges_per_node, &[]);
-            }
-        })
-        .build();
-    let svc_c1_indegree = svc.clone();
-    let _c1_indegree = meter
-        .f64_observable_gauge(C1_INDEGREE)
-        .with_description("C1 indegree")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_c1_indegree.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.c1_indegree, &[]);
-            }
-        })
-        .build();
-    let svc_c5_indegree = svc.clone();
-    let _c5_indegree = meter
-        .f64_observable_gauge(C5_INDEGREE)
-        .with_description("C5 indegree")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_c5_indegree.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.c5_indegree, &[]);
-            }
-        })
-        .build();
-    let svc_c95_outdegree = svc.clone();
-    let _c95_outdegree = meter
-        .f64_observable_gauge(C95_OUTDEGREE)
-        .with_description("C95 outdegree")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_c95_outdegree.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.c95_outdegree, &[]);
-            }
-        })
-        .build();
-    let svc_c99_outdegree = svc;
-    let _c99_outdegree = meter
-        .f64_observable_gauge(C99_OUTDEGREE)
-        .with_description("C99 outdegree")
-        .with_callback(move |observer| {
-            if let Some(service) = svc_c99_outdegree.upgrade()
-                && let Ok(s) = service.try_read()
-                && s.is_statistics_enabled()
-                && let Ok(stats) = s.index_statistics()
-            {
-                observer.observe(stats.c99_outdegree, &[]);
-            }
-        })
-        .build();
+    register_stats_gauge_f64!(meter, svc, VARIANCE_OF_INDEGREE, "Variance of indegree", variance_of_indegree);
+    register_stats_gauge_f64!(meter, svc, VARIANCE_OF_OUTDEGREE, "Variance of outdegree", variance_of_outdegree);
+    register_stats_gauge_f64!(meter, svc, MEAN_EDGE_LENGTH, "Mean edge length", mean_edge_length);
+    register_stats_gauge_f64!(meter, svc, MEAN_EDGE_LENGTH_FOR_10_EDGES, "Mean edge length for 10 edges", mean_edge_length_for_10_edges);
+    register_stats_gauge_f64!(meter, svc, MEAN_INDEGREE_DISTANCE_FOR_10_EDGES, "Mean indegree distance for 10 edges", mean_indegree_distance_for_10_edges);
+    register_stats_gauge_f64!(meter, svc, MEAN_NUMBER_OF_EDGES_PER_NODE, "Mean number of edges per node", mean_number_of_edges_per_node);
+    register_stats_gauge_f64!(meter, svc, C1_INDEGREE, "C1 indegree", c1_indegree);
+    register_stats_gauge_f64!(meter, svc, C5_INDEGREE, "C5 indegree", c5_indegree);
+    register_stats_gauge_f64!(meter, svc, C95_OUTDEGREE, "C95 outdegree", c95_outdegree);
+    register_stats_gauge_f64!(meter, svc, C99_OUTDEGREE, "C99 outdegree", c99_outdegree);
 
     Ok(())
 }
