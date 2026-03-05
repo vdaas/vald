@@ -65,7 +65,7 @@ jobs:
             const baseInclude = [
               { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "null" },
               { scenario: "unary_crud",  deployment: "helm-chart", cluster: "k3d", environment: "null" },
-              { scenario: "unary_crud",  deployment: "helm-chart", cluster: "k3d", environment: "meta" },
+              { scenario: "unary_crud_meta",  deployment: "helm-chart", cluster: "k3d", environment: "meta" },
               { scenario: "multi_crud",  deployment: "helm-chart", cluster: "k3d", environment: "null" },
               { scenario: "rollout",     deployment: "helm-chart", cluster: "k3d", environment: "null" },
               { scenario: "stream_crud", deployment: "helm-operator", cluster: "k3d", environment: "null" },
@@ -248,6 +248,9 @@ jobs:
           make hack/benchmark/assets/dataset/${{ env.DATASET }}
           if [[ "${{ matrix.environment }}" == "mirror" ]]; then
             export E2E_TARGET_NAMESPACE=vald-01
+          fi
+          if [[ "${{ matrix.environment }}" == "meta" ]]; then
+            export E2E_TARGET_NAME=vald-meta-gateway
           fi
           kubectl get pods
           make e2e/v2 E2E_CONFIG=$(pwd)/tests/v2/e2e/assets/${{ matrix.scenario }}.yaml \
