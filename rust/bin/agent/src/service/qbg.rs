@@ -37,6 +37,9 @@ use super::memstore;
 use super::metadata::Metadata;
 use super::persistence::{PersistenceConfig, PersistenceManager};
 
+const MY_POD_NAME: &str = "MY_POD_NAME";
+const MY_POD_NAMESPACE: &str = "MY_POD_NAMESPACE";
+
 /// QBG-based ANN service implementation.
 pub struct QBGService {
     path: String,
@@ -208,10 +211,8 @@ impl QBGService {
         // Initialize K8s metrics exporter if enabled
         let enable_export_index_info = config.enable_export_index_info_to_k8s;
         let metrics_exporter = if enable_export_index_info {
-            let pod_name = std::env::var("MY_POD_NAME");
-            let pod_name = pod_name.unwrap_or_default();
-            let pod_namespace = std::env::var("MY_POD_NAMESPACE");
-            let pod_namespace = pod_namespace.unwrap_or_default();
+            let pod_name = std::env::var(MY_POD_NAME).unwrap_or_default();
+            let pod_namespace = std::env::var(MY_POD_NAMESPACE).unwrap_or_default();
 
             if pod_name.is_empty() || pod_namespace.is_empty() {
                 warn!("K8s metrics export enabled but MY_POD_NAME or MY_POD_NAMESPACE not set");

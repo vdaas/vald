@@ -968,8 +968,8 @@ mod tests {
 
     #[test]
     fn test_get_actual_value_with_env_var() {
-        let home = env::var("HOME");
-        let existing = match home {
+        const HOME: &str = "HOME";
+        let existing = match std::env::var(HOME) {
             Ok(value) => value,
             Err(_) => return,
         };

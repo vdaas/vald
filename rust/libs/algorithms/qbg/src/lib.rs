@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-//! QBG (Query-by-Graph) ANN Algorithm Wrapper for Vald.
+//! QBG (Quantized Blob Graph) ANN Algorithm Wrapper for Vald.
 //!
 //! This library provides a **Rust wrapper for the C++ QBG library**, enabling high-performance
 //! approximate nearest neighbor (ANN) search with graph-based indexing. The wrapper abstracts
@@ -23,7 +23,7 @@
 //!
 //! # What is QBG?
 //!
-//! QBG (Query-by-Graph) is an efficient ANN algorithm that:
+//! QBG (Quantized Blob Graph) is an efficient ANN algorithm that:
 //! - Uses hierarchical clustering and graph-based indexing
 //! - Supports multiple distance metrics (L1, L2, Hamming, Angle, Cosine)
 //! - Handles various data types (uint8, float, float16)
@@ -543,13 +543,34 @@ pub mod property {
     use cxx::UniquePtr;
     use std::pin::Pin;
 
+    /// QBG index property configuration.
+    ///
+    /// `Property` encapsulates all configuration parameters needed to create or load a QBG index.
+    /// It provides a type-safe interface to the underlying C++ property object, managing memory
+    /// automatically through Rust's ownership system.
+    ///
+    /// # Usage
+    ///
+    /// Typically used in this pattern:
+    /// 1. Create a new Property with `Property::new()`
+    /// 2. Configure parameters using setter methods
+    /// 3. Pass to `Index::new()` or `Index::open()` to create/open an index
+    ///
+    /// # Thread Safety
+    ///
+    /// A Property should not be shared across threads during configuration. Once created,
+    /// pass it to an Index which manages thread safety.
     pub struct Property {
+        /// The underlying C++ QBG Property object.
+        ///
+        /// Manages the lifetime and memory of the C++ property instance.
+        /// Automatically cleaned up when Property is dropped.
         inner: UniquePtr<ffi::Property>,
     }
 
     impl Default for Property {
         fn default() -> Self {
-            Self::new()
+            Property::new()
         }
     }
 
@@ -849,7 +870,40 @@ pub mod index {
     use core::slice;
     use cxx::UniquePtr;
 
+    /// A QBG (Query-by-Graph) approximate nearest neighbor search index.
+    ///
+    /// `Index` is the core data structure for QBG-based vector search operations. It provides
+    /// methods to create/load indexes, insert vectors, search for nearest neighbors, and optimize
+    /// the index structure.
+    ///
+    /// # Creation and Loading
+    ///
+    /// - `Index::new()` - Create a new index from scratch with configuration from a Property
+    /// - `Index::open()` - Load an existing index from disk
+    ///
+    /// # Operations
+    ///
+    /// - **Insert/Update**: `insert()` - Add or update vectors in the index
+    /// - **Search**: `search()` - Find k nearest neighbors to a query vector
+    /// - **Optimization**: `rebuild()` - Reconstruct and optimize the index structure
+    /// - **Serialization**: `save()` - Persist index to disk
+    ///
+    /// # Thread Safety
+    ///
+    /// The underlying C++ QBG index supports concurrent read operations (searches) but
+    /// write operations (insert, rebuild) may have synchronization overhead. The index
+    /// should be accessed through proper synchronization primitives (Arc<Mutex<Index>>) in
+    /// multi-threaded contexts.
+    ///
+    /// # Memory Management
+    ///
+    /// The Index automatically manages C++ memory through a UniquePtr. All vectors and
+    /// indexes are cleaned up when the Index is dropped.
     pub struct Index {
+        /// The underlying C++ QBG Index object.
+        ///
+        /// Manages the C++ index instance and its associated data structures.
+        /// Automatically cleaned up when Index is dropped.
         inner: UniquePtr<ffi::Index>,
     }
 

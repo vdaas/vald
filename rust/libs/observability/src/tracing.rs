@@ -240,7 +240,7 @@ mod tests {
 
     #[test]
     fn test_tracing_config_builder() {
-        let config = TracingConfig::new()
+        let config = TracingConfig::default()
             .enable_stdout(false)
             .enable_json(true)
             .enable_otel(true)

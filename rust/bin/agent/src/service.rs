@@ -40,7 +40,6 @@ mod tests {
         dim: usize,
     }
 
-    // skipcq: RS-W1065
     impl algorithm::ANN for _MockService {
         // Async search operations
         async fn search(
@@ -71,7 +70,7 @@ mod tests {
             _vector: Vec<f32>,
             _k: u32,
         ) -> Result<search::Response, Error> {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         async fn linear_search_by_id(
@@ -79,12 +78,12 @@ mod tests {
             _uuid: String,
             _k: u32,
         ) -> Result<search::Response, Error> {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         // Async insert operations
         async fn insert(&mut self, _uuid: String, _vector: Vec<f32>) -> Result<(), Error> {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         async fn insert_with_time(
@@ -93,14 +92,14 @@ mod tests {
             _vector: Vec<f32>,
             _t: i64,
         ) -> Result<(), Error> {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         async fn insert_multiple(
             &mut self,
             _vectors: HashMap<String, Vec<f32>>,
         ) -> Result<(), Error> {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         async fn insert_multiple_with_time(
@@ -108,12 +107,12 @@ mod tests {
             _vectors: HashMap<String, Vec<f32>>,
             _t: i64,
         ) -> Result<(), Error> {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         // Async update operations
         async fn update(&mut self, _uuid: String, _vector: Vec<f32>) -> Result<(), Error> {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         async fn update_with_time(
@@ -122,14 +121,14 @@ mod tests {
             _vector: Vec<f32>,
             _t: i64,
         ) -> Result<(), Error> {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         async fn update_multiple(
             &mut self,
             _vectors: HashMap<String, Vec<f32>>,
         ) -> Result<(), Error> {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         async fn update_multiple_with_time(
@@ -137,7 +136,7 @@ mod tests {
             _vectors: HashMap<String, Vec<f32>>,
             _t: i64,
         ) -> Result<(), Error> {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         async fn update_timestamp(
@@ -146,20 +145,20 @@ mod tests {
             _t: i64,
             _force: bool,
         ) -> Result<(), Error> {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         // Async remove operations
         async fn remove(&mut self, _uuid: String) -> Result<(), Error> {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         async fn remove_with_time(&mut self, _uuid: String, _t: i64) -> Result<(), Error> {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         async fn remove_multiple(&mut self, _uuids: Vec<String>) -> Result<(), Error> {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         async fn remove_multiple_with_time(
@@ -167,45 +166,45 @@ mod tests {
             _uuids: Vec<String>,
             _t: i64,
         ) -> Result<(), Error> {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         // Async index management
         async fn regenerate_indexes(&mut self) -> Result<(), Error> {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         async fn create_index(&mut self) -> Result<(), Error> {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         async fn save_index(&mut self) -> Result<(), Error> {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         async fn create_and_save_index(&mut self) -> Result<(), Error> {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         // Async object retrieval
         async fn get_object(&self, _uuid: String) -> Result<(Vec<f32>, i64), Error> {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         async fn exists(&self, _uuid: String) -> (usize, bool) {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         async fn uuids(&self) -> Vec<String> {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         async fn list_object_func<F: FnMut(String, Vec<f32>, i64) -> bool + Send>(&self, _f: F) {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         async fn close(&mut self) -> Result<(), Error> {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         // Sync status methods
@@ -246,7 +245,7 @@ mod tests {
         }
 
         fn index_statistics(&self) -> Result<info::index::Statistics, Error> {
-            todo!()
+            todo!() // skipcq: RS-W1065
         }
 
         fn is_statistics_enabled(&self) -> bool {
@@ -254,7 +253,7 @@ mod tests {
         }
 
         fn index_property(&self) -> Result<info::index::Property, Error> {
-            todo!() 
+            todo!() // skipcq: RS-W1065 
         }
     }
 }
