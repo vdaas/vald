@@ -570,7 +570,9 @@ pub mod property {
 
     impl Default for Property {
         fn default() -> Self {
-            Property::new()
+            Property {
+                inner: ffi::new_property()
+            }
         }
     }
 
@@ -580,8 +582,9 @@ pub mod property {
         /// This initializes the underlying C++ property object which can be configured
         /// before using it to create or modify a QBG index.
         pub fn new() -> Self {
-            let inner = ffi::new_property();
-            Property { inner }
+            Property {
+                inner: ffi::new_property()
+            }
         }
 
         /// Gets a mutable reference to the underlying C++ Property object.

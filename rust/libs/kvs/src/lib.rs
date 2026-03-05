@@ -139,9 +139,9 @@ impl<M: MapBase<C = C>, C: Codec> MapBuilder<M, C> {
             tokio::fs::create_dir_all(dir).await?;
         }
 
-        let db =
-            tokio::task::spawn_blocking(move || self.config.path(Path::new(&self.path)).open())
-                .await??;
+        let db = tokio::task::spawn_blocking(move || {
+            self.config.path(Path::new(&self.path)).open()
+        }).await??;
 
         let map = Arc::new(M::new(db, self.scan_on_startup, self.codec)?);
 
