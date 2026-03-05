@@ -39,6 +39,12 @@ gateway:
       requests:
         cpu: 100m
         memory: 50Mi
+    gateway_config:
+      metadata_store:
+        addrs:
+          - "tikv-pd-0:2379"
+          - "tikv-pd-1:2379"
+          - "tikv-pd-2:2379"
 agent:
   minReplicas: 3
   maxReplicas: 10
