@@ -89,18 +89,22 @@ use serde::{Deserialize, Serialize};
 ///
 /// # Variants
 ///
-/// * `None` - Invalid or uninitialized state
+/// * `None` - Invalid type
 /// * `Uint8` - 8-bit unsigned integer quantization. Provides maximum compression but lowest precision.
 /// * `Float` - 32-bit floating-point. Full precision but higher memory usage.
 /// * `Float16` - 16-bit half-precision floating-point. Good balance between precision and compression.
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ObjectType {
+    /// Invalid type.
     #[serde(rename = "None", alias = "none")]
     None,
+    /// 8-bit unsigned integer quantization.
     #[serde(rename = "uint8", alias = "Uint8", alias = "u8", alias = "U8")]
     Uint8,
+    /// 32-bit floating-point representation.
     #[serde(rename = "float", alias = "Float", alias = "f32", alias = "F32")]
     Float,
+    /// 16-bit half-precision floating-point.
     #[serde(rename = "float16", alias = "Float16", alias = "f16", alias = "F16")]
     Float16,
 }
@@ -134,21 +138,26 @@ impl From<ObjectType> for ffi::ObjectType {
 ///
 /// # Variants
 ///
-/// * `None` - Invalid or uninitialized state
+/// * `None` - Invalid type
 /// * `Uint8` - 8-bit unsigned integer vectors. Useful for binary/categorical data.
 /// * `Float` - 32-bit floating-point vectors. Standard format for most applications.
 /// * `Float16` - 16-bit half-precision floating-point vectors.
 /// * `Any` - Accept vectors in any supported format. Useful for flexible implementations.
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DataType {
+    /// Invalid type.
     #[serde(rename = "None", alias = "none")]
     None,
+    /// 8-bit unsigned integer input vectors.
     #[serde(rename = "uint8", alias = "Uint8", alias = "u8", alias = "U8")]
     Uint8,
+    /// 32-bit floating-point input vectors.
     #[serde(rename = "float", alias = "Float", alias = "f32", alias = "F32")]
     Float,
+    /// 16-bit half-precision floating-point input vectors.
     #[serde(rename = "float16", alias = "Float16", alias = "f16", alias = "F16")]
     Float16,
+    /// Accept vectors in any supported format.
     #[serde(rename = "any", alias = "Any")]
     Any,
 }
@@ -210,18 +219,44 @@ impl From<DataType> for ffi::DataType {
 /// * `None` - Invalid or uninitialized state
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DistanceType {
+    /// Invalid or uninitialized distance metric.
     #[serde(rename = "None", alias = "none")]
     None,
+    /// Manhattan distance (L1 norm).
+    ///
+    /// Calculated as the sum of absolute differences: $\sum |x_i - y_i|$
+    /// Useful for sparse data and when different dimensions have different importance.
     #[serde(rename = "l1", alias = "L1")]
     L1,
+    /// Euclidean distance (L2 norm).
+    ///
+    /// Calculated as: $\sqrt{\sum (x_i - y_i)^2}$
+    /// The most commonly used distance metric. Suitable for most continuous data.
     #[serde(rename = "l2", alias = "L2")]
     L2,
+    /// Hamming distance.
+    ///
+    /// Counts the number of positions where vector components differ.
+    /// Useful for binary or categorical data encoded as bit vectors.
     #[serde(rename = "hamming", alias = "Hamming", alias = "ham")]
     Hamming,
+    /// Angular distance.
+    ///
+    /// Measures the angle between vectors. Useful for directional similarity
+    /// and when magnitude is irrelevant.
     #[serde(rename = "angle", alias = "Angle", alias = "ang")]
     Angle,
+    /// Cosine similarity distance.
+    ///
+    /// Calculated as: $1 - \cos(\theta) = 1 - \frac{x \cdot y}{||x|| \cdot ||y||}$
+    /// Excellent for high-dimensional sparse data, NLP applications, and when
+    /// only direction matters, not magnitude.
     #[serde(rename = "cosine", alias = "Cosine", alias = "cos")]
     Cosine,
+    /// Normalized angular distance.
+    ///
+    /// Angular distance normalized to a standard range.
+    /// Useful when you need bounded values between 0 and 1.
     #[serde(
         rename = "normalizedangle",
         alias = "NormalizedAngle",
@@ -229,6 +264,10 @@ pub enum DistanceType {
         alias = "NormAng"
     )]
     NormalizedAngle,
+    /// Normalized cosine similarity distance.
+    ///
+    /// Cosine similarity normalized to a standard range [0, 1].
+    /// Provides the same properties as cosine distance but with normalized bounds.
     #[serde(
         rename = "normalizedcosine",
         alias = "NormalizedCosine",
@@ -236,12 +275,30 @@ pub enum DistanceType {
         alias = "NormCos"
     )]
     NormalizedCosine,
+    /// Jaccard distance for sets.
+    ///
+    /// Calculated as: $1 - \frac{|A \cap B|}{|A \cup B|}$
+    /// Useful for set-based similarity, typical for categorical or presence/absence data.
     #[serde(rename = "jaccard", alias = "Jaccard", alias = "jac")]
     Jaccard,
+    /// Jaccard distance optimized for sparse vectors.
+    ///
+    /// Optimized version of Jaccard distance for sparse vector representations.
+    /// Better performance when vectors have many zero elements.
     #[serde(rename = "sparsejaccard", alias = "SparseJaccard", alias = "spjac")]
     SparseJaccard,
+    /// L2 distance normalized by vector magnitude.
+    ///
+    /// Normalized version of L2 distance that accounts for vector length differences.
+    /// Useful when you want Euclidean distance but normalized by magnitude.
     #[serde(rename = "normalizedl2", alias = "NormalizedL2", alias = "norml2")]
     NormalizedL2,
+    /// Inner product distance.
+    ///
+    /// Calculated as: $x \cdot y = \sum x_i \cdot y_i$
+    /// Note: Higher inner product = greater similarity (opposite of other metrics).
+    /// Optimized for dot product similarity searches, common in recommendation systems.
+    /// Aliases: `DotProduct`, `dp`
     #[serde(
         rename = "innerproduct",
         alias = "InnerProduct",
@@ -251,8 +308,16 @@ pub enum DistanceType {
         alias = "dp"
     )]
     InnerProduct,
+    /// Poincaré distance for hyperbolic geometry.
+    ///
+    /// Distance metric in the Poincaré model of hyperbolic space.
+    /// Useful for hierarchical data structures and tree-like relationships.
     #[serde(rename = "poincare", alias = "Poincare", alias = "poinc")]
     Poincare,
+    /// Lorentz distance (Lorentz model of hyperbolic geometry).
+    ///
+    /// Alternative distance metric for hyperbolic space using the Lorentz model.
+    /// Can be more efficient than Poincaré distance in some scenarios.
     #[serde(rename = "lorentz", alias = "Lorentz", alias = "loren")]
     Lorentz,
 }
