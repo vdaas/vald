@@ -41,8 +41,6 @@ type server struct {
 	replica           int
 	streamConcurrency int
 	multiConcurrency  int
-	name              string
-	ip                string
 }
 
 const apiName = "vald/gateway/lb"

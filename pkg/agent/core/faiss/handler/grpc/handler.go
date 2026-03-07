@@ -39,7 +39,7 @@ type server struct {
 	agent.UnimplementedAgentServer
 	vald.UnimplementedValdServer
 	stats.UnimplementedStatsDetailServer
-  faiss             service.Faiss
+	faiss             service.Faiss
 	eg                errgroup.Group
 	name              string
 	ip                string

@@ -38,7 +38,7 @@ type Server interface {
 type server struct {
 	agent.UnimplementedAgentServer
 	vald.UnimplementedValdServer
-  stats.UnimplementedStatsDetailServer
+	stats.UnimplementedStatsDetailServer
 	ngt               service.NGT
 	eg                errgroup.Group
 	name              string
