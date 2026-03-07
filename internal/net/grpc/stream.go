@@ -107,7 +107,7 @@ func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 		default:
 			data, err := stream.Recv()
 			if err != nil {
-				if err != io.EOF && !errors.Is(err, io.EOF) {
+				if !errors.Is(err, io.EOF) {
 					err = errors.Wrap(err, "BidirectionalStream Recv returned error")
 					emu.Lock()
 					errs = append(errs, err)

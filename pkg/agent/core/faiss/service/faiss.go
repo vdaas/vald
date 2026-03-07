@@ -76,52 +76,46 @@ type (
 	}
 
 	faiss struct {
-		core      core.Faiss
-		eg        errgroup.Group
-		kvs       kvs.BidiMap
-		fmu       sync.Mutex
-		fmap      map[string]int64 // failure map for index
-		vq        vqueue.Queue
-		addVecs   []float32
-		addIds    []int64
-		isTrained bool
-		trainSize int
-		icnt      uint64
-
-		// statuses
-		indexing  atomic.Value
-		saving    atomic.Value
-		cimu      sync.Mutex // create index mutex
-		lastNocie uint64     // last number of create index execution this value prevent unnecessary saveindex
-
-		// counters
-		nocie uint64 // number of create index execution
-		nogce uint64 // number of proactive GC execution
-		wfci  uint64 // wait for create indexing
-
-		// configurations
-		inMem             bool          // in-memory mode
-		dim               int           // dimension size
-		nlist             int           // the number of Voronoi cells
-		m                 int           // number of subquantizers
-		alen              int           // auto indexing length
-		dur               time.Duration // auto indexing check duration
-		sdur              time.Duration // auto save index check duration
-		lim               time.Duration // auto indexing time limit
-		minLit            time.Duration // minimum load index timeout
-		maxLit            time.Duration // maximum load index timeout
-		litFactor         time.Duration // load index timeout factor
-		enableProactiveGC bool          // if this value is true, agent component will purge GC memory more proactive
-		enableCopyOnWrite bool          // if this value is true, agent component will write backup file using Copy on Write and saves old files to the old directory
-		path              string        // index path
-		smu               sync.Mutex    // save index lock
-		tmpPath           atomic.Value  // temporary index path for Copy on Write
-		oldPath           string        // old volume path
-		basePath          string        // index base directory for CoW
-		cowmu             sync.Mutex    // copy on write move lock
-		dcd               bool          // disable commit daemon
-		idelay            time.Duration // initial delay duration
-		kvsdbConcurrency  int           // kvsdb concurrency
+		tmpPath           atomic.Value
+		eg                errgroup.Group
+		kvs               kvs.BidiMap
+		core              core.Faiss
+		vq                vqueue.Queue
+		saving            atomic.Value
+		indexing          atomic.Value
+		fmap              map[string]int64
+		basePath          string
+		oldPath           string
+		path              string
+		addIds            []int64
+		addVecs           []float32
+		nlist             int
+		alen              int
+		nocie             uint64
+		nogce             uint64
+		wfci              uint64
+		kvsdbConcurrency  int
+		dim               int
+		lastNocie         uint64
+		m                 int
+		icnt              uint64
+		dur               time.Duration
+		sdur              time.Duration
+		lim               time.Duration
+		minLit            time.Duration
+		maxLit            time.Duration
+		litFactor         time.Duration
+		idelay            time.Duration
+		trainSize         int
+		cimu              sync.Mutex
+		smu               sync.Mutex
+		fmu               sync.Mutex
+		cowmu             sync.Mutex
+		enableCopyOnWrite bool
+		isTrained         bool
+		dcd               bool
+		enableProactiveGC bool
+		inMem             bool
 	}
 )
 
@@ -228,7 +222,7 @@ func (f *faiss) initFaiss(opts ...core.Option) error {
 		return err
 	}
 
-	ctx := context.Background()
+	ctx := context.TODO()
 	err = f.load(ctx, f.path, opts...)
 	var current uint64
 	if err != nil {
@@ -364,7 +358,7 @@ func (f *faiss) load(ctx context.Context, path string, opts ...core.Option) erro
 	log.Debugf("index path: %s and metadata: %s exists, now starting to load metadata", path, metadataPath)
 	agentMetadata, err := metadata.Load(metadataPath)
 	if err != nil && errors.Is(err, fs.ErrNotExist) || agentMetadata == nil || agentMetadata.Faiss == nil || agentMetadata.Faiss.IndexCount == 0 {
-		err = errors.Wrapf(err, "cannot read metadata from path: %s\tmetadata: %s", path, agentMetadata)
+		err = errors.Wrapf(err, "cannot read metadata from path: %s\tmetadata: %v", path, agentMetadata)
 		return err
 	}
 
@@ -650,7 +644,7 @@ func (f *faiss) Start(ctx context.Context) <-chan error {
 			case <-sTick.C:
 				err = f.SaveIndex(ctx)
 			}
-			if err != nil && err != errors.ErrUncommittedIndexNotFound {
+			if err != nil && !errors.Is(err, errors.ErrUncommittedIndexNotFound) {
 				ech <- err
 				runtime.Gosched()
 				err = nil
@@ -1099,7 +1093,7 @@ func (f *faiss) moveAndSwitchSavedData(ctx context.Context) error {
 
 	err = file.MoveDir(ctx, f.path, f.oldPath)
 	if err != nil {
-		log.Warnf("failed to backup backup data from %s to %s error: %v", f.path, f.oldPath, err)
+		log.Warnf("failed to backup data from %s to %s error: %v", f.path, f.oldPath, err)
 	}
 
 	path := f.tmpPath.Load().(string)

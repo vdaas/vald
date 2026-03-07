@@ -16,7 +16,6 @@ package main
 import (
 	"fmt"
 
-	"github.com/grafana/grafana-foundation-sdk/go/cog"
 	"github.com/grafana/grafana-foundation-sdk/go/dashboard"
 	"github.com/grafana/grafana-foundation-sdk/go/timeseries"
 	"github.com/grafana/promql-builder/go/promql"
@@ -205,49 +204,49 @@ func addIndexPerPodPanel(dashboard *dashboard.DashboardBuilder) {
 }
 
 func addMemstatsPanels(dashboard *dashboard.DashboardBuilder) {
-	addMetricPanel(dashboard, index.AllocMetricsDescription, index.AllocMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, index.TotalAllocMetricsDescription, index.TotalAllocMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, index.SysMetricsDescription, index.SysMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, index.AllocMetricsDescription, index.AllocMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, index.TotalAllocMetricsDescription, index.TotalAllocMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, index.SysMetricsDescription, index.SysMetricsName, new("decbytes"))
 	addMetricPanel(dashboard, mem.LookupsMetricsDescription, mem.LookupsMetricsName, nil)
 	addMetricPanel(dashboard, mem.MallocsMetricsDescription, mem.MallocsMetricsName, nil)
 	addMetricPanel(dashboard, mem.FreesMetricsDescription, mem.FreesMetricsName, nil)
-	addMetricPanel(dashboard, mem.HeapAllocMetricsDescription, mem.HeapAllocMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, mem.HeapSysMetricsDescription, mem.HeapSysMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, mem.HeapIdleMetricsDescription, mem.HeapIdleMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, mem.HeapInuseMetricsDescription, mem.HeapInuseMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, mem.HeapReleasedMetricsDescription, mem.HeapReleasedMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.HeapAllocMetricsDescription, mem.HeapAllocMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, mem.HeapSysMetricsDescription, mem.HeapSysMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, mem.HeapIdleMetricsDescription, mem.HeapIdleMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, mem.HeapInuseMetricsDescription, mem.HeapInuseMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, mem.HeapReleasedMetricsDescription, mem.HeapReleasedMetricsName, new("decbytes"))
 	addMetricPanel(dashboard, mem.HeapObjectsMetricsDescription, mem.HeapObjectsMetricsName, nil)
-	addMetricPanel(dashboard, mem.StackInuseMetricsDescription, mem.StackInuseMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, mem.StackSysMetricsDescription, mem.StackSysMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, mem.MspanInuseMetricsDescription, mem.MspanInuseMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, mem.MspanSysMetricsDescription, mem.MspanSysMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.StackInuseMetricsDescription, mem.StackInuseMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, mem.StackSysMetricsDescription, mem.StackSysMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, mem.MspanInuseMetricsDescription, mem.MspanInuseMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, mem.MspanSysMetricsDescription, mem.MspanSysMetricsName, new("decbytes"))
 
-	addMetricPanel(dashboard, mem.McacheInuseMetricsDescription, mem.McacheInuseMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, mem.McacheSysMetricsDescription, mem.McacheSysMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, mem.BuckHashSysMetricsDescription, mem.BuckHashSysMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, mem.GcSysMetricsDescription, mem.GcSysMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, mem.OtherSysMetricsDescription, mem.OtherSysMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, mem.NextGcSysMetricsDescription, mem.NextGcSysMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, mem.PauseTotalMsMetricsDescription, mem.PauseTotalMsMetricsName, cog.ToPtr("ms"))
+	addMetricPanel(dashboard, mem.McacheInuseMetricsDescription, mem.McacheInuseMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, mem.McacheSysMetricsDescription, mem.McacheSysMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, mem.BuckHashSysMetricsDescription, mem.BuckHashSysMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, mem.GcSysMetricsDescription, mem.GcSysMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, mem.OtherSysMetricsDescription, mem.OtherSysMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, mem.NextGcSysMetricsDescription, mem.NextGcSysMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, mem.PauseTotalMsMetricsDescription, mem.PauseTotalMsMetricsName, new("ms"))
 	addMetricPanel(dashboard, mem.NumGCMetricsDescription, mem.NumGCMetricsName, nil)
 	addMetricPanel(dashboard, mem.NumForcedGCMetricsDescription, mem.NumGCMetricsName, nil)
-	addMetricPanel(dashboard, mem.HeapWillReturnMetricsDescription, mem.HeapWillReturnMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.HeapWillReturnMetricsDescription, mem.HeapWillReturnMetricsName, new("decbytes"))
 	addMetricPanel(dashboard, mem.LiveObjectsMetricsDescription, mem.LiveObjectsMetricsName, nil)
 }
 
 func addProcStatusPanels(dashboard *dashboard.DashboardBuilder) {
-	addMetricPanel(dashboard, mem.VmpeakMetricsDescription, mem.VmpeakMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, mem.VmsizeMetricsDescription, mem.VmsizeMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, mem.VmdataMetricsDescription, mem.VmdataMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, mem.VmrssMetricsDescription, mem.VmrssMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, mem.VmhwmMetricsDescription, mem.VmhwmMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, mem.VmstkMetricsDescription, mem.VmstkMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, mem.VmswapMetricsDescription, mem.VmswapMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, mem.VmexeMetricsDescription, mem.VmexeMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, mem.VmlibMetricsDescription, mem.VmlibMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, mem.VmlckMetricsDescription, mem.VmlckMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, mem.VmpinMetricsDescription, mem.VmpinMetricsName, cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, mem.VmpteMetricsDescription, mem.VmpteMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.VmpeakMetricsDescription, mem.VmpeakMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, mem.VmsizeMetricsDescription, mem.VmsizeMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, mem.VmdataMetricsDescription, mem.VmdataMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, mem.VmrssMetricsDescription, mem.VmrssMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, mem.VmhwmMetricsDescription, mem.VmhwmMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, mem.VmstkMetricsDescription, mem.VmstkMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, mem.VmswapMetricsDescription, mem.VmswapMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, mem.VmexeMetricsDescription, mem.VmexeMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, mem.VmlibMetricsDescription, mem.VmlibMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, mem.VmlckMetricsDescription, mem.VmlckMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, mem.VmpinMetricsDescription, mem.VmpinMetricsName, new("decbytes"))
+	addMetricPanel(dashboard, mem.VmpteMetricsDescription, mem.VmpteMetricsName, new("decbytes"))
 }
 
 func addMetricPanel(

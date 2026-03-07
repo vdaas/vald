@@ -31,10 +31,10 @@ func TestMain(m *testing.M) {
 
 func TestInit(t *testing.T) {
 	type test struct {
-		name       string
 		checkFunc  func() error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -108,12 +108,12 @@ func Test_logger_Info(t *testing.T) {
 		v int
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		fields     fields
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -164,12 +164,12 @@ func Test_logger_Infoln(t *testing.T) {
 		v int
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		fields     fields
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -221,12 +221,12 @@ func Test_logger_Infof(t *testing.T) {
 		v int
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		fields     fields
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -277,12 +277,12 @@ func Test_logger_Warning(t *testing.T) {
 		v int
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		fields     fields
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -333,12 +333,12 @@ func Test_logger_Warningln(t *testing.T) {
 		v int
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		fields     fields
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -390,12 +390,12 @@ func Test_logger_Warningf(t *testing.T) {
 		v int
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		fields     fields
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -446,12 +446,12 @@ func Test_logger_Error(t *testing.T) {
 		v int
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		fields     fields
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -502,12 +502,12 @@ func Test_logger_Errorln(t *testing.T) {
 		v int
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		fields     fields
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -559,12 +559,12 @@ func Test_logger_Errorf(t *testing.T) {
 		v int
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		fields     fields
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -611,7 +611,8 @@ func Test_logger_Fatal(t *testing.T) {
 		cmd := exec.Command(os.Args[0], "-test.run=Test_logger_Fatal")
 		cmd.Env = append(os.Environ(), "BE_CRASHER=1")
 		err := cmd.Run()
-		if e, ok := err.(*exec.ExitError); ok && !e.Success() {
+		e := &exec.ExitError{}
+		if errors.As(err, &e) {
 			return
 		}
 		t.Fatalf("process ran with err %v, want exit status 1", err)
@@ -624,12 +625,12 @@ func Test_logger_Fatal(t *testing.T) {
 		v int
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		fields     fields
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -680,7 +681,8 @@ func Test_logger_Fatalln(t *testing.T) {
 		cmd := exec.Command(os.Args[0], "-test.run=Test_logger_Fatalln")
 		cmd.Env = append(os.Environ(), "BE_CRASHER=1")
 		err := cmd.Run()
-		if e, ok := err.(*exec.ExitError); ok && !e.Success() {
+		e := &exec.ExitError{}
+		if errors.As(err, &e) {
 			return
 		}
 		t.Fatalf("process ran with err %v, want exit status 1", err)
@@ -693,12 +695,12 @@ func Test_logger_Fatalln(t *testing.T) {
 		v int
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		fields     fields
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -745,7 +747,8 @@ func Test_logger_Fatalf(t *testing.T) {
 		cmd := exec.Command(os.Args[0], "-test.run=Test_logger_Fatalf")
 		cmd.Env = append(os.Environ(), "BE_CRASHER=1")
 		err := cmd.Run()
-		if e, ok := err.(*exec.ExitError); ok && !e.Success() {
+		e := &exec.ExitError{}
+		if errors.As(err, &e) {
 			return
 		}
 		t.Fatalf("process ran with err %v, want exit status 1", err)
@@ -759,12 +762,12 @@ func Test_logger_Fatalf(t *testing.T) {
 		v int
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		fields     fields
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -822,13 +825,13 @@ func Test_logger_V(t *testing.T) {
 		want bool
 	}
 	type test struct {
+		checkFunc  func(want, bool) error
+		beforeFunc func(args)
+		afterFunc  func(*testing.T, args)
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, bool) error
-		beforeFunc func(args)
-		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -901,3 +904,73 @@ func Test_logger_V(t *testing.T) {
 }
 
 // NOT IMPLEMENTED BELOW
+//
+// func Test_internalInit(t *testing.T) {
+// 	type want struct{}
+// 	type test struct {
+// 		name       string
+// 		want       want
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want) error {
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			internalInit()
+// 			if err := checkFunc(test.want); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }

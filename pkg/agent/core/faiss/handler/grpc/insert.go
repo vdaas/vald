@@ -135,11 +135,11 @@ func (s *server) Insert(
 }
 
 func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error) {
-	return s.UnimplementedValdServer.UnimplementedInsertServer.StreamInsert(stream)
+	return s.UnimplementedInsertServer.StreamInsert(stream)
 }
 
 func (s *server) MultiInsert(
 	ctx context.Context, reqs *payload.Insert_MultiRequest,
 ) (res *payload.Object_Locations, err error) {
-	return s.UnimplementedValdServer.UnimplementedInsertServer.MultiInsert(ctx, reqs)
+	return s.UnimplementedInsertServer.MultiInsert(ctx, reqs)
 }

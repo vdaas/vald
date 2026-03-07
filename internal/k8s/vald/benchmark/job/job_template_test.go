@@ -109,11 +109,11 @@ package job
 // 		opts []BenchmarkJobOption
 // 	}
 // 	type fields struct {
+// 		jobTpl             k8s.Job
 // 		containerName      string
 // 		containerImageName string
 // 		configMapName      string
 // 		imagePullPolicy    ImagePullPolicy
-// 		jobTpl             k8s.Job
 // 	}
 // 	type want struct {
 // 		want k8s.Job
@@ -146,11 +146,11 @@ package job
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
+// 		           jobTpl:nil,
 // 		           containerName:"",
 // 		           containerImageName:"",
 // 		           configMapName:"",
 // 		           imagePullPolicy:nil,
-// 		           jobTpl:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -172,11 +172,11 @@ package job
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
+// 		           jobTpl:nil,
 // 		           containerName:"",
 // 		           containerImageName:"",
 // 		           configMapName:"",
 // 		           imagePullPolicy:nil,
-// 		           jobTpl:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -207,11 +207,11 @@ package job
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			b := &benchmarkJobTpl{
+// 				jobTpl:             test.fields.jobTpl,
 // 				containerName:      test.fields.containerName,
 // 				containerImageName: test.fields.containerImageName,
 // 				configMapName:      test.fields.configMapName,
 // 				imagePullPolicy:    test.fields.imagePullPolicy,
-// 				jobTpl:             test.fields.jobTpl,
 // 			}
 //
 // 			got, err := b.CreateJobTpl(test.args.opts...)

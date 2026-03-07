@@ -783,8 +783,8 @@
                     "port": {
                       "type": "integer",
                       "description": "liveness server port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     },
                     "server": {
                       "type": "object",
@@ -933,8 +933,8 @@
                     "servicePort": {
                       "type": "integer",
                       "description": "liveness server service port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     }
                   }
                 },
@@ -952,8 +952,8 @@
                     "port": {
                       "type": "integer",
                       "description": "readiness server port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     },
                     "readinessProbe": {
                       "type": "object",
@@ -1144,8 +1144,8 @@
                     "servicePort": {
                       "type": "integer",
                       "description": "readiness server service port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     }
                   }
                 },
@@ -1159,8 +1159,8 @@
                     "port": {
                       "type": "integer",
                       "description": "startup server port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     },
                     "startupProbe": {
                       "type": "object",
@@ -1225,8 +1225,8 @@
                     "port": {
                       "type": "integer",
                       "description": "pprof server port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     },
                     "server": {
                       "type": "object",
@@ -1375,8 +1375,8 @@
                     "servicePort": {
                       "type": "integer",
                       "description": "pprof server service port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     }
                   }
                 }
@@ -1399,8 +1399,8 @@
                     "port": {
                       "type": "integer",
                       "description": "gRPC server port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     },
                     "server": {
                       "type": "object",
@@ -1601,8 +1601,8 @@
                     "servicePort": {
                       "type": "integer",
                       "description": "gRPC server service port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     }
                   }
                 },
@@ -1620,8 +1620,8 @@
                     "port": {
                       "type": "integer",
                       "description": "REST server port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     },
                     "server": {
                       "type": "object",
@@ -1770,8 +1770,8 @@
                     "servicePort": {
                       "type": "integer",
                       "description": "REST server service port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     }
                   }
                 }
@@ -2519,8 +2519,8 @@
                         "port": {
                           "type": "integer",
                           "description": "liveness server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "server": {
                           "type": "object",
@@ -2669,8 +2669,8 @@
                         "servicePort": {
                           "type": "integer",
                           "description": "liveness server service port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         }
                       }
                     },
@@ -2688,8 +2688,8 @@
                         "port": {
                           "type": "integer",
                           "description": "readiness server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "readinessProbe": {
                           "type": "object",
@@ -2880,8 +2880,8 @@
                         "servicePort": {
                           "type": "integer",
                           "description": "readiness server service port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         }
                       }
                     },
@@ -2895,8 +2895,8 @@
                         "port": {
                           "type": "integer",
                           "description": "startup server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "startupProbe": {
                           "type": "object",
@@ -2961,8 +2961,8 @@
                         "port": {
                           "type": "integer",
                           "description": "pprof server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "server": {
                           "type": "object",
@@ -3111,8 +3111,8 @@
                         "servicePort": {
                           "type": "integer",
                           "description": "pprof server service port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         }
                       }
                     }
@@ -3135,8 +3135,8 @@
                         "port": {
                           "type": "integer",
                           "description": "gRPC server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "server": {
                           "type": "object",
@@ -3337,8 +3337,8 @@
                         "servicePort": {
                           "type": "integer",
                           "description": "gRPC server service port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         }
                       }
                     },
@@ -3356,8 +3356,8 @@
                         "port": {
                           "type": "integer",
                           "description": "REST server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "server": {
                           "type": "object",
@@ -3506,8 +3506,8 @@
                         "servicePort": {
                           "type": "integer",
                           "description": "REST server service port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         }
                       }
                     }
@@ -4252,8 +4252,8 @@
                     "port": {
                       "type": "integer",
                       "description": "liveness server port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     },
                     "server": {
                       "type": "object",
@@ -4402,8 +4402,8 @@
                     "servicePort": {
                       "type": "integer",
                       "description": "liveness server service port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     }
                   }
                 },
@@ -4421,8 +4421,8 @@
                     "port": {
                       "type": "integer",
                       "description": "readiness server port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     },
                     "readinessProbe": {
                       "type": "object",
@@ -4613,8 +4613,8 @@
                     "servicePort": {
                       "type": "integer",
                       "description": "readiness server service port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     }
                   }
                 },
@@ -4628,8 +4628,8 @@
                     "port": {
                       "type": "integer",
                       "description": "startup server port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     },
                     "startupProbe": {
                       "type": "object",
@@ -4694,8 +4694,8 @@
                     "port": {
                       "type": "integer",
                       "description": "pprof server port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     },
                     "server": {
                       "type": "object",
@@ -4844,8 +4844,8 @@
                     "servicePort": {
                       "type": "integer",
                       "description": "pprof server service port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     }
                   }
                 }
@@ -4868,8 +4868,8 @@
                     "port": {
                       "type": "integer",
                       "description": "gRPC server port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     },
                     "server": {
                       "type": "object",
@@ -5070,8 +5070,8 @@
                     "servicePort": {
                       "type": "integer",
                       "description": "gRPC server service port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     }
                   }
                 },
@@ -5089,8 +5089,8 @@
                     "port": {
                       "type": "integer",
                       "description": "REST server port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     },
                     "server": {
                       "type": "object",
@@ -5239,8 +5239,8 @@
                     "servicePort": {
                       "type": "integer",
                       "description": "REST server service port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     }
                   }
                 }
@@ -5911,8 +5911,8 @@
                     "port": {
                       "type": "integer",
                       "description": "liveness server port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     },
                     "server": {
                       "type": "object",
@@ -6061,8 +6061,8 @@
                     "servicePort": {
                       "type": "integer",
                       "description": "liveness server service port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     }
                   }
                 },
@@ -6080,8 +6080,8 @@
                     "port": {
                       "type": "integer",
                       "description": "readiness server port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     },
                     "readinessProbe": {
                       "type": "object",
@@ -6272,8 +6272,8 @@
                     "servicePort": {
                       "type": "integer",
                       "description": "readiness server service port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     }
                   }
                 },
@@ -6287,8 +6287,8 @@
                     "port": {
                       "type": "integer",
                       "description": "startup server port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     },
                     "startupProbe": {
                       "type": "object",
@@ -6353,8 +6353,8 @@
                     "port": {
                       "type": "integer",
                       "description": "pprof server port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     },
                     "server": {
                       "type": "object",
@@ -6503,8 +6503,8 @@
                     "servicePort": {
                       "type": "integer",
                       "description": "pprof server service port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     }
                   }
                 }
@@ -6527,8 +6527,8 @@
                     "port": {
                       "type": "integer",
                       "description": "gRPC server port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     },
                     "server": {
                       "type": "object",
@@ -6729,8 +6729,8 @@
                     "servicePort": {
                       "type": "integer",
                       "description": "gRPC server service port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     }
                   }
                 },
@@ -6748,8 +6748,8 @@
                     "port": {
                       "type": "integer",
                       "description": "REST server port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     },
                     "server": {
                       "type": "object",
@@ -6898,8 +6898,8 @@
                     "servicePort": {
                       "type": "integer",
                       "description": "REST server service port",
-                      "maximum": 65535,
-                      "minimum": 0
+                      "minimum": 0,
+                      "maximum": 65535
                     }
                   }
                 }
@@ -8674,8 +8674,8 @@
                         "port": {
                           "type": "integer",
                           "description": "liveness server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "server": {
                           "type": "object",
@@ -8824,8 +8824,8 @@
                         "servicePort": {
                           "type": "integer",
                           "description": "liveness server service port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         }
                       }
                     },
@@ -8843,8 +8843,8 @@
                         "port": {
                           "type": "integer",
                           "description": "readiness server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "readinessProbe": {
                           "type": "object",
@@ -9035,8 +9035,8 @@
                         "servicePort": {
                           "type": "integer",
                           "description": "readiness server service port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         }
                       }
                     },
@@ -9050,8 +9050,8 @@
                         "port": {
                           "type": "integer",
                           "description": "startup server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "startupProbe": {
                           "type": "object",
@@ -9116,8 +9116,8 @@
                         "port": {
                           "type": "integer",
                           "description": "pprof server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "server": {
                           "type": "object",
@@ -9266,8 +9266,8 @@
                         "servicePort": {
                           "type": "integer",
                           "description": "pprof server service port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         }
                       }
                     }
@@ -9290,8 +9290,8 @@
                         "port": {
                           "type": "integer",
                           "description": "gRPC server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "server": {
                           "type": "object",
@@ -9492,8 +9492,8 @@
                         "servicePort": {
                           "type": "integer",
                           "description": "gRPC server service port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         }
                       }
                     },
@@ -9511,8 +9511,8 @@
                         "port": {
                           "type": "integer",
                           "description": "REST server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "server": {
                           "type": "object",
@@ -9661,8 +9661,8 @@
                         "servicePort": {
                           "type": "integer",
                           "description": "REST server service port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         }
                       }
                     }
@@ -11418,8 +11418,8 @@
                         "port": {
                           "type": "integer",
                           "description": "liveness server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "server": {
                           "type": "object",
@@ -11568,8 +11568,8 @@
                         "servicePort": {
                           "type": "integer",
                           "description": "liveness server service port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         }
                       }
                     },
@@ -11587,8 +11587,8 @@
                         "port": {
                           "type": "integer",
                           "description": "readiness server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "readinessProbe": {
                           "type": "object",
@@ -11779,8 +11779,8 @@
                         "servicePort": {
                           "type": "integer",
                           "description": "readiness server service port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         }
                       }
                     },
@@ -11794,8 +11794,8 @@
                         "port": {
                           "type": "integer",
                           "description": "startup server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "startupProbe": {
                           "type": "object",
@@ -11860,8 +11860,8 @@
                         "port": {
                           "type": "integer",
                           "description": "pprof server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "server": {
                           "type": "object",
@@ -12010,8 +12010,8 @@
                         "servicePort": {
                           "type": "integer",
                           "description": "pprof server service port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         }
                       }
                     }
@@ -12034,8 +12034,8 @@
                         "port": {
                           "type": "integer",
                           "description": "gRPC server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "server": {
                           "type": "object",
@@ -12236,8 +12236,8 @@
                         "servicePort": {
                           "type": "integer",
                           "description": "gRPC server service port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         }
                       }
                     },
@@ -12255,8 +12255,8 @@
                         "port": {
                           "type": "integer",
                           "description": "REST server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "server": {
                           "type": "object",
@@ -12405,8 +12405,8 @@
                         "servicePort": {
                           "type": "integer",
                           "description": "REST server service port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         }
                       }
                     }
@@ -13528,8 +13528,8 @@
                         "port": {
                           "type": "integer",
                           "description": "liveness server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "server": {
                           "type": "object",
@@ -13678,8 +13678,8 @@
                         "servicePort": {
                           "type": "integer",
                           "description": "liveness server service port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         }
                       }
                     },
@@ -13697,8 +13697,8 @@
                         "port": {
                           "type": "integer",
                           "description": "readiness server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "readinessProbe": {
                           "type": "object",
@@ -13889,8 +13889,8 @@
                         "servicePort": {
                           "type": "integer",
                           "description": "readiness server service port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         }
                       }
                     },
@@ -13904,8 +13904,8 @@
                         "port": {
                           "type": "integer",
                           "description": "startup server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "startupProbe": {
                           "type": "object",
@@ -13970,8 +13970,8 @@
                         "port": {
                           "type": "integer",
                           "description": "pprof server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "server": {
                           "type": "object",
@@ -14120,8 +14120,8 @@
                         "servicePort": {
                           "type": "integer",
                           "description": "pprof server service port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         }
                       }
                     }
@@ -14144,8 +14144,8 @@
                         "port": {
                           "type": "integer",
                           "description": "gRPC server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "server": {
                           "type": "object",
@@ -14346,8 +14346,8 @@
                         "servicePort": {
                           "type": "integer",
                           "description": "gRPC server service port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         }
                       }
                     },
@@ -14365,8 +14365,8 @@
                         "port": {
                           "type": "integer",
                           "description": "REST server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "server": {
                           "type": "object",
@@ -14515,8 +14515,8 @@
                         "servicePort": {
                           "type": "integer",
                           "description": "REST server service port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         }
                       }
                     }
@@ -16185,8 +16185,8 @@
                             "port": {
                               "type": "integer",
                               "description": "liveness server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "server": {
                               "type": "object",
@@ -16335,8 +16335,8 @@
                             "servicePort": {
                               "type": "integer",
                               "description": "liveness server service port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             }
                           }
                         },
@@ -16354,8 +16354,8 @@
                             "port": {
                               "type": "integer",
                               "description": "readiness server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "readinessProbe": {
                               "type": "object",
@@ -16546,8 +16546,8 @@
                             "servicePort": {
                               "type": "integer",
                               "description": "readiness server service port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             }
                           }
                         },
@@ -16561,8 +16561,8 @@
                             "port": {
                               "type": "integer",
                               "description": "startup server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "startupProbe": {
                               "type": "object",
@@ -16627,8 +16627,8 @@
                             "port": {
                               "type": "integer",
                               "description": "pprof server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "server": {
                               "type": "object",
@@ -16777,8 +16777,8 @@
                             "servicePort": {
                               "type": "integer",
                               "description": "pprof server service port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             }
                           }
                         }
@@ -16801,8 +16801,8 @@
                             "port": {
                               "type": "integer",
                               "description": "gRPC server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "server": {
                               "type": "object",
@@ -17003,8 +17003,8 @@
                             "servicePort": {
                               "type": "integer",
                               "description": "gRPC server service port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             }
                           }
                         },
@@ -17022,8 +17022,8 @@
                             "port": {
                               "type": "integer",
                               "description": "REST server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "server": {
                               "type": "object",
@@ -17172,8 +17172,8 @@
                             "servicePort": {
                               "type": "integer",
                               "description": "REST server service port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             }
                           }
                         }
@@ -18362,8 +18362,8 @@
                             "port": {
                               "type": "integer",
                               "description": "liveness server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "server": {
                               "type": "object",
@@ -18512,8 +18512,8 @@
                             "servicePort": {
                               "type": "integer",
                               "description": "liveness server service port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             }
                           }
                         },
@@ -18531,8 +18531,8 @@
                             "port": {
                               "type": "integer",
                               "description": "readiness server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "readinessProbe": {
                               "type": "object",
@@ -18723,8 +18723,8 @@
                             "servicePort": {
                               "type": "integer",
                               "description": "readiness server service port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             }
                           }
                         },
@@ -18738,8 +18738,8 @@
                             "port": {
                               "type": "integer",
                               "description": "startup server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "startupProbe": {
                               "type": "object",
@@ -18804,8 +18804,8 @@
                             "port": {
                               "type": "integer",
                               "description": "pprof server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "server": {
                               "type": "object",
@@ -18954,8 +18954,8 @@
                             "servicePort": {
                               "type": "integer",
                               "description": "pprof server service port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             }
                           }
                         }
@@ -18978,8 +18978,8 @@
                             "port": {
                               "type": "integer",
                               "description": "gRPC server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "server": {
                               "type": "object",
@@ -19180,8 +19180,8 @@
                             "servicePort": {
                               "type": "integer",
                               "description": "gRPC server service port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             }
                           }
                         },
@@ -19199,8 +19199,8 @@
                             "port": {
                               "type": "integer",
                               "description": "REST server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "server": {
                               "type": "object",
@@ -19349,8 +19349,8 @@
                             "servicePort": {
                               "type": "integer",
                               "description": "REST server service port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             }
                           }
                         }
@@ -20539,8 +20539,8 @@
                             "port": {
                               "type": "integer",
                               "description": "liveness server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "server": {
                               "type": "object",
@@ -20689,8 +20689,8 @@
                             "servicePort": {
                               "type": "integer",
                               "description": "liveness server service port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             }
                           }
                         },
@@ -20708,8 +20708,8 @@
                             "port": {
                               "type": "integer",
                               "description": "readiness server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "readinessProbe": {
                               "type": "object",
@@ -20900,8 +20900,8 @@
                             "servicePort": {
                               "type": "integer",
                               "description": "readiness server service port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             }
                           }
                         },
@@ -20915,8 +20915,8 @@
                             "port": {
                               "type": "integer",
                               "description": "startup server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "startupProbe": {
                               "type": "object",
@@ -20981,8 +20981,8 @@
                             "port": {
                               "type": "integer",
                               "description": "pprof server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "server": {
                               "type": "object",
@@ -21131,8 +21131,8 @@
                             "servicePort": {
                               "type": "integer",
                               "description": "pprof server service port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             }
                           }
                         }
@@ -21155,8 +21155,8 @@
                             "port": {
                               "type": "integer",
                               "description": "gRPC server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "server": {
                               "type": "object",
@@ -21357,8 +21357,8 @@
                             "servicePort": {
                               "type": "integer",
                               "description": "gRPC server service port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             }
                           }
                         },
@@ -21376,8 +21376,8 @@
                             "port": {
                               "type": "integer",
                               "description": "REST server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "server": {
                               "type": "object",
@@ -21526,8 +21526,8 @@
                             "servicePort": {
                               "type": "integer",
                               "description": "REST server service port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             }
                           }
                         }
@@ -23050,8 +23050,8 @@
                             "port": {
                               "type": "integer",
                               "description": "liveness server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "server": {
                               "type": "object",
@@ -23200,8 +23200,8 @@
                             "servicePort": {
                               "type": "integer",
                               "description": "liveness server service port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             }
                           }
                         },
@@ -23219,8 +23219,8 @@
                             "port": {
                               "type": "integer",
                               "description": "readiness server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "readinessProbe": {
                               "type": "object",
@@ -23411,8 +23411,8 @@
                             "servicePort": {
                               "type": "integer",
                               "description": "readiness server service port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             }
                           }
                         },
@@ -23426,8 +23426,8 @@
                             "port": {
                               "type": "integer",
                               "description": "startup server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "startupProbe": {
                               "type": "object",
@@ -23492,8 +23492,8 @@
                             "port": {
                               "type": "integer",
                               "description": "pprof server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "server": {
                               "type": "object",
@@ -23642,8 +23642,8 @@
                             "servicePort": {
                               "type": "integer",
                               "description": "pprof server service port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             }
                           }
                         }
@@ -23666,8 +23666,8 @@
                             "port": {
                               "type": "integer",
                               "description": "gRPC server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "server": {
                               "type": "object",
@@ -23868,8 +23868,8 @@
                             "servicePort": {
                               "type": "integer",
                               "description": "gRPC server service port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             }
                           }
                         },
@@ -23887,8 +23887,8 @@
                             "port": {
                               "type": "integer",
                               "description": "REST server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "server": {
                               "type": "object",
@@ -24037,8 +24037,8 @@
                             "servicePort": {
                               "type": "integer",
                               "description": "REST server service port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             }
                           }
                         }
@@ -24410,8 +24410,8 @@
                                 "port": {
                                   "type": "integer",
                                   "description": "liveness server port",
-                                  "maximum": 65535,
-                                  "minimum": 0
+                                  "minimum": 0,
+                                  "maximum": 65535
                                 },
                                 "server": {
                                   "type": "object",
@@ -24560,8 +24560,8 @@
                                 "servicePort": {
                                   "type": "integer",
                                   "description": "liveness server service port",
-                                  "maximum": 65535,
-                                  "minimum": 0
+                                  "minimum": 0,
+                                  "maximum": 65535
                                 }
                               }
                             },
@@ -24579,8 +24579,8 @@
                                 "port": {
                                   "type": "integer",
                                   "description": "readiness server port",
-                                  "maximum": 65535,
-                                  "minimum": 0
+                                  "minimum": 0,
+                                  "maximum": 65535
                                 },
                                 "readinessProbe": {
                                   "type": "object",
@@ -24771,8 +24771,8 @@
                                 "servicePort": {
                                   "type": "integer",
                                   "description": "readiness server service port",
-                                  "maximum": 65535,
-                                  "minimum": 0
+                                  "minimum": 0,
+                                  "maximum": 65535
                                 }
                               }
                             },
@@ -24786,8 +24786,8 @@
                                 "port": {
                                   "type": "integer",
                                   "description": "startup server port",
-                                  "maximum": 65535,
-                                  "minimum": 0
+                                  "minimum": 0,
+                                  "maximum": 65535
                                 },
                                 "startupProbe": {
                                   "type": "object",
@@ -24852,8 +24852,8 @@
                                 "port": {
                                   "type": "integer",
                                   "description": "pprof server port",
-                                  "maximum": 65535,
-                                  "minimum": 0
+                                  "minimum": 0,
+                                  "maximum": 65535
                                 },
                                 "server": {
                                   "type": "object",
@@ -25002,8 +25002,8 @@
                                 "servicePort": {
                                   "type": "integer",
                                   "description": "pprof server service port",
-                                  "maximum": 65535,
-                                  "minimum": 0
+                                  "minimum": 0,
+                                  "maximum": 65535
                                 }
                               }
                             }
@@ -25026,8 +25026,8 @@
                                 "port": {
                                   "type": "integer",
                                   "description": "gRPC server port",
-                                  "maximum": 65535,
-                                  "minimum": 0
+                                  "minimum": 0,
+                                  "maximum": 65535
                                 },
                                 "server": {
                                   "type": "object",
@@ -25228,8 +25228,8 @@
                                 "servicePort": {
                                   "type": "integer",
                                   "description": "gRPC server service port",
-                                  "maximum": 65535,
-                                  "minimum": 0
+                                  "minimum": 0,
+                                  "maximum": 65535
                                 }
                               }
                             },
@@ -25247,8 +25247,8 @@
                                 "port": {
                                   "type": "integer",
                                   "description": "REST server port",
-                                  "maximum": 65535,
-                                  "minimum": 0
+                                  "minimum": 0,
+                                  "maximum": 65535
                                 },
                                 "server": {
                                   "type": "object",
@@ -25397,8 +25397,8 @@
                                 "servicePort": {
                                   "type": "integer",
                                   "description": "REST server service port",
-                                  "maximum": 65535,
-                                  "minimum": 0
+                                  "minimum": 0,
+                                  "maximum": 65535
                                 }
                               }
                             }
@@ -26602,8 +26602,8 @@
                             "port": {
                               "type": "integer",
                               "description": "liveness server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "server": {
                               "type": "object",
@@ -26752,8 +26752,8 @@
                             "servicePort": {
                               "type": "integer",
                               "description": "liveness server service port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             }
                           }
                         },
@@ -26771,8 +26771,8 @@
                             "port": {
                               "type": "integer",
                               "description": "readiness server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "readinessProbe": {
                               "type": "object",
@@ -26963,8 +26963,8 @@
                             "servicePort": {
                               "type": "integer",
                               "description": "readiness server service port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             }
                           }
                         },
@@ -26978,8 +26978,8 @@
                             "port": {
                               "type": "integer",
                               "description": "startup server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "startupProbe": {
                               "type": "object",
@@ -27044,8 +27044,8 @@
                             "port": {
                               "type": "integer",
                               "description": "pprof server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "server": {
                               "type": "object",
@@ -27194,8 +27194,8 @@
                             "servicePort": {
                               "type": "integer",
                               "description": "pprof server service port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             }
                           }
                         }
@@ -27218,8 +27218,8 @@
                             "port": {
                               "type": "integer",
                               "description": "gRPC server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "server": {
                               "type": "object",
@@ -27420,8 +27420,8 @@
                             "servicePort": {
                               "type": "integer",
                               "description": "gRPC server service port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             }
                           }
                         },
@@ -27439,8 +27439,8 @@
                             "port": {
                               "type": "integer",
                               "description": "REST server port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             },
                             "server": {
                               "type": "object",
@@ -27589,8 +27589,8 @@
                             "servicePort": {
                               "type": "integer",
                               "description": "REST server service port",
-                              "maximum": 65535,
-                              "minimum": 0
+                              "minimum": 0,
+                              "maximum": 65535
                             }
                           }
                         }
@@ -27747,8 +27747,8 @@
                         "port": {
                           "type": "integer",
                           "description": "liveness server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "server": {
                           "type": "object",
@@ -27897,8 +27897,8 @@
                         "servicePort": {
                           "type": "integer",
                           "description": "liveness server service port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         }
                       }
                     },
@@ -27916,8 +27916,8 @@
                         "port": {
                           "type": "integer",
                           "description": "readiness server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "readinessProbe": {
                           "type": "object",
@@ -28108,8 +28108,8 @@
                         "servicePort": {
                           "type": "integer",
                           "description": "readiness server service port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         }
                       }
                     },
@@ -28123,8 +28123,8 @@
                         "port": {
                           "type": "integer",
                           "description": "startup server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "startupProbe": {
                           "type": "object",
@@ -28189,8 +28189,8 @@
                         "port": {
                           "type": "integer",
                           "description": "pprof server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "server": {
                           "type": "object",
@@ -28339,8 +28339,8 @@
                         "servicePort": {
                           "type": "integer",
                           "description": "pprof server service port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         }
                       }
                     }
@@ -28363,8 +28363,8 @@
                         "port": {
                           "type": "integer",
                           "description": "gRPC server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "server": {
                           "type": "object",
@@ -28565,8 +28565,8 @@
                         "servicePort": {
                           "type": "integer",
                           "description": "gRPC server service port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         }
                       }
                     },
@@ -28584,8 +28584,8 @@
                         "port": {
                           "type": "integer",
                           "description": "REST server port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         },
                         "server": {
                           "type": "object",
@@ -28734,8 +28734,8 @@
                         "servicePort": {
                           "type": "integer",
                           "description": "REST server service port",
-                          "maximum": 65535,
-                          "minimum": 0
+                          "minimum": 0,
+                          "maximum": 65535
                         }
                       }
                     }

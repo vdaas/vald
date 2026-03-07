@@ -27,8 +27,8 @@ import (
 
 type gzipCompressor struct {
 	gobc             Compressor
-	compressionLevel int
 	gzip             gzip.Gzip
+	compressionLevel int
 }
 
 // NewGzip returns Compressor implementation.

@@ -31,12 +31,12 @@ func TestNew(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -109,21 +109,21 @@ func TestNew(t *testing.T) {
 func Test_db_Get(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		opts []Option
 		key  string
+		opts []Option
 	}
 	type want struct {
+		err   error
 		want  []byte
 		want1 bool
-		err   error
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, []byte, bool, error) error
 		beforeFunc func(*testing.T, DB, args)
 		afterFunc  func(*testing.T, DB, args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, got []byte, got1 bool, err error) error {
 		if !errors.Is(err, w.err) {
@@ -237,19 +237,19 @@ func Test_db_Get(t *testing.T) {
 func Test_db_Delete(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		opts []Option
 		key  string
+		opts []Option
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, DB, error) error
 		beforeFunc func(*testing.T, DB, args)
 		afterFunc  func(*testing.T, DB, args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, _ DB, err error) error {
 		if !errors.Is(err, w.err) {
@@ -334,20 +334,20 @@ func Test_db_Delete(t *testing.T) {
 func Test_db_Range(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		opts []Option
 		ctx  context.Context
 		f    func(key string, val []byte) bool
+		opts []Option
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T, DB, args)
 		afterFunc  func(*testing.T, DB, args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -369,7 +369,7 @@ func Test_db_Range(t *testing.T) {
 						WithPath(t.TempDir()),
 						WithBackgroundSyncInterval(0),
 					},
-					ctx: context.Background(),
+					ctx: t.Context(),
 					f: func(key string, val []byte) bool {
 						got[key] = val
 						return true
@@ -402,7 +402,7 @@ func Test_db_Range(t *testing.T) {
 		}(),
 		func() test {
 			got := make(map[string][]byte)
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			cancel()
 			return test{
 				name: "Fails to get all keys when the context is canceled",
@@ -486,12 +486,12 @@ func Test_db_Len(t *testing.T) {
 		want uint32
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, uint32) error
 		beforeFunc func(*testing.T, DB, args)
 		afterFunc  func(*testing.T, DB, args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, got uint32) error {
 		if !reflect.DeepEqual(got, w.want) {

@@ -27,9 +27,9 @@ import (
 
 func TestPairingHeap(t *testing.T) {
 	type test struct {
+		checkFunc func([]*DistPayload) error
 		name      string
 		args      []*DistPayload
-		checkFunc func([]*DistPayload) error
 	}
 	defaultCheckFunc := func(got []*DistPayload) error {
 		last := got[0].distance
@@ -58,7 +58,7 @@ func TestPairingHeap(t *testing.T) {
 		func() test {
 			dl := 100
 			ods := make([]*payload.Object_Distance, 0, dl)
-			for i := 0; i < dl; i++ {
+			for range dl {
 				ods = append(ods, &payload.Object_Distance{
 					Id:       strings.Random(12),
 					Distance: rand.Float32(),

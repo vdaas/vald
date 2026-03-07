@@ -28,7 +28,7 @@ func TestJSONPathEval(t *testing.T) {
 		"obj": {"key": "value"},
 		"counts": {
 			"A": { "stored": 10 },
-			"B": { "stored": 5, "uncommited": 5 }
+			"B": { "stored": 5, "uncommitted": 5 }
 		},
 		"array": [
 			{"A": "value1"},
@@ -40,10 +40,10 @@ func TestJSONPathEval(t *testing.T) {
 	}`)
 
 	tests := []struct {
-		json     []byte
+		expected any
 		name     string
 		path     string
-		expected any
+		json     []byte
 		wantErr  bool
 	}{
 		{

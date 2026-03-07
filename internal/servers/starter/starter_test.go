@@ -28,9 +28,9 @@ import (
 
 func TestNew(t *testing.T) {
 	type test struct {
+		checkFunc func(s Server, err error) error
 		name      string
 		opts      []Option
-		checkFunc func(s Server, err error) error
 	}
 
 	tests := []test{
@@ -109,10 +109,10 @@ func TestSetupAPIs(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
-		args      args
 		field     field
+		args      args
 		checkFunc func([]servers.Option, error) error
+		name      string
 	}
 
 	tests := []test{
@@ -289,10 +289,10 @@ func TestSetupHealthCheck(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
 		args      args
 		field     field
 		checkFunc func([]servers.Option, error) error
+		name      string
 	}
 
 	tests := []test{
@@ -380,10 +380,10 @@ func TestSetupMetrics(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
 		args      args
 		field     field
 		checkFunc func([]servers.Option, error) error
+		name      string
 	}
 
 	tests := []test{

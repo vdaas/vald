@@ -26,27 +26,27 @@ import (
 
 func TestGateway_Bind(t *testing.T) {
 	type fields struct {
-		AgentPort      int
-		AgentName      string
-		AgentNamespace string
-		AgentDNS       string
-		NodeName       string
-		IndexReplica   int
 		Discoverer     *DiscovererClient
 		Meta           *Meta
 		BackupManager  *BackupManager
 		EgressFilter   *EgressFilter
+		AgentName      string
+		AgentNamespace string
+		AgentDNS       string
+		NodeName       string
+		AgentPort      int
+		IndexReplica   int
 	}
 	type want struct {
 		want *Gateway
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *Gateway) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *Gateway) error {
 		if !reflect.DeepEqual(got, w.want) {

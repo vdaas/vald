@@ -34,11 +34,11 @@ func Test_newGRPCClientConfig(t *testing.T) {
 		want *GRPCClient
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, *GRPCClient) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got *GRPCClient) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -84,24 +84,24 @@ func Test_newGRPCClientConfig(t *testing.T) {
 
 func TestGRPCClient_Bind(t *testing.T) {
 	type fields struct {
-		Addrs               []string
-		HealthCheckDuration string
 		ConnectionPool      *ConnectionPool
 		Backoff             *Backoff
 		CallOption          *CallOption
 		DialOption          *DialOption
 		TLS                 *TLS
+		HealthCheckDuration string
+		Addrs               []string
 	}
 	type want struct {
 		want *GRPCClient
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *GRPCClient) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *GRPCClient) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -292,12 +292,12 @@ func TestGRPCClientKeepalive_Bind(t *testing.T) {
 		want *GRPCClientKeepalive
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *GRPCClientKeepalive) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *GRPCClientKeepalive) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -402,12 +402,12 @@ func TestCallOption_Bind(t *testing.T) {
 		want *CallOption
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *CallOption) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *CallOption) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -481,32 +481,32 @@ func TestCallOption_Bind(t *testing.T) {
 
 func TestDialOption_Bind(t *testing.T) {
 	type fields struct {
-		WriteBufferSize             int
-		ReadBufferSize              int
-		InitialWindowSize           int32
-		InitialConnectionWindowSize int32
-		MaxMsgSize                  int
-		BackoffMaxDelay             string
-		BackoffBaseDelay            string
-		BackoffJitter               float64
-		BackoffMultiplier           float64
-		MinimumConnectionTimeout    string
-		EnableBackoff               bool
-		Insecure                    bool
-		Timeout                     string
 		Net                         *Net
 		Keepalive                   *GRPCClientKeepalive
+		MinimumConnectionTimeout    string
+		BackoffMaxDelay             string
+		BackoffBaseDelay            string
+		Timeout                     string
+		MaxMsgSize                  int
+		BackoffJitter               float64
+		BackoffMultiplier           float64
+		WriteBufferSize             int
+		ReadBufferSize              int
+		InitialConnectionWindowSize int32
+		InitialWindowSize           int32
+		EnableBackoff               bool
+		Insecure                    bool
 	}
 	type want struct {
 		want *DialOption
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *DialOption) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *DialOption) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -654,25 +654,25 @@ func TestDialOption_Bind(t *testing.T) {
 
 func TestGRPCClient_Opts(t *testing.T) {
 	type fields struct {
-		Addrs               []string
-		HealthCheckDuration string
 		ConnectionPool      *ConnectionPool
 		Backoff             *Backoff
 		CallOption          *CallOption
 		DialOption          *DialOption
 		TLS                 *TLS
+		HealthCheckDuration string
+		Addrs               []string
 	}
 	type want struct {
-		want []grpc.Option
 		err  error
+		want []grpc.Option
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, []grpc.Option, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		fields     fields
+		want       want
 	}
 	defaultCheckFunc := func(w want, gotOpts []grpc.Option, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1052,11 +1052,11 @@ func TestGRPCClient_Opts(t *testing.T) {
 //
 // func TestConnectionPool_Bind(t *testing.T) {
 // 	type fields struct {
-// 		ResolveDNS           bool
-// 		EnableRebalance      bool
-// 		Size                 int
 // 		RebalanceDuration    string
 // 		OldConnCloseDuration string
+// 		Size                 int
+// 		ResolveDNS           bool
+// 		EnableRebalance      bool
 // 	}
 // 	type want struct {
 // 		want *ConnectionPool
@@ -1081,11 +1081,11 @@ func TestGRPCClient_Opts(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           ResolveDNS:false,
-// 		           EnableRebalance:false,
-// 		           Size:0,
 // 		           RebalanceDuration:"",
 // 		           OldConnCloseDuration:"",
+// 		           Size:0,
+// 		           ResolveDNS:false,
+// 		           EnableRebalance:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1104,11 +1104,11 @@ func TestGRPCClient_Opts(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           ResolveDNS:false,
-// 		           EnableRebalance:false,
-// 		           Size:0,
 // 		           RebalanceDuration:"",
 // 		           OldConnCloseDuration:"",
+// 		           Size:0,
+// 		           ResolveDNS:false,
+// 		           EnableRebalance:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1139,11 +1139,11 @@ func TestGRPCClient_Opts(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			cp := &ConnectionPool{
-// 				ResolveDNS:           test.fields.ResolveDNS,
-// 				EnableRebalance:      test.fields.EnableRebalance,
-// 				Size:                 test.fields.Size,
 // 				RebalanceDuration:    test.fields.RebalanceDuration,
 // 				OldConnCloseDuration: test.fields.OldConnCloseDuration,
+// 				Size:                 test.fields.Size,
+// 				ResolveDNS:           test.fields.ResolveDNS,
+// 				EnableRebalance:      test.fields.EnableRebalance,
 // 			}
 //
 // 			got := cp.Bind()

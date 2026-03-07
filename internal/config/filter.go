@@ -18,19 +18,28 @@ package config
 
 // EgressFilter represents the EgressFilter configuration.
 type EgressFilter struct {
-	Client          *GRPCClient `json:"client,omitempty"           yaml:"client"`
-	DistanceFilters []string    `json:"distance_filters,omitempty" yaml:"distance_filters"`
-	ObjectFilters   []string    `json:"object_filters,omitempty"   yaml:"object_filters"`
+	// Client represents the client configuration.
+	Client *GRPCClient `json:"client,omitempty" yaml:"client"`
+	// DistanceFilters represents the distance filters.
+	DistanceFilters []string `json:"distance_filters,omitempty" yaml:"distance_filters"`
+	// ObjectFilters represents the object filters.
+	ObjectFilters []string `json:"object_filters,omitempty" yaml:"object_filters"`
 }
 
 // IngressFilter represents the IngressFilter configuration.
 type IngressFilter struct {
-	Client        *GRPCClient `json:"client,omitempty"         yaml:"client"`
-	Vectorizer    string      `json:"vectorizer,omitempty"     yaml:"vectorizer"`
-	SearchFilters []string    `json:"search_filters,omitempty" yaml:"search_filters"`
-	InsertFilters []string    `json:"insert_filters,omitempty" yaml:"insert_filters"`
-	UpdateFilters []string    `json:"update_filters,omitempty" yaml:"update_filters"`
-	UpsertFilters []string    `json:"upsert_filters,omitempty" yaml:"upsert_filters"`
+	// Client represents the client configuration.
+	Client *GRPCClient `json:"client,omitempty" yaml:"client"`
+	// Vectorizer represents the vectorizer.
+	Vectorizer string `json:"vectorizer,omitempty" yaml:"vectorizer"`
+	// SearchFilters represents the search filters.
+	SearchFilters []string `json:"search_filters,omitempty" yaml:"search_filters"`
+	// InsertFilters represents the insert filters.
+	InsertFilters []string `json:"insert_filters,omitempty" yaml:"insert_filters"`
+	// UpdateFilters represents the update filters.
+	UpdateFilters []string `json:"update_filters,omitempty" yaml:"update_filters"`
+	// UpsertFilters represents the upsert filters.
+	UpsertFilters []string `json:"upsert_filters,omitempty" yaml:"upsert_filters"`
 }
 
 // Bind binds the actual data from the EgressFilter receiver field.

@@ -197,8 +197,8 @@ package vald
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		want <-chan error
@@ -231,8 +231,8 @@ package vald
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -254,8 +254,8 @@ package vald
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -286,8 +286,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			got, err := c.Start(test.args.ctx)
@@ -303,8 +303,8 @@ package vald
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		err error
@@ -333,8 +333,8 @@ package vald
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -356,8 +356,8 @@ package vald
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -388,8 +388,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			err := c.Stop(test.args.ctx)
@@ -402,8 +402,8 @@ package vald
 //
 // func Test_client_GRPCClient(t *testing.T) {
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		want grpc.Client
@@ -428,8 +428,8 @@ package vald
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -448,8 +448,8 @@ package vald
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -480,8 +480,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			got := c.GRPCClient()
@@ -499,8 +499,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantOid *payload.Object_ID
@@ -535,8 +535,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -560,8 +560,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -592,8 +592,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotOid, err := c.Exists(test.args.ctx, test.args.in, test.args.opts...)
@@ -611,8 +611,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Response
@@ -647,8 +647,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -672,8 +672,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -704,8 +704,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.Search(test.args.ctx, test.args.in, test.args.opts...)
@@ -723,8 +723,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Response
@@ -759,8 +759,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -784,8 +784,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -816,8 +816,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.SearchByID(test.args.ctx, test.args.in, test.args.opts...)
@@ -834,8 +834,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes vald.Search_StreamSearchClient
@@ -869,8 +869,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -893,8 +893,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -925,8 +925,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.StreamSearch(test.args.ctx, test.args.opts...)
@@ -943,8 +943,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes vald.Search_StreamSearchByIDClient
@@ -978,8 +978,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1002,8 +1002,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1034,8 +1034,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.StreamSearchByID(test.args.ctx, test.args.opts...)
@@ -1053,8 +1053,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Responses
@@ -1089,8 +1089,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1114,8 +1114,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1146,8 +1146,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.MultiSearch(test.args.ctx, test.args.in, test.args.opts...)
@@ -1165,8 +1165,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Responses
@@ -1201,8 +1201,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1226,8 +1226,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1258,8 +1258,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.MultiSearchByID(test.args.ctx, test.args.in, test.args.opts...)
@@ -1277,8 +1277,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Response
@@ -1313,8 +1313,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1338,8 +1338,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1370,8 +1370,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.LinearSearch(test.args.ctx, test.args.in, test.args.opts...)
@@ -1389,8 +1389,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Response
@@ -1425,8 +1425,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1450,8 +1450,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1482,8 +1482,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.LinearSearchByID(test.args.ctx, test.args.in, test.args.opts...)
@@ -1500,8 +1500,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes vald.Search_StreamLinearSearchClient
@@ -1535,8 +1535,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1559,8 +1559,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1591,8 +1591,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.StreamLinearSearch(test.args.ctx, test.args.opts...)
@@ -1609,8 +1609,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes vald.Search_StreamLinearSearchByIDClient
@@ -1644,8 +1644,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1668,8 +1668,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1700,8 +1700,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.StreamLinearSearchByID(test.args.ctx, test.args.opts...)
@@ -1719,8 +1719,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Responses
@@ -1755,8 +1755,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1780,8 +1780,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1812,8 +1812,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.MultiLinearSearch(test.args.ctx, test.args.in, test.args.opts...)
@@ -1831,8 +1831,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Responses
@@ -1867,8 +1867,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1892,8 +1892,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1924,8 +1924,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.MultiLinearSearchByID(test.args.ctx, test.args.in, test.args.opts...)
@@ -1943,8 +1943,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Location
@@ -1979,8 +1979,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2004,8 +2004,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2036,8 +2036,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.Insert(test.args.ctx, test.args.in, test.args.opts...)
@@ -2054,8 +2054,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes vald.Insert_StreamInsertClient
@@ -2089,8 +2089,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2113,8 +2113,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2145,8 +2145,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.StreamInsert(test.args.ctx, test.args.opts...)
@@ -2164,8 +2164,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Locations
@@ -2200,8 +2200,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2225,8 +2225,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2257,8 +2257,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.MultiInsert(test.args.ctx, test.args.in, test.args.opts...)
@@ -2276,8 +2276,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Location
@@ -2312,8 +2312,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2337,8 +2337,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2369,8 +2369,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.Update(test.args.ctx, test.args.in, test.args.opts...)
@@ -2387,8 +2387,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes vald.Update_StreamUpdateClient
@@ -2422,8 +2422,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2446,8 +2446,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2478,8 +2478,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.StreamUpdate(test.args.ctx, test.args.opts...)
@@ -2497,8 +2497,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Locations
@@ -2533,8 +2533,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2558,8 +2558,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2590,8 +2590,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.MultiUpdate(test.args.ctx, test.args.in, test.args.opts...)
@@ -2609,8 +2609,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Location
@@ -2645,8 +2645,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2670,8 +2670,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2702,8 +2702,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.UpdateTimestamp(test.args.ctx, test.args.in, test.args.opts...)
@@ -2721,8 +2721,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Location
@@ -2757,8 +2757,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2782,8 +2782,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2814,8 +2814,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.Upsert(test.args.ctx, test.args.in, test.args.opts...)
@@ -2832,8 +2832,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes vald.Upsert_StreamUpsertClient
@@ -2867,8 +2867,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2891,8 +2891,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2923,8 +2923,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.StreamUpsert(test.args.ctx, test.args.opts...)
@@ -2942,8 +2942,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Locations
@@ -2978,8 +2978,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3003,8 +3003,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3035,8 +3035,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.MultiUpsert(test.args.ctx, test.args.in, test.args.opts...)
@@ -3054,8 +3054,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Location
@@ -3090,8 +3090,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3115,8 +3115,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3147,8 +3147,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.Remove(test.args.ctx, test.args.in, test.args.opts...)
@@ -3165,8 +3165,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes vald.Remove_StreamRemoveClient
@@ -3200,8 +3200,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3224,8 +3224,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3256,8 +3256,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.StreamRemove(test.args.ctx, test.args.opts...)
@@ -3275,8 +3275,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Locations
@@ -3311,8 +3311,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3336,8 +3336,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3368,8 +3368,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.MultiRemove(test.args.ctx, test.args.in, test.args.opts...)
@@ -3387,8 +3387,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Info_Index_Count
@@ -3423,8 +3423,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3448,8 +3448,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3480,8 +3480,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.Flush(test.args.ctx, test.args.in, test.args.opts...)
@@ -3499,8 +3499,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Locations
@@ -3535,8 +3535,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3560,8 +3560,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3592,8 +3592,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.RemoveByTimestamp(test.args.ctx, test.args.in, test.args.opts...)
@@ -3611,8 +3611,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Vector
@@ -3647,8 +3647,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3672,8 +3672,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3704,8 +3704,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.GetObject(test.args.ctx, test.args.in, test.args.opts...)
@@ -3722,8 +3722,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes vald.Object_StreamGetObjectClient
@@ -3757,8 +3757,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3781,8 +3781,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3813,8 +3813,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.StreamGetObject(test.args.ctx, test.args.opts...)
@@ -3832,8 +3832,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes vald.Object_StreamListObjectClient
@@ -3868,8 +3868,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3893,8 +3893,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3925,8 +3925,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.StreamListObject(test.args.ctx, test.args.in, test.args.opts...)
@@ -3944,8 +3944,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Info_Index_Count
@@ -3980,8 +3980,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4005,8 +4005,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4037,8 +4037,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.IndexInfo(test.args.ctx, test.args.in, test.args.opts...)
@@ -4056,8 +4056,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Info_Index_Detail
@@ -4092,8 +4092,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4117,8 +4117,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4149,8 +4149,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.IndexDetail(test.args.ctx, test.args.in, test.args.opts...)
@@ -4168,8 +4168,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Info_Index_Statistics
@@ -4204,8 +4204,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4229,8 +4229,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4261,8 +4261,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.IndexStatistics(test.args.ctx, test.args.in, test.args.opts...)
@@ -4280,8 +4280,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Info_Index_StatisticsDetail
@@ -4316,8 +4316,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4341,8 +4341,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4373,8 +4373,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.IndexStatisticsDetail(test.args.ctx, test.args.in, test.args.opts...)
@@ -4392,8 +4392,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Info_Index_PropertyDetail
@@ -4428,8 +4428,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4453,8 +4453,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4485,8 +4485,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.IndexProperty(test.args.ctx, test.args.in, test.args.opts...)
@@ -4504,8 +4504,8 @@ package vald
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Timestamp
@@ -4540,8 +4540,8 @@ package vald
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4565,8 +4565,8 @@ package vald
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4597,8 +4597,8 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.GetTimestamp(test.args.ctx, test.args.in, test.args.opts...)

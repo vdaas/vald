@@ -14,7 +14,6 @@
 package servers
 
 import (
-	"context"
 	"reflect"
 	"testing"
 	"time"
@@ -26,9 +25,9 @@ import (
 
 func TestWithServer(t *testing.T) {
 	type test struct {
-		name      string
 		srv       server.Server
 		checkFunc func(opt Option) error
+		name      string
 	}
 
 	tests := []test{
@@ -89,14 +88,14 @@ func TestWithServer(t *testing.T) {
 
 func TestWithErrorGroup(t *testing.T) {
 	type test struct {
-		name      string
 		eg        errgroup.Group
 		checkFunc func(opt Option) error
+		name      string
 	}
 
 	tests := []test{
 		func() test {
-			eg, _ := errgroup.New(context.Background())
+			eg, _ := errgroup.New(t.Context())
 
 			return test{
 				name: "set success",
@@ -126,9 +125,9 @@ func TestWithErrorGroup(t *testing.T) {
 
 func TestWithShutdownDuration(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		dur       string
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -172,9 +171,9 @@ func TestWithShutdownDuration(t *testing.T) {
 
 func TestWithStartUpStrategy(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		strg      []string
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{
@@ -212,9 +211,9 @@ func TestWithStartUpStrategy(t *testing.T) {
 
 func TestWithShutdownStrategy(t *testing.T) {
 	type test struct {
+		checkFunc func(opt Option) error
 		name      string
 		strg      []string
-		checkFunc func(opt Option) error
 	}
 
 	tests := []test{

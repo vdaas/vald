@@ -33,8 +33,8 @@ func TestGetVector(t *testing.T) {
 		name      string
 		uuid      string
 		vec       []float32
-		timestamp int64
 		want      want
+		timestamp int64
 	}
 
 	now := time.Now().UnixNano()

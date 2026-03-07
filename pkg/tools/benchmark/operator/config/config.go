@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// Package config stores all server application settings
+// Package config stores all server application settings for benchmark operator
 package config
 
 import "github.com/vdaas/vald/internal/config"
@@ -25,16 +25,17 @@ type GlobalConfig = config.GlobalConfig
 // Config represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Config struct {
-	config.GlobalConfig `json:",inline" yaml:",inline"`
-
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
 
 	// Observability represent observability configurations
 	Observability *config.Observability `json:"observability" yaml:"observability"`
 
-	// Job represents the default benchmark job configuration and job images
+	// Job represent benchmark operator job configuration
 	Job *config.OperatorJobConfig `json:"job" yaml:"job"`
+
+	// GlobalConfig represent the global configuration
+	config.GlobalConfig `json:",inline" yaml:",inline"`
 }
 
 // NewConfig represents the set config from the given setting file path.

@@ -126,78 +126,148 @@ type (
 		destroyed atomic.Bool
 	}
 
+	// GraphStatistics represents the statistics of the NGT graph index.
 	GraphStatistics struct {
-		Valid                            bool
-		MedianIndegree                   int32
-		MedianOutdegree                  int32
-		MaxNumberOfIndegree              uint64
-		MaxNumberOfOutdegree             uint64
-		MinNumberOfIndegree              uint64
-		MinNumberOfOutdegree             uint64
-		ModeIndegree                     uint64
-		ModeOutdegree                    uint64
-		NodesSkippedFor10Edges           uint64
-		NodesSkippedForIndegreeDistance  uint64
-		NumberOfEdges                    uint64
-		NumberOfIndexedObjects           uint64
-		NumberOfNodes                    uint64
-		NumberOfNodesWithoutEdges        uint64
-		NumberOfNodesWithoutIndegree     uint64
-		NumberOfObjects                  uint64
-		NumberOfRemovedObjects           uint64
-		SizeOfObjectRepository           uint64
+		// Valid indicates whether the statistics are valid.
+		Valid bool
+		// MedianIndegree represents the median of indegrees.
+		MedianIndegree int32
+		// MedianOutdegree represents the median of outdegrees.
+		MedianOutdegree int32
+		// MaxNumberOfIndegree represents the maximum number of indegrees.
+		MaxNumberOfIndegree uint64
+		// MaxNumberOfOutdegree represents the maximum number of outdegrees.
+		MaxNumberOfOutdegree uint64
+		// MinNumberOfIndegree represents the minimum number of indegrees.
+		MinNumberOfIndegree uint64
+		// MinNumberOfOutdegree represents the minimum number of outdegrees.
+		MinNumberOfOutdegree uint64
+		// ModeIndegree represents the mode of indegrees.
+		ModeIndegree uint64
+		// ModeOutdegree represents the mode of outdegrees.
+		ModeOutdegree uint64
+		// NodesSkippedFor10Edges represents the number of nodes skipped for 10 edges.
+		NodesSkippedFor10Edges uint64
+		// NodesSkippedForIndegreeDistance represents the number of nodes skipped for indegree distance.
+		NodesSkippedForIndegreeDistance uint64
+		// NumberOfEdges represents the total number of edges.
+		NumberOfEdges uint64
+		// NumberOfIndexedObjects represents the number of indexed objects.
+		NumberOfIndexedObjects uint64
+		// NumberOfNodes represents the number of nodes.
+		NumberOfNodes uint64
+		// NumberOfNodesWithoutEdges represents the number of nodes without edges.
+		NumberOfNodesWithoutEdges uint64
+		// NumberOfNodesWithoutIndegree represents the number of nodes without indegree.
+		NumberOfNodesWithoutIndegree uint64
+		// NumberOfObjects represents the total number of objects.
+		NumberOfObjects uint64
+		// NumberOfRemovedObjects represents the number of removed objects.
+		NumberOfRemovedObjects uint64
+		// SizeOfObjectRepository represents the size of the object repository.
+		SizeOfObjectRepository uint64
+		// SizeOfRefinementObjectRepository represents the size of the refinement object repository.
 		SizeOfRefinementObjectRepository uint64
-		VarianceOfIndegree               float64
-		VarianceOfOutdegree              float64
-		MeanEdgeLength                   float64
-		MeanEdgeLengthFor10Edges         float64
-		MeanIndegreeDistanceFor10Edges   float64
-		MeanNumberOfEdgesPerNode         float64
-		C1Indegree                       float64
-		C5Indegree                       float64
-		C95Outdegree                     float64
-		C99Outdegree                     float64
-		IndegreeCount                    []int64
-		OutdegreeHistogram               []uint64
-		IndegreeHistogram                []uint64
+		// VarianceOfIndegree represents the variance of indegrees.
+		VarianceOfIndegree float64
+		// VarianceOfOutdegree represents the variance of outdegrees.
+		VarianceOfOutdegree float64
+		// MeanEdgeLength represents the mean edge length.
+		MeanEdgeLength float64
+		// MeanEdgeLengthFor10Edges represents the mean edge length for 10 edges.
+		MeanEdgeLengthFor10Edges float64
+		// MeanIndegreeDistanceFor10Edges represents the mean indegree distance for 10 edges.
+		MeanIndegreeDistanceFor10Edges float64
+		// MeanNumberOfEdgesPerNode represents the mean number of edges per node.
+		MeanNumberOfEdgesPerNode float64
+		// C1Indegree represents the C1 indegree.
+		C1Indegree float64
+		// C5Indegree represents the C5 indegree.
+		C5Indegree float64
+		// C95Outdegree represents the C95 outdegree.
+		C95Outdegree float64
+		// C99Outdegree represents the C99 outdegree.
+		C99Outdegree float64
+		// IndegreeCount represents the indegree count distribution.
+		IndegreeCount []int64
+		// OutdegreeHistogram represents the outdegree histogram.
+		OutdegreeHistogram []uint64
+		// IndegreeHistogram represents the indegree histogram.
+		IndegreeHistogram []uint64
 	}
 
+	// Property represents the NGT index property.
 	Property struct {
-		Dimension                     int32
-		ThreadPoolSize                int32
-		ObjectType                    objectType
-		DistanceType                  distanceType
-		IndexType                     indexType
-		DatabaseType                  databaseType
-		ObjectAlignment               objectAlignment
-		PathAdjustmentInterval        int32
-		GraphSharedMemorySize         int32
-		TreeSharedMemorySize          int32
-		ObjectSharedMemorySize        int32
-		PrefetchOffset                int32
-		PrefetchSize                  int32
-		AccuracyTable                 string
-		SearchType                    string
-		MaxMagnitude                  float32
+		// Dimension represents the dimension of the vector.
+		Dimension int32
+		// ThreadPoolSize represents the size of the thread pool.
+		ThreadPoolSize int32
+		// ObjectType represents the type of the object.
+		ObjectType objectType
+		// DistanceType represents the type of the distance.
+		DistanceType distanceType
+		// IndexType represents the type of the index.
+		IndexType indexType
+		// DatabaseType represents the type of the database.
+		DatabaseType databaseType
+		// ObjectAlignment represents the object alignment.
+		ObjectAlignment objectAlignment
+		// PathAdjustmentInterval represents the path adjustment interval.
+		PathAdjustmentInterval int32
+		// GraphSharedMemorySize represents the size of the graph shared memory.
+		GraphSharedMemorySize int32
+		// TreeSharedMemorySize represents the size of the tree shared memory.
+		TreeSharedMemorySize int32
+		// ObjectSharedMemorySize represents the size of the object shared memory.
+		ObjectSharedMemorySize int32
+		// PrefetchOffset represents the prefetch offset.
+		PrefetchOffset int32
+		// PrefetchSize represents the prefetch size.
+		PrefetchSize int32
+		// AccuracyTable represents the accuracy table.
+		AccuracyTable string
+		// SearchType represents the search type.
+		SearchType string
+		// MaxMagnitude represents the maximum magnitude.
+		MaxMagnitude float32
+		// NOfNeighborsForInsertionOrder represents the number of neighbors for insertion order.
 		NOfNeighborsForInsertionOrder int32
-		EpsilonForInsertionOrder      float32
-		EpsilonForCreation            float32
-		RefinementObjectType          objectType
-		TruncationThreshold           int32
-		EdgeSizeForCreation           int32
-		EdgeSizeForSearch             int32
-		EdgeSizeLimitForCreation      int32
-		InsertionRadiusCoefficient    float64
-		SeedSize                      int32
-		SeedType                      seedType
-		TruncationThreadPoolSize      int32
-		BatchSizeForCreation          int32
-		GraphType                     graphType
-		DynamicEdgeSizeBase           int32
-		DynamicEdgeSizeRate           int32
-		BuildTimeLimit                float32
-		OutgoingEdge                  int32
-		IncomingEdge                  int32
+		// EpsilonForInsertionOrder represents the epsilon for insertion order.
+		EpsilonForInsertionOrder float32
+		// EpsilonForCreation represents the epsilon for creation.
+		EpsilonForCreation float32
+		// RefinementObjectType represents the refinement object type.
+		RefinementObjectType objectType
+		// TruncationThreshold represents the truncation threshold.
+		TruncationThreshold int32
+		// EdgeSizeForCreation represents the edge size for creation.
+		EdgeSizeForCreation int32
+		// EdgeSizeForSearch represents the edge size for search.
+		EdgeSizeForSearch int32
+		// EdgeSizeLimitForCreation represents the edge size limit for creation.
+		EdgeSizeLimitForCreation int32
+		// InsertionRadiusCoefficient represents the insertion radius coefficient.
+		InsertionRadiusCoefficient float64
+		// SeedSize represents the seed size.
+		SeedSize int32
+		// SeedType represents the seed type.
+		SeedType seedType
+		// TruncationThreadPoolSize represents the truncation thread pool size.
+		TruncationThreadPoolSize int32
+		// BatchSizeForCreation represents the batch size for creation.
+		BatchSizeForCreation int32
+		// GraphType represents the graph type.
+		GraphType graphType
+		// DynamicEdgeSizeBase represents the dynamic edge size base.
+		DynamicEdgeSizeBase int32
+		// DynamicEdgeSizeRate represents the dynamic edge size rate.
+		DynamicEdgeSizeRate int32
+		// BuildTimeLimit represents the build time limit.
+		BuildTimeLimit float32
+		// OutgoingEdge represents the outgoing edge.
+		OutgoingEdge int32
+		// IncomingEdge represents the incoming edge.
+		IncomingEdge int32
 	}
 )
 
@@ -634,6 +704,11 @@ func (n *ngt) loadObjectSpace() error {
 }
 
 // Search returns search result as []algorithm.SearchResult.
+// It searches for the k-nearest neighbors of the given vector.
+//
+// Rationale:
+// - Uses a read lock to allow concurrent searches while blocking writes (like Insert/Remove).
+// - Calls CGO (C.ngt_search_index_as_float) which requires careful memory management for the results object.
 func (n *ngt) Search(
 	ctx context.Context, vec []float32, size int, epsilon, radius float32,
 ) (result []algorithm.SearchResult, err error) {
@@ -696,10 +771,18 @@ func (n *ngt) Search(
 		}
 		d := C.ngt_get_result(results, C.uint32_t(i), ne.err)
 		if d.id == 0 && d.distance == 0 {
-			result[i] = algorithm.SearchResult{0, 0, n.newGoError(ne)}
+			result[i] = algorithm.SearchResult{
+				ID:       0,
+				Distance: 0,
+				Error:    n.newGoError(ne),
+			}
 			ne = n.GetErrorBuffer()
 		} else {
-			result[i] = algorithm.SearchResult{uint32(d.id), float32(d.distance), nil}
+			result[i] = algorithm.SearchResult{
+				ID:       uint32(d.id),
+				Distance: float32(d.distance),
+				Error:    nil,
+			}
 		}
 	}
 	n.PutErrorBuffer(ne)
@@ -781,7 +864,11 @@ func (n *ngt) LinearSearch(
 }
 
 // Insert returns NGT object id.
-// This only stores not indexing, you must call CreateIndex and SaveIndex.
+// It inserts a vector into the NGT object repository but does not build the index immediately.
+//
+// Rationale:
+// - Acquire a write lock to ensure thread safety during CGO call.
+// - You must call CreateIndex and SaveIndex to make the vector searchable.
 func (n *ngt) Insert(vec []float32) (id uint, err error) {
 	if len(vec) != int(n.dimension) {
 		return 0, errors.ErrIncompatibleDimensionSize(len(vec), int(n.dimension))

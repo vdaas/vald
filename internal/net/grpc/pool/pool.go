@@ -116,38 +116,40 @@ func (pc *poolConn) Close(ctx context.Context, delay time.Duration) error {
 // pool implements the Conn interface.
 // It stores connection slots in a lock-free manner using an atomic.Value.
 type pool struct {
-	// connSlots holds a slice of atomic pointers to poolConn.
-	connSlots atomic.Pointer[[]atomic.Pointer[poolConn]] // holds []atomic.Pointer[poolConn]
-
-	// Configuration parameters.
-	startPort       uint16 // Starting port for scanning if needed.
-	endPort         uint16 // Ending port for scanning if needed.
-	host            string // Target host.
-	port            uint16 // Target port.
-	addr            string // Complete address (host:port).
-	isIPAddr        bool   // True if the target is an IP address.
-	enableDNSLookup bool   // Whether to perform DNS resolution.
-
-	// Pool management fields.
-	poolSize     atomic.Uint64 // Configured pool size.
-	currentIndex atomic.Uint64 // Atomic counter for round-robin indexing.
-
-	// gRPC dial options and timeouts.
-	dialOpts          []DialOption
-	dialTimeout       time.Duration // Timeout for dialing a connection.
-	oldConnCloseDelay time.Duration // Delay before closing old connections.
-
-	// Retry/backoff strategy.
-	bo backoff.Backoff
-
-	// Goroutine management.
+	// errGroup is used for managing asynchronous tasks such as graceful connection closure.
 	errGroup errgroup.Group
-
-	// Used for DNS change detection during reconnection.
+	// bo is the backoff strategy for dialing retries.
+	bo backoff.Backoff
+	// dnsHash stores the hash of resolved IP addresses to detect DNS changes.
 	dnsHash atomic.Pointer[string]
-
-	// Flag indicating whether the pool is closing.
+	// connSlots holds the atomic pointer to the slice of connection slots (poolConn).
+	connSlots atomic.Pointer[[]atomic.Pointer[poolConn]]
+	// host is the target hostname or IP address.
+	host string
+	// addr is the full target address (host:port).
+	addr string
+	// dialOpts contains the gRPC dial options used when creating new connections.
+	dialOpts []DialOption
+	// oldConnCloseDelay is the duration to wait before closing an old connection after a new one is established.
+	oldConnCloseDelay time.Duration
+	// poolSize is the configured number of connections in the pool.
+	poolSize atomic.Uint64
+	// currentIndex tracks the current index for round-robin connection selection.
+	currentIndex atomic.Uint64
+	// dialTimeout is the timeout duration for establishing a new connection.
+	dialTimeout time.Duration
+	// closing indicates whether the pool is currently being closed.
 	closing atomic.Bool
+	// port is the target port number.
+	port uint16
+	// endPort is the ending port number for port scanning range.
+	endPort uint16
+	// startPort is the starting port number for port scanning range.
+	startPort uint16
+	// enableDNSLookup indicates whether DNS lookup is enabled for the target host.
+	enableDNSLookup bool
+	// isIPAddr indicates whether the target address is a raw IP address (no DNS lookup needed).
+	isIPAddr bool
 }
 
 // Default pool size.

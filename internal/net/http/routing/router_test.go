@@ -72,16 +72,16 @@ func TestNew(t *testing.T) {
 func TestRouting(t *testing.T) {
 	t.Parallel()
 	type args struct {
+		h    rest.Func
 		name string
 		path string
 		m    []string
-		h    rest.Func
 	}
 
 	type test struct {
+		checkFunc func(http.Handler) error
 		name      string
 		args      args
-		checkFunc func(http.Handler) error
 	}
 
 	tests := []test{

@@ -35,12 +35,12 @@ func TestWithExpiredHook(t *testing.T) {
 		want *cache[any]
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, *cache[any]) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got *cache[any]) error {
 		if reflect.ValueOf(w.want.expiredHook).Pointer() != reflect.ValueOf(got.expiredHook).Pointer() {
@@ -109,12 +109,12 @@ func TestWithType(t *testing.T) {
 		want *cache[any]
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *cache[any]) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got *cache[any]) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -180,12 +180,12 @@ func TestWithExpireDuration(t *testing.T) {
 		want *cache[any]
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *cache[any]) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got *cache[any]) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -264,12 +264,12 @@ func TestWithExpireCheckDuration(t *testing.T) {
 		want *cache[any]
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *cache[any]) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got *cache[any]) error {
 		if !reflect.DeepEqual(got, w.want) {

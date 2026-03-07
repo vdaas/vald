@@ -36,14 +36,14 @@ type Server interface {
 }
 
 type server struct {
-	name              string
-	ip                string
-	ngt               service.NGT
-	eg                errgroup.Group
-	streamConcurrency int
 	agent.UnimplementedAgentServer
 	vald.UnimplementedValdServer
-	stats.UnimplementedStatsDetailServer
+  stats.UnimplementedStatsDetailServer
+	ngt               service.NGT
+	eg                errgroup.Group
+	name              string
+	ip                string
+	streamConcurrency int
 }
 
 const (

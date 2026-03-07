@@ -117,11 +117,11 @@ package ngt
 // 		radius  float32
 // 	}
 // 	type fields struct {
+// 		NGT        ngt.NGT
 // 		idxPath    string
 // 		tmpdir     string
 // 		objectType ObjectType
 // 		dimension  int
-// 		NGT        ngt.NGT
 // 	}
 // 	type want struct {
 // 		want any
@@ -158,11 +158,11 @@ package ngt
 // 		           radius:0,
 // 		       },
 // 		       fields: fields {
+// 		           NGT:nil,
 // 		           idxPath:"",
 // 		           tmpdir:"",
 // 		           objectType:nil,
 // 		           dimension:0,
-// 		           NGT:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -188,11 +188,11 @@ package ngt
 // 		           radius:0,
 // 		           },
 // 		           fields: fields {
+// 		           NGT:nil,
 // 		           idxPath:"",
 // 		           tmpdir:"",
 // 		           objectType:nil,
 // 		           dimension:0,
-// 		           NGT:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -223,11 +223,11 @@ package ngt
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &core{
+// 				NGT:        test.fields.NGT,
 // 				idxPath:    test.fields.idxPath,
 // 				tmpdir:     test.fields.tmpdir,
 // 				objectType: test.fields.objectType,
 // 				dimension:  test.fields.dimension,
-// 				NGT:        test.fields.NGT,
 // 			}
 //
 // 			got, err := c.Search(test.args.ctx, test.args.vec, test.args.size, test.args.epsilon, test.args.radius)
@@ -240,11 +240,11 @@ package ngt
 //
 // func Test_core_Close(t *testing.T) {
 // 	type fields struct {
+// 		NGT        ngt.NGT
 // 		idxPath    string
 // 		tmpdir     string
 // 		objectType ObjectType
 // 		dimension  int
-// 		NGT        ngt.NGT
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -264,11 +264,11 @@ package ngt
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           NGT:nil,
 // 		           idxPath:"",
 // 		           tmpdir:"",
 // 		           objectType:nil,
 // 		           dimension:0,
-// 		           NGT:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -287,11 +287,11 @@ package ngt
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           NGT:nil,
 // 		           idxPath:"",
 // 		           tmpdir:"",
 // 		           objectType:nil,
 // 		           dimension:0,
-// 		           NGT:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -322,11 +322,11 @@ package ngt
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &core{
+// 				NGT:        test.fields.NGT,
 // 				idxPath:    test.fields.idxPath,
 // 				tmpdir:     test.fields.tmpdir,
 // 				objectType: test.fields.objectType,
 // 				dimension:  test.fields.dimension,
-// 				NGT:        test.fields.NGT,
 // 			}
 //
 // 			c.Close()

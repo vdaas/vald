@@ -50,28 +50,28 @@ type MySQL interface {
 }
 
 type mySQLClient struct {
-	db                   string
-	network              string
-	socketPath           string
-	host                 string
-	port                 uint16
-	user                 string
-	pass                 string
-	name                 string
-	charset              string
-	timezone             string
-	initialPingTimeLimit time.Duration
-	initialPingDuration  time.Duration
-	connMaxLifeTime      time.Duration
 	dialer               net.Dialer
-	dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
-	tlsConfig            *tls.Config
-	maxOpenConns         int
-	maxIdleConns         int
-	session              dbr.Session
-	connected            atomic.Value
-	eventReceiver        EventReceiver
 	dbr                  dbr.DBR
+	eventReceiver        EventReceiver
+	connected            atomic.Value
+	session              dbr.Session
+	tlsConfig            *tls.Config
+	dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
+	user                 string
+	host                 string
+	timezone             string
+	network              string
+	charset              string
+	socketPath           string
+	name                 string
+	pass                 string
+	db                   string
+	initialPingDuration  time.Duration
+	maxIdleConns         int
+	maxOpenConns         int
+	connMaxLifeTime      time.Duration
+	initialPingTimeLimit time.Duration
+	port                 uint16
 }
 
 // New creates the new mySQLClient with option.

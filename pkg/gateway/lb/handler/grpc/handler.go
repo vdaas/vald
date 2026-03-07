@@ -31,16 +31,18 @@ type Server interface {
 }
 
 type server struct {
+	vald.UnimplementedValdServer
+	stats.UnimplementedStatsDetailServer
 	eg                errgroup.Group
 	gateway           service.Gateway
+	name              string
+	ip                string
 	timeout           time.Duration
 	replica           int
 	streamConcurrency int
 	multiConcurrency  int
 	name              string
 	ip                string
-	vald.UnimplementedValdServer
-	stats.UnimplementedStatsDetailServer
 }
 
 const apiName = "vald/gateway/lb"
