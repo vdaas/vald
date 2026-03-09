@@ -21,6 +21,7 @@ import (
 
 	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	stats "github.com/vdaas/vald/apis/grpc/v1/rpc/stats"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -31,11 +32,13 @@ import (
 type Server interface {
 	agent.AgentServer
 	vald.Server
+	stats.StatsDetailServer
 }
 
 type server struct {
 	agent.UnimplementedAgentServer
 	vald.UnimplementedValdServer
+	stats.UnimplementedStatsDetailServer
 	faiss             service.Faiss
 	eg                errgroup.Group
 	name              string

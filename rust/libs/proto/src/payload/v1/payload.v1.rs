@@ -1710,25 +1710,82 @@ pub mod info {
             "/payload.v1.Info.Index".into()
         }
     }
-    /// Represent the resource stats
-    #[derive(Clone, PartialEq, ::prost::Message)]
-    pub struct ResourceStats {
-        #[prost(string, tag = "1")]
-        pub name: ::prost::alloc::string::String,
-        #[prost(string, tag = "2")]
-        pub ip: ::prost::alloc::string::String,
-        /// Container resource usage statistics
-        #[prost(message, optional, tag = "3")]
-        pub cgroup_stats: ::core::option::Option<CgroupStats>,
+    /// Represents the stats info messages.
+    #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+    pub struct Stats {}
+    /// Nested message and enum types in `Stats`.
+    pub mod stats {
+        /// Represent the resource stats
+        #[derive(Clone, PartialEq, ::prost::Message)]
+        pub struct ResourceStats {
+            #[prost(string, tag = "1")]
+            pub name: ::prost::alloc::string::String,
+            #[prost(string, tag = "2")]
+            pub ip: ::prost::alloc::string::String,
+            /// Container resource usage statistics
+            #[prost(message, optional, tag = "3")]
+            pub cgroup_stats: ::core::option::Option<CgroupStats>,
+        }
+        impl ::prost::Name for ResourceStats {
+            const NAME: &'static str = "ResourceStats";
+            const PACKAGE: &'static str = "payload.v1";
+            fn full_name() -> ::prost::alloc::string::String {
+                "payload.v1.Info.Stats.ResourceStats".into()
+            }
+            fn type_url() -> ::prost::alloc::string::String {
+                "/payload.v1.Info.Stats.ResourceStats".into()
+            }
+        }
+        /// Represents the resource stats for each agent
+        #[derive(Clone, PartialEq, ::prost::Message)]
+        pub struct ResourceStatsDetail {
+            #[prost(map = "string, message", tag = "1")]
+            pub details: ::std::collections::HashMap<::prost::alloc::string::String, ResourceStats>,
+        }
+        impl ::prost::Name for ResourceStatsDetail {
+            const NAME: &'static str = "ResourceStatsDetail";
+            const PACKAGE: &'static str = "payload.v1";
+            fn full_name() -> ::prost::alloc::string::String {
+                "payload.v1.Info.Stats.ResourceStatsDetail".into()
+            }
+            fn type_url() -> ::prost::alloc::string::String {
+                "/payload.v1.Info.Stats.ResourceStatsDetail".into()
+            }
+        }
+        #[derive(Clone, Copy, PartialEq, ::prost::Message)]
+        pub struct CgroupStats {
+            /// CPU cores available
+            #[prost(double, tag = "1")]
+            pub cpu_limit_cores: f64,
+            /// CPU usage in cores (not percentage)
+            #[prost(double, tag = "2")]
+            pub cpu_usage_cores: f64,
+            /// Memory limit in bytes
+            #[prost(uint64, tag = "3")]
+            pub memory_limit_bytes: u64,
+            /// Memory usage in bytes
+            #[prost(uint64, tag = "4")]
+            pub memory_usage_bytes: u64,
+        }
+        impl ::prost::Name for CgroupStats {
+            const NAME: &'static str = "CgroupStats";
+            const PACKAGE: &'static str = "payload.v1";
+            fn full_name() -> ::prost::alloc::string::String {
+                "payload.v1.Info.Stats.CgroupStats".into()
+            }
+            fn type_url() -> ::prost::alloc::string::String {
+                "/payload.v1.Info.Stats.CgroupStats".into()
+            }
+        }
     }
-    impl ::prost::Name for ResourceStats {
-        const NAME: &'static str = "ResourceStats";
+    impl ::prost::Name for Stats {
+        const NAME: &'static str = "Stats";
         const PACKAGE: &'static str = "payload.v1";
         fn full_name() -> ::prost::alloc::string::String {
-            "payload.v1.Info.ResourceStats".into()
+            "payload.v1.Info.Stats".into()
         }
         fn type_url() -> ::prost::alloc::string::String {
-            "/payload.v1.Info.ResourceStats".into()
+            "/payload.v1.Info.Stats".into()
         }
     }
     #[derive(Clone, Copy, PartialEq, ::prost::Message)]
