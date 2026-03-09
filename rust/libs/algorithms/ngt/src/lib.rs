@@ -81,11 +81,9 @@ pub mod ffi {
 
 #[cfg(test)]
 mod tests {
-    use std::vec;
-
-    use anyhow::Result;
     use rand::distr::StandardUniform;
     use rand::prelude::*;
+    use std::vec;
 
     use super::*;
 
@@ -100,25 +98,29 @@ mod tests {
     }
 
     #[test]
-    fn test_ngt() -> Result<()> {
+    fn test_ngt() {
         let mut p = ffi::new_property();
         p.pin_mut().set_dimension(DIMENSION);
         p.pin_mut().set_distance_type(ffi::DistanceType::L2);
         p.pin_mut().set_object_type(ffi::ObjectType::Float);
 
-        let mut index = ffi::new_index_in_memory(p.pin_mut())?;
+        let mut index = ffi::new_index_in_memory(p.pin_mut());
+        assert!(index.is_ok());
+        let mut index = index.unwrap();
         let vectors: Vec<Vec<f32>> = (0..COUNT).map(|_| gen_random_vector(DIMENSION)).collect();
         for (i, v) in vectors.iter().enumerate() {
-            let id = index.pin_mut().insert(v.as_slice())?;
-            assert_eq!(i + 1, id as usize);
+            let id = index.pin_mut().insert(v.as_slice());
+            assert!(id.is_ok());
+            assert_eq!(i + 1, id.unwrap() as usize);
         }
-        index.pin_mut().create_index(4)?;
+        let result = index.pin_mut().create_index(4);
+        assert!(result.is_ok());
 
         for _ in 0..COUNT {
             let mut ids: Vec<i32> = vec![-1; K];
             let mut distances: Vec<f32> = vec![-1.0; K];
             unsafe {
-                index.pin_mut().search(
+                let result = index.pin_mut().search(
                     gen_random_vector(DIMENSION).as_slice(),
                     K as i32,
                     0.05,
@@ -126,7 +128,8 @@ mod tests {
                     i32::MIN,
                     &mut ids[0] as *mut i32,
                     &mut distances[0] as *mut f32,
-                )?
+                );
+                assert!(result.is_ok());
             };
             for i in 0..K {
                 assert!(
@@ -139,13 +142,14 @@ mod tests {
         }
 
         for (i, v) in vectors.iter().enumerate() {
-            let ret = index.pin_mut().get_vector((i + 1) as u32)?;
-            assert_eq!(v.as_slice(), ret);
+            let ret = index.pin_mut().get_vector((i + 1) as u32);
+            assert!(ret.is_ok());
+            assert_eq!(v.as_slice(), ret.unwrap());
         }
 
         for i in 1..COUNT + 1 {
-            index.pin_mut().remove(i)?;
+            let result = index.pin_mut().remove(i);
+            assert!(result.is_ok());
         }
-        Ok(())
     }
 }

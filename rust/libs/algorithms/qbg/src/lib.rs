@@ -1096,7 +1096,6 @@ pub mod index {
 #[cfg(test)]
 mod tests {
     use crate::{ffi, index::Index, property::Property};
-    use anyhow::Result;
     use tempfile::tempdir;
 
     const DIMENSION: usize = 128;
@@ -1105,10 +1104,10 @@ mod tests {
     const EPSILON: f32 = 0.1;
 
     #[test]
-    fn test_ffi_qbg() -> Result<()> {
+    fn test_ffi_qbg() {
         // New
         println!("create an empty index...");
-        let temp_dir = tempdir()?;
+        let temp_dir = tempdir().unwrap();
         let path = temp_dir.path().join("index").to_string_lossy().to_string();
         let mut p = ffi::new_property();
         ////////// Test Setter //////////
@@ -1175,7 +1174,9 @@ mod tests {
         // Search
         println!("search the index for the specified query...");
         let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
-        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON)?;
+        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON);
+        assert!(search_results.is_ok());
+        let mut search_results = search_results.unwrap();
         let ids: Vec<u32> = search_results
             .pin_mut()
             .into_iter()
@@ -1207,14 +1208,12 @@ mod tests {
         println!("distances:\n\t{:?}", distances);
 
         index.pin_mut().close_index();
-
-        Ok(())
     }
 
     #[test]
-    fn test_ffi_qbg_prebuilt() -> Result<()> {
+    fn test_ffi_qbg_prebuilt() {
         // First create an index for this test
-        let temp_dir = tempdir()?;
+        let temp_dir = tempdir().unwrap();
         let path = temp_dir.path().join("index").to_string_lossy().to_string();
 
         // Create and build a fresh index
@@ -1290,12 +1289,10 @@ mod tests {
         println!("distances:\n\t{:?}", distances);
 
         index.pin_mut().close_index();
-
-        Ok(())
     }
 
     #[test]
-    fn test_property() -> Result<()> {
+    fn test_property() {
         let mut p = Property::new();
         p.init_qbg_construction_parameters();
         p.set_qbg_construction_parameters(
@@ -1330,12 +1327,10 @@ mod tests {
         p.set_number_of_matrices(1);
         p.set_rotation(false);
         p.set_repositioning(false);
-
-        Ok(())
     }
 
     #[test]
-    fn test_index() -> Result<()> {
+    fn test_index() {
         // New
         println!("create an empty index...");
         let temp_dir = tempdir()?;
@@ -1407,7 +1402,5 @@ mod tests {
         );
 
         index.close_index();
-
-        Ok(())
     }
 }
