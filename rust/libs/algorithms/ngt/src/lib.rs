@@ -104,7 +104,7 @@ mod tests {
         p.pin_mut().set_distance_type(ffi::DistanceType::L2);
         p.pin_mut().set_object_type(ffi::ObjectType::Float);
 
-        let mut index = ffi::new_index_in_memory(p.pin_mut());
+        let index = ffi::new_index_in_memory(p.pin_mut());
         assert!(index.is_ok());
         let mut index = index.unwrap();
         let vectors: Vec<Vec<f32>> = (0..COUNT).map(|_| gen_random_vector(DIMENSION)).collect();
@@ -147,7 +147,7 @@ mod tests {
             assert_eq!(v.as_slice(), ret.unwrap());
         }
 
-        for i in 1..COUNT + 1 {
+        for i in 1..COUNT + 1 { // skipcq: RS-W1003
             let result = index.pin_mut().remove(i);
             assert!(result.is_ok());
         }
