@@ -330,22 +330,35 @@ test/cmd: \
 ## run tests for rust
 test/rust: \
 	test/rust/qbg \
+	test/rust/kvs \
+	test/rust/vqueue \
+	test/rust/observability \
 	test/rust/agent
 
 .PHONY: test/rust/qbg
-## run tests for qbg
+## run tests for qbg crate
 test/rust/qbg:
-	cargo test --manifest-path rust/Cargo.toml --package qbg --lib -- tests::test_ffi_qbg --exact --show-output
-	cargo test --manifest-path rust/Cargo.toml --package qbg --lib -- tests::test_ffi_qbg_prebuilt --exact --show-output
-	rm -rf rust/libs/algorithms/qbg/index/
-	cargo test --manifest-path rust/Cargo.toml --package qbg --lib -- tests::test_property --exact --show-output
-	cargo test --manifest-path rust/Cargo.toml --package qbg --lib -- tests::test_index --exact --show-output
-	rm -rf rust/libs/algorithms/qbg/index/
+	cargo test --manifest-path rust/Cargo.toml --package qbg --lib -- --show-output
+
+.PHONY: test/rust/kvs
+## run tests for kvs crate
+test/rust/kvs:
+	cargo test --manifest-path rust/Cargo.toml --package kvs --lib -- --show-output
+
+.PHONY: test/rust/vqueue
+## run tests for vqueue crate
+test/rust/vqueue:
+	cargo test --manifest-path rust/Cargo.toml --package vqueue --lib -- --show-output
+
+.PHONY: test/rust/observability
+## run tests for observability crate
+test/rust/observability:
+	cargo test --manifest-path rust/Cargo.toml --package observability --lib -- --show-output
 
 .PHONY: test/rust/agent
 ## run tests for agent
 test/rust/agent:
-	cargo test --manifest-path rust/Cargo.toml --package agent -- handler::common::tests --show-output
+	cargo test --manifest-path rust/Cargo.toml --package agent -- --show-output
 
 .PHONY: test/hack
 ## run tests for hack
@@ -383,6 +396,12 @@ test/all: \
 .PHONY: coverage
 ## calculate coverages
 coverage: \
+	coverage/go \
+	coverage/rust
+
+.PHONY: coverage/go
+## calculate go coverages
+coverage/go: \
 	ngt/install \
 	hdf5/install \
 	certs/gen
@@ -396,6 +415,11 @@ coverage: \
 	GOOS=$(GOOS) \
 	go tool cover -html=coverage.out -o coverage.html
 	$(MAKE) certs/clean
+
+.PHONY: coverage/rust
+## calculate rust coverages
+coverage/rust:
+	cargo llvm-cov --manifest-path rust/Cargo.toml --workspace --exclude proto --lcov --output-path rust-coverage.out
 
 .PHONY: gotests/gen
 ## generate missing go test files

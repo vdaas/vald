@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-use anyhow::{Ok, Result};
 use opentelemetry::global;
 use opentelemetry_otlp::{MetricExporter, SpanExporter, WithExportConfig};
 use opentelemetry_sdk::Resource;
@@ -23,13 +22,18 @@ use opentelemetry_sdk::trace::{self, SdkTracerProvider};
 use url::Url;
 
 use crate::config::Config;
+use crate::error::Result;
 
+/// Resource key for OpenTelemetry service name.
 pub const SERVICE_NAME: &str = opentelemetry_semantic_conventions::resource::SERVICE_NAME;
 
+/// Observability lifecycle hooks for telemetry exporters.
 pub trait Observability {
+    /// Flushes and shuts down any active exporters.
     fn shutdown(&mut self) -> Result<()>;
 }
 
+/// OpenTelemetry-backed observability implementation.
 pub struct ObservabilityImpl {
     config: Config,
     meter_provider: Option<SdkMeterProvider>,
@@ -37,7 +41,8 @@ pub struct ObservabilityImpl {
 }
 
 impl ObservabilityImpl {
-    pub fn new(cfg: Config) -> Result<ObservabilityImpl, anyhow::Error> {
+    /// Creates a new observability instance from configuration.
+    pub fn new(cfg: Config) -> Result<ObservabilityImpl> {
         let mut obj = ObservabilityImpl {
             config: cfg,
             meter_provider: None,
@@ -104,18 +109,18 @@ impl Observability for ObservabilityImpl {
             return Ok(());
         }
 
-        if self.config.meter.enabled {
-            if let Some(ref provider) = self.meter_provider {
-                provider.force_flush()?;
-                provider.shutdown()?;
-            }
+        if self.config.meter.enabled
+            && let Some(ref provider) = self.meter_provider
+        {
+            provider.force_flush()?;
+            provider.shutdown()?;
         }
 
-        if self.config.tracer.enabled {
-            if let Some(ref provider) = self.tracer_provider {
-                provider.force_flush()?;
-                provider.shutdown()?;
-            }
+        if self.config.tracer.enabled
+            && let Some(ref provider) = self.tracer_provider
+        {
+            provider.force_flush()?;
+            provider.shutdown()?;
         }
         Ok(())
     }

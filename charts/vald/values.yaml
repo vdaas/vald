@@ -1988,9 +1988,9 @@ agent:
   # @schema {"name": "agent.version", "alias": "version"}
   # agent.version -- version of agent config
   version: v0.0.0
-  # @schema {"name": "agent.algorithm", "type": "string", "enum": ["ngt", "faiss"]}
+  # @schema {"name": "agent.algorithm", "type": "string", "enum": ["ngt", "faiss", "qbg"]}
   # agent.algorithm -- agent algorithm type.
-  # it should be `ngt` or `faiss`.
+  # it should be `ngt`, `faiss` or `qbg`.
   algorithm: ngt
   # @schema {"name": "agent.time_zone", "type": "string"}
   # agent.time_zone -- Time zone
@@ -2458,6 +2458,151 @@ agent:
       # @schema {"name": "agent.faiss.kvsdb.concurrency", "type": "integer"}
       # agent.faiss.kvsdb.concurrency -- kvsdb processing concurrency
       concurrency: 6
+  # @schema {"name": "agent.qbg", "type": "object"}
+  qbg:
+    # @schema {"name": "agent.qbg.pod_name", "type": "string"}
+    # agent.qbg.pod_name -- pod name of myself
+    pod_name: _MY_POD_NAME_
+    # @schema {"name": "agent.qbg.namespace", "type": "string"}
+    # agent.qbg.namespace -- namespace of myself
+    namespace: _MY_POD_NAMESPACE_
+    # @schema {"name": "agent.qbg.index_path", "type": "string"}
+    # agent.qbg.index_path -- path to index data
+    index_path: ""
+    # @schema {"name": "agent.qbg.dimension", "type": "integer", "minimum": 1}
+    # agent.qbg.dimension -- vector dimension
+    dimension: 4096
+    # @schema {"name": "agent.qbg.extended_dimension", "type": "integer", "minimum": 0}
+    # agent.qbg.extended_dimension -- extended dimension
+    extended_dimension: 0
+    # @schema {"name": "agent.qbg.number_of_subvectors", "type": "integer", "minimum": 1}
+    # agent.qbg.number_of_subvectors -- number of subvectors
+    number_of_subvectors: 1
+    # @schema {"name": "agent.qbg.number_of_blobs", "type": "integer", "minimum": 0}
+    # agent.qbg.number_of_blobs -- number of blobs
+    number_of_blobs: 0
+    # @schema {"name": "agent.qbg.internal_data_type", "type": "string", "enum": ["float", "float16", "uint8"]}
+    # agent.qbg.internal_data_type -- internal data type.
+    internal_data_type: float
+    # @schema {"name": "agent.qbg.data_type", "type": "string", "enum": ["float", "float16", "uint8"]}
+    # agent.qbg.data_type -- data type.
+    data_type: float
+    # @schema {"name": "agent.qbg.distance_type", "type": "string", "enum": ["l1", "l2", "ang", "angle", "ham", "hamming", "cos", "cosine", "poincare", "poinc", "lorentz", "loren", "jac", "jaccard", "spjac", "sparsejaccard", "norml2", "normalizedl2", "normang", "normalizedangle", "normcos", "normalizedcosine", "dotproduct", "innerproduct", "dp", "ip"]}
+    # agent.qbg.distance_type -- distance type.
+    # it should be `l1`, `l2`, `angle`, `hamming`, `cosine`, `poincare`, `lorentz`, `jaccard`, `sparsejaccard`, `normalizedangle` or `normalizedcosine` or `innerproduct`.
+    distance_type: l2
+    # @schema {"name": "agent.qbg.hierarchical_clustering_init_mode", "type": "integer"}
+    # agent.qbg.hierarchical_clustering_init_mode -- hierarchical clustering init mode
+    hierarchical_clustering_init_mode: 2
+    # @schema {"name": "agent.qbg.number_of_first_objects", "type": "integer", "minimum": 0}
+    # agent.qbg.number_of_first_objects -- number of first objects
+    number_of_first_objects: 0
+    # @schema {"name": "agent.qbg.number_of_first_clusters", "type": "integer", "minimum": 0}
+    # agent.qbg.number_of_first_clusters -- number of first clusters
+    number_of_first_clusters: 0
+    # @schema {"name": "agent.qbg.number_of_second_objects", "type": "integer", "minimum": 0}
+    # agent.qbg.number_of_second_objects -- number of second objects
+    number_of_second_objects: 0
+    # @schema {"name": "agent.qbg.number_of_second_clusters", "type": "integer", "minimum": 0}
+    # agent.qbg.number_of_second_clusters -- number of second clusters
+    number_of_second_clusters: 0
+    # @schema {"name": "agent.qbg.number_of_third_clusters", "type": "integer", "minimum": 0}
+    # agent.qbg.number_of_third_clusters -- number of third clusters
+    number_of_third_clusters: 0
+    # @schema {"name": "agent.qbg.number_of_objects", "type": "integer", "minimum": 0}
+    # agent.qbg.number_of_objects -- total number of objects
+    number_of_objects: 1000
+    # @schema {"name": "agent.qbg.optimization_clustering_init_mode", "type": "integer"}
+    # agent.qbg.optimization_clustering_init_mode -- optimization clustering init mode
+    optimization_clustering_init_mode: 2
+    # @schema {"name": "agent.qbg.rotation_iteration", "type": "integer", "minimum": 0}
+    # agent.qbg.rotation_iteration -- rotation iteration count
+    rotation_iteration: 2000
+    # @schema {"name": "agent.qbg.subvector_iteration", "type": "integer", "minimum": 0}
+    # agent.qbg.subvector_iteration -- subvector iteration count
+    subvector_iteration: 400
+    # @schema {"name": "agent.qbg.number_of_matrices", "type": "integer", "minimum": 0}
+    # agent.qbg.number_of_matrices -- number of matrices
+    number_of_matrices: 3
+    # @schema {"name": "agent.qbg.rotation", "type": "boolean"}
+    # agent.qbg.rotation -- enable rotation
+    rotation: true
+    # @schema {"name": "agent.qbg.repositioning", "type": "boolean"}
+    # agent.qbg.repositioning -- enable repositioning
+    repositioning: false
+    # @schema {"name": "agent.qbg.bulk_insert_chunk_size", "type": "integer", "minimum": 1}
+    # agent.qbg.bulk_insert_chunk_size -- bulk insert chunk size
+    bulk_insert_chunk_size: 100
+    # @schema {"name": "agent.qbg.default_pool_size", "type": "integer", "minimum": 0}
+    # agent.qbg.default_pool_size -- default create index batch pool size
+    default_pool_size: 10
+    # @schema {"name": "agent.qbg.default_radius", "type": "number"}
+    # agent.qbg.default_radius -- default radius used for search
+    default_radius: -1.0
+    # @schema {"name": "agent.qbg.default_epsilon", "type": "number"}
+    # agent.qbg.default_epsilon -- default epsilon used for search
+    default_epsilon: 0.1
+    # @schema {"name": "agent.qbg.auto_index_duration_limit", "type": "string"}
+    # agent.qbg.auto_index_duration_limit -- limit duration of automatic indexing
+    auto_index_duration_limit: 24h
+    # @schema {"name": "agent.qbg.auto_index_check_duration", "type": "string"}
+    # agent.qbg.auto_index_check_duration -- check duration of automatic indexing
+    auto_index_check_duration: 30m
+    # @schema {"name": "agent.qbg.auto_save_index_duration", "type": "string"}
+    # agent.qbg.auto_save_index_duration -- duration of automatic save index
+    auto_save_index_duration: 35m
+    # @schema {"name": "agent.qbg.auto_index_length", "type": "integer", "minimum": 0}
+    # agent.qbg.auto_index_length -- number of cache to trigger automatic indexing
+    auto_index_length: 100
+    # @schema {"name": "agent.qbg.initial_delay_max_duration", "type": "string"}
+    # agent.qbg.initial_delay_max_duration -- maximum duration for initial delay
+    initial_delay_max_duration: 3m
+    # @schema {"name": "agent.qbg.enable_in_memory_mode", "type": "boolean"}
+    # agent.qbg.enable_in_memory_mode -- in-memory mode enabled
+    enable_in_memory_mode: true
+    # @schema {"name": "agent.qbg.enable_copy_on_write", "type": "boolean"}
+    # agent.qbg.enable_copy_on_write -- enable copy on write saving for more stable backup
+    enable_copy_on_write: false
+    # @schema {"name": "agent.qbg.vqueue", "type": "object"}
+    vqueue:
+      # @schema {"name": "agent.qbg.vqueue.insert_buffer_pool_size", "type": "integer"}
+      # agent.qbg.vqueue.insert_buffer_pool_size -- insert slice pool buffer size
+      insert_buffer_pool_size: 10000
+      # @schema {"name": "agent.qbg.vqueue.delete_buffer_pool_size", "type": "integer"}
+      # agent.qbg.vqueue.delete_buffer_pool_size -- delete slice pool buffer size
+      delete_buffer_pool_size: 5000
+    # @schema {"name": "agent.qbg.kvsdb", "type": "object"}
+    kvsdb:
+      # @schema {"name": "agent.qbg.kvsdb.concurrency", "type": "integer"}
+      # agent.qbg.kvsdb.concurrency -- kvsdb processing concurrency
+      concurrency: 10
+      # @schema {"name": "agent.qbg.kvsdb.cache_capacity", "type": "integer"}
+      # agent.qbg.kvsdb.cache_capacity -- kvsdb cache capacity
+      cache_capacity: 10000
+      # @schema {"name": "agent.qbg.kvsdb.compression_factor", "type": "integer"}
+      # agent.qbg.kvsdb.compression_factor -- kvsdb compression factor
+      compression_factor: 9
+      # @schema {"name": "agent.qbg.kvsdb.use_compression", "type": "boolean"}
+      # agent.qbg.kvsdb.use_compression -- enable kvsdb compression
+      use_compression: true
+    # @schema {"name": "agent.qbg.broken_index_history_limit", "type": "integer", "minimum": 0}
+    # agent.qbg.broken_index_history_limit -- maximum number of broken index generations to backup
+    broken_index_history_limit: 3
+    # @schema {"name": "agent.qbg.error_buffer_limit", "type": "integer", "minimum": 1}
+    # agent.qbg.error_buffer_limit -- maximum number of core qbg error buffer pool size limit
+    error_buffer_limit: 10
+    # @schema {"name": "agent.qbg.is_readreplica", "type": "boolean"}
+    # agent.qbg.is_readreplica -- whether the qbg is read replica or not
+    is_readreplica: false
+    # @schema {"name": "agent.qbg.enable_export_index_info_to_k8s", "type": "boolean"}
+    # agent.qbg.enable_export_index_info_to_k8s -- enable export index info to k8s
+    enable_export_index_info_to_k8s: false
+    # @schema {"name": "agent.qbg.export_index_info_duration", "type": "string"}
+    # agent.qbg.export_index_info_duration -- duration of exporting index info
+    export_index_info_duration: 1m
+    # @schema {"name": "agent.qbg.enable_statistics", "type": "boolean"}
+    # agent.qbg.enable_statistics -- enable index statistics loading
+    enable_statistics: false
   # @schema {"name": "agent.sidecar", "type": "object"}
   sidecar:
     # @schema {"name": "agent.sidecar.enabled", "type": "boolean"}

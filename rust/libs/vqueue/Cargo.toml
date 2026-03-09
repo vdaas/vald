@@ -23,12 +23,11 @@ tokio = { version = "1", features = ["full"] }
 tokio-stream = "0.1"
 futures = "0.3"
 async-trait = "0.1"
-sled = "0.34"
+sled = { version = "0.34", features = ["compression"] }
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "2.0"
 moka = { version = "0.12", features = ["future"] }
-wincode = { version = "0.4.4", features = ["derive"] }
-
+wincode = { version = "0.4.5", features = ["derive"] }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

@@ -27,15 +27,15 @@ use tonic_types::StatusExt;
 
 use super::common::{bidirectional_stream, build_error_details};
 
-async fn remove(
-    s: Arc<RwLock<dyn algorithm::ANN>>,
+async fn remove<S: algorithm::ANN>(
+    s: Arc<RwLock<S>>,
     resource_type: &str,
     api_name: &str,
     name: &str,
     ip: &str,
     request: &remove::Request,
 ) -> Result<object::Location, Status> {
-    let config = match request.config.clone() {
+    let _config = match request.config {
         Some(cfg) => cfg,
         None => return Err(Status::invalid_argument("Missing configuration in request")),
     };
@@ -44,17 +44,14 @@ async fn remove(
         None => return Err(Status::invalid_argument("Missing ID in request")),
     };
     let uuid = id.id;
-    let hostname = cargo::util::hostname()?;
-    let domain = hostname.to_str().unwrap();
     {
         let mut s = s.write().await;
-        if uuid.len() == 0 {
+        if uuid.is_empty() {
             let err = Error::InvalidUUID { uuid: uuid.clone() };
             let resource_type = format!("{}/qbg.Remove", resource_type);
             let resource_name = format!("{}: {}({})", api_name, name, ip);
             let err_details = build_error_details(
                 err,
-                domain,
                 &uuid,
                 request.encode_to_vec(),
                 &resource_type,
@@ -69,23 +66,23 @@ async fn remove(
             warn!("{:?}", status);
             return Err(status);
         }
-        let result = s.remove(uuid.clone(), config.timestamp);
+        let result = s.remove(uuid.clone()).await;
         match result {
             Err(err) => {
                 let resource_type = format!("{}/qbg.Remove", resource_type);
                 let resource_name = format!("{}: {}({})", api_name, name, ip);
                 let request_bytes = request.encode_to_vec();
+                let err_msg = err.to_string();
+                let mut err_details = build_error_details(
+                    err_msg.clone(),
+                    &uuid,
+                    request_bytes,
+                    &resource_type,
+                    &resource_name,
+                    None,
+                );
                 let status = match err {
                     Error::FlushingIsInProgress {} => {
-                        let err_details = build_error_details(
-                            err,
-                            domain,
-                            &uuid,
-                            request_bytes,
-                            &resource_type,
-                            &resource_name,
-                            None,
-                        );
                         let status = Status::with_error_details(
                             Code::Aborted,
                             "Remove API aborted to process remove request due to flushing indices is in progress",
@@ -94,16 +91,7 @@ async fn remove(
                         warn!("{:?}", status);
                         status
                     }
-                    Error::ObjectIDNotFound { uuid: _ } => {
-                        let err_details = build_error_details(
-                            err,
-                            domain,
-                            &uuid,
-                            request_bytes,
-                            &resource_type,
-                            &resource_name,
-                            None,
-                        );
+                    Error::ObjectIDNotFound { .. } => {
                         let status = Status::with_error_details(
                             Code::NotFound,
                             format!("Remove API uuid {} not found", uuid),
@@ -112,16 +100,9 @@ async fn remove(
                         warn!("{:?}", status);
                         status
                     }
-                    Error::UUIDNotFound { uuid: _ } => {
-                        let err_details = build_error_details(
-                            err,
-                            domain,
-                            &uuid,
-                            request_bytes,
-                            &resource_type,
-                            &resource_name,
-                            Some("uuid"),
-                        );
+                    Error::UUIDNotFound { .. } => {
+                        err_details
+                            .set_bad_request(vec![tonic_types::FieldViolation::new("id", err_msg)]);
                         let status = Status::with_error_details(
                             Code::InvalidArgument,
                             format!("Remove API invalid argument for uuid \"{}\" detected", uuid),
@@ -131,15 +112,6 @@ async fn remove(
                         status
                     }
                     _ => {
-                        let err_details = build_error_details(
-                            err,
-                            domain,
-                            &uuid,
-                            request_bytes,
-                            &resource_type,
-                            &resource_name,
-                            None,
-                        );
                         let status = Status::with_error_details(
                             Code::Internal,
                             "Remove API failed",
@@ -153,7 +125,7 @@ async fn remove(
             }
             Ok(()) => Ok(object::Location {
                 name: name.to_owned(),
-                uuid: uuid,
+                uuid,
                 ips: vec![ip.to_owned()],
             }),
         }
@@ -161,7 +133,7 @@ async fn remove(
 }
 
 #[tonic::async_trait]
-impl remove_server::Remove for super::Agent {
+impl<S: algorithm::ANN + 'static> remove_server::Remove for super::Agent<S> {
     async fn remove(
         &self,
         request: tonic::Request<remove::Request>,
@@ -182,9 +154,98 @@ impl remove_server::Remove for super::Agent {
     #[doc = " A method to remove an indexed vector based on timestamp.\n"]
     async fn remove_by_timestamp(
         &self,
-        _request: tonic::Request<remove::TimestampRequest>,
+        request: tonic::Request<remove::TimestampRequest>,
     ) -> std::result::Result<tonic::Response<object::Locations>, tonic::Status> {
-        todo!()
+        info!("Recieved a request from {:?}", request.remote_addr());
+        let req = request.get_ref();
+        let timestamps = &req.timestamps;
+
+        let mut locations: Vec<object::Location> = Vec::new();
+        let mut errors: Vec<Status> = Vec::new();
+
+        // Build timestamp filter function
+        let timestamp_filter = |obj_ts: i64| -> bool {
+            for ts in timestamps {
+                let op = remove::timestamp::Operator::try_from(ts.operator)
+                    .unwrap_or(remove::timestamp::Operator::Eq);
+                let matches = match op {
+                    remove::timestamp::Operator::Eq => obj_ts == ts.timestamp,
+                    remove::timestamp::Operator::Ne => obj_ts != ts.timestamp,
+                    remove::timestamp::Operator::Ge => obj_ts >= ts.timestamp,
+                    remove::timestamp::Operator::Gt => obj_ts > ts.timestamp,
+                    remove::timestamp::Operator::Le => obj_ts <= ts.timestamp,
+                    remove::timestamp::Operator::Lt => obj_ts < ts.timestamp,
+                };
+                if !matches {
+                    return false;
+                }
+            }
+            true
+        };
+
+        // Collect UUIDs to remove based on timestamp filter
+        let uuids_to_remove: Vec<String>;
+        {
+            let s = self.s.read().await;
+            let mut matching_uuids = Vec::new();
+            s.list_object_func(|uuid, _vec, ts| {
+                if timestamp_filter(ts) {
+                    matching_uuids.push(uuid);
+                }
+                true
+            })
+            .await;
+            uuids_to_remove = matching_uuids;
+        }
+
+        // Remove each matching object
+        for uuid in uuids_to_remove {
+            let remove_req = remove::Request {
+                id: Some(object::Id { id: uuid.clone() }),
+                config: None,
+            };
+            match remove(
+                self.s.clone(),
+                &self.resource_type,
+                &self.api_name,
+                &self.name,
+                &self.ip,
+                &remove_req,
+            )
+            .await
+            {
+                Ok(loc) => locations.push(loc),
+                Err(e) => errors.push(e),
+            }
+        }
+
+        if !errors.is_empty() && locations.is_empty() {
+            // All removals failed
+            return Err(errors.into_iter().next().unwrap());
+        }
+
+        if locations.is_empty() {
+            let resource_type = format!("{}/qbg.RemoveByTimestamp", self.resource_type);
+            let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
+            let err = Error::IndexNotFound {};
+            let err_details = build_error_details(
+                err,
+                "",
+                req.encode_to_vec(),
+                &resource_type,
+                &resource_name,
+                None,
+            );
+            let status = Status::with_error_details(
+                Code::NotFound,
+                "RemoveByTimestamp API remove target not found",
+                err_details,
+            );
+            error!("{:?}", status);
+            return Err(status);
+        }
+
+        Ok(tonic::Response::new(object::Locations { locations }))
     }
 
     #[doc = " Server streaming response type for the StreamRemove method."]
@@ -232,8 +293,6 @@ impl remove_server::Remove for super::Agent {
     ) -> std::result::Result<tonic::Response<object::Locations>, tonic::Status> {
         info!("Recieved a request from {:?}", request.remote_addr());
         let mreq = request.get_ref();
-        let hostname = cargo::util::hostname()?;
-        let domain = hostname.to_str().unwrap();
         let uuids: Vec<String> = mreq
             .requests
             .clone()
@@ -245,7 +304,7 @@ impl remove_server::Remove for super::Agent {
             .collect();
         {
             let mut s = self.s.write().await;
-            let result = s.remove_multiple(uuids.clone());
+            let result = s.remove_multiple(uuids.clone()).await;
             match result {
                 Err(err) => {
                     let resource_type = self.resource_type.clone() + "/qbg.MultiRemove";
@@ -255,7 +314,6 @@ impl remove_server::Remove for super::Agent {
                         Error::FlushingIsInProgress {} => {
                             let err_details = build_error_details(
                                 err,
-                                domain,
                                 &uuids.join(","),
                                 request_bytes,
                                 &resource_type,
@@ -273,7 +331,6 @@ impl remove_server::Remove for super::Agent {
                         Error::ObjectIDNotFound { ref uuid } => {
                             let err_details = build_error_details(
                                 &err,
-                                domain,
                                 uuid,
                                 request_bytes,
                                 &resource_type,
@@ -289,10 +346,9 @@ impl remove_server::Remove for super::Agent {
                             warn!("{:?}", status);
                             status
                         }
-                        Error::UUIDNotFound { uuid: _ } => {
+                        Error::UUIDNotFound { .. } => {
                             let err_details = build_error_details(
                                 err,
-                                domain,
                                 &uuids.join(","),
                                 request_bytes,
                                 &resource_type,
@@ -313,7 +369,6 @@ impl remove_server::Remove for super::Agent {
                         _ => {
                             let err_details = build_error_details(
                                 err,
-                                domain,
                                 &uuids.join(","),
                                 request_bytes,
                                 &resource_type,

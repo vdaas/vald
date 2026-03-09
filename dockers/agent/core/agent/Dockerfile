@@ -91,7 +91,7 @@ RUN --mount=type=bind,target=.,rw \
     && mv "rust/target/release/${APP_NAME}" "/usr/bin/${APP_NAME}" \
     && rm -rf rust/target
 # skipcq: DOK-DL3026,DOK-DL3007
-FROM gcr.io/distroless/cc-debian12:nonroot
+FROM gcr.io/distroless/cc-debian13:nonroot
 LABEL maintainer="vdaas.org vald team <vald@vdaas.org>"
 COPY --from=builder /usr/bin/agent /usr/bin/agent
 # skipcq: DOK-DL3002

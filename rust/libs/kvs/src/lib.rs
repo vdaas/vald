@@ -24,11 +24,11 @@
 //! The implementation uses `sled` as its underlying persistent storage engine to leverage
 //! its robust transactional capabilities, ensuring data consistency for bidirectional mappings.
 
-use std::{path::Path, sync::Arc};
+use std::sync::Arc;
 
+/// Map implementations and shared map traits.
 pub mod map;
-
-use crate::map::{
+pub use crate::map::{
     base::MapBase,
     codec::{Codec, WincodeCodec},
     error::Error,
@@ -57,7 +57,7 @@ impl<M: MapBase<C = WincodeCodec>> MapBuilder<M, WincodeCodec> {
     pub fn new(path: impl AsRef<str>) -> Self {
         Self {
             path: path.as_ref().to_string(),
-            codec: WincodeCodec::default(),
+            codec: WincodeCodec,
             config: Config::default(),
             scan_on_startup: true,
             _marker: std::marker::PhantomData,
@@ -139,9 +139,7 @@ impl<M: MapBase<C = C>, C: Codec> MapBuilder<M, C> {
             tokio::fs::create_dir_all(dir).await?;
         }
 
-        let db =
-            tokio::task::spawn_blocking(move || self.config.path(Path::new(&self.path)).open())
-                .await??;
+        let db = tokio::task::spawn_blocking(move || self.config.path(&self.path).open()).await??;
 
         let map = Arc::new(M::new(db, self.scan_on_startup, self.codec)?);
 

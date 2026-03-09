@@ -120,7 +120,7 @@ k8s/vald/manifests:
 	helm template \
 	--values $(HELM_VALUES) \
 	--set defaults.image.tag=$(VERSION) \
-	--set agent.image.repository=$(CRORG)/$(AGENT_NGT_IMAGE) \
+	--set agent.image.repository=$(CRORG)/$(if $(findstring qbg,$(HELM_VALUES)),$(AGENT_IMAGE),$(AGENT_NGT_IMAGE)) \
 	--set agent.sidecar.image.repository=$(CRORG)/$(AGENT_SIDECAR_IMAGE) \
 	--set discoverer.image.repository=$(CRORG)/$(DISCOVERER_IMAGE) \
 	--set gateway.filter.image.repository=$(CRORG)/$(FILTER_GATEWAY_IMAGE) \
@@ -142,6 +142,7 @@ k8s/vald/deploy: k8s/vald/manifests
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent/ngt || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/agent/qbg || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent/readreplica || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway || true
@@ -173,6 +174,7 @@ k8s/vald/delete: k8s/vald/manifests
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index || true
 	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer || true
 	kubectl delete -f $(TEMP_DIR)/vald/templates/agent/readreplica || true
+	kubectl delete -f $(TEMP_DIR)/vald/templates/agent/qbg || true
 	kubectl delete -f $(TEMP_DIR)/vald/templates/agent/ngt || true
 	kubectl delete -f $(TEMP_DIR)/vald/templates/agent || true
 	kubectl delete -f $(TEMP_DIR)/vald/crds || true
@@ -242,7 +244,7 @@ k8s/vald-readreplica/deploy: k8s/vald/deploy
 	helm template \
 	--values $(HELM_VALUES) \
 	--set defaults.image.tag=$(VERSION) \
-	--set agent.image.repository=$(CRORG)/$(AGENT_NGT_IMAGE) \
+	--set agent.image.repository=$(CRORG)/$(if $(findstring qbg,$(HELM_VALUES)),$(AGENT_IMAGE),$(AGENT_NGT_IMAGE)) \
 	--set agent.sidecar.image.repository=$(CRORG)/$(AGENT_SIDECAR_IMAGE) \
 	--set discoverer.image.repository=$(CRORG)/$(DISCOVERER_IMAGE) \
 	--set gateway.filter.image.repository=$(CRORG)/$(FILTER_GATEWAY_IMAGE) \
@@ -272,7 +274,7 @@ k8s/vald-readreplica/delete: k8s/vald/delete
 	helm template \
 	--values $(HELM_VALUES) \
 	--set defaults.image.tag=$(VERSION) \
-	--set agent.image.repository=$(CRORG)/$(AGENT_NGT_IMAGE) \
+	--set agent.image.repository=$(CRORG)/$(if $(findstring qbg,$(HELM_VALUES)),$(AGENT_IMAGE),$(AGENT_NGT_IMAGE)) \
 	--set agent.sidecar.image.repository=$(CRORG)/$(AGENT_SIDECAR_IMAGE) \
 	--set discoverer.image.repository=$(CRORG)/$(DISCOVERER_IMAGE) \
 	--set gateway.filter.image.repository=$(CRORG)/$(FILTER_GATEWAY_IMAGE) \

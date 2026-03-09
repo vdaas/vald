@@ -190,7 +190,7 @@ define run-v2-e2e-crud-test
 	$(ROOTDIR)/tests/v2/e2e/crud \
 	-tags "e2e" \
 	-timeout $(E2E_TIMEOUT) \
-	-config $(E2E_CONFIG)
+	-config $2
 endef
 
 define run-e2e-crud-test

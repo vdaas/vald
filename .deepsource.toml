@@ -81,3 +81,7 @@ enabled = true
 [[analyzers]]
 name = "test-coverage"
 enabled = false
+
+[[analyzers]]
+name = "rust"
+enabled = true
