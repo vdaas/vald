@@ -147,7 +147,8 @@ mod tests {
             assert_eq!(v.as_slice(), ret.unwrap());
         }
 
-        for i in 1..COUNT + 1 { // skipcq: RS-W1003
+        for i in 1..COUNT + 1 {
+            // skipcq: RS-W1003
             let result = index.pin_mut().remove(i);
             assert!(result.is_ok());
         }

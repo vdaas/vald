@@ -1193,7 +1193,10 @@ mod tests {
         // Remove
         index.pin_mut().remove(1).unwrap();
         let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
-        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON).unwrap();
+        let mut search_results = index
+            .pin_mut()
+            .search(vec.as_slice(), K, RADIUS, EPSILON)
+            .unwrap();
         let ids: Vec<u32> = search_results
             .pin_mut()
             .into_iter()
@@ -1262,7 +1265,10 @@ mod tests {
 
         // Search
         let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
-        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON).unwrap();
+        let mut search_results = index
+            .pin_mut()
+            .search(vec.as_slice(), K, RADIUS, EPSILON)
+            .unwrap();
         let ids: Vec<u32> = search_results
             .pin_mut()
             .into_iter()
@@ -1279,7 +1285,10 @@ mod tests {
         // Remove
         index.pin_mut().remove(1).unwrap();
         let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
-        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON).unwrap();
+        let mut search_results = index
+            .pin_mut()
+            .search(vec.as_slice(), K, RADIUS, EPSILON)
+            .unwrap();
         let ids: Vec<u32> = search_results
             .pin_mut()
             .into_iter()
