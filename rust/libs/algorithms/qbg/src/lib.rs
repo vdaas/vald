@@ -1193,7 +1193,7 @@ mod tests {
         // Remove
         index.pin_mut().remove(1).unwrap();
         let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
-        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON)?;
+        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON).unwrap();
         let ids: Vec<u32> = search_results
             .pin_mut()
             .into_iter()
@@ -1224,18 +1224,23 @@ mod tests {
         p.pin_mut().set_number_of_blobs(0);
         p.pin_mut().init_qbg_build_parameters();
         p.pin_mut().set_number_of_objects(500);
-        let mut index = ffi::new_index(&path, p.pin_mut())?;
+        let index = ffi::new_index(&path, p.pin_mut());
+        assert!(index.is_ok());
+        let mut index = index.unwrap();
 
         // Append some objects
         for i in 0..100 {
             let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|x| (x + i) as f32).collect();
-            index.pin_mut().append(vec.as_slice())?;
+            let result = index.pin_mut().append(vec.as_slice());
+            assert!(result.is_ok());
         }
-        index.pin_mut().save_index()?;
+        let result = index.pin_mut().save_index();
+        assert!(result.is_ok());
         index.pin_mut().close_index();
 
         // Build the index
-        index.pin_mut().build_index(&path, p.pin_mut())?;
+        let result = index.pin_mut().build_index(&path, p.pin_mut());
+        assert!(result.is_ok());
 
         // Now test with prebuilt index
         let mut index = ffi::new_prebuilt_index(&path, true).unwrap();
@@ -1257,7 +1262,7 @@ mod tests {
 
         // Search
         let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
-        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON)?;
+        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON).unwrap();
         let ids: Vec<u32> = search_results
             .pin_mut()
             .into_iter()
@@ -1274,7 +1279,7 @@ mod tests {
         // Remove
         index.pin_mut().remove(1).unwrap();
         let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
-        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON)?;
+        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON).unwrap();
         let ids: Vec<u32> = search_results
             .pin_mut()
             .into_iter()
@@ -1333,7 +1338,7 @@ mod tests {
     fn test_index() {
         // New
         println!("create an empty index...");
-        let temp_dir = tempdir()?;
+        let temp_dir = tempdir().unwrap();
         let path = temp_dir.path().join("index").to_string_lossy().to_string();
         let mut p = Property::new();
         p.init_qbg_construction_parameters();
