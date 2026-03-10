@@ -245,6 +245,13 @@ jobs:
       - name: Run E2E CRUD
         shell: bash
         run: |
+
+
+          kubectl get pods
+          kubectl describe pods
+          kubectl logs -l app=vald-meta-gateway -c wait-for-gateway-lb
+
+
           make hack/benchmark/assets/dataset/${{ env.DATASET }}
           if [[ "${{ matrix.environment }}" == "mirror" ]]; then
             export E2E_TARGET_NAMESPACE=vald-01
