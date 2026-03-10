@@ -282,8 +282,6 @@ jobs:
           kubectl get pods
           kubectl describe pods
           kubectl describe pvc
-          kubectl get svc
-          kubectl logs -l app=vald-meta-gateway -c wait-for-gateway-lb
 
   slack-notification:
     timeout-minutes: 30
