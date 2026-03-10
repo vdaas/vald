@@ -727,7 +727,7 @@ initContainers
       {{- else if eq .target "gateway-lb" }}
       {{- $lbGatewayReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.gateway.lb.server_config.healths.readiness.port }}
       {{- $lbGatewayReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
-      until [ "$(wget --server-response --spider --quiet http://{{ $.Values.gateway.lb.name }}.{{ $.namespace }}.svc.cluster.local:{{ $lbGatewayReadinessPort }}{{ $lbGatewayReadinessPath }} 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+      until [ "$(wget --server-response --spider --quiet http://{{ $.Values.gateway.lb.name }}.{{ $.namespace }}.svc.cluster.local:{{ $lbGatewayReadinessPort }}{{ $lbGatewayReadinessPath }} 2>&1 | tee /dev/stderr | awk 'NR==1{print $2}')" == "200" ]; do
       {{- else if .untilCondition }}
       until [ {{ .untilCondition }} ]; do
       {{- else if .whileCondition }}
