@@ -42,7 +42,7 @@ gateway:
     gateway_config:
       metadata_store:
         addrs:
-          - "tikv-pd.default.svc.cluster.local:2379"
+          - "http://tikv-pd.default.svc.cluster.local:2379"
 agent:
   minReplicas: 3
   maxReplicas: 10
