@@ -280,11 +280,13 @@ jobs:
         if: ${{ always() }}
         run: |
           kubectl get nodes
+          kubectl get svc
           kubectl get pods
           kubectl describe pods
           kubectl describe pvc
           kubectl logs -l app=vald-meta-gateway
           kubectl logs tikv-pd-0
+          kubectl logs svc/tikv-discovery
 
   slack-notification:
     timeout-minutes: 30
