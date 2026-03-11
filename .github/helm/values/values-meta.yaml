@@ -90,7 +90,7 @@ tidbCluster:
   timezone: UTC
   pd:
     baseImage: pingcap/pd
-    replicas: 3
+    replicas: 1
     requests:
       storage: "10Gi"
       cpu: ""
@@ -101,7 +101,7 @@ tidbCluster:
     config: {}
   tikv:
     baseImage: pingcap/tikv
-    replicas: 3
+    replicas: 2
     requests:
       storage: "100Gi"
       cpu: ""
