@@ -191,6 +191,7 @@ jobs:
           helm_extra_options: "${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}"
           values: .github/helm/values/values-meta.yaml
           wait_for_selector: "app=vald-meta-gateway"
+          wait_for_timeout: "600s"
 
       - name: Create Helm options for vald-helm-operator
         if: ${{ matrix.deployment == 'helm-operator' }}
