@@ -149,6 +149,7 @@ k8s/vald/deploy: k8s/vald/manifests
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/meta || true
 	kubectl apply -f $(TEMP_DIR)/vald/crds --server-side || true
+	sleep 60
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/mirror || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/index/job/correction || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/index/job/creation || true
