@@ -92,7 +92,7 @@ tidbCluster:
     baseImage: pingcap/pd
     replicas: 1
     requests:
-      storage: "10Gi"
+      storage: "2Gi"
       cpu: ""
       memory: ""
     limits:
@@ -103,7 +103,7 @@ tidbCluster:
     baseImage: pingcap/tikv
     replicas: 1
     requests:
-      storage: ""
+      storage: "2Gi"
       cpu: ""
       memory: ""
     limits:
