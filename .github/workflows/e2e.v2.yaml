@@ -284,6 +284,7 @@ jobs:
           kubectl describe pods
           kubectl describe pvc
           kubectl logs -l app=vald-meta-gateway
+          kubectl logs tikv-pd-0
 
   slack-notification:
     timeout-minutes: 30
