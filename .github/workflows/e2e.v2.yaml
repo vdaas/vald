@@ -262,6 +262,7 @@ jobs:
           fi
           kubectl get pods
           make e2e/v2 E2E_CONFIG=$(pwd)/tests/v2/e2e/assets/${{ matrix.scenario }}.yaml \
+            E2E_TIMEOUT=10m \
             E2E_PARALLELISM="4" \
             E2E_INSERT_COUNT="10000" \
             E2E_EXPECTED_INDEX="30000" \
@@ -283,8 +284,11 @@ jobs:
           kubectl get pods
           kubectl describe pods
           kubectl describe pvc
+          echo "##############################"
           kubectl logs -l app=vald-meta-gateway
-          kubectl logs tikv-pd-0
+          echo "##############################"
+          kubectl logs -l app=tikv -p --tail=20
+          echo "##############################"
           kubectl logs svc/tikv-discovery
 
   slack-notification:

@@ -30,6 +30,7 @@ spec:
   replicas: {{ $tc.tikv.replicas }}
   selector:
     matchLabels:
+      app: tikv
       app.kubernetes.io/component: tikv
       app.kubernetes.io/instance: {{ $tc.name }}
       #app.kubernetes.io/managed-by: tidb-operator
@@ -37,6 +38,7 @@ spec:
   template:
     metadata:
       labels:
+        app: tikv
         app.kubernetes.io/component: tikv
         app.kubernetes.io/instance: {{ $tc.name }}
         #app.kubernetes.io/managed-by: tidb-operator

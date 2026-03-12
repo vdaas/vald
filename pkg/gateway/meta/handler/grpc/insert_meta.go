@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -49,10 +50,10 @@ func (s *server) InsertWithMetadata(
 	}
 	err = s.metadataClient.Put(ctx, []byte(req.GetVector().GetId()), req.GetVector().GetMetadata())
 	if err != nil {
-		st, _ := status.FromError(err)
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to InsertWithMetadata")
 		if st != nil && span != nil {
 			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
