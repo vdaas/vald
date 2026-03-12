@@ -19,6 +19,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
+    app: discovery
     app.kubernetes.io/component: discovery
     app.kubernetes.io/instance: {{ $tc.name }}
     #app.kubernetes.io/managed-by: tidb-operator

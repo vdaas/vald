@@ -101,9 +101,9 @@ tidbCluster:
     config: {}
   tikv:
     baseImage: pingcap/tikv
-    replicas: 1
+    replicas: 3
     requests:
-      storage: "2Gi"
+      storage: "20Gi"
       cpu: ""
       memory: ""
     limits:

@@ -19,6 +19,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   labels:
+    app: pd
     app.kubernetes.io/component: pd
     app.kubernetes.io/instance: {{ $tc.name }}
     #app.kubernetes.io/managed-by: tidb-operator
