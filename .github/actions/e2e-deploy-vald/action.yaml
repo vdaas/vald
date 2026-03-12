@@ -99,11 +99,16 @@ runs:
         make k8s/vald/deploy HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS}"
         sleep 3
 
-        kubectl wait --for=condition=Ready pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
+        kubectl get pods
+        kubectl describe pods --selector="${WAIT_FOR_SELECTOR}"
+
+        kubectl wait --for=condition=Ready pod -l "${WAIT_FOR_SELECTOR}" --timeout=${WAIT_FOR_TIMEOUT}
 
         kubectl get pods
+        kubectl describe pods --selector="${WAIT_FOR_SELECTOR}"
+        kubectl logs -l app=tikv -p
 
-        podname=`kubectl get pods --selector=${WAIT_FOR_SELECTOR} | tail -1 | awk '{print $1}'`
+        podname=`kubectl get pods --selector="${WAIT_FOR_SELECTOR}" | tail -1 | awk '{print $1}'`
         echo "POD_NAME=${podname}" >> $GITHUB_OUTPUT
       env:
         VALUES: ${{ inputs.values }}

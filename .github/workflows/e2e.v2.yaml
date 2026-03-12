@@ -65,7 +65,7 @@ jobs:
             const baseInclude = [
               { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "null" },
               { scenario: "unary_crud",  deployment: "helm-chart", cluster: "k3d", environment: "null" },
-              { scenario: "unary_crud",  deployment: "helm-chart", cluster: "k3d", environment: "meta" },
+              { scenario: "unary_crud_meta",  deployment: "helm-chart", cluster: "k3d", environment: "meta" },
               { scenario: "multi_crud",  deployment: "helm-chart", cluster: "k3d", environment: "null" },
               { scenario: "rollout",     deployment: "helm-chart", cluster: "k3d", environment: "null" },
               { scenario: "stream_crud", deployment: "helm-operator", cluster: "k3d", environment: "null" },
@@ -190,7 +190,8 @@ jobs:
         with:
           helm_extra_options: "${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}"
           values: .github/helm/values/values-meta.yaml
-          wait_for_selector: "app=vald-lb-gateway"
+          wait_for_selector: "app in (vald-meta-gateway, pd, tikv)"
+          wait_for_timeout: "600s"
 
       - name: Create Helm options for vald-helm-operator
         if: ${{ matrix.deployment == 'helm-operator' }}
@@ -245,12 +246,23 @@ jobs:
       - name: Run E2E CRUD
         shell: bash
         run: |
+
+
+          kubectl get pods
+          kubectl describe pods
+          kubectl logs -l app=vald-meta-gateway -c wait-for-gateway-lb
+
+
           make hack/benchmark/assets/dataset/${{ env.DATASET }}
           if [[ "${{ matrix.environment }}" == "mirror" ]]; then
             export E2E_TARGET_NAMESPACE=vald-01
           fi
+          if [[ "${{ matrix.environment }}" == "meta" ]]; then
+            export E2E_TARGET_NAME=vald-meta-gateway
+          fi
           kubectl get pods
           make e2e/v2 E2E_CONFIG=$(pwd)/tests/v2/e2e/assets/${{ matrix.scenario }}.yaml \
+            E2E_TIMEOUT=10m \
             E2E_PARALLELISM="4" \
             E2E_INSERT_COUNT="10000" \
             E2E_EXPECTED_INDEX="30000" \
@@ -268,9 +280,16 @@ jobs:
         if: ${{ always() }}
         run: |
           kubectl get nodes
+          kubectl get svc
           kubectl get pods
           kubectl describe pods
           kubectl describe pvc
+          echo "##############################"
+          kubectl logs -l app=vald-meta-gateway
+          echo "##############################"
+          kubectl logs -l app=tikv -p --tail=20
+          echo "##############################"
+          kubectl logs svc/tikv-discovery
 
   slack-notification:
     timeout-minutes: 30

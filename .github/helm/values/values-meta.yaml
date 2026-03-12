@@ -30,6 +30,19 @@ gateway:
         memory: 50Mi
     gateway_config:
       index_replica: 3
+  meta:
+    enabled: true
+    minReplicas: 1
+    hpa:
+      enabled: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 50Mi
+    gateway_config:
+      metadata_store:
+        addrs:
+          - "http://tikv-pd.default.svc.cluster.local:2379"
 agent:
   minReplicas: 3
   maxReplicas: 10
@@ -77,23 +90,27 @@ tidbCluster:
   timezone: UTC
   pd:
     baseImage: pingcap/pd
-    replicas: 3
+    replicas: 1
     requests:
-      storage: "10Gi"
-      cpu: ""
-      memory: ""
+      storage: "2Gi"
+      cpu: "100m"
+      memory: "50Mi"
     limits:
       cpu: "1"
-      memory: "2Gi"
+      memory: "1Gi"
     config: {}
   tikv:
     baseImage: pingcap/tikv
-    replicas: 3
+    replicas: 1
     requests:
-      storage: "100Gi"
-      cpu: ""
-      memory: ""
+      storage: "20Gi"
+      cpu: "100m"
+      memory: "50Mi"
     limits:
-      cpu: "2"
-      memory: "8Gi"
-    config: {}
+      cpu: "1"
+      memory: "1Gi"
+    config:
+      rocksdb:
+        max_open_files: 40960
+      raftdb:
+        max_open_files: 40960
