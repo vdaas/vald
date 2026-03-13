@@ -636,15 +636,21 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 	if p == nil || p.closing.Load() {
 		return nil, false
 	}
-	sz := p.Size()
+	sz := p.poolSize.Load()
 	if sz == 0 {
 		return nil, false
 	}
+
 	slots := p.getSlots()
 	slen := uint64(len(slots))
 	start := p.currentIndex.Add(1)
+
 	for i := uint64(0); i < sz; i++ {
-		idx := (start + i) % sz
+		idx := start + i
+		if idx >= sz {
+			idx = idx % sz
+		}
+
 		if idx < slen {
 			pc = slots[idx].Load()
 		} else if slen > 0 {
@@ -677,7 +683,11 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 	rc := make([]uint64, 0, sz) // refreshedConnection list
 	// Second pass: if no healthy connection found, try to refresh empty slots or shutdown connections.
 	for i := uint64(0); i < sz; i++ {
-		idx := (start + i) % sz
+		idx := start + i
+		if idx >= sz {
+			idx = idx % sz
+		}
+
 		if idx < slen {
 			pc = slots[idx].Load()
 		} else if slen > 0 {
@@ -685,6 +695,7 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 		} else {
 			_, pc = p.load(idx)
 		}
+
 		if pc == nil || pc.conn == nil || pc.conn.GetState() == connectivity.Shutdown {
 			p.refreshConn(egctx, eg, idx, pc, p.addr)
 			rc = append(rc, idx)
@@ -712,6 +723,7 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 		} else {
 			_, pc = p.load(idx)
 		}
+
 		if pc != nil && pc.conn != nil && pc.conn.GetState() != connectivity.Shutdown {
 			return pc, true
 		}
