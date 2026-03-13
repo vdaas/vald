@@ -326,7 +326,9 @@ func (p *pool) loop(
 	ctx context.Context, fn func(ctx context.Context, idx uint64, pc *poolConn) bool,
 ) (err error) {
 	var count uint64
-	for idx := range p.poolSize.Load() {
+	slots := p.getSlots()
+	slen := uint64(len(slots))
+	for idx := uint64(0); idx < p.poolSize.Load(); idx++ {
 		select {
 		case <-ctx.Done():
 			err = ctx.Err()
@@ -336,7 +338,16 @@ func (p *pool) loop(
 			return nil
 		default:
 			count++
-			ridx, pc := p.load(idx)
+			var pc *poolConn
+			ridx := idx
+			if idx < slen {
+				pc = slots[idx].Load()
+			} else if slen > 0 {
+				ridx = slen - 1
+				pc = slots[ridx].Load()
+			} else {
+				ridx, pc = p.load(idx)
+			}
 			if !fn(ctx, ridx, pc) {
 				return nil
 			}
@@ -629,10 +640,18 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 	if sz == 0 {
 		return nil, false
 	}
+	slots := p.getSlots()
+	slen := uint64(len(slots))
 	start := p.currentIndex.Add(1)
-	for i := range sz {
+	for i := uint64(0); i < sz; i++ {
 		idx := (start + i) % sz
-		_, pc = p.load(idx)
+		if idx < slen {
+			pc = slots[idx].Load()
+		} else if slen > 0 {
+			pc = slots[slen-1].Load()
+		} else {
+			_, pc = p.load(idx)
+		}
 
 		if pc != nil && pc.conn != nil {
 			state := pc.conn.GetState()
@@ -657,9 +676,15 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 	eg, egctx := errgroup.New(ctx)
 	rc := make([]uint64, 0, sz) // refreshedConnection list
 	// Second pass: if no healthy connection found, try to refresh empty slots or shutdown connections.
-	for i := range sz {
+	for i := uint64(0); i < sz; i++ {
 		idx := (start + i) % sz
-		_, pc = p.load(idx)
+		if idx < slen {
+			pc = slots[idx].Load()
+		} else if slen > 0 {
+			pc = slots[slen-1].Load()
+		} else {
+			_, pc = p.load(idx)
+		}
 		if pc == nil || pc.conn == nil || pc.conn.GetState() == connectivity.Shutdown {
 			p.refreshConn(egctx, eg, idx, pc, p.addr)
 			rc = append(rc, idx)
@@ -680,7 +705,13 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 
 	// Third pass return connected pool conn
 	for _, idx := range rc {
-		_, pc = p.load(idx)
+		if idx < slen {
+			pc = slots[idx].Load()
+		} else if slen > 0 {
+			pc = slots[slen-1].Load()
+		} else {
+			_, pc = p.load(idx)
+		}
 		if pc != nil && pc.conn != nil && pc.conn.GetState() != connectivity.Shutdown {
 			return pc, true
 		}
