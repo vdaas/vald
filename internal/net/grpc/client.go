@@ -887,18 +887,17 @@ func (g *gRPCClient) executeRPC(
 	})
 	if err != nil {
 		// not-retryable errors
-		if errors.IsAny(err, context.Canceled,
-			context.DeadlineExceeded,
-			errors.ErrCircuitBreakerOpenState,
-			errors.ErrGRPCClientConnNotFound("*"),
-			errors.ErrGRPCClientNotFound) ||
-			(p.IsIPConn() &&
-				errors.Is(err, errors.ErrGRPCClientConnNotFound(addr))) {
+		if errors.Is(err, context.Canceled) ||
+			errors.Is(err, context.DeadlineExceeded) ||
+			errors.Is(err, errors.ErrCircuitBreakerOpenState) ||
+			errors.Is(err, errors.ErrGRPCClientNotFound) ||
+			errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) ||
+			(p.IsIPConn() && errors.Is(err, errors.ErrGRPCClientConnNotFound(addr))) {
 			return nil, false, err
 		}
 		st, ok := status.FromError(err)
 		if !ok || st == nil {
-			if errors.IsAny(err, context.Canceled, context.DeadlineExceeded) {
+			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 				return nil, false, err
 			}
 			return nil, p.IsHealthy(ctx), err
