@@ -138,26 +138,12 @@ type pool struct {
 	endPort uint16
 	// startPort is the starting port number for port scanning range.
 	startPort uint16
-
-	// oldConnCloseDelay is the duration to wait before closing an old connection after a new one is established.
-	oldConnCloseDelay time.Duration
-	// dialTimeout is the timeout duration for establishing a new connection.
-	dialTimeout time.Duration
-
-	// addr is the full target address (host:port).
-	addr string
-	// host is the target hostname or IP address.
-	host string
-
-	// dnsHash stores the hash of resolved IP addresses to detect DNS changes.
-	dnsHash atomic.Pointer[string]
-
-	// bo is the backoff strategy for dialing retries.
-	bo backoff.Backoff
-	// errGroup is used for managing asynchronous tasks such as graceful connection closure.
-	errGroup errgroup.Group
-	// dialOpts contains the gRPC dial options used when creating new connections.
-	dialOpts []DialOption
+	// enableDNSLookup indicates whether DNS lookup is enabled for the target host.
+	enableDNSLookup bool
+	// isIPAddr indicates whether the target address is a raw IP address (no DNS lookup needed).
+	isIPAddr bool
+	// enableMetrics enables connection pool metrics
+	enableMetrics bool // Whether to enable metrics collection.
 }
 
 // Default pool size.
@@ -352,7 +338,9 @@ func (p *pool) loop(
 	}
 
 	var count uint64
-	for idx := range sz {
+	slots := p.getSlots()
+	slen := uint64(len(slots))
+	for idx := uint64(0); idx < p.poolSize.Load(); idx++ {
 		select {
 		case <-ctx.Done():
 			err = ctx.Err()
@@ -362,8 +350,17 @@ func (p *pool) loop(
 			return nil
 		default:
 			count++
-			pc := slots[idx].Load()
-			if !fn(ctx, idx, pc) {
+			var pc *poolConn
+			ridx := idx
+			if idx < slen {
+				pc = slots[idx].Load()
+			} else if slen > 0 {
+				ridx = slen - 1
+				pc = slots[ridx].Load()
+			} else {
+				ridx, pc = p.load(idx)
+			}
+			if !fn(ctx, ridx, pc) {
 				return nil
 			}
 		}
@@ -420,25 +417,10 @@ func (p *pool) refreshConn(
 	} else {
 		log.Debugf("connection pool %d/%d len %d is empty, establish new pool member connection to %s", idx+1, p.Size(), p.Len(), addr)
 	}
-
-	dialsPtr := p.dials.Load()
-	if dialsPtr == nil {
-		return
-	}
-	dials := *dialsPtr
-	if idx >= uint64(len(dials)) {
-		return
-	}
-
-	if !dials[idx].CompareAndSwap(false, true) {
-		return
-	}
-
 	if eg == nil {
 		eg = p.errGroup
 	}
 	eg.Go(func() error {
-		defer dials[idx].Store(false)
 		newConn, err := p.dial(ctx, idx, addr)
 		if err != nil {
 			if pc != nil && pc.conn != nil {
@@ -450,14 +432,11 @@ func (p *pool) refreshConn(
 					pc.addr, idx+1, p.Size(), p.Len(), state.String(), addr)
 
 				if pc.conn != nil {
-					p.errGroup.Go(func() error {
-						log.Debugf("closing unhealthy connection pool %d/%d len %d for addr: %s", idx+1, p.Size(), p.Len(), pc.addr)
-						err := pc.Close(context.WithoutCancel(ctx), p.oldConnCloseDelay)
-						if err != nil {
-							log.Errorf("failed to close connection pool %d/%d addr = %s\terror = %v", idx+1, p.Size(), pc.addr, err)
-						}
-						return nil
-					})
+					log.Debugf("closing unhealthy connection pool %d/%d len %d for addr: %s", idx+1, p.Size(), p.Len(), pc.addr)
+					err := pc.Close(ctx, p.oldConnCloseDelay)
+					if err != nil {
+						log.Errorf("failed to close connection pool %d/%d addr = %s\terror = %v", idx+1, p.Size(), pc.addr, err)
+					}
 					return nil
 				}
 			}
@@ -473,14 +452,11 @@ func (p *pool) refreshConn(
 		p.store(idx, &poolConn{conn: newConn, addr: addr})
 
 		if pc != nil && pc.conn != nil {
-			p.errGroup.Go(func() error {
-				log.Debugf("closing unhealthy connection pool %d/%d len %d for addr: %s", idx+1, p.Size(), p.Len(), pc.addr)
-				err := pc.Close(context.WithoutCancel(ctx), p.oldConnCloseDelay)
-				if err != nil {
-					log.Errorf("failed to close connection pool %d/%d addr = %s\terror = %v", idx+1, p.Size(), pc.addr, err)
-				}
-				return nil
-			})
+			log.Debugf("closing unhealthy connection pool %d/%d len %d for addr: %s", idx+1, p.Size(), p.Len(), pc.addr)
+			err := pc.Close(ctx, p.oldConnCloseDelay)
+			if err != nil {
+				log.Errorf("failed to close connection pool %d/%d addr = %s\terror = %v", idx+1, p.Size(), pc.addr, err)
+			}
 		}
 		return nil
 	})
@@ -682,11 +658,22 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 	if sz == 0 {
 		return nil, false
 	}
-
+	slots := p.getSlots()
+	slen := uint64(len(slots))
 	start := p.currentIndex.Add(1)
-	for i := range sz {
-		idx := (start + i) % sz
-		pc = slots[idx].Load()
+	for i := uint64(0); i < sz; i++ {
+		idx := start + i
+		if idx >= sz {
+			idx = idx % sz
+		}
+
+		if idx < slen {
+			pc = slots[idx].Load()
+		} else if slen > 0 {
+			pc = slots[slen-1].Load()
+		} else {
+			_, pc = p.load(idx)
+		}
 
 		if pc != nil && pc.conn != nil {
 			state := pc.conn.GetState()
@@ -711,9 +698,20 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 	eg, egctx := errgroup.New(ctx)
 	rc := make([]uint64, 0, sz) // refreshedConnection list
 	// Second pass: if no healthy connection found, try to refresh empty slots or shutdown connections.
-	for i := range sz {
-		idx := (start + i) % sz
-		pc = slots[idx].Load()
+	for i := uint64(0); i < sz; i++ {
+		idx := start + i
+		if idx >= sz {
+			idx = idx % sz
+		}
+
+		if idx < slen {
+			pc = slots[idx].Load()
+		} else if slen > 0 {
+			pc = slots[slen-1].Load()
+		} else {
+			_, pc = p.load(idx)
+		}
+
 		if pc == nil || pc.conn == nil || pc.conn.GetState() == connectivity.Shutdown {
 			p.refreshConn(egctx, eg, idx, pc, p.addr)
 			rc = append(rc, idx)
@@ -734,8 +732,13 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 
 	// Third pass return connected pool conn
 	for _, idx := range rc {
-		// we should reload the connection from the pool, because the connection might be updated by refreshConn
-		_, pc = p.load(idx)
+		if idx < slen {
+			pc = slots[idx].Load()
+		} else if slen > 0 {
+			pc = slots[slen-1].Load()
+		} else {
+			_, pc = p.load(idx)
+		}
 		if pc != nil && pc.conn != nil && pc.conn.GetState() != connectivity.Shutdown {
 			return pc, true
 		}
@@ -810,18 +813,21 @@ func (p *pool) IsHealthy(ctx context.Context) bool {
 				}
 			} else {
 				log.Debugf("unhealthy connection detected for %s pool %d/%d len %d is unhealthy (state: %s)",
-					pc.addr, idx+1, p.Size(), sz, state.String())
+					pc.addr, idx+1, p.Size(), p.Len(), state.String())
 			}
 		} else {
 			// Do not block health check with dial
 			p.refreshConn(ctx, p.errGroup, idx, pc, p.addr)
 			// Assume unhealthy if nil for now
-			log.Debugf("nil pool connection detected for %s pool %d/%d len %d is unhealthy", p.addr, idx+1, p.Size(), sz)
+			log.Debugf("nil pool connection detected for %s pool %d/%d len %d is unhealthy", p.addr, idx+1, p.Size(), p.Len())
 		}
-	}
-
+		return true
+	})
 	if p.enableMetrics {
 		metrics.Store(p.addr, healthyCount)
+	}
+	if err != nil {
+		log.Debugf("health check loop for addr=%s returned error: %v", p.addr, err)
 	}
 	if healthyCount == 0 {
 		log.Warnf("no connection pool member is healthy for addr=%s size=%d, len=%d", p.addr, p.Size(), sz)

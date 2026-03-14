@@ -1069,6 +1069,7 @@ func (g *gRPCClient) Connect(
 				return g.resolveDNS
 			}()),
 			pool.WithEnableMetrics(g.enablePoolMetrics),
+			pool.WithErrGroup(g.eg),
 		}
 		if g.bo != nil {
 			opts = append(opts, pool.WithBackoff(g.bo))
