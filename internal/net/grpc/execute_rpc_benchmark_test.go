@@ -81,3 +81,46 @@ func BenchmarkExecuteRPC(b *testing.B) {
 	}
 	b.StopTimer()
 }
+
+func BenchmarkExecuteRPCParallel(b *testing.B) {
+	eg := errgroup.Get()
+	addr, closer := startEchoServer(b, eg)
+	defer closer()
+
+	ctx := context.Background()
+	client := grpc.New(
+		"benchmark-client",
+		grpc.WithAddrs(addr),
+		grpc.WithDialOptions(
+			ggrpc.WithTransportCredentials(insecure.NewCredentials()),
+		),
+		grpc.WithConnectionPoolSize(1),
+	)
+	defer client.Close(ctx)
+
+	for range 10 {
+		_, err := client.Connect(ctx, addr)
+		if err == nil {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+
+	req := &payload.Insert_Request{}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			_, err := client.Do(ctx, addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
+				c := vald.NewValdClient(conn)
+				return c.Insert(ctx, req)
+			})
+			if err != nil {
+				b.Errorf("Do failed: %v", err)
+			}
+		}
+	})
+	b.StopTimer()
+}
