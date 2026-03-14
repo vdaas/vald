@@ -924,7 +924,9 @@ func (g *gRPCClient) do(
 		log.Warnf("gRPCClient.do operation failed, gRPC connection pool for %s is invalid,\terror: %v", addr, err)
 		return nil, err
 	}
-	sctx, span := trace.StartSpan(ctx, apiName+"/Client.Do/"+addr) // Reused name to avoid too many traces
+	sctx := ctx
+	var span trace.Span
+	sctx, span = trace.StartSpan(ctx, apiName+"/Client.do/"+addr)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -954,14 +956,6 @@ func (g *gRPCClient) do(
 		data, _, err = g.executeRPC(sctx, p, addr, f)
 	}
 	if err != nil {
-		if span != nil {
-			span.RecordError(err)
-			st, ok := status.FromError(err)
-			if ok && st != nil {
-				span.SetAttributes(trace.FromGRPCStatus(st.Code(), err.Error())...)
-			}
-			span.SetStatus(trace.StatusError, err.Error())
-		}
 		return nil, errors.ErrRPCCallFailed(addr, err)
 	}
 	return data, nil
