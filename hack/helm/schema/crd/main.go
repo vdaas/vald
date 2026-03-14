@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io/fs"
 	"strconv"
+	strings0 "strings"
 
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
@@ -243,22 +244,22 @@ func newSpec(schemas map[string]*Schema) *Spec {
 }
 
 func indent(text string, nindent int) string {
-	indent := ""
+	var indent strings0.Builder
 
 	for range nindent {
-		indent += " "
+		indent.WriteString(" ")
 	}
 
 	if text[len(text)-1:] == "\n" {
 		var result strings.Builder
 		for _, j := range strings.Split(text[:len(text)-1], "\n") {
-			result.WriteString(indent + j + "\n")
+			result.WriteString(indent.String() + j + "\n")
 		}
 		return result.String()
 	}
 	result := ""
 	for _, j := range strings.Split(strings.TrimRight(text, "\n"), "\n") {
-		result += indent + j + "\n"
+		result += indent.String() + j + "\n"
 	}
 	return result[:len(result)-1]
 }
