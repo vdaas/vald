@@ -547,6 +547,9 @@ func (g *gRPCClient) RangeConcurrent(
 	concurrency int,
 	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error,
 ) (err error) {
+	if g.conns.Len() == 0 {
+		return errors.ErrGRPCClientConnNotFound("*")
+	}
 	sctx, span := trace.StartSpan(ctx, apiName+"/Client.RangeConcurrent")
 	defer func() {
 		if span != nil {

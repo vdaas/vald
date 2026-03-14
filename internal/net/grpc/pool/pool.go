@@ -649,10 +649,15 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 	slots := *p.connSlots.Load()
 	slen := uint64(len(slots))
 	start := p.currentIndex.Add(1)
-	for i := range sz {
+	if start >= sz {
+		if p.currentIndex.CompareAndSwap(start, 0) {
+			start = 0
+		}
+	}
+	for i := uint64(0); i < sz; i++ {
 		idx := start + i
 		if idx >= sz {
-			idx = idx % sz
+			idx -= sz
 		}
 
 		if idx < slen {
@@ -686,10 +691,10 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 	eg, egctx := errgroup.New(ctx)
 	rc := make([]uint64, 0, sz) // refreshedConnection list
 	// Second pass: if no healthy connection found, try to refresh empty slots or shutdown connections.
-	for i := range sz {
+	for i := uint64(0); i < sz; i++ {
 		idx := start + i
 		if idx >= sz {
-			idx = idx % sz
+			idx -= sz
 		}
 
 		if idx < slen {
