@@ -636,15 +636,13 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 	if p == nil || p.closing.Load() {
 		return nil, false
 	}
-	sz := p.poolSize.Load()
+	sz := p.Size()
 	if sz == 0 {
 		return nil, false
 	}
-
 	slots := p.getSlots()
 	slen := uint64(len(slots))
 	start := p.currentIndex.Add(1)
-
 	for i := uint64(0); i < sz; i++ {
 		idx := start + i
 		if idx >= sz {
@@ -723,7 +721,6 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 		} else {
 			_, pc = p.load(idx)
 		}
-
 		if pc != nil && pc.conn != nil && pc.conn.GetState() != connectivity.Shutdown {
 			return pc, true
 		}
