@@ -1,4 +1,4 @@
-package grpc
+package grpc_test
 
 import (
 	"context"
@@ -6,8 +6,8 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/discoverer"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	"github.com/vdaas/vald/internal/net"
-	"github.com/vdaas/vald/internal/sync"
+	grpc_client "github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/servers/server"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -17,11 +17,11 @@ const (
 	DefaultPoolSize   = 4
 )
 
-type server struct {
+type testServer struct {
 	discoverer.DiscovererServer
 }
 
-func (*server) Pods(context.Context, *payload.Discoverer_Request) (*payload.Info_Pods, error) {
+func (*testServer) Pods(context.Context, *payload.Discoverer_Request) (*payload.Info_Pods, error) {
 	return &payload.Info_Pods{
 		Pods: []*payload.Info_Pod{
 			{
@@ -31,44 +31,38 @@ func (*server) Pods(context.Context, *payload.Discoverer_Request) (*payload.Info
 	}, nil
 }
 
-func (*server) Nodes(context.Context, *payload.Discoverer_Request) (*payload.Info_Nodes, error) {
+func (*testServer) Nodes(context.Context, *payload.Discoverer_Request) (*payload.Info_Nodes, error) {
 	return new(payload.Info_Nodes), nil
 }
 
-func ListenAndServe(b *testing.B, addr string) func() {
+func listenAndServe(b *testing.B, addr string) func() {
 	b.Helper()
-	lis, err := net.Listen("tcp", addr)
+	srv, err := server.New(
+		server.WithServerMode(server.GRPC),
+		server.WithHost("127.0.0.1"),
+		server.WithPort(5001),
+		server.WithGRPCRegisterar(func(srv *grpc.Server) {
+			discoverer.RegisterDiscovererServer(srv, new(testServer))
+		}),
+	)
 	if err != nil {
 		b.Error(err)
 	}
 
-	// skipcq: GO-S0902
-	s := grpc.NewServer()
-	discoverer.RegisterDiscovererServer(s, new(server))
-
-	wg := new(sync.WaitGroup)
-	wg.Add(1)
-
-	go func() {
-		wg.Done()
-		if err := s.Serve(lis); err != nil {
-			b.Error(err)
-		}
-	}()
-
-	wg.Wait()
+	errCh := make(chan error, 1)
+	go srv.ListenAndServe(context.Background(), errCh)
 	return func() {
-		s.Stop()
+		srv.Shutdown(context.Background())
 	}
 }
 
 func BenchmarkClient_ExecuteRPC(b *testing.B) {
-	defer ListenAndServe(b, DefaultServerAddr)()
+	defer listenAndServe(b, DefaultServerAddr)()
 
 	ctx := b.Context()
-	client := New("test",
-		WithAddrs(DefaultServerAddr),
-		WithDialOptions(grpc.WithTransportCredentials(insecure.NewCredentials())),
+	client := grpc_client.New("test",
+		grpc_client.WithAddrs(DefaultServerAddr),
+		grpc_client.WithDialOptions(grpc.WithTransportCredentials(insecure.NewCredentials())),
 	)
 	defer client.Close(ctx)
 
@@ -83,7 +77,7 @@ func BenchmarkClient_ExecuteRPC(b *testing.B) {
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
-		client.(*gRPCClient).executeRPC(ctx, conn, DefaultServerAddr, func(ctx context.Context, conn *ClientConn, copts ...CallOption) (any, error) {
+		grpc_client.ExecuteRPC(client, ctx, conn, DefaultServerAddr, func(ctx context.Context, conn *grpc_client.ClientConn, copts ...grpc_client.CallOption) (any, error) {
 			return discoverer.NewDiscovererClient(conn).Nodes(ctx, new(payload.Discoverer_Request))
 		})
 	}
