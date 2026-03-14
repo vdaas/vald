@@ -850,33 +850,14 @@ func (g *gRPCClient) Do(
 	f func(ctx context.Context,
 		conn *ClientConn, copts ...CallOption) (any, error),
 ) (data any, err error) {
-	sctx, span := trace.StartSpan(ctx, apiName+"/Client.Do/"+addr)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
 	p, ok := g.conns.Load(addr)
 	if !ok || p == nil {
 		g.crl.Store(addr, true)
 		err = errors.ErrGRPCClientConnNotFound(addr)
 		log.Warnf("gRPCClient.Do operation failed, gRPC connection pool for %s is invalid,\terror: %v", addr, err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
 		return nil, err
 	}
-	data, err = g.do(sctx, p, addr, f)
-	if err != nil && span != nil {
-		span.RecordError(err)
-		st, ok := status.FromError(err)
-		if ok && st != nil {
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), err.Error())...)
-		}
-		span.SetStatus(trace.StatusError, err.Error())
-	}
+	data, err = g.do(ctx, p, addr, f)
 	return data, err
 }
 
@@ -888,13 +869,13 @@ func (g *gRPCClient) executeRPC(
 	addr string,
 	f func(ctx context.Context, conn *ClientConn, copts ...CallOption) (any, error),
 ) (res any, retryable bool, err error) {
-	err = p.Do(ctx, func(conn *ClientConn) (err error) {
-		if conn == nil {
-			return errors.ErrGRPCClientConnNotFound(addr)
-		}
+	conn, ok := p.Get(ctx)
+	if !ok || conn == nil {
+		err = errors.ErrGRPCClientConnNotFound(addr)
+	} else {
 		res, err = f(ctx, conn, g.copts...)
-		return err
-	})
+	}
+
 	if err != nil {
 		// not-retryable errors
 		if errors.IsAny(err, context.Canceled,
@@ -943,7 +924,7 @@ func (g *gRPCClient) do(
 		log.Warnf("gRPCClient.do operation failed, gRPC connection pool for %s is invalid,\terror: %v", addr, err)
 		return nil, err
 	}
-	sctx, span := trace.StartSpan(ctx, apiName+"/Client.do/"+addr)
+	sctx, span := trace.StartSpan(ctx, apiName+"/Client.Do/"+addr) // Reused name to avoid too many traces
 	defer func() {
 		if span != nil {
 			span.End()

@@ -640,7 +640,7 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 	if sz == 0 {
 		return nil, false
 	}
-	slots := p.getSlots()
+	slots := *p.connSlots.Load()
 	slen := uint64(len(slots))
 	start := p.currentIndex.Add(1)
 	for i := uint64(0); i < sz; i++ {
