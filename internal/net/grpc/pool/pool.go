@@ -648,10 +648,13 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 	}
 	slots := *p.connSlots.Load()
 	slen := uint64(len(slots))
+
 	start := p.currentIndex.Add(1)
 	if start >= sz {
 		if p.currentIndex.CompareAndSwap(start, 0) {
 			start = 0
+		} else {
+			start %= sz
 		}
 	}
 	for i := uint64(0); i < sz; i++ {
