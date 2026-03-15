@@ -608,6 +608,7 @@ format/go: \
 		$(GOBIN)/crlfmt -w -diff=false {} && \
 		$(BINDIR)/golangci-lint fmt --config $(ROOTDIR)/.golangci.json {}'; \
 	fi
+	go fix $(ROOTDIR)/...
 	@echo "Go formatting complete."
 
 .PHONY: format/go/test
