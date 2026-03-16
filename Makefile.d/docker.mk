@@ -27,6 +27,7 @@ docker/build: \
 	docker/build/buildbase \
 	docker/build/buildkit \
 	docker/build/buildkit-syft-scanner \
+	docker/build/ci-container \
 	docker/build/dev-container \
 	docker/build/discoverer-k8s \
 	docker/build/example-client \
@@ -58,6 +59,7 @@ docker/xpanes/build:
 	docker/build/buildbase \
 	docker/build/buildkit \
 	docker/build/buildkit-syft-scanner \
+	docker/build/ci-container \
 	docker/build/dev-container \
 	docker/build/discoverer-k8s \
 	docker/build/example-client \
@@ -310,6 +312,18 @@ docker/build/buildkit-syft-scanner:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/buildkit/syft/scanner/Dockerfile" \
 	IMAGE=$(BUILDKIT_SYFT_SCANNER_IMAGE) \
 	DEFAULT_BUILDKIT_SYFT_SCANNER_IMAGE="docker/buildkit-syft-scanner:edge" \
+	docker/build/image
+
+.PHONY: docker/name/ci-container
+## print ci-container image name
+docker/name/ci-container:
+	@echo "$(ORG)/$(CI_CONTAINER_IMAGE)"
+
+.PHONY: docker/build/ci-container
+## build ci-container image
+docker/build/ci-container:
+	@make DOCKERFILE="$(ROOTDIR)/.github/ci/Dockerfile" \
+	IMAGE=$(CI_CONTAINER_IMAGE) \
 	docker/build/image
 
 .PHONY: docker/name/dev-container
