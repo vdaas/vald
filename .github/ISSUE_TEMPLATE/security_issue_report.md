@@ -17,10 +17,10 @@ assignees: ""
 <!--- Please change the versions below along with your environment -->
 
 - Vald Version: v1.7.17
-- Go Version: v1.26.0
-- Rust Version: v1.93.1
-- Docker Version: v29.2.1
-- Kubernetes Version: v1.35.1
-- Helm Version: v4.1.1
-- NGT Version: v2.6.0
-- Faiss Version: v1.13.2
+- Go Version: v1.26.1
+- Rust Version: v1.94.0
+- Docker Version: v29.3.0
+- Kubernetes Version: v1.35.2
+- Helm Version: v4.1.3
+- NGT Version: v2.7.0
+- Faiss Version: v1.14.1

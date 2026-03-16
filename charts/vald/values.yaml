@@ -711,7 +711,11 @@ defaults:
         # @schema {"name": "defaults.grpc.client.connection_pool.old_conn_close_duration", "type": "string"}
         # defaults.grpc.client.connection_pool.old_conn_close_duration -- makes delay before gRPC client connection closing during connection pool rebalance
         old_conn_close_duration: "2m"
+        # @schema {"name": "defaults.grpc.client.connection_pool.enable_metrics", "type": "boolean"}
+        # defaults.grpc.client.connection_pool.enable_metrics -- enables gRPC client connection pool metrics
+        enable_metrics: false
       # @schema {"name": "defaults.grpc.client.backoff", "type": "object", "anchor": "backoff"}
+      #
       backoff:
         # @schema {"name": "defaults.grpc.client.backoff.initial_duration", "type": "string"}
         # defaults.grpc.client.backoff.initial_duration -- gRPC client backoff initial duration

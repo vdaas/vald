@@ -628,11 +628,7 @@ func Test_server_SaveIndex(t *testing.T) {
 				return err
 			}
 
-			// FIXME: remove these 2 lines after migrating Config.Timestamp to Vector.Timestamp
-			wantVec := ir.GetVector()
-			wantVec.Timestamp = obj.Timestamp
-
-			if !reflect.DeepEqual(obj, wantVec) {
+			if !reflect.DeepEqual(obj, ir.GetVector()) {
 				return errors.Errorf("vector is not match, got: %v, want: %v", obj, ir)
 			}
 		}
@@ -674,6 +670,10 @@ func Test_server_SaveIndex(t *testing.T) {
 			irs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, 1, dim, nil)
 			if err != nil {
 				t.Error(err)
+			}
+			ts := time.Now().UnixNano()
+			for _, req := range irs.GetRequests() {
+				req.GetVector().Timestamp = ts
 			}
 
 			return test{
@@ -718,6 +718,10 @@ func Test_server_SaveIndex(t *testing.T) {
 			irs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, 100, dim, nil)
 			if err != nil {
 				t.Error(err)
+			}
+			ts := time.Now().UnixNano()
+			for _, req := range irs.GetRequests() {
+				req.GetVector().Timestamp = ts
 			}
 
 			return test{
@@ -764,6 +768,10 @@ func Test_server_SaveIndex(t *testing.T) {
 			irs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, dim, nil)
 			if err != nil {
 				t.Error(err)
+			}
+			ts := time.Now().UnixNano()
+			for _, req := range irs.GetRequests() {
+				req.GetVector().Timestamp = ts
 			}
 
 			return test{
@@ -1161,10 +1169,6 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 				return err
 			}
 
-			// FIXME: remove these 2 lines after migrating Config.Timestamp to Vector.Timestamp
-			wantVec := ir.GetVector()
-			wantVec.Timestamp = obj.Timestamp
-
 			if !reflect.DeepEqual(obj, ir.GetVector()) {
 				return errors.Errorf("vector is not match, got: %v, want: %v", obj, ir)
 			}
@@ -1234,6 +1238,10 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 					if ir, err = request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig); err != nil {
 						t.Error(err)
 					}
+					ts := time.Now().UnixNano()
+					for _, req := range ir.GetRequests() {
+						req.GetVector().Timestamp = ts
+					}
 					if _, err := s.MultiInsert(ctx, ir); err != nil {
 						t.Error(err)
 					}
@@ -1271,6 +1279,10 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 					var err error
 					if ir, err = request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig); err != nil {
 						t.Error(err)
+					}
+					ts := time.Now().UnixNano()
+					for _, req := range ir.GetRequests() {
+						req.GetVector().Timestamp = ts
 					}
 					if _, err := s.MultiInsert(ctx, ir); err != nil {
 						t.Error(err)
@@ -1631,6 +1643,10 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 					var err error
 					if ir, err = request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, dim, defaultInsertConfig); err != nil {
 						t.Error(err)
+					}
+					ts := time.Now().UnixNano()
+					for _, req := range ir.GetRequests() {
+						req.GetVector().Timestamp = ts
 					}
 					if _, err := s.MultiInsert(ctx, ir); err != nil {
 						t.Error(err)

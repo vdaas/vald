@@ -90,15 +90,15 @@ jobs:
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@1b168cd39490f61582a9beae412bb7057a6b2c4e # v4.31.8
+        uses: github/codeql-action/init@0d579ffd059c29b07949a3cce3983f0780820c98 # v4.32.6
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
           config-file: ./.github/codeql/codeql-config.yaml
       - name: Autobuild
         if: matrix.language == 'go'
-        uses: github/codeql-action/autobuild@1b168cd39490f61582a9beae412bb7057a6b2c4e # v4.31.8
+        uses: github/codeql-action/autobuild@0d579ffd059c29b07949a3cce3983f0780820c98 # v4.32.6
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@1b168cd39490f61582a9beae412bb7057a6b2c4e # v4.31.8
+        uses: github/codeql-action/analyze@0d579ffd059c29b07949a3cce3983f0780820c98 # v4.32.6
         with:
           category: "/language:${{matrix.language}}"
