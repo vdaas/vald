@@ -22,7 +22,7 @@
 - Docker Version: v29.2.1
 - Kubernetes Version: v1.35.1
 - Helm Version: v4.1.1
-- NGT Version: v2.5.1
+- NGT Version: v2.6.0
 - Faiss Version: v1.13.2
 
 ### Checklist
