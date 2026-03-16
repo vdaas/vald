@@ -66,9 +66,8 @@ func (s *server) ResourceStatsDetail(
 					sspan.End()
 				}
 			}()
-			var stats *payload.Info_Stats_ResourceStats
-			stats, err = vc.ResourceStats(sctx, new(payload.Empty), copts...)
-			if err != nil {
+			stats, callErr := vc.ResourceStats(sctx, new(payload.Empty), copts...)
+			if callErr != nil {
 				var (
 					attrs trace.Attributes
 					st    *status.Status
@@ -76,22 +75,22 @@ func (s *server) ResourceStatsDetail(
 					code  codes.Code
 				)
 				switch {
-				case errors.Is(err, context.Canceled),
-					errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
+				case errors.Is(callErr, context.Canceled),
+					errors.Is(callErr, errors.ErrRPCCallFailed(target, context.Canceled)):
 					attrs = trace.StatusCodeCancelled(
 						errdetails.ValdGRPCResourceTypePrefix +
 							"/" + statsPackageName + "." + resourceStatsDetailRPCName + ".BroadCast/" +
-							target + " canceled: " + err.Error())
+							target + " canceled: " + callErr.Error())
 					code = codes.Canceled
-				case errors.Is(err, context.DeadlineExceeded),
-					errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
+				case errors.Is(callErr, context.DeadlineExceeded),
+					errors.Is(callErr, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
 					attrs = trace.StatusCodeDeadlineExceeded(
 						errdetails.ValdGRPCResourceTypePrefix +
 							"/" + statsPackageName + "." + resourceStatsDetailRPCName + ".BroadCast/" +
-							target + " deadline_exceeded: " + err.Error())
+							target + " deadline_exceeded: " + callErr.Error())
 					code = codes.DeadlineExceeded
 				default:
-					st, msg, err = status.ParseError(err, codes.NotFound, "error "+resourceStatsDetailRPCName+" API",
+					st, msg, callErr = status.ParseError(callErr, codes.NotFound, "error "+resourceStatsDetailRPCName+" API",
 						&errdetails.ResourceInfo{
 							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/" + statsPackageName + "." + resourceStatsDetailRPCName + ".BroadCast/" + target,
 							ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
@@ -104,18 +103,18 @@ func (s *server) ResourceStatsDetail(
 					attrs = trace.FromGRPCStatus(code, msg)
 				}
 				if sspan != nil {
-					sspan.RecordError(err)
+					sspan.RecordError(callErr)
 					sspan.SetAttributes(attrs...)
-					sspan.SetStatus(trace.StatusError, err.Error())
+					sspan.SetStatus(trace.StatusError, callErr.Error())
 				}
-				if err != nil && st != nil &&
+				if callErr != nil && st != nil &&
 					code != codes.Canceled &&
 					code != codes.DeadlineExceeded &&
 					code != codes.InvalidArgument &&
 					code != codes.NotFound &&
 					code != codes.OK &&
 					code != codes.Unimplemented {
-					return err
+					return callErr
 				}
 				return nil
 			}
