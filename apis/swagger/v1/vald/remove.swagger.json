@@ -38,7 +38,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1RemoveRequest"
+              "$ref": "#/definitions/RemoveRequest"
             }
           }
         ],
@@ -71,7 +71,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1RemoveMultiRequest"
+              "$ref": "#/definitions/RemoveMultiRequest"
             }
           }
         ],
@@ -104,7 +104,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1RemoveTimestampRequest"
+              "$ref": "#/definitions/RemoveTimestampRequest"
             }
           }
         ],

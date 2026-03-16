@@ -52,6 +52,7 @@ SearchObject RPC is the method to search object(s) similar to request object.
     Search.AggregationAlgorithm aggregation_algorithm = 9;
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
+    int32 edge_size = 12;
   }
 
   message Filter.Target {
@@ -96,6 +97,7 @@ SearchObject RPC is the method to search object(s) similar to request object.
     | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
     |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
     |        nprobe         | uint32                      |       | Search nprobe.                               |
+    |       edge_size       | int32                       |       | Search edge size                             |
 
   - Filter.Target
 
@@ -187,6 +189,7 @@ Each Search request and response are independent.
     Search.AggregationAlgorithm aggregation_algorithm = 9;
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
+    int32 edge_size = 12;
   }
 
   message Filter.Target {
@@ -237,6 +240,7 @@ Each Search request and response are independent.
     | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
     |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
     |        nprobe         | uint32                      |       | Search nprobe.                               |
+    |       edge_size       | int32                       |       | Search edge size                             |
 
   - Filter.Target
 
@@ -337,6 +341,7 @@ Please be careful that the size of the request exceeds the limit.
     Search.AggregationAlgorithm aggregation_algorithm = 9;
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
+    int32 edge_size = 12;
   }
 
   message Filter.Target {
@@ -381,6 +386,7 @@ Please be careful that the size of the request exceeds the limit.
     | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
     |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
     |        nprobe         | uint32                      |       | Search nprobe.                               |
+    |       edge_size       | int32                       |       | Search edge size                             |
 
   - Filter.Target
 

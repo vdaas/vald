@@ -9660,6 +9660,9 @@ impl serde::Serialize for search::Config {
         if self.nprobe != 0 {
             len += 1;
         }
+        if self.edge_size != 0 {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("payload.v1.Search.Config", len)?;
         if !self.request_id.is_empty() {
             struct_ser.serialize_field("requestId", &self.request_id)?;
@@ -9704,6 +9707,9 @@ impl serde::Serialize for search::Config {
         if self.nprobe != 0 {
             struct_ser.serialize_field("nprobe", &self.nprobe)?;
         }
+        if self.edge_size != 0 {
+            struct_ser.serialize_field("edgeSize", &self.edge_size)?;
+        }
         struct_ser.end()
     }
 }
@@ -9730,6 +9736,8 @@ impl<'de> serde::Deserialize<'de> for search::Config {
             "aggregationAlgorithm",
             "ratio",
             "nprobe",
+            "edge_size",
+            "edgeSize",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -9745,6 +9753,7 @@ impl<'de> serde::Deserialize<'de> for search::Config {
             AggregationAlgorithm,
             Ratio,
             Nprobe,
+            EdgeSize,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -9784,6 +9793,7 @@ impl<'de> serde::Deserialize<'de> for search::Config {
                             }
                             "ratio" => Ok(GeneratedField::Ratio),
                             "nprobe" => Ok(GeneratedField::Nprobe),
+                            "edgeSize" | "edge_size" => Ok(GeneratedField::EdgeSize),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -9814,6 +9824,7 @@ impl<'de> serde::Deserialize<'de> for search::Config {
                 let mut aggregation_algorithm__ = None;
                 let mut ratio__ = None;
                 let mut nprobe__ = None;
+                let mut edge_size__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::RequestId => {
@@ -9903,6 +9914,15 @@ impl<'de> serde::Deserialize<'de> for search::Config {
                                     .0,
                             );
                         }
+                        GeneratedField::EdgeSize => {
+                            if edge_size__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("edgeSize"));
+                            }
+                            edge_size__ = Some(
+                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
+                                    .0,
+                            );
+                        }
                     }
                 }
                 Ok(search::Config {
@@ -9917,6 +9937,7 @@ impl<'de> serde::Deserialize<'de> for search::Config {
                     aggregation_algorithm: aggregation_algorithm__.unwrap_or_default(),
                     ratio: ratio__,
                     nprobe: nprobe__.unwrap_or_default(),
+                    edge_size: edge_size__.unwrap_or_default(),
                 })
             }
         }
