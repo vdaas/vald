@@ -3710,6 +3710,10 @@
                       "type": "boolean",
                       "description": "enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance"
                     },
+                    "enable_metrics": {
+                      "type": "boolean",
+                      "description": "enables gRPC client connection pool metrics"
+                    },
                     "enable_rebalance": {
                       "type": "boolean",
                       "description": "enables gRPC client connection pool rebalance"
@@ -7154,6 +7158,10 @@
                               "type": "boolean",
                               "description": "enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance"
                             },
+                            "enable_metrics": {
+                              "type": "boolean",
+                              "description": "enables gRPC client connection pool metrics"
+                            },
                             "enable_rebalance": {
                               "type": "boolean",
                               "description": "enables gRPC client connection pool rebalance"
@@ -7565,6 +7573,10 @@
                           "type": "boolean",
                           "description": "enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance"
                         },
+                        "enable_metrics": {
+                          "type": "boolean",
+                          "description": "enables gRPC client connection pool metrics"
+                        },
                         "enable_rebalance": {
                           "type": "boolean",
                           "description": "enables gRPC client connection pool rebalance"
@@ -7964,6 +7976,10 @@
                             "enable_dns_resolver": {
                               "type": "boolean",
                               "description": "enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance"
+                            },
+                            "enable_metrics": {
+                              "type": "boolean",
+                              "description": "enables gRPC client connection pool metrics"
                             },
                             "enable_rebalance": {
                               "type": "boolean",
@@ -9923,6 +9939,10 @@
                               "type": "boolean",
                               "description": "enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance"
                             },
+                            "enable_metrics": {
+                              "type": "boolean",
+                              "description": "enables gRPC client connection pool metrics"
+                            },
                             "enable_rebalance": {
                               "type": "boolean",
                               "description": "enables gRPC client connection pool rebalance"
@@ -10321,6 +10341,10 @@
                             "enable_dns_resolver": {
                               "type": "boolean",
                               "description": "enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance"
+                            },
+                            "enable_metrics": {
+                              "type": "boolean",
+                              "description": "enables gRPC client connection pool metrics"
                             },
                             "enable_rebalance": {
                               "type": "boolean",
@@ -10721,6 +10745,10 @@
                             "enable_dns_resolver": {
                               "type": "boolean",
                               "description": "enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance"
+                            },
+                            "enable_metrics": {
+                              "type": "boolean",
+                              "description": "enables gRPC client connection pool metrics"
                             },
                             "enable_rebalance": {
                               "type": "boolean",
@@ -12685,6 +12713,10 @@
                         "enable_dns_resolver": {
                           "type": "boolean",
                           "description": "enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance"
+                        },
+                        "enable_metrics": {
+                          "type": "boolean",
+                          "description": "enables gRPC client connection pool metrics"
                         },
                         "enable_rebalance": {
                           "type": "boolean",
@@ -14827,6 +14859,10 @@
                               "type": "boolean",
                               "description": "enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance"
                             },
+                            "enable_metrics": {
+                              "type": "boolean",
+                              "description": "enables gRPC client connection pool metrics"
+                            },
                             "enable_rebalance": {
                               "type": "boolean",
                               "description": "enables gRPC client connection pool rebalance"
@@ -15225,6 +15261,10 @@
                             "enable_dns_resolver": {
                               "type": "boolean",
                               "description": "enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance"
+                            },
+                            "enable_metrics": {
+                              "type": "boolean",
+                              "description": "enables gRPC client connection pool metrics"
                             },
                             "enable_rebalance": {
                               "type": "boolean",
@@ -15639,6 +15679,10 @@
                         "enable_dns_resolver": {
                           "type": "boolean",
                           "description": "enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance"
+                        },
+                        "enable_metrics": {
+                          "type": "boolean",
+                          "description": "enables gRPC client connection pool metrics"
                         },
                         "enable_rebalance": {
                           "type": "boolean",
@@ -17408,6 +17452,10 @@
                               "type": "boolean",
                               "description": "enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance"
                             },
+                            "enable_metrics": {
+                              "type": "boolean",
+                              "description": "enables gRPC client connection pool metrics"
+                            },
                             "enable_rebalance": {
                               "type": "boolean",
                               "description": "enables gRPC client connection pool rebalance"
@@ -17806,6 +17854,10 @@
                             "enable_dns_resolver": {
                               "type": "boolean",
                               "description": "enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance"
+                            },
+                            "enable_metrics": {
+                              "type": "boolean",
+                              "description": "enables gRPC client connection pool metrics"
                             },
                             "enable_rebalance": {
                               "type": "boolean",
@@ -19581,6 +19633,10 @@
                               "type": "boolean",
                               "description": "enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance"
                             },
+                            "enable_metrics": {
+                              "type": "boolean",
+                              "description": "enables gRPC client connection pool metrics"
+                            },
                             "enable_rebalance": {
                               "type": "boolean",
                               "description": "enables gRPC client connection pool rebalance"
@@ -19979,6 +20035,10 @@
                             "enable_dns_resolver": {
                               "type": "boolean",
                               "description": "enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance"
+                            },
+                            "enable_metrics": {
+                              "type": "boolean",
+                              "description": "enables gRPC client connection pool metrics"
                             },
                             "enable_rebalance": {
                               "type": "boolean",
@@ -21758,6 +21818,10 @@
                               "type": "boolean",
                               "description": "enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance"
                             },
+                            "enable_metrics": {
+                              "type": "boolean",
+                              "description": "enables gRPC client connection pool metrics"
+                            },
                             "enable_rebalance": {
                               "type": "boolean",
                               "description": "enables gRPC client connection pool rebalance"
@@ -22156,6 +22220,10 @@
                             "enable_dns_resolver": {
                               "type": "boolean",
                               "description": "enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance"
+                            },
+                            "enable_metrics": {
+                              "type": "boolean",
+                              "description": "enables gRPC client connection pool metrics"
                             },
                             "enable_rebalance": {
                               "type": "boolean",
@@ -25648,6 +25716,10 @@
                               "type": "boolean",
                               "description": "enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance"
                             },
+                            "enable_metrics": {
+                              "type": "boolean",
+                              "description": "enables gRPC client connection pool metrics"
+                            },
                             "enable_rebalance": {
                               "type": "boolean",
                               "description": "enables gRPC client connection pool rebalance"
@@ -26046,6 +26118,10 @@
                             "enable_dns_resolver": {
                               "type": "boolean",
                               "description": "enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance"
+                            },
+                            "enable_metrics": {
+                              "type": "boolean",
+                              "description": "enables gRPC client connection pool metrics"
                             },
                             "enable_rebalance": {
                               "type": "boolean",

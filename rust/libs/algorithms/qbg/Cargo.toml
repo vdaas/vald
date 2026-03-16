@@ -19,7 +19,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-anyhow = "1.0.101"
+anyhow = "1.0.102"
 cxx = { version = "1.0.194", features = ["c++20"] }
 
 [build-dependencies]

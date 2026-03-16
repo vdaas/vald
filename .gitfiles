@@ -1347,6 +1347,7 @@ internal/net/dialer_test.go
 internal/net/doc.go
 internal/net/grpc/admin/admin.go
 internal/net/grpc/admin/doc.go
+internal/net/grpc/benchmark_test.go
 internal/net/grpc/client.go
 internal/net/grpc/client_test.go
 internal/net/grpc/codec.go
@@ -1363,6 +1364,7 @@ internal/net/grpc/doc.go
 internal/net/grpc/errdetails/doc.go
 internal/net/grpc/errdetails/errdetails.go
 internal/net/grpc/errdetails/errdetails_test.go
+internal/net/grpc/execute_rpc_benchmark_test.go
 internal/net/grpc/handler.go
 internal/net/grpc/health/doc.go
 internal/net/grpc/health/health.go
@@ -1397,6 +1399,7 @@ internal/net/grpc/pool/doc.go
 internal/net/grpc/pool/option.go
 internal/net/grpc/pool/option_test.go
 internal/net/grpc/pool/pool.go
+internal/net/grpc/pool/pool_bench_gethealthy_test.go
 internal/net/grpc/pool/pool_bench_test.go
 internal/net/grpc/pool/pool_test.go
 internal/net/grpc/proto/doc.go
