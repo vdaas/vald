@@ -59,7 +59,7 @@ var (
 				Id:        id,
 				Vector:    vec,
 				Timestamp: ts,
-				Metadata: metadata,
+				Metadata:  metadata,
 			},
 			Config: &payload.Insert_Config{
 				Timestamp:            ts,
@@ -99,7 +99,7 @@ var (
 				Id:        id,
 				Vector:    vec,
 				Timestamp: ts,
-				Metadata: metadata,
+				Metadata:  metadata,
 			},
 			Config: &payload.Update_Config{
 				Timestamp:            ts,
@@ -139,7 +139,7 @@ var (
 				Id:        id,
 				Vector:    vec,
 				Timestamp: ts,
-				Metadata: metadata,
+				Metadata:  metadata,
 			},
 			Config: &payload.Upsert_Config{
 				Timestamp:            ts,

@@ -2457,6 +2457,7 @@ tests/v2/e2e/assets/readreplica.yaml
 tests/v2/e2e/assets/rollout.yaml
 tests/v2/e2e/assets/stream_crud.yaml
 tests/v2/e2e/assets/unary_crud.yaml
+tests/v2/e2e/assets/unary_crud_meta.yaml
 tests/v2/e2e/config/config.go
 tests/v2/e2e/config/enums.go
 tests/v2/e2e/crud/agent_test.go
