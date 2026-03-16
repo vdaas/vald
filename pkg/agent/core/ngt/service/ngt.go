@@ -56,8 +56,8 @@ import (
 type (
 	NGT interface {
 		Start(ctx context.Context) <-chan error
-		Search(ctx context.Context, vec []float32, size uint32, epsilon, radius float32) (*payload.Search_Response, error)
-		SearchByID(ctx context.Context, uuid string, size uint32, epsilon, radius float32) ([]float32, *payload.Search_Response, error)
+		Search(ctx context.Context, vec []float32, size uint32, epsilon, radius float32, edgeSize int32) (*payload.Search_Response, error)
+		SearchByID(ctx context.Context, uuid string, size uint32, epsilon, radius float32, edgeSize int32) ([]float32, *payload.Search_Response, error)
 		LinearSearch(ctx context.Context, vec []float32, size uint32) (*payload.Search_Response, error)
 		LinearSearchByID(ctx context.Context, uuid string, size uint32) ([]float32, *payload.Search_Response, error)
 		Insert(uuid string, vec []float32) (err error)
@@ -959,7 +959,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 }
 
 func (n *ngt) Search(
-	ctx context.Context, vec []float32, size uint32, epsilon, radius float32,
+	ctx context.Context, vec []float32, size uint32, epsilon, radius float32, edgeSize int32,
 ) (res *payload.Search_Response, err error) {
 	if n.IsFlushing() {
 		return nil, errors.ErrFlushingIsInProgress
@@ -967,7 +967,7 @@ func (n *ngt) Search(
 	if n.IsIndexing() {
 		return nil, errors.ErrCreateIndexingIsInProgress
 	}
-	sr, err := n.core.Search(ctx, vec, int(size), epsilon, radius)
+	sr, err := n.core.Search(ctx, vec, int(size), epsilon, radius, edgeSize)
 	if err != nil {
 		if n.IsIndexing() {
 			return nil, errors.ErrCreateIndexingIsInProgress
@@ -983,7 +983,7 @@ func (n *ngt) Search(
 }
 
 func (n *ngt) SearchByID(
-	ctx context.Context, uuid string, size uint32, epsilon, radius float32,
+	ctx context.Context, uuid string, size uint32, epsilon, radius float32, edgeSize int32,
 ) (vec []float32, dst *payload.Search_Response, err error) {
 	if n.IsFlushing() {
 		return nil, nil, errors.ErrFlushingIsInProgress
@@ -995,7 +995,7 @@ func (n *ngt) SearchByID(
 	if err != nil {
 		return nil, nil, err
 	}
-	dst, err = n.Search(ctx, vec, size, epsilon, radius)
+	dst, err = n.Search(ctx, vec, size, epsilon, radius, edgeSize)
 	if err != nil {
 		return vec, nil, err
 	}

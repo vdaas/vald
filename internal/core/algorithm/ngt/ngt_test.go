@@ -352,7 +352,7 @@ func TestLoad(t *testing.T) {
 					}
 
 					// check no vector can be searched
-					vs, err := n.Search(ctx, []float32{0, 1, 2, 3, 4, 5, 6, 7, 8}, 10, 0, 0)
+					vs, err := n.Search(ctx, []float32{0, 1, 2, 3, 4, 5, 6, 7, 8}, 10, 0, 0, 0)
 					if err != nil && !errors.Is(err, errors.ErrSearchResultEmptyButNoDataStored) {
 						return err
 					}
@@ -425,7 +425,7 @@ func TestLoad(t *testing.T) {
 					}
 
 					// check inserted vector can be searched
-					vs, err := n.Search(ctx, vec, 10, 0, 0)
+					vs, err := n.Search(ctx, vec, 10, 0, 0, 0)
 					if err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
 						return err
 					}
@@ -492,7 +492,7 @@ func TestLoad(t *testing.T) {
 					}
 
 					// check no vector can be searched
-					vs, err := n.Search(ctx, []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8}, 10, 0, 0)
+					vs, err := n.Search(ctx, []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8}, 10, 0, 0, 0)
 					if err != nil && !errors.Is(err, errors.ErrSearchResultEmptyButNoDataStored) {
 						return err
 					}
@@ -565,7 +565,7 @@ func TestLoad(t *testing.T) {
 					}
 
 					// check inserted vector can be searched
-					vs, err := n.Search(ctx, vec, 10, 0, 0)
+					vs, err := n.Search(ctx, vec, 10, 0, 0, 0)
 					if err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
 						return err
 					}
@@ -610,7 +610,7 @@ func TestLoad(t *testing.T) {
 						}
 
 						// check no vector can be searched
-						vs, err := n.Search(ctx, vec, 10, 0, 0)
+						vs, err := n.Search(ctx, vec, 10, 0, 0, 0)
 						if err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
 							return err
 						}
@@ -816,7 +816,7 @@ func Test_gen(t *testing.T) {
 					}
 
 					// check inserted vector can be searched
-					vs, err := n.Search(ctx, vec, 10, 0, 0)
+					vs, err := n.Search(ctx, vec, 10, 0, 0, 0)
 					if err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
 						return err
 					}
@@ -1398,11 +1398,12 @@ func Test_ngt_loadObjectSpace(t *testing.T) {
 
 func Test_ngt_Search(t *testing.T) {
 	type args struct {
-		ctx     context.Context
-		vec     []float32
-		size    int
-		epsilon float32
-		radius  float32
+		ctx      context.Context
+		vec      []float32
+		size     int
+		epsilon  float32
+		radius   float32
+		edgeSize int32
 	}
 	type fields struct {
 		idxPath             string
@@ -1821,6 +1822,50 @@ func Test_ngt_Search(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "return most accurate result after insert 10 vectors with limited size 5 (float) with edge size",
+			args: args{
+				ctx:      context.Background(),
+				vec:      []float32{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9},
+				size:     5,
+				edgeSize: 7,
+			},
+			fields: fields{
+				inMemory:            false,
+				idxPath:             idxTempDir(t),
+				bulkInsertChunkSize: 100,
+				dimension:           9,
+				objectType:          Float,
+				radius:              float32(-1.0),
+				epsilon:             float32(0.1),
+			},
+			createFunc: func(t *testing.T, fields fields) (NGT, error) {
+				t.Helper()
+				ivs := [][]float32{
+					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},           // vec id 1
+					{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9},         // vec id 2
+					{0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10},        // vec id 3
+					{0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10, 0.11},       // vec id 4
+					{0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10, 0.11, 0.12},      // vec id 5
+					{0.5, 0.6, 0.7, 0.8, 0.9, 0.10, 0.11, 0.12, 0.13},     // vec id 6
+					{0.6, 0.7, 0.8, 0.9, 0.10, 0.11, 0.12, 0.13, 0.14},    // vec id 7
+					{0.7, 0.8, 0.9, 0.10, 0.11, 0.12, 0.13, 0.14, 0.15},   // vec id 8
+					{0.8, 0.9, 0.10, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16},  // vec id 9
+					{0.9, 0.10, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17}, // vec id 10
+				}
+
+				return insertCreateFunc(t, fields, ivs, 1)
+			},
+			want: want{
+				want: []algorithm.SearchResult{
+					{ID: uint32(2), Distance: 0},
+					{ID: uint32(1), Distance: 3},
+					{ID: uint32(3), Distance: 3},
+					{ID: uint32(4), Distance: 3},
+					{ID: uint32(5), Distance: 3},
+				},
+			},
+		},
 		// other cases
 		{
 			name: "return nothing if the search dimension is less than the inserted vector",
@@ -1953,7 +1998,7 @@ func Test_ngt_Search(t *testing.T) {
 				tt.Fatal(err)
 			}
 
-			got, err := n.Search(ctx, test.args.vec, test.args.size, test.args.epsilon, test.args.radius)
+			got, err := n.Search(ctx, test.args.vec, test.args.size, test.args.epsilon, test.args.radius, test.args.edgeSize)
 			if err := checkFunc(test.want, got, n, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -2020,7 +2065,7 @@ func Test_ngt_Insert(t *testing.T) {
 		}
 
 		// search before indexing, it should return nothing
-		r, err := n.Search(ctx, args.vec, 5, 0, 0)
+		r, err := n.Search(ctx, args.vec, 5, 0, 0, 0)
 		if err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
 			return err
 		}
@@ -2032,7 +2077,7 @@ func Test_ngt_Insert(t *testing.T) {
 		if err := n.CreateIndex(1); err != nil {
 			return err
 		}
-		r, err = n.Search(ctx, args.vec, 5, 0, 0)
+		r, err = n.Search(ctx, args.vec, 5, 0, 0, 0)
 		if err != nil {
 			return err
 		}
@@ -2288,7 +2333,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 			return nil
 		}
 
-		r, err := n.Search(ctx, args.vec, 5, 0, 0)
+		r, err := n.Search(ctx, args.vec, 5, 0, 0, 0)
 		if err != nil {
 			return err
 		}
@@ -2564,7 +2609,7 @@ func Test_ngt_BulkInsert(t *testing.T) {
 			if len(vec) != fields.dimension {
 				continue
 			}
-			r, err := n.Search(ctx, vec, 1, 0, 0)
+			r, err := n.Search(ctx, vec, 1, 0, 0, 0)
 			if err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
 				return err
 			}
@@ -2581,7 +2626,7 @@ func Test_ngt_BulkInsert(t *testing.T) {
 			if len(vec) != fields.dimension {
 				continue
 			}
-			r, err := n.Search(ctx, vec, 1, 0, 0)
+			r, err := n.Search(ctx, vec, 1, 0, 0, 0)
 			if err != nil {
 				return err
 			}
@@ -2877,7 +2922,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 			if len(vec) != fields.dimension {
 				continue
 			}
-			r, err := n.Search(ctx, vec, 1, 0, 0)
+			r, err := n.Search(ctx, vec, 1, 0, 0, 0)
 			if err != nil {
 				return err
 			}
@@ -3253,7 +3298,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 
 					// search the inserted vector exists after create index
 					for _, v := range ivs {
-						if rs, err := n.Search(ctx, v, 1, 0, 0); err != nil {
+						if rs, err := n.Search(ctx, v, 1, 0, 0, 0); err != nil {
 							if rs[0].Distance != 0 {
 								return errors.Errorf("vector distance is invalid, got: %d, want: %d", rs[0].Distance, 0)
 							}
@@ -3313,7 +3358,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 
 					// search the inserted vector exists after create index
 					for _, v := range ivs {
-						if rs, err := n.Search(ctx, v, 1, 0, 0); err != nil {
+						if rs, err := n.Search(ctx, v, 1, 0, 0, 0); err != nil {
 							if rs[0].Distance != 0 {
 								return errors.Errorf("vector distance is invalid, got: %d, want: %d", rs[0].Distance, 0)
 							}
@@ -3515,7 +3560,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 
 					// search the inserted vector exists after create index
 					for _, v := range ivs {
-						if rs, err := n.Search(ctx, v, 1, 0, 0); err != nil {
+						if rs, err := n.Search(ctx, v, 1, 0, 0, 0); err != nil {
 							if rs[0].Distance != 0 {
 								return errors.Errorf("vector distance is invalid, got: %d, want: %d", rs[0].Distance, 0)
 							}
@@ -3574,7 +3619,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 
 					// search the inserted vector exists after create index
 					for _, v := range ivs {
-						if rs, err := n.Search(ctx, v, 1, 0, 0); err != nil {
+						if rs, err := n.Search(ctx, v, 1, 0, 0, 0); err != nil {
 							if rs[0].Distance != 0 {
 								return errors.Errorf("vector distance is invalid, got: %d, want: %d", rs[0].Distance, 0)
 							}
@@ -3771,7 +3816,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 
 					// search the inserted vector exists after create index
 					for _, v := range ivs {
-						if rs, err := n.Search(ctx, v, 1, 0, 0); err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
+						if rs, err := n.Search(ctx, v, 1, 0, 0, 0); err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
 							if rs[0].Distance != 0 {
 								return errors.Errorf("vector distance is invalid, got: %d, want: %d", rs[0].Distance, 0)
 							}
@@ -3830,7 +3875,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 
 					// search the inserted vector exists after create index
 					for _, v := range ivs {
-						if rs, err := n.Search(ctx, v, 1, 0, 0); err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
+						if rs, err := n.Search(ctx, v, 1, 0, 0, 0); err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
 							if rs[0].Distance != 0 {
 								return errors.Errorf("vector distance is invalid, got: %d, want: %d", rs[0].Distance, 0)
 							}
