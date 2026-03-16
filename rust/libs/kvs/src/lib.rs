@@ -23,12 +23,24 @@
 //!
 //! The implementation uses `sled` as its underlying persistent storage engine to leverage
 //! its robust transactional capabilities, ensuring data consistency for bidirectional mappings.
+<<<<<<< HEAD
 use bincode::{Decode, Encode, config::standard as bincode_standard};
 use futures::{Stream, StreamExt};
 use serde::{Serialize, de::DeserializeOwned};
 use sled::{
     Db, IVec, Tree,
     transaction::{ConflictableTransactionError, TransactionError, Transactional},
+=======
+
+use std::{path::Path, sync::Arc};
+
+pub mod map;
+
+use crate::map::{
+    base::MapBase,
+    codec::{Codec, WincodeCodec},
+    error::Error,
+>>>>>>> eb66fdc3e (Migrate from bincode to wincode (#3448))
 };
 use std::borrow::Borrow;
 use std::fmt::Debug;
@@ -42,6 +54,7 @@ use tracing::instrument;
 
 /// Custom error type for all operations within the `BidiMap`.
 ///
+<<<<<<< HEAD
 /// This enum consolidates errors from various sources into a single, well-defined
 /// error type, making error handling for the library's users more straightforward.
 #[derive(Error, Debug)]
@@ -140,6 +153,31 @@ where
         Self {
             path: path.as_ref().to_string(),
             codec: BincodeCodec::default(),
+=======
+/// This builder allows for configuration of the map before it is created,
+/// such as setting the path, codec, and startup behavior.
+pub struct MapBuilder<M: MapBase, C: Codec = WincodeCodec> {
+    path: String,
+    codec: C,
+    config: Config,
+    scan_on_startup: bool,
+    _marker: std::marker::PhantomData<M>,
+}
+
+impl<M: MapBase<C = WincodeCodec>> MapBuilder<M, WincodeCodec> {
+    /// Creates a new `MapBuilder` with the given path.
+    ///
+    /// By default, it uses `WincodeCodec` and scans the database on startup.
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - The path to the Sled database file.
+    pub fn new(path: impl AsRef<str>) -> Self {
+        Self {
+            path: path.as_ref().to_string(),
+            codec: WincodeCodec::default(),
+            config: Config::default(),
+>>>>>>> eb66fdc3e (Migrate from bincode to wincode (#3448))
             scan_on_startup: true,
             _marker: std::marker::PhantomData,
         }
@@ -520,10 +558,17 @@ mod integration_tests {
         (path, guard)
     }
 
+<<<<<<< HEAD
     #[tokio::test]
     async fn test_crud_and_len() {
         let (path, _guard) = setup("crud_and_len");
         let map = BidiBuilder::new(&path).build().await.unwrap();
+=======
+    async fn test_crud_and_len<M: MapBase<K = String, V = String, C = WincodeCodec>>(
+        path: &str,
+    ) -> Arc<M> {
+        let map = MapBuilder::<M>::new(path).build().await.unwrap();
+>>>>>>> eb66fdc3e (Migrate from bincode to wincode (#3448))
         assert_eq!(map.len(), 0);
 
         map.set("alpha".to_string(), "one".to_string(), 123)
@@ -552,9 +597,34 @@ mod integration_tests {
     }
 
     #[tokio::test]
+<<<<<<< HEAD
     async fn test_delete_inverse() {
         let (path, _guard) = setup("delete_inverse");
         let map = BidiBuilder::new(&path).build().await.unwrap();
+=======
+    async fn test_bidirectional_map_crud_and_len() {
+        let (path, _guard) = setup("bidirectional_map_crud_and_len");
+
+        let map = test_crud_and_len::<BidirectionalMap<String, String, WincodeCodec>>(&path).await;
+
+        assert!(map.get_inverse("one").await.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_unidirectional_map_crud_and_len() {
+        let (path, _guard) = setup("unidirectional_map_crud_and_len");
+
+        test_crud_and_len::<UnidirectionalMap<String, String, WincodeCodec>>(&path).await;
+    }
+
+    #[tokio::test]
+    async fn test_bidirectional_map_delete_inverse() {
+        let (path, _guard) = setup("bidirectional_map_delete_inverse");
+        let map = MapBuilder::<BidirectionalMap<String, String, WincodeCodec>>::new(&path)
+            .build()
+            .await
+            .unwrap();
+>>>>>>> eb66fdc3e (Migrate from bincode to wincode (#3448))
         map.set("a".to_string(), "1".to_string(), 1).await.unwrap();
         assert_eq!(map.len(), 1);
 
@@ -565,10 +635,15 @@ mod integration_tests {
         assert!(map.get_inverse("1").await.is_err());
     }
 
+<<<<<<< HEAD
     #[tokio::test]
     async fn test_range_callback() {
         let (path, _guard) = setup("range_callback");
         let map = BidiBuilder::new(&path).build().await.unwrap();
+=======
+    async fn test_range_callback<M: MapBase<K = String, V = String, C = WincodeCodec>>(path: &str) {
+        let map = MapBuilder::<M>::new(&path).build().await.unwrap();
+>>>>>>> eb66fdc3e (Migrate from bincode to wincode (#3448))
         let mut expected = HashMap::new();
         for i in 0..10 {
             let k = format!("key{}", i);
@@ -592,9 +667,25 @@ mod integration_tests {
     }
 
     #[tokio::test]
+<<<<<<< HEAD
     async fn test_range_stream() {
         let (path, _guard) = setup("range_stream");
         let map = BidiBuilder::new(&path).build().await.unwrap();
+=======
+    async fn test_bidirectional_map_range_callback() {
+        let (path, _guard) = setup("bidirectional_map_range_callback");
+        test_range_callback::<BidirectionalMap<String, String, WincodeCodec>>(&path).await;
+    }
+
+    #[tokio::test]
+    async fn test_unidirectional_map_range_callback() {
+        let (path, _guard) = setup("unidirectional_map_range_callback");
+        test_range_callback::<UnidirectionalMap<String, String, WincodeCodec>>(&path).await;
+    }
+
+    async fn test_range_stream<M: MapBase<K = String, V = String, C = WincodeCodec>>(path: &str) {
+        let map = MapBuilder::<M>::new(path).build().await.unwrap();
+>>>>>>> eb66fdc3e (Migrate from bincode to wincode (#3448))
         let mut expected = HashMap::new();
         for i in 0..10 {
             let k = format!("key{}", i);
@@ -616,8 +707,25 @@ mod integration_tests {
     }
 
     #[tokio::test]
+<<<<<<< HEAD
     async fn test_disable_scan_on_startup() {
         let (path, _guard) = setup("disable_scan_on_startup");
+=======
+    async fn test_bidirectional_map_range_stream() {
+        let (path, _guard) = setup("bidirectional_map_range_stream");
+        test_range_stream::<BidirectionalMap<String, String, WincodeCodec>>(&path).await;
+    }
+
+    #[tokio::test]
+    async fn test_unidirectional_map_range_stream() {
+        let (path, _guard) = setup("unidirectional_map_range_stream");
+        test_range_stream::<UnidirectionalMap<String, String, WincodeCodec>>(&path).await;
+    }
+
+    async fn test_disable_scan_on_startup<M: MapBase<K = String, V = String, C = WincodeCodec>>(
+        path: &str,
+    ) {
+>>>>>>> eb66fdc3e (Migrate from bincode to wincode (#3448))
         {
             let map = BidiBuilder::<String, String>::new(&path)
                 .build()
@@ -641,9 +749,33 @@ mod integration_tests {
     }
 
     #[tokio::test]
+<<<<<<< HEAD
     async fn test_concurrent_access() {
         let (path, _guard) = setup("concurrent_access");
         let map = BidiBuilder::new(&path).build().await.unwrap();
+=======
+    async fn test_bidirectional_map_disable_scan_on_startup() {
+        let (path, _guard) = setup("bidirectional_map_disable_scan_on_startup");
+        test_disable_scan_on_startup::<BidirectionalMap<String, String, WincodeCodec>>(&path).await;
+    }
+
+    #[tokio::test]
+    async fn test_unidirectional_map_disable_scan_on_startup() {
+        let (path, _guard) = setup("unidirectional_map_disable_scan_on_startup");
+        test_disable_scan_on_startup::<UnidirectionalMap<String, String, WincodeCodec>>(&path)
+            .await;
+    }
+
+    async fn test_concurrent_access<M, F1, F2, Fut1, Fut2>(path: &str, f1: F1, f2: F2)
+    where
+        M: MapBase<K = String, V = String, C = WincodeCodec>,
+        F1: Fn(Arc<M>, String, String, u128) -> Fut1 + Send + Sync + Copy + 'static,
+        F2: Fn(Arc<M>, String, String, usize) -> Fut2 + Send + Sync + Copy + 'static,
+        Fut1: Future<Output = ()> + Send,
+        Fut2: Future<Output = ()> + Send,
+    {
+        let map = MapBuilder::<M>::new(&path).build().await.unwrap();
+>>>>>>> eb66fdc3e (Migrate from bincode to wincode (#3448))
 
         let num_items = 100;
         let items: Vec<_> = (0..num_items)
@@ -700,4 +832,57 @@ mod integration_tests {
 
         assert_eq!(map.len(), 0);
     }
+<<<<<<< HEAD
+=======
+
+    #[tokio::test]
+    async fn test_bidirectional_map_concurrent_access() {
+        let (path, _guard) = setup("bidirectional_map_concurrent_access");
+        let f1 = |map: Arc<BidirectionalMap<String, String, WincodeCodec>>,
+                  key: String,
+                  value: String,
+                  timestamp: u128| async move {
+            let (read_v, read_ts) = map.get(key.as_str()).await.unwrap();
+            assert_eq!(read_v, value);
+            assert_eq!(read_ts, timestamp);
+            let (read_k, read_ts_inv) = map.get_inverse(value.as_str()).await.unwrap();
+            assert_eq!(read_k, key);
+            assert_eq!(read_ts_inv, timestamp);
+        };
+        let f2 = |map: Arc<BidirectionalMap<String, String, WincodeCodec>>,
+                  key: String,
+                  value: String,
+                  i: usize| async move {
+            if i % 2 == 0 {
+                let deleted_v = map.delete(key.as_str()).await.unwrap();
+                assert_eq!(deleted_v, value);
+            } else {
+                let deleted_k = map.delete_inverse(value.as_str()).await.unwrap();
+                assert_eq!(deleted_k, key);
+            }
+        };
+        test_concurrent_access(&path, f1, f2).await;
+    }
+
+    #[tokio::test]
+    async fn test_unidirectional_map_concurrent_access() {
+        let (path, _guard) = setup("unidirectional_map_concurrent_access");
+        let f1 = |map: Arc<UnidirectionalMap<String, String, WincodeCodec>>,
+                  key: String,
+                  value: String,
+                  timestamp: u128| async move {
+            let (read_v, read_ts) = map.get(key.as_str()).await.unwrap();
+            assert_eq!(read_v, value);
+            assert_eq!(read_ts, timestamp);
+        };
+        let f2 = |map: Arc<UnidirectionalMap<String, String, WincodeCodec>>,
+                  key: String,
+                  value: String,
+                  _: usize| async move {
+            let deleted_v = map.delete(key.as_str()).await.unwrap();
+            assert_eq!(deleted_v, value);
+        };
+        test_concurrent_access(&path, f1, f2).await;
+    }
+>>>>>>> eb66fdc3e (Migrate from bincode to wincode (#3448))
 }
