@@ -189,6 +189,7 @@ func (m *Search_Config) CloneVT() *Search_Config {
 	r.AggregationAlgorithm = m.AggregationAlgorithm
 	r.Ratio = (*wrapperspb.FloatValue)((*wrapperspb1.FloatValue)(m.Ratio).CloneVT())
 	r.Nprobe = m.Nprobe
+	r.EdgeSize = m.EdgeSize
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
 		copy(r.unknownFields, m.unknownFields)
@@ -2425,6 +2426,9 @@ func (this *Search_Config) EqualVT(that *Search_Config) bool {
 		return false
 	}
 	if this.Nprobe != that.Nprobe {
+		return false
+	}
+	if this.EdgeSize != that.EdgeSize {
 		return false
 	}
 	return string(this.unknownFields) == string(that.unknownFields)
@@ -5689,6 +5693,11 @@ func (m *Search_Config) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.EdgeSize != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.EdgeSize))
+		i--
+		dAtA[i] = 0x60
 	}
 	if m.Nprobe != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Nprobe))
@@ -11159,6 +11168,11 @@ func (m *Search_Config) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.EdgeSize != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.EdgeSize))
+		i--
+		dAtA[i] = 0x60
+	}
 	if m.Nprobe != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Nprobe))
 		i--
@@ -16478,6 +16492,9 @@ func (m *Search_Config) SizeVT() (n int) {
 	if m.Nprobe != 0 {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.Nprobe))
 	}
+	if m.EdgeSize != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.EdgeSize))
+	}
 	n += len(m.unknownFields)
 	return n
 }
@@ -19360,6 +19377,25 @@ func (m *Search_Config) UnmarshalVT(dAtA []byte) error {
 				b := dAtA[iNdEx]
 				iNdEx++
 				m.Nprobe |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 12:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EdgeSize", wireType)
+			}
+			m.EdgeSize = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.EdgeSize |= int32(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -31553,6 +31589,25 @@ func (m *Search_Config) UnmarshalVTUnsafe(dAtA []byte) error {
 				b := dAtA[iNdEx]
 				iNdEx++
 				m.Nprobe |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 12:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EdgeSize", wireType)
+			}
+			m.EdgeSize = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.EdgeSize |= int32(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}

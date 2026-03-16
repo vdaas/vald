@@ -53,13 +53,13 @@
               "type": "object",
               "properties": {
                 "result": {
-                  "$ref": "#/definitions/ObjectListResponse"
+                  "$ref": "#/definitions/ListResponse"
                 },
                 "error": {
                   "$ref": "#/definitions/rpcStatus"
                 }
               },
-              "title": "Stream result of ObjectListResponse"
+              "title": "Stream result of ListResponse"
             }
           },
           "default": {
