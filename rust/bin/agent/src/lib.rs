@@ -50,6 +50,23 @@ use observability::{TracingConfig, init_tracing, shutdown_tracing};
 use service::QBGService;
 use tracing::{error, info};
 
+fn resolve_agent_metadata(config: &AgentConfig) -> Result<(String, String, usize), std::io::Error> {
+    let grpc_server = config.server_config.grpc_server_config().ok_or_else(|| {
+        std::io::Error::new(std::io::ErrorKind::NotFound, "grpc server config not found")
+    })?;
+    let name = if config.qbg.pod_name.is_empty() {
+        grpc_server.name.clone()
+    } else {
+        config.qbg.pod_name.clone()
+    };
+    let ip = if grpc_server.host.is_empty() {
+        "0.0.0.0".to_string()
+    } else {
+        grpc_server.host.clone()
+    };
+    Ok((name, ip, config.server_config.grpc_stream_concurrency()))
+}
+
 /// Starts the agent service with the given configuration.
 pub async fn serve(config: AgentConfig) -> Result<(), Box<dyn std::error::Error>> {
     // Initialize tracing
@@ -74,29 +91,26 @@ pub async fn serve(config: AgentConfig) -> Result<(), Box<dyn std::error::Error>
 
     let service = match config.service.type_.as_str() {
         "qbg" => QBGService::new(&config.qbg).await,
-        _ => panic!("unsupported algorithm service"),
+        t => {
+            return Err(format!("unsupported algorithm service: {}", t).into());
+        }
     };
+    let (name, ip, stream_concurrency) = resolve_agent_metadata(&config)?;
     let mut agent = Agent::new(
         service,
-        "agent-qbg",
-        "127.0.0.1",
+        &name,
+        &ip,
         "vald/internal/core/algorithm",
         "vald-agent",
-        10,
+        stream_concurrency,
     );
 
     // Start the daemon for automatic indexing and saving
     agent.start(&config).await;
 
     // Start health servers
-    let health_servers = vec![
-        &config.server_config.healths.liveness,
-        &config.server_config.healths.readiness,
-        &config.server_config.healths.startup,
-    ];
-
     let mut bind_addrs = std::collections::HashSet::new();
-    for s in health_servers {
+    for s in config.server_config.health_server_configs() {
         if s.enabled {
             let host = if s.host.is_empty() {
                 "0.0.0.0"
@@ -272,5 +286,21 @@ qbg:
         let config: AgentConfig = settings.try_deserialize().unwrap();
 
         assert_eq!(config.service.type_, "unsupported");
+    }
+
+    #[test]
+    fn test_resolve_agent_metadata_defaults_grpc_host_to_all_interfaces() {
+        let mut config = create_test_config();
+        config.qbg.pod_name = "agent-pod-0".to_string();
+        config.server_config.servers[0].host = String::new();
+        config.server_config.servers[0]
+            .grpc
+            .bidirectional_stream_concurrency = 48;
+
+        let (name, ip, stream_concurrency) = resolve_agent_metadata(&config).unwrap();
+
+        assert_eq!(name, "agent-pod-0");
+        assert_eq!(ip, "0.0.0.0");
+        assert_eq!(stream_concurrency, 48);
     }
 }

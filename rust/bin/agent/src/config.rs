@@ -49,7 +49,10 @@ pub struct AgentConfig {
 impl AgentConfig {
     /// Applies environment-variable expansion to nested configurations.
     pub fn bind(&mut self) -> &mut Self {
+        self.logging.bind();
+        self.observability.bind();
         self.qbg.bind();
+        self.daemon.bind_from_qbg(&self.qbg);
         self
     }
 
@@ -70,10 +73,18 @@ pub struct Logging {
     #[serde(default)]
     /// Whether to output JSON-formatted logs.
     pub json: bool,
+
+    #[serde(default = "default_logging_format")]
+    /// Logging format from Helm values (`raw` or `json`).
+    pub format: String,
 }
 
 fn default_logging_level() -> String {
     "info".to_string()
+}
+
+fn default_logging_format() -> String {
+    "raw".to_string()
 }
 
 impl Default for Logging {
@@ -81,7 +92,19 @@ impl Default for Logging {
         Self {
             level: default_logging_level(),
             json: false,
+            format: default_logging_format(),
         }
+    }
+}
+
+impl Logging {
+    pub fn bind(&mut self) -> &mut Self {
+        self.level = self.level.to_lowercase();
+        self.format = self.format.to_lowercase();
+        if self.format == "json" {
+            self.json = true;
+        }
+        self
     }
 }
 
@@ -107,6 +130,18 @@ pub struct Observability {
     #[serde(default)]
     /// Metrics configuration settings.
     pub meter: Meter,
+
+    #[serde(default)]
+    /// Helm-compatible OTLP settings.
+    pub otlp: Otlp,
+
+    #[serde(default)]
+    /// Helm-compatible metrics settings.
+    pub metrics: ObservabilityMetrics,
+
+    #[serde(default)]
+    /// Helm-compatible trace settings.
+    pub trace: Trace,
 }
 
 fn default_service_name() -> String {
@@ -121,8 +156,137 @@ impl Default for Observability {
             service_name: default_service_name(),
             tracer: Tracer::default(),
             meter: Meter::default(),
+            otlp: Otlp::default(),
+            metrics: ObservabilityMetrics::default(),
+            trace: Trace::default(),
         }
     }
+}
+
+impl Observability {
+    pub fn bind(&mut self) -> &mut Self {
+        self.otlp.bind();
+        if self.endpoint.is_empty() {
+            self.endpoint = self.otlp.collector_endpoint.clone();
+        }
+        if self.service_name == default_service_name()
+            && !self.otlp.attribute.service_name.is_empty()
+        {
+            self.service_name = self.otlp.attribute.service_name.clone();
+        }
+
+        self.tracer.enabled = self.tracer.enabled || self.trace.enabled;
+
+        // Vald Helm controls metrics through observability.metrics.* and otlp intervals.
+        if self.metrics.is_any_enabled() {
+            self.meter.enabled = true;
+        }
+
+        if let Some(sec) = parse_duration_to_seconds(&self.otlp.metrics_export_interval) {
+            self.meter.export_duration_secs = sec;
+        }
+        if let Some(sec) = parse_duration_to_seconds(&self.otlp.metrics_export_timeout) {
+            self.meter.export_timeout_secs = sec;
+        }
+        self
+    }
+}
+
+/// OTLP exporter configuration.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct Otlp {
+    /// OTLP collector endpoint URL.
+    #[serde(default)]
+    pub collector_endpoint: String,
+    /// Trace batch timeout duration.
+    #[serde(default)]
+    pub trace_batch_timeout: String,
+    /// Trace export timeout duration.
+    #[serde(default)]
+    pub trace_export_timeout: String,
+    /// Maximum number of spans per export batch.
+    #[serde(default)]
+    pub trace_max_export_batch_size: u32,
+    /// Maximum number of spans queued before export.
+    #[serde(default)]
+    pub trace_max_queue_size: u32,
+    /// Metrics export interval duration.
+    #[serde(default)]
+    pub metrics_export_interval: String,
+    /// Metrics export timeout duration.
+    #[serde(default)]
+    pub metrics_export_timeout: String,
+    /// Resource attributes attached to telemetry data.
+    #[serde(default)]
+    pub attribute: OtlpAttribute,
+}
+
+impl Otlp {
+    fn bind(&mut self) -> &mut Self {
+        self.collector_endpoint = get_actual_value(&self.collector_endpoint);
+        self.metrics_export_interval = get_actual_value(&self.metrics_export_interval);
+        self.metrics_export_timeout = get_actual_value(&self.metrics_export_timeout);
+        self.attribute.bind();
+        self
+    }
+}
+
+/// OTLP resource attribute configuration.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct OtlpAttribute {
+    /// Kubernetes namespace name.
+    #[serde(default)]
+    pub namespace: String,
+    /// Kubernetes pod name.
+    #[serde(default)]
+    pub pod_name: String,
+    /// Kubernetes node name.
+    #[serde(default)]
+    pub node_name: String,
+    /// Logical service name.
+    #[serde(default)]
+    pub service_name: String,
+}
+
+impl OtlpAttribute {
+    fn bind(&mut self) -> &mut Self {
+        self.namespace = get_actual_value(&self.namespace);
+        self.pod_name = get_actual_value(&self.pod_name);
+        self.node_name = get_actual_value(&self.node_name);
+        self.service_name = get_actual_value(&self.service_name);
+        self
+    }
+}
+
+/// Fine-grained metrics toggles for observability.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct ObservabilityMetrics {
+    /// Enables build/version info metrics.
+    #[serde(default)]
+    pub enable_version_info: bool,
+    /// Enables memory usage metrics.
+    #[serde(default)]
+    pub enable_memory: bool,
+    /// Enables goroutine metrics.
+    #[serde(default)]
+    pub enable_goroutine: bool,
+    /// Enables cgo call metrics.
+    #[serde(default)]
+    pub enable_cgo: bool,
+}
+
+impl ObservabilityMetrics {
+    fn is_any_enabled(&self) -> bool {
+        self.enable_version_info || self.enable_memory || self.enable_goroutine || self.enable_cgo
+    }
+}
+
+/// Legacy trace toggle used by Helm compatibility mapping.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct Trace {
+    /// Enables tracing.
+    #[serde(default)]
+    pub enabled: bool,
 }
 
 /// Tracing configuration settings.
@@ -177,6 +341,10 @@ pub struct ServerConfig {
     #[serde(default)]
     /// Health check server configuration.
     pub healths: Healths,
+
+    #[serde(default)]
+    /// Helm-generated health check server list.
+    pub health_check_servers: Vec<HealthServer>,
 }
 
 /// Health check servers configuration.
@@ -211,6 +379,52 @@ pub struct HealthServerConfig {
     pub port: u16,
 }
 
+/// Health server entry generated by Helm `server_config.health_check_servers`.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct HealthServer {
+    /// Health server name.
+    #[serde(default)]
+    pub name: String,
+    /// Health server bind host.
+    #[serde(default)]
+    pub host: String,
+    /// Health server bind port.
+    #[serde(default)]
+    pub port: u16,
+}
+
+impl ServerConfig {
+    pub fn grpc_server_config(&self) -> Option<&Server> {
+        self.servers.iter().find(|s| s.name == "grpc")
+    }
+
+    pub fn grpc_stream_concurrency(&self) -> usize {
+        self.grpc_server_config()
+            .map(|s| s.grpc.bidirectional_stream_concurrency)
+            .unwrap_or_else(default_bidirectional_stream_concurrency)
+    }
+
+    pub fn health_server_configs(&self) -> Vec<HealthServerConfig> {
+        if !self.health_check_servers.is_empty() {
+            return self
+                .health_check_servers
+                .iter()
+                .map(|h| HealthServerConfig {
+                    enabled: true,
+                    host: h.host.clone(),
+                    port: h.port,
+                })
+                .collect();
+        }
+
+        vec![
+            self.healths.liveness.clone(),
+            self.healths.readiness.clone(),
+            self.healths.startup.clone(),
+        ]
+    }
+}
+
 /// Server entry configuration.
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Server {
@@ -234,6 +448,10 @@ pub struct Server {
 /// gRPC server configuration options.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GrpcServerConfig {
+    #[serde(default = "default_bidirectional_stream_concurrency")]
+    /// Maximum number of concurrent requests handled by bidirectional stream RPCs.
+    pub bidirectional_stream_concurrency: usize,
+
     #[serde(default)]
     /// Maximum receive message size in bytes.
     pub max_receive_message_size: usize,
@@ -274,6 +492,7 @@ pub struct GrpcServerConfig {
 impl Default for GrpcServerConfig {
     fn default() -> Self {
         Self {
+            bidirectional_stream_concurrency: default_bidirectional_stream_concurrency(),
             max_receive_message_size: 4 * 1024 * 1024,
             max_send_message_size: 4 * 1024 * 1024,
             initial_window_size: 65535,
@@ -285,6 +504,10 @@ impl Default for GrpcServerConfig {
             interceptors: Vec::new(),
         }
     }
+}
+
+fn default_bidirectional_stream_concurrency() -> usize {
+    20
 }
 
 /// Keepalive settings for gRPC connections.
@@ -313,7 +536,7 @@ pub struct Service {
 }
 
 /// Daemon configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Daemon {
     #[serde(default = "default_daemon_auto_index_check_duration_ms")]
     /// Auto index check interval in milliseconds.
@@ -379,6 +602,35 @@ impl Default for Daemon {
             initial_delay_ms: default_daemon_initial_delay_ms(),
             enable_proactive_gc: false,
         }
+    }
+}
+
+impl Daemon {
+    fn bind_from_qbg(&mut self, qbg: &QBG) -> &mut Self {
+        // Keep backward compatibility: explicit `daemon` config has priority.
+        if *self != Daemon::default() {
+            return self;
+        }
+
+        if let Some(ms) = parse_duration_to_millis(&qbg.auto_index_check_duration) {
+            self.auto_index_check_duration_ms = ms;
+        }
+        if let Some(ms) = parse_duration_to_millis(&qbg.auto_save_index_duration) {
+            self.auto_save_index_duration_ms = ms;
+        }
+        if let Some(ms) = parse_duration_to_millis(&qbg.auto_index_duration_limit) {
+            self.auto_index_limit_ms = ms;
+        }
+        if let Some(ms) = parse_duration_to_millis(&qbg.initial_delay_max_duration) {
+            self.initial_delay_ms = ms;
+        }
+        if qbg.auto_index_length > 0 {
+            self.auto_index_length = qbg.auto_index_length;
+        }
+        if qbg.default_pool_size > 0 {
+            self.pool_size = qbg.default_pool_size;
+        }
+        self
     }
 }
 
@@ -826,6 +1078,44 @@ fn get_actual_value(value: &str) -> String {
     }
 }
 
+fn parse_duration_to_millis(value: &str) -> Option<u64> {
+    let v = value.trim();
+    if v.is_empty() {
+        return None;
+    }
+
+    let (num, unit) = if let Some(s) = v.strip_suffix("ms") {
+        (s, "ms")
+    } else if let Some(s) = v.strip_suffix('s') {
+        (s, "s")
+    } else if let Some(s) = v.strip_suffix('m') {
+        (s, "m")
+    } else if let Some(s) = v.strip_suffix('h') {
+        (s, "h")
+    } else {
+        return None;
+    };
+
+    let n = num.parse::<u64>().ok()?;
+    match unit {
+        "ms" => Some(n),
+        "s" => n.checked_mul(1_000),
+        "m" => n.checked_mul(60_000),
+        "h" => n.checked_mul(3_600_000),
+        _ => None,
+    }
+}
+
+fn parse_duration_to_seconds(value: &str) -> Option<u64> {
+    parse_duration_to_millis(value).and_then(|ms| {
+        if ms == 0 {
+            return Some(0);
+        }
+        let secs = ms / 1_000;
+        if secs == 0 { Some(1) } else { Some(secs) }
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -841,6 +1131,73 @@ mod tests {
         config.bind();
         config.validate()?;
         Ok(config)
+    }
+
+    #[test]
+    fn test_agent_config_helm_style_bind() {
+        let yaml_str = r#"
+logging:
+  level: info
+  format: json
+server_config:
+  servers:
+    - name: grpc
+      host: 0.0.0.0
+      port: 8081
+      grpc:
+        bidirectional_stream_concurrency: 48
+        max_receive_message_size: 4194304
+        max_send_message_size: 4194304
+  health_check_servers:
+    - name: liveness
+      host: 0.0.0.0
+      port: 3000
+observability:
+  enabled: true
+  otlp:
+    collector_endpoint: "otel-collector:4317"
+    metrics_export_interval: "2s"
+    metrics_export_timeout: "7s"
+    attribute:
+      service_name: "vald-agent-qbg"
+  metrics:
+    enable_version_info: true
+  trace:
+    enabled: true
+service:
+  type: qbg
+qbg:
+  index_path: "/tmp/index"
+  dimension: 128
+  auto_index_check_duration: "30m"
+  auto_save_index_duration: "35m"
+  auto_index_duration_limit: "24h"
+  auto_index_length: 200
+  default_pool_size: 16
+  initial_delay_max_duration: "3m"
+"#;
+        let mut cfg: AgentConfig = serde_yaml::from_str(yaml_str).expect("Failed to deserialize");
+        cfg.bind();
+
+        assert!(cfg.logging.json);
+        assert_eq!(cfg.observability.endpoint, "otel-collector:4317");
+        assert_eq!(cfg.observability.service_name, "vald-agent-qbg");
+        assert!(cfg.observability.tracer.enabled);
+        assert!(cfg.observability.meter.enabled);
+        assert_eq!(cfg.observability.meter.export_duration_secs, 2);
+        assert_eq!(cfg.observability.meter.export_timeout_secs, 7);
+
+        let healths = cfg.server_config.health_server_configs();
+        assert_eq!(healths.len(), 1);
+        assert_eq!(healths[0].port, 3000);
+        assert_eq!(cfg.server_config.grpc_stream_concurrency(), 48);
+
+        assert_eq!(cfg.daemon.auto_index_check_duration_ms, 1_800_000);
+        assert_eq!(cfg.daemon.auto_save_index_duration_ms, 2_100_000);
+        assert_eq!(cfg.daemon.auto_index_limit_ms, 86_400_000);
+        assert_eq!(cfg.daemon.auto_index_length, 200);
+        assert_eq!(cfg.daemon.pool_size, 16);
+        assert_eq!(cfg.daemon.initial_delay_ms, 180_000);
     }
 
     #[test]

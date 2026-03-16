@@ -62,6 +62,7 @@ async fn test_qbg_agent_integration() {
         logging: Logging {
             level: "debug".to_string(),
             json: false,
+            format: "raw".to_string(),
         },
         observability: Observability {
             enabled: true,                                 // Enable to test that it doesn't crash
@@ -85,6 +86,7 @@ async fn test_qbg_agent_integration() {
                 },
             }],
             healths: Healths::default(),
+            health_check_servers: Vec::new(),
         },
         service: Service {
             type_: "qbg".to_string(),
