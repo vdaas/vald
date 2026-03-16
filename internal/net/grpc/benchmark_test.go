@@ -17,34 +17,33 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"sync/atomic"
 	"testing"
-	"time"
 
-	"github.com/vdaas/vald/apis/grpc/v1/discoverer"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	ggrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
 )
 
-type broadcastServer struct {
-	discoverer.UnimplementedDiscovererServer
+type echoServer struct {
+	vald.UnimplementedValdServer
 }
 
-func (s *broadcastServer) Nodes(
-	ctx context.Context, req *payload.Discoverer_Request,
-) (*payload.Info_Nodes, error) {
-	return &payload.Info_Nodes{}, nil
+func (s *echoServer) Insert(
+	ctx context.Context, req *payload.Insert_Request,
+) (*payload.Object_Location, error) {
+	return &payload.Object_Location{}, nil
 }
 
 func startBroadcastServer(t testing.TB, eg errgroup.Group) (net.Listener, func()) {
 	t.Helper()
 	lis := bufconn.Listen(1024 * 1024)
 	srv := ggrpc.NewServer()
-	discoverer.RegisterDiscovererServer(srv, &broadcastServer{})
+	vald.RegisterValdServer(srv, &echoServer{})
 
 	eg.Go(func() error {
 		return srv.Serve(lis)
@@ -52,6 +51,41 @@ func startBroadcastServer(t testing.TB, eg errgroup.Group) (net.Listener, func()
 
 	return lis, func() {
 		srv.Stop()
+	}
+}
+
+func startEchoServer(t testing.TB, eg errgroup.Group) (string, func()) {
+	t.Helper()
+
+	// Get available port
+	lis, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("failed to listen: %v", err)
+	}
+	addr := lis.Addr().(*net.TCPAddr)
+	port := addr.Port
+	lis.Close()
+
+	srv, err := server.New(
+		server.WithServerMode(server.GRPC),
+		server.WithHost("127.0.0.1"),
+		server.WithPort(uint16(port)),
+		server.WithNetwork("tcp"),
+		server.WithGRPCRegisterar(func(s *ggrpc.Server) {
+			vald.RegisterValdServer(s, &echoServer{})
+		}),
+	)
+	if err != nil {
+		t.Fatalf("failed to create server: %v", err)
+	}
+
+	errCh := make(chan error, 1)
+	eg.Go(func() error {
+		return srv.ListenAndServe(t.Context(), errCh)
+	})
+
+	return fmt.Sprintf("127.0.0.1:%d", port), func() {
+		srv.Shutdown(t.Context())
 	}
 }
 
@@ -91,7 +125,6 @@ func BenchmarkBroadcast(b *testing.B) {
 	}
 
 	// Initialize Client
-	ctx := context.Background()
 	client := grpc.New(
 		"benchmark-client",
 		grpc.WithAddrs(addrs...),
@@ -101,33 +134,21 @@ func BenchmarkBroadcast(b *testing.B) {
 		),
 		grpc.WithConnectionPoolSize(1),
 	)
-	defer client.Close(ctx)
+	defer client.Close(b.Context())
 
-	// Connect to all agents
-	var connectedCount int64
-	for _, addr := range addrs {
-		eg.Go(func() error {
-			// Retry connect loop since server might take a moment to start
-			for range 10 {
-				_, err := client.Connect(ctx, addr)
-				if err == nil {
-					atomic.AddInt64(&connectedCount, 1)
-					return nil
-				}
-				time.Sleep(10 * time.Millisecond)
-			}
-			return nil
-		})
+	_, err := client.StartConnectionMonitor(b.Context())
+	if err != nil {
+		b.Fatal(err)
 	}
-	eg.Wait()
+	req := &payload.Insert_Request{}
 
 	b.ResetTimer()
 	b.ReportAllocs()
 
 	for b.Loop() {
-		err := client.RangeConcurrent(ctx, concurrency, func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-			c := discoverer.NewDiscovererClient(conn)
-			_, err := c.Nodes(ctx, &payload.Discoverer_Request{})
+		err := client.RangeConcurrent(b.Context(), concurrency, func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+			c := vald.NewValdClient(conn)
+			_, err := c.Insert(ctx, req)
 			return err
 		})
 		if err != nil {
@@ -136,4 +157,81 @@ func BenchmarkBroadcast(b *testing.B) {
 	}
 	b.StopTimer()
 	// NOT IMPLEMENTED BELOW
+}
+
+func BenchmarkExecuteRPC(b *testing.B) {
+	eg := errgroup.Get()
+	addr, closer := startEchoServer(b, eg)
+	defer closer()
+
+	client := grpc.New(
+		"benchmark-client",
+		grpc.WithAddrs(addr),
+		grpc.WithDialOptions(
+			ggrpc.WithTransportCredentials(insecure.NewCredentials()),
+		),
+		grpc.WithConnectionPoolSize(2),
+	)
+	defer client.Close(b.Context())
+
+	_, err := client.StartConnectionMonitor(b.Context())
+	if err != nil {
+		b.Fatal(err)
+	}
+	req := &payload.Insert_Request{}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for b.Loop() {
+		_, err := client.Do(b.Context(), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
+			c := vald.NewValdClient(conn)
+			return c.Insert(ctx, req)
+		})
+		if err != nil {
+			b.Fatalf("Do failed: %v", err)
+		}
+	}
+	b.StopTimer()
+}
+
+func BenchmarkExecuteRPCParallel(b *testing.B) {
+	eg := errgroup.Get()
+	addr, closer := startEchoServer(b, eg)
+	defer closer()
+
+	client := grpc.New(
+		"benchmark-client",
+		grpc.WithAddrs(addr),
+		grpc.WithDialOptions(
+			ggrpc.WithTransportCredentials(insecure.NewCredentials()),
+		),
+		grpc.WithConnectionPoolSize(10),
+	)
+	defer client.Close(b.Context())
+
+	_, err := client.StartConnectionMonitor(b.Context())
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	req := &payload.Insert_Request{}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	b.SetParallelism(1000) // Simulate high load
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			_, err := client.Do(b.Context(), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
+				c := vald.NewValdClient(conn)
+				return c.Insert(ctx, req)
+			})
+			if err != nil {
+				b.Errorf("Do failed: %v", err)
+			}
+		}
+	})
+	b.StopTimer()
 }
