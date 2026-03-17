@@ -1927,5 +1927,3 @@ feat: automatically resolve go.mod & go.sum conflicts in backport workflow [#298
 - Add filter gateway api doc [#1821](https://github.com/vdaas/vald/pull/1821)
 - Fix dead link [#1823](https://github.com/vdaas/vald/pull/1823)
 - Update pull request template [#1820](https://github.com/vdaas/vald/pull/1820)
-
-
