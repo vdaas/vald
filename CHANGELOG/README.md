@@ -3,7 +3,7 @@
 - [CHANGELOG-v1.7.md](./CHANGELOG-v1.7.md)
 - [CHANGELOG-v1.6.md](./CHANGELOG-v1.6.md)
 - [CHANGELOG-v1.5.md](./CHANGELOG-v1.5.md)
-- [ CHANGELOG-v1.4.md](./CHANGELOG-v1.4.md)
+- [CHANGELOG-v1.4.md](./CHANGELOG-v1.4.md)
 - [CHANGELOG-v1.3.md](./CHANGELOG-v1.3.md)
 - [CHANGELOG-v1.2.md](./CHANGELOG-v1.2.md)
 - [CHANGELOG-v1.1.md](./CHANGELOG-v1.1.md)

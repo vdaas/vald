@@ -60,7 +60,7 @@ DEFAULT_BUILDKIT_SYFT_SCANNER_IMAGE = $(GHCRORG)/$(BUILDKIT_SYFT_SCANNER_IMAGE):
 
 VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
 
-VERSION_RELEASE_DIR ?= $(eval VERSION_RELEASE_DIR := $(shell cat versions/VALD_VERSION | sed -E "s/v([0-9]+)\.([0-9]+)\..*/v\1-\2/"))$(VERSION_RELEASE_DIR)
+RELEASED_MINOR_VERSION ?= $(eval RELEASED_MINOR_VERSION := $(shell cat versions/VALD_VERSION | sed -E "s/v([0-9]+)\.([0-9]+)\..*/\1.\2/"))$(RELEASED_MINOR_VERSION)
 
 NGT_REPO = github.com/yahoojapan/NGT
 
@@ -1009,34 +1009,35 @@ files/cspell: \
 	cspell/install
 	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then cspell "$(ROOTDIR)/.gitfiles" --show-suggestions $(CSPELL_EXTRA_OPTIONS); fi
 
-.PHONY: changelog/update/origin
-## update original changelog
-changelog/update/origin:
-	echo "# CHANGELOG" > $(TEMP_DIR)/CHANGELOG.md
+.PHONY: changelog/update
+## update changelog
+changelog/update:
+	$(MAKE) -s changelog/next/print > $(TEMP_DIR)/CHANGELOG.md
 	echo "" >> $(TEMP_DIR)/CHANGELOG.md
-	$(MAKE) -s changelog/next/print >> $(TEMP_DIR)/CHANGELOG.md
-	echo "" >> $(TEMP_DIR)/CHANGELOG.md
-	tail -n +2 $(ROOTDIR)/CHANGELOG.md >> $(TEMP_DIR)/CHANGELOG.md
-	mv -f $(TEMP_DIR)/CHANGELOG.md $(ROOTDIR)/CHANGELOG.md
-
-.PHONY: changelog/update/minor
-## update changelog minor directory
-changelog/update/minor:
-	mkdir -p release/$(VERSION_RELEASE_DIR)
-	echo "# CHANGELOG $(VERSION_RELEASE_DIR).x" > $(TEMP_DIR)/CHANGELOG.md
-	echo "" >> $(TEMP_DIR)/CHANGELOG.md
-	$(MAKE) -s changelog/next/print >> $(TEMP_DIR)/CHANGELOG.md
-	echo "" >> $(TEMP_DIR)/CHANGELOG.md
-	if [ -f $(ROOTDIR)/release/$(VERSION_RELEASE_DIR)/CHANGELOG.md ]; then \
-	  tail -n +2 $(ROOTDIR)/release/$(VERSION_RELEASE_DIR)/CHANGELOG.md >> $(TEMP_DIR)/CHANGELOG.md; \
+	if [ -f $(ROOTDIR)/CHANGELOG/CHANGELOG-$(RELEASED_MINOR_VERSION).md ]; then \
+	  tail -n $(ROOTDIR)/CHANGELOG/CHANGELOG-$(RELEASED_MINOR_VERSION).md >> $(TEMP_DIR)/CHANGELOG.md; \
 	fi
-	mv -f $(TEMP_DIR)/CHANGELOG.md $(ROOTDIR)/release/$(VERSION_RELEASE_DIR)/CHANGELOG.md
+	mv -f $(TEMP_DIR)/CHANGELOG.md $(ROOTDIR)/CHANGELOG-$(RELEASED_MINOR_VERSION).md
+	echo "CHANGELOGs" > $(TEMP_DIR)/README.md
+	echo "" >> $(TEMP_DIR)/README.md
+	$(MAKE) -s changelog/readme/print >> $(TEMP_DIR)/README.md
+	if [ -f $(ROOTDIR)/CHANGELOG/README.md ]; then \
+	  tail -n +2 $(ROOTDIR)/CHANGELOG/README.md >> $(TEMP_DIR)/README.md; \
+	fi
+	mv -f $(TEMP_DIR)/README.md $(ROOTDIR)/CHANGELOG/README.md
 
 .PHONY: changelog/next/print
 ## print next changelog entry
 changelog/next/print:
 	@cat $(ROOTDIR)/hack/CHANGELOG.template.md | \
 	sed -e 's/{{ version }}/$(VERSION)/g'
+	@echo "$$BODY"
+
+.PHONY: changelog/readme/print
+## print changelog link
+changelog/readme/print:
+	@cat $(ROOTDIR)/hack/CHANGELOG-README.template.md | \
+	sed -e 's/{{ version }}/$(RELEASED_MINOR_VERSION)/g'
 	@echo "$$BODY"
 
 include Makefile.d/actions.mk

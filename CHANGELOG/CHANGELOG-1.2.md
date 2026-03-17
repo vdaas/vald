@@ -1,5 +1,3 @@
-# CHANGELOG v1.2.x
-
 ## v1.2.4
 
 ### Docker images
