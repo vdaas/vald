@@ -60,6 +60,8 @@ DEFAULT_BUILDKIT_SYFT_SCANNER_IMAGE = $(GHCRORG)/$(BUILDKIT_SYFT_SCANNER_IMAGE):
 
 VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
 
+RELEASE_TARGET_VERSION ?= $(eval RELEASE_TARGET_VERSION := $(shell cat versions/VALD_VERSION | sed -E "s/v([0-9]+)\.([0-9]+)\..*/\1.\2/"))$(RELEASE_TARGET_VERSION)
+
 NGT_REPO = github.com/yahoojapan/NGT
 
 TEST_NOT_IMPL_PLACEHOLDER = NOT IMPLEMENTED BELOW
@@ -1010,12 +1012,18 @@ files/cspell: \
 .PHONY: changelog/update
 ## update changelog
 changelog/update:
-	echo "# CHANGELOG" > $(TEMP_DIR)/CHANGELOG.md
-	echo "" >> $(TEMP_DIR)/CHANGELOG.md
-	$(MAKE) -s changelog/next/print >> $(TEMP_DIR)/CHANGELOG.md
-	echo "" >> $(TEMP_DIR)/CHANGELOG.md
-	tail -n +2 $(ROOTDIR)/CHANGELOG.md >> $(TEMP_DIR)/CHANGELOG.md
-	mv -f $(TEMP_DIR)/CHANGELOG.md $(ROOTDIR)/CHANGELOG.md
+	@echo "# CHANGELOGs" > $(TEMP_DIR)/README.md
+	@echo "" >> $(TEMP_DIR)/README.md
+	$(MAKE) -s changelog/next/print > $(TEMP_DIR)/CHANGELOG.md
+	@echo "" >> $(TEMP_DIR)/CHANGELOG.md
+	if [ -f $(ROOTDIR)/CHANGELOG/CHANGELOG-$(RELEASE_TARGET_VERSION).md ]; then \
+	  cat $(ROOTDIR)/CHANGELOG/CHANGELOG-$(RELEASE_TARGET_VERSION).md >> $(TEMP_DIR)/CHANGELOG.md; \
+	else \
+	  $(MAKE) -s changelog/readme/print >> $(TEMP_DIR)/README.md ; \
+	fi
+	tail -n +3 $(ROOTDIR)/CHANGELOG/README.md >> $(TEMP_DIR)/README.md
+	mv -f $(TEMP_DIR)/CHANGELOG.md $(ROOTDIR)/CHANGELOG/CHANGELOG-$(RELEASE_TARGET_VERSION).md
+	mv -f $(TEMP_DIR)/README.md $(ROOTDIR)/CHANGELOG/README.md
 
 .PHONY: changelog/next/print
 ## print next changelog entry
@@ -1023,6 +1031,12 @@ changelog/next/print:
 	@cat $(ROOTDIR)/hack/CHANGELOG.template.md | \
 	sed -e 's/{{ version }}/$(VERSION)/g'
 	@echo "$$BODY"
+
+.PHONY: changelog/readme/print
+## print changelog link
+changelog/readme/print:
+	@cat $(ROOTDIR)/hack/CHANGELOG-README.template.md | \
+	sed -e 's/{{ version }}/$(RELEASE_TARGET_VERSION)/g'
 
 include Makefile.d/actions.mk
 include Makefile.d/bench.mk
