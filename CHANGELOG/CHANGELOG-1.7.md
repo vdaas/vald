@@ -1,5 +1,3 @@
-# CHANGELOG v1.7.x
-
 ## v1.7.17
 
 ### Docker images
