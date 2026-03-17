@@ -330,4 +330,3 @@
 - Add deployment document [#1758](https://github.com/vdaas/vald/pull/1758)
 - Update the images of agent page [#1753](https://github.com/vdaas/vald/pull/1753)
 - Update config document [#1751](https://github.com/vdaas/vald/pull/1751)
-

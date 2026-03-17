@@ -419,4 +419,3 @@
 - remove ngt version in filter-ingress-tensorflow (#1157)
 - remove license from bot config json (#1164)
 - improve internal/timeutil/location implementation (#1176)
-

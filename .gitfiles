@@ -145,6 +145,16 @@
 .yamlfmt
 AGENTS.md
 CHANGELOG.md
+CHANGELOG/CHANGELOG-0.0.md
+CHANGELOG/CHANGELOG-1.0.md
+CHANGELOG/CHANGELOG-1.1.md
+CHANGELOG/CHANGELOG-1.2.md
+CHANGELOG/CHANGELOG-1.3.md
+CHANGELOG/CHANGELOG-1.4.md
+CHANGELOG/CHANGELOG-1.5.md
+CHANGELOG/CHANGELOG-1.6.md
+CHANGELOG/CHANGELOG-1.7.md
+CHANGELOG/README.md
 CODE_OF_CONDUCT.md
 CONTRIBUTING.md
 LICENSE
@@ -720,6 +730,7 @@ example/manifest/scylla/configmap.yaml
 example/manifest/scylla/job.yaml
 go.mod
 go.sum
+hack/CHANGELOG-README.template.md
 hack/CHANGELOG.template.md
 hack/benchmark/assets/checksum/fashion-mnist-784-euclidean.md5
 hack/benchmark/assets/checksum/gist-960-euclidean.md5

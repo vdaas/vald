@@ -132,4 +132,3 @@
 
 - add startupProbe support (#1473)
 - add label / field selectors for discoverer (#1472)
-

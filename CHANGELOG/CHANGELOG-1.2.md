@@ -517,5 +517,3 @@
 - fix: :bug: Fix typo (#1330)
 - remove owner and description info from resource info rich error for each grpc handler (#1327)
 - Update documents: configurations (#1289
-
-
