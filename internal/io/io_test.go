@@ -38,12 +38,12 @@ func TestNewReaderWithContext(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, io.Reader, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got io.Reader, err error) error {
 		if !errors.Is(err, w.err) {
@@ -58,12 +58,12 @@ func TestNewReaderWithContext(t *testing.T) {
 		{
 			name: "success when context.Context and io.Reader are not nil",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 				r:   &bytes.Buffer{},
 			},
 			want: want{
 				want: &ctxReader{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					r:   &bytes.Buffer{},
 				},
 				err: nil,
@@ -72,7 +72,7 @@ func TestNewReaderWithContext(t *testing.T) {
 		{
 			name: "fail when io.Reader is nil",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 				r:   nil,
 			},
 			want: want{
@@ -128,12 +128,12 @@ func TestNewReadCloserWithContext(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, io.ReadCloser, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got io.ReadCloser, err error) error {
 		if !errors.Is(err, w.err) {
@@ -148,12 +148,12 @@ func TestNewReadCloserWithContext(t *testing.T) {
 		{
 			name: "success when context.Context and io.ReadCloser are not nil",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 				r:   NopCloser(&bytes.Buffer{}),
 			},
 			want: want{
 				want: &ctxReader{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					r:   NopCloser(&bytes.Buffer{}),
 				},
 				err: nil,
@@ -162,7 +162,7 @@ func TestNewReadCloserWithContext(t *testing.T) {
 		{
 			name: "fail when io.ReadCloser is nil",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 				r:   nil,
 			},
 			want: want{
@@ -217,17 +217,17 @@ func Test_ctxReader_Read(t *testing.T) {
 		r   io.Reader
 	}
 	type want struct {
-		wantN int
 		err   error
+		wantN int
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
 		want       want
 		checkFunc  func(want, int, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, gotN int, err error) error {
 		if !errors.Is(err, w.err) {
@@ -249,7 +249,7 @@ func Test_ctxReader_Read(t *testing.T) {
 					p: make([]byte, 64),
 				},
 				fields: fields{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					r:   r,
 				},
 				want: want{
@@ -259,7 +259,7 @@ func Test_ctxReader_Read(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "fail when calling cancel function",
 				args: args{
@@ -318,12 +318,12 @@ func Test_ctxReader_Close(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -333,7 +333,7 @@ func Test_ctxReader_Close(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx := context.Background()
+			ctx := t.Context()
 			return test{
 				name: "success when doing nothing",
 				fields: fields{
@@ -346,7 +346,7 @@ func Test_ctxReader_Close(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "fail when calling cancel function",
 				fields: fields{
@@ -362,7 +362,7 @@ func Test_ctxReader_Close(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx := context.Background()
+			ctx := t.Context()
 			return test{
 				name: "success with Closer",
 				fields: fields{
@@ -415,12 +415,12 @@ func TestNewWriterWithContext(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, io.Writer, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got io.Writer, err error) error {
 		if !errors.Is(err, w.err) {
@@ -433,7 +433,7 @@ func TestNewWriterWithContext(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx := context.Background()
+			ctx := t.Context()
 			w := &bytes.Buffer{}
 			return test{
 				name: "success when context.Context and io.Writer is not nil",
@@ -453,7 +453,7 @@ func TestNewWriterWithContext(t *testing.T) {
 		{
 			name: "fail when io.Writer is nil",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 				w:   nil,
 			},
 			want: want{
@@ -517,12 +517,12 @@ func TestNewWriteCloserWithContext(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, io.WriteCloser, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got io.WriteCloser, err error) error {
 		if !errors.Is(err, w.err) {
@@ -537,12 +537,12 @@ func TestNewWriteCloserWithContext(t *testing.T) {
 		{
 			name: "success when context.Context and io.WriteClose are not nil",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 				w:   &nopWriteCloser{},
 			},
 			want: want{
 				want: &ctxWriter{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					w:   &nopWriteCloser{},
 				},
 				err: nil,
@@ -551,7 +551,7 @@ func TestNewWriteCloserWithContext(t *testing.T) {
 		{
 			name: "fail when io.WriteCloser is nil",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 				w:   nil,
 			},
 			want: want{
@@ -606,17 +606,17 @@ func Test_ctxWriter_Write(t *testing.T) {
 		w   io.Writer
 	}
 	type want struct {
-		wantN int
 		err   error
+		wantN int
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
 		want       want
 		checkFunc  func(want, int, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, gotN int, err error) error {
 		if !errors.Is(err, w.err) {
@@ -630,7 +630,7 @@ func Test_ctxWriter_Write(t *testing.T) {
 	tests := []test{
 		func() test {
 			txt := "hello, world."
-			ctx := context.Background()
+			ctx := t.Context()
 			w := &bytes.Buffer{}
 			return test{
 				name: "success when doing nothing",
@@ -648,7 +648,7 @@ func Test_ctxWriter_Write(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "fail when calling cancel function",
 				args: args{
@@ -707,12 +707,12 @@ func Test_ctxWriter_Close(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -722,7 +722,7 @@ func Test_ctxWriter_Close(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx := context.Background()
+			ctx := t.Context()
 			return test{
 				name: "success without Closer",
 				fields: fields{
@@ -735,7 +735,7 @@ func Test_ctxWriter_Close(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "fail when calling cancel function",
 				fields: fields{
@@ -751,7 +751,7 @@ func Test_ctxWriter_Close(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx := context.Background()
+			ctx := t.Context()
 			return test{
 				name: "success with Closer",
 				fields: fields{

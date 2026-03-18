@@ -14,7 +14,6 @@
 package middleware
 
 import (
-	"context"
 	"reflect"
 	"testing"
 	"time"
@@ -26,9 +25,9 @@ import (
 func TestWithErrorGroup(t *testing.T) {
 	t.Parallel()
 	type test struct {
+		checkFunc func(TimeoutOption) error
 		name      string
 		dur       string
-		checkFunc func(TimeoutOption) error
 	}
 
 	tests := []test{
@@ -75,14 +74,14 @@ func TestWithErrorGroup(t *testing.T) {
 func TestWithTimeout(t *testing.T) {
 	t.Parallel()
 	type test struct {
-		name      string
 		eg        errgroup.Group
 		checkFunc func(TimeoutOption) error
+		name      string
 	}
 
 	tests := []test{
 		func() test {
-			eg, _ := errgroup.New(context.Background())
+			eg, _ := errgroup.New(t.Context())
 
 			return test{
 				name: "set success",

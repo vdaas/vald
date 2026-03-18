@@ -470,7 +470,7 @@ func TestExemplar_ProbabilisticSampling(t *testing.T) {
 		// These should be filtered by the sampling (1/16).
 		// Latencies between 10ms and 1s.
 		// We offer enough to statistically guarantee hitting the reservoir at least once.
-		for i := 0; i < 1000; i++ {
+		for i := range 1000 {
 			e.Offer(100*time.Millisecond, fmt.Sprintf("avg-%d", i), nil, "")
 		}
 

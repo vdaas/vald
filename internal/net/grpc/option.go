@@ -238,7 +238,7 @@ API References https://pkg.go.dev/google.golang.org/grpc#CallOption
 
 4. Deprecated APIs
 - func CallCustomCodec(codec Codec) CallOption
-- func FailFast(failFast bool) CallOption
+- func FailFast(failFast bool) CallOption.
 */
 const defaultCallOptionLength = 5
 

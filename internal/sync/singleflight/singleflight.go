@@ -66,18 +66,11 @@ func newPanicError(v any) error {
 
 // call is an in-flight or completed singleflight.Do call.
 type call[V any] struct {
-	wg sync.WaitGroup
-
-	// These fields are written once before the WaitGroup is done
-	// and are only read after the WaitGroup is done.
-	val V
-	err error
-
-	// These fields are read and written with the singleflight
-	// mutex held before the WaitGroup is done, and are read but
-	// not written after the WaitGroup is done.
-	dups  uint64
+	val   V
+	err   error
 	chans []chan<- Result[V]
+	wg    sync.WaitGroup
+	dups  uint64
 }
 
 // Group represents interface for zero time cache.
@@ -90,9 +83,9 @@ type Group[V any] interface {
 // group represents a class of work and forms a namespace in
 // which units of work can be executed with duplicate suppression.
 type group[V any] struct {
-	mu sync.Mutex          // protects m
-	m  map[string]*call[V] // lazily initialized
 	eg errgroup.Group
+	m  map[string]*call[V]
+	mu sync.Mutex
 }
 
 // Result holds the results of Do, so they can be passed
@@ -125,9 +118,10 @@ func (g *group[V]) Do(
 		g.mu.Unlock()
 		atomic.AddUint64(&c.dups, 1)
 		c.wg.Wait()
-		if e, ok := c.err.(*panicError); ok {
+		e := &panicError{}
+		if errors.As(c.err, &e) {
 			panic(e)
-		} else if c.err == errGoexit {
+		} else if errors.Is(c.err, errGoexit) {
 			runtime.Goexit()
 		}
 		return c.val, true, c.err
@@ -191,7 +185,8 @@ func (g *group[V]) doCall(
 			delete(g.m, key)
 		}
 
-		if e, ok := c.err.(*panicError); ok {
+		e := &panicError{}
+		if errors.As(c.err, &e) {
 			// In order to prevent the waiting channels from being blocked forever,
 			// needs to ensure that this panic cannot be recovered.
 			if len(c.chans) > 0 {
@@ -202,7 +197,7 @@ func (g *group[V]) doCall(
 			} else {
 				panic(e)
 			}
-		} else if c.err == errGoexit {
+		} else if errors.Is(c.err, errGoexit) {
 			// Already in the process of goexit, no need to call again.
 		} else {
 			// Normal return.

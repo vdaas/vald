@@ -29,9 +29,9 @@ var goleakIgnoreOptions = []goleak.Option{
 
 func TestWithInitialDuration(t *testing.T) {
 	type test struct {
+		checkFunc func(Option) error
 		name      string
 		dur       string
-		checkFunc func(Option) error
 	}
 
 	tests := []test{
@@ -75,9 +75,9 @@ func TestWithInitialDuration(t *testing.T) {
 
 func TestWithMaximumDuration(t *testing.T) {
 	type test struct {
+		checkFunc func(Option) error
 		name      string
 		dur       string
-		checkFunc func(Option) error
 	}
 
 	tests := []test{
@@ -121,9 +121,9 @@ func TestWithMaximumDuration(t *testing.T) {
 
 func TestWithJitterLimit(t *testing.T) {
 	type test struct {
+		checkFunc func(Option) error
 		name      string
 		dur       string
-		checkFunc func(Option) error
 	}
 
 	tests := []test{
@@ -167,9 +167,9 @@ func TestWithJitterLimit(t *testing.T) {
 
 func TestWithBackOffFactor(t *testing.T) {
 	type test struct {
+		checkFunc func(Option) error
 		name      string
 		f         float64
-		checkFunc func(Option) error
 	}
 
 	tests := []test{
@@ -213,9 +213,9 @@ func TestWithBackOffFactor(t *testing.T) {
 
 func TestWithRetryCount(t *testing.T) {
 	type test struct {
+		checkFunc func(Option) error
 		name      string
 		c         int
-		checkFunc func(Option) error
 	}
 
 	tests := []test{
@@ -259,9 +259,9 @@ func TestWithRetryCount(t *testing.T) {
 
 func TestWithBackOffTimeLimit(t *testing.T) {
 	type test struct {
+		checkFunc func(Option) error
 		name      string
 		dur       string
-		checkFunc func(Option) error
 	}
 
 	tests := []test{
@@ -305,8 +305,8 @@ func TestWithBackOffTimeLimit(t *testing.T) {
 
 func TestWithDisableErrorLog(t *testing.T) {
 	type test struct {
-		name      string
 		checkFunc func(Option) error
+		name      string
 	}
 
 	tests := []test{
@@ -336,8 +336,8 @@ func TestWithDisableErrorLog(t *testing.T) {
 
 func TestDefaultOptions(t *testing.T) {
 	type test struct {
-		name      string
 		checkFunc func([]Option) error
+		name      string
 	}
 
 	tests := []test{
@@ -394,11 +394,11 @@ func TestWithEnableErrorLog(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {

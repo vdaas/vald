@@ -23,5 +23,5 @@ import (
 func (s *server) Flush(
 	ctx context.Context, req *payload.Flush_Request,
 ) (*payload.Info_Index_Count, error) {
-	return s.UnimplementedValdServer.UnimplementedFlushServer.Flush(ctx, req)
+	return s.UnimplementedFlushServer.Flush(ctx, req)
 }

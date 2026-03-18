@@ -80,13 +80,11 @@ func (c *CompressCore) Bind() *CompressCore {
 
 // Compressor represents Compressor configuration.
 type Compressor struct {
-	CompressCore `json:",inline" yaml:",inline"`
-
-	// ConcurrentLimit represents limitation of compression worker concurrency
-	ConcurrentLimit int `json:"concurrent_limit" yaml:"concurrent_limit"`
-
-	// QueueCheckDuration represents duration of queue daemon block
+	// QueueCheckDuration represents queue check duration.
 	QueueCheckDuration string `json:"queue_check_duration" yaml:"queue_check_duration"`
+	CompressCore       `       json:",inline"              yaml:",inline"`
+	// ConcurrentLimit represents concurrent limit.
+	ConcurrentLimit int `json:"concurrent_limit" yaml:"concurrent_limit"`
 }
 
 // Bind binds the actual data from the Compressor receiver field.
@@ -98,14 +96,12 @@ func (c *Compressor) Bind() *Compressor {
 
 // CompressorRegisterer represents CompressorRegisterer configuration.
 type CompressorRegisterer struct {
-	// ConcurrentLimit represents limitation of worker
-	ConcurrentLimit int `json:"concurrent_limit" yaml:"concurrent_limit"`
-
-	// QueueCheckDuration represents duration of queue daemon block
-	QueueCheckDuration string `json:"queue_check_duration" yaml:"queue_check_duration"`
-
-	// Compressor represents gRPC client config of compressor client (for forwarding use)
+	// Compressor represents compressor configuration.
 	Compressor *BackupManager `json:"compressor" yaml:"compressor"`
+	// QueueCheckDuration represents queue check duration.
+	QueueCheckDuration string `json:"queue_check_duration" yaml:"queue_check_duration"`
+	// ConcurrentLimit represents concurrent limit.
+	ConcurrentLimit int `json:"concurrent_limit" yaml:"concurrent_limit"`
 }
 
 // Bind binds the actual data from the CompressorRegisterer receiver field.

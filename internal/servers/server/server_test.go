@@ -33,8 +33,8 @@ import (
 func TestServerMode_String(t *testing.T) {
 	type test struct {
 		name string
-		m    ServerMode
 		want string
+		m    ServerMode
 	}
 
 	tests := []test{
@@ -131,10 +131,10 @@ func TestMode(t *testing.T) {
 
 func TestNew(t *testing.T) {
 	type test struct {
+		wantErr   error
+		checkFunc func(got *server, gotErr, wantErr error) error
 		name      string
 		opts      []Option
-		checkFunc func(got *server, gotErr, wantErr error) error
-		wantErr   error
 	}
 
 	tests := []test{
@@ -310,8 +310,8 @@ func TestNew(t *testing.T) {
 
 func Test_server_IsRunning(t *testing.T) {
 	type test struct {
-		name string
 		s    *server
+		name string
 		want bool
 	}
 
@@ -377,25 +377,25 @@ func Test_server_ListenAndServe(t *testing.T) {
 	}
 
 	type field struct {
-		running        bool
 		eg             errgroup.Group
-		mode           ServerMode
-		pwt            time.Duration
-		sddur          time.Duration
 		httpSrvStarter func(net.Listener) error
 		grpcSrv        *grpc.Server
 		lc             *net.ListenConfig
-		host           string
-		port           uint
 		preStartFunc   func() error
+		host           string
+		pwt            time.Duration
+		sddur          time.Duration
+		port           uint
+		running        bool
+		mode           ServerMode
 	}
 
 	type test struct {
-		name      string
 		args      args
-		field     field
-		afterFunc func(*testing.T)
 		want      error
+		afterFunc func(*testing.T)
+		name      string
+		field     field
 	}
 
 	tests := []test{
@@ -423,11 +423,11 @@ func Test_server_ListenAndServe(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			eg, ctx := errgroup.New(ctx)
 
 			handler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.WriteHeader(200)
+				w.WriteHeader(http.StatusOK)
 			})
 
 			srv := &http.Server{
@@ -459,7 +459,7 @@ func Test_server_ListenAndServe(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			eg, _ := errgroup.New(ctx)
 
 			srv := new(grpc.Server)
@@ -503,8 +503,8 @@ func Test_server_ListenAndServe(t *testing.T) {
 				mode: test.field.mode,
 				eg:   test.field.eg,
 				http: struct {
-					srv      *http.Server
 					h        http.Handler
+					srv      *http.Server
 					h2srv    *http2.Server
 					enableH2 bool
 					starter  func(net.Listener) error
@@ -541,27 +541,27 @@ func Test_server_Shutdown(t *testing.T) {
 	}
 
 	type field struct {
-		running     bool
 		eg          errgroup.Group
-		mode        ServerMode
-		pwt         time.Duration
-		sddur       time.Duration
 		httpSrv     *http.Server
 		grpcSrv     *grpc.Server
 		preStopFunc func() error
+		pwt         time.Duration
+		sddur       time.Duration
+		running     bool
+		mode        ServerMode
 	}
 
 	type test struct {
-		name      string
 		args      args
-		field     field
+		want      error
 		afterFunc func(*testing.T)
 		checkFunc func(s *server, got, want error) error
-		want      error
+		name      string
+		field     field
 	}
 
 	defaultCheckFunc := func(s *server, got, want error) error {
-		if want != got {
+		if !errors.Is(want, got) {
 			return errors.Errorf("Shutdown returns error: %v", got)
 		}
 		var running bool
@@ -583,11 +583,11 @@ func Test_server_Shutdown(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			eg, ctx := errgroup.New(ctx)
 
 			handler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.WriteHeader(200)
+				w.WriteHeader(http.StatusOK)
 			})
 			testSrv := httptest.NewServer(handler)
 
@@ -617,7 +617,7 @@ func Test_server_Shutdown(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			eg, ctx := errgroup.New(ctx)
 
 			grpcSrv := grpc.NewServer()
@@ -665,8 +665,8 @@ func Test_server_Shutdown(t *testing.T) {
 				mode: test.field.mode,
 				eg:   test.field.eg,
 				http: struct {
-					srv      *http.Server
 					h        http.Handler
+					srv      *http.Server
 					h2srv    *http2.Server
 					enableH2 bool
 					starter  func(net.Listener) error

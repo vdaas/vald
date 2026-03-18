@@ -32,7 +32,7 @@ func (m *StreamInsertServerMock) Send(l *payload.Object_StreamLocation) error {
 		if m.SendFunc != nil {
 			return m.SendFunc(l)
 		}
-		return m.ServerStream.SendMsg(l)
+		return m.SendMsg(l)
 	}
 	return nil
 }
@@ -43,7 +43,7 @@ func (m *StreamInsertServerMock) Recv() (res *payload.Insert_Request, err error)
 			return m.RecvFunc()
 		}
 		res = new(payload.Insert_Request)
-		err := m.ServerStream.RecvMsg(res)
+		err := m.RecvMsg(res)
 		if err != nil {
 			return nil, err
 		}

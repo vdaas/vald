@@ -24,8 +24,4 @@ faiss = { version = "0.1.0", path = "../algorithms/faiss" }
 ngt = { version = "0.1.0", path = "../algorithms/ngt" }
 qbg = { version = "0.1.0", path = "../algorithms/qbg" }
 proto = { version = "0.1.0", path = "../proto" }
-<<<<<<< HEAD
-tonic = "0.14.3"
-=======
 tonic = "0.14.5"
->>>>>>> 70de68426 (Support dynamic edge size parameter for Search API (#3480))

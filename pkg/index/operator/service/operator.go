@@ -51,14 +51,14 @@ type Operator interface {
 type operator struct {
 	ctrl                              k8s.Controller
 	eg                                errgroup.Group
-	namespace                         string
 	client                            client.Client
+	rotatorJob                        *k8s.Job
+	namespace                         string
 	rotatorName                       string
 	targetReadReplicaIDAnnotationsKey string
-	readReplicaEnabled                bool
 	readReplicaLabelKey               string
 	rotationJobConcurrency            uint
-	rotatorJob                        *k8s.Job
+	readReplicaEnabled                bool
 }
 
 // New returns Indexer object if no error occurs.

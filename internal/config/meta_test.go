@@ -27,23 +27,23 @@ import (
 
 func TestMeta_Bind(t *testing.T) {
 	type fields struct {
-		Host                      string
-		Port                      uint16
 		Client                    *GRPCClient
-		EnableCache               bool
+		Host                      string
 		CacheExpiration           string
 		ExpiredCacheCheckDuration string
+		Port                      uint16
+		EnableCache               bool
 	}
 	type want struct {
 		want *Meta
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *Meta) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *Meta) error {
 		if !reflect.DeepEqual(got, w.want.Bind()) {

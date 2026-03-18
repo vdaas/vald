@@ -33,10 +33,9 @@ type URLOpener interface {
 }
 
 type urlOpener struct {
+	client              *http.Client
 	credentialsFilePath string
 	credentialsJSON     string
-
-	client *http.Client
 }
 
 // New returns URLOpener implementation.

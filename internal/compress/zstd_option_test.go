@@ -36,12 +36,12 @@ func TestWithZstdGob(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -106,12 +106,12 @@ func TestWithZstdCompressionLevel(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -121,7 +121,7 @@ func TestWithZstdCompressionLevel(t *testing.T) {
 		zstdComparator := []comparator.Option{
 			comparator.AllowUnexported(*obj),
 			comparator.Comparer(func(x, y zstd.EOption) bool {
-				return !(x == nil && y != nil) || !(x != nil && y == nil)
+				return (x != nil || y == nil) || (x == nil || y != nil)
 			}),
 		}
 

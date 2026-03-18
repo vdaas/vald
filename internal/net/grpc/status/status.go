@@ -201,21 +201,25 @@ func FromError(err error) (st *Status, ok bool) {
 	for {
 		if st, ok = status.FromError(err); ok && st != nil {
 			if st.Code() == codes.Unknown {
-				switch x := err.(type) {
-				case interface{ Unwrap() error }:
-					err = x.Unwrap()
-					if err == nil {
-						return st, true
-					}
-					sst, ok := FromError(err)
-					if ok && sst != nil {
-						return sst, true
-					}
-				case interface{ Unwrap() []error }:
-					for _, err = range x.Unwrap() {
-						if sst, ok := FromError(err); ok && sst != nil {
-							if sst.Code() != codes.Unknown {
-								return sst, true
+				{
+					var x interface{ Unwrap() error }
+					var x1 interface{ Unwrap() []error }
+					switch {
+					case errors.As(err, &x):
+						err = x.Unwrap()
+						if err == nil {
+							return st, true
+						}
+						sst, ok := FromError(err)
+						if ok && sst != nil {
+							return sst, true
+						}
+					case errors.As(err, &x1):
+						for _, err = range x1.Unwrap() {
+							if sst, ok := FromError(err); ok && sst != nil {
+								if sst.Code() != codes.Unknown {
+									return sst, true
+								}
 							}
 						}
 					}
@@ -224,33 +228,36 @@ func FromError(err error) (st *Status, ok bool) {
 			return st, true
 		}
 
-		switch x := err.(type) {
-		case interface{ Unwrap() error }:
-			err = x.Unwrap()
-			if err == nil {
-				return possibleStatus()
-			}
-		case interface{ Unwrap() []error }:
-			errs := x.Unwrap()
-			if errs == nil {
-				return possibleStatus()
-			}
-			var prev *Status
-			for _, err = range errs {
-				if st, ok = FromError(err); ok && st != nil {
-					if st.Code() != codes.Unknown {
-						return st, true
-					}
-					prev = st
+		{
+			var x interface{ Unwrap() error }
+			var x1 interface{ Unwrap() []error }
+			switch {
+			case errors.As(err, &x):
+				err = x.Unwrap()
+				if err == nil {
+					return possibleStatus()
 				}
+			case errors.As(err, &x1):
+				errs := x1.Unwrap()
+				if errs == nil {
+					return possibleStatus()
+				}
+				var prev *Status
+				for _, err = range errs {
+					if st, ok = FromError(err); ok && st != nil {
+						if st.Code() != codes.Unknown {
+							return st, true
+						}
+						prev = st
+					}
+				}
+				if prev != nil {
+					return prev, true
+				}
+				return possibleStatus()
+			default:
+				return possibleStatus()
 			}
-			if prev != nil {
-				return prev, true
-			}
-			return possibleStatus()
-		default:
-			return possibleStatus()
-
 		}
 	}
 }

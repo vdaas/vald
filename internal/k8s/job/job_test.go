@@ -111,10 +111,10 @@ package job
 // 	}
 // 	type fields struct {
 // 		mgr         manager.Manager
-// 		name        string
-// 		namespaces  []string
 // 		onError     func(err error)
 // 		onReconcile func(ctx context.Context, jobList map[string][]k8s.Job)
+// 		name        string
+// 		namespaces  []string
 // 		listOpts    []client.ListOption
 // 	}
 // 	type want struct {
@@ -150,10 +150,10 @@ package job
 // 		       },
 // 		       fields: fields {
 // 		           mgr:nil,
-// 		           name:"",
-// 		           namespaces:nil,
 // 		           onError:nil,
 // 		           onReconcile:nil,
+// 		           name:"",
+// 		           namespaces:nil,
 // 		           listOpts:nil,
 // 		       },
 // 		       want: want{},
@@ -178,10 +178,10 @@ package job
 // 		           },
 // 		           fields: fields {
 // 		           mgr:nil,
-// 		           name:"",
-// 		           namespaces:nil,
 // 		           onError:nil,
 // 		           onReconcile:nil,
+// 		           name:"",
+// 		           namespaces:nil,
 // 		           listOpts:nil,
 // 		           },
 // 		           want: want{},
@@ -214,10 +214,10 @@ package job
 // 			}
 // 			r := &reconciler{
 // 				mgr:         test.fields.mgr,
-// 				name:        test.fields.name,
-// 				namespaces:  test.fields.namespaces,
 // 				onError:     test.fields.onError,
 // 				onReconcile: test.fields.onReconcile,
+// 				name:        test.fields.name,
+// 				namespaces:  test.fields.namespaces,
 // 				listOpts:    test.fields.listOpts,
 // 			}
 //
@@ -232,10 +232,10 @@ package job
 // func Test_reconciler_GetName(t *testing.T) {
 // 	type fields struct {
 // 		mgr         manager.Manager
-// 		name        string
-// 		namespaces  []string
 // 		onError     func(err error)
 // 		onReconcile func(ctx context.Context, jobList map[string][]k8s.Job)
+// 		name        string
+// 		namespaces  []string
 // 		listOpts    []client.ListOption
 // 	}
 // 	type want struct {
@@ -262,10 +262,10 @@ package job
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           mgr:nil,
-// 		           name:"",
-// 		           namespaces:nil,
 // 		           onError:nil,
 // 		           onReconcile:nil,
+// 		           name:"",
+// 		           namespaces:nil,
 // 		           listOpts:nil,
 // 		       },
 // 		       want: want{},
@@ -286,10 +286,10 @@ package job
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           mgr:nil,
-// 		           name:"",
-// 		           namespaces:nil,
 // 		           onError:nil,
 // 		           onReconcile:nil,
+// 		           name:"",
+// 		           namespaces:nil,
 // 		           listOpts:nil,
 // 		           },
 // 		           want: want{},
@@ -322,10 +322,10 @@ package job
 // 			}
 // 			r := &reconciler{
 // 				mgr:         test.fields.mgr,
-// 				name:        test.fields.name,
-// 				namespaces:  test.fields.namespaces,
 // 				onError:     test.fields.onError,
 // 				onReconcile: test.fields.onReconcile,
+// 				name:        test.fields.name,
+// 				namespaces:  test.fields.namespaces,
 // 				listOpts:    test.fields.listOpts,
 // 			}
 //
@@ -344,10 +344,10 @@ package job
 // 	}
 // 	type fields struct {
 // 		mgr         manager.Manager
-// 		name        string
-// 		namespaces  []string
 // 		onError     func(err error)
 // 		onReconcile func(ctx context.Context, jobList map[string][]k8s.Job)
+// 		name        string
+// 		namespaces  []string
 // 		listOpts    []client.ListOption
 // 	}
 // 	type want struct {
@@ -379,10 +379,10 @@ package job
 // 		       },
 // 		       fields: fields {
 // 		           mgr:nil,
-// 		           name:"",
-// 		           namespaces:nil,
 // 		           onError:nil,
 // 		           onReconcile:nil,
+// 		           name:"",
+// 		           namespaces:nil,
 // 		           listOpts:nil,
 // 		       },
 // 		       want: want{},
@@ -407,10 +407,10 @@ package job
 // 		           },
 // 		           fields: fields {
 // 		           mgr:nil,
-// 		           name:"",
-// 		           namespaces:nil,
 // 		           onError:nil,
 // 		           onReconcile:nil,
+// 		           name:"",
+// 		           namespaces:nil,
 // 		           listOpts:nil,
 // 		           },
 // 		           want: want{},
@@ -443,10 +443,10 @@ package job
 // 			}
 // 			r := &reconciler{
 // 				mgr:         test.fields.mgr,
-// 				name:        test.fields.name,
-// 				namespaces:  test.fields.namespaces,
 // 				onError:     test.fields.onError,
 // 				onReconcile: test.fields.onReconcile,
+// 				name:        test.fields.name,
+// 				namespaces:  test.fields.namespaces,
 // 				listOpts:    test.fields.listOpts,
 // 			}
 //
@@ -461,10 +461,10 @@ package job
 // func Test_reconciler_For(t *testing.T) {
 // 	type fields struct {
 // 		mgr         manager.Manager
-// 		name        string
-// 		namespaces  []string
 // 		onError     func(err error)
 // 		onReconcile func(ctx context.Context, jobList map[string][]k8s.Job)
+// 		name        string
+// 		namespaces  []string
 // 		listOpts    []client.ListOption
 // 	}
 // 	type want struct {
@@ -495,10 +495,10 @@ package job
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           mgr:nil,
-// 		           name:"",
-// 		           namespaces:nil,
 // 		           onError:nil,
 // 		           onReconcile:nil,
+// 		           name:"",
+// 		           namespaces:nil,
 // 		           listOpts:nil,
 // 		       },
 // 		       want: want{},
@@ -519,10 +519,10 @@ package job
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           mgr:nil,
-// 		           name:"",
-// 		           namespaces:nil,
 // 		           onError:nil,
 // 		           onReconcile:nil,
+// 		           name:"",
+// 		           namespaces:nil,
 // 		           listOpts:nil,
 // 		           },
 // 		           want: want{},
@@ -555,10 +555,10 @@ package job
 // 			}
 // 			r := &reconciler{
 // 				mgr:         test.fields.mgr,
-// 				name:        test.fields.name,
-// 				namespaces:  test.fields.namespaces,
 // 				onError:     test.fields.onError,
 // 				onReconcile: test.fields.onReconcile,
+// 				name:        test.fields.name,
+// 				namespaces:  test.fields.namespaces,
 // 				listOpts:    test.fields.listOpts,
 // 			}
 //
@@ -573,10 +573,10 @@ package job
 // func Test_reconciler_Owns(t *testing.T) {
 // 	type fields struct {
 // 		mgr         manager.Manager
-// 		name        string
-// 		namespaces  []string
 // 		onError     func(err error)
 // 		onReconcile func(ctx context.Context, jobList map[string][]k8s.Job)
+// 		name        string
+// 		namespaces  []string
 // 		listOpts    []client.ListOption
 // 	}
 // 	type want struct {
@@ -607,10 +607,10 @@ package job
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           mgr:nil,
-// 		           name:"",
-// 		           namespaces:nil,
 // 		           onError:nil,
 // 		           onReconcile:nil,
+// 		           name:"",
+// 		           namespaces:nil,
 // 		           listOpts:nil,
 // 		       },
 // 		       want: want{},
@@ -631,10 +631,10 @@ package job
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           mgr:nil,
-// 		           name:"",
-// 		           namespaces:nil,
 // 		           onError:nil,
 // 		           onReconcile:nil,
+// 		           name:"",
+// 		           namespaces:nil,
 // 		           listOpts:nil,
 // 		           },
 // 		           want: want{},
@@ -667,10 +667,10 @@ package job
 // 			}
 // 			r := &reconciler{
 // 				mgr:         test.fields.mgr,
-// 				name:        test.fields.name,
-// 				namespaces:  test.fields.namespaces,
 // 				onError:     test.fields.onError,
 // 				onReconcile: test.fields.onReconcile,
+// 				name:        test.fields.name,
+// 				namespaces:  test.fields.namespaces,
 // 				listOpts:    test.fields.listOpts,
 // 			}
 //
@@ -685,10 +685,10 @@ package job
 // func Test_reconciler_Watches(t *testing.T) {
 // 	type fields struct {
 // 		mgr         manager.Manager
-// 		name        string
-// 		namespaces  []string
 // 		onError     func(err error)
 // 		onReconcile func(ctx context.Context, jobList map[string][]k8s.Job)
+// 		name        string
+// 		namespaces  []string
 // 		listOpts    []client.ListOption
 // 	}
 // 	type want struct {
@@ -723,10 +723,10 @@ package job
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           mgr:nil,
-// 		           name:"",
-// 		           namespaces:nil,
 // 		           onError:nil,
 // 		           onReconcile:nil,
+// 		           name:"",
+// 		           namespaces:nil,
 // 		           listOpts:nil,
 // 		       },
 // 		       want: want{},
@@ -747,10 +747,10 @@ package job
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           mgr:nil,
-// 		           name:"",
-// 		           namespaces:nil,
 // 		           onError:nil,
 // 		           onReconcile:nil,
+// 		           name:"",
+// 		           namespaces:nil,
 // 		           listOpts:nil,
 // 		           },
 // 		           want: want{},
@@ -783,10 +783,10 @@ package job
 // 			}
 // 			r := &reconciler{
 // 				mgr:         test.fields.mgr,
-// 				name:        test.fields.name,
-// 				namespaces:  test.fields.namespaces,
 // 				onError:     test.fields.onError,
 // 				onReconcile: test.fields.onReconcile,
+// 				name:        test.fields.name,
+// 				namespaces:  test.fields.namespaces,
 // 				listOpts:    test.fields.listOpts,
 // 			}
 //

@@ -51,60 +51,82 @@ func AtoBST(bst string) BlobStorageType {
 
 // Blob represents Blob configuration.
 type Blob struct {
-	// StorageType represents blob storaget type
-	StorageType string `json:"storage_type" yaml:"storage_type"`
-
-	// Bucket represents bucket name
-	Bucket string `json:"bucket" yaml:"bucket"`
-
-	// S3 represents S3 config
+	// S3 represents S3 configuration.
 	S3 *S3Config `json:"s3" yaml:"s3"`
-
-	// CloudStorage represents CloudStorage config
+	// CloudStorage represents CloudStorage configuration.
 	CloudStorage *CloudStorageConfig `json:"cloud_storage" yaml:"cloud_storage"`
+	// StorageType represents the storage type.
+	StorageType string `json:"storage_type" yaml:"storage_type"`
+	// Bucket represents the bucket name.
+	Bucket string `json:"bucket" yaml:"bucket"`
 }
 
 // S3Config represents S3Config configuration.
 type S3Config struct {
-	Endpoint        string `json:"endpoint"          yaml:"endpoint"`
-	Region          string `json:"region"            yaml:"region"`
-	AccessKey       string `json:"access_key"        yaml:"access_key"`
+	// Endpoint represents the S3 endpoint.
+	Endpoint string `json:"endpoint" yaml:"endpoint"`
+	// Region represents the S3 region.
+	Region string `json:"region" yaml:"region"`
+	// AccessKey represents the access key.
+	AccessKey string `json:"access_key" yaml:"access_key"`
+	// SecretAccessKey represents the secret access key.
 	SecretAccessKey string `json:"secret_access_key" yaml:"secret_access_key"`
-	Token           string `json:"token"             yaml:"token"`
-
-	MaxRetries                 int  `json:"max_retries"                   yaml:"max_retries"`
-	ForcePathStyle             bool `json:"force_path_style"              yaml:"force_path_style"`
-	UseAccelerate              bool `json:"use_accelerate"                yaml:"use_accelerate"`
-	UseARNRegion               bool `json:"use_arn_region"                yaml:"use_arn_region"`
-	UseDualStack               bool `json:"use_dual_stack"                yaml:"use_dual_stack"`
-	EnableSSL                  bool `json:"enable_ssl"                    yaml:"enable_ssl"`
-	EnableParamValidation      bool `json:"enable_param_validation"       yaml:"enable_param_validation"`
-	Enable100Continue          bool `json:"enable_100_continue"           yaml:"enable_100_continue"`
-	EnableContentMD5Validation bool `json:"enable_content_md5_validation" yaml:"enable_content_md5_validation"`
-	EnableEndpointDiscovery    bool `json:"enable_endpoint_discovery"     yaml:"enable_endpoint_discovery"`
-	EnableEndpointHostPrefix   bool `json:"enable_endpoint_host_prefix"   yaml:"enable_endpoint_host_prefix"`
-
-	MaxPartSize  string `json:"max_part_size"  yaml:"max_part_size"`
+	// Token represents the session token.
+	Token string `json:"token" yaml:"token"`
+	// MaxChunkSize represents the maximum chunk size.
 	MaxChunkSize string `json:"max_chunk_size" yaml:"max_chunk_size"`
+	// MaxPartSize represents the maximum part size.
+	MaxPartSize string `json:"max_part_size" yaml:"max_part_size"`
+	// MaxRetries represents the maximum retry count.
+	MaxRetries int `json:"max_retries" yaml:"max_retries"`
+	// UseARNRegion enables using ARN region.
+	UseARNRegion bool `json:"use_arn_region" yaml:"use_arn_region"`
+	// UseDualStack enables using dual stack.
+	UseDualStack bool `json:"use_dual_stack" yaml:"use_dual_stack"`
+	// EnableSSL enables SSL.
+	EnableSSL bool `json:"enable_ssl" yaml:"enable_ssl"`
+	// EnableParamValidation enables parameter validation.
+	EnableParamValidation bool `json:"enable_param_validation" yaml:"enable_param_validation"`
+	// Enable100Continue enables 100-continue.
+	Enable100Continue bool `json:"enable_100_continue" yaml:"enable_100_continue"`
+	// EnableContentMD5Validation enables content MD5 validation.
+	EnableContentMD5Validation bool `json:"enable_content_md5_validation" yaml:"enable_content_md5_validation"`
+	// EnableEndpointDiscovery enables endpoint discovery.
+	EnableEndpointDiscovery bool `json:"enable_endpoint_discovery" yaml:"enable_endpoint_discovery"`
+	// EnableEndpointHostPrefix enables endpoint host prefix.
+	EnableEndpointHostPrefix bool `json:"enable_endpoint_host_prefix" yaml:"enable_endpoint_host_prefix"`
+	// UseAccelerate enables using accelerate.
+	UseAccelerate bool `json:"use_accelerate" yaml:"use_accelerate"`
+	// ForcePathStyle enables forcing path style.
+	ForcePathStyle bool `json:"force_path_style" yaml:"force_path_style"`
 }
 
 // CloudStorageConfig represents CloudStorage configuration.
 type CloudStorageConfig struct {
-	URL    string              `json:"url"    yaml:"url"`
+	// Client represents the CloudStorage client configuration.
 	Client *CloudStorageClient `json:"client" yaml:"client"`
-
-	WriteBufferSize         int    `json:"write_buffer_size"         yaml:"write_buffer_size"`
-	WriteCacheControl       string `json:"write_cache_control"       yaml:"write_cache_control"`
+	// URL represents the storage URL.
+	URL string `json:"url" yaml:"url"`
+	// WriteCacheControl represents the cache control header.
+	WriteCacheControl string `json:"write_cache_control" yaml:"write_cache_control"`
+	// WriteContentDisposition represents the content disposition header.
 	WriteContentDisposition string `json:"write_content_disposition" yaml:"write_content_disposition"`
-	WriteContentEncoding    string `json:"write_content_encoding"    yaml:"write_content_encoding"`
-	WriteContentLanguage    string `json:"write_content_language"    yaml:"write_content_language"`
-	WriteContentType        string `json:"write_content_type"        yaml:"write_content_type"`
+	// WriteContentEncoding represents the content encoding header.
+	WriteContentEncoding string `json:"write_content_encoding" yaml:"write_content_encoding"`
+	// WriteContentLanguage represents the content language header.
+	WriteContentLanguage string `json:"write_content_language" yaml:"write_content_language"`
+	// WriteContentType represents the content type header.
+	WriteContentType string `json:"write_content_type" yaml:"write_content_type"`
+	// WriteBufferSize represents the write buffer size.
+	WriteBufferSize int `json:"write_buffer_size" yaml:"write_buffer_size"`
 }
 
 // CloudStorageClient represents CloudStorage client configuration.
 type CloudStorageClient struct {
+	// CredentialsFilePath represents the path to the credentials file.
 	CredentialsFilePath string `json:"credentials_file_path" yaml:"credentials_file_path"`
-	CredentialsJSON     string `json:"credentials_json"      yaml:"credentials_json"`
+	// CredentialsJSON represents the credentials JSON string.
+	CredentialsJSON string `json:"credentials_json" yaml:"credentials_json"`
 }
 
 // Bind binds the actual data from the CloudStorageClient receiver fields.

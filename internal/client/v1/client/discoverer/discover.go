@@ -51,25 +51,24 @@ type Client interface {
 }
 
 type client struct {
-	autoconn     bool
-	onDiscover   func(ctx context.Context, c Client, addrs []string) error
-	onConnect    func(ctx context.Context, c Client, addr string) error
-	onDisconnect func(ctx context.Context, c Client, addr string) error
-	client       grpc.Client
-	dns          string
-	opts         []grpc.Option
-	port         int
-	addrs        atomic.Pointer[[]string]
-	dscClient    grpc.Client
-	dscDur       time.Duration
-	eg           errgroup.Group
-	name         string
-	namespace    string
-	nodeName     string
-	// read replica related members below
+	client              grpc.Client
 	readClient          grpc.Client
+	eg                  errgroup.Group
+	dscClient           grpc.Client
+	addrs               atomic.Pointer[[]string]
+	onDisconnect        func(ctx context.Context, c Client, addr string) error
+	onDiscover          func(ctx context.Context, c Client, addrs []string) error
+	onConnect           func(ctx context.Context, c Client, addr string) error
+	nodeName            string
+	name                string
+	namespace           string
+	dns                 string
+	opts                []grpc.Option
+	dscDur              time.Duration
+	port                int
 	readReplicaReplicas uint64
 	roundRobin          atomic.Uint64
+	autoconn            bool
 }
 
 func New(opts ...Option) (d Client, err error) {
@@ -163,7 +162,7 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 				}
 			}
 			err = ctx.Err()
-			if err != nil && err != context.Canceled {
+			if err != nil && !errors.Is(err, context.Canceled) {
 				errs = errors.Join(errs, err)
 			}
 			return errs

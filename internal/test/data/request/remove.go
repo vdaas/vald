@@ -24,7 +24,7 @@ func GenMultiRemoveReq(num int, cfg *payload.Remove_Config) *payload.Remove_Mult
 	req := &payload.Remove_MultiRequest{
 		Requests: make([]*payload.Remove_Request, num),
 	}
-	for i := 0; i < num; i++ {
+	for i := range num {
 		req.Requests[i] = &payload.Remove_Request{
 			Id: &payload.Object_ID{
 				Id: "uuid-" + strconv.Itoa(i+1),

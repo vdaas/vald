@@ -518,9 +518,9 @@ func load(path string) (train, test [][]float32, err error) {
 		// Converts a one-dimensional array to a two-dimensional array.
 		// Use the `dim` variable as a separator.
 		vecs := make([][]float32, row)
-		for i := 0; i < row; i++ {
+		for i := range row {
 			vecs[i] = make([]float32, dim)
-			for j := 0; j < dim; j++ {
+			for j := range dim {
 				vecs[i][j] = vec[i*dim+j]
 			}
 		}

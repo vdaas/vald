@@ -17,7 +17,6 @@
 package metrics
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -79,7 +78,7 @@ func TestCollector_Record_And_Snapshot(t *testing.T) {
 			return nil, err
 		}
 		for _, r := range args.records {
-			c.Record(context.Background(), 0, r)
+			c.Record(t.Context(), 0, r)
 		}
 		return c.GlobalSnapshot(), nil
 	}, []test.Case[*GlobalSnapshot, args]{
@@ -187,7 +186,7 @@ func TestCollector_Merge(t *testing.T) {
 			return nil, err
 		}
 		for _, r := range args.c1Records {
-			c1.Record(context.Background(), 0, r)
+			c1.Record(t.Context(), 0, r)
 		}
 
 		c2, err := NewCollector(args.c2Opts...)
@@ -195,7 +194,7 @@ func TestCollector_Merge(t *testing.T) {
 			return nil, err
 		}
 		for _, r := range args.c2Records {
-			c2.Record(context.Background(), 0, r)
+			c2.Record(t.Context(), 0, r)
 		}
 
 		if err := c2.MergeInto(c1); err != nil {

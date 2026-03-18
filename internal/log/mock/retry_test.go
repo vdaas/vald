@@ -31,13 +31,13 @@ func TestRetry_Out(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fieldsFunc func(*testing.T) fields
 		want       want
+		fieldsFunc func(*testing.T) fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -121,13 +121,13 @@ func TestRetry_Outf(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fieldsFunc func(*testing.T) fields
 		want       want
+		fieldsFunc func(*testing.T) fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil

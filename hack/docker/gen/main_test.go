@@ -102,10 +102,10 @@ func TestTopologicalSortOrder(t *testing.T) {
 		return -1
 	}
 	ia, ib, ic := gi("A"), gi("B"), gi("C")
-	if !(ia != -1 && ib != -1 && ic != -1) {
+	if ia == -1 || ib == -1 || ic == -1 {
 		t.Fatalf("missing keys in topologicalSort result: %v", got)
 	}
-	if !(ia < ib && ib < ic) {
+	if ia >= ib || ib >= ic {
 		t.Fatalf("unexpected order: %v (want A < B < C)", got)
 	}
 }

@@ -35,9 +35,9 @@ func (*writer) Write(p []byte) (n int, err error) {
 }
 
 type reader struct {
+	io.Reader
 	pos int
 	len int
-	io.Reader
 }
 
 func (r *reader) Read(p []byte) (n int, err error) {
@@ -45,17 +45,14 @@ func (r *reader) Read(p []byte) (n int, err error) {
 		return 0, io.EOF
 	}
 
-	read := r.len - r.pos
-	if read > len(p) {
-		read = len(p)
-	}
+	read := min(r.len-r.pos, len(p))
 
 	r.pos += read
 	return read, nil
 }
 
 func BenchmarkStandardIOCopy(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		w := &writer{}
 		r := &reader{len: readerLength}
 
@@ -64,7 +61,7 @@ func BenchmarkStandardIOCopy(b *testing.B) {
 }
 
 func BenchmarkStandardIOCopyBuffer(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		buf := make([]byte, bufferLength)
 		w := &writer{}
 		r := &reader{len: readerLength}
@@ -74,7 +71,7 @@ func BenchmarkStandardIOCopyBuffer(b *testing.B) {
 
 func BenchmarkValdIOCopy(b *testing.B) {
 	c := NewCopier(bufferLength)
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		w := &writer{}
 		r := &reader{len: readerLength}
 		c.Copy(w, r)
@@ -83,7 +80,7 @@ func BenchmarkValdIOCopy(b *testing.B) {
 
 func BenchmarkValdIOCopyBuffer(b *testing.B) {
 	c := NewCopier(bufferLength)
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		w := &writer{}
 		r := &reader{len: readerLength}
 		c.CopyBuffer(w, r, nil)

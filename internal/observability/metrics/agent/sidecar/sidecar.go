@@ -42,12 +42,11 @@ type MetricsHook interface {
 }
 
 type sidecarMetrics struct {
+	info           *observer.BackupInfo
 	storageTypeKey string
 	bucketNameKey  string
 	filenameKey    string
-
-	mu   sync.Mutex
-	info *observer.BackupInfo
+	mu             sync.Mutex
 }
 
 func New() MetricsHook {
@@ -128,7 +127,7 @@ func (sm *sidecarMetrics) Register(m metrics.Meter) error {
 			}
 
 			attrs := api.WithAttributes(
-				attribute.String(sm.storageTypeKey, sm.info.StorageInfo.Type),
+				attribute.String(sm.storageTypeKey, sm.info.Type),
 				attribute.String(sm.bucketNameKey, sm.info.BucketName),
 				attribute.String(sm.filenameKey, sm.info.Filename),
 			)

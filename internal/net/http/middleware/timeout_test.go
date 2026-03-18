@@ -14,7 +14,6 @@
 package middleware
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -31,8 +30,8 @@ import (
 func TestNewTimeout(t *testing.T) {
 	t.Parallel()
 	type test struct {
-		name string
 		want Wrapper
+		name string
 	}
 	tests := []test{
 		{
@@ -66,10 +65,10 @@ func Test_timeout_Wrap(t *testing.T) {
 		dur time.Duration
 	}
 	type test struct {
-		name      string
 		args      args
-		field     field
 		checkFunc func(code int, err error) error
+		name      string
+		field     field
 	}
 	tests := []test{
 		func() test {
@@ -168,7 +167,7 @@ func Test_timeout_Wrap(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 
-			eg, _ := errgroup.New(context.Background())
+			eg, _ := errgroup.New(tt.Context())
 			to := &timeout{
 				dur: test.field.dur,
 				eg:  eg,

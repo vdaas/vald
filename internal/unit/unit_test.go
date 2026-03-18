@@ -29,16 +29,16 @@ func TestParseBytes(t *testing.T) {
 		bs string
 	}
 	type want struct {
-		wantBytes uint64
 		err       error
+		wantBytes uint64
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, uint64, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, gotBytes uint64, err error) error {
 		if !errors.Is(err, w.err) {
