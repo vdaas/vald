@@ -290,6 +290,15 @@ func (r *runner) processExecution(
 						e.Name, time.Since(start).String(), e.Type, e.Mode, idx)
 				}()
 				return r.processIndex(ttt, ctx, e)
+			case config.OpResourceStatsDetail:
+				start := time.Now()
+				log.Infof("started %s execution at %s, type: %s, mode: %s, execution: %d",
+					e.Name, start.Format("2006-01-02 15:04:05"), e.Type, e.Mode, idx)
+				defer func() {
+					log.Infof("finished %s execution in %s, type: %s, mode: %s, execution: %d",
+						e.Name, time.Since(start).String(), e.Type, e.Mode, idx)
+				}()
+				return r.processStats(ttt, ctx, e)
 			case config.OpCreateIndex,
 				config.OpSaveIndex,
 				config.OpCreateAndSaveIndex:

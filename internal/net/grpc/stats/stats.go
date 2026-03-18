@@ -76,7 +76,12 @@ type server struct {
 
 func (s *server) ResourceStats(
 	ctx context.Context, _ *payload.Empty,
-) (stats *payload.Info_ResourceStats, err error) {
+) (stats *payload.Info_Stats_ResourceStats, err error) {
+	return GetResourceStats(ctx)
+}
+
+// GetResourceStats returns local resource stats measured from cgroup metrics.
+func GetResourceStats(ctx context.Context) (stats *payload.Info_Stats_ResourceStats, err error) {
 	hostname, err := os.Hostname()
 	if err != nil {
 		hostname = "unknown"
@@ -87,7 +92,7 @@ func (s *server) ResourceStats(
 		ip = "unknown"
 	}
 
-	stats = &payload.Info_ResourceStats{
+	stats = &payload.Info_Stats_ResourceStats{
 		Name: hostname,
 		Ip:   ip,
 	}
@@ -96,7 +101,7 @@ func (s *server) ResourceStats(
 		log.Warn("failed to measure cgroup stats", err)
 	}
 	if cgroupStats != nil {
-		stats.CgroupStats = &payload.Info_CgroupStats{
+		stats.CgroupStats = &payload.Info_Stats_CgroupStats{
 			CpuLimitCores:    cgroupStats.CPULimitCores,
 			CpuUsageCores:    cgroupStats.CPUUsageCores,
 			MemoryLimitBytes: cgroupStats.MemoryLimitBytes,

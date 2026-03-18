@@ -495,6 +495,8 @@ func (e *Execution) Bind(parentMetrics *Metrics) (bound *Execution, err error) {
 		OpIndexStatisticsDetail,
 		OpIndexProperty,
 		OpFlush:
+	case OpResourceStatsDetail:
+		// do nothing
 	case OpCreateIndex,
 		OpSaveIndex,
 		OpCreateAndSaveIndex:
@@ -614,6 +616,8 @@ func (ot OperationType) Bind() (bound OperationType, err error) {
 		return OpIndexStatistics, nil
 	case "indexstatisticsdetail", "statisticsdetail", "statdetail", "isd":
 		return OpIndexStatisticsDetail, nil
+	case "resourcestatsdetail", "statsdetail", "rsd":
+		return OpResourceStatsDetail, nil
 	case "indexproperty", "property", "prop", "ip":
 		return OpIndexProperty, nil
 	case "flush", "fl", "f":
