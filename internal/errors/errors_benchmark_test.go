@@ -43,7 +43,7 @@ func TestMain(m *testing.M) {
 		m.Run()
 		return
 	}
-	for i := 0; i < bigDataCount; i++ {
+	for range bigDataCount {
 		bigData[strings.Random(bigDataLen)] = New(strings.Random(bigDataLen))
 	}
 	m.Run()

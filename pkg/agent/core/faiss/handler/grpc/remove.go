@@ -128,11 +128,11 @@ func (s *server) Remove(
 }
 
 func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error) {
-	return s.UnimplementedValdServer.UnimplementedRemoveServer.StreamRemove(stream)
+	return s.UnimplementedRemoveServer.StreamRemove(stream)
 }
 
 func (s *server) MultiRemove(
 	ctx context.Context, reqs *payload.Remove_MultiRequest,
 ) (res *payload.Object_Locations, err error) {
-	return s.UnimplementedValdServer.UnimplementedRemoveServer.MultiRemove(ctx, reqs)
+	return s.UnimplementedRemoveServer.MultiRemove(ctx, reqs)
 }

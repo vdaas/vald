@@ -50,12 +50,9 @@ type Parser interface {
 }
 
 type parser struct {
-	overrideDefault bool
-	name            string
-	filters         []func(string) bool
-	f               *flag.FlagSet
-	defaults        *flag.FlagSet
-	filePath        struct {
+	f        *flag.FlagSet
+	defaults *flag.FlagSet
+	filePath struct {
 		keys        []string
 		defaultPath string
 		description string
@@ -65,7 +62,10 @@ type parser struct {
 		defaultFlag bool
 		description string
 	}
-	ErrorHandler ErrorHandling
+	name            string
+	filters         []func(string) bool
+	ErrorHandler    ErrorHandling
+	overrideDefault bool
 }
 
 // New returns parser object.

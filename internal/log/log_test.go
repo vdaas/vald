@@ -43,12 +43,12 @@ func TestInit(t *testing.T) {
 		l logger.Logger
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, logger.Logger) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got logger.Logger) error {
 		if !reflect.DeepEqual(got, l) {
@@ -124,12 +124,12 @@ func Test_getLogger(t *testing.T) {
 		want logger.Logger
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
+		args       args
 		checkFunc  func(want, logger.Logger) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got logger.Logger) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -238,12 +238,12 @@ func TestBold(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -294,12 +294,12 @@ func TestDebug(t *testing.T) {
 		vals []any
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		want       want
 	}
 	tests := []test{
 		func() test {
@@ -319,9 +319,7 @@ func TestDebug(t *testing.T) {
 
 			return test{
 				name: "output success",
-				args: args{
-					vals: w.vals,
-				},
+				args: args(w),
 				want: w,
 				beforeFunc: func(t *testing.T, _ args) {
 					t.Helper()
@@ -370,12 +368,12 @@ func TestDebugf(t *testing.T) {
 		vals   []any
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		want       want
 	}
 	tests := []test{
 		func() test {
@@ -399,10 +397,7 @@ func TestDebugf(t *testing.T) {
 
 			return test{
 				name: "output success",
-				args: args{
-					format: w.format,
-					vals:   w.vals,
-				},
+				args: args(w),
 				want: w,
 				beforeFunc: func(t *testing.T, _ args) {
 					t.Helper()
@@ -452,12 +447,12 @@ func TestInfo(t *testing.T) {
 		vals []any
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		want       want
 	}
 	tests := []test{
 		func() test {
@@ -477,9 +472,7 @@ func TestInfo(t *testing.T) {
 
 			return test{
 				name: "output success",
-				args: args{
-					vals: w.vals,
-				},
+				args: args(w),
 				want: w,
 				beforeFunc: func(t *testing.T, _ args) {
 					t.Helper()
@@ -528,12 +521,12 @@ func TestInfof(t *testing.T) {
 		vals   []any
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		want       want
 	}
 	tests := []test{
 		func() test {
@@ -557,10 +550,7 @@ func TestInfof(t *testing.T) {
 
 			return test{
 				name: "output success",
-				args: args{
-					format: w.format,
-					vals:   w.vals,
-				},
+				args: args(w),
 				want: w,
 				beforeFunc: func(t *testing.T, _ args) {
 					t.Helper()
@@ -610,12 +600,12 @@ func TestWarn(t *testing.T) {
 		vals []any
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		want       want
 	}
 	tests := []test{
 		func() test {
@@ -635,9 +625,7 @@ func TestWarn(t *testing.T) {
 
 			return test{
 				name: "output success",
-				args: args{
-					vals: w.vals,
-				},
+				args: args(w),
 				want: w,
 				beforeFunc: func(t *testing.T, _ args) {
 					t.Helper()
@@ -686,12 +674,12 @@ func TestWarnf(t *testing.T) {
 		vals   []any
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		want       want
 	}
 	tests := []test{
 		func() test {
@@ -715,10 +703,7 @@ func TestWarnf(t *testing.T) {
 
 			return test{
 				name: "output success",
-				args: args{
-					format: w.format,
-					vals:   w.vals,
-				},
+				args: args(w),
 				want: w,
 				beforeFunc: func(t *testing.T, _ args) {
 					t.Helper()
@@ -768,12 +753,12 @@ func TestError(t *testing.T) {
 		vals []any
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		want       want
 	}
 	tests := []test{
 		func() test {
@@ -793,9 +778,7 @@ func TestError(t *testing.T) {
 
 			return test{
 				name: "output success",
-				args: args{
-					vals: w.vals,
-				},
+				args: args(w),
 				want: w,
 				beforeFunc: func(t *testing.T, _ args) {
 					t.Helper()
@@ -844,12 +827,12 @@ func TestErrorf(t *testing.T) {
 		vals   []any
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		want       want
 	}
 	tests := []test{
 		func() test {
@@ -873,10 +856,7 @@ func TestErrorf(t *testing.T) {
 
 			return test{
 				name: "output success",
-				args: args{
-					format: w.format,
-					vals:   w.vals,
-				},
+				args: args(w),
 				want: w,
 				beforeFunc: func(t *testing.T, _ args) {
 					t.Helper()
@@ -926,12 +906,12 @@ func TestFatal(t *testing.T) {
 		vals []any
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		want       want
 	}
 	tests := []test{
 		func() test {
@@ -951,9 +931,7 @@ func TestFatal(t *testing.T) {
 
 			return test{
 				name: "output success",
-				args: args{
-					vals: w.vals,
-				},
+				args: args(w),
 				want: w,
 				beforeFunc: func(t *testing.T, _ args) {
 					t.Helper()
@@ -1002,12 +980,12 @@ func TestFatalf(t *testing.T) {
 		vals   []any
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		want       want
 	}
 	tests := []test{
 		func() test {
@@ -1031,10 +1009,7 @@ func TestFatalf(t *testing.T) {
 
 			return test{
 				name: "output success",
-				args: args{
-					format: w.format,
-					vals:   w.vals,
-				},
+				args: args(w),
 				want: w,
 				beforeFunc: func(t *testing.T, _ args) {
 					t.Helper()

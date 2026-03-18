@@ -24,19 +24,19 @@ import (
 
 func TestGenMultiRemoveReq(t *testing.T) {
 	type args struct {
-		num int
 		cfg *payload.Remove_Config
+		num int
 	}
 	type want struct {
 		want *payload.Remove_MultiRequest
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, *payload.Remove_MultiRequest) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got *payload.Remove_MultiRequest) error {
 		if !reflect.DeepEqual(got, w.want) {

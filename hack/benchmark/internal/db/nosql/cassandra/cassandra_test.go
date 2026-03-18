@@ -60,10 +60,10 @@ type ReadMetaVector struct {
 }
 
 type MetaVector struct {
-	UUID   string   `json:"uuid"   db:"uuid"`
-	Vector []byte   `json:"vector" db:"vector"`
-	Meta   string   `json:"meta"   db:"meta"`
-	IPs    []string `json:"ips"    db:"ips"`
+	UUID   string   `db:"uuid"   json:"uuid"`
+	Vector []byte   `db:"vector" json:"vector"`
+	Meta   string   `db:"meta"   json:"meta"`
+	IPs    []string `db:"ips"    json:"ips"`
 }
 
 func init() {
@@ -108,7 +108,7 @@ func init() {
 		panic(err)
 	}
 
-	ctx := context.Background()
+	ctx := context.TODO()
 	err = c.Open(ctx)
 	if err != nil {
 		panic(err)
@@ -186,7 +186,8 @@ func BenchmarkGocqlxSelectBindMap(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	b.StartTimer()
-	for i := 0; i < b.N; i++ {
+	i := 0
+	for b.Loop() {
 		// query
 		if err := c.Query(
 			cassandra.Select(
@@ -202,6 +203,7 @@ func BenchmarkGocqlxSelectBindMap(b *testing.B) {
 		if val.UUID != keys[i%len(metas)][uuidColumn] {
 			b.Errorf("Verify failed: %s != %s", val.UUID, keys[i%len(metas)][uuidColumn])
 		}
+		i++
 	}
 	b.StopTimer()
 }
@@ -223,7 +225,8 @@ func BenchmarkGocqlxSelectBindStruct(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	b.StartTimer()
-	for i := 0; i < b.N; i++ {
+	i := 0
+	for b.Loop() {
 		// query
 		if err := c.Query(
 			cassandra.Select(
@@ -239,6 +242,7 @@ func BenchmarkGocqlxSelectBindStruct(b *testing.B) {
 		if val.UUID != keys[i%len(metas)].UUID {
 			b.Errorf("Verify failed: %s != %s", val.UUID, keys[i%len(metas)].UUID)
 		}
+		i++
 	}
 	b.StopTimer()
 }

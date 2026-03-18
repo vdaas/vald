@@ -60,8 +60,8 @@ type reconciler struct {
 type Target struct {
 	Colocation string
 	Host       string
-	Port       int
 	Phase      MirrorTargetPhase
+	Port       int
 }
 
 func New(opts ...Option) (MirrorTargetWatcher, error) {

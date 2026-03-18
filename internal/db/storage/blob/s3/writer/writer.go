@@ -20,7 +20,6 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/sdk/s3/s3iface"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/sdk/s3/s3manager"
 	"github.com/vdaas/vald/internal/errors"
@@ -32,16 +31,14 @@ import (
 )
 
 type writer struct {
-	eg        errgroup.Group
-	s3manager s3manager.S3Manager
-	service   s3iface.S3API
-	bucket    string
-
+	eg          errgroup.Group
+	s3manager   s3manager.S3Manager
+	service     s3iface.S3API
+	pw          io.WriteCloser
+	wg          *sync.WaitGroup
+	bucket      string
 	contentType string
 	maxPartSize int64
-
-	pw io.WriteCloser
-	wg *sync.WaitGroup
 }
 
 // Writer represents an interface to write to s3.
@@ -115,10 +112,10 @@ func (w *writer) upload(ctx context.Context, key string, body io.Reader) (err er
 		},
 	)
 	input := &s3manager.UploadInput{
-		Bucket:      aws.String(w.bucket),
-		Key:         aws.String(key),
+		Bucket:      new(w.bucket),
+		Key:         new(key),
 		Body:        body,
-		ContentType: aws.String(w.contentType),
+		ContentType: new(w.contentType),
 	}
 
 	res, err := client.UploadWithContext(ctx, input)

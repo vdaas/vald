@@ -24,99 +24,45 @@ type Affinity struct {
 
 // Agent.
 type Agent struct {
-	Affinity *Affinity `json:"affinity,omitempty"`
-
-	// deployment annotations
-	Annotations *Annotations `json:"annotations,omitempty"`
-
-	// agent enabled
-	Enabled bool `json:"enabled,omitempty"`
-
-	// environment variables
-	Env []*EnvItems `json:"env,omitempty"`
-
-	// external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
-	ExternalTrafficPolicy string `json:"externalTrafficPolicy,omitempty"`
-	Hpa                   *Hpa   `json:"hpa,omitempty"`
-	Image                 *Image `json:"image,omitempty"`
-
-	// init containers
-	InitContainers []*InitContainersItems `json:"initContainers,omitempty"`
-
-	// deployment kind: Deployment, DaemonSet or StatefulSet
-	Kind    string   `json:"kind,omitempty"`
-	Logging *Logging `json:"logging,omitempty"`
-
-	// maximum number of replicas. if HPA is disabled, this value will be ignored.
-	MaxReplicas int `json:"maxReplicas,omitempty"`
-
-	// maximum number of unavailable replicas
-	MaxUnavailable string `json:"maxUnavailable,omitempty"`
-
-	// minimum number of replicas. if HPA is disabled, the replicas will be set to this value
-	MinReplicas int `json:"minReplicas,omitempty"`
-
-	// name of agent deployment
-	Name string      `json:"name,omitempty"`
-	Ngt  *config.NGT `json:"ngt,omitempty"`
-
-	// node name
-	NodeName string `json:"nodeName,omitempty"`
-
-	// node selector
-	NodeSelector     *NodeSelector     `json:"nodeSelector,omitempty"`
-	Observability    *Observability    `json:"observability,omitempty"`
-	PersistentVolume *PersistentVolume `json:"persistentVolume,omitempty"`
-
-	// pod annotations
-	PodAnnotations *PodAnnotations `json:"podAnnotations,omitempty"`
-
-	// pod management policy: OrderedReady or Parallel
-	PodManagementPolicy string       `json:"podManagementPolicy,omitempty"`
-	PodPriority         *PodPriority `json:"podPriority,omitempty"`
-
-	// security context for pod
-	PodSecurityContext *PodSecurityContext `json:"podSecurityContext,omitempty"`
-
-	// progress deadline seconds
-	ProgressDeadlineSeconds int `json:"progressDeadlineSeconds,omitempty"`
-
-	// compute resources
-	Resources *Resources `json:"resources,omitempty"`
-
-	// number of old history to retain to allow rollback
-	RevisionHistoryLimit int            `json:"revisionHistoryLimit,omitempty"`
-	RollingUpdate        *RollingUpdate `json:"rollingUpdate,omitempty"`
-
-	// security context for container
-	SecurityContext *SecurityContext `json:"securityContext,omitempty"`
-	ServerConfig    *ServerConfig    `json:"server_config,omitempty"`
-	Service         *Service         `json:"service,omitempty"`
-
-	// service type: ClusterIP, LoadBalancer or NodePort
-	ServiceType string   `json:"serviceType,omitempty"`
-	Sidecar     *Sidecar `json:"sidecar,omitempty"`
-
-	// duration in seconds pod needs to terminate gracefully
-	TerminationGracePeriodSeconds int `json:"terminationGracePeriodSeconds,omitempty"`
-
-	// Time zone
-	TimeZone string `json:"time_zone,omitempty"`
-
-	// tolerations
-	Tolerations []*TolerationsItems `json:"tolerations,omitempty"`
-
-	// topology spread constraints of gateway pods
-	TopologySpreadConstraints []*TopologySpreadConstraintsItems `json:"topologySpreadConstraints,omitempty"`
-
-	// version of gateway config
-	Version string `json:"version,omitempty"`
-
-	// volume mounts
-	VolumeMounts []*VolumeMountsItems `json:"volumeMounts,omitempty"`
-
-	// volumes
-	Volumes []*VolumesItems `json:"volumes,omitempty"`
+	PersistentVolume              *PersistentVolume                 `json:"persistentVolume,omitempty"`
+	ServerConfig                  *ServerConfig                     `json:"server_config,omitempty"`
+	Sidecar                       *Sidecar                          `json:"sidecar,omitempty"`
+	Service                       *Service                          `json:"service,omitempty"`
+	Affinity                      *Affinity                         `json:"affinity,omitempty"`
+	Hpa                           *Hpa                              `json:"hpa,omitempty"`
+	Image                         *Image                            `json:"image,omitempty"`
+	SecurityContext               *SecurityContext                  `json:"securityContext,omitempty"`
+	RollingUpdate                 *RollingUpdate                    `json:"rollingUpdate,omitempty"`
+	Logging                       *Logging                          `json:"logging,omitempty"`
+	Resources                     *Resources                        `json:"resources,omitempty"`
+	PodSecurityContext            *PodSecurityContext               `json:"podSecurityContext,omitempty"`
+	PodPriority                   *PodPriority                      `json:"podPriority,omitempty"`
+	NodeSelector                  *NodeSelector                     `json:"nodeSelector,omitempty"`
+	Ngt                           *config.NGT                       `json:"ngt,omitempty"`
+	Annotations                   *Annotations                      `json:"annotations,omitempty"`
+	PodAnnotations                *PodAnnotations                   `json:"podAnnotations,omitempty"`
+	Observability                 *Observability                    `json:"observability,omitempty"`
+	ExternalTrafficPolicy         string                            `json:"externalTrafficPolicy,omitempty"`
+	NodeName                      string                            `json:"nodeName,omitempty"`
+	Version                       string                            `json:"version,omitempty"`
+	ServiceType                   string                            `json:"serviceType,omitempty"`
+	MaxUnavailable                string                            `json:"maxUnavailable,omitempty"`
+	PodManagementPolicy           string                            `json:"podManagementPolicy,omitempty"`
+	TimeZone                      string                            `json:"time_zone,omitempty"`
+	Kind                          string                            `json:"kind,omitempty"`
+	Name                          string                            `json:"name,omitempty"`
+	Tolerations                   []*TolerationsItems               `json:"tolerations,omitempty"`
+	Env                           []*EnvItems                       `json:"env,omitempty"`
+	InitContainers                []*InitContainersItems            `json:"initContainers,omitempty"`
+	TopologySpreadConstraints     []*TopologySpreadConstraintsItems `json:"topologySpreadConstraints,omitempty"`
+	VolumeMounts                  []*VolumeMountsItems              `json:"volumeMounts,omitempty"`
+	Volumes                       []*VolumesItems                   `json:"volumes,omitempty"`
+	RevisionHistoryLimit          int                               `json:"revisionHistoryLimit,omitempty"`
+	TerminationGracePeriodSeconds int                               `json:"terminationGracePeriodSeconds,omitempty"`
+	MaxReplicas                   int                               `json:"maxReplicas,omitempty"`
+	MinReplicas                   int                               `json:"minReplicas,omitempty"`
+	ProgressDeadlineSeconds       int                               `json:"progressDeadlineSeconds,omitempty"`
+	Enabled                       bool                              `json:"enabled,omitempty"`
 }
 
 // Annotations deployment annotations.
@@ -135,53 +81,32 @@ type BlobStorage struct {
 
 // CloudStorage.
 type CloudStorage struct {
-	Client *config.GRPCClient `json:"client,omitempty"`
-
-	// cloud storage url
-	Url string `json:"url,omitempty"`
-
-	// bytes of the chunks for upload
-	WriteBufferSize int `json:"write_buffer_size,omitempty"`
-
-	// Cache-Control of HTTP Header
-	WriteCacheControl string `json:"write_cache_control,omitempty"`
-
-	// Content-Disposition of HTTP Header
-	WriteContentDisposition string `json:"write_content_disposition,omitempty"`
-
-	// the encoding of the blob's content
-	WriteContentEncoding string `json:"write_content_encoding,omitempty"`
-
-	// the language of blob's content
-	WriteContentLanguage string `json:"write_content_language,omitempty"`
-
-	// MIME type of the blob
-	WriteContentType string `json:"write_content_type,omitempty"`
+	Client                  *config.GRPCClient `json:"client,omitempty"`
+	Url                     string             `json:"url,omitempty"`
+	WriteCacheControl       string             `json:"write_cache_control,omitempty"`
+	WriteContentDisposition string             `json:"write_content_disposition,omitempty"`
+	WriteContentEncoding    string             `json:"write_content_encoding,omitempty"`
+	WriteContentLanguage    string             `json:"write_content_language,omitempty"`
+	WriteContentType        string             `json:"write_content_type,omitempty"`
+	WriteBufferSize         int                `json:"write_buffer_size,omitempty"`
 }
 
 // ClusterRole.
 type ClusterRole struct {
-	// creates clusterRole resource
-	Enabled bool `json:"enabled,omitempty"`
-
-	// name of clusterRole
-	Name string `json:"name,omitempty"`
+	Name    string `json:"name,omitempty"`
+	Enabled bool   `json:"enabled,omitempty"`
 }
 
 // ClusterRoleBinding.
 type ClusterRoleBinding struct {
-	// creates clusterRoleBinding resource
-	Enabled bool `json:"enabled,omitempty"`
-
-	// name of clusterRoleBinding
-	Name string `json:"name,omitempty"`
+	Name    string `json:"name,omitempty"`
+	Enabled bool   `json:"enabled,omitempty"`
 }
 
 // Collector.
 type Collector struct {
-	// metrics collect duration. if it is set as 5s, enabled metrics are collected every 5 seconds.
-	Duration string   `json:"duration,omitempty"`
 	Metrics  *Metrics `json:"metrics,omitempty"`
+	Duration string   `json:"duration,omitempty"`
 }
 
 // Compress.
@@ -195,30 +120,17 @@ type Compress struct {
 
 // Config.
 type Config struct {
-	// auto backup duration
-	AutoBackupDuration string `json:"auto_backup_duration,omitempty"`
-
-	// auto backup triggered by timer is enabled
-	AutoBackupEnabled bool               `json:"auto_backup_enabled,omitempty"`
-	BlobStorage       *BlobStorage       `json:"blob_storage,omitempty"`
-	Client            *config.GRPCClient `json:"client,omitempty"`
-	Compress          *Compress          `json:"compress,omitempty"`
-
-	// backup filename
-	Filename string `json:"filename,omitempty"`
-
-	// suffix for backup filename
-	FilenameSuffix string `json:"filename_suffix,omitempty"`
-
-	// timeout for observing file changes during post stop
-	PostStopTimeout string          `json:"post_stop_timeout,omitempty"`
-	RestoreBackoff  *config.Backoff `json:"restore_backoff,omitempty"`
-
-	// restore backoff enabled
-	RestoreBackoffEnabled bool `json:"restore_backoff_enabled,omitempty"`
-
-	// auto backup triggered by file changes is enabled
-	WatchEnabled bool `json:"watch_enabled,omitempty"`
+	BlobStorage           *BlobStorage       `json:"blob_storage,omitempty"`
+	Client                *config.GRPCClient `json:"client,omitempty"`
+	Compress              *Compress          `json:"compress,omitempty"`
+	RestoreBackoff        *config.Backoff    `json:"restore_backoff,omitempty"`
+	AutoBackupDuration    string             `json:"auto_backup_duration,omitempty"`
+	Filename              string             `json:"filename,omitempty"`
+	FilenameSuffix        string             `json:"filename_suffix,omitempty"`
+	PostStopTimeout       string             `json:"post_stop_timeout,omitempty"`
+	AutoBackupEnabled     bool               `json:"auto_backup_enabled,omitempty"`
+	RestoreBackoffEnabled bool               `json:"restore_backoff_enabled,omitempty"`
+	WatchEnabled          bool               `json:"watch_enabled,omitempty"`
 }
 
 // Defaults.
@@ -236,14 +148,9 @@ type Defaults struct {
 
 // Dialer.
 type Dialer struct {
-	// gRPC client TCP dialer dual stack enabled
-	DualStackEnabled bool `json:"dual_stack_enabled,omitempty"`
-
-	// gRPC client TCP dialer keep alive
-	Keepalive string `json:"keepalive,omitempty"`
-
-	// gRPC client TCP dialer timeout
-	Timeout string `json:"timeout,omitempty"`
+	Keepalive        string `json:"keepalive,omitempty"`
+	Timeout          string `json:"timeout,omitempty"`
+	DualStackEnabled bool   `json:"dual_stack_enabled,omitempty"`
 }
 
 // Discoverer.
@@ -257,14 +164,9 @@ type Discoverer struct {
 
 // Dns.
 type Dns struct {
-	// gRPC client TCP DNS cache enabled
-	CacheEnabled bool `json:"cache_enabled,omitempty"`
-
-	// gRPC client TCP DNS cache expiration
 	CacheExpiration string `json:"cache_expiration,omitempty"`
-
-	// gRPC client TCP DNS cache refresh duration
 	RefreshDuration string `json:"refresh_duration,omitempty"`
+	CacheEnabled    bool   `json:"cache_enabled,omitempty"`
 }
 
 // EgressFilter gRPC client config for egress filter.
@@ -286,95 +188,43 @@ type Fields struct{}
 
 // Filter.
 type Filter struct {
-	Affinity *Affinity `json:"affinity,omitempty"`
-
-	// deployment annotations
-	Annotations *Annotations `json:"annotations,omitempty"`
-
-	// gateway enabled
-	Enabled bool `json:"enabled,omitempty"`
-
-	// environment variables
-	Env []*EnvItems `json:"env,omitempty"`
-
-	// external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
-	ExternalTrafficPolicy string         `json:"externalTrafficPolicy,omitempty"`
-	GatewayConfig         *GatewayConfig `json:"gateway_config,omitempty"`
-	Hpa                   *Hpa           `json:"hpa,omitempty"`
-	Image                 *Image         `json:"image,omitempty"`
-	Ingress               *Ingress       `json:"ingress,omitempty"`
-
-	// init containers
-	InitContainers []*InitContainersItems `json:"initContainers,omitempty"`
-
-	// deployment kind: Deployment or DaemonSet
-	Kind    string   `json:"kind,omitempty"`
-	Logging *Logging `json:"logging,omitempty"`
-
-	// maximum number of replicas. if HPA is disabled, this value will be ignored.
-	MaxReplicas int `json:"maxReplicas,omitempty"`
-
-	// maximum number of unavailable replicas
-	MaxUnavailable string `json:"maxUnavailable,omitempty"`
-
-	// minimum number of replicas. if HPA is disabled, the replicas will be set to this value
-	MinReplicas int `json:"minReplicas,omitempty"`
-
-	// name of filter gateway deployment
-	Name string `json:"name,omitempty"`
-
-	// node name
-	NodeName string `json:"nodeName,omitempty"`
-
-	// node selector
-	NodeSelector  *NodeSelector  `json:"nodeSelector,omitempty"`
-	Observability *Observability `json:"observability,omitempty"`
-
-	// pod annotations
-	PodAnnotations *PodAnnotations `json:"podAnnotations,omitempty"`
-	PodPriority    *PodPriority    `json:"podPriority,omitempty"`
-
-	// security context for pod
-	PodSecurityContext *PodSecurityContext `json:"podSecurityContext,omitempty"`
-
-	// progress deadline seconds
-	ProgressDeadlineSeconds int `json:"progressDeadlineSeconds,omitempty"`
-
-	// compute resources
-	Resources *Resources `json:"resources,omitempty"`
-
-	// number of old history to retain to allow rollback
-	RevisionHistoryLimit int            `json:"revisionHistoryLimit,omitempty"`
-	RollingUpdate        *RollingUpdate `json:"rollingUpdate,omitempty"`
-
-	// security context for container
-	SecurityContext *SecurityContext `json:"securityContext,omitempty"`
-	ServerConfig    *ServerConfig    `json:"server_config,omitempty"`
-	Service         *Service         `json:"service,omitempty"`
-
-	// service type: ClusterIP, LoadBalancer or NodePort
-	ServiceType string `json:"serviceType,omitempty"`
-
-	// duration in seconds pod needs to terminate gracefully
-	TerminationGracePeriodSeconds int `json:"terminationGracePeriodSeconds,omitempty"`
-
-	// Time zone
-	TimeZone string `json:"time_zone,omitempty"`
-
-	// tolerations
-	Tolerations []*TolerationsItems `json:"tolerations,omitempty"`
-
-	// topology spread constraints of gateway pods
-	TopologySpreadConstraints []*TopologySpreadConstraintsItems `json:"topologySpreadConstraints,omitempty"`
-
-	// version of gateway config
-	Version string `json:"version,omitempty"`
-
-	// volume mounts
-	VolumeMounts []*VolumeMountsItems `json:"volumeMounts,omitempty"`
-
-	// volumes
-	Volumes []*VolumesItems `json:"volumes,omitempty"`
+	ServerConfig                  *ServerConfig                     `json:"server_config,omitempty"`
+	Service                       *Service                          `json:"service,omitempty"`
+	Observability                 *Observability                    `json:"observability,omitempty"`
+	Affinity                      *Affinity                         `json:"affinity,omitempty"`
+	SecurityContext               *SecurityContext                  `json:"securityContext,omitempty"`
+	PodPriority                   *PodPriority                      `json:"podPriority,omitempty"`
+	Hpa                           *Hpa                              `json:"hpa,omitempty"`
+	Image                         *Image                            `json:"image,omitempty"`
+	Ingress                       *Ingress                          `json:"ingress,omitempty"`
+	RollingUpdate                 *RollingUpdate                    `json:"rollingUpdate,omitempty"`
+	Resources                     *Resources                        `json:"resources,omitempty"`
+	Logging                       *Logging                          `json:"logging,omitempty"`
+	PodSecurityContext            *PodSecurityContext               `json:"podSecurityContext,omitempty"`
+	GatewayConfig                 *GatewayConfig                    `json:"gateway_config,omitempty"`
+	PodAnnotations                *PodAnnotations                   `json:"podAnnotations,omitempty"`
+	Annotations                   *Annotations                      `json:"annotations,omitempty"`
+	NodeSelector                  *NodeSelector                     `json:"nodeSelector,omitempty"`
+	NodeName                      string                            `json:"nodeName,omitempty"`
+	Name                          string                            `json:"name,omitempty"`
+	Version                       string                            `json:"version,omitempty"`
+	MaxUnavailable                string                            `json:"maxUnavailable,omitempty"`
+	TimeZone                      string                            `json:"time_zone,omitempty"`
+	ServiceType                   string                            `json:"serviceType,omitempty"`
+	Kind                          string                            `json:"kind,omitempty"`
+	ExternalTrafficPolicy         string                            `json:"externalTrafficPolicy,omitempty"`
+	Tolerations                   []*TolerationsItems               `json:"tolerations,omitempty"`
+	InitContainers                []*InitContainersItems            `json:"initContainers,omitempty"`
+	Env                           []*EnvItems                       `json:"env,omitempty"`
+	TopologySpreadConstraints     []*TopologySpreadConstraintsItems `json:"topologySpreadConstraints,omitempty"`
+	VolumeMounts                  []*VolumeMountsItems              `json:"volumeMounts,omitempty"`
+	Volumes                       []*VolumesItems                   `json:"volumes,omitempty"`
+	RevisionHistoryLimit          int                               `json:"revisionHistoryLimit,omitempty"`
+	ProgressDeadlineSeconds       int                               `json:"progressDeadlineSeconds,omitempty"`
+	TerminationGracePeriodSeconds int                               `json:"terminationGracePeriodSeconds,omitempty"`
+	MaxReplicas                   int                               `json:"maxReplicas,omitempty"`
+	MinReplicas                   int                               `json:"minReplicas,omitempty"`
+	Enabled                       bool                              `json:"enabled,omitempty"`
 }
 
 // Gateway.
@@ -395,18 +245,11 @@ type GatewayConfig struct {
 
 // Grpc.
 type Grpc struct {
-	// gRPC server enabled
-	Enabled bool `json:"enabled,omitempty"`
-
-	// gRPC server host
-	Host string `json:"host,omitempty"`
-
-	// gRPC server port
-	Port   int     `json:"port,omitempty"`
-	Server *Server `json:"server,omitempty"`
-
-	// gRPC server service port
-	ServicePort int `json:"servicePort,omitempty"`
+	Server      *Server `json:"server,omitempty"`
+	Host        string  `json:"host,omitempty"`
+	Port        int     `json:"port,omitempty"`
+	ServicePort int     `json:"servicePort,omitempty"`
+	Enabled     bool    `json:"enabled,omitempty"`
 }
 
 // Healths.
@@ -472,159 +315,73 @@ type Image struct {
 
 // Index.
 type Index struct {
-	Affinity *Affinity `json:"affinity,omitempty"`
-
-	// deployment annotations
-	Annotations *Annotations `json:"annotations,omitempty"`
-
-	// index manager enabled
-	Enabled bool `json:"enabled,omitempty"`
-
-	// environment variables
-	Env []*EnvItems `json:"env,omitempty"`
-
-	// external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
-	ExternalTrafficPolicy string   `json:"externalTrafficPolicy,omitempty"`
-	Image                 *Image   `json:"image,omitempty"`
-	Indexer               *Indexer `json:"indexer,omitempty"`
-
-	// init containers
-	InitContainers []*InitContainersItems `json:"initContainers,omitempty"`
-
-	// deployment kind: Deployment or DaemonSet
-	Kind    string   `json:"kind,omitempty"`
-	Logging *Logging `json:"logging,omitempty"`
-
-	// maximum number of unavailable replicas
-	MaxUnavailable string `json:"maxUnavailable,omitempty"`
-
-	// name of index manager deployment
-	Name string `json:"name,omitempty"`
-
-	// node name
-	NodeName string `json:"nodeName,omitempty"`
-
-	// node selector
-	NodeSelector  *NodeSelector  `json:"nodeSelector,omitempty"`
-	Observability *Observability `json:"observability,omitempty"`
-
-	// pod annotations
-	PodAnnotations *PodAnnotations `json:"podAnnotations,omitempty"`
-	PodPriority    *PodPriority    `json:"podPriority,omitempty"`
-
-	// security context for pod
-	PodSecurityContext *PodSecurityContext `json:"podSecurityContext,omitempty"`
-
-	// progress deadline seconds
-	ProgressDeadlineSeconds int `json:"progressDeadlineSeconds,omitempty"`
-
-	// number of replicas
-	Replicas int `json:"replicas,omitempty"`
-
-	// compute resources
-	Resources *Resources `json:"resources,omitempty"`
-
-	// number of old history to retain to allow rollback
-	RevisionHistoryLimit int            `json:"revisionHistoryLimit,omitempty"`
-	RollingUpdate        *RollingUpdate `json:"rollingUpdate,omitempty"`
-
-	// security context for container
-	SecurityContext *SecurityContext `json:"securityContext,omitempty"`
-	ServerConfig    *ServerConfig    `json:"server_config,omitempty"`
-	Service         *Service         `json:"service,omitempty"`
-
-	// service type: ClusterIP, LoadBalancer or NodePort
-	ServiceType string `json:"serviceType,omitempty"`
-
-	// duration in seconds pod needs to terminate gracefully
-	TerminationGracePeriodSeconds int `json:"terminationGracePeriodSeconds,omitempty"`
-
-	// Time zone
-	TimeZone string `json:"time_zone,omitempty"`
-
-	// tolerations
-	Tolerations []*TolerationsItems `json:"tolerations,omitempty"`
-
-	// topology spread constraints of gateway pods
-	TopologySpreadConstraints []*TopologySpreadConstraintsItems `json:"topologySpreadConstraints,omitempty"`
-
-	// version of gateway config
-	Version string `json:"version,omitempty"`
-
-	// volume mounts
-	VolumeMounts []*VolumeMountsItems `json:"volumeMounts,omitempty"`
-
-	// volumes
-	Volumes []*VolumesItems `json:"volumes,omitempty"`
+	ServerConfig                  *ServerConfig                     `json:"server_config,omitempty"`
+	PodSecurityContext            *PodSecurityContext               `json:"podSecurityContext,omitempty"`
+	Service                       *Service                          `json:"service,omitempty"`
+	Affinity                      *Affinity                         `json:"affinity,omitempty"`
+	SecurityContext               *SecurityContext                  `json:"securityContext,omitempty"`
+	Image                         *Image                            `json:"image,omitempty"`
+	Indexer                       *Indexer                          `json:"indexer,omitempty"`
+	RollingUpdate                 *RollingUpdate                    `json:"rollingUpdate,omitempty"`
+	Resources                     *Resources                        `json:"resources,omitempty"`
+	Logging                       *Logging                          `json:"logging,omitempty"`
+	PodPriority                   *PodPriority                      `json:"podPriority,omitempty"`
+	Annotations                   *Annotations                      `json:"annotations,omitempty"`
+	PodAnnotations                *PodAnnotations                   `json:"podAnnotations,omitempty"`
+	NodeSelector                  *NodeSelector                     `json:"nodeSelector,omitempty"`
+	Observability                 *Observability                    `json:"observability,omitempty"`
+	ServiceType                   string                            `json:"serviceType,omitempty"`
+	Name                          string                            `json:"name,omitempty"`
+	TimeZone                      string                            `json:"time_zone,omitempty"`
+	MaxUnavailable                string                            `json:"maxUnavailable,omitempty"`
+	ExternalTrafficPolicy         string                            `json:"externalTrafficPolicy,omitempty"`
+	Kind                          string                            `json:"kind,omitempty"`
+	NodeName                      string                            `json:"nodeName,omitempty"`
+	Version                       string                            `json:"version,omitempty"`
+	InitContainers                []*InitContainersItems            `json:"initContainers,omitempty"`
+	Tolerations                   []*TolerationsItems               `json:"tolerations,omitempty"`
+	TopologySpreadConstraints     []*TopologySpreadConstraintsItems `json:"topologySpreadConstraints,omitempty"`
+	Env                           []*EnvItems                       `json:"env,omitempty"`
+	VolumeMounts                  []*VolumeMountsItems              `json:"volumeMounts,omitempty"`
+	Volumes                       []*VolumesItems                   `json:"volumes,omitempty"`
+	Replicas                      int                               `json:"replicas,omitempty"`
+	TerminationGracePeriodSeconds int                               `json:"terminationGracePeriodSeconds,omitempty"`
+	RevisionHistoryLimit          int                               `json:"revisionHistoryLimit,omitempty"`
+	ProgressDeadlineSeconds       int                               `json:"progressDeadlineSeconds,omitempty"`
+	Enabled                       bool                              `json:"enabled,omitempty"`
 }
 
 // Indexer.
 type Indexer struct {
-	// namespace of agent pods to manage
-	AgentNamespace string `json:"agent_namespace,omitempty"`
-
-	// check duration of automatic indexing
-	AutoIndexCheckDuration string `json:"auto_index_check_duration,omitempty"`
-
-	// limit duration of automatic indexing
-	AutoIndexDurationLimit string `json:"auto_index_duration_limit,omitempty"`
-
-	// number of cache to trigger automatic indexing
-	AutoIndexLength int `json:"auto_index_length,omitempty"`
-
-	// limit duration of automatic index saving
-	AutoSaveIndexDurationLimit string `json:"auto_save_index_duration_limit,omitempty"`
-
-	// duration of automatic index saving wait duration for next saving
-	AutoSaveIndexWaitDuration string `json:"auto_save_index_wait_duration,omitempty"`
-
-	// concurrency
-	Concurrency int `json:"concurrency,omitempty"`
-
-	// number of pool size of create index processing
-	CreationPoolSize int         `json:"creation_pool_size,omitempty"`
-	Discoverer       *Discoverer `json:"discoverer,omitempty"`
-
-	// node name
-	NodeName string `json:"node_name,omitempty"`
+	Discoverer                 *Discoverer `json:"discoverer,omitempty"`
+	AgentNamespace             string      `json:"agent_namespace,omitempty"`
+	AutoIndexCheckDuration     string      `json:"auto_index_check_duration,omitempty"`
+	AutoIndexDurationLimit     string      `json:"auto_index_duration_limit,omitempty"`
+	AutoSaveIndexDurationLimit string      `json:"auto_save_index_duration_limit,omitempty"`
+	AutoSaveIndexWaitDuration  string      `json:"auto_save_index_wait_duration,omitempty"`
+	NodeName                   string      `json:"node_name,omitempty"`
+	AutoIndexLength            int         `json:"auto_index_length,omitempty"`
+	Concurrency                int         `json:"concurrency,omitempty"`
+	CreationPoolSize           int         `json:"creation_pool_size,omitempty"`
 }
 
 // Ingress.
 type Ingress struct {
-	// annotations for ingress
 	Annotations *Annotations `json:"annotations,omitempty"`
-
-	// gateway ingress enabled
-	Enabled bool `json:"enabled,omitempty"`
-
-	// ingress hostname
-	Host string `json:"host,omitempty"`
-
-	// gateway ingress pathType
-	PathType string `json:"pathType,omitempty"`
-
-	// service port to be exposed by ingress
-	ServicePort string `json:"servicePort,omitempty"`
+	Host        string       `json:"host,omitempty"`
+	PathType    string       `json:"pathType,omitempty"`
+	ServicePort string       `json:"servicePort,omitempty"`
+	Enabled     bool         `json:"enabled,omitempty"`
 }
 
 // IngressFilter gRPC client config for ingress filter.
 type IngressFilter struct {
-	Client *config.GRPCClient `json:"client,omitempty"`
-
-	// insert ingress vector filter targets
-	InsertFilters []string `json:"insert_filters,omitempty"`
-
-	// search ingress vector filter targets
-	SearchFilters []string `json:"search_filters,omitempty"`
-
-	// update ingress vector filter targets
-	UpdateFilters []string `json:"update_filters,omitempty"`
-
-	// upsert ingress vector filter targets
-	UpsertFilters []string `json:"upsert_filters,omitempty"`
-
-	// object ingress vectorize filter targets
-	Vectorizer string `json:"vectorizer,omitempty"`
+	Client        *config.GRPCClient `json:"client,omitempty"`
+	Vectorizer    string             `json:"vectorizer,omitempty"`
+	InsertFilters []string           `json:"insert_filters,omitempty"`
+	SearchFilters []string           `json:"search_filters,omitempty"`
+	UpdateFilters []string           `json:"update_filters,omitempty"`
+	UpsertFilters []string           `json:"upsert_filters,omitempty"`
 }
 
 // InitContainersItems.
@@ -641,53 +398,25 @@ type Initializer struct{}
 
 // Jaeger.
 type Jaeger struct {
-	// Jaeger agent endpoint
-	AgentEndpoint string `json:"agent_endpoint,omitempty"`
-
-	// Jaeger agent reconnect interval
+	AgentEndpoint          string `json:"agent_endpoint,omitempty"`
 	AgentReconnectInterval string `json:"agent_reconnect_interval,omitempty"`
-
-	// Jaeger Agent max packet size
-	AgentMaxPacketSize int `json:"agent_max_packet_size,omitempty"`
-
-	// Jaeger collector endpoint
-	CollectorEndpoint string `json:"collector_endpoint,omitempty"`
-
-	// Jaeger exporter enabled
-	Enabled bool `json:"enabled,omitempty"`
-
-	// Jaeger password
-	Password string `json:"password,omitempty"`
-
-	// Jaeger service name
-	ServiceName string `json:"service_name,omitempty"`
-
-	// Jaeger username
-	Username string `json:"username,omitempty"`
-
-	// Jaeger export batch timeout
-	BatchTimeout string `json:"batch_timeout,omitempty"`
-
-	// Jaeger export timeout
-	ExportTimeout string `json:"export_timeout,omitempty"`
-
-	// Jaeger max export batch size
-	MaxExportBatchSize int `json:"max_export_batch_size,omitempty"`
-
-	// Jaeger max queue size
-	MaxQueueSize int `json:"max_queue_size,omitempty"`
+	CollectorEndpoint      string `json:"collector_endpoint,omitempty"`
+	Password               string `json:"password,omitempty"`
+	ServiceName            string `json:"service_name,omitempty"`
+	Username               string `json:"username,omitempty"`
+	BatchTimeout           string `json:"batch_timeout,omitempty"`
+	ExportTimeout          string `json:"export_timeout,omitempty"`
+	AgentMaxPacketSize     int    `json:"agent_max_packet_size,omitempty"`
+	MaxExportBatchSize     int    `json:"max_export_batch_size,omitempty"`
+	MaxQueueSize           int    `json:"max_queue_size,omitempty"`
+	Enabled                bool   `json:"enabled,omitempty"`
 }
 
 // Keepalive.
 type Keepalive struct {
-	// gRPC client keep alive permit without stream
-	PermitWithoutStream bool `json:"permit_without_stream,omitempty"`
-
-	// gRPC client keep alive time
-	Time string `json:"time,omitempty"`
-
-	// gRPC client keep alive timeout
-	Timeout string `json:"timeout,omitempty"`
+	Time                string `json:"time,omitempty"`
+	Timeout             string `json:"timeout,omitempty"`
+	PermitWithoutStream bool   `json:"permit_without_stream,omitempty"`
 }
 
 // Kvsdb.
@@ -701,95 +430,43 @@ type Labels map[string]string
 
 // Lb.
 type Lb struct {
-	Affinity *Affinity `json:"affinity,omitempty"`
-
-	// deployment annotations
-	Annotations *Annotations `json:"annotations,omitempty"`
-
-	// gateway enabled
-	Enabled bool `json:"enabled,omitempty"`
-
-	// environment variables
-	Env []*EnvItems `json:"env,omitempty"`
-
-	// external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
-	ExternalTrafficPolicy string         `json:"externalTrafficPolicy,omitempty"`
-	GatewayConfig         *GatewayConfig `json:"gateway_config,omitempty"`
-	Hpa                   *Hpa           `json:"hpa,omitempty"`
-	Image                 *Image         `json:"image,omitempty"`
-	Ingress               *Ingress       `json:"ingress,omitempty"`
-
-	// init containers
-	InitContainers []*InitContainersItems `json:"initContainers,omitempty"`
-
-	// deployment kind: Deployment or DaemonSet
-	Kind    string   `json:"kind,omitempty"`
-	Logging *Logging `json:"logging,omitempty"`
-
-	// maximum number of replicas. if HPA is disabled, this value will be ignored.
-	MaxReplicas int `json:"maxReplicas,omitempty"`
-
-	// maximum number of unavailable replicas
-	MaxUnavailable string `json:"maxUnavailable,omitempty"`
-
-	// minimum number of replicas. if HPA is disabled, the replicas will be set to this value
-	MinReplicas int `json:"minReplicas,omitempty"`
-
-	// name of gateway deployment
-	Name string `json:"name,omitempty"`
-
-	// node name
-	NodeName string `json:"nodeName,omitempty"`
-
-	// node selector
-	NodeSelector  *NodeSelector  `json:"nodeSelector,omitempty"`
-	Observability *Observability `json:"observability,omitempty"`
-
-	// pod annotations
-	PodAnnotations *PodAnnotations `json:"podAnnotations,omitempty"`
-	PodPriority    *PodPriority    `json:"podPriority,omitempty"`
-
-	// security context for pod
-	PodSecurityContext *PodSecurityContext `json:"podSecurityContext,omitempty"`
-
-	// progress deadline seconds
-	ProgressDeadlineSeconds int `json:"progressDeadlineSeconds,omitempty"`
-
-	// compute resources
-	Resources *Resources `json:"resources,omitempty"`
-
-	// number of old history to retain to allow rollback
-	RevisionHistoryLimit int            `json:"revisionHistoryLimit,omitempty"`
-	RollingUpdate        *RollingUpdate `json:"rollingUpdate,omitempty"`
-
-	// security context for container
-	SecurityContext *SecurityContext `json:"securityContext,omitempty"`
-	ServerConfig    *ServerConfig    `json:"server_config,omitempty"`
-	Service         *Service         `json:"service,omitempty"`
-
-	// service type: ClusterIP, LoadBalancer or NodePort
-	ServiceType string `json:"serviceType,omitempty"`
-
-	// duration in seconds pod needs to terminate gracefully
-	TerminationGracePeriodSeconds int `json:"terminationGracePeriodSeconds,omitempty"`
-
-	// Time zone
-	TimeZone string `json:"time_zone,omitempty"`
-
-	// tolerations
-	Tolerations []*TolerationsItems `json:"tolerations,omitempty"`
-
-	// topology spread constraints of gateway pods
-	TopologySpreadConstraints []*TopologySpreadConstraintsItems `json:"topologySpreadConstraints,omitempty"`
-
-	// version of gateway config
-	Version string `json:"version,omitempty"`
-
-	// volume mounts
-	VolumeMounts []*VolumeMountsItems `json:"volumeMounts,omitempty"`
-
-	// volumes
-	Volumes []*VolumesItems `json:"volumes,omitempty"`
+	ServerConfig                  *ServerConfig                     `json:"server_config,omitempty"`
+	Service                       *Service                          `json:"service,omitempty"`
+	Observability                 *Observability                    `json:"observability,omitempty"`
+	Affinity                      *Affinity                         `json:"affinity,omitempty"`
+	SecurityContext               *SecurityContext                  `json:"securityContext,omitempty"`
+	PodPriority                   *PodPriority                      `json:"podPriority,omitempty"`
+	Hpa                           *Hpa                              `json:"hpa,omitempty"`
+	Image                         *Image                            `json:"image,omitempty"`
+	Ingress                       *Ingress                          `json:"ingress,omitempty"`
+	RollingUpdate                 *RollingUpdate                    `json:"rollingUpdate,omitempty"`
+	Resources                     *Resources                        `json:"resources,omitempty"`
+	Logging                       *Logging                          `json:"logging,omitempty"`
+	PodSecurityContext            *PodSecurityContext               `json:"podSecurityContext,omitempty"`
+	GatewayConfig                 *GatewayConfig                    `json:"gateway_config,omitempty"`
+	PodAnnotations                *PodAnnotations                   `json:"podAnnotations,omitempty"`
+	Annotations                   *Annotations                      `json:"annotations,omitempty"`
+	NodeSelector                  *NodeSelector                     `json:"nodeSelector,omitempty"`
+	NodeName                      string                            `json:"nodeName,omitempty"`
+	Name                          string                            `json:"name,omitempty"`
+	Version                       string                            `json:"version,omitempty"`
+	MaxUnavailable                string                            `json:"maxUnavailable,omitempty"`
+	TimeZone                      string                            `json:"time_zone,omitempty"`
+	ServiceType                   string                            `json:"serviceType,omitempty"`
+	Kind                          string                            `json:"kind,omitempty"`
+	ExternalTrafficPolicy         string                            `json:"externalTrafficPolicy,omitempty"`
+	Tolerations                   []*TolerationsItems               `json:"tolerations,omitempty"`
+	InitContainers                []*InitContainersItems            `json:"initContainers,omitempty"`
+	Env                           []*EnvItems                       `json:"env,omitempty"`
+	TopologySpreadConstraints     []*TopologySpreadConstraintsItems `json:"topologySpreadConstraints,omitempty"`
+	VolumeMounts                  []*VolumeMountsItems              `json:"volumeMounts,omitempty"`
+	Volumes                       []*VolumesItems                   `json:"volumes,omitempty"`
+	RevisionHistoryLimit          int                               `json:"revisionHistoryLimit,omitempty"`
+	ProgressDeadlineSeconds       int                               `json:"progressDeadlineSeconds,omitempty"`
+	TerminationGracePeriodSeconds int                               `json:"terminationGracePeriodSeconds,omitempty"`
+	MaxReplicas                   int                               `json:"maxReplicas,omitempty"`
+	MinReplicas                   int                               `json:"minReplicas,omitempty"`
+	Enabled                       bool                              `json:"enabled,omitempty"`
 }
 
 // Limits.
@@ -797,38 +474,22 @@ type Limits struct{}
 
 // Liveness.
 type Liveness struct {
-	// liveness server enabled
-	Enabled bool `json:"enabled,omitempty"`
-
-	// liveness server host
-	Host          string         `json:"host,omitempty"`
 	LivenessProbe *LivenessProbe `json:"livenessProbe,omitempty"`
-
-	// liveness server port
-	Port   int     `json:"port,omitempty"`
-	Server *Server `json:"server,omitempty"`
-
-	// liveness server service port
-	ServicePort int `json:"servicePort,omitempty"`
+	Server        *Server        `json:"server,omitempty"`
+	Host          string         `json:"host,omitempty"`
+	Port          int            `json:"port,omitempty"`
+	ServicePort   int            `json:"servicePort,omitempty"`
+	Enabled       bool           `json:"enabled,omitempty"`
 }
 
 // LivenessProbe.
 type LivenessProbe struct {
-	// liveness probe failure threshold
-	FailureThreshold int      `json:"failureThreshold,omitempty"`
-	HttpGet          *HttpGet `json:"httpGet,omitempty"`
-
-	// liveness probe initial delay seconds
-	InitialDelaySeconds int `json:"initialDelaySeconds,omitempty"`
-
-	// liveness probe period seconds
-	PeriodSeconds int `json:"periodSeconds,omitempty"`
-
-	// liveness probe success threshold
-	SuccessThreshold int `json:"successThreshold,omitempty"`
-
-	// liveness probe timeout seconds
-	TimeoutSeconds int `json:"timeoutSeconds,omitempty"`
+	HttpGet             *HttpGet `json:"httpGet,omitempty"`
+	FailureThreshold    int      `json:"failureThreshold,omitempty"`
+	InitialDelaySeconds int      `json:"initialDelaySeconds,omitempty"`
+	PeriodSeconds       int      `json:"periodSeconds,omitempty"`
+	SuccessThreshold    int      `json:"successThreshold,omitempty"`
+	TimeoutSeconds      int      `json:"timeoutSeconds,omitempty"`
 }
 
 // Logging.
@@ -850,20 +511,11 @@ type Manager struct {
 
 // Metrics.
 type Metrics struct {
-	// CGO metrics enabled
-	EnableCgo bool `json:"enable_cgo,omitempty"`
-
-	// goroutine metrics enabled
-	EnableGoroutine bool `json:"enable_goroutine,omitempty"`
-
-	// memory metrics enabled
-	EnableMemory bool `json:"enable_memory,omitempty"`
-
-	// version info metrics enabled
-	EnableVersionInfo bool `json:"enable_version_info,omitempty"`
-
-	// enabled label names of version info
 	VersionInfoLabels []string `json:"version_info_labels,omitempty"`
+	EnableCgo         bool     `json:"enable_cgo,omitempty"`
+	EnableGoroutine   bool     `json:"enable_goroutine,omitempty"`
+	EnableMemory      bool     `json:"enable_memory,omitempty"`
+	EnableVersionInfo bool     `json:"enable_version_info,omitempty"`
 }
 
 // Node k8s resource selectors for node discovery.
@@ -876,9 +528,8 @@ type Node struct {
 
 // NodeAffinity.
 type NodeAffinity struct {
-	// node affinity preferred scheduling terms
-	PreferredDuringSchedulingIgnoredDuringExecution []*PreferredDuringSchedulingIgnoredDuringExecutionItems `json:"preferredDuringSchedulingIgnoredDuringExecution,omitempty"`
 	RequiredDuringSchedulingIgnoredDuringExecution  *RequiredDuringSchedulingIgnoredDuringExecution         `json:"requiredDuringSchedulingIgnoredDuringExecution,omitempty"`
+	PreferredDuringSchedulingIgnoredDuringExecution []*PreferredDuringSchedulingIgnoredDuringExecutionItems `json:"preferredDuringSchedulingIgnoredDuringExecution,omitempty"`
 }
 
 // NodeMetrics k8s resource selectors for node_metrics discovery.
@@ -898,28 +549,19 @@ type NodeSelectorTermsItems struct{}
 
 // Observability.
 type Observability struct {
-	Metrics *Metrics `json:"metrics,omitempty"`
-
-	// observability features enabled
-	Enabled    bool        `json:"enabled,omitempty"`
+	Metrics    *Metrics    `json:"metrics,omitempty"`
 	Jaeger     *Jaeger     `json:"jaeger,omitempty"`
 	Prometheus *Prometheus `json:"prometheus,omitempty"`
 	Trace      *Trace      `json:"trace,omitempty"`
+	Enabled    bool        `json:"enabled,omitempty"`
 }
 
 // PersistentVolume.
 type PersistentVolume struct {
-	// agent pod storage accessMode
-	AccessMode string `json:"accessMode,omitempty"`
-
-	// enables PVC. It is required to enable if agent pod's file store functionality is enabled with non in-memory mode
-	Enabled bool `json:"enabled,omitempty"`
-
-	// size of agent pod volume
-	Size string `json:"size,omitempty"`
-
-	// storageClass name for agent pod volume
+	AccessMode   string `json:"accessMode,omitempty"`
+	Size         string `json:"size,omitempty"`
 	StorageClass string `json:"storageClass,omitempty"`
+	Enabled      bool   `json:"enabled,omitempty"`
 }
 
 // Pod k8s resource selectors for pod discovery.
@@ -975,18 +617,11 @@ type PodSecurityContext struct{}
 
 // Pprof.
 type Pprof struct {
-	// pprof server enabled
-	Enabled bool `json:"enabled,omitempty"`
-
-	// pprof server host
-	Host string `json:"host,omitempty"`
-
-	// pprof server port
-	Port   int     `json:"port,omitempty"`
-	Server *Server `json:"server,omitempty"`
-
-	// pprof server service port
-	ServicePort int `json:"servicePort,omitempty"`
+	Server      *Server `json:"server,omitempty"`
+	Host        string  `json:"host,omitempty"`
+	Port        int     `json:"port,omitempty"`
+	ServicePort int     `json:"servicePort,omitempty"`
+	Enabled     bool    `json:"enabled,omitempty"`
 }
 
 // PreferredDuringSchedulingIgnoredDuringExecutionItems.
@@ -994,59 +629,32 @@ type PreferredDuringSchedulingIgnoredDuringExecutionItems struct{}
 
 // Prometheus.
 type Prometheus struct {
-	// Prometheus exporter enabled
-	Enabled bool `json:"enabled,omitempty"`
-
-	// Prometheus exporter endpoint
-	Endpoint string `json:"endpoint,omitempty"`
-
-	// service namespace for metrics
-	Namespace string `json:"namespace,omitempty"`
-
-	// Prometheus collect interval
-	CollectInterval string `json:"collect_interval,omitempty"`
-
-	// Prometheus collect timeout
-	CollectTimeout string `json:"collect_timeout,omitempty"`
-
-	// Prometheus collect with in memory
-	EnableInMemoryMode bool `json:"enable_in_memory_mode,omitempty"`
+	Endpoint           string `json:"endpoint,omitempty"`
+	Namespace          string `json:"namespace,omitempty"`
+	CollectInterval    string `json:"collect_interval,omitempty"`
+	CollectTimeout     string `json:"collect_timeout,omitempty"`
+	Enabled            bool   `json:"enabled,omitempty"`
+	EnableInMemoryMode bool   `json:"enable_in_memory_mode,omitempty"`
 }
 
 // Readiness.
 type Readiness struct {
-	// readiness server enabled
-	Enabled bool `json:"enabled,omitempty"`
-
-	// readiness server host
-	Host string `json:"host,omitempty"`
-
-	// readiness server port
-	Port           int             `json:"port,omitempty"`
 	ReadinessProbe *ReadinessProbe `json:"readinessProbe,omitempty"`
 	Server         *Server         `json:"server,omitempty"`
-
-	// readiness server service port
-	ServicePort int `json:"servicePort,omitempty"`
+	Host           string          `json:"host,omitempty"`
+	Port           int             `json:"port,omitempty"`
+	ServicePort    int             `json:"servicePort,omitempty"`
+	Enabled        bool            `json:"enabled,omitempty"`
 }
 
 // ReadinessProbe.
 type ReadinessProbe struct {
-	// readiness probe failure threshold
-	FailureThreshold int      `json:"failureThreshold,omitempty"`
-	HttpGet          *HttpGet `json:"httpGet,omitempty"`
-
-	// readiness probe initial delay seconds
-	InitialDelaySeconds int `json:"initialDelaySeconds,omitempty"`
-
-	// readiness probe period seconds
-	PeriodSeconds int `json:"periodSeconds,omitempty"`
-
-	// readiness probe success threshold
-	SuccessThreshold int `json:"successThreshold,omitempty"`
-
-	// readiness probe timeout seconds
-	TimeoutSeconds int `json:"timeoutSeconds,omitempty"`
+	HttpGet             *HttpGet `json:"httpGet,omitempty"`
+	FailureThreshold    int      `json:"failureThreshold,omitempty"`
+	InitialDelaySeconds int      `json:"initialDelaySeconds,omitempty"`
+	PeriodSeconds       int      `json:"periodSeconds,omitempty"`
+	SuccessThreshold    int      `json:"successThreshold,omitempty"`
+	TimeoutSeconds      int      `json:"timeoutSeconds,omitempty"`
 }
 
 // Requests.
@@ -1069,18 +677,11 @@ type Resources struct {
 
 // Rest.
 type Rest struct {
-	// REST server enabled
-	Enabled bool `json:"enabled,omitempty"`
-
-	// REST server host
-	Host string `json:"host,omitempty"`
-
-	// REST server port
-	Port   int     `json:"port,omitempty"`
-	Server *Server `json:"server,omitempty"`
-
-	// REST server service port
-	ServicePort int `json:"servicePort,omitempty"`
+	Server      *Server `json:"server,omitempty"`
+	Host        string  `json:"host,omitempty"`
+	Port        int     `json:"port,omitempty"`
+	ServicePort int     `json:"servicePort,omitempty"`
+	Enabled     bool    `json:"enabled,omitempty"`
 }
 
 // RollingUpdate.
@@ -1094,59 +695,24 @@ type RollingUpdate struct {
 
 // S3.
 type S3 struct {
-	// s3 access key
-	AccessKey string `json:"access_key,omitempty"`
-
-	// enable AWS SDK adding the 'Expect: 100-Continue' header to PUT requests over 2MB of content.
-	Enable100Continue bool `json:"enable_100_continue,omitempty"`
-
-	// enable the S3 client to add MD5 checksum to upload API calls.
-	EnableContentMd5Validation bool `json:"enable_content_md5_validation,omitempty"`
-
-	// enable endpoint discovery
-	EnableEndpointDiscovery bool `json:"enable_endpoint_discovery,omitempty"`
-
-	// enable prefixing request endpoint hosts with modeled information
-	EnableEndpointHostPrefix bool `json:"enable_endpoint_host_prefix,omitempty"`
-
-	// enables semantic parameter validation
-	EnableParamValidation bool `json:"enable_param_validation,omitempty"`
-
-	// enable ssl for s3 session
-	EnableSsl bool `json:"enable_ssl,omitempty"`
-
-	// s3 endpoint
-	Endpoint string `json:"endpoint,omitempty"`
-
-	// use path-style addressing
-	ForcePathStyle bool `json:"force_path_style,omitempty"`
-
-	// s3 download max chunk size
-	MaxChunkSize string `json:"max_chunk_size,omitempty"`
-
-	// s3 multipart upload max part size
-	MaxPartSize string `json:"max_part_size,omitempty"`
-
-	// maximum number of retries of s3 client
-	MaxRetries int `json:"max_retries,omitempty"`
-
-	// s3 region
-	Region string `json:"region,omitempty"`
-
-	// s3 secret access key
-	SecretAccessKey string `json:"secret_access_key,omitempty"`
-
-	// s3 token
-	Token string `json:"token,omitempty"`
-
-	// enable s3 accelerate feature
-	UseAccelerate bool `json:"use_accelerate,omitempty"`
-
-	// s3 service client to use the region specified in the ARN
-	UseArnRegion bool `json:"use_arn_region,omitempty"`
-
-	// use dual stack
-	UseDualStack bool `json:"use_dual_stack,omitempty"`
+	MaxChunkSize               string `json:"max_chunk_size,omitempty"`
+	Token                      string `json:"token,omitempty"`
+	SecretAccessKey            string `json:"secret_access_key,omitempty"`
+	Region                     string `json:"region,omitempty"`
+	AccessKey                  string `json:"access_key,omitempty"`
+	MaxPartSize                string `json:"max_part_size,omitempty"`
+	Endpoint                   string `json:"endpoint,omitempty"`
+	MaxRetries                 int    `json:"max_retries,omitempty"`
+	EnableEndpointHostPrefix   bool   `json:"enable_endpoint_host_prefix,omitempty"`
+	ForcePathStyle             bool   `json:"force_path_style,omitempty"`
+	EnableSsl                  bool   `json:"enable_ssl,omitempty"`
+	EnableParamValidation      bool   `json:"enable_param_validation,omitempty"`
+	EnableEndpointDiscovery    bool   `json:"enable_endpoint_discovery,omitempty"`
+	EnableContentMd5Validation bool   `json:"enable_content_md5_validation,omitempty"`
+	Enable100Continue          bool   `json:"enable_100_continue,omitempty"`
+	UseAccelerate              bool   `json:"use_accelerate,omitempty"`
+	UseArnRegion               bool   `json:"use_arn_region,omitempty"`
+	UseDualStack               bool   `json:"use_dual_stack,omitempty"`
 }
 
 // SecurityContext security context for container.
@@ -1171,7 +737,7 @@ type Selectors struct {
 type Server struct {
 	Http *Http `json:"http,omitempty"`
 
-	// REST server server mode
+	// REST server mode
 	Mode string `json:"mode,omitempty"`
 
 	// mysql network
@@ -1187,12 +753,11 @@ type Server struct {
 
 // ServerConfig.
 type ServerConfig struct {
-	// server full shutdown duration
-	FullShutdownDuration string   `json:"full_shutdown_duration,omitempty"`
 	Healths              *Healths `json:"healths,omitempty"`
 	Metrics              *Metrics `json:"metrics,omitempty"`
 	Servers              *Servers `json:"servers,omitempty"`
 	Tls                  *Tls     `json:"tls,omitempty"`
+	FullShutdownDuration string   `json:"full_shutdown_duration,omitempty"`
 }
 
 // Servers.
@@ -1212,89 +777,51 @@ type Service struct {
 
 // ServiceAccount.
 type ServiceAccount struct {
-	// creates service account
-	Enabled bool `json:"enabled,omitempty"`
-
-	// name of service account
-	Name string `json:"name,omitempty"`
+	Name    string `json:"name,omitempty"`
+	Enabled bool   `json:"enabled,omitempty"`
 }
 
 // Sidecar.
 type Sidecar struct {
-	Config *Config `json:"config,omitempty"`
-
-	// sidecar enabled
-	Enabled bool `json:"enabled,omitempty"`
-
-	// environment variables
-	Env   []*EnvItems `json:"env,omitempty"`
-	Image *Image      `json:"image,omitempty"`
-
-	// sidecar on initContainer mode enabled.
-	InitContainerEnabled bool     `json:"initContainerEnabled,omitempty"`
-	Logging              *Logging `json:"logging,omitempty"`
-
-	// name of agent sidecar
-	Name          string         `json:"name,omitempty"`
-	Observability *Observability `json:"observability,omitempty"`
-
-	// compute resources
-	Resources    *Resources    `json:"resources,omitempty"`
-	ServerConfig *ServerConfig `json:"server_config,omitempty"`
-	Service      *Service      `json:"service,omitempty"`
-
-	// Time zone
-	TimeZone string `json:"time_zone,omitempty"`
-
-	// version of gateway config
-	Version string `json:"version,omitempty"`
+	ServerConfig         *ServerConfig  `json:"server_config,omitempty"`
+	Image                *Image         `json:"image,omitempty"`
+	Logging              *Logging       `json:"logging,omitempty"`
+	Observability        *Observability `json:"observability,omitempty"`
+	Resources            *Resources     `json:"resources,omitempty"`
+	Config               *Config        `json:"config,omitempty"`
+	Service              *Service       `json:"service,omitempty"`
+	Name                 string         `json:"name,omitempty"`
+	TimeZone             string         `json:"time_zone,omitempty"`
+	Version              string         `json:"version,omitempty"`
+	Env                  []*EnvItems    `json:"env,omitempty"`
+	Enabled              bool           `json:"enabled,omitempty"`
+	InitContainerEnabled bool           `json:"initContainerEnabled,omitempty"`
 }
 
 // Startup.
 type Startup struct {
-	// startup server enabled
-	Enabled bool `json:"enabled,omitempty"`
-
-	// startup server port
-	Port         int           `json:"port,omitempty"`
 	StartupProbe *StartupProbe `json:"startupProbe,omitempty"`
+	Port         int           `json:"port,omitempty"`
+	Enabled      bool          `json:"enabled,omitempty"`
 }
 
 // StartupProbe.
 type StartupProbe struct {
-	// startup probe failure threshold
-	FailureThreshold int      `json:"failureThreshold,omitempty"`
-	HttpGet          *HttpGet `json:"httpGet,omitempty"`
-
-	// startup probe initial delay seconds
-	InitialDelaySeconds int `json:"initialDelaySeconds,omitempty"`
-
-	// startup probe period seconds
-	PeriodSeconds int `json:"periodSeconds,omitempty"`
-
-	// startup probe success threshold
-	SuccessThreshold int `json:"successThreshold,omitempty"`
-
-	// startup probe timeout seconds
-	TimeoutSeconds int `json:"timeoutSeconds,omitempty"`
+	HttpGet             *HttpGet `json:"httpGet,omitempty"`
+	FailureThreshold    int      `json:"failureThreshold,omitempty"`
+	InitialDelaySeconds int      `json:"initialDelaySeconds,omitempty"`
+	PeriodSeconds       int      `json:"periodSeconds,omitempty"`
+	SuccessThreshold    int      `json:"successThreshold,omitempty"`
+	TimeoutSeconds      int      `json:"timeoutSeconds,omitempty"`
 }
 
 // Tls.
 type Tls struct {
-	// TLS ca path
-	Ca string `json:"ca,omitempty"`
-
-	// TLS cert path
-	Cert string `json:"cert,omitempty"`
-
-	// TLS enabled
-	Enabled bool `json:"enabled,omitempty"`
-
-	// enable/disable skip SSL certificate verification
-	InsecureSkipVerify bool `json:"insecure_skip_verify,omitempty"`
-
-	// TLS key path
-	Key string `json:"key,omitempty"`
+	Ca                 string `json:"ca,omitempty"`
+	Cert               string `json:"cert,omitempty"`
+	Key                string `json:"key,omitempty"`
+	Enabled            bool   `json:"enabled,omitempty"`
+	InsecureSkipVerify bool   `json:"insecure_skip_verify,omitempty"`
 }
 
 // TolerationsItems.

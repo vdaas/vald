@@ -49,13 +49,10 @@ type Modifier interface {
 // During construction, it calculates the optimal noise level, estimates the required noise table size,
 // and precomputes a noise table using a fast Gaussian generator. These values remain constant as long as the dataset is unchanged.
 type noiseGenerator struct {
-	// Configuration factors.
-	noiseLevelFactor         float32 // Fraction of the average standard deviation used as noise level.
-	noiseTableDivisionFactor uint64  // Division factor for computing the noise table size.
-	minNoiseTableSize        uint64  // Minimum allowed size for the noise table.
-
-	// Precomputed parameters.
-	noiseTable []float32 // Precomputed noise table (each sample is already scaled by the noise level).
+	noiseTable               []float32
+	noiseTableDivisionFactor uint64
+	minNoiseTableSize        uint64
+	noiseLevelFactor         float32
 }
 
 // New constructs a new noiseGenerator instance using the Functional Option Pattern.
@@ -134,7 +131,7 @@ func New(data [][]float32, num uint64, opts ...Option) Modifier {
 	// This is faster and ensures that the same noise values are used for the same sample index.
 	// The noise table is a power of two in size to allow for fast modulo indexing.
 	ng.noiseTable = make([]float32, noiseTableSize)
-	for i := 0; i < noiseTableSize; i++ {
+	for i := range noiseTableSize {
 		ng.noiseTable[i] = func() float32 {
 			if haveSpare32 {
 				haveSpare32 = false
@@ -185,7 +182,7 @@ func (ng *noiseGenerator) Mod() Func {
 		res = slices.Clone(vec)
 		n := uint64(len(res))
 		baseIdx := i * n // Precompute the base index.
-		for j := uint64(0); j < n; j++ {
+		for j := range n {
 			res[j] += noiseTable[(baseIdx+j)%tableSize]
 		}
 		return res

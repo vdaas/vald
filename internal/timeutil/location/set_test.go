@@ -25,9 +25,9 @@ import (
 
 func TestSet(t *testing.T) {
 	type test struct {
+		checkFunc func(got *time.Location) error
 		name      string
 		loc       string
-		checkFunc func(got *time.Location) error
 	}
 
 	tests := []test{

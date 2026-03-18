@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+// Package config stores all server application settings for filter gateway
 package config
 
 import (
@@ -29,22 +30,23 @@ type (
 // Config represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Data struct {
-	config.GlobalConfig `json:",inline" yaml:",inline"`
-
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
 
 	// Observability represent observability configurations
 	Observability *config.Observability `json:"observability" yaml:"observability"`
 
-	// Client represent gateway client configuration
+	// Client represent gRPC client configuration
 	Client *config.GRPCClient `json:"client" yaml:"client"`
 
-	// IngressFilters represent filter configuration for ingress payload
+	// IngressFilters represent ingress filter configuration
 	IngressFilters *config.IngressFilter `json:"ingress_filter" yaml:"ingress_filter"`
 
-	// EgressFilters represent filter configuration for egress payload
+	// EgressFilters represent egress filter configuration
 	EgressFilters *config.EgressFilter `json:"egress_filter" yaml:"egress_filter"`
+
+	// GlobalConfig represent the global configuration
+	config.GlobalConfig `json:",inline" yaml:",inline"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {

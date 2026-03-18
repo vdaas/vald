@@ -53,12 +53,12 @@ func Test_operator_getAtomicScenario(t *testing.T) {
 		want map[string]*scenario
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, map[string]*scenario) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got map[string]*scenario) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -233,12 +233,12 @@ func Test_operator_getAtomicBenchJob(t *testing.T) {
 		want map[string]*v1.ValdBenchmarkJob
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, map[string]*v1.ValdBenchmarkJob) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got map[string]*v1.ValdBenchmarkJob) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -428,12 +428,12 @@ func Test_operator_getAtomicJob(t *testing.T) {
 		want map[string]string
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, map[string]string) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got map[string]string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -519,26 +519,26 @@ func Test_operator_jobReconcile(t *testing.T) {
 		jobList map[string][]k8s.Job
 	}
 	type fields struct {
+		ctrl               k8s.Controller
+		scenarios          *atomic.Pointer[map[string]*scenario]
+		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+		jobs               *atomic.Pointer[map[string]string]
 		jobNamespace       string
 		jobImageRepository string
 		jobImageTag        string
 		jobImagePullPolicy string
-		scenarios          *atomic.Pointer[map[string]*scenario]
-		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-		jobs               *atomic.Pointer[map[string]string]
-		ctrl               k8s.Controller
 	}
 	type want struct {
 		want map[string]string
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
+		args       args
 		want       want
 		checkFunc  func(want, map[string]string) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got map[string]string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -548,7 +548,7 @@ func Test_operator_jobReconcile(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "success when the length of jobList is 0.",
 				args: args{
@@ -577,7 +577,7 @@ func Test_operator_jobReconcile(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "success with new job whose namespace is same as jobNamespace and deleted job by etcd",
 				args: args{
@@ -667,7 +667,7 @@ func Test_operator_jobReconcile(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "success with completed job whose namespace is same as jobNamespace",
 				args: args{
@@ -764,7 +764,7 @@ func Test_operator_jobReconcile(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "success with job whose namespace is not same as jobNamespace",
 				args: args{
@@ -848,27 +848,27 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 		benchJobList map[string]v1.ValdBenchmarkJob
 	}
 	type fields struct {
+		ctrl               k8s.Controller
+		scenarios          *atomic.Pointer[map[string]*scenario]
+		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+		jobs               *atomic.Pointer[map[string]string]
 		jobNamespace       string
 		jobImageRepository string
 		jobImageTag        string
 		jobImagePullPolicy string
-		scenarios          *atomic.Pointer[map[string]*scenario]
-		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-		jobs               *atomic.Pointer[map[string]string]
-		ctrl               k8s.Controller
 	}
 	type want struct {
 		scenarios map[string]*scenario
 		benchjobs map[string]*v1.ValdBenchmarkJob
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
+		args       args
 		want       want
 		checkFunc  func(want, map[string]*scenario, map[string]*v1.ValdBenchmarkJob) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, gotS map[string]*scenario, gotJ map[string]*v1.ValdBenchmarkJob) error {
 		if !reflect.DeepEqual(w.scenarios, gotS) {
@@ -881,7 +881,7 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "success when benchJobList is empty",
 				args: args{
@@ -911,7 +911,7 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "success when benchJobList has new benchmark Job with owner reference (reconcile after submitted scenario)",
 				args: args{
@@ -1101,7 +1101,7 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "success when benchJobList has updated benchmark Job with owner reference (reconcile after updated scenario)",
 				args: args{
@@ -1335,7 +1335,7 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "success when benchJobList has updated benchmark Job with owner reference (reconcile after updated job status)",
 				args: args{
@@ -1569,7 +1569,7 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "success when benchJobList has new benchmark Job with owner reference and benchJob has deleted job",
 				args: args{
@@ -1881,26 +1881,26 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 		scenarioList map[string]v1.ValdBenchmarkScenario
 	}
 	type fields struct {
+		ctrl               k8s.Controller
+		scenarios          *atomic.Pointer[map[string]*scenario]
+		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+		jobs               *atomic.Pointer[map[string]string]
 		jobNamespace       string
 		jobImageRepository string
 		jobImageTag        string
 		jobImagePullPolicy string
-		scenarios          *atomic.Pointer[map[string]*scenario]
-		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-		jobs               *atomic.Pointer[map[string]string]
-		ctrl               k8s.Controller
 	}
 	type want struct {
 		want map[string]*scenario
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
+		args       args
 		want       want
 		checkFunc  func(want, map[string]*scenario) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got map[string]*scenario) error {
 		if len(w.want) != len(got) {
@@ -1931,7 +1931,7 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "success with scenarioList is empty",
 				args: args{
@@ -1961,7 +1961,7 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "success with scenarioList has new scenario with no scenario has been applied yet.",
 				args: args{
@@ -2097,7 +2097,7 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "success with scenarioList has only status updated scenario.",
 				args: args{
@@ -2289,7 +2289,7 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "success with scenarioList has updated scenario when job is already running",
 				args: args{
@@ -2481,7 +2481,7 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "success with scenarioList has another scenario when scenario is already running",
 				args: args{
@@ -2721,12 +2721,12 @@ func Test_operator_checkAtomics(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -3212,17 +3212,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 //
 // func Test_operator_initCtrl(t *testing.T) {
 // 	type fields struct {
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 		scenarios          *atomic.Pointer[map[string]*scenario]
+// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               *atomic.Pointer[map[string]string]
 // 		jobNamespace       string
 // 		jobImageRepository string
 // 		jobImageTag        string
 // 		jobImagePullPolicy string
 // 		configMapName      string
-// 		scenarios          *atomic.Pointer[map[string]*scenario]
-// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-// 		jobs               *atomic.Pointer[map[string]string]
 // 		rcd                time.Duration
-// 		eg                 errgroup.Group
-// 		ctrl               k8s.Controller
 // 	}
 // 	type want struct {
 // 		err error
@@ -3247,17 +3247,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
 // 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
 // 		           configMapName:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
 // 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3276,17 +3276,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
 // 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
 // 		           configMapName:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
 // 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3317,17 +3317,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			o := &operator{
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
 // 				jobNamespace:       test.fields.jobNamespace,
 // 				jobImageRepository: test.fields.jobImageRepository,
 // 				jobImageTag:        test.fields.jobImageTag,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
 // 				configMapName:      test.fields.configMapName,
-// 				scenarios:          test.fields.scenarios,
-// 				benchjobs:          test.fields.benchjobs,
-// 				jobs:               test.fields.jobs,
 // 				rcd:                test.fields.rcd,
-// 				eg:                 test.fields.eg,
-// 				ctrl:               test.fields.ctrl,
 // 			}
 //
 // 			err := o.initCtrl()
@@ -3345,17 +3345,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		generation int64
 // 	}
 // 	type fields struct {
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 		scenarios          *atomic.Pointer[map[string]*scenario]
+// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               *atomic.Pointer[map[string]string]
 // 		jobNamespace       string
 // 		jobImageRepository string
 // 		jobImageTag        string
 // 		jobImagePullPolicy string
 // 		configMapName      string
-// 		scenarios          *atomic.Pointer[map[string]*scenario]
-// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-// 		jobs               *atomic.Pointer[map[string]string]
 // 		rcd                time.Duration
-// 		eg                 errgroup.Group
-// 		ctrl               k8s.Controller
 // 	}
 // 	type want struct {
 // 		err error
@@ -3386,17 +3386,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           generation:0,
 // 		       },
 // 		       fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
 // 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
 // 		           configMapName:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
 // 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3420,17 +3420,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           generation:0,
 // 		           },
 // 		           fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
 // 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
 // 		           configMapName:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
 // 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3461,17 +3461,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			o := &operator{
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
 // 				jobNamespace:       test.fields.jobNamespace,
 // 				jobImageRepository: test.fields.jobImageRepository,
 // 				jobImageTag:        test.fields.jobImageTag,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
 // 				configMapName:      test.fields.configMapName,
-// 				scenarios:          test.fields.scenarios,
-// 				benchjobs:          test.fields.benchjobs,
-// 				jobs:               test.fields.jobs,
 // 				rcd:                test.fields.rcd,
-// 				eg:                 test.fields.eg,
-// 				ctrl:               test.fields.ctrl,
 // 			}
 //
 // 			err := o.deleteBenchmarkJob(test.args.ctx, test.args.name, test.args.generation)
@@ -3488,17 +3488,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		name string
 // 	}
 // 	type fields struct {
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 		scenarios          *atomic.Pointer[map[string]*scenario]
+// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               *atomic.Pointer[map[string]string]
 // 		jobNamespace       string
 // 		jobImageRepository string
 // 		jobImageTag        string
 // 		jobImagePullPolicy string
 // 		configMapName      string
-// 		scenarios          *atomic.Pointer[map[string]*scenario]
-// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-// 		jobs               *atomic.Pointer[map[string]string]
 // 		rcd                time.Duration
-// 		eg                 errgroup.Group
-// 		ctrl               k8s.Controller
 // 	}
 // 	type want struct {
 // 		err error
@@ -3528,17 +3528,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           name:"",
 // 		       },
 // 		       fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
 // 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
 // 		           configMapName:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
 // 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3561,17 +3561,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           name:"",
 // 		           },
 // 		           fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
 // 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
 // 		           configMapName:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
 // 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3602,17 +3602,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			o := &operator{
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
 // 				jobNamespace:       test.fields.jobNamespace,
 // 				jobImageRepository: test.fields.jobImageRepository,
 // 				jobImageTag:        test.fields.jobImageTag,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
 // 				configMapName:      test.fields.configMapName,
-// 				scenarios:          test.fields.scenarios,
-// 				benchjobs:          test.fields.benchjobs,
-// 				jobs:               test.fields.jobs,
 // 				rcd:                test.fields.rcd,
-// 				eg:                 test.fields.eg,
-// 				ctrl:               test.fields.ctrl,
 // 			}
 //
 // 			err := o.deleteJob(test.args.ctx, test.args.name)
@@ -3629,17 +3629,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		scenario v1.ValdBenchmarkScenario
 // 	}
 // 	type fields struct {
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 		scenarios          *atomic.Pointer[map[string]*scenario]
+// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               *atomic.Pointer[map[string]string]
 // 		jobNamespace       string
 // 		jobImageRepository string
 // 		jobImageTag        string
 // 		jobImagePullPolicy string
 // 		configMapName      string
-// 		scenarios          *atomic.Pointer[map[string]*scenario]
-// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-// 		jobs               *atomic.Pointer[map[string]string]
 // 		rcd                time.Duration
-// 		eg                 errgroup.Group
-// 		ctrl               k8s.Controller
 // 	}
 // 	type want struct {
 // 		want []string
@@ -3673,17 +3673,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           scenario:nil,
 // 		       },
 // 		       fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
 // 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
 // 		           configMapName:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
 // 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3706,17 +3706,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           scenario:nil,
 // 		           },
 // 		           fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
 // 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
 // 		           configMapName:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
 // 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3747,17 +3747,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			o := &operator{
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
 // 				jobNamespace:       test.fields.jobNamespace,
 // 				jobImageRepository: test.fields.jobImageRepository,
 // 				jobImageTag:        test.fields.jobImageTag,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
 // 				configMapName:      test.fields.configMapName,
-// 				scenarios:          test.fields.scenarios,
-// 				benchjobs:          test.fields.benchjobs,
-// 				jobs:               test.fields.jobs,
 // 				rcd:                test.fields.rcd,
-// 				eg:                 test.fields.eg,
-// 				ctrl:               test.fields.ctrl,
 // 			}
 //
 // 			got, err := o.createBenchmarkJob(test.args.ctx, test.args.scenario)
@@ -3774,17 +3774,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		bjr v1.ValdBenchmarkJob
 // 	}
 // 	type fields struct {
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 		scenarios          *atomic.Pointer[map[string]*scenario]
+// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               *atomic.Pointer[map[string]string]
 // 		jobNamespace       string
 // 		jobImageRepository string
 // 		jobImageTag        string
 // 		jobImagePullPolicy string
 // 		configMapName      string
-// 		scenarios          *atomic.Pointer[map[string]*scenario]
-// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-// 		jobs               *atomic.Pointer[map[string]string]
 // 		rcd                time.Duration
-// 		eg                 errgroup.Group
-// 		ctrl               k8s.Controller
 // 	}
 // 	type want struct {
 // 		err error
@@ -3814,17 +3814,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           bjr:nil,
 // 		       },
 // 		       fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
 // 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
 // 		           configMapName:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
 // 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3847,17 +3847,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           bjr:nil,
 // 		           },
 // 		           fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
 // 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
 // 		           configMapName:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
 // 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3888,17 +3888,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			o := &operator{
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
 // 				jobNamespace:       test.fields.jobNamespace,
 // 				jobImageRepository: test.fields.jobImageRepository,
 // 				jobImageTag:        test.fields.jobImageTag,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
 // 				configMapName:      test.fields.configMapName,
-// 				scenarios:          test.fields.scenarios,
-// 				benchjobs:          test.fields.benchjobs,
-// 				jobs:               test.fields.jobs,
 // 				rcd:                test.fields.rcd,
-// 				eg:                 test.fields.eg,
-// 				ctrl:               test.fields.ctrl,
 // 			}
 //
 // 			err := o.createJob(test.args.ctx, test.args.bjr)
@@ -3915,17 +3915,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		ss  map[string]v1.ValdBenchmarkScenarioStatus
 // 	}
 // 	type fields struct {
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 		scenarios          *atomic.Pointer[map[string]*scenario]
+// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               *atomic.Pointer[map[string]string]
 // 		jobNamespace       string
 // 		jobImageRepository string
 // 		jobImageTag        string
 // 		jobImagePullPolicy string
 // 		configMapName      string
-// 		scenarios          *atomic.Pointer[map[string]*scenario]
-// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-// 		jobs               *atomic.Pointer[map[string]string]
 // 		rcd                time.Duration
-// 		eg                 errgroup.Group
-// 		ctrl               k8s.Controller
 // 	}
 // 	type want struct {
 // 		want []string
@@ -3959,17 +3959,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           ss:nil,
 // 		       },
 // 		       fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
 // 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
 // 		           configMapName:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
 // 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3992,17 +3992,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           ss:nil,
 // 		           },
 // 		           fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
 // 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
 // 		           configMapName:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
 // 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4033,17 +4033,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			o := &operator{
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
 // 				jobNamespace:       test.fields.jobNamespace,
 // 				jobImageRepository: test.fields.jobImageRepository,
 // 				jobImageTag:        test.fields.jobImageTag,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
 // 				configMapName:      test.fields.configMapName,
-// 				scenarios:          test.fields.scenarios,
-// 				benchjobs:          test.fields.benchjobs,
-// 				jobs:               test.fields.jobs,
 // 				rcd:                test.fields.rcd,
-// 				eg:                 test.fields.eg,
-// 				ctrl:               test.fields.ctrl,
 // 			}
 //
 // 			got, err := o.updateBenchmarkScenarioStatus(test.args.ctx, test.args.ss)
@@ -4060,17 +4060,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		js  map[string]v1.BenchmarkJobStatus
 // 	}
 // 	type fields struct {
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 		scenarios          *atomic.Pointer[map[string]*scenario]
+// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               *atomic.Pointer[map[string]string]
 // 		jobNamespace       string
 // 		jobImageRepository string
 // 		jobImageTag        string
 // 		jobImagePullPolicy string
 // 		configMapName      string
-// 		scenarios          *atomic.Pointer[map[string]*scenario]
-// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-// 		jobs               *atomic.Pointer[map[string]string]
 // 		rcd                time.Duration
-// 		eg                 errgroup.Group
-// 		ctrl               k8s.Controller
 // 	}
 // 	type want struct {
 // 		want []string
@@ -4104,17 +4104,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           js:nil,
 // 		       },
 // 		       fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
 // 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
 // 		           configMapName:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
 // 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4137,17 +4137,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           js:nil,
 // 		           },
 // 		           fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
 // 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
 // 		           configMapName:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
 // 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4178,17 +4178,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			o := &operator{
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
 // 				jobNamespace:       test.fields.jobNamespace,
 // 				jobImageRepository: test.fields.jobImageRepository,
 // 				jobImageTag:        test.fields.jobImageTag,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
 // 				configMapName:      test.fields.configMapName,
-// 				scenarios:          test.fields.scenarios,
-// 				benchjobs:          test.fields.benchjobs,
-// 				jobs:               test.fields.jobs,
 // 				rcd:                test.fields.rcd,
-// 				eg:                 test.fields.eg,
-// 				ctrl:               test.fields.ctrl,
 // 			}
 //
 // 			got, err := o.updateBenchmarkJobStatus(test.args.ctx, test.args.js)
@@ -4205,17 +4205,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		jobs map[string]string
 // 	}
 // 	type fields struct {
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 		scenarios          *atomic.Pointer[map[string]*scenario]
+// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               *atomic.Pointer[map[string]string]
 // 		jobNamespace       string
 // 		jobImageRepository string
 // 		jobImageTag        string
 // 		jobImagePullPolicy string
 // 		configMapName      string
-// 		scenarios          *atomic.Pointer[map[string]*scenario]
-// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-// 		jobs               *atomic.Pointer[map[string]string]
 // 		rcd                time.Duration
-// 		eg                 errgroup.Group
-// 		ctrl               k8s.Controller
 // 	}
 // 	type want struct {
 // 		err error
@@ -4245,17 +4245,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           jobs:nil,
 // 		       },
 // 		       fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
 // 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
 // 		           configMapName:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
 // 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4278,17 +4278,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           jobs:nil,
 // 		           },
 // 		           fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
 // 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
 // 		           configMapName:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
 // 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4319,17 +4319,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			o := &operator{
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
 // 				jobNamespace:       test.fields.jobNamespace,
 // 				jobImageRepository: test.fields.jobImageRepository,
 // 				jobImageTag:        test.fields.jobImageTag,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
 // 				configMapName:      test.fields.configMapName,
-// 				scenarios:          test.fields.scenarios,
-// 				benchjobs:          test.fields.benchjobs,
-// 				jobs:               test.fields.jobs,
 // 				rcd:                test.fields.rcd,
-// 				eg:                 test.fields.eg,
-// 				ctrl:               test.fields.ctrl,
 // 			}
 //
 // 			err := o.checkJobsStatus(test.args.ctx, test.args.jobs)
@@ -4342,17 +4342,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 //
 // func Test_operator_GetScenarioStatus(t *testing.T) {
 // 	type fields struct {
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 		scenarios          *atomic.Pointer[map[string]*scenario]
+// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               *atomic.Pointer[map[string]string]
 // 		jobNamespace       string
 // 		jobImageRepository string
 // 		jobImageTag        string
 // 		jobImagePullPolicy string
 // 		configMapName      string
-// 		scenarios          *atomic.Pointer[map[string]*scenario]
-// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-// 		jobs               *atomic.Pointer[map[string]string]
 // 		rcd                time.Duration
-// 		eg                 errgroup.Group
-// 		ctrl               k8s.Controller
 // 	}
 // 	type want struct {
 // 		want map[v1.ValdBenchmarkScenarioStatus]int64
@@ -4377,17 +4377,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
 // 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
 // 		           configMapName:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
 // 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4406,17 +4406,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
 // 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
 // 		           configMapName:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
 // 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4447,17 +4447,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			o := &operator{
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
 // 				jobNamespace:       test.fields.jobNamespace,
 // 				jobImageRepository: test.fields.jobImageRepository,
 // 				jobImageTag:        test.fields.jobImageTag,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
 // 				configMapName:      test.fields.configMapName,
-// 				scenarios:          test.fields.scenarios,
-// 				benchjobs:          test.fields.benchjobs,
-// 				jobs:               test.fields.jobs,
 // 				rcd:                test.fields.rcd,
-// 				eg:                 test.fields.eg,
-// 				ctrl:               test.fields.ctrl,
 // 			}
 //
 // 			got := o.GetScenarioStatus()
@@ -4470,17 +4470,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 //
 // func Test_operator_GetBenchmarkJobStatus(t *testing.T) {
 // 	type fields struct {
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 		scenarios          *atomic.Pointer[map[string]*scenario]
+// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               *atomic.Pointer[map[string]string]
 // 		jobNamespace       string
 // 		jobImageRepository string
 // 		jobImageTag        string
 // 		jobImagePullPolicy string
 // 		configMapName      string
-// 		scenarios          *atomic.Pointer[map[string]*scenario]
-// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-// 		jobs               *atomic.Pointer[map[string]string]
 // 		rcd                time.Duration
-// 		eg                 errgroup.Group
-// 		ctrl               k8s.Controller
 // 	}
 // 	type want struct {
 // 		want map[v1.BenchmarkJobStatus]int64
@@ -4505,17 +4505,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
 // 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
 // 		           configMapName:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
 // 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4534,17 +4534,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
 // 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
 // 		           configMapName:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
 // 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4575,17 +4575,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			o := &operator{
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
 // 				jobNamespace:       test.fields.jobNamespace,
 // 				jobImageRepository: test.fields.jobImageRepository,
 // 				jobImageTag:        test.fields.jobImageTag,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
 // 				configMapName:      test.fields.configMapName,
-// 				scenarios:          test.fields.scenarios,
-// 				benchjobs:          test.fields.benchjobs,
-// 				jobs:               test.fields.jobs,
 // 				rcd:                test.fields.rcd,
-// 				eg:                 test.fields.eg,
-// 				ctrl:               test.fields.ctrl,
 // 			}
 //
 // 			got := o.GetBenchmarkJobStatus()
@@ -4601,17 +4601,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		in0 context.Context
 // 	}
 // 	type fields struct {
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 		scenarios          *atomic.Pointer[map[string]*scenario]
+// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               *atomic.Pointer[map[string]string]
 // 		jobNamespace       string
 // 		jobImageRepository string
 // 		jobImageTag        string
 // 		jobImagePullPolicy string
 // 		configMapName      string
-// 		scenarios          *atomic.Pointer[map[string]*scenario]
-// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-// 		jobs               *atomic.Pointer[map[string]string]
 // 		rcd                time.Duration
-// 		eg                 errgroup.Group
-// 		ctrl               k8s.Controller
 // 	}
 // 	type want struct {
 // 		err error
@@ -4640,17 +4640,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           in0:nil,
 // 		       },
 // 		       fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
 // 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
 // 		           configMapName:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
 // 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4672,17 +4672,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           in0:nil,
 // 		           },
 // 		           fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
 // 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
 // 		           configMapName:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
 // 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4713,17 +4713,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			o := &operator{
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
 // 				jobNamespace:       test.fields.jobNamespace,
 // 				jobImageRepository: test.fields.jobImageRepository,
 // 				jobImageTag:        test.fields.jobImageTag,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
 // 				configMapName:      test.fields.configMapName,
-// 				scenarios:          test.fields.scenarios,
-// 				benchjobs:          test.fields.benchjobs,
-// 				jobs:               test.fields.jobs,
 // 				rcd:                test.fields.rcd,
-// 				eg:                 test.fields.eg,
-// 				ctrl:               test.fields.ctrl,
 // 			}
 //
 // 			err := o.PreStart(test.args.in0)
@@ -4739,17 +4739,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 		scenarios          *atomic.Pointer[map[string]*scenario]
+// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               *atomic.Pointer[map[string]string]
 // 		jobNamespace       string
 // 		jobImageRepository string
 // 		jobImageTag        string
 // 		jobImagePullPolicy string
 // 		configMapName      string
-// 		scenarios          *atomic.Pointer[map[string]*scenario]
-// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-// 		jobs               *atomic.Pointer[map[string]string]
 // 		rcd                time.Duration
-// 		eg                 errgroup.Group
-// 		ctrl               k8s.Controller
 // 	}
 // 	type want struct {
 // 		want <-chan error
@@ -4782,17 +4782,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
 // 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
 // 		           configMapName:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
 // 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4814,17 +4814,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
 // 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
 // 		           configMapName:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
 // 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4855,17 +4855,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			o := &operator{
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
 // 				jobNamespace:       test.fields.jobNamespace,
 // 				jobImageRepository: test.fields.jobImageRepository,
 // 				jobImageTag:        test.fields.jobImageTag,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
 // 				configMapName:      test.fields.configMapName,
-// 				scenarios:          test.fields.scenarios,
-// 				benchjobs:          test.fields.benchjobs,
-// 				jobs:               test.fields.jobs,
 // 				rcd:                test.fields.rcd,
-// 				eg:                 test.fields.eg,
-// 				ctrl:               test.fields.ctrl,
 // 			}
 //
 // 			got, err := o.Start(test.args.ctx)

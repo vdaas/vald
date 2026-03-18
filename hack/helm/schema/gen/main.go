@@ -47,32 +47,25 @@ var (
 )
 
 type SchemaBase struct {
-	// for object type
-	Required          []string          `json:"required,omitempty"`
-	MaxProperties     *uint64           `json:"maxProperties,omitempty"`
+	MaxContains       *uint64           `json:"maxContains,omitempty"`
+	MinContains       *uint64           `json:"minContains,omitempty"`
 	MinProperties     *uint64           `json:"minProperties,omitempty"`
+	MaxItems          *uint64           `json:"maxItems,omitempty"`
+	Minimum           *int64            `json:"minimum,omitempty"`
+	Maximum           *int64            `json:"maximum,omitempty"`
+	MaxLength         *uint64           `json:"maxLength,omitempty"`
+	MinLength         *uint64           `json:"minLength,omitempty"`
+	MaxProperties     *uint64           `json:"maxProperties,omitempty"`
+	MinItems          *uint64           `json:"minItems,omitempty"`
 	DependentRequired map[string]string `json:"dependentRequired,omitempty"`
-
-	// for string type
-	Enum      []string `json:"enum,omitempty"`
-	Pattern   string   `json:"pattern,omitempty"`
-	MaxLength *uint64  `json:"maxLength,omitempty"`
-	MinLength *uint64  `json:"minLength,omitempty"`
-
-	// for array type
-	Items       *Schema `json:"items,omitempty"`
-	MaxItems    *uint64 `json:"maxItems,omitempty"`
-	MinItems    *uint64 `json:"minItems,omitempty"`
-	UniqueItems bool    `json:"uniqueItems,omitempty"`
-	MaxContains *uint64 `json:"maxContains,omitempty"`
-	MinContains *uint64 `json:"minContains,omitempty"`
-
-	// for numeric types
-	MultipleOf       *int64 `json:"multipleOf,omitempty"`
-	Maximum          *int64 `json:"maximum,omitempty"`
-	ExclusiveMaximum bool   `json:"exclusiveMaximum,omitempty"`
-	Minimum          *int64 `json:"minimum,omitempty"`
-	ExclusiveMinimum bool   `json:"exclusiveMinimum,omitempty"`
+	MultipleOf        *int64            `json:"multipleOf,omitempty"`
+	Items             *Schema           `json:"items,omitempty"`
+	Pattern           string            `json:"pattern,omitempty"`
+	Required          []string          `json:"required,omitempty"`
+	Enum              []string          `json:"enum,omitempty"`
+	UniqueItems       bool              `json:"uniqueItems,omitempty"`
+	ExclusiveMaximum  bool              `json:"exclusiveMaximum,omitempty"`
+	ExclusiveMinimum  bool              `json:"exclusiveMinimum,omitempty"`
 }
 
 type VSchema struct {

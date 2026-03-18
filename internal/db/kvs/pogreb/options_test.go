@@ -32,12 +32,12 @@ func TestWithPath(t *testing.T) {
 		path string
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, *db, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		want       want
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got *db, err error) error {
 		if !errors.Is(err, w.err) {

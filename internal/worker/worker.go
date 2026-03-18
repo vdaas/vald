@@ -45,12 +45,12 @@ type Worker interface {
 }
 
 type worker struct {
-	name           string
-	limitation     int
 	running        atomic.Value
 	eg             errgroup.Group
 	queue          Queue
+	name           string
 	qopts          []QueueOption
+	limitation     int
 	requestedCount uint64
 	completedCount uint64
 }

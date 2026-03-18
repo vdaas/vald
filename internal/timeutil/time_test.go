@@ -111,12 +111,12 @@ func TestParseWithDefault(t *testing.T) {
 		want time.Duration
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, time.Duration) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, got time.Duration) error {
 		if !reflect.DeepEqual(got, w.want) {

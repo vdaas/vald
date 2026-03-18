@@ -18,37 +18,60 @@ package config
 
 // BenchmarkJob represents the configuration for the internal benchmark search job.
 type BenchmarkJob struct {
-	Target             *BenchmarkTarget    `json:"target,omitempty"               yaml:"target"`
-	Dataset            *BenchmarkDataset   `json:"dataset,omitempty"              yaml:"dataset"`
-	Replica            int                 `json:"replica,omitempty"              yaml:"replica"`
-	Repetition         int                 `json:"repetition,omitempty"           yaml:"repetition"`
-	JobType            string              `json:"job_type,omitempty"             yaml:"job_type"`
-	InsertConfig       *InsertConfig       `json:"insert_config,omitempty"        yaml:"insert_config"`
-	UpdateConfig       *UpdateConfig       `json:"update_config,omitempty"        yaml:"update_config"`
-	UpsertConfig       *UpsertConfig       `json:"upsert_config,omitempty"        yaml:"upsert_config"`
-	SearchConfig       *SearchConfig       `json:"search_config,omitempty"        yaml:"search_config"`
-	RemoveConfig       *RemoveConfig       `json:"remove_config,omitempty"        yaml:"remove_config"`
-	ObjectConfig       *ObjectConfig       `json:"object_config,omitempty"        yaml:"object_config"`
-	ClientConfig       *GRPCClient         `json:"client_config,omitempty"        yaml:"client_config"`
-	Rules              []*BenchmarkJobRule `json:"rules,omitempty"                yaml:"rules"`
-	BeforeJobName      string              `json:"before_job_name,omitempty"      yaml:"before_job_name"`
-	BeforeJobNamespace string              `json:"before_job_namespace,omitempty" yaml:"before_job_namespace"`
-	RPS                int                 `json:"rps,omitempty"                  yaml:"rps"`
-	ConcurrencyLimit   int                 `json:"concurrency_limit,omitempty"    yaml:"concurrency_limit"`
+	// RemoveConfig represents the remove configuration.
+	RemoveConfig *RemoveConfig `json:"remove_config,omitempty" yaml:"remove_config"`
+	// Dataset represents the dataset configuration.
+	Dataset *BenchmarkDataset `json:"dataset,omitempty" yaml:"dataset"`
+	// ClientConfig represents the client configuration.
+	ClientConfig *GRPCClient `json:"client_config,omitempty" yaml:"client_config"`
+	// ObjectConfig represents the object configuration.
+	ObjectConfig *ObjectConfig `json:"object_config,omitempty" yaml:"object_config"`
+	// Target represents the target configuration.
+	Target *BenchmarkTarget `json:"target,omitempty" yaml:"target"`
+	// InsertConfig represents the insert configuration.
+	InsertConfig *InsertConfig `json:"insert_config,omitempty" yaml:"insert_config"`
+	// UpdateConfig represents the update configuration.
+	UpdateConfig *UpdateConfig `json:"update_config,omitempty" yaml:"update_config"`
+	// UpsertConfig represents the upsert configuration.
+	UpsertConfig *UpsertConfig `json:"upsert_config,omitempty" yaml:"upsert_config"`
+	// SearchConfig represents the search configuration.
+	SearchConfig *SearchConfig `json:"search_config,omitempty" yaml:"search_config"`
+	// JobType represents the job type.
+	JobType string `json:"job_type,omitempty" yaml:"job_type"`
+	// BeforeJobName represents the before job name.
+	BeforeJobName string `json:"before_job_name,omitempty" yaml:"before_job_name"`
+	// BeforeJobNamespace represents the before job namespace.
+	BeforeJobNamespace string `json:"before_job_namespace,omitempty" yaml:"before_job_namespace"`
+	// Rules represents the list of rules.
+	Rules []*BenchmarkJobRule `json:"rules,omitempty" yaml:"rules"`
+	// Repetition represents the repetition count.
+	Repetition int `json:"repetition,omitempty" yaml:"repetition"`
+	// Replica represents the replica count.
+	Replica int `json:"replica,omitempty" yaml:"replica"`
+	// RPS represents the requests per second.
+	RPS int `json:"rps,omitempty" yaml:"rps"`
+	// ConcurrencyLimit represents the concurrency limit.
+	ConcurrencyLimit int `json:"concurrency_limit,omitempty" yaml:"concurrency_limit"`
 }
 
 // BenchmarkScenario represents the configuration for the internal benchmark scenario.
 type BenchmarkScenario struct {
-	Target  *BenchmarkTarget  `json:"target,omitempty"  yaml:"target"`
+	// Target represents the target configuration.
+	Target *BenchmarkTarget `json:"target,omitempty" yaml:"target"`
+	// Dataset represents the dataset configuration.
 	Dataset *BenchmarkDataset `json:"dataset,omitempty" yaml:"dataset"`
-	Jobs    []*BenchmarkJob   `json:"jobs,omitempty"    yaml:"jobs"`
+	// Jobs represents the list of benchmark jobs.
+	Jobs []*BenchmarkJob `json:"jobs,omitempty" yaml:"jobs"`
 }
 
 // BenchmarkTarget defines the desired state of BenchmarkTarget.
 type BenchmarkTarget struct {
-	Host string            `json:"host,omitempty"`
-	Port int               `json:"port,omitempty"`
+	// Meta represents the metadata.
 	Meta map[string]string `json:"meta,omitempty"`
+	// Host represents the host.
+	Host string `json:"host,omitempty"`
+	// Port represents the port.
+	Port int `json:"port,omitempty"`
 }
 
 func (t *BenchmarkTarget) Bind() *BenchmarkTarget {
@@ -58,11 +81,16 @@ func (t *BenchmarkTarget) Bind() *BenchmarkTarget {
 
 // BenchmarkDataset defines the desired state of BenchmarkDateset.
 type BenchmarkDataset struct {
-	Name    string                 `json:"name,omitempty"`
-	Group   string                 `json:"group,omitempty"`
-	Indexes int                    `json:"indexes,omitempty"`
-	Range   *BenchmarkDatasetRange `json:"range,omitempty"`
-	URL     string                 `json:"url,omitempty"`
+	// Range represents the range configuration.
+	Range *BenchmarkDatasetRange `json:"range,omitempty"`
+	// Name represents the dataset name.
+	Name string `json:"name,omitempty"`
+	// Group represents the dataset group.
+	Group string `json:"group,omitempty"`
+	// URL represents the dataset URL.
+	URL string `json:"url,omitempty"`
+	// Indexes represents the number of indexes.
+	Indexes int `json:"indexes,omitempty"`
 }
 
 func (d *BenchmarkDataset) Bind() *BenchmarkDataset {
@@ -74,13 +102,17 @@ func (d *BenchmarkDataset) Bind() *BenchmarkDataset {
 
 // BenchmarkDatasetRange defines the desired state of BenchmarkDatesetRange.
 type BenchmarkDatasetRange struct {
+	// Start represents the start index.
 	Start int `json:"start,omitempty"`
-	End   int `json:"end,omitempty"`
+	// End represents the end index.
+	End int `json:"end,omitempty"`
 }
 
 // BenchmarkJobRule defines the desired state of BenchmarkJobRule.
 type BenchmarkJobRule struct {
+	// Name represents the rule name.
 	Name string `json:"name,omitempty"`
+	// Type represents the rule type.
 	Type string `json:"type,omitempty"`
 }
 
@@ -92,8 +124,10 @@ func (r *BenchmarkJobRule) Bind() *BenchmarkJobRule {
 
 // InsertConfig defines the desired state of insert config.
 type InsertConfig struct {
-	SkipStrictExistCheck bool   `json:"skip_strict_exist_check,omitempty"`
-	Timestamp            string `json:"timestamp,omitempty"`
+	// Timestamp represents the timestamp.
+	Timestamp string `json:"timestamp,omitempty"`
+	// SkipStrictExistCheck enables skipping strict existence check.
+	SkipStrictExistCheck bool `json:"skip_strict_exist_check,omitempty"`
 }
 
 func (cfg *InsertConfig) Bind() *InsertConfig {
@@ -103,9 +137,12 @@ func (cfg *InsertConfig) Bind() *InsertConfig {
 
 // UpdateConfig defines the desired state of update config.
 type UpdateConfig struct {
-	SkipStrictExistCheck  bool   `json:"skip_strict_exist_check,omitempty"`
-	Timestamp             string `json:"timestamp,omitempty"`
-	DisableBalancedUpdate bool   `json:"disable_balanced_update,omitempty"`
+	// Timestamp represents the timestamp.
+	Timestamp string `json:"timestamp,omitempty"`
+	// SkipStrictExistCheck enables skipping strict existence check.
+	SkipStrictExistCheck bool `json:"skip_strict_exist_check,omitempty"`
+	// DisableBalancedUpdate disables balanced update.
+	DisableBalancedUpdate bool `json:"disable_balanced_update,omitempty"`
 }
 
 func (cfg *UpdateConfig) Bind() *UpdateConfig {
@@ -115,9 +152,12 @@ func (cfg *UpdateConfig) Bind() *UpdateConfig {
 
 // UpsertConfig defines the desired state of upsert config.
 type UpsertConfig struct {
-	SkipStrictExistCheck  bool   `json:"skip_strict_exist_check,omitempty"`
-	Timestamp             string `json:"timestamp,omitempty"`
-	DisableBalancedUpdate bool   `json:"disable_balanced_update,omitempty"`
+	// Timestamp represents the timestamp.
+	Timestamp string `json:"timestamp,omitempty"`
+	// SkipStrictExistCheck enables skipping strict existence check.
+	SkipStrictExistCheck bool `json:"skip_strict_exist_check,omitempty"`
+	// DisableBalancedUpdate disables balanced update.
+	DisableBalancedUpdate bool `json:"disable_balanced_update,omitempty"`
 }
 
 func (cfg *UpsertConfig) Bind() *UpsertConfig {
@@ -127,13 +167,20 @@ func (cfg *UpsertConfig) Bind() *UpsertConfig {
 
 // SearchConfig defines the desired state of search config.
 type SearchConfig struct {
-	Epsilon              float32 `json:"epsilon,omitempty"`
-	Radius               float32 `json:"radius,omitempty"`
-	Num                  int32   `json:"num,omitempty"`
-	MinNum               int32   `json:"min_num,omitempty"`
-	Timeout              string  `json:"timeout,omitempty"`
-	EnableLinearSearch   bool    `json:"enable_linear_search,omitempty"`
-	AggregationAlgorithm string  `json:"aggregation_algorithm,omitempty"`
+	// Timeout represents the timeout.
+	Timeout string `json:"timeout,omitempty"`
+	// AggregationAlgorithm represents the aggregation algorithm.
+	AggregationAlgorithm string `json:"aggregation_algorithm,omitempty"`
+	// Epsilon represents the epsilon.
+	Epsilon float32 `json:"epsilon,omitempty"`
+	// Radius represents the radius.
+	Radius float32 `json:"radius,omitempty"`
+	// Num represents the number of results.
+	Num int32 `json:"num,omitempty"`
+	// MinNum represents the minimum number of results.
+	MinNum int32 `json:"min_num,omitempty"`
+	// EnableLinearSearch enables linear search.
+	EnableLinearSearch bool `json:"enable_linear_search,omitempty"`
 }
 
 func (cfg *SearchConfig) Bind() *SearchConfig {
@@ -144,8 +191,10 @@ func (cfg *SearchConfig) Bind() *SearchConfig {
 
 // RemoveConfig defines the desired state of remove config.
 type RemoveConfig struct {
-	SkipStrictExistCheck bool   `json:"skip_strict_exist_check,omitempty"`
-	Timestamp            string `json:"timestamp,omitempty"`
+	// Timestamp represents the timestamp.
+	Timestamp string `json:"timestamp,omitempty"`
+	// SkipStrictExistCheck enables skipping strict existence check.
+	SkipStrictExistCheck bool `json:"skip_strict_exist_check,omitempty"`
 }
 
 func (cfg *RemoveConfig) Bind() *RemoveConfig {
@@ -155,7 +204,8 @@ func (cfg *RemoveConfig) Bind() *RemoveConfig {
 
 // ObjectConfig defines the desired state of object config.
 type ObjectConfig struct {
-	FilterConfig FilterConfig `json:"filter_config,omitempty" yaml:"filter_config"`
+	// FilterConfig represents the filter configuration.
+	FilterConfig FilterConfig `json:"filter_config" yaml:"filter_config"`
 }
 
 func (cfg *ObjectConfig) Bind() *ObjectConfig {
@@ -165,8 +215,10 @@ func (cfg *ObjectConfig) Bind() *ObjectConfig {
 
 // FilterTarget defines the desired state of filter target.
 type FilterTarget struct {
+	// Host represents the host.
 	Host string `json:"host,omitempty" yaml:"host"`
-	Port int32  `json:"port,omitempty" yaml:"port"`
+	// Port represents the port.
+	Port int32 `json:"port,omitempty" yaml:"port"`
 }
 
 func (cfg *FilterTarget) Bind() *FilterTarget {
@@ -176,6 +228,7 @@ func (cfg *FilterTarget) Bind() *FilterTarget {
 
 // FilterConfig defines the desired state of filter config.
 type FilterConfig struct {
+	// Targets represents the list of filter targets.
 	Targets []*FilterTarget `json:"target,omitempty" yaml:"target"`
 }
 
@@ -251,8 +304,11 @@ func (b *BenchmarkScenario) Bind() *BenchmarkScenario {
 
 // BenchmarkJobImageInfo represents the docker image information for benchmark job.
 type BenchmarkJobImageInfo struct {
-	Repository string `info:"repository"  json:"repository,omitempty"  yaml:"repository"`
-	Tag        string `info:"tag"         json:"tag,omitempty"         yaml:"tag"`
+	// Repository represents the image repository.
+	Repository string `info:"repository" json:"repository,omitempty" yaml:"repository"`
+	// Tag represents the image tag.
+	Tag string `info:"tag" json:"tag,omitempty" yaml:"tag"`
+	// PullPolicy represents the image pull policy.
 	PullPolicy string `info:"pull_policy" json:"pull_policy,omitempty" yaml:"pull_policy"`
 }
 
@@ -266,6 +322,8 @@ func (b *BenchmarkJobImageInfo) Bind() *BenchmarkJobImageInfo {
 
 // OperatorJobConfig represents the general job configuration for operator.
 type OperatorJobConfig struct {
+	// Image represents the image information.
 	Image *BenchmarkJobImageInfo `info:"image" json:"image,omitempty" yaml:"image"`
+	// BenchmarkJob represents the benchmark job configuration.
 	*BenchmarkJob
 }

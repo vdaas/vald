@@ -52,13 +52,13 @@ func Test_server_CreateIndex(t *testing.T) {
 		errCode status.Code
 	}
 	type test struct {
-		name       string
 		args       args
-		fields     fields
-		want       want
 		checkFunc  func(want, *payload.Empty, error) error
 		beforeFunc func(*testing.T, context.Context, args, Server)
 		afterFunc  func(*testing.T, args)
+		name       string
+		want       want
+		fields     fields
 	}
 
 	// common variables for test
@@ -484,8 +484,7 @@ func Test_server_CreateIndex(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := tt.Context()
 
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt, test.args)
@@ -524,23 +523,23 @@ func Test_server_SaveIndex(t *testing.T) {
 		in *payload.Empty
 	}
 	type fields struct {
-		srvOpts   []Option
 		svcCfg    *config.NGT
+		indexPath string
+		srvOpts   []Option
 		svcOpts   []service.Option
-		indexPath string // index path for svcOpts
 	}
 	type want struct {
 		wantRes *payload.Empty
 		errCode codes.Code
 	}
 	type test struct {
-		name       string
 		args       args
-		fields     fields
-		want       want
 		checkFunc  func(test, context.Context, Server, service.NGT, want, *payload.Empty, error) error
 		beforeFunc func(*testing.T, context.Context, Server, service.NGT)
 		afterFunc  func(test)
+		name       string
+		want       want
+		fields     fields
 	}
 	defaultCheckFunc := func(test test, ctx context.Context, s Server, n service.NGT, w want, gotRes *payload.Empty, err error) error {
 		if (err == nil && w.errCode != 0) || (err != nil && w.errCode == 0) {
@@ -1010,8 +1009,7 @@ func Test_server_SaveIndex(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := tt.Context()
 
 			afterFunc := test.afterFunc
 			if test.afterFunc == nil {
@@ -1055,23 +1053,23 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 		c *payload.Control_CreateIndexRequest
 	}
 	type fields struct {
-		srvOpts   []Option
 		svcCfg    *config.NGT
+		indexPath string
+		srvOpts   []Option
 		svcOpts   []service.Option
-		indexPath string // index path for svcOpts
 	}
 	type want struct {
 		wantRes *payload.Empty
 		errCode codes.Code
 	}
 	type test struct {
-		name       string
 		args       args
-		fields     fields
-		want       want
 		checkFunc  func(test test, ctx context.Context, s Server, n service.NGT, w want, gotRes *payload.Empty, err error) error
 		beforeFunc func(*testing.T, context.Context, Server, service.NGT, test)
 		afterFunc  func(*testing.T, test)
+		name       string
+		want       want
+		fields     fields
 	}
 
 	// common variables for test
@@ -1371,7 +1369,7 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 
 					// remove requests
 					rr := make([]*payload.Remove_Request, 100)
-					for i := 0; i < 100; i++ {
+					for i := range 100 {
 						rr[i] = &payload.Remove_Request{
 							Id: &payload.Object_ID{
 								Id: ir.GetRequests()[i].GetVector().GetId(),
@@ -1893,8 +1891,7 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := tt.Context()
 
 			afterFunc := test.afterFunc
 			if test.afterFunc == nil {
@@ -1941,24 +1938,24 @@ func Test_server_IndexInfo(t *testing.T) {
 		in1 *payload.Empty
 	}
 	type fields struct {
+		svcCfg            *config.NGT
 		name              string
 		ip                string
-		streamConcurrency int
-		svcCfg            *config.NGT
 		svcOpts           []service.Option
+		streamConcurrency int
 	}
 	type want struct {
 		wantRes *payload.Info_Index_Count
 		err     error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		args       args
 		checkFunc  func(Server, context.Context, args, want, *payload.Info_Index_Count, error) error
 		beforeFunc func(*testing.T, context.Context, args, Server)
 		afterFunc  func(*testing.T, args)
+		name       string
+		fields     fields
 	}
 
 	// common variables for test
@@ -2094,7 +2091,7 @@ func Test_server_IndexInfo(t *testing.T) {
 			)
 
 			// create server to insert index before test
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			eg, _ := errgroup.New(ctx)
 			ngt, err := service.New(svcCfg, append(svcOpts, service.WithErrGroup(eg))...)
 			if err != nil {
@@ -2434,8 +2431,7 @@ func Test_server_IndexInfo(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := tt.Context()
 
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt, test.args)
@@ -2488,13 +2484,13 @@ func Test_server_IndexProperty(t *testing.T) {
 		err     error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		args       args
 		checkFunc  func(want, *payload.Info_Index_PropertyDetail, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Info_Index_PropertyDetail, err error) error {
 		if !errors.Is(err, w.err) {
@@ -2562,9 +2558,9 @@ func Test_server_IndexProperty(t *testing.T) {
 				if !errors.Is(err, w.err) {
 					return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 				}
-				if val, ok := gotRes.Details[name]; ok {
-					gotType := reflect.TypeOf(val)
-					wantType := reflect.TypeOf(&payload.Info_Index_Property{})
+				if _, ok := gotRes.Details[name]; ok {
+					gotType := reflect.TypeFor[*payload.Info_Index_Property]()
+					wantType := reflect.TypeFor[*payload.Info_Index_Property]()
 					if gotType != wantType {
 						return errors.Errorf("got_type: \"%s\", want_type: \"%s\"", gotType, wantType)
 					}
@@ -2617,8 +2613,7 @@ func Test_server_IndexProperty(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := tt.Context()
 
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
@@ -2659,13 +2654,13 @@ func Test_server_IndexProperty(t *testing.T) {
 // 		in1 *payload.Empty
 // 	}
 // 	type fields struct {
-// 		name                     string
-// 		ip                       string
-// 		ngt                      service.NGT
-// 		eg                       errgroup.Group
-// 		streamConcurrency        int
 // 		UnimplementedAgentServer agent.UnimplementedAgentServer
 // 		UnimplementedValdServer  vald.UnimplementedValdServer
+// 		ngt                      service.NGT
+// 		eg                       errgroup.Group
+// 		name                     string
+// 		ip                       string
+// 		streamConcurrency        int
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Info_Index_Detail
@@ -2699,13 +2694,13 @@ func Test_server_IndexProperty(t *testing.T) {
 // 		           in1:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2728,13 +2723,13 @@ func Test_server_IndexProperty(t *testing.T) {
 // 		           in1:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2765,13 +2760,13 @@ func Test_server_IndexProperty(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				name:                     test.fields.name,
-// 				ip:                       test.fields.ip,
-// 				ngt:                      test.fields.ngt,
-// 				eg:                       test.fields.eg,
-// 				streamConcurrency:        test.fields.streamConcurrency,
 // 				UnimplementedAgentServer: test.fields.UnimplementedAgentServer,
 // 				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
+// 				ngt:                      test.fields.ngt,
+// 				eg:                       test.fields.eg,
+// 				name:                     test.fields.name,
+// 				ip:                       test.fields.ip,
+// 				streamConcurrency:        test.fields.streamConcurrency,
 // 			}
 //
 // 			gotRes, err := s.IndexDetail(test.args.ctx, test.args.in1)
@@ -2788,13 +2783,13 @@ func Test_server_IndexProperty(t *testing.T) {
 // 		in1 *payload.Empty
 // 	}
 // 	type fields struct {
-// 		name                     string
-// 		ip                       string
-// 		ngt                      service.NGT
-// 		eg                       errgroup.Group
-// 		streamConcurrency        int
 // 		UnimplementedAgentServer agent.UnimplementedAgentServer
 // 		UnimplementedValdServer  vald.UnimplementedValdServer
+// 		ngt                      service.NGT
+// 		eg                       errgroup.Group
+// 		name                     string
+// 		ip                       string
+// 		streamConcurrency        int
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Info_Index_Statistics
@@ -2828,13 +2823,13 @@ func Test_server_IndexProperty(t *testing.T) {
 // 		           in1:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2857,13 +2852,13 @@ func Test_server_IndexProperty(t *testing.T) {
 // 		           in1:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2894,13 +2889,13 @@ func Test_server_IndexProperty(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				name:                     test.fields.name,
-// 				ip:                       test.fields.ip,
-// 				ngt:                      test.fields.ngt,
-// 				eg:                       test.fields.eg,
-// 				streamConcurrency:        test.fields.streamConcurrency,
 // 				UnimplementedAgentServer: test.fields.UnimplementedAgentServer,
 // 				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
+// 				ngt:                      test.fields.ngt,
+// 				eg:                       test.fields.eg,
+// 				name:                     test.fields.name,
+// 				ip:                       test.fields.ip,
+// 				streamConcurrency:        test.fields.streamConcurrency,
 // 			}
 //
 // 			gotRes, err := s.IndexStatistics(test.args.ctx, test.args.in1)
@@ -2917,13 +2912,13 @@ func Test_server_IndexProperty(t *testing.T) {
 // 		in1 *payload.Empty
 // 	}
 // 	type fields struct {
-// 		name                     string
-// 		ip                       string
-// 		ngt                      service.NGT
-// 		eg                       errgroup.Group
-// 		streamConcurrency        int
 // 		UnimplementedAgentServer agent.UnimplementedAgentServer
 // 		UnimplementedValdServer  vald.UnimplementedValdServer
+// 		ngt                      service.NGT
+// 		eg                       errgroup.Group
+// 		name                     string
+// 		ip                       string
+// 		streamConcurrency        int
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Info_Index_StatisticsDetail
@@ -2957,13 +2952,13 @@ func Test_server_IndexProperty(t *testing.T) {
 // 		           in1:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2986,13 +2981,13 @@ func Test_server_IndexProperty(t *testing.T) {
 // 		           in1:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3023,13 +3018,13 @@ func Test_server_IndexProperty(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				name:                     test.fields.name,
-// 				ip:                       test.fields.ip,
-// 				ngt:                      test.fields.ngt,
-// 				eg:                       test.fields.eg,
-// 				streamConcurrency:        test.fields.streamConcurrency,
 // 				UnimplementedAgentServer: test.fields.UnimplementedAgentServer,
 // 				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
+// 				ngt:                      test.fields.ngt,
+// 				eg:                       test.fields.eg,
+// 				name:                     test.fields.name,
+// 				ip:                       test.fields.ip,
+// 				streamConcurrency:        test.fields.streamConcurrency,
 // 			}
 //
 // 			gotRes, err := s.IndexStatisticsDetail(test.args.ctx, test.args.in1)

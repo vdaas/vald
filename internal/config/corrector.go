@@ -18,39 +18,28 @@ package config
 
 // Corrector represents the index correction configurations.
 type Corrector struct {
-	// AgentPort represent agent port number
-	AgentPort int `json:"agent_port" yaml:"agent_port"`
-
-	// AgentName represent agents meta_name for service discovery
-	AgentName string `json:"agent_name" yaml:"agent_name"`
-
-	// AgentNamespace represent agent namespace location
-	AgentNamespace string `json:"agent_namespace" yaml:"agent_namespace"`
-
-	// AgentDNS represent agents dns A record for service discovery
-	AgentDNS string `json:"agent_dns" yaml:"agent_dns"`
-
-	// NodeName represents node name
-	NodeName string `json:"node_name" yaml:"node_name"`
-
-	// StreamConcurrency represent stream concurrency for StreamListObject rpc client
-	// this directly affects the memory usage of this job
-	StreamListConcurrency int `json:"stream_list_concurrency" yaml:"stream_list_concurrency"`
-
-	// KVSBackgroundSyncInterval represents interval for checked id list kvs sync duration
-	KVSBackgroundSyncInterval string `json:"kvs_background_sync_interval" yaml:"kvs_background_sync_interval"`
-
-	// KVSBackgroundCompactionInterval represents interval for checked id list kvs compaction duration
-	KVSBackgroundCompactionInterval string `json:"kvs_background_compaction_interval" yaml:"kvs_background_compaction_interval"`
-
-	// IndexReplica represent index replica count. This should be equal to the lb setting
-	IndexReplica int `json:"index_replica" yaml:"index_replica"`
-
-	// Discoverer represent agent discoverer service configuration
+	// Discoverer represents the discoverer client configuration.
 	Discoverer *DiscovererClient `json:"discoverer" yaml:"discoverer"`
-
-	// Gateway represent gateway service configuration
+	// Gateway represents the gateway client configuration.
 	Gateway *GRPCClient `json:"gateway" yaml:"gateway"`
+	// AgentName represents the agent name.
+	AgentName string `json:"agent_name" yaml:"agent_name"`
+	// AgentNamespace represents the agent namespace.
+	AgentNamespace string `json:"agent_namespace" yaml:"agent_namespace"`
+	// AgentDNS represents the agent DNS.
+	AgentDNS string `json:"agent_dns" yaml:"agent_dns"`
+	// NodeName represents the node name.
+	NodeName string `json:"node_name" yaml:"node_name"`
+	// KVSBackgroundSyncInterval represents the interval for KVS background synchronization.
+	KVSBackgroundSyncInterval string `json:"kvs_background_sync_interval" yaml:"kvs_background_sync_interval"`
+	// KVSBackgroundCompactionInterval represents the interval for KVS background compaction.
+	KVSBackgroundCompactionInterval string `json:"kvs_background_compaction_interval" yaml:"kvs_background_compaction_interval"`
+	// AgentPort represents the agent port.
+	AgentPort int `json:"agent_port" yaml:"agent_port"`
+	// StreamListConcurrency represents the stream list concurrency.
+	StreamListConcurrency int `json:"stream_list_concurrency" yaml:"stream_list_concurrency"`
+	// IndexReplica represents the index replica count.
+	IndexReplica int `json:"index_replica" yaml:"index_replica"`
 }
 
 // Bind binds the actual data from the Indexer receiver field.

@@ -83,23 +83,23 @@ func (jt jobType) String() string {
 
 type job struct {
 	eg                 errgroup.Group
-	dataset            *config.BenchmarkDataset
-	meta               grpc.MD
-	jobType            jobType
-	jobFunc            func(context.Context, chan error) error
+	limiter            rate.Limiter
+	k8sClient          client.Client
+	hdf5               hdf5.Data
+	client             vald.Client
 	insertConfig       *config.InsertConfig
 	updateConfig       *config.UpdateConfig
 	upsertConfig       *config.UpsertConfig
 	searchConfig       *config.SearchConfig
 	removeConfig       *config.RemoveConfig
 	objectConfig       *config.ObjectConfig
-	client             vald.Client
-	hdf5               hdf5.Data
-	beforeJobName      string
+	jobFunc            func(context.Context, chan error) error
+	dataset            *config.BenchmarkDataset
+	meta               grpc.MD
 	beforeJobNamespace string
-	k8sClient          client.Client
+	beforeJobName      string
 	beforeJobDur       time.Duration
-	limiter            rate.Limiter
+	jobType            jobType
 	rps                int
 	concurrencyLimit   int
 	timeout            time.Duration

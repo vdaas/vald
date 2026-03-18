@@ -53,14 +53,14 @@ type ResourceController interface {
 
 type controller struct {
 	eg                      errgroup.Group
+	mgr                     manager.Manager
+	der                     net.Dialer
 	name                    string
 	merticsAddr             string
-	leaderElection          bool
 	leaderElectionID        string
 	leaderElectionNamespace string
-	mgr                     manager.Manager
 	rcs                     []ResourceController
-	der                     net.Dialer
+	leaderElection          bool
 }
 
 func New(opts ...Option) (cl Controller, err error) {

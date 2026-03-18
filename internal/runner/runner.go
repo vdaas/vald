@@ -48,12 +48,12 @@ type Runner interface {
 }
 
 type runner struct {
+	loadConfig       func(string) (any, *config.GlobalConfig, error)
+	initializeDaemon func(any) (Runner, error)
 	version          string
 	maxVersion       string
 	minVersion       string
 	name             string
-	loadConfig       func(string) (any, *config.GlobalConfig, error)
-	initializeDaemon func(any) (Runner, error)
 }
 
 func Do(ctx context.Context, opts ...Option) error {

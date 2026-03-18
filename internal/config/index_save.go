@@ -15,29 +15,22 @@ package config
 
 // IndexSave represents the configurations for index save.
 type IndexSave struct {
-	// AgentPort represent agent port number.
-	AgentPort int `json:"agent_port" yaml:"agent_port"`
-
-	// AgentName represent agents meta_name for service discovery.
-	AgentName string `json:"agent_name" yaml:"agent_name"`
-
-	// AgentNamespace represent agent namespace location.
-	AgentNamespace string `json:"agent_namespace" yaml:"agent_namespace"`
-
-	// AgentDNS represent agents dns A record for service discovery.
-	AgentDNS string `json:"agent_dns" yaml:"agent_dns"`
-
-	// NodeName represents node name.
-	NodeName string `json:"node_name" yaml:"node_name"`
-
-	// Concurrency represents indexing concurrency.
-	Concurrency int `json:"concurrency" yaml:"concurrency"`
-
-	// TargetAddrs represents indexing target addresses.
-	TargetAddrs []string `json:"target_addrs" yaml:"target_addrs"`
-
-	// Discoverer represents agent discoverer service configuration.
+	// Discoverer represents the discoverer client configuration.
 	Discoverer *DiscovererClient `json:"discoverer" yaml:"discoverer"`
+	// AgentName represents the agent name.
+	AgentName string `json:"agent_name" yaml:"agent_name"`
+	// AgentNamespace represents the agent namespace.
+	AgentNamespace string `json:"agent_namespace" yaml:"agent_namespace"`
+	// AgentDNS represents the agent DNS.
+	AgentDNS string `json:"agent_dns" yaml:"agent_dns"`
+	// NodeName represents the node name.
+	NodeName string `json:"node_name" yaml:"node_name"`
+	// TargetAddrs represents the target addresses.
+	TargetAddrs []string `json:"target_addrs" yaml:"target_addrs"`
+	// AgentPort represents the agent port.
+	AgentPort int `json:"agent_port" yaml:"agent_port"`
+	// Concurrency represents the concurrency.
+	Concurrency int `json:"concurrency" yaml:"concurrency"`
 }
 
 func (is *IndexSave) Bind() *IndexSave {

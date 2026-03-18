@@ -35,11 +35,11 @@ const (
 )
 
 type core struct {
+	ngt.NGT
 	idxPath    string
 	tmpdir     string
 	objectType ObjectType
 	dimension  int
-	ngt.NGT
 }
 
 func New(opts ...Option) (c.Bit32, error) {

@@ -30,12 +30,12 @@ func TestMain(m *testing.M) {
 //
 // func TestAccessLogEntity_String(t *testing.T) {
 // 	type fields struct {
+// 		Error     error
 // 		GRPC      *AccessLogGRPCEntity
+// 		TraceID   string
 // 		StartTime int64
 // 		EndTime   int64
 // 		Latency   int64
-// 		TraceID   string
-// 		Error     error
 // 	}
 // 	type want struct {
 // 		wantStr string
@@ -60,12 +60,12 @@ func TestMain(m *testing.M) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           Error:nil,
 // 		           GRPC:AccessLogGRPCEntity{},
+// 		           TraceID:"",
 // 		           StartTime:0,
 // 		           EndTime:0,
 // 		           Latency:0,
-// 		           TraceID:"",
-// 		           Error:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -84,12 +84,12 @@ func TestMain(m *testing.M) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           Error:nil,
 // 		           GRPC:AccessLogGRPCEntity{},
+// 		           TraceID:"",
 // 		           StartTime:0,
 // 		           EndTime:0,
 // 		           Latency:0,
-// 		           TraceID:"",
-// 		           Error:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -120,12 +120,12 @@ func TestMain(m *testing.M) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			e := AccessLogEntity{
+// 				Error:     test.fields.Error,
 // 				GRPC:      test.fields.GRPC,
+// 				TraceID:   test.fields.TraceID,
 // 				StartTime: test.fields.StartTime,
 // 				EndTime:   test.fields.EndTime,
 // 				Latency:   test.fields.Latency,
-// 				TraceID:   test.fields.TraceID,
-// 				Error:     test.fields.Error,
 // 			}
 //
 // 			gotStr := e.String()

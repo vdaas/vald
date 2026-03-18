@@ -31,32 +31,32 @@ import (
 
 func TestMySQL_Bind(t *testing.T) {
 	type fields struct {
-		DB                   string
-		Host                 string
-		Port                 uint16
+		TLS                  *TLS
+		Net                  *Net
+		Charset              string
 		User                 string
 		Pass                 string
 		Name                 string
-		Charset              string
+		DB                   string
 		Timezone             string
 		InitialPingTimeLimit string
 		InitialPingDuration  string
 		ConnMaxLifeTime      string
+		Host                 string
 		MaxOpenConns         int
 		MaxIdleConns         int
-		TLS                  *TLS
-		Net                  *Net
+		Port                 uint16
 	}
 	type want struct {
 		want *MySQL
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *MySQL) error
 		beforeFunc func(*testing.T)
 		afterFunc  func()
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *MySQL) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -246,34 +246,34 @@ func TestMySQL_Bind(t *testing.T) {
 
 func TestMySQL_Opts(t *testing.T) {
 	type fields struct {
-		DB                   string
-		Network              string
-		Host                 string
-		Port                 uint16
+		TLS                  *TLS
+		Net                  *Net
+		Timezone             string
+		InitialPingTimeLimit string
 		User                 string
 		Pass                 string
 		Name                 string
 		Charset              string
-		Timezone             string
-		InitialPingTimeLimit string
+		DB                   string
+		Network              string
 		InitialPingDuration  string
 		ConnMaxLifeTime      string
-		MaxOpenConns         int
+		Host                 string
 		MaxIdleConns         int
-		TLS                  *TLS
-		Net                  *Net
+		MaxOpenConns         int
+		Port                 uint16
 	}
 	type want struct {
-		want []mysql.Option
 		err  error
+		want []mysql.Option
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, []mysql.Option, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got []mysql.Option, err error) error {
 		if !errors.Is(err, w.err) {
