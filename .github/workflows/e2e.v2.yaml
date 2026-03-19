@@ -218,6 +218,10 @@ jobs:
             ARR=(${IMAGE_TAG//=/ })
             FIELD=${ARR[0]}
             TAG="\"${ARR[1]}\""
+            if [[ "${FIELD}" == gateway.meta.* && "${{ matrix.environment }}" != "meta" ]]; then
+              echo "skip IMAGE_TAG:${IMAGE_TAG} for environment=${{ matrix.environment }}"
+              continue
+            fi
             yq e ".spec.$FIELD=$TAG" -i ./.github/valdrelease/valdrelease.yaml
           done
       - name: Deploy Vald using Vald Helm Operator
