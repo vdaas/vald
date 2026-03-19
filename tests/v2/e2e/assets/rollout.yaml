@@ -239,8 +239,7 @@ strategies:
         executions:
           - name: Remove
             type: remove
-            mode: stream
-            parallelism: 0
+            mode: multiple
             num: _E2E_INSERT_COUNT_
             offset: 0
             bulk_size: _E2E_BULK_SIZE_
