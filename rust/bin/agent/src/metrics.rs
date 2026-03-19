@@ -143,7 +143,7 @@ where
         svc,
         UNCOMMITTED_INDEX_COUNT,
         "Agent NGT uncommitted index count",
-        |s| { (s.insert_vqueue_buffer_len() + s.delete_vqueue_buffer_len()) as i64 }
+        |s| (s.insert_vqueue_buffer_len() + s.delete_vqueue_buffer_len()) as i64
     );
     register_basic_gauge!(
         meter,

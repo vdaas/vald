@@ -708,6 +708,7 @@ mod tests {
                 aggregation_algorithm: 0,
                 ratio: None,
                 nprobe: 0,
+                edge_size: 40,
             }),
         });
 
@@ -737,6 +738,7 @@ mod tests {
                 aggregation_algorithm: 0,
                 ratio: None,
                 nprobe: 0,
+                edge_size: 40,
             }),
         });
 
@@ -765,6 +767,7 @@ mod tests {
                 aggregation_algorithm: 0,
                 ratio: None,
                 nprobe: 0,
+                edge_size: 40,
             }),
         });
 
@@ -959,6 +962,7 @@ mod tests {
                     aggregation_algorithm: 0,
                     ratio: None,
                     nprobe: 0,
+                    edge_size: 40,
                 }),
             })
             .collect();
@@ -1355,6 +1359,7 @@ mod tests {
                 aggregation_algorithm: 0,
                 ratio: None,
                 nprobe: 0,
+                edge_size: 40,
             }),
         });
 
@@ -1398,6 +1403,7 @@ mod tests {
                 aggregation_algorithm: 0,
                 ratio: None,
                 nprobe: 0,
+                edge_size: 40,
             }),
         });
 
@@ -1428,6 +1434,7 @@ mod tests {
                 aggregation_algorithm: 0,
                 ratio: None,
                 nprobe: 0,
+                edge_size: 40,
             }),
         });
 
@@ -1457,6 +1464,7 @@ mod tests {
                 aggregation_algorithm: 0,
                 ratio: None,
                 nprobe: 0,
+                edge_size: 40,
             }),
         });
 
