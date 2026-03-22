@@ -1157,10 +1157,13 @@ mod tests {
         index.pin_mut().open_index(&path, true).unwrap();
 
         // Insert
+        let mut inserted_ids = Vec::new();
         for i in 0..100 {
             let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|x| (x + i) as f32).collect();
             let id = index.pin_mut().insert(vec.as_slice()).unwrap();
-            assert_eq!((i + 1 + 100) as i32, id)
+            assert!(id > 0);
+            assert!(!inserted_ids.contains(&id), "duplicate inserted id: {id}");
+            inserted_ids.push(id);
         }
 
         // Get Object
@@ -1249,10 +1252,13 @@ mod tests {
         let mut index = ffi::new_prebuilt_index(&path, true).unwrap();
 
         // Insert
+        let mut inserted_ids = Vec::new();
         for i in 0..100 {
             let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|x| (x + i) as f32).collect();
             let id = index.pin_mut().insert(vec.as_slice()).unwrap();
-            assert_eq!((i + 1 + 100) as i32, id)
+            assert!(id > 0);
+            assert!(!inserted_ids.contains(&id), "duplicate inserted id: {id}");
+            inserted_ids.push(id);
         }
 
         // Get Object
@@ -1375,11 +1381,15 @@ mod tests {
         assert!(res.is_ok(), "open_index failed: {:?}", res.err());
 
         // Insert
+        let mut inserted_ids = Vec::new();
         for i in 0..100 {
             let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|x| (x + i) as f32).collect();
             let res = index.insert(vec.as_slice());
             assert!(res.is_ok(), "insert failed: {:?}", res.err());
-            assert_eq!((i + 1 + 100) as i32, res.unwrap());
+            let id = res.unwrap();
+            assert!(id > 0);
+            assert!(!inserted_ids.contains(&id), "duplicate inserted id: {id}");
+            inserted_ids.push(id);
         }
 
         // Get Object

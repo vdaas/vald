@@ -27,10 +27,10 @@ fn main() -> miette::Result<()> {
     println!("cargo:rustc-link-search=native=/usr/local/lib");
     println!("cargo:rustc-link-search=native=/usr/lib/x86_64-linux-gnu");
     println!("cargo:rustc-link-search=native=/usr/lib/gcc/x86_64-linux-gnu/13");
-    println!("cargo:rustc-link-lib=static=ngt");
-    println!("cargo:rustc-link-lib=static=blas");
-    println!("cargo:rustc-link-lib=static=gfortran");
-    println!("cargo:rustc-link-lib=static=gomp");
+    // Link against the shared NGT library so its transitive LAPACK/BLAS/OpenMP
+    // dependencies are resolved by the system linker.
+    println!("cargo:rustc-link-lib=dylib=ngt");
+    println!("cargo:rustc-link-arg=-Wl,-rpath,/usr/local/lib");
     println!("cargo:rerun-if-changed=src/*");
 
     Ok(())

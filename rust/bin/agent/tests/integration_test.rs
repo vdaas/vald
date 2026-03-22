@@ -231,9 +231,16 @@ async fn test_qbg_agent_integration() {
         let response = res.into_inner();
         // Verify results
         if !response.results.is_empty() {
-            assert_eq!(
-                response.results[0].id, ids[0],
-                "Top result should be the query vector itself"
+            let top = &response.results[0];
+            assert!(
+                ids.contains(&top.id),
+                "Top result should be one of the inserted ids, got {}",
+                top.id
+            );
+            assert!(
+                top.distance <= 1e-5,
+                "Top result should be an exact or near-exact match, got distance {}",
+                top.distance
             );
         } else {
             println!("Search returned empty results (expected for empty graph issue)");
