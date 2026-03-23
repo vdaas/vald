@@ -16,6 +16,7 @@
 fn main() -> miette::Result<()> {
     let current_dir = std::env::current_dir().unwrap();
     println!("cargo:rustc-link-search=native={}", current_dir.display());
+    println!("cargo:rerun-if-changed=src/*");
 
     cxx_build::bridge("src/lib.rs")
         .file("src/input.cpp")
@@ -28,11 +29,16 @@ fn main() -> miette::Result<()> {
     println!("cargo:rustc-link-search=native=/usr/local/lib");
     println!("cargo:rustc-link-search=native=/usr/lib/x86_64-linux-gnu");
     println!("cargo:rustc-link-search=native=/usr/lib/gcc/x86_64-linux-gnu/13");
-    // Link against the shared NGT library so its transitive LAPACK/BLAS/OpenMP
-    // dependencies are resolved by the system linker.
+    // Static-link handling is intentionally disabled for now.
+    // NGT 2.7.x static archives are not reliable with the current Rust/LTO path,
+    // so always link the shared library here.
+    //
+    // println!("cargo:rustc-link-lib=static=ngt");
+    // println!("cargo:rustc-link-lib=static=blas");
+    // println!("cargo:rustc-link-lib=static=gfortran");
+    // println!("cargo:rustc-link-lib=static=gomp");
     println!("cargo:rustc-link-lib=dylib=ngt");
     println!("cargo:rustc-link-arg=-Wl,-rpath,/usr/local/lib");
-    println!("cargo:rerun-if-changed=src/*");
 
     Ok(())
 }
