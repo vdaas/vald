@@ -23,7 +23,7 @@ inputs:
   images:
     description: "Image names"
     required: false
-    default: "vdaas/vald-agent-ngt vdaas/vald-agent-faiss vdaas/vald-agent-sidecar vdaas/vald-discoverer-k8s vdaas/vald-lb-gateway vdaas/vald-filter-gateway vdaas/vald-mirror-gateway vdaas/vald-manager-index vdaas/vald-index-operator vdaas/vald-readreplica-rotate"
+    default: "vdaas/vald-agent-ngt vdaas/vald-agent-faiss vdaas/vald-agent-sidecar vdaas/vald-discoverer-k8s vdaas/vald-lb-gateway vdaas/vald-meta-gateway vdaas/vald-filter-gateway vdaas/vald-mirror-gateway vdaas/vald-manager-index vdaas/vald-index-operator vdaas/vald-readreplica-rotate"
 outputs:
   HELM_EXTRA_OPTIONS:
     description: "Helm extra options that specifies image tags"
@@ -44,6 +44,7 @@ runs:
           ["vdaas/vald-agent-sidecar"]="agent.sidecar.image.tag"
           ["vdaas/vald-discoverer-k8s"]="discoverer.image.tag"
           ["vdaas/vald-lb-gateway"]="gateway.lb.image.tag"
+          ["vdaas/vald-meta-gateway"]="gateway.meta.image.tag"
           ["vdaas/vald-filter-gateway"]="gateway.filter.image.tag"
           ["vdaas/vald-mirror-gateway"]="gateway.mirror.image.tag"
           ["vdaas/vald-manager-index"]="manager.index.image.tag"

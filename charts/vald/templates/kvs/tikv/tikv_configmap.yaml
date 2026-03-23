@@ -17,7 +17,11 @@
 {{- if and $tc.enabled $tc.tikv }}
 apiVersion: v1
 data:
-  config-file: ""
+  config-file: |
+    [rocksdb]
+    max-open-files = {{ .Values.tidbCluster.tikv.config.rocksdb.max_open_files }}
+    [raftdb]
+    max-open-files = {{ .Values.tidbCluster.tikv.config.rocksdb.max_open_files }}
   startup-script: "#!/bin/sh\n\n# This script is used to start tikv containers in\
     \ kubernetes cluster\n\n# Use DownwardAPIVolumeFiles to store informations of the\
     \ cluster:\n# https://kubernetes.io/docs/tasks/inject-data-application/downward-api-volume-expose-pod-information/#the-downward-api\n#\n#\
