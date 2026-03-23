@@ -47,12 +47,12 @@ func TestNewExpBackoff(t *testing.T) {
 		want http.RoundTripper
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, http.RoundTripper) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got http.RoundTripper) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -125,13 +125,13 @@ func Test_ert_RoundTrip(t *testing.T) {
 		err     error
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
 		want       want
+		args       args
 		checkFunc  func(want, *http.Response, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, gotRes *http.Response, err error) error {
 		if !errors.Is(err, w.err) {
@@ -344,13 +344,13 @@ func Test_ert_doRoundTrip(t *testing.T) {
 		err     error
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
 		want       want
+		args       args
 		checkFunc  func(want, *http.Response, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, gotRes *http.Response, err error) error {
 		if !errors.Is(err, w.err) {
@@ -501,12 +501,12 @@ func Test_retryableStatusCode(t *testing.T) {
 		want bool
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, bool) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -574,15 +574,15 @@ func Test_closeBody(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
 		want       want
+		args       args
 		checkFunc  func(io.ReadCloser, want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(rc io.ReadCloser, w want) error {
-		if i, err := rc.Read([]byte{}); i != 0 || err != io.EOF {
+		if i, err := rc.Read([]byte{}); i != 0 || !errors.Is(err, io.EOF) {
 			return errors.Errorf("connection not closed, num: %d, err: %v", i, err)
 		}
 		return nil

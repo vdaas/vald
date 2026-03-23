@@ -47,10 +47,9 @@ var defaultOpts = []Option{
 
 type index struct {
 	client        discoverer.Client
-	targetAddrs   []string
 	targetIndexID string
-
-	concurrency int
+	targetAddrs   []string
+	concurrency   int
 }
 
 // New returns Deleter object if no error occurs.

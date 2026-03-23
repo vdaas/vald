@@ -28,16 +28,15 @@ import (
 )
 
 type sess struct {
-	endpoint        string
-	region          string
-	accessKey       string
-	secretAccessKey string
-	token           string
-
+	client                     *http.Client
+	endpoint                   string
+	region                     string
+	accessKey                  string
+	secretAccessKey            string
+	token                      string
 	maxRetries                 int
-	forcePathStyle             bool
-	useAccelerate              bool
 	useARNRegion               bool
+	useAccelerate              bool
 	useDualStack               bool
 	enableSSL                  bool
 	enableParamValidation      bool
@@ -45,8 +44,7 @@ type sess struct {
 	enableContentMD5Validation bool
 	enableEndpointDiscovery    bool
 	enableEndpointHostPrefix   bool
-
-	client *http.Client
+	forcePathStyle             bool
 }
 
 // Session represents the interface to get AWS S3 session.

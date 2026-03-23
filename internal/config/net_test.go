@@ -29,20 +29,20 @@ import (
 
 func TestDNS_Bind(t *testing.T) {
 	type fields struct {
-		CacheEnabled    bool
 		RefreshDuration string
 		CacheExpiration string
+		CacheEnabled    bool
 	}
 	type want struct {
 		want *DNS
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *DNS) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *DNS) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -150,12 +150,12 @@ func TestDialer_Bind(t *testing.T) {
 		want *Dialer
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *Dialer) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *Dialer) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -273,12 +273,12 @@ func TestSocketOption_Bind(t *testing.T) {
 		want *SocketOption
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *SocketOption) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *SocketOption) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -378,12 +378,12 @@ func TestSocketOption_ToSocketFlag(t *testing.T) {
 		want control.SocketFlag
 	}
 	type test struct {
-		name       string
 		fields     fields
-		want       want
 		checkFunc  func(want, control.SocketFlag) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got control.SocketFlag) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -563,12 +563,12 @@ func TestNet_Bind(t *testing.T) {
 		want *Net
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, *Net) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got *Net) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -669,16 +669,16 @@ func TestNet_Opts(t *testing.T) {
 		TLS          *TLS
 	}
 	type want struct {
-		want []net.DialerOption
 		err  error
+		want []net.DialerOption
 	}
 	type test struct {
-		name       string
 		fields     fields
-		want       want
 		checkFunc  func(want, []net.DialerOption, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, gotOpts []net.DialerOption, err error) error {
 		if !errors.Is(err, w.err) {

@@ -40,20 +40,20 @@ func Test_server_Upsert(t *testing.T) {
 	}
 
 	type args struct {
-		optIdx optIdx
 		req    *payload.Upsert_Request
+		optIdx optIdx
 	}
 	type want struct {
-		code     codes.Code
 		wantUUID string
+		code     codes.Code
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, *payload.Object_Location, error) error
 		beforeFunc func(*testing.T, context.Context, optIdx) (Server, error)
 		afterFunc  func()
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Object_Location, err error) error {
 		if err != nil {
@@ -1564,8 +1564,7 @@ func Test_server_Upsert(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := tt.Context()
 
 			if test.beforeFunc == nil {
 				test.beforeFunc = defaultBeforeFunc(ngt.Float.String(), defaultInsertNum)
@@ -1596,13 +1595,13 @@ func Test_server_Upsert(t *testing.T) {
 // 		stream vald.Upsert_StreamUpsertServer
 // 	}
 // 	type fields struct {
-// 		name                     string
-// 		ip                       string
-// 		ngt                      service.NGT
-// 		eg                       errgroup.Group
-// 		streamConcurrency        int
 // 		UnimplementedAgentServer agent.UnimplementedAgentServer
 // 		UnimplementedValdServer  vald.UnimplementedValdServer
+// 		ngt                      service.NGT
+// 		eg                       errgroup.Group
+// 		name                     string
+// 		ip                       string
+// 		streamConcurrency        int
 // 	}
 // 	type want struct {
 // 		err error
@@ -1631,13 +1630,13 @@ func Test_server_Upsert(t *testing.T) {
 // 		           stream:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1659,13 +1658,13 @@ func Test_server_Upsert(t *testing.T) {
 // 		           stream:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1696,13 +1695,13 @@ func Test_server_Upsert(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				name:                     test.fields.name,
-// 				ip:                       test.fields.ip,
-// 				ngt:                      test.fields.ngt,
-// 				eg:                       test.fields.eg,
-// 				streamConcurrency:        test.fields.streamConcurrency,
 // 				UnimplementedAgentServer: test.fields.UnimplementedAgentServer,
 // 				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
+// 				ngt:                      test.fields.ngt,
+// 				eg:                       test.fields.eg,
+// 				name:                     test.fields.name,
+// 				ip:                       test.fields.ip,
+// 				streamConcurrency:        test.fields.streamConcurrency,
 // 			}
 //
 // 			err := s.StreamUpsert(test.args.stream)
@@ -1719,13 +1718,13 @@ func Test_server_Upsert(t *testing.T) {
 // 		reqs *payload.Upsert_MultiRequest
 // 	}
 // 	type fields struct {
-// 		name                     string
-// 		ip                       string
-// 		ngt                      service.NGT
-// 		eg                       errgroup.Group
-// 		streamConcurrency        int
 // 		UnimplementedAgentServer agent.UnimplementedAgentServer
 // 		UnimplementedValdServer  vald.UnimplementedValdServer
+// 		ngt                      service.NGT
+// 		eg                       errgroup.Group
+// 		name                     string
+// 		ip                       string
+// 		streamConcurrency        int
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Locations
@@ -1759,13 +1758,13 @@ func Test_server_Upsert(t *testing.T) {
 // 		           reqs:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1788,13 +1787,13 @@ func Test_server_Upsert(t *testing.T) {
 // 		           reqs:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1825,13 +1824,13 @@ func Test_server_Upsert(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				name:                     test.fields.name,
-// 				ip:                       test.fields.ip,
-// 				ngt:                      test.fields.ngt,
-// 				eg:                       test.fields.eg,
-// 				streamConcurrency:        test.fields.streamConcurrency,
 // 				UnimplementedAgentServer: test.fields.UnimplementedAgentServer,
 // 				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
+// 				ngt:                      test.fields.ngt,
+// 				eg:                       test.fields.eg,
+// 				name:                     test.fields.name,
+// 				ip:                       test.fields.ip,
+// 				streamConcurrency:        test.fields.streamConcurrency,
 // 			}
 //
 // 			gotRes, err := s.MultiUpsert(test.args.ctx, test.args.reqs)

@@ -34,7 +34,7 @@ func TestMain(m *testing.M) {
 		m.Run()
 		return
 	}
-	for i := 0; i < testDataCount; i++ {
+	for range testDataCount {
 		testData = append(testData, tstr.Random(testDataLen))
 	}
 	m.Run()

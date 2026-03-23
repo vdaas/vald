@@ -87,16 +87,16 @@ func Test_getNewBaseName(t *testing.T) {
 func Test_parseReplicaID(t *testing.T) {
 	labelKey := "foo"
 	type args struct {
-		replicaID string
 		c         client.Client
+		replicaID string
 	}
 	type want struct {
-		ids []string
 		err error
+		ids []string
 	}
 	type test struct {
-		name string
 		args args
+		name string
 		want want
 	}
 	tests := []test{

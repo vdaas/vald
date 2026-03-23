@@ -18,9 +18,9 @@ package assets
 // func Test_dataset_Name(t *testing.T) {
 // 	type fields struct {
 // 		name         string
-// 		dimension    int
 // 		distanceType string
 // 		objectType   string
+// 		dimension    int
 // 	}
 // 	type want struct {
 // 		want string
@@ -46,9 +46,9 @@ package assets
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           name:"",
-// 		           dimension:0,
 // 		           distanceType:"",
 // 		           objectType:"",
+// 		           dimension:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -68,9 +68,9 @@ package assets
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           name:"",
-// 		           dimension:0,
 // 		           distanceType:"",
 // 		           objectType:"",
+// 		           dimension:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -102,9 +102,9 @@ package assets
 // 			}
 // 			d := &dataset{
 // 				name:         test.fields.name,
-// 				dimension:    test.fields.dimension,
 // 				distanceType: test.fields.distanceType,
 // 				objectType:   test.fields.objectType,
+// 				dimension:    test.fields.dimension,
 // 			}
 //
 // 			got := d.Name()
@@ -118,9 +118,9 @@ package assets
 // func Test_dataset_Dimension(t *testing.T) {
 // 	type fields struct {
 // 		name         string
-// 		dimension    int
 // 		distanceType string
 // 		objectType   string
+// 		dimension    int
 // 	}
 // 	type want struct {
 // 		want int
@@ -146,9 +146,9 @@ package assets
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           name:"",
-// 		           dimension:0,
 // 		           distanceType:"",
 // 		           objectType:"",
+// 		           dimension:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -168,9 +168,9 @@ package assets
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           name:"",
-// 		           dimension:0,
 // 		           distanceType:"",
 // 		           objectType:"",
+// 		           dimension:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -202,9 +202,9 @@ package assets
 // 			}
 // 			d := &dataset{
 // 				name:         test.fields.name,
-// 				dimension:    test.fields.dimension,
 // 				distanceType: test.fields.distanceType,
 // 				objectType:   test.fields.objectType,
+// 				dimension:    test.fields.dimension,
 // 			}
 //
 // 			got := d.Dimension()
@@ -218,9 +218,9 @@ package assets
 // func Test_dataset_DistanceType(t *testing.T) {
 // 	type fields struct {
 // 		name         string
-// 		dimension    int
 // 		distanceType string
 // 		objectType   string
+// 		dimension    int
 // 	}
 // 	type want struct {
 // 		want string
@@ -246,9 +246,9 @@ package assets
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           name:"",
-// 		           dimension:0,
 // 		           distanceType:"",
 // 		           objectType:"",
+// 		           dimension:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -268,9 +268,9 @@ package assets
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           name:"",
-// 		           dimension:0,
 // 		           distanceType:"",
 // 		           objectType:"",
+// 		           dimension:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -302,9 +302,9 @@ package assets
 // 			}
 // 			d := &dataset{
 // 				name:         test.fields.name,
-// 				dimension:    test.fields.dimension,
 // 				distanceType: test.fields.distanceType,
 // 				objectType:   test.fields.objectType,
+// 				dimension:    test.fields.dimension,
 // 			}
 //
 // 			got := d.DistanceType()
@@ -318,9 +318,9 @@ package assets
 // func Test_dataset_ObjectType(t *testing.T) {
 // 	type fields struct {
 // 		name         string
-// 		dimension    int
 // 		distanceType string
 // 		objectType   string
+// 		dimension    int
 // 	}
 // 	type want struct {
 // 		want string
@@ -346,9 +346,9 @@ package assets
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           name:"",
-// 		           dimension:0,
 // 		           distanceType:"",
 // 		           objectType:"",
+// 		           dimension:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -368,9 +368,9 @@ package assets
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           name:"",
-// 		           dimension:0,
 // 		           distanceType:"",
 // 		           objectType:"",
+// 		           dimension:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -402,9 +402,9 @@ package assets
 // 			}
 // 			d := &dataset{
 // 				name:         test.fields.name,
-// 				dimension:    test.fields.dimension,
 // 				distanceType: test.fields.distanceType,
 // 				objectType:   test.fields.objectType,
+// 				dimension:    test.fields.dimension,
 // 			}
 //
 // 			got := d.ObjectType()

@@ -36,12 +36,12 @@ func TestRegister(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
 		want       want
+		args       args
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil

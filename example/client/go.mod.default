@@ -1,6 +1,6 @@
 module github.com/vdaas/vald/example/client
 
-go 1.25.7
+go 1.26.0
 
 replace (
 	github.com/kpango/fuid => github.com/kpango/fuid upgrade

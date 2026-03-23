@@ -29,12 +29,12 @@ func TestBlobStorageType_String(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
-		bst        BlobStorageType
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
+		bst        BlobStorageType
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -103,12 +103,12 @@ func TestAtoBST(t *testing.T) {
 		want BlobStorageType
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, BlobStorageType) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, got BlobStorageType) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -195,21 +195,21 @@ func TestAtoBST(t *testing.T) {
 
 func TestBlob_Bind(t *testing.T) {
 	type fields struct {
-		StorageType  string
-		Bucket       string
 		S3           *S3Config
 		CloudStorage *CloudStorageConfig
+		StorageType  string
+		Bucket       string
 	}
 	type want struct {
 		want *Blob
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, *Blob) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got *Blob) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -329,9 +329,9 @@ func TestS3Config_Bind(t *testing.T) {
 		AccessKey                  string
 		SecretAccessKey            string
 		Token                      string
+		MaxChunkSize               string
+		MaxPartSize                string
 		MaxRetries                 int
-		ForcePathStyle             bool
-		UseAccelerate              bool
 		UseARNRegion               bool
 		UseDualStack               bool
 		EnableSSL                  bool
@@ -340,19 +340,19 @@ func TestS3Config_Bind(t *testing.T) {
 		EnableContentMD5Validation bool
 		EnableEndpointDiscovery    bool
 		EnableEndpointHostPrefix   bool
-		MaxPartSize                string
-		MaxChunkSize               string
+		UseAccelerate              bool
+		ForcePathStyle             bool
 	}
 	type want struct {
 		want *S3Config
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *S3Config) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *S3Config) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -497,25 +497,25 @@ func TestS3Config_Bind(t *testing.T) {
 
 func TestCloudStorageConfig_Bind(t *testing.T) {
 	type fields struct {
-		URL                     string
 		Client                  *CloudStorageClient
-		WriteBufferSize         int
+		URL                     string
 		WriteCacheControl       string
 		WriteContentDisposition string
 		WriteContentEncoding    string
 		WriteContentLanguage    string
 		WriteContentType        string
+		WriteBufferSize         int
 	}
 	type want struct {
 		want *CloudStorageConfig
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *CloudStorageConfig) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *CloudStorageConfig) error {
 		if !reflect.DeepEqual(got, w.want) {

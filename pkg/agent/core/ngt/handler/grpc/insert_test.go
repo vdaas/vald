@@ -44,24 +44,24 @@ func Test_server_Insert(t *testing.T) {
 		req *payload.Insert_Request
 	}
 	type fields struct {
+		svcCfg            *config.NGT
 		name              string
 		ip                string
-		streamConcurrency int
-		svcCfg            *config.NGT
 		svcOpts           []service.Option
+		streamConcurrency int
 	}
 	type want struct {
 		wantRes *payload.Object_Location
 		err     error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		args       args
 		checkFunc  func(want, *payload.Object_Location, error) error
 		beforeFunc func(*testing.T, *server)
 		afterFunc  func(args)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Object_Location, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1346,8 +1346,7 @@ func Test_server_Insert(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := tt.Context()
 
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -1393,17 +1392,17 @@ func Test_server_StreamInsert(t *testing.T) {
 		ngtOpts []service.Option
 	}
 	type want struct {
-		errCode codes.Code
 		rpcResp []*payload.Object_StreamLocation
+		errCode codes.Code
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
 		checkFunc  func(want, []*payload.Object_StreamLocation, error) error
 		beforeFunc func(*testing.T, context.Context, args, Server)
 		afterFunc  func(args)
+		name       string
+		fields     fields
+		args       args
+		want       want
 	}
 
 	const (
@@ -1672,7 +1671,7 @@ func Test_server_StreamInsert(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			for i := 0; i < invalidInsertCnt; i++ {
+			for i := range invalidInsertCnt {
 				reqs.Requests[i] = invalidReqs.Requests[i]
 			}
 
@@ -1693,7 +1692,7 @@ func Test_server_StreamInsert(t *testing.T) {
 					rpcResp: func() []*payload.Object_StreamLocation {
 						l := request.GenObjectStreamLocation(insertCnt, name, ip)
 
-						for i := 0; i < 50; i++ {
+						for i := range 50 {
 							l[i] = genObjectStreamLoc(codes.InvalidArgument)
 						}
 
@@ -1727,7 +1726,7 @@ func Test_server_StreamInsert(t *testing.T) {
 					rpcResp: func() []*payload.Object_StreamLocation {
 						l := make([]*payload.Object_StreamLocation, insertCnt)
 
-						for i := 0; i < insertCnt; i++ {
+						for i := range insertCnt {
 							l[i] = genObjectStreamLoc(codes.InvalidArgument)
 						}
 
@@ -2635,8 +2634,7 @@ func Test_server_StreamInsert(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := tt.Context()
 
 			eg, _ := errgroup.New(ctx)
 			ngt, err := service.New(test.fields.ngtCfg,
@@ -2706,24 +2704,24 @@ func Test_server_MultiInsert(t *testing.T) {
 		reqs *payload.Insert_MultiRequest
 	}
 	type fields struct {
+		svcCfg            *config.NGT
 		name              string
 		ip                string
-		streamConcurrency int
-		svcCfg            *config.NGT
 		svcOpts           []service.Option
+		streamConcurrency int
 	}
 	type want struct {
 		wantRes *payload.Object_Locations
 		err     error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		args       args
 		checkFunc  func(want, *payload.Object_Locations, error) error
 		beforeFunc func(*testing.T, context.Context, *server)
 		afterFunc  func(args)
+		name       string
+		fields     fields
 	}
 
 	// common variables for test
@@ -3209,7 +3207,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			for i := 0; i < invalidCnt; i++ {
+			for i := range invalidCnt {
 				req.Requests[i].Vector.Vector = invalidVec[i]
 			}
 
@@ -3262,7 +3260,7 @@ func Test_server_MultiInsert(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			for i := 0; i < invalidCnt; i++ {
+			for i := range invalidCnt {
 				req.Requests[i].Vector.Vector = invalidVec[i]
 			}
 
@@ -4979,7 +4977,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					if err != nil {
 						t.Error(err)
 					}
-					for i := 0; i < 2; i++ {
+					for i := range 2 {
 						ir := &payload.Insert_Request{
 							Vector: &payload.Object_Vector{
 								Id:     req.Requests[i].Vector.Id,
@@ -5084,7 +5082,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					if err != nil {
 						t.Error(err)
 					}
-					for i := 0; i < 2; i++ {
+					for i := range 2 {
 						ir := &payload.Insert_Request{
 							Vector: &payload.Object_Vector{
 								Id:     req.Requests[i].Vector.Id,
@@ -5186,7 +5184,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				beforeFunc: func(t *testing.T, ctx context.Context, s *server) {
 					t.Helper()
 					// insert same request with different ID
-					for i := 0; i < 2; i++ {
+					for i := range 2 {
 						ir := &payload.Insert_Request{
 							Vector: &payload.Object_Vector{
 								Id:     fmt.Sprintf("nonexistid%d", i),
@@ -5278,7 +5276,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				beforeFunc: func(t *testing.T, ctx context.Context, s *server) {
 					t.Helper()
 					// insert same request with different ID
-					for i := 0; i < 2; i++ {
+					for i := range 2 {
 						ir := &payload.Insert_Request{
 							Vector: &payload.Object_Vector{
 								Id:     fmt.Sprintf("nonexistid%d", i),
@@ -5369,7 +5367,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s *server) {
 					t.Helper()
-					for i := 0; i < 2; i++ {
+					for i := range 2 {
 						ir := &payload.Insert_Request{
 							Vector: req.Requests[i].Vector,
 							Config: &payload.Insert_Config{
@@ -5460,7 +5458,7 @@ func Test_server_MultiInsert(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T, ctx context.Context, s *server) {
 					t.Helper()
-					for i := 0; i < 2; i++ {
+					for i := range 2 {
 						ir := &payload.Insert_Request{
 							Vector: req.Requests[i].Vector,
 							Config: &payload.Insert_Config{
@@ -5538,8 +5536,7 @@ func Test_server_MultiInsert(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := tt.Context()
 
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)

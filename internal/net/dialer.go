@@ -46,23 +46,23 @@ type Dialer interface {
 
 type dialer struct {
 	dnsCache              cacher.Cache[*dialerCache]
-	enableDNSCache        bool
-	dnsCachedOnce         sync.Once
+	ctrl                  control.SocketController
+	dialer                func(ctx context.Context, network, addr string) (Conn, error)
+	der                   *net.Dialer
 	tlsConfig             *tls.Config
-	tmu                   sync.RWMutex // lock mutex for tls handshake update
+	addrs                 sync.Map[string, *addrInfo]
 	dnsRefreshDurationStr string
 	dnsCacheExpirationStr string
-	dnsRefreshDuration    time.Duration
 	dnsCacheExpiration    time.Duration
 	dialerTimeout         time.Duration
 	dialerKeepalive       time.Duration
 	dialerFallbackDelay   time.Duration
-	ctrl                  control.SocketController
+	dnsRefreshDuration    time.Duration
 	sockFlg               control.SocketFlag
+	tmu                   sync.RWMutex
+	dnsCachedOnce         sync.Once
 	dialerDualStack       bool
-	addrs                 sync.Map[string, *addrInfo]
-	der                   *net.Dialer
-	dialer                func(ctx context.Context, network, addr string) (Conn, error)
+	enableDNSCache        bool
 }
 
 type addrInfo struct {

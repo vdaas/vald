@@ -61,7 +61,7 @@ func TestNewServerConfig(t *testing.T) {
 			CheckFunc: func(tt *testing.T, want testdata.Result[*Config], got testdata.Result[*Config]) error {
 				tt.Helper()
 				if !errors.Is(got.Err, want.Err) {
-					return fmt.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", got.Err, want.Err)
+					return fmt.Errorf("got_error: \"%wv\",\n\t\t\t\twawt: \"%#v\"", got.Err, want.Err)
 				}
 				if len(got.Val.Certificates) != 1 && len(got.Val.Certificates) != len(want.Val.Certificates) {
 					return errors.New("Certificates length is wrong")
@@ -286,6 +286,99 @@ func TestNewX509CertPool(t *testing.T) {
 
 // NOT IMPLEMENTED BELOW
 //
+// func Test_loadCRL(t *testing.T) {
+// 	type args struct {
+// 		path string
+// 	}
+// 	type want struct {
+// 		want  map[string]struct{}
+// 		want1 time.Time
+// 		err   error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, map[string]struct{}, time.Time, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got map[string]struct{}, got1 time.Time, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		if !reflect.DeepEqual(got1, w.want1) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           path:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           path:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got, got1, err := loadCRL(test.args.path)
+// 			if err := checkFunc(test.want, got, got1, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
 // func Test_newCredential(t *testing.T) {
 // 	type args struct {
 // 		opts []Option
@@ -464,6 +557,406 @@ func TestNewX509CertPool(t *testing.T) {
 //
 // 			got, err := loadKeyPair(test.args.role, test.args.certPath, test.args.keyPath)
 // 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_credentials_reloadCert(t *testing.T) {
+// 	type fields struct {
+// 		crlNextUpdate time.Time
+// 		certPtr       atomic.Pointer[tls.Certificate]
+// 		revoked       map[string]struct{}
+// 		cfg           *Config
+// 		crl           string
+// 		sn            string
+// 		ca            string
+// 		key           string
+// 		cert          string
+// 		clientAuth    tls.ClientAuthType
+// 		insecure      bool
+// 		hotReload     bool
+// 	}
+// 	type want struct {
+// 		want *tls.Certificate
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *tls.Certificate, error) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *tls.Certificate, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           crlNextUpdate:time.Time{},
+// 		           certPtr:nil,
+// 		           revoked:nil,
+// 		           cfg:Config{},
+// 		           crl:"",
+// 		           sn:"",
+// 		           ca:"",
+// 		           key:"",
+// 		           cert:"",
+// 		           clientAuth:nil,
+// 		           insecure:false,
+// 		           hotReload:false,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           crlNextUpdate:time.Time{},
+// 		           certPtr:nil,
+// 		           revoked:nil,
+// 		           cfg:Config{},
+// 		           crl:"",
+// 		           sn:"",
+// 		           ca:"",
+// 		           key:"",
+// 		           cert:"",
+// 		           clientAuth:nil,
+// 		           insecure:false,
+// 		           hotReload:false,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			c := &credentials{
+// 				crlNextUpdate: test.fields.crlNextUpdate,
+// 				certPtr:       test.fields.certPtr,
+// 				revoked:       test.fields.revoked,
+// 				cfg:           test.fields.cfg,
+// 				crl:           test.fields.crl,
+// 				sn:            test.fields.sn,
+// 				ca:            test.fields.ca,
+// 				key:           test.fields.key,
+// 				cert:          test.fields.cert,
+// 				clientAuth:    test.fields.clientAuth,
+// 				insecure:      test.fields.insecure,
+// 				hotReload:     test.fields.hotReload,
+// 			}
+//
+// 			got, err := c.reloadCert()
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_credentials_ensureCRL(t *testing.T) {
+// 	type fields struct {
+// 		crlNextUpdate time.Time
+// 		certPtr       atomic.Pointer[tls.Certificate]
+// 		revoked       map[string]struct{}
+// 		cfg           *Config
+// 		crl           string
+// 		sn            string
+// 		ca            string
+// 		key           string
+// 		cert          string
+// 		clientAuth    tls.ClientAuthType
+// 		insecure      bool
+// 		hotReload     bool
+// 	}
+// 	type want struct{}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want) error {
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           crlNextUpdate:time.Time{},
+// 		           certPtr:nil,
+// 		           revoked:nil,
+// 		           cfg:Config{},
+// 		           crl:"",
+// 		           sn:"",
+// 		           ca:"",
+// 		           key:"",
+// 		           cert:"",
+// 		           clientAuth:nil,
+// 		           insecure:false,
+// 		           hotReload:false,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           crlNextUpdate:time.Time{},
+// 		           certPtr:nil,
+// 		           revoked:nil,
+// 		           cfg:Config{},
+// 		           crl:"",
+// 		           sn:"",
+// 		           ca:"",
+// 		           key:"",
+// 		           cert:"",
+// 		           clientAuth:nil,
+// 		           insecure:false,
+// 		           hotReload:false,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			c := &credentials{
+// 				crlNextUpdate: test.fields.crlNextUpdate,
+// 				certPtr:       test.fields.certPtr,
+// 				revoked:       test.fields.revoked,
+// 				cfg:           test.fields.cfg,
+// 				crl:           test.fields.crl,
+// 				sn:            test.fields.sn,
+// 				ca:            test.fields.ca,
+// 				key:           test.fields.key,
+// 				cert:          test.fields.cert,
+// 				clientAuth:    test.fields.clientAuth,
+// 				insecure:      test.fields.insecure,
+// 				hotReload:     test.fields.hotReload,
+// 			}
+//
+// 			c.ensureCRL()
+// 			if err := checkFunc(test.want); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_credentials_attachCRLChainChecker(t *testing.T) {
+// 	type args struct {
+// 		cfg *tls.Config
+// 	}
+// 	type fields struct {
+// 		crlNextUpdate time.Time
+// 		certPtr       atomic.Pointer[tls.Certificate]
+// 		revoked       map[string]struct{}
+// 		cfg           *Config
+// 		crl           string
+// 		sn            string
+// 		ca            string
+// 		key           string
+// 		cert          string
+// 		clientAuth    tls.ClientAuthType
+// 		insecure      bool
+// 		hotReload     bool
+// 	}
+// 	type want struct{}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want) error {
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           cfg:nil,
+// 		       },
+// 		       fields: fields {
+// 		           crlNextUpdate:time.Time{},
+// 		           certPtr:nil,
+// 		           revoked:nil,
+// 		           cfg:Config{},
+// 		           crl:"",
+// 		           sn:"",
+// 		           ca:"",
+// 		           key:"",
+// 		           cert:"",
+// 		           clientAuth:nil,
+// 		           insecure:false,
+// 		           hotReload:false,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           cfg:nil,
+// 		           },
+// 		           fields: fields {
+// 		           crlNextUpdate:time.Time{},
+// 		           certPtr:nil,
+// 		           revoked:nil,
+// 		           cfg:Config{},
+// 		           crl:"",
+// 		           sn:"",
+// 		           ca:"",
+// 		           key:"",
+// 		           cert:"",
+// 		           clientAuth:nil,
+// 		           insecure:false,
+// 		           hotReload:false,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			c := &credentials{
+// 				crlNextUpdate: test.fields.crlNextUpdate,
+// 				certPtr:       test.fields.certPtr,
+// 				revoked:       test.fields.revoked,
+// 				cfg:           test.fields.cfg,
+// 				crl:           test.fields.crl,
+// 				sn:            test.fields.sn,
+// 				ca:            test.fields.ca,
+// 				key:           test.fields.key,
+// 				cert:          test.fields.cert,
+// 				clientAuth:    test.fields.clientAuth,
+// 				insecure:      test.fields.insecure,
+// 				hotReload:     test.fields.hotReload,
+// 			}
+//
+// 			c.attachCRLChainChecker(test.args.cfg)
+// 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})

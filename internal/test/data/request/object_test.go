@@ -31,20 +31,20 @@ var defaultObjectLocationComparators = []comparator.Option{
 func TestGenObjectLocations(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		num    int
 		name   string
 		ipAddr string
+		num    int
 	}
 	type want struct {
 		want *payload.Object_Locations
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *payload.Object_Locations) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got *payload.Object_Locations) error {
 		if diff := comparator.Diff(got, w.want, defaultObjectLocationComparators...); diff != "" {
@@ -154,20 +154,20 @@ func TestGenObjectLocations(t *testing.T) {
 func TestGenObjectStreamLocation(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		num    int
 		name   string
 		ipAddr string
+		num    int
 	}
 	type want struct {
 		want []*payload.Object_StreamLocation
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, []*payload.Object_StreamLocation) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		args       args
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got []*payload.Object_StreamLocation) error {
 		if !reflect.DeepEqual(got, w.want) {

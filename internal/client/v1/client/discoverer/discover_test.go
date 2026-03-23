@@ -18,7 +18,6 @@
 package discoverer
 
 import (
-	"context"
 	"reflect"
 	"sync/atomic"
 	"testing"
@@ -37,9 +36,9 @@ func Test_client_GetReadClient(t *testing.T) {
 		roundRobin          atomic.Uint64
 	}
 	type test struct {
+		want   grpc.Client
 		name   string
 		fields fields
-		want   grpc.Client
 	}
 
 	mockClient := mock.ClientInternal{}
@@ -142,8 +141,8 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 		roundRobin:          atomic.Uint64{},
 	}
 
-	eg, _ := errgroup.New(context.Background())
-	for i := 0; i < 150; i++ {
+	eg, _ := errgroup.New(t.Context())
+	for range 150 {
 		eg.Go(func() error {
 			c.GetReadClient()
 			return nil
@@ -252,24 +251,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		autoconn            bool
+// 		client              grpc.Client
+// 		readClient          grpc.Client
+// 		eg                  errgroup.Group
+// 		dscClient           grpc.Client
+// 		addrs               atomic.Pointer[[]string]
+// 		onDisconnect        func(ctx context.Context, c Client, addr string) error
 // 		onDiscover          func(ctx context.Context, c Client, addrs []string) error
 // 		onConnect           func(ctx context.Context, c Client, addr string) error
-// 		onDisconnect        func(ctx context.Context, c Client, addr string) error
-// 		client              grpc.Client
-// 		dns                 string
-// 		opts                []grpc.Option
-// 		port                int
-// 		addrs               atomic.Pointer[[]string]
-// 		dscClient           grpc.Client
-// 		dscDur              time.Duration
-// 		eg                  errgroup.Group
+// 		nodeName            string
 // 		name                string
 // 		namespace           string
-// 		nodeName            string
-// 		readClient          grpc.Client
+// 		dns                 string
+// 		opts                []grpc.Option
+// 		dscDur              time.Duration
+// 		port                int
 // 		readReplicaReplicas uint64
 // 		roundRobin          atomic.Uint64
+// 		autoconn            bool
 // 	}
 // 	type want struct {
 // 		want <-chan error
@@ -302,24 +301,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           autoconn:false,
+// 		           client:nil,
+// 		           readClient:nil,
+// 		           eg:nil,
+// 		           dscClient:nil,
+// 		           addrs:nil,
+// 		           onDisconnect:nil,
 // 		           onDiscover:nil,
 // 		           onConnect:nil,
-// 		           onDisconnect:nil,
-// 		           client:nil,
-// 		           dns:"",
-// 		           opts:nil,
-// 		           port:0,
-// 		           addrs:nil,
-// 		           dscClient:nil,
-// 		           dscDur:nil,
-// 		           eg:nil,
+// 		           nodeName:"",
 // 		           name:"",
 // 		           namespace:"",
-// 		           nodeName:"",
-// 		           readClient:nil,
+// 		           dns:"",
+// 		           opts:nil,
+// 		           dscDur:nil,
+// 		           port:0,
 // 		           readReplicaReplicas:0,
 // 		           roundRobin:nil,
+// 		           autoconn:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -341,24 +340,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           autoconn:false,
+// 		           client:nil,
+// 		           readClient:nil,
+// 		           eg:nil,
+// 		           dscClient:nil,
+// 		           addrs:nil,
+// 		           onDisconnect:nil,
 // 		           onDiscover:nil,
 // 		           onConnect:nil,
-// 		           onDisconnect:nil,
-// 		           client:nil,
-// 		           dns:"",
-// 		           opts:nil,
-// 		           port:0,
-// 		           addrs:nil,
-// 		           dscClient:nil,
-// 		           dscDur:nil,
-// 		           eg:nil,
+// 		           nodeName:"",
 // 		           name:"",
 // 		           namespace:"",
-// 		           nodeName:"",
-// 		           readClient:nil,
+// 		           dns:"",
+// 		           opts:nil,
+// 		           dscDur:nil,
+// 		           port:0,
 // 		           readReplicaReplicas:0,
 // 		           roundRobin:nil,
+// 		           autoconn:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -389,24 +388,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				autoconn:            test.fields.autoconn,
+// 				client:              test.fields.client,
+// 				readClient:          test.fields.readClient,
+// 				eg:                  test.fields.eg,
+// 				dscClient:           test.fields.dscClient,
+// 				addrs:               test.fields.addrs,
+// 				onDisconnect:        test.fields.onDisconnect,
 // 				onDiscover:          test.fields.onDiscover,
 // 				onConnect:           test.fields.onConnect,
-// 				onDisconnect:        test.fields.onDisconnect,
-// 				client:              test.fields.client,
-// 				dns:                 test.fields.dns,
-// 				opts:                test.fields.opts,
-// 				port:                test.fields.port,
-// 				addrs:               test.fields.addrs,
-// 				dscClient:           test.fields.dscClient,
-// 				dscDur:              test.fields.dscDur,
-// 				eg:                  test.fields.eg,
+// 				nodeName:            test.fields.nodeName,
 // 				name:                test.fields.name,
 // 				namespace:           test.fields.namespace,
-// 				nodeName:            test.fields.nodeName,
-// 				readClient:          test.fields.readClient,
+// 				dns:                 test.fields.dns,
+// 				opts:                test.fields.opts,
+// 				dscDur:              test.fields.dscDur,
+// 				port:                test.fields.port,
 // 				readReplicaReplicas: test.fields.readReplicaReplicas,
 // 				roundRobin:          test.fields.roundRobin,
+// 				autoconn:            test.fields.autoconn,
 // 			}
 //
 // 			got, err := c.Start(test.args.ctx)
@@ -422,24 +421,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		autoconn            bool
+// 		client              grpc.Client
+// 		readClient          grpc.Client
+// 		eg                  errgroup.Group
+// 		dscClient           grpc.Client
+// 		addrs               atomic.Pointer[[]string]
+// 		onDisconnect        func(ctx context.Context, c Client, addr string) error
 // 		onDiscover          func(ctx context.Context, c Client, addrs []string) error
 // 		onConnect           func(ctx context.Context, c Client, addr string) error
-// 		onDisconnect        func(ctx context.Context, c Client, addr string) error
-// 		client              grpc.Client
-// 		dns                 string
-// 		opts                []grpc.Option
-// 		port                int
-// 		addrs               atomic.Pointer[[]string]
-// 		dscClient           grpc.Client
-// 		dscDur              time.Duration
-// 		eg                  errgroup.Group
+// 		nodeName            string
 // 		name                string
 // 		namespace           string
-// 		nodeName            string
-// 		readClient          grpc.Client
+// 		dns                 string
+// 		opts                []grpc.Option
+// 		dscDur              time.Duration
+// 		port                int
 // 		readReplicaReplicas uint64
 // 		roundRobin          atomic.Uint64
+// 		autoconn            bool
 // 	}
 // 	type want struct {
 // 		wantAddrs []string
@@ -468,24 +467,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           autoconn:false,
+// 		           client:nil,
+// 		           readClient:nil,
+// 		           eg:nil,
+// 		           dscClient:nil,
+// 		           addrs:nil,
+// 		           onDisconnect:nil,
 // 		           onDiscover:nil,
 // 		           onConnect:nil,
-// 		           onDisconnect:nil,
-// 		           client:nil,
-// 		           dns:"",
-// 		           opts:nil,
-// 		           port:0,
-// 		           addrs:nil,
-// 		           dscClient:nil,
-// 		           dscDur:nil,
-// 		           eg:nil,
+// 		           nodeName:"",
 // 		           name:"",
 // 		           namespace:"",
-// 		           nodeName:"",
-// 		           readClient:nil,
+// 		           dns:"",
+// 		           opts:nil,
+// 		           dscDur:nil,
+// 		           port:0,
 // 		           readReplicaReplicas:0,
 // 		           roundRobin:nil,
+// 		           autoconn:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -507,24 +506,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           autoconn:false,
+// 		           client:nil,
+// 		           readClient:nil,
+// 		           eg:nil,
+// 		           dscClient:nil,
+// 		           addrs:nil,
+// 		           onDisconnect:nil,
 // 		           onDiscover:nil,
 // 		           onConnect:nil,
-// 		           onDisconnect:nil,
-// 		           client:nil,
-// 		           dns:"",
-// 		           opts:nil,
-// 		           port:0,
-// 		           addrs:nil,
-// 		           dscClient:nil,
-// 		           dscDur:nil,
-// 		           eg:nil,
+// 		           nodeName:"",
 // 		           name:"",
 // 		           namespace:"",
-// 		           nodeName:"",
-// 		           readClient:nil,
+// 		           dns:"",
+// 		           opts:nil,
+// 		           dscDur:nil,
+// 		           port:0,
 // 		           readReplicaReplicas:0,
 // 		           roundRobin:nil,
+// 		           autoconn:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -555,24 +554,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				autoconn:            test.fields.autoconn,
+// 				client:              test.fields.client,
+// 				readClient:          test.fields.readClient,
+// 				eg:                  test.fields.eg,
+// 				dscClient:           test.fields.dscClient,
+// 				addrs:               test.fields.addrs,
+// 				onDisconnect:        test.fields.onDisconnect,
 // 				onDiscover:          test.fields.onDiscover,
 // 				onConnect:           test.fields.onConnect,
-// 				onDisconnect:        test.fields.onDisconnect,
-// 				client:              test.fields.client,
-// 				dns:                 test.fields.dns,
-// 				opts:                test.fields.opts,
-// 				port:                test.fields.port,
-// 				addrs:               test.fields.addrs,
-// 				dscClient:           test.fields.dscClient,
-// 				dscDur:              test.fields.dscDur,
-// 				eg:                  test.fields.eg,
+// 				nodeName:            test.fields.nodeName,
 // 				name:                test.fields.name,
 // 				namespace:           test.fields.namespace,
-// 				nodeName:            test.fields.nodeName,
-// 				readClient:          test.fields.readClient,
+// 				dns:                 test.fields.dns,
+// 				opts:                test.fields.opts,
+// 				dscDur:              test.fields.dscDur,
+// 				port:                test.fields.port,
 // 				readReplicaReplicas: test.fields.readReplicaReplicas,
 // 				roundRobin:          test.fields.roundRobin,
+// 				autoconn:            test.fields.autoconn,
 // 			}
 //
 // 			gotAddrs := c.GetAddrs(test.args.ctx)
@@ -585,24 +584,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 //
 // func Test_client_GetClient(t *testing.T) {
 // 	type fields struct {
-// 		autoconn            bool
+// 		client              grpc.Client
+// 		readClient          grpc.Client
+// 		eg                  errgroup.Group
+// 		dscClient           grpc.Client
+// 		addrs               atomic.Pointer[[]string]
+// 		onDisconnect        func(ctx context.Context, c Client, addr string) error
 // 		onDiscover          func(ctx context.Context, c Client, addrs []string) error
 // 		onConnect           func(ctx context.Context, c Client, addr string) error
-// 		onDisconnect        func(ctx context.Context, c Client, addr string) error
-// 		client              grpc.Client
-// 		dns                 string
-// 		opts                []grpc.Option
-// 		port                int
-// 		addrs               atomic.Pointer[[]string]
-// 		dscClient           grpc.Client
-// 		dscDur              time.Duration
-// 		eg                  errgroup.Group
+// 		nodeName            string
 // 		name                string
 // 		namespace           string
-// 		nodeName            string
-// 		readClient          grpc.Client
+// 		dns                 string
+// 		opts                []grpc.Option
+// 		dscDur              time.Duration
+// 		port                int
 // 		readReplicaReplicas uint64
 // 		roundRobin          atomic.Uint64
+// 		autoconn            bool
 // 	}
 // 	type want struct {
 // 		want grpc.Client
@@ -627,24 +626,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           autoconn:false,
+// 		           client:nil,
+// 		           readClient:nil,
+// 		           eg:nil,
+// 		           dscClient:nil,
+// 		           addrs:nil,
+// 		           onDisconnect:nil,
 // 		           onDiscover:nil,
 // 		           onConnect:nil,
-// 		           onDisconnect:nil,
-// 		           client:nil,
-// 		           dns:"",
-// 		           opts:nil,
-// 		           port:0,
-// 		           addrs:nil,
-// 		           dscClient:nil,
-// 		           dscDur:nil,
-// 		           eg:nil,
+// 		           nodeName:"",
 // 		           name:"",
 // 		           namespace:"",
-// 		           nodeName:"",
-// 		           readClient:nil,
+// 		           dns:"",
+// 		           opts:nil,
+// 		           dscDur:nil,
+// 		           port:0,
 // 		           readReplicaReplicas:0,
 // 		           roundRobin:nil,
+// 		           autoconn:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -663,24 +662,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           autoconn:false,
+// 		           client:nil,
+// 		           readClient:nil,
+// 		           eg:nil,
+// 		           dscClient:nil,
+// 		           addrs:nil,
+// 		           onDisconnect:nil,
 // 		           onDiscover:nil,
 // 		           onConnect:nil,
-// 		           onDisconnect:nil,
-// 		           client:nil,
-// 		           dns:"",
-// 		           opts:nil,
-// 		           port:0,
-// 		           addrs:nil,
-// 		           dscClient:nil,
-// 		           dscDur:nil,
-// 		           eg:nil,
+// 		           nodeName:"",
 // 		           name:"",
 // 		           namespace:"",
-// 		           nodeName:"",
-// 		           readClient:nil,
+// 		           dns:"",
+// 		           opts:nil,
+// 		           dscDur:nil,
+// 		           port:0,
 // 		           readReplicaReplicas:0,
 // 		           roundRobin:nil,
+// 		           autoconn:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -711,24 +710,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				autoconn:            test.fields.autoconn,
+// 				client:              test.fields.client,
+// 				readClient:          test.fields.readClient,
+// 				eg:                  test.fields.eg,
+// 				dscClient:           test.fields.dscClient,
+// 				addrs:               test.fields.addrs,
+// 				onDisconnect:        test.fields.onDisconnect,
 // 				onDiscover:          test.fields.onDiscover,
 // 				onConnect:           test.fields.onConnect,
-// 				onDisconnect:        test.fields.onDisconnect,
-// 				client:              test.fields.client,
-// 				dns:                 test.fields.dns,
-// 				opts:                test.fields.opts,
-// 				port:                test.fields.port,
-// 				addrs:               test.fields.addrs,
-// 				dscClient:           test.fields.dscClient,
-// 				dscDur:              test.fields.dscDur,
-// 				eg:                  test.fields.eg,
+// 				nodeName:            test.fields.nodeName,
 // 				name:                test.fields.name,
 // 				namespace:           test.fields.namespace,
-// 				nodeName:            test.fields.nodeName,
-// 				readClient:          test.fields.readClient,
+// 				dns:                 test.fields.dns,
+// 				opts:                test.fields.opts,
+// 				dscDur:              test.fields.dscDur,
+// 				port:                test.fields.port,
 // 				readReplicaReplicas: test.fields.readReplicaReplicas,
 // 				roundRobin:          test.fields.roundRobin,
+// 				autoconn:            test.fields.autoconn,
 // 			}
 //
 // 			got := c.GetClient()
@@ -745,24 +744,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		addr string
 // 	}
 // 	type fields struct {
-// 		autoconn            bool
+// 		client              grpc.Client
+// 		readClient          grpc.Client
+// 		eg                  errgroup.Group
+// 		dscClient           grpc.Client
+// 		addrs               atomic.Pointer[[]string]
+// 		onDisconnect        func(ctx context.Context, c Client, addr string) error
 // 		onDiscover          func(ctx context.Context, c Client, addrs []string) error
 // 		onConnect           func(ctx context.Context, c Client, addr string) error
-// 		onDisconnect        func(ctx context.Context, c Client, addr string) error
-// 		client              grpc.Client
-// 		dns                 string
-// 		opts                []grpc.Option
-// 		port                int
-// 		addrs               atomic.Pointer[[]string]
-// 		dscClient           grpc.Client
-// 		dscDur              time.Duration
-// 		eg                  errgroup.Group
+// 		nodeName            string
 // 		name                string
 // 		namespace           string
-// 		nodeName            string
-// 		readClient          grpc.Client
+// 		dns                 string
+// 		opts                []grpc.Option
+// 		dscDur              time.Duration
+// 		port                int
 // 		readReplicaReplicas uint64
 // 		roundRobin          atomic.Uint64
+// 		autoconn            bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -792,24 +791,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           addr:"",
 // 		       },
 // 		       fields: fields {
-// 		           autoconn:false,
+// 		           client:nil,
+// 		           readClient:nil,
+// 		           eg:nil,
+// 		           dscClient:nil,
+// 		           addrs:nil,
+// 		           onDisconnect:nil,
 // 		           onDiscover:nil,
 // 		           onConnect:nil,
-// 		           onDisconnect:nil,
-// 		           client:nil,
-// 		           dns:"",
-// 		           opts:nil,
-// 		           port:0,
-// 		           addrs:nil,
-// 		           dscClient:nil,
-// 		           dscDur:nil,
-// 		           eg:nil,
+// 		           nodeName:"",
 // 		           name:"",
 // 		           namespace:"",
-// 		           nodeName:"",
-// 		           readClient:nil,
+// 		           dns:"",
+// 		           opts:nil,
+// 		           dscDur:nil,
+// 		           port:0,
 // 		           readReplicaReplicas:0,
 // 		           roundRobin:nil,
+// 		           autoconn:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -832,24 +831,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           addr:"",
 // 		           },
 // 		           fields: fields {
-// 		           autoconn:false,
+// 		           client:nil,
+// 		           readClient:nil,
+// 		           eg:nil,
+// 		           dscClient:nil,
+// 		           addrs:nil,
+// 		           onDisconnect:nil,
 // 		           onDiscover:nil,
 // 		           onConnect:nil,
-// 		           onDisconnect:nil,
-// 		           client:nil,
-// 		           dns:"",
-// 		           opts:nil,
-// 		           port:0,
-// 		           addrs:nil,
-// 		           dscClient:nil,
-// 		           dscDur:nil,
-// 		           eg:nil,
+// 		           nodeName:"",
 // 		           name:"",
 // 		           namespace:"",
-// 		           nodeName:"",
-// 		           readClient:nil,
+// 		           dns:"",
+// 		           opts:nil,
+// 		           dscDur:nil,
+// 		           port:0,
 // 		           readReplicaReplicas:0,
 // 		           roundRobin:nil,
+// 		           autoconn:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -880,24 +879,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				autoconn:            test.fields.autoconn,
+// 				client:              test.fields.client,
+// 				readClient:          test.fields.readClient,
+// 				eg:                  test.fields.eg,
+// 				dscClient:           test.fields.dscClient,
+// 				addrs:               test.fields.addrs,
+// 				onDisconnect:        test.fields.onDisconnect,
 // 				onDiscover:          test.fields.onDiscover,
 // 				onConnect:           test.fields.onConnect,
-// 				onDisconnect:        test.fields.onDisconnect,
-// 				client:              test.fields.client,
-// 				dns:                 test.fields.dns,
-// 				opts:                test.fields.opts,
-// 				port:                test.fields.port,
-// 				addrs:               test.fields.addrs,
-// 				dscClient:           test.fields.dscClient,
-// 				dscDur:              test.fields.dscDur,
-// 				eg:                  test.fields.eg,
+// 				nodeName:            test.fields.nodeName,
 // 				name:                test.fields.name,
 // 				namespace:           test.fields.namespace,
-// 				nodeName:            test.fields.nodeName,
-// 				readClient:          test.fields.readClient,
+// 				dns:                 test.fields.dns,
+// 				opts:                test.fields.opts,
+// 				dscDur:              test.fields.dscDur,
+// 				port:                test.fields.port,
 // 				readReplicaReplicas: test.fields.readReplicaReplicas,
 // 				roundRobin:          test.fields.roundRobin,
+// 				autoconn:            test.fields.autoconn,
 // 			}
 //
 // 			err := c.connect(test.args.ctx, test.args.addr)
@@ -914,24 +913,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		addr string
 // 	}
 // 	type fields struct {
-// 		autoconn            bool
+// 		client              grpc.Client
+// 		readClient          grpc.Client
+// 		eg                  errgroup.Group
+// 		dscClient           grpc.Client
+// 		addrs               atomic.Pointer[[]string]
+// 		onDisconnect        func(ctx context.Context, c Client, addr string) error
 // 		onDiscover          func(ctx context.Context, c Client, addrs []string) error
 // 		onConnect           func(ctx context.Context, c Client, addr string) error
-// 		onDisconnect        func(ctx context.Context, c Client, addr string) error
-// 		client              grpc.Client
-// 		dns                 string
-// 		opts                []grpc.Option
-// 		port                int
-// 		addrs               atomic.Pointer[[]string]
-// 		dscClient           grpc.Client
-// 		dscDur              time.Duration
-// 		eg                  errgroup.Group
+// 		nodeName            string
 // 		name                string
 // 		namespace           string
-// 		nodeName            string
-// 		readClient          grpc.Client
+// 		dns                 string
+// 		opts                []grpc.Option
+// 		dscDur              time.Duration
+// 		port                int
 // 		readReplicaReplicas uint64
 // 		roundRobin          atomic.Uint64
+// 		autoconn            bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -961,24 +960,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           addr:"",
 // 		       },
 // 		       fields: fields {
-// 		           autoconn:false,
+// 		           client:nil,
+// 		           readClient:nil,
+// 		           eg:nil,
+// 		           dscClient:nil,
+// 		           addrs:nil,
+// 		           onDisconnect:nil,
 // 		           onDiscover:nil,
 // 		           onConnect:nil,
-// 		           onDisconnect:nil,
-// 		           client:nil,
-// 		           dns:"",
-// 		           opts:nil,
-// 		           port:0,
-// 		           addrs:nil,
-// 		           dscClient:nil,
-// 		           dscDur:nil,
-// 		           eg:nil,
+// 		           nodeName:"",
 // 		           name:"",
 // 		           namespace:"",
-// 		           nodeName:"",
-// 		           readClient:nil,
+// 		           dns:"",
+// 		           opts:nil,
+// 		           dscDur:nil,
+// 		           port:0,
 // 		           readReplicaReplicas:0,
 // 		           roundRobin:nil,
+// 		           autoconn:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1001,24 +1000,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           addr:"",
 // 		           },
 // 		           fields: fields {
-// 		           autoconn:false,
+// 		           client:nil,
+// 		           readClient:nil,
+// 		           eg:nil,
+// 		           dscClient:nil,
+// 		           addrs:nil,
+// 		           onDisconnect:nil,
 // 		           onDiscover:nil,
 // 		           onConnect:nil,
-// 		           onDisconnect:nil,
-// 		           client:nil,
-// 		           dns:"",
-// 		           opts:nil,
-// 		           port:0,
-// 		           addrs:nil,
-// 		           dscClient:nil,
-// 		           dscDur:nil,
-// 		           eg:nil,
+// 		           nodeName:"",
 // 		           name:"",
 // 		           namespace:"",
-// 		           nodeName:"",
-// 		           readClient:nil,
+// 		           dns:"",
+// 		           opts:nil,
+// 		           dscDur:nil,
+// 		           port:0,
 // 		           readReplicaReplicas:0,
 // 		           roundRobin:nil,
+// 		           autoconn:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1049,24 +1048,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				autoconn:            test.fields.autoconn,
+// 				client:              test.fields.client,
+// 				readClient:          test.fields.readClient,
+// 				eg:                  test.fields.eg,
+// 				dscClient:           test.fields.dscClient,
+// 				addrs:               test.fields.addrs,
+// 				onDisconnect:        test.fields.onDisconnect,
 // 				onDiscover:          test.fields.onDiscover,
 // 				onConnect:           test.fields.onConnect,
-// 				onDisconnect:        test.fields.onDisconnect,
-// 				client:              test.fields.client,
-// 				dns:                 test.fields.dns,
-// 				opts:                test.fields.opts,
-// 				port:                test.fields.port,
-// 				addrs:               test.fields.addrs,
-// 				dscClient:           test.fields.dscClient,
-// 				dscDur:              test.fields.dscDur,
-// 				eg:                  test.fields.eg,
+// 				nodeName:            test.fields.nodeName,
 // 				name:                test.fields.name,
 // 				namespace:           test.fields.namespace,
-// 				nodeName:            test.fields.nodeName,
-// 				readClient:          test.fields.readClient,
+// 				dns:                 test.fields.dns,
+// 				opts:                test.fields.opts,
+// 				dscDur:              test.fields.dscDur,
+// 				port:                test.fields.port,
 // 				readReplicaReplicas: test.fields.readReplicaReplicas,
 // 				roundRobin:          test.fields.roundRobin,
+// 				autoconn:            test.fields.autoconn,
 // 			}
 //
 // 			err := c.disconnect(test.args.ctx, test.args.addr)
@@ -1082,24 +1081,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		autoconn            bool
+// 		client              grpc.Client
+// 		readClient          grpc.Client
+// 		eg                  errgroup.Group
+// 		dscClient           grpc.Client
+// 		addrs               atomic.Pointer[[]string]
+// 		onDisconnect        func(ctx context.Context, c Client, addr string) error
 // 		onDiscover          func(ctx context.Context, c Client, addrs []string) error
 // 		onConnect           func(ctx context.Context, c Client, addr string) error
-// 		onDisconnect        func(ctx context.Context, c Client, addr string) error
-// 		client              grpc.Client
-// 		dns                 string
-// 		opts                []grpc.Option
-// 		port                int
-// 		addrs               atomic.Pointer[[]string]
-// 		dscClient           grpc.Client
-// 		dscDur              time.Duration
-// 		eg                  errgroup.Group
+// 		nodeName            string
 // 		name                string
 // 		namespace           string
-// 		nodeName            string
-// 		readClient          grpc.Client
+// 		dns                 string
+// 		opts                []grpc.Option
+// 		dscDur              time.Duration
+// 		port                int
 // 		readReplicaReplicas uint64
 // 		roundRobin          atomic.Uint64
+// 		autoconn            bool
 // 	}
 // 	type want struct {
 // 		wantAddrs []string
@@ -1132,24 +1131,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           autoconn:false,
+// 		           client:nil,
+// 		           readClient:nil,
+// 		           eg:nil,
+// 		           dscClient:nil,
+// 		           addrs:nil,
+// 		           onDisconnect:nil,
 // 		           onDiscover:nil,
 // 		           onConnect:nil,
-// 		           onDisconnect:nil,
-// 		           client:nil,
-// 		           dns:"",
-// 		           opts:nil,
-// 		           port:0,
-// 		           addrs:nil,
-// 		           dscClient:nil,
-// 		           dscDur:nil,
-// 		           eg:nil,
+// 		           nodeName:"",
 // 		           name:"",
 // 		           namespace:"",
-// 		           nodeName:"",
-// 		           readClient:nil,
+// 		           dns:"",
+// 		           opts:nil,
+// 		           dscDur:nil,
+// 		           port:0,
 // 		           readReplicaReplicas:0,
 // 		           roundRobin:nil,
+// 		           autoconn:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1171,24 +1170,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           autoconn:false,
+// 		           client:nil,
+// 		           readClient:nil,
+// 		           eg:nil,
+// 		           dscClient:nil,
+// 		           addrs:nil,
+// 		           onDisconnect:nil,
 // 		           onDiscover:nil,
 // 		           onConnect:nil,
-// 		           onDisconnect:nil,
-// 		           client:nil,
-// 		           dns:"",
-// 		           opts:nil,
-// 		           port:0,
-// 		           addrs:nil,
-// 		           dscClient:nil,
-// 		           dscDur:nil,
-// 		           eg:nil,
+// 		           nodeName:"",
 // 		           name:"",
 // 		           namespace:"",
-// 		           nodeName:"",
-// 		           readClient:nil,
+// 		           dns:"",
+// 		           opts:nil,
+// 		           dscDur:nil,
+// 		           port:0,
 // 		           readReplicaReplicas:0,
 // 		           roundRobin:nil,
+// 		           autoconn:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1219,24 +1218,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				autoconn:            test.fields.autoconn,
+// 				client:              test.fields.client,
+// 				readClient:          test.fields.readClient,
+// 				eg:                  test.fields.eg,
+// 				dscClient:           test.fields.dscClient,
+// 				addrs:               test.fields.addrs,
+// 				onDisconnect:        test.fields.onDisconnect,
 // 				onDiscover:          test.fields.onDiscover,
 // 				onConnect:           test.fields.onConnect,
-// 				onDisconnect:        test.fields.onDisconnect,
-// 				client:              test.fields.client,
-// 				dns:                 test.fields.dns,
-// 				opts:                test.fields.opts,
-// 				port:                test.fields.port,
-// 				addrs:               test.fields.addrs,
-// 				dscClient:           test.fields.dscClient,
-// 				dscDur:              test.fields.dscDur,
-// 				eg:                  test.fields.eg,
+// 				nodeName:            test.fields.nodeName,
 // 				name:                test.fields.name,
 // 				namespace:           test.fields.namespace,
-// 				nodeName:            test.fields.nodeName,
-// 				readClient:          test.fields.readClient,
+// 				dns:                 test.fields.dns,
+// 				opts:                test.fields.opts,
+// 				dscDur:              test.fields.dscDur,
+// 				port:                test.fields.port,
 // 				readReplicaReplicas: test.fields.readReplicaReplicas,
 // 				roundRobin:          test.fields.roundRobin,
+// 				autoconn:            test.fields.autoconn,
 // 			}
 //
 // 			gotAddrs, err := c.dnsDiscovery(test.args.ctx)
@@ -1252,24 +1251,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		autoconn            bool
+// 		client              grpc.Client
+// 		readClient          grpc.Client
+// 		eg                  errgroup.Group
+// 		dscClient           grpc.Client
+// 		addrs               atomic.Pointer[[]string]
+// 		onDisconnect        func(ctx context.Context, c Client, addr string) error
 // 		onDiscover          func(ctx context.Context, c Client, addrs []string) error
 // 		onConnect           func(ctx context.Context, c Client, addr string) error
-// 		onDisconnect        func(ctx context.Context, c Client, addr string) error
-// 		client              grpc.Client
-// 		dns                 string
-// 		opts                []grpc.Option
-// 		port                int
-// 		addrs               atomic.Pointer[[]string]
-// 		dscClient           grpc.Client
-// 		dscDur              time.Duration
-// 		eg                  errgroup.Group
+// 		nodeName            string
 // 		name                string
 // 		namespace           string
-// 		nodeName            string
-// 		readClient          grpc.Client
+// 		dns                 string
+// 		opts                []grpc.Option
+// 		dscDur              time.Duration
+// 		port                int
 // 		readReplicaReplicas uint64
 // 		roundRobin          atomic.Uint64
+// 		autoconn            bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -1298,24 +1297,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           autoconn:false,
+// 		           client:nil,
+// 		           readClient:nil,
+// 		           eg:nil,
+// 		           dscClient:nil,
+// 		           addrs:nil,
+// 		           onDisconnect:nil,
 // 		           onDiscover:nil,
 // 		           onConnect:nil,
-// 		           onDisconnect:nil,
-// 		           client:nil,
-// 		           dns:"",
-// 		           opts:nil,
-// 		           port:0,
-// 		           addrs:nil,
-// 		           dscClient:nil,
-// 		           dscDur:nil,
-// 		           eg:nil,
+// 		           nodeName:"",
 // 		           name:"",
 // 		           namespace:"",
-// 		           nodeName:"",
-// 		           readClient:nil,
+// 		           dns:"",
+// 		           opts:nil,
+// 		           dscDur:nil,
+// 		           port:0,
 // 		           readReplicaReplicas:0,
 // 		           roundRobin:nil,
+// 		           autoconn:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1337,24 +1336,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           autoconn:false,
+// 		           client:nil,
+// 		           readClient:nil,
+// 		           eg:nil,
+// 		           dscClient:nil,
+// 		           addrs:nil,
+// 		           onDisconnect:nil,
 // 		           onDiscover:nil,
 // 		           onConnect:nil,
-// 		           onDisconnect:nil,
-// 		           client:nil,
-// 		           dns:"",
-// 		           opts:nil,
-// 		           port:0,
-// 		           addrs:nil,
-// 		           dscClient:nil,
-// 		           dscDur:nil,
-// 		           eg:nil,
+// 		           nodeName:"",
 // 		           name:"",
 // 		           namespace:"",
-// 		           nodeName:"",
-// 		           readClient:nil,
+// 		           dns:"",
+// 		           opts:nil,
+// 		           dscDur:nil,
+// 		           port:0,
 // 		           readReplicaReplicas:0,
 // 		           roundRobin:nil,
+// 		           autoconn:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1385,24 +1384,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				autoconn:            test.fields.autoconn,
+// 				client:              test.fields.client,
+// 				readClient:          test.fields.readClient,
+// 				eg:                  test.fields.eg,
+// 				dscClient:           test.fields.dscClient,
+// 				addrs:               test.fields.addrs,
+// 				onDisconnect:        test.fields.onDisconnect,
 // 				onDiscover:          test.fields.onDiscover,
 // 				onConnect:           test.fields.onConnect,
-// 				onDisconnect:        test.fields.onDisconnect,
-// 				client:              test.fields.client,
-// 				dns:                 test.fields.dns,
-// 				opts:                test.fields.opts,
-// 				port:                test.fields.port,
-// 				addrs:               test.fields.addrs,
-// 				dscClient:           test.fields.dscClient,
-// 				dscDur:              test.fields.dscDur,
-// 				eg:                  test.fields.eg,
+// 				nodeName:            test.fields.nodeName,
 // 				name:                test.fields.name,
 // 				namespace:           test.fields.namespace,
-// 				nodeName:            test.fields.nodeName,
-// 				readClient:          test.fields.readClient,
+// 				dns:                 test.fields.dns,
+// 				opts:                test.fields.opts,
+// 				dscDur:              test.fields.dscDur,
+// 				port:                test.fields.port,
 // 				readReplicaReplicas: test.fields.readReplicaReplicas,
 // 				roundRobin:          test.fields.roundRobin,
+// 				autoconn:            test.fields.autoconn,
 // 			}
 //
 // 			err := c.discover(test.args.ctx)
@@ -1418,24 +1417,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		autoconn            bool
+// 		client              grpc.Client
+// 		readClient          grpc.Client
+// 		eg                  errgroup.Group
+// 		dscClient           grpc.Client
+// 		addrs               atomic.Pointer[[]string]
+// 		onDisconnect        func(ctx context.Context, c Client, addr string) error
 // 		onDiscover          func(ctx context.Context, c Client, addrs []string) error
 // 		onConnect           func(ctx context.Context, c Client, addr string) error
-// 		onDisconnect        func(ctx context.Context, c Client, addr string) error
-// 		client              grpc.Client
-// 		dns                 string
-// 		opts                []grpc.Option
-// 		port                int
-// 		addrs               atomic.Pointer[[]string]
-// 		dscClient           grpc.Client
-// 		dscDur              time.Duration
-// 		eg                  errgroup.Group
+// 		nodeName            string
 // 		name                string
 // 		namespace           string
-// 		nodeName            string
-// 		readClient          grpc.Client
+// 		dns                 string
+// 		opts                []grpc.Option
+// 		dscDur              time.Duration
+// 		port                int
 // 		readReplicaReplicas uint64
 // 		roundRobin          atomic.Uint64
+// 		autoconn            bool
 // 	}
 // 	type want struct {
 // 		wantConnected []string
@@ -1468,24 +1467,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           autoconn:false,
+// 		           client:nil,
+// 		           readClient:nil,
+// 		           eg:nil,
+// 		           dscClient:nil,
+// 		           addrs:nil,
+// 		           onDisconnect:nil,
 // 		           onDiscover:nil,
 // 		           onConnect:nil,
-// 		           onDisconnect:nil,
-// 		           client:nil,
-// 		           dns:"",
-// 		           opts:nil,
-// 		           port:0,
-// 		           addrs:nil,
-// 		           dscClient:nil,
-// 		           dscDur:nil,
-// 		           eg:nil,
+// 		           nodeName:"",
 // 		           name:"",
 // 		           namespace:"",
-// 		           nodeName:"",
-// 		           readClient:nil,
+// 		           dns:"",
+// 		           opts:nil,
+// 		           dscDur:nil,
+// 		           port:0,
 // 		           readReplicaReplicas:0,
 // 		           roundRobin:nil,
+// 		           autoconn:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1507,24 +1506,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           autoconn:false,
+// 		           client:nil,
+// 		           readClient:nil,
+// 		           eg:nil,
+// 		           dscClient:nil,
+// 		           addrs:nil,
+// 		           onDisconnect:nil,
 // 		           onDiscover:nil,
 // 		           onConnect:nil,
-// 		           onDisconnect:nil,
-// 		           client:nil,
-// 		           dns:"",
-// 		           opts:nil,
-// 		           port:0,
-// 		           addrs:nil,
-// 		           dscClient:nil,
-// 		           dscDur:nil,
-// 		           eg:nil,
+// 		           nodeName:"",
 // 		           name:"",
 // 		           namespace:"",
-// 		           nodeName:"",
-// 		           readClient:nil,
+// 		           dns:"",
+// 		           opts:nil,
+// 		           dscDur:nil,
+// 		           port:0,
 // 		           readReplicaReplicas:0,
 // 		           roundRobin:nil,
+// 		           autoconn:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1555,24 +1554,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				autoconn:            test.fields.autoconn,
+// 				client:              test.fields.client,
+// 				readClient:          test.fields.readClient,
+// 				eg:                  test.fields.eg,
+// 				dscClient:           test.fields.dscClient,
+// 				addrs:               test.fields.addrs,
+// 				onDisconnect:        test.fields.onDisconnect,
 // 				onDiscover:          test.fields.onDiscover,
 // 				onConnect:           test.fields.onConnect,
-// 				onDisconnect:        test.fields.onDisconnect,
-// 				client:              test.fields.client,
-// 				dns:                 test.fields.dns,
-// 				opts:                test.fields.opts,
-// 				port:                test.fields.port,
-// 				addrs:               test.fields.addrs,
-// 				dscClient:           test.fields.dscClient,
-// 				dscDur:              test.fields.dscDur,
-// 				eg:                  test.fields.eg,
+// 				nodeName:            test.fields.nodeName,
 // 				name:                test.fields.name,
 // 				namespace:           test.fields.namespace,
-// 				nodeName:            test.fields.nodeName,
-// 				readClient:          test.fields.readClient,
+// 				dns:                 test.fields.dns,
+// 				opts:                test.fields.opts,
+// 				dscDur:              test.fields.dscDur,
+// 				port:                test.fields.port,
 // 				readReplicaReplicas: test.fields.readReplicaReplicas,
 // 				roundRobin:          test.fields.roundRobin,
+// 				autoconn:            test.fields.autoconn,
 // 			}
 //
 // 			gotConnected, err := c.updateDiscoveryInfo(test.args.ctx)
@@ -1588,24 +1587,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		autoconn            bool
+// 		client              grpc.Client
+// 		readClient          grpc.Client
+// 		eg                  errgroup.Group
+// 		dscClient           grpc.Client
+// 		addrs               atomic.Pointer[[]string]
+// 		onDisconnect        func(ctx context.Context, c Client, addr string) error
 // 		onDiscover          func(ctx context.Context, c Client, addrs []string) error
 // 		onConnect           func(ctx context.Context, c Client, addr string) error
-// 		onDisconnect        func(ctx context.Context, c Client, addr string) error
-// 		client              grpc.Client
-// 		dns                 string
-// 		opts                []grpc.Option
-// 		port                int
-// 		addrs               atomic.Pointer[[]string]
-// 		dscClient           grpc.Client
-// 		dscDur              time.Duration
-// 		eg                  errgroup.Group
+// 		nodeName            string
 // 		name                string
 // 		namespace           string
-// 		nodeName            string
-// 		readClient          grpc.Client
+// 		dns                 string
+// 		opts                []grpc.Option
+// 		dscDur              time.Duration
+// 		port                int
 // 		readReplicaReplicas uint64
 // 		roundRobin          atomic.Uint64
+// 		autoconn            bool
 // 	}
 // 	type want struct {
 // 		wantNodes *payload.Info_Nodes
@@ -1638,24 +1637,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           autoconn:false,
+// 		           client:nil,
+// 		           readClient:nil,
+// 		           eg:nil,
+// 		           dscClient:nil,
+// 		           addrs:nil,
+// 		           onDisconnect:nil,
 // 		           onDiscover:nil,
 // 		           onConnect:nil,
-// 		           onDisconnect:nil,
-// 		           client:nil,
-// 		           dns:"",
-// 		           opts:nil,
-// 		           port:0,
-// 		           addrs:nil,
-// 		           dscClient:nil,
-// 		           dscDur:nil,
-// 		           eg:nil,
+// 		           nodeName:"",
 // 		           name:"",
 // 		           namespace:"",
-// 		           nodeName:"",
-// 		           readClient:nil,
+// 		           dns:"",
+// 		           opts:nil,
+// 		           dscDur:nil,
+// 		           port:0,
 // 		           readReplicaReplicas:0,
 // 		           roundRobin:nil,
+// 		           autoconn:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1677,24 +1676,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           autoconn:false,
+// 		           client:nil,
+// 		           readClient:nil,
+// 		           eg:nil,
+// 		           dscClient:nil,
+// 		           addrs:nil,
+// 		           onDisconnect:nil,
 // 		           onDiscover:nil,
 // 		           onConnect:nil,
-// 		           onDisconnect:nil,
-// 		           client:nil,
-// 		           dns:"",
-// 		           opts:nil,
-// 		           port:0,
-// 		           addrs:nil,
-// 		           dscClient:nil,
-// 		           dscDur:nil,
-// 		           eg:nil,
+// 		           nodeName:"",
 // 		           name:"",
 // 		           namespace:"",
-// 		           nodeName:"",
-// 		           readClient:nil,
+// 		           dns:"",
+// 		           opts:nil,
+// 		           dscDur:nil,
+// 		           port:0,
 // 		           readReplicaReplicas:0,
 // 		           roundRobin:nil,
+// 		           autoconn:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1725,24 +1724,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				autoconn:            test.fields.autoconn,
+// 				client:              test.fields.client,
+// 				readClient:          test.fields.readClient,
+// 				eg:                  test.fields.eg,
+// 				dscClient:           test.fields.dscClient,
+// 				addrs:               test.fields.addrs,
+// 				onDisconnect:        test.fields.onDisconnect,
 // 				onDiscover:          test.fields.onDiscover,
 // 				onConnect:           test.fields.onConnect,
-// 				onDisconnect:        test.fields.onDisconnect,
-// 				client:              test.fields.client,
-// 				dns:                 test.fields.dns,
-// 				opts:                test.fields.opts,
-// 				port:                test.fields.port,
-// 				addrs:               test.fields.addrs,
-// 				dscClient:           test.fields.dscClient,
-// 				dscDur:              test.fields.dscDur,
-// 				eg:                  test.fields.eg,
+// 				nodeName:            test.fields.nodeName,
 // 				name:                test.fields.name,
 // 				namespace:           test.fields.namespace,
-// 				nodeName:            test.fields.nodeName,
-// 				readClient:          test.fields.readClient,
+// 				dns:                 test.fields.dns,
+// 				opts:                test.fields.opts,
+// 				dscDur:              test.fields.dscDur,
+// 				port:                test.fields.port,
 // 				readReplicaReplicas: test.fields.readReplicaReplicas,
 // 				roundRobin:          test.fields.roundRobin,
+// 				autoconn:            test.fields.autoconn,
 // 			}
 //
 // 			gotNodes, err := c.discoverNodes(test.args.ctx)
@@ -1759,24 +1758,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		nodes *payload.Info_Nodes
 // 	}
 // 	type fields struct {
-// 		autoconn            bool
+// 		client              grpc.Client
+// 		readClient          grpc.Client
+// 		eg                  errgroup.Group
+// 		dscClient           grpc.Client
+// 		addrs               atomic.Pointer[[]string]
+// 		onDisconnect        func(ctx context.Context, c Client, addr string) error
 // 		onDiscover          func(ctx context.Context, c Client, addrs []string) error
 // 		onConnect           func(ctx context.Context, c Client, addr string) error
-// 		onDisconnect        func(ctx context.Context, c Client, addr string) error
-// 		client              grpc.Client
-// 		dns                 string
-// 		opts                []grpc.Option
-// 		port                int
-// 		addrs               atomic.Pointer[[]string]
-// 		dscClient           grpc.Client
-// 		dscDur              time.Duration
-// 		eg                  errgroup.Group
+// 		nodeName            string
 // 		name                string
 // 		namespace           string
-// 		nodeName            string
-// 		readClient          grpc.Client
+// 		dns                 string
+// 		opts                []grpc.Option
+// 		dscDur              time.Duration
+// 		port                int
 // 		readReplicaReplicas uint64
 // 		roundRobin          atomic.Uint64
+// 		autoconn            bool
 // 	}
 // 	type want struct {
 // 		wantAddrs []string
@@ -1810,24 +1809,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           nodes:nil,
 // 		       },
 // 		       fields: fields {
-// 		           autoconn:false,
+// 		           client:nil,
+// 		           readClient:nil,
+// 		           eg:nil,
+// 		           dscClient:nil,
+// 		           addrs:nil,
+// 		           onDisconnect:nil,
 // 		           onDiscover:nil,
 // 		           onConnect:nil,
-// 		           onDisconnect:nil,
-// 		           client:nil,
-// 		           dns:"",
-// 		           opts:nil,
-// 		           port:0,
-// 		           addrs:nil,
-// 		           dscClient:nil,
-// 		           dscDur:nil,
-// 		           eg:nil,
+// 		           nodeName:"",
 // 		           name:"",
 // 		           namespace:"",
-// 		           nodeName:"",
-// 		           readClient:nil,
+// 		           dns:"",
+// 		           opts:nil,
+// 		           dscDur:nil,
+// 		           port:0,
 // 		           readReplicaReplicas:0,
 // 		           roundRobin:nil,
+// 		           autoconn:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1850,24 +1849,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           nodes:nil,
 // 		           },
 // 		           fields: fields {
-// 		           autoconn:false,
+// 		           client:nil,
+// 		           readClient:nil,
+// 		           eg:nil,
+// 		           dscClient:nil,
+// 		           addrs:nil,
+// 		           onDisconnect:nil,
 // 		           onDiscover:nil,
 // 		           onConnect:nil,
-// 		           onDisconnect:nil,
-// 		           client:nil,
-// 		           dns:"",
-// 		           opts:nil,
-// 		           port:0,
-// 		           addrs:nil,
-// 		           dscClient:nil,
-// 		           dscDur:nil,
-// 		           eg:nil,
+// 		           nodeName:"",
 // 		           name:"",
 // 		           namespace:"",
-// 		           nodeName:"",
-// 		           readClient:nil,
+// 		           dns:"",
+// 		           opts:nil,
+// 		           dscDur:nil,
+// 		           port:0,
 // 		           readReplicaReplicas:0,
 // 		           roundRobin:nil,
+// 		           autoconn:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1898,24 +1897,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				autoconn:            test.fields.autoconn,
+// 				client:              test.fields.client,
+// 				readClient:          test.fields.readClient,
+// 				eg:                  test.fields.eg,
+// 				dscClient:           test.fields.dscClient,
+// 				addrs:               test.fields.addrs,
+// 				onDisconnect:        test.fields.onDisconnect,
 // 				onDiscover:          test.fields.onDiscover,
 // 				onConnect:           test.fields.onConnect,
-// 				onDisconnect:        test.fields.onDisconnect,
-// 				client:              test.fields.client,
-// 				dns:                 test.fields.dns,
-// 				opts:                test.fields.opts,
-// 				port:                test.fields.port,
-// 				addrs:               test.fields.addrs,
-// 				dscClient:           test.fields.dscClient,
-// 				dscDur:              test.fields.dscDur,
-// 				eg:                  test.fields.eg,
+// 				nodeName:            test.fields.nodeName,
 // 				name:                test.fields.name,
 // 				namespace:           test.fields.namespace,
-// 				nodeName:            test.fields.nodeName,
-// 				readClient:          test.fields.readClient,
+// 				dns:                 test.fields.dns,
+// 				opts:                test.fields.opts,
+// 				dscDur:              test.fields.dscDur,
+// 				port:                test.fields.port,
 // 				readReplicaReplicas: test.fields.readReplicaReplicas,
 // 				roundRobin:          test.fields.roundRobin,
+// 				autoconn:            test.fields.autoconn,
 // 			}
 //
 // 			gotAddrs, err := c.discoverAddrs(test.args.ctx, test.args.nodes)
@@ -1933,24 +1932,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		connectedAddrs []string
 // 	}
 // 	type fields struct {
-// 		autoconn            bool
+// 		client              grpc.Client
+// 		readClient          grpc.Client
+// 		eg                  errgroup.Group
+// 		dscClient           grpc.Client
+// 		addrs               atomic.Pointer[[]string]
+// 		onDisconnect        func(ctx context.Context, c Client, addr string) error
 // 		onDiscover          func(ctx context.Context, c Client, addrs []string) error
 // 		onConnect           func(ctx context.Context, c Client, addr string) error
-// 		onDisconnect        func(ctx context.Context, c Client, addr string) error
-// 		client              grpc.Client
-// 		dns                 string
-// 		opts                []grpc.Option
-// 		port                int
-// 		addrs               atomic.Pointer[[]string]
-// 		dscClient           grpc.Client
-// 		dscDur              time.Duration
-// 		eg                  errgroup.Group
+// 		nodeName            string
 // 		name                string
 // 		namespace           string
-// 		nodeName            string
-// 		readClient          grpc.Client
+// 		dns                 string
+// 		opts                []grpc.Option
+// 		dscDur              time.Duration
+// 		port                int
 // 		readReplicaReplicas uint64
 // 		roundRobin          atomic.Uint64
+// 		autoconn            bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -1981,24 +1980,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           connectedAddrs:nil,
 // 		       },
 // 		       fields: fields {
-// 		           autoconn:false,
+// 		           client:nil,
+// 		           readClient:nil,
+// 		           eg:nil,
+// 		           dscClient:nil,
+// 		           addrs:nil,
+// 		           onDisconnect:nil,
 // 		           onDiscover:nil,
 // 		           onConnect:nil,
-// 		           onDisconnect:nil,
-// 		           client:nil,
-// 		           dns:"",
-// 		           opts:nil,
-// 		           port:0,
-// 		           addrs:nil,
-// 		           dscClient:nil,
-// 		           dscDur:nil,
-// 		           eg:nil,
+// 		           nodeName:"",
 // 		           name:"",
 // 		           namespace:"",
-// 		           nodeName:"",
-// 		           readClient:nil,
+// 		           dns:"",
+// 		           opts:nil,
+// 		           dscDur:nil,
+// 		           port:0,
 // 		           readReplicaReplicas:0,
 // 		           roundRobin:nil,
+// 		           autoconn:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2022,24 +2021,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           connectedAddrs:nil,
 // 		           },
 // 		           fields: fields {
-// 		           autoconn:false,
+// 		           client:nil,
+// 		           readClient:nil,
+// 		           eg:nil,
+// 		           dscClient:nil,
+// 		           addrs:nil,
+// 		           onDisconnect:nil,
 // 		           onDiscover:nil,
 // 		           onConnect:nil,
-// 		           onDisconnect:nil,
-// 		           client:nil,
-// 		           dns:"",
-// 		           opts:nil,
-// 		           port:0,
-// 		           addrs:nil,
-// 		           dscClient:nil,
-// 		           dscDur:nil,
-// 		           eg:nil,
+// 		           nodeName:"",
 // 		           name:"",
 // 		           namespace:"",
-// 		           nodeName:"",
-// 		           readClient:nil,
+// 		           dns:"",
+// 		           opts:nil,
+// 		           dscDur:nil,
+// 		           port:0,
 // 		           readReplicaReplicas:0,
 // 		           roundRobin:nil,
+// 		           autoconn:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2070,24 +2069,24 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				autoconn:            test.fields.autoconn,
+// 				client:              test.fields.client,
+// 				readClient:          test.fields.readClient,
+// 				eg:                  test.fields.eg,
+// 				dscClient:           test.fields.dscClient,
+// 				addrs:               test.fields.addrs,
+// 				onDisconnect:        test.fields.onDisconnect,
 // 				onDiscover:          test.fields.onDiscover,
 // 				onConnect:           test.fields.onConnect,
-// 				onDisconnect:        test.fields.onDisconnect,
-// 				client:              test.fields.client,
-// 				dns:                 test.fields.dns,
-// 				opts:                test.fields.opts,
-// 				port:                test.fields.port,
-// 				addrs:               test.fields.addrs,
-// 				dscClient:           test.fields.dscClient,
-// 				dscDur:              test.fields.dscDur,
-// 				eg:                  test.fields.eg,
+// 				nodeName:            test.fields.nodeName,
 // 				name:                test.fields.name,
 // 				namespace:           test.fields.namespace,
-// 				nodeName:            test.fields.nodeName,
-// 				readClient:          test.fields.readClient,
+// 				dns:                 test.fields.dns,
+// 				opts:                test.fields.opts,
+// 				dscDur:              test.fields.dscDur,
+// 				port:                test.fields.port,
 // 				readReplicaReplicas: test.fields.readReplicaReplicas,
 // 				roundRobin:          test.fields.roundRobin,
+// 				autoconn:            test.fields.autoconn,
 // 			}
 //
 // 			err := c.disconnectOldAddrs(test.args.ctx, test.args.oldAddrs, test.args.connectedAddrs)

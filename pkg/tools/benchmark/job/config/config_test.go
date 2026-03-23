@@ -18,7 +18,6 @@
 package config
 
 import (
-	"context"
 	"io/fs"
 	"testing"
 
@@ -38,12 +37,12 @@ func TestNewConfig(t *testing.T) {
 		err     error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *Config, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, gotCfg *Config, err error) error {
 		if !errors.Is(err, w.err) {
@@ -99,7 +98,7 @@ func TestNewConfig(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			gotCfg, err := NewConfig(context.Background(), test.args.path)
+			gotCfg, err := NewConfig(tt.Context(), test.args.path)
 			if err := checkFunc(test.want, gotCfg, err); err != nil {
 				tt.Errorf("error = %v, got = %#v", err, gotCfg)
 			}

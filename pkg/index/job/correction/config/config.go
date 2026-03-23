@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+// Package config stores all server application settings for index correction job
 package config
 
 import (
@@ -26,16 +27,17 @@ type GlobalConfig = config.GlobalConfig
 // Data represents a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Data struct {
-	config.GlobalConfig `json:",inline" yaml:",inline"`
-
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
 
 	// Observability represent observability configurations
 	Observability *config.Observability `json:"observability" yaml:"observability"`
 
-	// Indexer represent agent auto indexing service configuration
+	// Corrector represent index correction configuration
 	Corrector *config.Corrector `json:"corrector" yaml:"corrector"`
+
+	// GlobalConfig represent the global configuration
+	config.GlobalConfig `json:",inline" yaml:",inline"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {

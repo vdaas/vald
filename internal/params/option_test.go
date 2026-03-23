@@ -33,12 +33,12 @@ func TestWithConfigFilePathKeys(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {
@@ -106,12 +106,12 @@ func TestWithConfigFilePathDefault(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {
@@ -175,12 +175,12 @@ func TestWithConfigFileDescription(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {
@@ -244,12 +244,12 @@ func TestWithVersionKeys(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {
@@ -317,12 +317,12 @@ func TestWithVersionFlagDefault(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {
@@ -386,12 +386,12 @@ func TestWithVersionDescription(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {

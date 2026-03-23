@@ -38,12 +38,12 @@ func TestRegister(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
 		want       want
+		args       args
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -100,12 +100,12 @@ func Test_server_ResourceStats(t *testing.T) {
 		err   error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, *payload.Info_ResourceStats, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, stats *payload.Info_ResourceStats, err error) error {
 		if !errors.Is(err, w.err) {
@@ -124,7 +124,7 @@ func Test_server_ResourceStats(t *testing.T) {
 			return test{
 				name: "success to get resource stats",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					req: &payload.Empty{},
 				},
 				checkFunc: func(w want, stats *payload.Info_ResourceStats, err error) error {
@@ -178,11 +178,11 @@ func Test_detectCgroupMode(t *testing.T) {
 		mode CgroupMode
 	}
 	type test struct {
-		name       string
-		want       want
 		checkFunc  func(want, CgroupMode) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, mode CgroupMode) error {
 		if mode != w.mode {
@@ -240,12 +240,12 @@ func Test_calculateCpuUsageCores(t *testing.T) {
 		stats *CgroupStats
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *CgroupStats) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		args       args
+		name       string
 	}
 	defaultCheckFunc := func(w want, stats *CgroupStats) error {
 		if stats == nil && w.stats != nil {
@@ -405,11 +405,11 @@ func Test_readCgroupMetrics(t *testing.T) {
 		err     error
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, *CgroupMetrics, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, metrics *CgroupMetrics, err error) error {
 		if !errors.Is(err, w.err) {
@@ -481,12 +481,12 @@ func Test_measureCgroupStats(t *testing.T) {
 		err   error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
+		args       args
 		checkFunc  func(want, *CgroupStats, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, stats *CgroupStats, err error) error {
 		if !errors.Is(err, w.err) {
@@ -505,7 +505,7 @@ func Test_measureCgroupStats(t *testing.T) {
 			return test{
 				name: "successfully measures cgroup stats",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 				},
 				checkFunc: func(w want, stats *CgroupStats, err error) error {
 					if err != nil && !errors.Is(err, context.DeadlineExceeded) && !errors.Is(err, context.Canceled) {
@@ -525,7 +525,7 @@ func Test_measureCgroupStats(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			cancel()
 			return test{
 				name: "context canceled during measurement",
@@ -574,11 +574,11 @@ func Test_readCgroupV2Metrics(t *testing.T) {
 		err     error
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, *CgroupMetrics, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, metrics *CgroupMetrics, err error) error {
 		if !errors.Is(err, w.err) {

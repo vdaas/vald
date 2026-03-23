@@ -479,7 +479,7 @@ func CreateTemp(baseDir string) (f *os.File, err error) {
 		return nil, err
 	}
 	var path string
-	for try := 0; try < 10000; try++ {
+	for range 10000 {
 		path = Join(dir, strconv.FormatInt(time.Now().UnixNano(), 10))
 		f, err = Open(path, os.O_CREATE|os.O_EXCL|os.O_RDWR|os.O_TRUNC, os.ModePerm)
 		if err == nil && f != nil {

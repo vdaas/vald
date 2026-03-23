@@ -73,7 +73,6 @@ func ExampleGroup_justErrors() {
 	}
 	for _, url := range urls {
 		// Launch a goroutine to fetch the URL.
-		url := url // https://golang.org/doc/faq#closures_and_goroutines
 		g.Go(func() error {
 			// Fetch the URL.
 			resp, err := http.Get(url)
@@ -100,7 +99,6 @@ func ExampleGroup_parallel() {
 		searches := []Search{Web, Image, Video}
 		results := make([]Result, len(searches))
 		for i, search := range searches {
-			i, search := i, search // https://golang.org/doc/faq#closures_and_goroutines
 			g.Go(func() error {
 				result, err := search(ctx, query)
 				if err == nil {
@@ -145,11 +143,10 @@ func TestZeroGroup(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		g, _ := errgroup.New(context.Background())
+		g, _ := errgroup.New(t.Context())
 
 		var firstErr error
 		for i, err := range tc.errs {
-			err := err
 			g.Go(func() error { return err })
 
 			if firstErr == nil && err != nil {
@@ -169,8 +166,8 @@ func TestWithContext(t *testing.T) {
 	errDoom := errors.New("group_test: doomed")
 
 	cases := []struct {
-		errs []error
 		want error
+		errs []error
 	}{
 		{want: nil},
 		{errs: []error{nil}, want: nil},
@@ -179,14 +176,13 @@ func TestWithContext(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		g, ctx := errgroup.WithContext(context.Background())
+		g, ctx := errgroup.WithContext(t.Context())
 
 		for _, err := range tc.errs {
-			err := err
 			g.Go(func() error { return err })
 		}
 
-		if err := g.Wait(); err != tc.want {
+		if err := g.Wait(); !errors.Is(err, tc.want) {
 			t.Errorf("after %T.Go(func() error { return err }) for err in %v\n"+
 				"g.Wait() = %v; want %v",
 				g, tc.errs, err, tc.want)
@@ -207,7 +203,7 @@ func TestWithContext(t *testing.T) {
 }
 
 func TestTryGo(t *testing.T) {
-	g, _ := errgroup.New(context.Background())
+	g, _ := errgroup.New(t.Context())
 	n := 42
 	g.SetLimit(42)
 	ch := make(chan struct{})
@@ -215,7 +211,7 @@ func TestTryGo(t *testing.T) {
 		ch <- struct{}{}
 		return nil
 	}
-	for i := 0; i < n; i++ {
+	for i := range n {
 		if !g.TryGo(fn) {
 			t.Fatalf("TryGo should succeed but got fail at %d-th call.", i)
 		}
@@ -224,7 +220,7 @@ func TestTryGo(t *testing.T) {
 		t.Fatalf("TryGo is expected to fail but succeeded.")
 	}
 	go func() {
-		for i := 0; i < n; i++ {
+		for range n {
 			<-ch
 		}
 	}()
@@ -249,7 +245,7 @@ func TestTryGo(t *testing.T) {
 
 	// Block all calls.
 	g.SetLimit(0)
-	for i := 0; i < 1<<10; i++ {
+	for range 1 << 10 {
 		if g.TryGo(fn) {
 			t.Fatalf("TryGo should fail but got succeeded.")
 		}
@@ -260,7 +256,7 @@ func TestTryGo(t *testing.T) {
 func TestGoLimit(t *testing.T) {
 	const limit = 10
 
-	g, _ := errgroup.New(context.Background())
+	g, _ := errgroup.New(t.Context())
 	g.SetLimit(limit)
 	var active int32
 	for i := 0; i <= 1<<10; i++ {
@@ -281,10 +277,10 @@ func TestGoLimit(t *testing.T) {
 
 func BenchmarkGo(b *testing.B) {
 	fn := func() {}
-	g, _ := errgroup.New(context.Background())
-	b.ResetTimer()
+	g, _ := errgroup.New(b.Context())
 	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
+	b.ResetTimer()
+	for b.Loop() {
 		g.Go(func() error { fn(); return nil })
 	}
 	g.Wait()
