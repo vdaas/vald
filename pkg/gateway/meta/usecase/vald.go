@@ -19,8 +19,10 @@ package usecase
 import (
 	"context"
 
+	tikvcfg "github.com/tikv/client-go/v2/config"
+	"github.com/tikv/client-go/v2/rawkv"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
-	"github.com/vdaas/vald/internal/client/v1/client/meta/tikv"
+	"github.com/vdaas/vald/internal/client/v1/client/meta"
 	client "github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -44,7 +46,7 @@ type run struct {
 	server        starter.Server
 	observability observability.Observability
 	client        client.Client
-	metaClient    tikv.Client
+	metaClient    meta.ManagedMetadataClient
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
@@ -65,8 +67,10 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
-	mc, err := tikv.New(
-		tikv.WithPDAddrs(cfg.MetadataStore.Addrs...),
+	mc, err := rawkv.NewClient(
+		context.Background(),
+		cfg.MetadataStore.Addrs,
+		tikvcfg.DefaultConfig().Security,
 	)
 	if err != nil {
 		return nil, err

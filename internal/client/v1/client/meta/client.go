@@ -23,3 +23,8 @@ type MetadataClient interface {
 	Put(context.Context, []byte, []byte) error
 	Delete(context.Context, []byte) error
 }
+
+type ManagedMetadataClient interface {
+	MetadataClient
+	Close() error
+}
