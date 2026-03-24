@@ -19,6 +19,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <iostream>
+#include <sstream>
 #include <faiss/IndexBinaryFlat.h>
 #include <faiss/IndexBinaryIVF.h>
 #include <faiss/IndexFlat.h>

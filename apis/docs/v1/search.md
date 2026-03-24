@@ -49,6 +49,7 @@ Search RPC is the method to search vector(s) similar to the request vector.
     Search.AggregationAlgorithm aggregation_algorithm = 9;
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
+    int32 edge_size = 12;
   }
 
   message Filter.Config {
@@ -92,6 +93,7 @@ Search RPC is the method to search vector(s) similar to the request vector.
     | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
     |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
     |        nprobe         | uint32                      |       | Search nprobe.                               |
+    |       edge_size       | int32                       |       | Search edge size                             |
 
   - Filter.Config
 
@@ -194,6 +196,7 @@ The vector with the same requested ID should be indexed into the `vald-agent` be
     Search.AggregationAlgorithm aggregation_algorithm = 9;
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
+    int32 edge_size = 12;
   }
 
   message Filter.Config {
@@ -237,6 +240,7 @@ The vector with the same requested ID should be indexed into the `vald-agent` be
     | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
     |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
     |        nprobe         | uint32                      |       | Search nprobe.                               |
+    |       edge_size       | int32                       |       | Search edge size                             |
 
   - Filter.Config
 
@@ -340,6 +344,7 @@ Each Search request and response are independent.
     Search.AggregationAlgorithm aggregation_algorithm = 9;
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
+    int32 edge_size = 12;
   }
 
   message Filter.Config {
@@ -383,6 +388,7 @@ Each Search request and response are independent.
     | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
     |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
     |        nprobe         | uint32                      |       | Search nprobe.                               |
+    |       edge_size       | int32                       |       | Search edge size                             |
 
   - Filter.Config
 
@@ -498,6 +504,7 @@ Each SearchByID request and response are independent.
     Search.AggregationAlgorithm aggregation_algorithm = 9;
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
+    int32 edge_size = 12;
   }
 
   message Filter.Config {
@@ -541,6 +548,7 @@ Each SearchByID request and response are independent.
     | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
     |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
     |        nprobe         | uint32                      |       | Search nprobe.                               |
+    |       edge_size       | int32                       |       | Search edge size                             |
 
   - Filter.Config
 
@@ -663,6 +671,7 @@ Please be careful that the size of the request exceeds the limit.
     Search.AggregationAlgorithm aggregation_algorithm = 9;
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
+    int32 edge_size = 12;
   }
 
   message Filter.Config {
@@ -712,6 +721,7 @@ Please be careful that the size of the request exceeds the limit.
     | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
     |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
     |        nprobe         | uint32                      |       | Search nprobe.                               |
+    |       edge_size       | int32                       |       | Search edge size                             |
 
   - Filter.Config
 
@@ -832,6 +842,7 @@ Please be careful that the size of the request exceeds the limit.
     Search.AggregationAlgorithm aggregation_algorithm = 9;
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
+    int32 edge_size = 12;
   }
 
   message Filter.Config {
@@ -881,6 +892,7 @@ Please be careful that the size of the request exceeds the limit.
     | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
     |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
     |        nprobe         | uint32                      |       | Search nprobe.                               |
+    |       edge_size       | int32                       |       | Search edge size                             |
 
   - Filter.Config
 
@@ -992,6 +1004,7 @@ LinearSearch RPC is the method to linear search vector(s) similar to the request
     Search.AggregationAlgorithm aggregation_algorithm = 9;
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
+    int32 edge_size = 12;
   }
 
   message Filter.Config {
@@ -1035,6 +1048,7 @@ LinearSearch RPC is the method to linear search vector(s) similar to the request
     | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
     |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
     |        nprobe         | uint32                      |       | Search nprobe.                               |
+    |       edge_size       | int32                       |       | Search edge size                             |
 
   - Filter.Config
 
@@ -1138,6 +1152,7 @@ You will get a `NOT_FOUND` error if the vector isn't stored.
     Search.AggregationAlgorithm aggregation_algorithm = 9;
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
+    int32 edge_size = 12;
   }
 
   message Filter.Config {
@@ -1181,6 +1196,7 @@ You will get a `NOT_FOUND` error if the vector isn't stored.
     | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
     |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
     |        nprobe         | uint32                      |       | Search nprobe.                               |
+    |       edge_size       | int32                       |       | Search edge size                             |
 
   - Filter.Config
 
@@ -1284,6 +1300,7 @@ Each LinearSearch request and response are independent.
     Search.AggregationAlgorithm aggregation_algorithm = 9;
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
+    int32 edge_size = 12;
   }
 
   message Filter.Config {
@@ -1327,6 +1344,7 @@ Each LinearSearch request and response are independent.
     | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
     |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
     |        nprobe         | uint32                      |       | Search nprobe.                               |
+    |       edge_size       | int32                       |       | Search edge size                             |
 
   - Filter.Config
 
@@ -1442,6 +1460,7 @@ Each LinearSearchByID request and response are independent.
     Search.AggregationAlgorithm aggregation_algorithm = 9;
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
+    int32 edge_size = 12;
   }
 
   message Filter.Config {
@@ -1485,6 +1504,7 @@ Each LinearSearchByID request and response are independent.
     | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
     |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
     |        nprobe         | uint32                      |       | Search nprobe.                               |
+    |       edge_size       | int32                       |       | Search edge size                             |
 
   - Filter.Config
 
@@ -1607,6 +1627,7 @@ Please be careful that the size of the request exceeds the limit.
     Search.AggregationAlgorithm aggregation_algorithm = 9;
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
+    int32 edge_size = 12;
   }
 
   message Filter.Config {
@@ -1656,6 +1677,7 @@ Please be careful that the size of the request exceeds the limit.
     | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
     |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
     |        nprobe         | uint32                      |       | Search nprobe.                               |
+    |       edge_size       | int32                       |       | Search edge size                             |
 
   - Filter.Config
 
@@ -1777,6 +1799,7 @@ Please be careful that the size of the request exceeds the limit.
     Search.AggregationAlgorithm aggregation_algorithm = 9;
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
+    int32 edge_size = 12;
   }
 
   message Filter.Config {
@@ -1826,6 +1849,7 @@ Please be careful that the size of the request exceeds the limit.
     | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
     |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
     |        nprobe         | uint32                      |       | Search nprobe.                               |
+    |       edge_size       | int32                       |       | Search edge size                             |
 
   - Filter.Config
 

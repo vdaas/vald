@@ -552,6 +552,11 @@
           "type": "integer",
           "format": "int64",
           "description": "Search nprobe."
+        },
+        "edgeSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Search edge size"
         }
       },
       "description": "Represent search configuration."

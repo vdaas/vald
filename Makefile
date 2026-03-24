@@ -61,7 +61,9 @@ DEFAULT_BUILDKIT_SYFT_SCANNER_IMAGE = $(GHCRORG)/$(BUILDKIT_SYFT_SCANNER_IMAGE):
 
 VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
 
-NGT_REPO = github.com/yahoojapan/NGT
+NGT_REPO = github.com/NGT-labs/NGT
+
+NGT_EXTRA_CMAKE_FLAGS ?=
 
 TEST_NOT_IMPL_PLACEHOLDER = NOT IMPLEMENTED BELOW
 
@@ -167,20 +169,24 @@ PROTO_VALD_API_DOCS := $(PROTO_VALD_APIS:$(ROOTDIR)/apis/proto/v1/vald/%.proto=$
 PROTO_MIRROR_APIS := $(eval PROTO_MIRROR_APIS := $(filter $(ROOTDIR)/apis/proto/v1/mirror/%.proto,$(PROTOS)))$(PROTO_MIRROR_APIS)
 PROTO_MIRROR_API_DOCS := $(PROTO_MIRROR_APIS:$(ROOTDIR)/apis/proto/v1/mirror/%.proto=$(ROOTDIR)/apis/docs/v1/%.md)
 
-LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -march=native -mtune=native -fno-plt -O3 -ffast-math -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
+LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -ffat-lto-objects -march=native -mtune=native -fno-plt -O3 -ffast-math -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
 
 NGT_LDFLAGS = -fopenmp -lopenblas -llapack -lgfortran
 FAISS_LDFLAGS = $(NGT_LDFLAGS)
 HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl -lm
 CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
 # TEST_LDFLAGS without -static to avoid conflicts with CGO and glibc dynamic linking requirements
-TEST_LDFLAGS_BASE = -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -march=native -mtune=native -fno-plt -O3 -ffast-math -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
+TEST_LDFLAGS_BASE = -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -ffat-lto-objects -march=native -mtune=native -fno-plt -O3 -ffast-math -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
 TEST_LDFLAGS = $(TEST_LDFLAGS_BASE) $(CGO_LDFLAGS)
 
 ifeq ($(GOARCH),amd64)
 CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
 CXXFLAGS ?= $(CFLAGS)
+ifeq ($(GOOS),darwin)
 EXTLDFLAGS ?= -m64
+else
+EXTLDFLAGS ?= -m64 -Wl,--no-keep-memory
+endif
 else ifeq ($(GOARCH),arm64)
 CFLAGS ?=
 ifeq ($(GOOS),darwin)
@@ -188,13 +194,19 @@ HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lz -ldl -lm
 CFLAGS = -I $(shell brew --prefix hdf5)/include
 CGO_CFLAGS ?= $(CFLAGS)
 CGO_LDFLAGS = -L $(shell brew --prefix hdf5)/lib -L $(shell brew --prefix zlib)/lib $(HDF5_LDFLAGS)
+EXTLDFLAGS ?= -march=armv8-a
+else
+EXTLDFLAGS ?= -march=armv8-a -Wl,--no-keep-memory
 endif
 CXXFLAGS ?= $(CFLAGS)
-EXTLDFLAGS ?= -march=armv8-a
 else
 CFLAGS ?=
 CXXFLAGS ?= $(CFLAGS)
+ifeq ($(GOOS),darwin)
 EXTLDFLAGS ?=
+else
+EXTLDFLAGS ?= -Wl,--no-keep-memory
+endif
 endif
 
 BENCH_DATASET_MD5S := $(eval BENCH_DATASET_MD5S := $(shell find $(BENCH_DATASET_MD5_DIR) -type f -regex ".*\.md5"))$(BENCH_DATASET_MD5S)
@@ -609,6 +621,7 @@ format/go: \
 		$(GOBIN)/crlfmt -w -diff=false {} && \
 		$(BINDIR)/golangci-lint fmt --config $(ROOTDIR)/.golangci.json {}'; \
 	fi
+	go fix $(ROOTDIR)/...
 	@echo "Go formatting complete."
 
 .PHONY: format/go/test
@@ -646,9 +659,11 @@ format/go/diff: \
 
 .PHONY: format/rust
 ## format rust codes
-format/rust: rustfmt/install
+format/rust: \
+	rustfmt/install \
+	files
 	@echo "Formatting Rust files..."
-	@cd $(ROOTDIR)/rust && cargo fmt
+	@cd $(ROOTDIR)/rust && $(CARGO_HOME)/bin/cargo fmt
 	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
 		grep -e "\.rs$$" "$(ROOTDIR)/.gitfiles" \
 		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
@@ -824,7 +839,7 @@ version/telepresence:
 ## install NGT
 ngt/install: $(USR_LOCAL)/include/NGT/Capi.h
 $(USR_LOCAL)/include/NGT/Capi.h:
-	git clone --depth 1 --branch v$(NGT_VERSION) https://github.com/yahoojapan/NGT $(TEMP_DIR)/NGT-$(NGT_VERSION)
+	git clone --depth 1 --branch v$(NGT_VERSION) https://github.com/NGT-labs/NGT $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	cd $(TEMP_DIR)/NGT-$(NGT_VERSION) && \
 	cmake -DCMAKE_BUILD_TYPE=Release \
 	-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
@@ -832,9 +847,11 @@ $(USR_LOCAL)/include/NGT/Capi.h:
 	-DBUILD_STATIC_EXECS=ON \
 	-DBUILD_TESTING=OFF \
 	-DNGT_LARGE_DATASET=ON \
-	-DCMAKE_C_FLAGS="$(CFLAGS)" \
-	-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
+	-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
+	-DCMAKE_C_FLAGS="$(CFLAGS) -flto=auto -ffat-lto-objects" \
+	-DCMAKE_CXX_FLAGS="$(CXXFLAGS) -flto=auto -ffat-lto-objects" \
 	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+	$(NGT_EXTRA_CMAKE_FLAGS) \
 	-B $(TEMP_DIR)/NGT-$(NGT_VERSION)/build $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	make -C $(TEMP_DIR)/NGT-$(NGT_VERSION)/build -j$(CORES) ngt
 	make -C $(TEMP_DIR)/NGT-$(NGT_VERSION)/build install

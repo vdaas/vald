@@ -34,7 +34,7 @@ as core algorithm layer.
 
 #### Vald Agent NGT
 
-Vald Agent NGT uses [NGT](https://github.com/yahoojapan/NGT) as an algorithm.
+Vald Agent NGT uses [NGT](https://github.com/NGT-labs/NGT) as an algorithm.
 
 The main functions are the followings:
 

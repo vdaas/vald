@@ -685,7 +685,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return 32 grpc.Option and nil error when all parameters are set",
+			name: "return 33 grpc.Option and nil error when all parameters are set",
 			fields: fields{
 				Addrs: []string{
 					"10.40.3.342",
@@ -699,6 +699,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 					RebalanceDuration:    "5m",
 					Size:                 100,
 					OldConnCloseDuration: "3m",
+					EnableMetrics:        false,
 				},
 				Backoff: &Backoff{
 					InitialDuration:  "5m",
@@ -757,7 +758,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 				},
 			},
 			want: want{
-				want: make([]grpc.Option, 32),
+				want: make([]grpc.Option, 33),
 			},
 		},
 		{
@@ -775,6 +776,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 					RebalanceDuration:    "5m",
 					Size:                 100,
 					OldConnCloseDuration: "3m",
+					EnableMetrics:        false,
 				},
 				Backoff: &Backoff{
 					InitialDuration:  "5m",
@@ -857,6 +859,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 					RebalanceDuration:    "5m",
 					Size:                 100,
 					OldConnCloseDuration: "3m",
+					EnableMetrics:        false,
 				},
 				Backoff: &Backoff{
 					InitialDuration:  "5m",
@@ -943,6 +946,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 					RebalanceDuration:    "5m",
 					Size:                 100,
 					OldConnCloseDuration: "3m",
+					EnableMetrics:        false,
 				},
 				Backoff: &Backoff{
 					InitialDuration:  "5m",

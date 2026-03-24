@@ -167,6 +167,9 @@ pub mod search {
         /// Search nprobe.
         #[prost(uint32, tag = "11")]
         pub nprobe: u32,
+        /// Search edge size
+        #[prost(int32, tag = "12")]
+        pub edge_size: i32,
     }
     impl ::prost::Name for Config {
         const NAME: &'static str = "Config";

@@ -253,9 +253,9 @@ update/kube-linter:
 #	grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/OTEL_OPERATOR_VERSION
 
 .PHONY: update/ngt
-## update yahoojapan/NGT version
+## update NGT-labs/NGT version
 update/ngt:
-	curl -fsSL https://api.github.com/repos/yahoojapan/NGT/releases/latest | \
+	curl -fsSL https://api.github.com/repos/NGT-labs/NGT/releases/latest | \
 	grep -Po '"tag_name": "\K.*?(?=")' | \
 	sed 's/v//g' > $(ROOTDIR)/versions/NGT_VERSION
 
