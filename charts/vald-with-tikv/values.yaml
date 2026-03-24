@@ -2305,13 +2305,13 @@ agent:
     # @schema {"name": "agent.ngt.distance_type", "type": "string", "enum": ["l1", "l2", "ang", "angle", "ham", "hamming", "cos", "cosine", "poincare", "poinc", "lorentz", "loren", "jac", "jaccard", "spjac", "sparsejaccard", "norml2", "normalizedl2", "normang", "normalizedangle", "normcos", "normalizedcosine", "dotproduct", "innerproduct", "dp", "ip"]}
     # agent.ngt.distance_type -- distance type.
     # it should be `l1`, `l2`, `angle`, `hamming`, `cosine`,`poincare`, `lorentz`, `jaccard`, `sparsejaccard`, `normalizedangle` or `normalizedcosine` or `innerproduct`.
-    # for further details about NGT libraries supported distance is https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference
+    # for further details about NGT libraries supported distance is https://github.com/NGT-labs/NGT/wiki/Command-Quick-Reference
     # and vald agent's supported NGT distance type is https://pkg.go.dev/github.com/vdaas/vald/internal/core/algorithm/ngt#pkg-constants
     distance_type: l2
     # @schema {"name": "agent.ngt.object_type", "type": "string", "enum": ["float", "float16", "uint8"]}
     # agent.ngt.object_type -- object type.
     # it should be `float` or `uint8` or `float16`.
-    # for further details: https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference
+    # for further details: https://github.com/NGT-labs/NGT/wiki/Command-Quick-Reference
     object_type: float
     # @schema {"name": "agent.ngt.creation_edge_size", "type": "integer"}
     # agent.ngt.creation_edge_size -- creation edge size

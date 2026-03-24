@@ -494,6 +494,7 @@ var (
 		"graphviz",
 		"jq",
 		"libaec-dev",
+		"pigz",
 		"sed",
 		"zip",
 	}

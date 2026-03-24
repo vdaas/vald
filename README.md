@@ -30,7 +30,7 @@ Vald has automatic vector indexing and index backup, and horizontal scaling whic
 
 Vald is easy to use, feature-rich and highly customizable as you needed.
 
-It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to search neighbors.
+It uses the fastest ANN Algorithm [NGT](https://github.com/NGT-labs/NGT) to search neighbors.
 
 (If you are interested in ANN benchmarks, please refer to [ann-benchmarks.com](https://ann-benchmarks.com/).)
 

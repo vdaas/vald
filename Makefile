@@ -60,7 +60,7 @@ DEFAULT_BUILDKIT_SYFT_SCANNER_IMAGE = $(GHCRORG)/$(BUILDKIT_SYFT_SCANNER_IMAGE):
 
 VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
 
-NGT_REPO = github.com/yahoojapan/NGT
+NGT_REPO = github.com/NGT-labs/NGT
 
 TEST_NOT_IMPL_PLACEHOLDER = NOT IMPLEMENTED BELOW
 
@@ -608,6 +608,7 @@ format/go: \
 		$(GOBIN)/crlfmt -w -diff=false {} && \
 		$(BINDIR)/golangci-lint fmt --config $(ROOTDIR)/.golangci.json {}'; \
 	fi
+	go fix $(ROOTDIR)/...
 	@echo "Go formatting complete."
 
 .PHONY: format/go/test
@@ -645,9 +646,11 @@ format/go/diff: \
 
 .PHONY: format/rust
 ## format rust codes
-format/rust: rustfmt/install
+format/rust: \
+	rustfmt/install \
+	files
 	@echo "Formatting Rust files..."
-	@cd $(ROOTDIR)/rust && cargo fmt
+	@cd $(ROOTDIR)/rust && $(CARGO_HOME)/bin/cargo fmt
 	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
 		grep -e "\.rs$$" "$(ROOTDIR)/.gitfiles" \
 		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
@@ -823,7 +826,7 @@ version/telepresence:
 ## install NGT
 ngt/install: $(USR_LOCAL)/include/NGT/Capi.h
 $(USR_LOCAL)/include/NGT/Capi.h:
-	git clone --depth 1 --branch v$(NGT_VERSION) https://github.com/yahoojapan/NGT $(TEMP_DIR)/NGT-$(NGT_VERSION)
+	git clone --depth 1 --branch v$(NGT_VERSION) https://github.com/NGT-labs/NGT $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	cd $(TEMP_DIR)/NGT-$(NGT_VERSION) && \
 	cmake -DCMAKE_BUILD_TYPE=Release \
 	-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \

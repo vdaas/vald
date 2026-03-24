@@ -92,6 +92,7 @@ RUN --mount=type=bind,target=.,rw \
     graphviz \
     jq \
     libaec-dev \
+    pigz \
     sed \
     zip \
     && ldconfig \
