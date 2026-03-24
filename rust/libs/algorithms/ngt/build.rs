@@ -21,6 +21,7 @@ fn main() -> miette::Result<()> {
         .file("src/input.cpp")
         .flag_if_supported("-std=c++20")
         .flag_if_supported("-fopenmp")
+        .flag_if_supported("-flto=thin")
         .flag_if_supported("-DNGT_BFLOAT_DISABLED")
         .compile("ngt-rs");
 
