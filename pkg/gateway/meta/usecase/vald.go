@@ -19,8 +19,6 @@ package usecase
 import (
 	"context"
 
-	tikvcfg "github.com/tikv/client-go/v2/config"
-	"github.com/tikv/client-go/v2/rawkv"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/client/v1/client/meta"
 	client "github.com/vdaas/vald/internal/client/v1/client/vald"
@@ -67,10 +65,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
-	mc, err := rawkv.NewClient(
+	mc, err := meta.NewRawKVClient(
 		context.Background(),
 		cfg.MetadataStore.Addrs,
-		tikvcfg.DefaultConfig().Security,
 	)
 	if err != nil {
 		return nil, err
