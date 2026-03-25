@@ -31,7 +31,7 @@ async-trait = "0.1"
 chrono = "0.4.44"
 backtrace = "0.3.76"
 clap = { version = "4.6", features = ["derive"] }
-config = "0.15.21"
+config = "0.15.22"
 flexi_logger = "0.31"
 futures = "0.3.32"
 gethostname = "1.1"
