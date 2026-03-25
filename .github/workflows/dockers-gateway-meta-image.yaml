@@ -67,7 +67,6 @@ on:
       - internal/cache/gache/*.go
       - internal/circuitbreaker/*.go
       - internal/client/v1/client/meta/*.go
-      - internal/client/v1/client/meta/tikv/*.go
       - internal/client/v1/client/vald/*.go
       - internal/config/*.go
       - internal/conv/*.go
@@ -184,7 +183,6 @@ on:
       - internal/cache/gache/*.go
       - internal/circuitbreaker/*.go
       - internal/client/v1/client/meta/*.go
-      - internal/client/v1/client/meta/tikv/*.go
       - internal/client/v1/client/vald/*.go
       - internal/config/*.go
       - internal/conv/*.go
