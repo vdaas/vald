@@ -285,7 +285,7 @@ qbg:
     fn test_resolve_agent_metadata_defaults_grpc_host_to_all_interfaces() {
         let mut config = create_test_config();
         config.qbg.pod_name = "agent-pod-0".to_string();
-        config.server_config.servers[0].host = String::new();
+        config.server_config.servers[0].host = String::default();
         config.server_config.servers[0]
             .grpc
             .bidirectional_stream_concurrency = 48;

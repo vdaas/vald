@@ -223,7 +223,7 @@ fn collect_stack_traces() -> Vec<StackTraceEntry> {
                 None => continue,
             };
             let line = match symbol.lineno() {
-                Some(line) => line as u32,
+                Some(line) => line,
                 None => continue,
             };
             let func_name = symbol

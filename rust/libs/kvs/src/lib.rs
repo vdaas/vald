@@ -261,7 +261,7 @@ mod integration_tests {
     }
 
     async fn test_range_callback<M: MapBase<K = String, V = String, C = WincodeCodec>>(path: &str) {
-        let map = MapBuilder::<M>::new(&path).build().await.unwrap();
+        let map = MapBuilder::<M>::new(path).build().await.unwrap();
         let mut expected = HashMap::new();
         for i in 0..10 {
             let k = format!("key{}", i);
@@ -334,13 +334,13 @@ mod integration_tests {
         path: &str,
     ) {
         {
-            let map = MapBuilder::<M>::new(&path).build().await.unwrap();
+            let map = MapBuilder::<M>::new(path).build().await.unwrap();
             map.set("a".to_string(), "1".to_string(), 1).await.unwrap();
             map.set("b".to_string(), "2".to_string(), 2).await.unwrap();
             map.flush().await.unwrap();
         }
 
-        let map = MapBuilder::<M>::new(&path)
+        let map = MapBuilder::<M>::new(path)
             .disable_scan_on_startup()
             .build()
             .await
@@ -373,7 +373,7 @@ mod integration_tests {
         Fut1: Future<Output = ()> + Send,
         Fut2: Future<Output = ()> + Send,
     {
-        let map = MapBuilder::<M>::new(&path).build().await.unwrap();
+        let map = MapBuilder::<M>::new(path).build().await.unwrap();
 
         let num_items = 100;
         let items: Vec<_> = (0..num_items)
@@ -437,7 +437,7 @@ mod integration_tests {
                   key: String,
                   value: String,
                   i: usize| async move {
-            if i % 2 == 0 {
+            if i.is_multiple_of(2) {
                 let deleted_v = map.delete(key.as_str()).await.unwrap();
                 assert_eq!(deleted_v, value);
             } else {

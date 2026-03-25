@@ -19,7 +19,7 @@ pub mod error;
 pub use error::{Error, MultiError};
 
 use proto::payload::v1::{info, search};
-use std::{collections::HashMap, future::Future, i64, result::Result};
+use std::{collections::HashMap, future::Future, result::Result};
 
 /// Trait for Approximate Nearest Neighbor (ANN) index implementations.
 ///

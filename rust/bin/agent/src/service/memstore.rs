@@ -413,10 +413,10 @@ async fn pop_delete_with_rollback<Q: Queue>(
     uuid: &str,
     expected_dts: i64,
 ) -> Result<(), MemstoreError> {
-    if let Ok(pdts) = vq.pop_delete(uuid).await {
-        if pdts != expected_dts {
-            vq.push_delete(uuid, Some(pdts)).await?;
-        }
+    if let Ok(pdts) = vq.pop_delete(uuid).await
+        && pdts != expected_dts
+    {
+        vq.push_delete(uuid, Some(pdts)).await?;
     }
     Ok(())
 }
@@ -427,10 +427,10 @@ async fn pop_insert_with_rollback<Q: Queue>(
     uuid: &str,
     expected_its: i64,
 ) -> Result<(), MemstoreError> {
-    if let Ok((pvec, pits)) = vq.pop_insert(uuid).await {
-        if pits != expected_its {
-            vq.push_insert(uuid, pvec, Some(pits)).await?;
-        }
+    if let Ok((pvec, pits)) = vq.pop_insert(uuid).await
+        && pits != expected_its
+    {
+        vq.push_insert(uuid, pvec, Some(pits)).await?;
     }
     Ok(())
 }
@@ -531,13 +531,13 @@ where
         return Ok(false);
     }
     kv.set(uuid.to_string(), st.oid, ts as u128).await?;
-    if st.vec.is_none() && st.its > st.dts {
-        if let Some(f) = get_vector_fn {
-            if let Ok(ovec) = f(st.oid).await {
-                vq.push_insert(uuid, ovec, Some(ts)).await?;
-                return Ok(true);
-            }
-        }
+    if st.vec.is_none()
+        && st.its > st.dts
+        && let Some(f) = get_vector_fn
+        && let Ok(ovec) = f(st.oid).await
+    {
+        vq.push_insert(uuid, ovec, Some(ts)).await?;
+        return Ok(true);
     }
     pop_insert_with_rollback(vq, uuid, st.its).await?;
     Ok(true)
@@ -1394,7 +1394,7 @@ mod tests {
     async fn test_special_characters_in_uuid() {
         let (kv, vq, _guard) = setup("special_chars").await;
 
-        let special_uuids = vec![
+        let special_uuids = [
             "uuid-with-dashes",
             "uuid_with_underscores",
             "uuid.with.dots",

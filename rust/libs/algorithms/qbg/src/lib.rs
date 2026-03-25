@@ -1144,7 +1144,7 @@ mod tests {
         // Append
         println!("append objects...");
         for i in 0..100 {
-            let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|x| (x + i) as f32).collect();
+            let vec: Vec<f32> = (0..DIMENSION).map(|x| (x + i) as f32).collect();
             let id = index.pin_mut().append(vec.as_slice()).unwrap();
             assert_eq!((i + 1) as i32, id)
         }
@@ -1159,7 +1159,7 @@ mod tests {
         // Insert
         let mut inserted_ids = Vec::new();
         for i in 0..100 {
-            let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|x| (x + i) as f32).collect();
+            let vec: Vec<f32> = (0..DIMENSION).map(|x| (x + i) as f32).collect();
             let id = index.pin_mut().insert(vec.as_slice()).unwrap();
             assert!(id > 0);
             assert!(!inserted_ids.contains(&id), "duplicate inserted id: {id}");
@@ -1176,8 +1176,8 @@ mod tests {
 
         // Search
         println!("search the index for the specified query...");
-        let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
-        let mut search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON);
+        let vec: Vec<f32> = (0..DIMENSION).map(|i| i as f32).collect();
+        let search_results = index.pin_mut().search(vec.as_slice(), K, RADIUS, EPSILON);
         assert!(search_results.is_ok());
         let mut search_results = search_results.unwrap();
         let ids: Vec<u32> = search_results
@@ -1195,7 +1195,7 @@ mod tests {
 
         // Remove
         index.pin_mut().remove(1).unwrap();
-        let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
+        let vec: Vec<f32> = (0..DIMENSION).map(|i| i as f32).collect();
         let mut search_results = index
             .pin_mut()
             .search(vec.as_slice(), K, RADIUS, EPSILON)
@@ -1236,7 +1236,7 @@ mod tests {
 
         // Append some objects
         for i in 0..100 {
-            let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|x| (x + i) as f32).collect();
+            let vec: Vec<f32> = (0..DIMENSION).map(|x| (x + i) as f32).collect();
             let result = index.pin_mut().append(vec.as_slice());
             assert!(result.is_ok());
         }
@@ -1254,7 +1254,7 @@ mod tests {
         // Insert
         let mut inserted_ids = Vec::new();
         for i in 0..100 {
-            let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|x| (x + i) as f32).collect();
+            let vec: Vec<f32> = (0..DIMENSION).map(|x| (x + i) as f32).collect();
             let id = index.pin_mut().insert(vec.as_slice()).unwrap();
             assert!(id > 0);
             assert!(!inserted_ids.contains(&id), "duplicate inserted id: {id}");
@@ -1270,7 +1270,7 @@ mod tests {
         println!("dimension:\n\t{:?}", dim);
 
         // Search
-        let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
+        let vec: Vec<f32> = (0..DIMENSION).map(|i| i as f32).collect();
         let mut search_results = index
             .pin_mut()
             .search(vec.as_slice(), K, RADIUS, EPSILON)
@@ -1290,7 +1290,7 @@ mod tests {
 
         // Remove
         index.pin_mut().remove(1).unwrap();
-        let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
+        let vec: Vec<f32> = (0..DIMENSION).map(|i| i as f32).collect();
         let mut search_results = index
             .pin_mut()
             .search(vec.as_slice(), K, RADIUS, EPSILON)
@@ -1367,7 +1367,7 @@ mod tests {
         // Append
         println!("append objects...");
         for i in 0..100 {
-            let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|x| (x + i) as f32).collect();
+            let vec: Vec<f32> = (0..DIMENSION).map(|x| (x + i) as f32).collect();
             let res = index.append(vec.as_slice());
             assert!(res.is_ok(), "append failed: {:?}", res.err());
             assert_eq!((i + 1) as i32, res.unwrap())
@@ -1383,7 +1383,7 @@ mod tests {
         // Insert
         let mut inserted_ids = Vec::new();
         for i in 0..100 {
-            let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|x| (x + i) as f32).collect();
+            let vec: Vec<f32> = (0..DIMENSION).map(|x| (x + i) as f32).collect();
             let res = index.insert(vec.as_slice());
             assert!(res.is_ok(), "insert failed: {:?}", res.err());
             let id = res.unwrap();
@@ -1403,7 +1403,7 @@ mod tests {
 
         // Search
         println!("search the index for the specified query...");
-        let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
+        let vec: Vec<f32> = (0..DIMENSION).map(|i| i as f32).collect();
         let res = index.search(vec.as_slice(), K, RADIUS, EPSILON);
         assert!(res.is_ok(), "search failed: {:?}", res.err());
         let search_results = res.unwrap();
@@ -1416,7 +1416,7 @@ mod tests {
         // Remove
         let res = index.remove(1);
         assert!(res.is_ok(), "remove failed: {:?}", res.err());
-        let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|i| i as f32).collect();
+        let vec: Vec<f32> = (0..DIMENSION).map(|i| i as f32).collect();
         let res = index.search(vec.as_slice(), K, RADIUS, EPSILON);
         assert!(res.is_ok(), "search failed: {:?}", res.err());
         let search_results = res.unwrap();

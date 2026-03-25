@@ -400,8 +400,9 @@ impl ServerConfig {
 
     pub fn grpc_stream_concurrency(&self) -> usize {
         self.grpc_server_config()
-            .map(|s| s.grpc.bidirectional_stream_concurrency)
-            .unwrap_or_else(default_bidirectional_stream_concurrency)
+            .map_or_else(default_bidirectional_stream_concurrency, |s| {
+                s.grpc.bidirectional_stream_concurrency
+            })
     }
 
     pub fn health_server_configs(&self) -> Vec<HealthServerConfig> {
@@ -1107,12 +1108,12 @@ fn parse_duration_to_millis(value: &str) -> Option<u64> {
 }
 
 fn parse_duration_to_seconds(value: &str) -> Option<u64> {
-    parse_duration_to_millis(value).and_then(|ms| {
+    parse_duration_to_millis(value).map(|ms| {
         if ms == 0 {
-            return Some(0);
+            return 0;
         }
         let secs = ms / 1_000;
-        if secs == 0 { Some(1) } else { Some(secs) }
+        if secs == 0 { 1 } else { secs }
     })
 }
 

@@ -50,7 +50,7 @@ mod tests {
             _radius: f32,
         ) -> Result<search::Response, Error> {
             Err(Error::IncompatibleDimensionSize {
-                got: vector.len() as usize,
+                got: vector.len(),
                 want: self.dim,
             })
         }

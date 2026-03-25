@@ -80,7 +80,7 @@ impl QBGService {
     /// # Arguments
     ///
     /// * `config` - QBG configuration containing all parameters for index construction,
-    ///              persistence, optimization, and operational behavior.
+    ///   persistence, optimization, and operational behavior.
     ///
     /// # Panics
     ///
@@ -1562,7 +1562,7 @@ mod tests {
         // Note: QBG's HierarchicalKmeans requires many objects for clustering
         // Skip create_index in this test since it may fail with few objects
         // len() returns kvs.len() which reflects inserted items
-        assert!(test_svc.service.len() >= 0);
+        assert_eq!(test_svc.service.len(), 0);
     }
 
     // ========== Create/Save Index Tests ==========
@@ -2032,7 +2032,7 @@ mod tests {
             .list_object_func(|uuid, vec, ts| {
                 count.fetch_add(1, Ordering::SeqCst);
                 assert!(uuid.starts_with("uuid-"), "UUID should start with 'uuid-'");
-                assert!(vec.len() > 0, "Vector should not be empty");
+                assert!(!vec.is_empty(), "Vector should not be empty");
                 assert!(ts > 0, "Timestamp should be greater than 0");
                 true // continue iterating
             })
