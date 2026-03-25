@@ -690,21 +690,7 @@ func main() {
 				append(ngtBuildDeps, rustBuildDeps...)...),
 			Preprocess: []string{
 				ngtPreprocess,
-				"cp /usr/local/lib/libngt.so* /usr/lib/x86_64-linux-gnu/",
 				faissPreprocess,
-			},
-			StageFiles: []string{
-				"/usr/lib/x86_64-linux-gnu/libngt.so",
-				"/usr/lib/x86_64-linux-gnu/libngt.so.2",
-				"/usr/lib/x86_64-linux-gnu/libngt.so.2.7.2",
-				"/lib/x86_64-linux-gnu/liblapack.so.3",
-				"/usr/lib/x86_64-linux-gnu/openblas-pthread/liblapack.so.3",
-				"/lib/x86_64-linux-gnu/libblas.so.3",
-				"/usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3",
-				"/lib/x86_64-linux-gnu/libopenblas.so.0",
-				"/usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so",
-				"/lib/x86_64-linux-gnu/libgfortran.so.5",
-				"/usr/lib/x86_64-linux-gnu/libgfortran.so.5.0.0",
 			},
 		},
 		vald + "-" + agentSidecar: {

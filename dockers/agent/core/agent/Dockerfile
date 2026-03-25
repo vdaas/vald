@@ -86,7 +86,6 @@ RUN --mount=type=bind,target=.,rw \
     && apt-get autoremove -y \
     && make RUST_VERSION="${RUST_VERSION}" rust/install \
     && make ngt/install \
-    && cp /usr/local/lib/libngt.so* /usr/lib/x86_64-linux-gnu/ \
     && make faiss/install \
     && make rust/target/release/${APP_NAME} \
     && mv "rust/target/release/${APP_NAME}" "/usr/bin/${APP_NAME}" \
@@ -95,17 +94,6 @@ RUN --mount=type=bind,target=.,rw \
 FROM gcr.io/distroless/cc-debian13:nonroot
 LABEL maintainer="vdaas.org vald team <vald@vdaas.org>"
 COPY --from=builder /usr/bin/agent /usr/bin/agent
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libngt.so /usr/lib/x86_64-linux-gnu/libngt.so
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libngt.so.2 /usr/lib/x86_64-linux-gnu/libngt.so.2
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libngt.so.2.7.2 /usr/lib/x86_64-linux-gnu/libngt.so.2.7.2
-COPY --from=builder /lib/x86_64-linux-gnu/liblapack.so.3 /lib/x86_64-linux-gnu/liblapack.so.3
-COPY --from=builder /usr/lib/x86_64-linux-gnu/openblas-pthread/liblapack.so.3 /usr/lib/x86_64-linux-gnu/openblas-pthread/liblapack.so.3
-COPY --from=builder /lib/x86_64-linux-gnu/libblas.so.3 /lib/x86_64-linux-gnu/libblas.so.3
-COPY --from=builder /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
-COPY --from=builder /lib/x86_64-linux-gnu/libopenblas.so.0 /lib/x86_64-linux-gnu/libopenblas.so.0
-COPY --from=builder /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so
-COPY --from=builder /lib/x86_64-linux-gnu/libgfortran.so.5 /lib/x86_64-linux-gnu/libgfortran.so.5
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libgfortran.so.5.0.0 /usr/lib/x86_64-linux-gnu/libgfortran.so.5.0.0
 # skipcq: DOK-DL3002
 USER nonroot:nonroot
 ENTRYPOINT ["/usr/bin/agent"]
