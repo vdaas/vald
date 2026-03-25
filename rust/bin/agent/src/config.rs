@@ -98,6 +98,7 @@ impl Default for Logging {
 }
 
 impl Logging {
+    /// Normalizes logging-related fields and derives compatibility flags.
     pub fn bind(&mut self) -> &mut Self {
         self.level = self.level.to_lowercase();
         self.format = self.format.to_lowercase();
@@ -164,15 +165,17 @@ impl Default for Observability {
 }
 
 impl Observability {
+    /// Resolves Helm-compatible observability fields into runtime settings.
     pub fn bind(&mut self) -> &mut Self {
         self.otlp.bind();
         if self.endpoint.is_empty() {
-            self.endpoint = self.otlp.collector_endpoint.clone();
+            self.endpoint.clone_from(&self.otlp.collector_endpoint);
         }
         if self.service_name == default_service_name()
             && !self.otlp.attribute.service_name.is_empty()
         {
-            self.service_name = self.otlp.attribute.service_name.clone();
+            self.service_name
+                .clone_from(&self.otlp.attribute.service_name);
         }
 
         self.tracer.enabled = self.tracer.enabled || self.trace.enabled;
@@ -394,10 +397,12 @@ pub struct HealthServer {
 }
 
 impl ServerConfig {
+    /// Returns the server entry configured for gRPC, if present.
     pub fn grpc_server_config(&self) -> Option<&Server> {
         self.servers.iter().find(|s| s.name == "grpc")
     }
 
+    /// Returns the configured gRPC bidirectional stream concurrency or the default value.
     pub fn grpc_stream_concurrency(&self) -> usize {
         self.grpc_server_config()
             .map_or_else(default_bidirectional_stream_concurrency, |s| {
@@ -405,6 +410,7 @@ impl ServerConfig {
             })
     }
 
+    /// Returns health check server configurations from Helm-generated entries or legacy probes.
     pub fn health_server_configs(&self) -> Vec<HealthServerConfig> {
         if !self.health_check_servers.is_empty() {
             return self
