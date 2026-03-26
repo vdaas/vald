@@ -8,8 +8,8 @@ import (
 	context "context"
 	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
 	grpc "google.golang.org/grpc"
-	codes "google.golang.org/grpc/codes"
-	status "google.golang.org/grpc/status"
+	codes "github.com/vdaas/vald/internal/net/grpc/codes"
+	status "github.com/vdaas/vald/internal/net/grpc/status"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
@@ -329,7 +329,7 @@ func RegisterUpdateServer(s grpc.ServiceRegistrar, srv UpdateServer) {
 	s.RegisterService(&Update_ServiceDesc, srv)
 }
 
-func _Update_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Update_Update_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Update_Request)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -341,13 +341,13 @@ func _Update_Update_Handler(srv interface{}, ctx context.Context, dec func(inter
 		Server:     srv,
 		FullMethod: "/vald.v1.Update/Update",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(UpdateServer).Update(ctx, req.(*payload.Update_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Update_StreamUpdate_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _Update_StreamUpdate_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(UpdateServer).StreamUpdate(&updateStreamUpdateServer{stream})
 }
 
@@ -373,7 +373,7 @@ func (x *updateStreamUpdateServer) Recv() (*payload.Update_Request, error) {
 	return m, nil
 }
 
-func _Update_MultiUpdate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Update_MultiUpdate_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Update_MultiRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -385,13 +385,13 @@ func _Update_MultiUpdate_Handler(srv interface{}, ctx context.Context, dec func(
 		Server:     srv,
 		FullMethod: "/vald.v1.Update/MultiUpdate",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(UpdateServer).MultiUpdate(ctx, req.(*payload.Update_MultiRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Update_UpdateTimestamp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Update_UpdateTimestamp_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Update_TimestampRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -403,7 +403,7 @@ func _Update_UpdateTimestamp_Handler(srv interface{}, ctx context.Context, dec f
 		Server:     srv,
 		FullMethod: "/vald.v1.Update/UpdateTimestamp",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(UpdateServer).UpdateTimestamp(ctx, req.(*payload.Update_TimestampRequest))
 	}
 	return interceptor(ctx, in, info, handler)

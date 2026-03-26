@@ -30,7 +30,7 @@ import (
 	anypb "google.golang.org/protobuf/types/known/anypb"
 	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 	reflect "reflect"
-	sync "sync"
+	sync "github.com/vdaas/vald/internal/sync"
 	unsafe "unsafe"
 )
 
@@ -3435,8 +3435,7 @@ type Object_Location struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The name of the location.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// The UUID of the vector.
-	// TODO(v2): Use id to unify names.
+	// TODO(v2): Use id instead to unify names. The UUID of the vector.
 	Uuid string `protobuf:"bytes,2,opt,name=uuid,proto3" json:"uuid,omitempty"`
 	// The IP list.
 	Ips           []string `protobuf:"bytes,3,rep,name=ips,proto3" json:"ips,omitempty"`
@@ -4987,7 +4986,7 @@ type Info_Index_Statistics struct {
 	MinNumberOfOutdegree             uint64                 `protobuf:"varint,7,opt,name=min_number_of_outdegree,json=minNumberOfOutdegree,proto3" json:"min_number_of_outdegree,omitempty"`
 	ModeIndegree                     uint64                 `protobuf:"varint,8,opt,name=mode_indegree,json=modeIndegree,proto3" json:"mode_indegree,omitempty"`
 	ModeOutdegree                    uint64                 `protobuf:"varint,9,opt,name=mode_outdegree,json=modeOutdegree,proto3" json:"mode_outdegree,omitempty"`
-	NodesSkippedFor_10Edges          uint64                 `protobuf:"varint,10,opt,name=nodes_skipped_for_10_edges,json=nodesSkippedFor10Edges,proto3" json:"nodes_skipped_for_10_edges,omitempty"`
+	NodesSkippedFor10Edges          uint64                 `protobuf:"varint,10,opt,name=nodes_skipped_for_10_edges,json=nodesSkippedFor10Edges,proto3" json:"nodes_skipped_for_10_edges,omitempty"`
 	NodesSkippedForIndegreeDistance  uint64                 `protobuf:"varint,11,opt,name=nodes_skipped_for_indegree_distance,json=nodesSkippedForIndegreeDistance,proto3" json:"nodes_skipped_for_indegree_distance,omitempty"`
 	NumberOfEdges                    uint64                 `protobuf:"varint,12,opt,name=number_of_edges,json=numberOfEdges,proto3" json:"number_of_edges,omitempty"`
 	NumberOfIndexedObjects           uint64                 `protobuf:"varint,13,opt,name=number_of_indexed_objects,json=numberOfIndexedObjects,proto3" json:"number_of_indexed_objects,omitempty"`
@@ -5001,8 +5000,8 @@ type Info_Index_Statistics struct {
 	VarianceOfIndegree               float64                `protobuf:"fixed64,21,opt,name=variance_of_indegree,json=varianceOfIndegree,proto3" json:"variance_of_indegree,omitempty"`
 	VarianceOfOutdegree              float64                `protobuf:"fixed64,22,opt,name=variance_of_outdegree,json=varianceOfOutdegree,proto3" json:"variance_of_outdegree,omitempty"`
 	MeanEdgeLength                   float64                `protobuf:"fixed64,23,opt,name=mean_edge_length,json=meanEdgeLength,proto3" json:"mean_edge_length,omitempty"`
-	MeanEdgeLengthFor_10Edges        float64                `protobuf:"fixed64,24,opt,name=mean_edge_length_for_10_edges,json=meanEdgeLengthFor10Edges,proto3" json:"mean_edge_length_for_10_edges,omitempty"`
-	MeanIndegreeDistanceFor_10Edges  float64                `protobuf:"fixed64,25,opt,name=mean_indegree_distance_for_10_edges,json=meanIndegreeDistanceFor10Edges,proto3" json:"mean_indegree_distance_for_10_edges,omitempty"`
+	MeanEdgeLengthFor10Edges        float64                `protobuf:"fixed64,24,opt,name=mean_edge_length_for_10_edges,json=meanEdgeLengthFor10Edges,proto3" json:"mean_edge_length_for_10_edges,omitempty"`
+	MeanIndegreeDistanceFor10Edges  float64                `protobuf:"fixed64,25,opt,name=mean_indegree_distance_for_10_edges,json=meanIndegreeDistanceFor10Edges,proto3" json:"mean_indegree_distance_for_10_edges,omitempty"`
 	MeanNumberOfEdgesPerNode         float64                `protobuf:"fixed64,26,opt,name=mean_number_of_edges_per_node,json=meanNumberOfEdgesPerNode,proto3" json:"mean_number_of_edges_per_node,omitempty"`
 	C1Indegree                       float64                `protobuf:"fixed64,27,opt,name=c1_indegree,json=c1Indegree,proto3" json:"c1_indegree,omitempty"`
 	C5Indegree                       float64                `protobuf:"fixed64,28,opt,name=c5_indegree,json=c5Indegree,proto3" json:"c5_indegree,omitempty"`
@@ -5108,9 +5107,9 @@ func (x *Info_Index_Statistics) GetModeOutdegree() uint64 {
 	return 0
 }
 
-func (x *Info_Index_Statistics) GetNodesSkippedFor_10Edges() uint64 {
+func (x *Info_Index_Statistics) GetNodesSkippedFor10Edges() uint64 {
 	if x != nil {
-		return x.NodesSkippedFor_10Edges
+		return x.NodesSkippedFor10Edges
 	}
 	return 0
 }
@@ -5206,16 +5205,16 @@ func (x *Info_Index_Statistics) GetMeanEdgeLength() float64 {
 	return 0
 }
 
-func (x *Info_Index_Statistics) GetMeanEdgeLengthFor_10Edges() float64 {
+func (x *Info_Index_Statistics) GetMeanEdgeLengthFor10Edges() float64 {
 	if x != nil {
-		return x.MeanEdgeLengthFor_10Edges
+		return x.MeanEdgeLengthFor10Edges
 	}
 	return 0
 }
 
-func (x *Info_Index_Statistics) GetMeanIndegreeDistanceFor_10Edges() float64 {
+func (x *Info_Index_Statistics) GetMeanIndegreeDistanceFor10Edges() float64 {
 	if x != nil {
-		return x.MeanIndegreeDistanceFor_10Edges
+		return x.MeanIndegreeDistanceFor10Edges
 	}
 	return 0
 }

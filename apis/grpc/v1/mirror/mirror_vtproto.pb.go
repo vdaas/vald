@@ -8,8 +8,8 @@ import (
 	context "context"
 	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
 	grpc "google.golang.org/grpc"
-	codes "google.golang.org/grpc/codes"
-	status "google.golang.org/grpc/status"
+	codes "github.com/vdaas/vald/internal/net/grpc/codes"
+	status "github.com/vdaas/vald/internal/net/grpc/status"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
@@ -95,7 +95,7 @@ func RegisterMirrorServer(s grpc.ServiceRegistrar, srv MirrorServer) {
 	s.RegisterService(&Mirror_ServiceDesc, srv)
 }
 
-func _Mirror_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Mirror_Register_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Mirror_Targets)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -107,7 +107,7 @@ func _Mirror_Register_Handler(srv interface{}, ctx context.Context, dec func(int
 		Server:     srv,
 		FullMethod: "/mirror.v1.Mirror/Register",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(MirrorServer).Register(ctx, req.(*payload.Mirror_Targets))
 	}
 	return interceptor(ctx, in, info, handler)

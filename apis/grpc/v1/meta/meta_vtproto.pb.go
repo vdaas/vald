@@ -8,8 +8,8 @@ import (
 	context "context"
 	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
 	grpc "google.golang.org/grpc"
-	codes "google.golang.org/grpc/codes"
-	status "google.golang.org/grpc/status"
+	codes "github.com/vdaas/vald/internal/net/grpc/codes"
+	status "github.com/vdaas/vald/internal/net/grpc/status"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
@@ -105,7 +105,7 @@ func RegisterMetaServer(s grpc.ServiceRegistrar, srv MetaServer) {
 	s.RegisterService(&Meta_ServiceDesc, srv)
 }
 
-func _Meta_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Meta_Get_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Meta_Key)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -117,13 +117,13 @@ func _Meta_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{
 		Server:     srv,
 		FullMethod: "/meta.v1.Meta/Get",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(MetaServer).Get(ctx, req.(*payload.Meta_Key))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Meta_Set_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Meta_Set_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Meta_KeyValue)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -135,13 +135,13 @@ func _Meta_Set_Handler(srv interface{}, ctx context.Context, dec func(interface{
 		Server:     srv,
 		FullMethod: "/meta.v1.Meta/Set",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(MetaServer).Set(ctx, req.(*payload.Meta_KeyValue))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Meta_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Meta_Delete_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Meta_Key)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -153,7 +153,7 @@ func _Meta_Delete_Handler(srv interface{}, ctx context.Context, dec func(interfa
 		Server:     srv,
 		FullMethod: "/meta.v1.Meta/Delete",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(MetaServer).Delete(ctx, req.(*payload.Meta_Key))
 	}
 	return interceptor(ctx, in, info, handler)

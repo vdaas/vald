@@ -15,7 +15,7 @@ import (
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	anypb "google.golang.org/protobuf/types/known/anypb"
 	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
-	io "io"
+	io "github.com/vdaas/vald/internal/io"
 	math "math"
 	unsafe "unsafe"
 )
@@ -270,7 +270,7 @@ func (m *Search_StreamResponse_Status) CloneVT() isSearch_StreamResponse_Payload
 	}
 	r := new(Search_StreamResponse_Status)
 	if rhs := m.Status; rhs != nil {
-		if vtpb, ok := interface{}(rhs).(interface{ CloneVT() *status.Status }); ok {
+		if vtpb, ok := any(rhs).(interface{ CloneVT() *status.Status }); ok {
 			r.Status = vtpb.CloneVT()
 		} else {
 			r.Status = proto.Clone(rhs).(*status.Status)
@@ -957,7 +957,7 @@ func (m *Object_StreamDistance_Status) CloneVT() isObject_StreamDistance_Payload
 	}
 	r := new(Object_StreamDistance_Status)
 	if rhs := m.Status; rhs != nil {
-		if vtpb, ok := interface{}(rhs).(interface{ CloneVT() *status.Status }); ok {
+		if vtpb, ok := any(rhs).(interface{ CloneVT() *status.Status }); ok {
 			r.Status = vtpb.CloneVT()
 		} else {
 			r.Status = proto.Clone(rhs).(*status.Status)
@@ -1126,7 +1126,7 @@ func (m *Object_StreamVector_Status) CloneVT() isObject_StreamVector_Payload {
 	}
 	r := new(Object_StreamVector_Status)
 	if rhs := m.Status; rhs != nil {
-		if vtpb, ok := interface{}(rhs).(interface{ CloneVT() *status.Status }); ok {
+		if vtpb, ok := any(rhs).(interface{ CloneVT() *status.Status }); ok {
 			r.Status = vtpb.CloneVT()
 		} else {
 			r.Status = proto.Clone(rhs).(*status.Status)
@@ -1219,7 +1219,7 @@ func (m *Object_StreamBlob_Status) CloneVT() isObject_StreamBlob_Payload {
 	}
 	r := new(Object_StreamBlob_Status)
 	if rhs := m.Status; rhs != nil {
-		if vtpb, ok := interface{}(rhs).(interface{ CloneVT() *status.Status }); ok {
+		if vtpb, ok := any(rhs).(interface{ CloneVT() *status.Status }); ok {
 			r.Status = vtpb.CloneVT()
 		} else {
 			r.Status = proto.Clone(rhs).(*status.Status)
@@ -1287,7 +1287,7 @@ func (m *Object_StreamLocation_Status) CloneVT() isObject_StreamLocation_Payload
 	}
 	r := new(Object_StreamLocation_Status)
 	if rhs := m.Status; rhs != nil {
-		if vtpb, ok := interface{}(rhs).(interface{ CloneVT() *status.Status }); ok {
+		if vtpb, ok := any(rhs).(interface{ CloneVT() *status.Status }); ok {
 			r.Status = vtpb.CloneVT()
 		} else {
 			r.Status = proto.Clone(rhs).(*status.Status)
@@ -1371,7 +1371,7 @@ func (m *Object_List_Response_Status) CloneVT() isObject_List_Response_Payload {
 	}
 	r := new(Object_List_Response_Status)
 	if rhs := m.Status; rhs != nil {
-		if vtpb, ok := interface{}(rhs).(interface{ CloneVT() *status.Status }); ok {
+		if vtpb, ok := any(rhs).(interface{ CloneVT() *status.Status }); ok {
 			r.Status = vtpb.CloneVT()
 		} else {
 			r.Status = proto.Clone(rhs).(*status.Status)
@@ -1589,7 +1589,7 @@ func (m *Info_Index_Statistics) CloneVT() *Info_Index_Statistics {
 	r.MinNumberOfOutdegree = m.MinNumberOfOutdegree
 	r.ModeIndegree = m.ModeIndegree
 	r.ModeOutdegree = m.ModeOutdegree
-	r.NodesSkippedFor_10Edges = m.NodesSkippedFor_10Edges
+	r.NodesSkippedFor10Edges = m.NodesSkippedFor10Edges
 	r.NodesSkippedForIndegreeDistance = m.NodesSkippedForIndegreeDistance
 	r.NumberOfEdges = m.NumberOfEdges
 	r.NumberOfIndexedObjects = m.NumberOfIndexedObjects
@@ -1603,8 +1603,8 @@ func (m *Info_Index_Statistics) CloneVT() *Info_Index_Statistics {
 	r.VarianceOfIndegree = m.VarianceOfIndegree
 	r.VarianceOfOutdegree = m.VarianceOfOutdegree
 	r.MeanEdgeLength = m.MeanEdgeLength
-	r.MeanEdgeLengthFor_10Edges = m.MeanEdgeLengthFor_10Edges
-	r.MeanIndegreeDistanceFor_10Edges = m.MeanIndegreeDistanceFor_10Edges
+	r.MeanEdgeLengthFor10Edges = m.MeanEdgeLengthFor10Edges
+	r.MeanIndegreeDistanceFor10Edges = m.MeanIndegreeDistanceFor10Edges
 	r.MeanNumberOfEdgesPerNode = m.MeanNumberOfEdgesPerNode
 	r.C1Indegree = m.C1Indegree
 	r.C5Indegree = m.C5Indegree
@@ -2580,7 +2580,7 @@ func (this *Search_StreamResponse_Status) EqualVT(thatIface isSearch_StreamRespo
 		if q == nil {
 			q = &status.Status{}
 		}
-		if equal, ok := interface{}(p).(interface{ EqualVT(*status.Status) bool }); ok {
+		if equal, ok := any(p).(interface{ EqualVT(*status.Status) bool }); ok {
 			if !equal.EqualVT(q) {
 				return false
 			}
@@ -3472,7 +3472,7 @@ func (this *Object_StreamDistance_Status) EqualVT(thatIface isObject_StreamDista
 		if q == nil {
 			q = &status.Status{}
 		}
-		if equal, ok := interface{}(p).(interface{ EqualVT(*status.Status) bool }); ok {
+		if equal, ok := any(p).(interface{ EqualVT(*status.Status) bool }); ok {
 			if !equal.EqualVT(q) {
 				return false
 			}
@@ -3706,7 +3706,7 @@ func (this *Object_StreamVector_Status) EqualVT(thatIface isObject_StreamVector_
 		if q == nil {
 			q = &status.Status{}
 		}
-		if equal, ok := interface{}(p).(interface{ EqualVT(*status.Status) bool }); ok {
+		if equal, ok := any(p).(interface{ EqualVT(*status.Status) bool }); ok {
 			if !equal.EqualVT(q) {
 				return false
 			}
@@ -3838,7 +3838,7 @@ func (this *Object_StreamBlob_Status) EqualVT(thatIface isObject_StreamBlob_Payl
 		if q == nil {
 			q = &status.Status{}
 		}
-		if equal, ok := interface{}(p).(interface{ EqualVT(*status.Status) bool }); ok {
+		if equal, ok := any(p).(interface{ EqualVT(*status.Status) bool }); ok {
 			if !equal.EqualVT(q) {
 				return false
 			}
@@ -3951,7 +3951,7 @@ func (this *Object_StreamLocation_Status) EqualVT(thatIface isObject_StreamLocat
 		if q == nil {
 			q = &status.Status{}
 		}
-		if equal, ok := interface{}(p).(interface{ EqualVT(*status.Status) bool }); ok {
+		if equal, ok := any(p).(interface{ EqualVT(*status.Status) bool }); ok {
 			if !equal.EqualVT(q) {
 				return false
 			}
@@ -4082,7 +4082,7 @@ func (this *Object_List_Response_Status) EqualVT(thatIface isObject_List_Respons
 		if q == nil {
 			q = &status.Status{}
 		}
-		if equal, ok := interface{}(p).(interface{ EqualVT(*status.Status) bool }); ok {
+		if equal, ok := any(p).(interface{ EqualVT(*status.Status) bool }); ok {
 			if !equal.EqualVT(q) {
 				return false
 			}
@@ -4358,7 +4358,7 @@ func (this *Info_Index_Statistics) EqualVT(that *Info_Index_Statistics) bool {
 	if this.ModeOutdegree != that.ModeOutdegree {
 		return false
 	}
-	if this.NodesSkippedFor_10Edges != that.NodesSkippedFor_10Edges {
+	if this.NodesSkippedFor10Edges != that.NodesSkippedFor10Edges {
 		return false
 	}
 	if this.NodesSkippedForIndegreeDistance != that.NodesSkippedForIndegreeDistance {
@@ -4400,10 +4400,10 @@ func (this *Info_Index_Statistics) EqualVT(that *Info_Index_Statistics) bool {
 	if this.MeanEdgeLength != that.MeanEdgeLength {
 		return false
 	}
-	if this.MeanEdgeLengthFor_10Edges != that.MeanEdgeLengthFor_10Edges {
+	if this.MeanEdgeLengthFor10Edges != that.MeanEdgeLengthFor10Edges {
 		return false
 	}
-	if this.MeanIndegreeDistanceFor_10Edges != that.MeanIndegreeDistanceFor_10Edges {
+	if this.MeanIndegreeDistanceFor10Edges != that.MeanIndegreeDistanceFor10Edges {
 		return false
 	}
 	if this.MeanNumberOfEdgesPerNode != that.MeanNumberOfEdgesPerNode {
@@ -5852,7 +5852,7 @@ func (m *Search_StreamResponse_Status) MarshalToVT(dAtA []byte) (int, error) {
 func (m *Search_StreamResponse_Status) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if vtmsg, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := any(m.Status).(interface {
 			MarshalToSizedBufferVT([]byte) (int, error)
 		}); ok {
 			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
@@ -7512,7 +7512,7 @@ func (m *Object_StreamDistance_Status) MarshalToVT(dAtA []byte) (int, error) {
 func (m *Object_StreamDistance_Status) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if vtmsg, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := any(m.Status).(interface {
 			MarshalToSizedBufferVT([]byte) (int, error)
 		}); ok {
 			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
@@ -7881,7 +7881,7 @@ func (m *Object_StreamVector_Status) MarshalToVT(dAtA []byte) (int, error) {
 func (m *Object_StreamVector_Status) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if vtmsg, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := any(m.Status).(interface {
 			MarshalToSizedBufferVT([]byte) (int, error)
 		}); ok {
 			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
@@ -8081,7 +8081,7 @@ func (m *Object_StreamBlob_Status) MarshalToVT(dAtA []byte) (int, error) {
 func (m *Object_StreamBlob_Status) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if vtmsg, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := any(m.Status).(interface {
 			MarshalToSizedBufferVT([]byte) (int, error)
 		}); ok {
 			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
@@ -8229,7 +8229,7 @@ func (m *Object_StreamLocation_Status) MarshalToVT(dAtA []byte) (int, error) {
 func (m *Object_StreamLocation_Status) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if vtmsg, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := any(m.Status).(interface {
 			MarshalToSizedBufferVT([]byte) (int, error)
 		}); ok {
 			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
@@ -8399,7 +8399,7 @@ func (m *Object_List_Response_Status) MarshalToVT(dAtA []byte) (int, error) {
 func (m *Object_List_Response_Status) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if vtmsg, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := any(m.Status).(interface {
 			MarshalToSizedBufferVT([]byte) (int, error)
 		}); ok {
 			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
@@ -9024,17 +9024,17 @@ func (m *Info_Index_Statistics) MarshalToSizedBufferVT(dAtA []byte) (int, error)
 		i--
 		dAtA[i] = 0xd1
 	}
-	if m.MeanIndegreeDistanceFor_10Edges != 0 {
+	if m.MeanIndegreeDistanceFor10Edges != 0 {
 		i -= 8
-		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.MeanIndegreeDistanceFor_10Edges))))
+		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.MeanIndegreeDistanceFor10Edges))))
 		i--
 		dAtA[i] = 0x1
 		i--
 		dAtA[i] = 0xc9
 	}
-	if m.MeanEdgeLengthFor_10Edges != 0 {
+	if m.MeanEdgeLengthFor10Edges != 0 {
 		i -= 8
-		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.MeanEdgeLengthFor_10Edges))))
+		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.MeanEdgeLengthFor10Edges))))
 		i--
 		dAtA[i] = 0x1
 		i--
@@ -9124,8 +9124,8 @@ func (m *Info_Index_Statistics) MarshalToSizedBufferVT(dAtA []byte) (int, error)
 		i--
 		dAtA[i] = 0x58
 	}
-	if m.NodesSkippedFor_10Edges != 0 {
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.NodesSkippedFor_10Edges))
+	if m.NodesSkippedFor10Edges != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.NodesSkippedFor10Edges))
 		i--
 		dAtA[i] = 0x50
 	}
@@ -11340,7 +11340,7 @@ func (m *Search_StreamResponse_Status) MarshalToVTStrict(dAtA []byte) (int, erro
 func (m *Search_StreamResponse_Status) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if vtmsg, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := any(m.Status).(interface {
 			MarshalToSizedBufferVTStrict([]byte) (int, error)
 		}); ok {
 			size, err := vtmsg.MarshalToSizedBufferVTStrict(dAtA[:i])
@@ -13005,7 +13005,7 @@ func (m *Object_StreamDistance_Status) MarshalToVTStrict(dAtA []byte) (int, erro
 func (m *Object_StreamDistance_Status) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if vtmsg, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := any(m.Status).(interface {
 			MarshalToSizedBufferVTStrict([]byte) (int, error)
 		}); ok {
 			size, err := vtmsg.MarshalToSizedBufferVTStrict(dAtA[:i])
@@ -13379,7 +13379,7 @@ func (m *Object_StreamVector_Status) MarshalToVTStrict(dAtA []byte) (int, error)
 func (m *Object_StreamVector_Status) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if vtmsg, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := any(m.Status).(interface {
 			MarshalToSizedBufferVTStrict([]byte) (int, error)
 		}); ok {
 			size, err := vtmsg.MarshalToSizedBufferVTStrict(dAtA[:i])
@@ -13584,7 +13584,7 @@ func (m *Object_StreamBlob_Status) MarshalToVTStrict(dAtA []byte) (int, error) {
 func (m *Object_StreamBlob_Status) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if vtmsg, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := any(m.Status).(interface {
 			MarshalToSizedBufferVTStrict([]byte) (int, error)
 		}); ok {
 			size, err := vtmsg.MarshalToSizedBufferVTStrict(dAtA[:i])
@@ -13737,7 +13737,7 @@ func (m *Object_StreamLocation_Status) MarshalToVTStrict(dAtA []byte) (int, erro
 func (m *Object_StreamLocation_Status) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if vtmsg, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := any(m.Status).(interface {
 			MarshalToSizedBufferVTStrict([]byte) (int, error)
 		}); ok {
 			size, err := vtmsg.MarshalToSizedBufferVTStrict(dAtA[:i])
@@ -13912,7 +13912,7 @@ func (m *Object_List_Response_Status) MarshalToVTStrict(dAtA []byte) (int, error
 func (m *Object_List_Response_Status) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if vtmsg, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := any(m.Status).(interface {
 			MarshalToSizedBufferVTStrict([]byte) (int, error)
 		}); ok {
 			size, err := vtmsg.MarshalToSizedBufferVTStrict(dAtA[:i])
@@ -14537,17 +14537,17 @@ func (m *Info_Index_Statistics) MarshalToSizedBufferVTStrict(dAtA []byte) (int, 
 		i--
 		dAtA[i] = 0xd1
 	}
-	if m.MeanIndegreeDistanceFor_10Edges != 0 {
+	if m.MeanIndegreeDistanceFor10Edges != 0 {
 		i -= 8
-		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.MeanIndegreeDistanceFor_10Edges))))
+		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.MeanIndegreeDistanceFor10Edges))))
 		i--
 		dAtA[i] = 0x1
 		i--
 		dAtA[i] = 0xc9
 	}
-	if m.MeanEdgeLengthFor_10Edges != 0 {
+	if m.MeanEdgeLengthFor10Edges != 0 {
 		i -= 8
-		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.MeanEdgeLengthFor_10Edges))))
+		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.MeanEdgeLengthFor10Edges))))
 		i--
 		dAtA[i] = 0x1
 		i--
@@ -14637,8 +14637,8 @@ func (m *Info_Index_Statistics) MarshalToSizedBufferVTStrict(dAtA []byte) (int, 
 		i--
 		dAtA[i] = 0x58
 	}
-	if m.NodesSkippedFor_10Edges != 0 {
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.NodesSkippedFor_10Edges))
+	if m.NodesSkippedFor10Edges != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.NodesSkippedFor10Edges))
 		i--
 		dAtA[i] = 0x50
 	}
@@ -16495,7 +16495,7 @@ func (m *Search_StreamResponse_Status) SizeVT() (n int) {
 	var l int
 	_ = l
 	if m.Status != nil {
-		if size, ok := interface{}(m.Status).(interface {
+		if size, ok := any(m.Status).(interface {
 			SizeVT() int
 		}); ok {
 			l = size.SizeVT()
@@ -17078,7 +17078,7 @@ func (m *Object_StreamDistance_Status) SizeVT() (n int) {
 	var l int
 	_ = l
 	if m.Status != nil {
-		if size, ok := interface{}(m.Status).(interface {
+		if size, ok := any(m.Status).(interface {
 			SizeVT() int
 		}); ok {
 			l = size.SizeVT()
@@ -17222,7 +17222,7 @@ func (m *Object_StreamVector_Status) SizeVT() (n int) {
 	var l int
 	_ = l
 	if m.Status != nil {
-		if size, ok := interface{}(m.Status).(interface {
+		if size, ok := any(m.Status).(interface {
 			SizeVT() int
 		}); ok {
 			l = size.SizeVT()
@@ -17304,7 +17304,7 @@ func (m *Object_StreamBlob_Status) SizeVT() (n int) {
 	var l int
 	_ = l
 	if m.Status != nil {
-		if size, ok := interface{}(m.Status).(interface {
+		if size, ok := any(m.Status).(interface {
 			SizeVT() int
 		}); ok {
 			l = size.SizeVT()
@@ -17371,7 +17371,7 @@ func (m *Object_StreamLocation_Status) SizeVT() (n int) {
 	var l int
 	_ = l
 	if m.Status != nil {
-		if size, ok := interface{}(m.Status).(interface {
+		if size, ok := any(m.Status).(interface {
 			SizeVT() int
 		}); ok {
 			l = size.SizeVT()
@@ -17440,7 +17440,7 @@ func (m *Object_List_Response_Status) SizeVT() (n int) {
 	var l int
 	_ = l
 	if m.Status != nil {
-		if size, ok := interface{}(m.Status).(interface {
+		if size, ok := any(m.Status).(interface {
 			SizeVT() int
 		}); ok {
 			l = size.SizeVT()
@@ -17648,8 +17648,8 @@ func (m *Info_Index_Statistics) SizeVT() (n int) {
 	if m.ModeOutdegree != 0 {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.ModeOutdegree))
 	}
-	if m.NodesSkippedFor_10Edges != 0 {
-		n += 1 + protohelpers.SizeOfVarint(uint64(m.NodesSkippedFor_10Edges))
+	if m.NodesSkippedFor10Edges != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.NodesSkippedFor10Edges))
 	}
 	if m.NodesSkippedForIndegreeDistance != 0 {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.NodesSkippedForIndegreeDistance))
@@ -17690,10 +17690,10 @@ func (m *Info_Index_Statistics) SizeVT() (n int) {
 	if m.MeanEdgeLength != 0 {
 		n += 10
 	}
-	if m.MeanEdgeLengthFor_10Edges != 0 {
+	if m.MeanEdgeLengthFor10Edges != 0 {
 		n += 10
 	}
-	if m.MeanIndegreeDistanceFor_10Edges != 0 {
+	if m.MeanIndegreeDistanceFor10Edges != 0 {
 		n += 10
 	}
 	if m.MeanNumberOfEdgesPerNode != 0 {
@@ -19646,7 +19646,7 @@ func (m *Search_StreamResponse) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if oneof, ok := m.Payload.(*Search_StreamResponse_Status); ok {
-				if unmarshal, ok := interface{}(oneof.Status).(interface {
+				if unmarshal, ok := any(oneof.Status).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -19659,7 +19659,7 @@ func (m *Search_StreamResponse) UnmarshalVT(dAtA []byte) error {
 				}
 			} else {
 				v := &status.Status{}
-				if unmarshal, ok := interface{}(v).(interface {
+				if unmarshal, ok := any(v).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -23043,7 +23043,7 @@ func (m *Object_StreamDistance) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if oneof, ok := m.Payload.(*Object_StreamDistance_Status); ok {
-				if unmarshal, ok := interface{}(oneof.Status).(interface {
+				if unmarshal, ok := any(oneof.Status).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -23056,7 +23056,7 @@ func (m *Object_StreamDistance) UnmarshalVT(dAtA []byte) error {
 				}
 			} else {
 				v := &status.Status{}
-				if unmarshal, ok := interface{}(v).(interface {
+				if unmarshal, ok := any(v).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -23822,7 +23822,7 @@ func (m *Object_StreamVector) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if oneof, ok := m.Payload.(*Object_StreamVector_Status); ok {
-				if unmarshal, ok := interface{}(oneof.Status).(interface {
+				if unmarshal, ok := any(oneof.Status).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -23835,7 +23835,7 @@ func (m *Object_StreamVector) UnmarshalVT(dAtA []byte) error {
 				}
 			} else {
 				v := &status.Status{}
-				if unmarshal, ok := interface{}(v).(interface {
+				if unmarshal, ok := any(v).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -24249,7 +24249,7 @@ func (m *Object_StreamBlob) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if oneof, ok := m.Payload.(*Object_StreamBlob_Status); ok {
-				if unmarshal, ok := interface{}(oneof.Status).(interface {
+				if unmarshal, ok := any(oneof.Status).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -24262,7 +24262,7 @@ func (m *Object_StreamBlob) UnmarshalVT(dAtA []byte) error {
 				}
 			} else {
 				v := &status.Status{}
-				if unmarshal, ok := interface{}(v).(interface {
+				if unmarshal, ok := any(v).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -24545,7 +24545,7 @@ func (m *Object_StreamLocation) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if oneof, ok := m.Payload.(*Object_StreamLocation_Status); ok {
-				if unmarshal, ok := interface{}(oneof.Status).(interface {
+				if unmarshal, ok := any(oneof.Status).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -24558,7 +24558,7 @@ func (m *Object_StreamLocation) UnmarshalVT(dAtA []byte) error {
 				}
 			} else {
 				v := &status.Status{}
-				if unmarshal, ok := interface{}(v).(interface {
+				if unmarshal, ok := any(v).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -24830,7 +24830,7 @@ func (m *Object_List_Response) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if oneof, ok := m.Payload.(*Object_List_Response_Status); ok {
-				if unmarshal, ok := interface{}(oneof.Status).(interface {
+				if unmarshal, ok := any(oneof.Status).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -24843,7 +24843,7 @@ func (m *Object_List_Response) UnmarshalVT(dAtA []byte) error {
 				}
 			} else {
 				v := &status.Status{}
-				if unmarshal, ok := interface{}(v).(interface {
+				if unmarshal, ok := any(v).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -26067,9 +26067,9 @@ func (m *Info_Index_Statistics) UnmarshalVT(dAtA []byte) error {
 			}
 		case 10:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NodesSkippedFor_10Edges", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field NodesSkippedFor10Edges", wireType)
 			}
-			m.NodesSkippedFor_10Edges = 0
+			m.NodesSkippedFor10Edges = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return protohelpers.ErrIntOverflow
@@ -26079,7 +26079,7 @@ func (m *Info_Index_Statistics) UnmarshalVT(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NodesSkippedFor_10Edges |= uint64(b&0x7F) << shift
+				m.NodesSkippedFor10Edges |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -26309,7 +26309,7 @@ func (m *Info_Index_Statistics) UnmarshalVT(dAtA []byte) error {
 			m.MeanEdgeLength = float64(math.Float64frombits(v))
 		case 24:
 			if wireType != 1 {
-				return fmt.Errorf("proto: wrong wireType = %d for field MeanEdgeLengthFor_10Edges", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field MeanEdgeLengthFor10Edges", wireType)
 			}
 			var v uint64
 			if (iNdEx + 8) > l {
@@ -26317,10 +26317,10 @@ func (m *Info_Index_Statistics) UnmarshalVT(dAtA []byte) error {
 			}
 			v = uint64(binary.LittleEndian.Uint64(dAtA[iNdEx:]))
 			iNdEx += 8
-			m.MeanEdgeLengthFor_10Edges = float64(math.Float64frombits(v))
+			m.MeanEdgeLengthFor10Edges = float64(math.Float64frombits(v))
 		case 25:
 			if wireType != 1 {
-				return fmt.Errorf("proto: wrong wireType = %d for field MeanIndegreeDistanceFor_10Edges", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field MeanIndegreeDistanceFor10Edges", wireType)
 			}
 			var v uint64
 			if (iNdEx + 8) > l {
@@ -26328,7 +26328,7 @@ func (m *Info_Index_Statistics) UnmarshalVT(dAtA []byte) error {
 			}
 			v = uint64(binary.LittleEndian.Uint64(dAtA[iNdEx:]))
 			iNdEx += 8
-			m.MeanIndegreeDistanceFor_10Edges = float64(math.Float64frombits(v))
+			m.MeanIndegreeDistanceFor10Edges = float64(math.Float64frombits(v))
 		case 26:
 			if wireType != 1 {
 				return fmt.Errorf("proto: wrong wireType = %d for field MeanNumberOfEdgesPerNode", wireType)
@@ -31866,7 +31866,7 @@ func (m *Search_StreamResponse) UnmarshalVTUnsafe(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if oneof, ok := m.Payload.(*Search_StreamResponse_Status); ok {
-				if unmarshal, ok := interface{}(oneof.Status).(interface {
+				if unmarshal, ok := any(oneof.Status).(interface {
 					UnmarshalVTUnsafe([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
@@ -31879,7 +31879,7 @@ func (m *Search_StreamResponse) UnmarshalVTUnsafe(dAtA []byte) error {
 				}
 			} else {
 				v := &status.Status{}
-				if unmarshal, ok := interface{}(v).(interface {
+				if unmarshal, ok := any(v).(interface {
 					UnmarshalVTUnsafe([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
@@ -35269,7 +35269,7 @@ func (m *Object_StreamDistance) UnmarshalVTUnsafe(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if oneof, ok := m.Payload.(*Object_StreamDistance_Status); ok {
-				if unmarshal, ok := interface{}(oneof.Status).(interface {
+				if unmarshal, ok := any(oneof.Status).(interface {
 					UnmarshalVTUnsafe([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
@@ -35282,7 +35282,7 @@ func (m *Object_StreamDistance) UnmarshalVTUnsafe(dAtA []byte) error {
 				}
 			} else {
 				v := &status.Status{}
-				if unmarshal, ok := interface{}(v).(interface {
+				if unmarshal, ok := any(v).(interface {
 					UnmarshalVTUnsafe([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
@@ -36061,7 +36061,7 @@ func (m *Object_StreamVector) UnmarshalVTUnsafe(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if oneof, ok := m.Payload.(*Object_StreamVector_Status); ok {
-				if unmarshal, ok := interface{}(oneof.Status).(interface {
+				if unmarshal, ok := any(oneof.Status).(interface {
 					UnmarshalVTUnsafe([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
@@ -36074,7 +36074,7 @@ func (m *Object_StreamVector) UnmarshalVTUnsafe(dAtA []byte) error {
 				}
 			} else {
 				v := &status.Status{}
-				if unmarshal, ok := interface{}(v).(interface {
+				if unmarshal, ok := any(v).(interface {
 					UnmarshalVTUnsafe([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
@@ -36486,7 +36486,7 @@ func (m *Object_StreamBlob) UnmarshalVTUnsafe(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if oneof, ok := m.Payload.(*Object_StreamBlob_Status); ok {
-				if unmarshal, ok := interface{}(oneof.Status).(interface {
+				if unmarshal, ok := any(oneof.Status).(interface {
 					UnmarshalVTUnsafe([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
@@ -36499,7 +36499,7 @@ func (m *Object_StreamBlob) UnmarshalVTUnsafe(dAtA []byte) error {
 				}
 			} else {
 				v := &status.Status{}
-				if unmarshal, ok := interface{}(v).(interface {
+				if unmarshal, ok := any(v).(interface {
 					UnmarshalVTUnsafe([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
@@ -36794,7 +36794,7 @@ func (m *Object_StreamLocation) UnmarshalVTUnsafe(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if oneof, ok := m.Payload.(*Object_StreamLocation_Status); ok {
-				if unmarshal, ok := interface{}(oneof.Status).(interface {
+				if unmarshal, ok := any(oneof.Status).(interface {
 					UnmarshalVTUnsafe([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
@@ -36807,7 +36807,7 @@ func (m *Object_StreamLocation) UnmarshalVTUnsafe(dAtA []byte) error {
 				}
 			} else {
 				v := &status.Status{}
-				if unmarshal, ok := interface{}(v).(interface {
+				if unmarshal, ok := any(v).(interface {
 					UnmarshalVTUnsafe([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
@@ -37079,7 +37079,7 @@ func (m *Object_List_Response) UnmarshalVTUnsafe(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if oneof, ok := m.Payload.(*Object_List_Response_Status); ok {
-				if unmarshal, ok := interface{}(oneof.Status).(interface {
+				if unmarshal, ok := any(oneof.Status).(interface {
 					UnmarshalVTUnsafe([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
@@ -37092,7 +37092,7 @@ func (m *Object_List_Response) UnmarshalVTUnsafe(dAtA []byte) error {
 				}
 			} else {
 				v := &status.Status{}
-				if unmarshal, ok := interface{}(v).(interface {
+				if unmarshal, ok := any(v).(interface {
 					UnmarshalVTUnsafe([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
@@ -38340,9 +38340,9 @@ func (m *Info_Index_Statistics) UnmarshalVTUnsafe(dAtA []byte) error {
 			}
 		case 10:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NodesSkippedFor_10Edges", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field NodesSkippedFor10Edges", wireType)
 			}
-			m.NodesSkippedFor_10Edges = 0
+			m.NodesSkippedFor10Edges = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return protohelpers.ErrIntOverflow
@@ -38352,7 +38352,7 @@ func (m *Info_Index_Statistics) UnmarshalVTUnsafe(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NodesSkippedFor_10Edges |= uint64(b&0x7F) << shift
+				m.NodesSkippedFor10Edges |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -38582,7 +38582,7 @@ func (m *Info_Index_Statistics) UnmarshalVTUnsafe(dAtA []byte) error {
 			m.MeanEdgeLength = float64(math.Float64frombits(v))
 		case 24:
 			if wireType != 1 {
-				return fmt.Errorf("proto: wrong wireType = %d for field MeanEdgeLengthFor_10Edges", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field MeanEdgeLengthFor10Edges", wireType)
 			}
 			var v uint64
 			if (iNdEx + 8) > l {
@@ -38590,10 +38590,10 @@ func (m *Info_Index_Statistics) UnmarshalVTUnsafe(dAtA []byte) error {
 			}
 			v = uint64(binary.LittleEndian.Uint64(dAtA[iNdEx:]))
 			iNdEx += 8
-			m.MeanEdgeLengthFor_10Edges = float64(math.Float64frombits(v))
+			m.MeanEdgeLengthFor10Edges = float64(math.Float64frombits(v))
 		case 25:
 			if wireType != 1 {
-				return fmt.Errorf("proto: wrong wireType = %d for field MeanIndegreeDistanceFor_10Edges", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field MeanIndegreeDistanceFor10Edges", wireType)
 			}
 			var v uint64
 			if (iNdEx + 8) > l {
@@ -38601,7 +38601,7 @@ func (m *Info_Index_Statistics) UnmarshalVTUnsafe(dAtA []byte) error {
 			}
 			v = uint64(binary.LittleEndian.Uint64(dAtA[iNdEx:]))
 			iNdEx += 8
-			m.MeanIndegreeDistanceFor_10Edges = float64(math.Float64frombits(v))
+			m.MeanIndegreeDistanceFor10Edges = float64(math.Float64frombits(v))
 		case 26:
 			if wireType != 1 {
 				return fmt.Errorf("proto: wrong wireType = %d for field MeanNumberOfEdgesPerNode", wireType)
