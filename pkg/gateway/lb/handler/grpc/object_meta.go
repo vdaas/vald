@@ -152,7 +152,7 @@ func (s *server) StreamListObjectWithMetadata(
 				if !errors.Is(ctx.Err(), context.Canceled) {
 					err = errors.Join(err, ctx.Err())
 				}
-				if egerr := eg.Wait(); err != nil {
+				if egerr := eg.Wait(); egerr != nil {
 					err = errors.Join(err, egerr)
 				}
 				return err
