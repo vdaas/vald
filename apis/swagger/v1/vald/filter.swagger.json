@@ -507,7 +507,7 @@
         },
         "uuid": {
           "type": "string",
-          "description": "The UUID of the vector.\nTODO(v2): Use id to unify names."
+          "description": "TODO(v2): Use id instead to unify names. The UUID of the vector."
         },
         "ips": {
           "type": "array",

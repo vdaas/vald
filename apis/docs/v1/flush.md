@@ -30,7 +30,6 @@ Flush RPC is the method to remove all vectors.
   - Flush.Request
 
     empty
-
 ### Output
 
 - the scheme of `payload.v1.Info.Index.Count`
@@ -47,12 +46,12 @@ Flush RPC is the method to remove all vectors.
 
   - Info.Index.Count
 
-    |    field    | type   | label | description                  |
-    | :---------: | :----- | :---- | :--------------------------- |
-    |   stored    | uint32 |       | The stored index count.      |
-    | uncommitted | uint32 |       | The uncommitted index count. |
-    |  indexing   | bool   |       | The indexing index count.    |
-    |   saving    | bool   |       | The saving index count.      |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | stored | uint32 |  | The stored index count. |
+    | uncommitted | uint32 |  | The uncommitted index count. |
+    | indexing | bool |  | The indexing index count. |
+    | saving | bool |  | The saving index count. |
 
 ### Status Code
 
@@ -66,3 +65,4 @@ Flush RPC is the method to remove all vectors.
 |  13  | INTERNAL          |
 
 Please refer to [Response Status Code](../status.md) for more details.
+

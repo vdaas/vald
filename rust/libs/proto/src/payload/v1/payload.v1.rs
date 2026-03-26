@@ -879,8 +879,7 @@ fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.StreamBlob
         /// The name of the location.
         #[prost(string, tag="1")]
         pub name: ::prost::alloc::string::String,
-        /// The UUID of the vector.
-        /// TODO(v2): Use id to unify names.
+        /// TODO(v2): Use id instead to unify names. The UUID of the vector.
         #[prost(string, tag="2")]
         pub uuid: ::prost::alloc::string::String,
         /// The IP list.

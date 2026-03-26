@@ -34,17 +34,16 @@ Register RPC is the method to register other Vald Mirror Gateway targets.
 
   - Mirror.Targets
 
-    |  field  | type          | label    | description                      |
-    | :-----: | :------------ | :------- | :------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Mirror.Target | repeated | The multiple target information. |
 
   - Mirror.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Mirror.Targets`
@@ -63,16 +62,16 @@ Register RPC is the method to register other Vald Mirror Gateway targets.
 
   - Mirror.Targets
 
-    |  field  | type          | label    | description                      |
-    | :-----: | :------------ | :------- | :------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Mirror.Target | repeated | The multiple target information. |
 
   - Mirror.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 
 ### Status Code
 
@@ -85,3 +84,4 @@ Register RPC is the method to register other Vald Mirror Gateway targets.
 |  13  | INTERNAL          |
 
 Please refer to [Response Status Code](../status.md) for more details.
+

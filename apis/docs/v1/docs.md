@@ -1163,7 +1163,7 @@ Represent the vector location.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | name | [string](#string) |  | The name of the location. |
-| uuid | [string](#string) |  | The UUID of the vector. TODO(v2): Use id to unify names. |
+| uuid | [string](#string) |  | TODO(v2): Use id instead to unify names. The UUID of the vector. |
 | ips | [string](#string) | repeated | The IP list. |
 
 

@@ -8,8 +8,8 @@ import (
 	context "context"
 	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
 	grpc "google.golang.org/grpc"
-	codes "google.golang.org/grpc/codes"
-	status "google.golang.org/grpc/status"
+	codes "github.com/vdaas/vald/internal/net/grpc/codes"
+	status "github.com/vdaas/vald/internal/net/grpc/status"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
@@ -81,7 +81,7 @@ func RegisterStatsServer(s grpc.ServiceRegistrar, srv StatsServer) {
 	s.RegisterService(&Stats_ServiceDesc, srv)
 }
 
-func _Stats_ResourceStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Stats_ResourceStats_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -93,7 +93,7 @@ func _Stats_ResourceStats_Handler(srv interface{}, ctx context.Context, dec func
 		Server:     srv,
 		FullMethod: "/rpc.v1.Stats/ResourceStats",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(StatsServer).ResourceStats(ctx, req.(*payload.Empty))
 	}
 	return interceptor(ctx, in, info, handler)

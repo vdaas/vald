@@ -8,8 +8,8 @@ import (
 	context "context"
 	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
 	grpc "google.golang.org/grpc"
-	codes "google.golang.org/grpc/codes"
-	status "google.golang.org/grpc/status"
+	codes "github.com/vdaas/vald/internal/net/grpc/codes"
+	status "github.com/vdaas/vald/internal/net/grpc/status"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
@@ -352,7 +352,7 @@ func RegisterObjectServer(s grpc.ServiceRegistrar, srv ObjectServer) {
 	s.RegisterService(&Object_ServiceDesc, srv)
 }
 
-func _Object_Exists_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Object_Exists_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Object_ID)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -364,13 +364,13 @@ func _Object_Exists_Handler(srv interface{}, ctx context.Context, dec func(inter
 		Server:     srv,
 		FullMethod: "/vald.v1.Object/Exists",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(ObjectServer).Exists(ctx, req.(*payload.Object_ID))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Object_GetObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Object_GetObject_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Object_VectorRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -382,13 +382,13 @@ func _Object_GetObject_Handler(srv interface{}, ctx context.Context, dec func(in
 		Server:     srv,
 		FullMethod: "/vald.v1.Object/GetObject",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(ObjectServer).GetObject(ctx, req.(*payload.Object_VectorRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Object_StreamGetObject_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _Object_StreamGetObject_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(ObjectServer).StreamGetObject(&objectStreamGetObjectServer{stream})
 }
 
@@ -414,7 +414,7 @@ func (x *objectStreamGetObjectServer) Recv() (*payload.Object_VectorRequest, err
 	return m, nil
 }
 
-func _Object_StreamListObject_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _Object_StreamListObject_Handler(srv any, stream grpc.ServerStream) error {
 	m := new(payload.Object_List_Request)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
@@ -435,7 +435,7 @@ func (x *objectStreamListObjectServer) Send(m *payload.Object_List_Response) err
 	return x.ServerStream.SendMsg(m)
 }
 
-func _Object_GetTimestamp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Object_GetTimestamp_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Object_TimestampRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -447,7 +447,7 @@ func _Object_GetTimestamp_Handler(srv interface{}, ctx context.Context, dec func
 		Server:     srv,
 		FullMethod: "/vald.v1.Object/GetTimestamp",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(ObjectServer).GetTimestamp(ctx, req.(*payload.Object_TimestampRequest))
 	}
 	return interceptor(ctx, in, info, handler)

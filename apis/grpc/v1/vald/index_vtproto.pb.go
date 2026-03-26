@@ -8,8 +8,8 @@ import (
 	context "context"
 	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
 	grpc "google.golang.org/grpc"
-	codes "google.golang.org/grpc/codes"
-	status "google.golang.org/grpc/status"
+	codes "github.com/vdaas/vald/internal/net/grpc/codes"
+	status "github.com/vdaas/vald/internal/net/grpc/status"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
@@ -153,7 +153,7 @@ func RegisterIndexServer(s grpc.ServiceRegistrar, srv IndexServer) {
 	s.RegisterService(&Index_ServiceDesc, srv)
 }
 
-func _Index_IndexInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Index_IndexInfo_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -165,13 +165,13 @@ func _Index_IndexInfo_Handler(srv interface{}, ctx context.Context, dec func(int
 		Server:     srv,
 		FullMethod: "/vald.v1.Index/IndexInfo",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(IndexServer).IndexInfo(ctx, req.(*payload.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Index_IndexDetail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Index_IndexDetail_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -183,13 +183,13 @@ func _Index_IndexDetail_Handler(srv interface{}, ctx context.Context, dec func(i
 		Server:     srv,
 		FullMethod: "/vald.v1.Index/IndexDetail",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(IndexServer).IndexDetail(ctx, req.(*payload.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Index_IndexStatistics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Index_IndexStatistics_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -201,13 +201,13 @@ func _Index_IndexStatistics_Handler(srv interface{}, ctx context.Context, dec fu
 		Server:     srv,
 		FullMethod: "/vald.v1.Index/IndexStatistics",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(IndexServer).IndexStatistics(ctx, req.(*payload.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Index_IndexStatisticsDetail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Index_IndexStatisticsDetail_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -219,13 +219,13 @@ func _Index_IndexStatisticsDetail_Handler(srv interface{}, ctx context.Context, 
 		Server:     srv,
 		FullMethod: "/vald.v1.Index/IndexStatisticsDetail",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(IndexServer).IndexStatisticsDetail(ctx, req.(*payload.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Index_IndexProperty_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Index_IndexProperty_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -237,7 +237,7 @@ func _Index_IndexProperty_Handler(srv interface{}, ctx context.Context, dec func
 		Server:     srv,
 		FullMethod: "/vald.v1.Index/IndexProperty",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(IndexServer).IndexProperty(ctx, req.(*payload.Empty))
 	}
 	return interceptor(ctx, in, info, handler)

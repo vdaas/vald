@@ -8,8 +8,8 @@ import (
 	context "context"
 	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
 	grpc "google.golang.org/grpc"
-	codes "google.golang.org/grpc/codes"
-	status "google.golang.org/grpc/status"
+	codes "github.com/vdaas/vald/internal/net/grpc/codes"
+	status "github.com/vdaas/vald/internal/net/grpc/status"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
@@ -965,7 +965,7 @@ func RegisterSearchWithMetadataServer(s grpc.ServiceRegistrar, srv SearchWithMet
 	s.RegisterService(&SearchWithMetadata_ServiceDesc, srv)
 }
 
-func _SearchWithMetadata_SearchWithMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _SearchWithMetadata_SearchWithMetadata_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Search_Request)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -977,13 +977,13 @@ func _SearchWithMetadata_SearchWithMetadata_Handler(srv interface{}, ctx context
 		Server:     srv,
 		FullMethod: "/meta.v1.SearchWithMetadata/SearchWithMetadata",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(SearchWithMetadataServer).SearchWithMetadata(ctx, req.(*payload.Search_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _SearchWithMetadata_SearchByIDWithMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _SearchWithMetadata_SearchByIDWithMetadata_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Search_IDRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -995,13 +995,13 @@ func _SearchWithMetadata_SearchByIDWithMetadata_Handler(srv interface{}, ctx con
 		Server:     srv,
 		FullMethod: "/meta.v1.SearchWithMetadata/SearchByIDWithMetadata",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(SearchWithMetadataServer).SearchByIDWithMetadata(ctx, req.(*payload.Search_IDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _SearchWithMetadata_StreamSearchWithMetadata_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _SearchWithMetadata_StreamSearchWithMetadata_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(SearchWithMetadataServer).StreamSearchWithMetadata(&searchWithMetadataStreamSearchWithMetadataServer{stream})
 }
 
@@ -1027,7 +1027,7 @@ func (x *searchWithMetadataStreamSearchWithMetadataServer) Recv() (*payload.Sear
 	return m, nil
 }
 
-func _SearchWithMetadata_StreamSearchByIDWithMetadata_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _SearchWithMetadata_StreamSearchByIDWithMetadata_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(SearchWithMetadataServer).StreamSearchByIDWithMetadata(&searchWithMetadataStreamSearchByIDWithMetadataServer{stream})
 }
 
@@ -1053,7 +1053,7 @@ func (x *searchWithMetadataStreamSearchByIDWithMetadataServer) Recv() (*payload.
 	return m, nil
 }
 
-func _SearchWithMetadata_MultiSearchWithMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _SearchWithMetadata_MultiSearchWithMetadata_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Search_MultiRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -1065,13 +1065,13 @@ func _SearchWithMetadata_MultiSearchWithMetadata_Handler(srv interface{}, ctx co
 		Server:     srv,
 		FullMethod: "/meta.v1.SearchWithMetadata/MultiSearchWithMetadata",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(SearchWithMetadataServer).MultiSearchWithMetadata(ctx, req.(*payload.Search_MultiRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _SearchWithMetadata_MultiSearchByIDWithMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _SearchWithMetadata_MultiSearchByIDWithMetadata_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Search_MultiIDRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -1083,13 +1083,13 @@ func _SearchWithMetadata_MultiSearchByIDWithMetadata_Handler(srv interface{}, ct
 		Server:     srv,
 		FullMethod: "/meta.v1.SearchWithMetadata/MultiSearchByIDWithMetadata",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(SearchWithMetadataServer).MultiSearchByIDWithMetadata(ctx, req.(*payload.Search_MultiIDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _SearchWithMetadata_LinearSearchWithMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _SearchWithMetadata_LinearSearchWithMetadata_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Search_Request)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -1101,13 +1101,13 @@ func _SearchWithMetadata_LinearSearchWithMetadata_Handler(srv interface{}, ctx c
 		Server:     srv,
 		FullMethod: "/meta.v1.SearchWithMetadata/LinearSearchWithMetadata",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(SearchWithMetadataServer).LinearSearchWithMetadata(ctx, req.(*payload.Search_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _SearchWithMetadata_LinearSearchByIDWithMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _SearchWithMetadata_LinearSearchByIDWithMetadata_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Search_IDRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -1119,13 +1119,13 @@ func _SearchWithMetadata_LinearSearchByIDWithMetadata_Handler(srv interface{}, c
 		Server:     srv,
 		FullMethod: "/meta.v1.SearchWithMetadata/LinearSearchByIDWithMetadata",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(SearchWithMetadataServer).LinearSearchByIDWithMetadata(ctx, req.(*payload.Search_IDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _SearchWithMetadata_StreamLinearSearchWithMetadata_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _SearchWithMetadata_StreamLinearSearchWithMetadata_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(SearchWithMetadataServer).StreamLinearSearchWithMetadata(&searchWithMetadataStreamLinearSearchWithMetadataServer{stream})
 }
 
@@ -1151,7 +1151,7 @@ func (x *searchWithMetadataStreamLinearSearchWithMetadataServer) Recv() (*payloa
 	return m, nil
 }
 
-func _SearchWithMetadata_StreamLinearSearchByIDWithMetadata_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _SearchWithMetadata_StreamLinearSearchByIDWithMetadata_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(SearchWithMetadataServer).StreamLinearSearchByIDWithMetadata(&searchWithMetadataStreamLinearSearchByIDWithMetadataServer{stream})
 }
 
@@ -1177,7 +1177,7 @@ func (x *searchWithMetadataStreamLinearSearchByIDWithMetadataServer) Recv() (*pa
 	return m, nil
 }
 
-func _SearchWithMetadata_MultiLinearSearchWithMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _SearchWithMetadata_MultiLinearSearchWithMetadata_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Search_MultiRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -1189,13 +1189,13 @@ func _SearchWithMetadata_MultiLinearSearchWithMetadata_Handler(srv interface{}, 
 		Server:     srv,
 		FullMethod: "/meta.v1.SearchWithMetadata/MultiLinearSearchWithMetadata",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(SearchWithMetadataServer).MultiLinearSearchWithMetadata(ctx, req.(*payload.Search_MultiRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _SearchWithMetadata_MultiLinearSearchByIDWithMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _SearchWithMetadata_MultiLinearSearchByIDWithMetadata_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Search_MultiIDRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -1207,7 +1207,7 @@ func _SearchWithMetadata_MultiLinearSearchByIDWithMetadata_Handler(srv interface
 		Server:     srv,
 		FullMethod: "/meta.v1.SearchWithMetadata/MultiLinearSearchByIDWithMetadata",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(SearchWithMetadataServer).MultiLinearSearchByIDWithMetadata(ctx, req.(*payload.Search_MultiIDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
@@ -1542,7 +1542,7 @@ func RegisterInsertWithMetadataServer(s grpc.ServiceRegistrar, srv InsertWithMet
 	s.RegisterService(&InsertWithMetadata_ServiceDesc, srv)
 }
 
-func _InsertWithMetadata_InsertWithMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _InsertWithMetadata_InsertWithMetadata_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Insert_Request)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -1554,13 +1554,13 @@ func _InsertWithMetadata_InsertWithMetadata_Handler(srv interface{}, ctx context
 		Server:     srv,
 		FullMethod: "/meta.v1.InsertWithMetadata/InsertWithMetadata",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(InsertWithMetadataServer).InsertWithMetadata(ctx, req.(*payload.Insert_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _InsertWithMetadata_StreamInsertWithMetadata_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _InsertWithMetadata_StreamInsertWithMetadata_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(InsertWithMetadataServer).StreamInsertWithMetadata(&insertWithMetadataStreamInsertWithMetadataServer{stream})
 }
 
@@ -1586,7 +1586,7 @@ func (x *insertWithMetadataStreamInsertWithMetadataServer) Recv() (*payload.Inse
 	return m, nil
 }
 
-func _InsertWithMetadata_MultiInsertWithMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _InsertWithMetadata_MultiInsertWithMetadata_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Insert_MultiRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -1598,7 +1598,7 @@ func _InsertWithMetadata_MultiInsertWithMetadata_Handler(srv interface{}, ctx co
 		Server:     srv,
 		FullMethod: "/meta.v1.InsertWithMetadata/MultiInsertWithMetadata",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(InsertWithMetadataServer).MultiInsertWithMetadata(ctx, req.(*payload.Insert_MultiRequest))
 	}
 	return interceptor(ctx, in, info, handler)
@@ -1868,7 +1868,7 @@ func RegisterObjectWithMetadataServer(s grpc.ServiceRegistrar, srv ObjectWithMet
 	s.RegisterService(&ObjectWithMetadata_ServiceDesc, srv)
 }
 
-func _ObjectWithMetadata_GetObjectWithMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ObjectWithMetadata_GetObjectWithMetadata_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Object_VectorRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -1880,13 +1880,13 @@ func _ObjectWithMetadata_GetObjectWithMetadata_Handler(srv interface{}, ctx cont
 		Server:     srv,
 		FullMethod: "/meta.v1.ObjectWithMetadata/GetObjectWithMetadata",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(ObjectWithMetadataServer).GetObjectWithMetadata(ctx, req.(*payload.Object_VectorRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ObjectWithMetadata_StreamGetObjectWithMetadata_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _ObjectWithMetadata_StreamGetObjectWithMetadata_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(ObjectWithMetadataServer).StreamGetObjectWithMetadata(&objectWithMetadataStreamGetObjectWithMetadataServer{stream})
 }
 
@@ -1912,7 +1912,7 @@ func (x *objectWithMetadataStreamGetObjectWithMetadataServer) Recv() (*payload.O
 	return m, nil
 }
 
-func _ObjectWithMetadata_StreamListObjectWithMetadata_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _ObjectWithMetadata_StreamListObjectWithMetadata_Handler(srv any, stream grpc.ServerStream) error {
 	m := new(payload.Object_List_Request)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
@@ -2297,7 +2297,7 @@ func RegisterRemoveWithMetadataServer(s grpc.ServiceRegistrar, srv RemoveWithMet
 	s.RegisterService(&RemoveWithMetadata_ServiceDesc, srv)
 }
 
-func _RemoveWithMetadata_RemoveWithMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _RemoveWithMetadata_RemoveWithMetadata_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Remove_Request)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -2309,13 +2309,13 @@ func _RemoveWithMetadata_RemoveWithMetadata_Handler(srv interface{}, ctx context
 		Server:     srv,
 		FullMethod: "/meta.v1.RemoveWithMetadata/RemoveWithMetadata",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(RemoveWithMetadataServer).RemoveWithMetadata(ctx, req.(*payload.Remove_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _RemoveWithMetadata_RemoveByTimestampWithMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _RemoveWithMetadata_RemoveByTimestampWithMetadata_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Remove_TimestampRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -2327,13 +2327,13 @@ func _RemoveWithMetadata_RemoveByTimestampWithMetadata_Handler(srv interface{}, 
 		Server:     srv,
 		FullMethod: "/meta.v1.RemoveWithMetadata/RemoveByTimestampWithMetadata",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(RemoveWithMetadataServer).RemoveByTimestampWithMetadata(ctx, req.(*payload.Remove_TimestampRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _RemoveWithMetadata_StreamRemoveWithMetadata_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _RemoveWithMetadata_StreamRemoveWithMetadata_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(RemoveWithMetadataServer).StreamRemoveWithMetadata(&removeWithMetadataStreamRemoveWithMetadataServer{stream})
 }
 
@@ -2359,7 +2359,7 @@ func (x *removeWithMetadataStreamRemoveWithMetadataServer) Recv() (*payload.Remo
 	return m, nil
 }
 
-func _RemoveWithMetadata_MultiRemoveWithMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _RemoveWithMetadata_MultiRemoveWithMetadata_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Remove_MultiRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -2371,7 +2371,7 @@ func _RemoveWithMetadata_MultiRemoveWithMetadata_Handler(srv interface{}, ctx co
 		Server:     srv,
 		FullMethod: "/meta.v1.RemoveWithMetadata/MultiRemoveWithMetadata",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(RemoveWithMetadataServer).MultiRemoveWithMetadata(ctx, req.(*payload.Remove_MultiRequest))
 	}
 	return interceptor(ctx, in, info, handler)
@@ -2712,7 +2712,7 @@ func RegisterUpdateWithMetadataServer(s grpc.ServiceRegistrar, srv UpdateWithMet
 	s.RegisterService(&UpdateWithMetadata_ServiceDesc, srv)
 }
 
-func _UpdateWithMetadata_UpdateWithMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _UpdateWithMetadata_UpdateWithMetadata_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Update_Request)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -2724,13 +2724,13 @@ func _UpdateWithMetadata_UpdateWithMetadata_Handler(srv interface{}, ctx context
 		Server:     srv,
 		FullMethod: "/meta.v1.UpdateWithMetadata/UpdateWithMetadata",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(UpdateWithMetadataServer).UpdateWithMetadata(ctx, req.(*payload.Update_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UpdateWithMetadata_StreamUpdateWithMetadata_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _UpdateWithMetadata_StreamUpdateWithMetadata_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(UpdateWithMetadataServer).StreamUpdateWithMetadata(&updateWithMetadataStreamUpdateWithMetadataServer{stream})
 }
 
@@ -2756,7 +2756,7 @@ func (x *updateWithMetadataStreamUpdateWithMetadataServer) Recv() (*payload.Upda
 	return m, nil
 }
 
-func _UpdateWithMetadata_MultiUpdateWithMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _UpdateWithMetadata_MultiUpdateWithMetadata_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Update_MultiRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -2768,13 +2768,13 @@ func _UpdateWithMetadata_MultiUpdateWithMetadata_Handler(srv interface{}, ctx co
 		Server:     srv,
 		FullMethod: "/meta.v1.UpdateWithMetadata/MultiUpdateWithMetadata",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(UpdateWithMetadataServer).MultiUpdateWithMetadata(ctx, req.(*payload.Update_MultiRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UpdateWithMetadata_UpdateTimestampWithMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _UpdateWithMetadata_UpdateTimestampWithMetadata_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Update_TimestampRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -2786,7 +2786,7 @@ func _UpdateWithMetadata_UpdateTimestampWithMetadata_Handler(srv interface{}, ct
 		Server:     srv,
 		FullMethod: "/meta.v1.UpdateWithMetadata/UpdateTimestampWithMetadata",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(UpdateWithMetadataServer).UpdateTimestampWithMetadata(ctx, req.(*payload.Update_TimestampRequest))
 	}
 	return interceptor(ctx, in, info, handler)
@@ -3091,7 +3091,7 @@ func RegisterUpsertWithMetadataServer(s grpc.ServiceRegistrar, srv UpsertWithMet
 	s.RegisterService(&UpsertWithMetadata_ServiceDesc, srv)
 }
 
-func _UpsertWithMetadata_UpsertWithMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _UpsertWithMetadata_UpsertWithMetadata_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Upsert_Request)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -3103,13 +3103,13 @@ func _UpsertWithMetadata_UpsertWithMetadata_Handler(srv interface{}, ctx context
 		Server:     srv,
 		FullMethod: "/meta.v1.UpsertWithMetadata/UpsertWithMetadata",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(UpsertWithMetadataServer).UpsertWithMetadata(ctx, req.(*payload.Upsert_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UpsertWithMetadata_StreamUpsertWithMetadata_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _UpsertWithMetadata_StreamUpsertWithMetadata_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(UpsertWithMetadataServer).StreamUpsertWithMetadata(&upsertWithMetadataStreamUpsertWithMetadataServer{stream})
 }
 
@@ -3135,7 +3135,7 @@ func (x *upsertWithMetadataStreamUpsertWithMetadataServer) Recv() (*payload.Upse
 	return m, nil
 }
 
-func _UpsertWithMetadata_MultiUpsertWithMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _UpsertWithMetadata_MultiUpsertWithMetadata_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Upsert_MultiRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -3147,7 +3147,7 @@ func _UpsertWithMetadata_MultiUpsertWithMetadata_Handler(srv interface{}, ctx co
 		Server:     srv,
 		FullMethod: "/meta.v1.UpsertWithMetadata/MultiUpsertWithMetadata",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(UpsertWithMetadataServer).MultiUpsertWithMetadata(ctx, req.(*payload.Upsert_MultiRequest))
 	}
 	return interceptor(ctx, in, info, handler)

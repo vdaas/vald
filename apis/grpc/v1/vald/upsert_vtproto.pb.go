@@ -8,8 +8,8 @@ import (
 	context "context"
 	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
 	grpc "google.golang.org/grpc"
-	codes "google.golang.org/grpc/codes"
-	status "google.golang.org/grpc/status"
+	codes "github.com/vdaas/vald/internal/net/grpc/codes"
+	status "github.com/vdaas/vald/internal/net/grpc/status"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
@@ -293,7 +293,7 @@ func RegisterUpsertServer(s grpc.ServiceRegistrar, srv UpsertServer) {
 	s.RegisterService(&Upsert_ServiceDesc, srv)
 }
 
-func _Upsert_Upsert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Upsert_Upsert_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Upsert_Request)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -305,13 +305,13 @@ func _Upsert_Upsert_Handler(srv interface{}, ctx context.Context, dec func(inter
 		Server:     srv,
 		FullMethod: "/vald.v1.Upsert/Upsert",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(UpsertServer).Upsert(ctx, req.(*payload.Upsert_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Upsert_StreamUpsert_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _Upsert_StreamUpsert_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(UpsertServer).StreamUpsert(&upsertStreamUpsertServer{stream})
 }
 
@@ -337,7 +337,7 @@ func (x *upsertStreamUpsertServer) Recv() (*payload.Upsert_Request, error) {
 	return m, nil
 }
 
-func _Upsert_MultiUpsert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Upsert_MultiUpsert_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Upsert_MultiRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -349,7 +349,7 @@ func _Upsert_MultiUpsert_Handler(srv interface{}, ctx context.Context, dec func(
 		Server:     srv,
 		FullMethod: "/vald.v1.Upsert/MultiUpsert",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(UpsertServer).MultiUpsert(ctx, req.(*payload.Upsert_MultiRequest))
 	}
 	return interceptor(ctx, in, info, handler)

@@ -8,8 +8,8 @@ import (
 	context "context"
 	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
 	grpc "google.golang.org/grpc"
-	codes "google.golang.org/grpc/codes"
-	status "google.golang.org/grpc/status"
+	codes "github.com/vdaas/vald/internal/net/grpc/codes"
+	status "github.com/vdaas/vald/internal/net/grpc/status"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
@@ -97,7 +97,7 @@ func RegisterFlushServer(s grpc.ServiceRegistrar, srv FlushServer) {
 	s.RegisterService(&Flush_ServiceDesc, srv)
 }
 
-func _Flush_Flush_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Flush_Flush_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Flush_Request)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -109,7 +109,7 @@ func _Flush_Flush_Handler(srv interface{}, ctx context.Context, dec func(interfa
 		Server:     srv,
 		FullMethod: "/vald.v1.Flush/Flush",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(FlushServer).Flush(ctx, req.(*payload.Flush_Request))
 	}
 	return interceptor(ctx, in, info, handler)
