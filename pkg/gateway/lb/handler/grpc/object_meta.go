@@ -182,7 +182,7 @@ func (s *server) StreamListObjectWithMetadata(
 
 					vec.Metadata, err = s.metadataClient.Get(ctx, []byte(vec.Id))
 					if err != nil {
-						return errors.ErrServerStreamClientRecv(err)
+						return err
 					}
 
 					smu.Lock()
