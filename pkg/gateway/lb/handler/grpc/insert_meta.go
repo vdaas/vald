@@ -216,13 +216,12 @@ func (s *server) MultiInsertWithMetadata(
 	}
 
 	if errs != nil {
-		st, _ := status.FromError(err)
+		st, _ := status.FromError(errs)
 		if st != nil && span != nil {
-			span.RecordError(err)
+			span.RecordError(errs)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
+			span.SetStatus(trace.StatusError, errs.Error())
 		}
-		errs = err
 	}
 
 	return locs, errs
