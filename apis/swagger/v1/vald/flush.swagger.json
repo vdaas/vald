@@ -9,8 +9,12 @@
       "name": "Flush"
     }
   ],
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/flush": {
       "delete": {
@@ -30,7 +34,9 @@
             }
           }
         },
-        "tags": ["Flush"]
+        "tags": [
+          "Flush"
+        ]
       }
     }
   },

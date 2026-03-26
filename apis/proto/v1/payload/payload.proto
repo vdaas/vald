@@ -474,8 +474,7 @@ message Object {
   message Location {
     // The name of the location.
     string name = 1;
-    // The UUID of the vector.
-    // TODO(v2): Use id to unify names.
+    // TODO(v2): Use id instead to unify names. The UUID of the vector.
     string uuid = 2;
     // The IP list.
     repeated string ips = 3;
