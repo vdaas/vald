@@ -28,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 func (s *server) SearchWithMetadata(
@@ -44,22 +45,21 @@ func (s *server) SearchWithMetadata(
 		return res, err
 	}
 
-	var wg sync.WaitGroup
 	var mu, emu sync.Mutex
 	var errs error
+	eg, ectx := errgroup.New(ctx)
+	eg.SetLimit(s.multiConcurrency)
 	for i, dis := range res.GetResults() {
 		idx, id := i, dis.GetId()
-		wg.Add(1)
-		s.eg.Go(safety.RecoverFunc(func() error {
-			defer wg.Done()
+		eg.Go(safety.RecoverFunc(func() error {
 			ti := "errgroup.Go/id-" + strconv.Itoa(idx)
-			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, ti), apiName+"/Metadata/"+ti)
+			ectx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ectx, ti), apiName+"/Metadata/"+ti)
 			defer func() {
 				if sspan != nil {
 					sspan.End()
 				}
 			}()
-			meta, err := s.metadataClient.Get(ctx, []byte(id))
+			meta, err := s.metadataClient.Get(ectx, []byte(id))
 			if err != nil {
 				st, _ := status.FromError(err)
 				if st != nil && sspan != nil {
@@ -82,7 +82,15 @@ func (s *server) SearchWithMetadata(
 			return nil
 		}))
 	}
-	wg.Wait()
+	if err := eg.Wait(); err != nil {
+		emu.Lock()
+		if errs != nil {
+			errs = errors.Join(errs, err)
+		} else {
+			errs = err
+		}
+		emu.Unlock()
+	}
 	if errs != nil {
 		st, _ := status.FromError(errs)
 		if st != nil && span != nil {
@@ -109,22 +117,21 @@ func (s *server) SearchByIDWithMetadata(
 		return res, err
 	}
 
-	var wg sync.WaitGroup
 	var mu, emu sync.Mutex
 	var errs error
+	eg, ectx := errgroup.New(ctx)
+	eg.SetLimit(s.multiConcurrency)
 	for i, dis := range res.GetResults() {
 		idx, id := i, dis.GetId()
-		wg.Add(1)
-		s.eg.Go(safety.RecoverFunc(func() error {
-			defer wg.Done()
+		eg.Go(safety.RecoverFunc(func() error {
 			ti := "errgroup.Go/id-" + strconv.Itoa(idx)
-			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, ti), apiName+"/Metadata/"+ti)
+			ectx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ectx, ti), apiName+"/Metadata/"+ti)
 			defer func() {
 				if sspan != nil {
 					sspan.End()
 				}
 			}()
-			meta, err := s.metadataClient.Get(ctx, []byte(id))
+			meta, err := s.metadataClient.Get(ectx, []byte(id))
 			if err != nil {
 				st, _ := status.FromError(err)
 				if st != nil && sspan != nil {
@@ -147,7 +154,15 @@ func (s *server) SearchByIDWithMetadata(
 			return nil
 		}))
 	}
-	wg.Wait()
+	if err := eg.Wait(); err != nil {
+		emu.Lock()
+		if errs != nil {
+			errs = errors.Join(errs, err)
+		} else {
+			errs = err
+		}
+		emu.Unlock()
+	}
 	if errs != nil {
 		st, _ := status.FromError(errs)
 		if st != nil && span != nil {
@@ -274,23 +289,20 @@ func (s *server) MultiSearchWithMetadata(
 	res = &payload.Search_Responses{
 		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
 	}
-	var wg sync.WaitGroup
 	var mu, emu sync.Mutex
-	rids := make([]string, 0, len(reqs.GetRequests()))
+	eg, ectx := errgroup.New(ctx)
+	eg.SetLimit(s.multiConcurrency)
 	for i, req := range reqs.GetRequests() {
 		idx, query := i, req
-		rids = append(rids, req.GetConfig().GetRequestId())
-		wg.Add(1)
-		s.eg.Go(safety.RecoverFunc(func() error {
-			defer wg.Done()
+		eg.Go(safety.RecoverFunc(func() error {
 			ti := "errgroup.Go/id-" + strconv.Itoa(idx)
-			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, ti), apiName+"/"+vald.MultiSearchRPCName+"/"+ti)
+			ectx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ectx, ti), apiName+"/"+vald.MultiSearchRPCName+"/"+ti)
 			defer func() {
 				if sspan != nil {
 					sspan.End()
 				}
 			}()
-			r, err := s.SearchWithMetadata(ctx, query)
+			r, err := s.SearchWithMetadata(ectx, query)
 			if err != nil {
 				st, _ := status.FromError(err)
 				if st != nil && sspan != nil {
@@ -313,7 +325,15 @@ func (s *server) MultiSearchWithMetadata(
 			return nil
 		}))
 	}
-	wg.Wait()
+	if err := eg.Wait(); err != nil {
+		emu.Lock()
+		if errs != nil {
+			errs = errors.Join(errs, err)
+		} else {
+			errs = err
+		}
+		emu.Unlock()
+	}
 	if errs != nil {
 		st, _ := status.FromError(errs)
 		if st != nil && span != nil {
@@ -342,23 +362,20 @@ func (s *server) MultiSearchByIDWithMetadata(
 	res = &payload.Search_Responses{
 		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
 	}
-	var wg sync.WaitGroup
 	var mu, emu sync.Mutex
-	rids := make([]string, 0, len(reqs.GetRequests()))
+	eg, ectx := errgroup.New(ctx)
+	eg.SetLimit(s.multiConcurrency)
 	for i, req := range reqs.GetRequests() {
 		idx, query := i, req
-		rids = append(rids, req.GetConfig().GetRequestId())
-		wg.Add(1)
-		s.eg.Go(safety.RecoverFunc(func() error {
-			defer wg.Done()
+		eg.Go(safety.RecoverFunc(func() error {
 			ti := "errgroup.Go/id-" + strconv.Itoa(idx)
-			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, ti), apiName+"/"+vald.MultiSearchByIDRPCName+"/"+ti)
+			ectx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ectx, ti), apiName+"/"+vald.MultiSearchByIDRPCName+"/"+ti)
 			defer func() {
 				if sspan != nil {
 					sspan.End()
 				}
 			}()
-			r, err := s.SearchByIDWithMetadata(ctx, query)
+			r, err := s.SearchByIDWithMetadata(ectx, query)
 			if err != nil {
 				st, _ := status.FromError(err)
 				if st != nil && sspan != nil {
@@ -381,7 +398,15 @@ func (s *server) MultiSearchByIDWithMetadata(
 			return nil
 		}))
 	}
-	wg.Wait()
+	if err := eg.Wait(); err != nil {
+		emu.Lock()
+		if errs != nil {
+			errs = errors.Join(errs, err)
+		} else {
+			errs = err
+		}
+		emu.Unlock()
+	}
 	if errs != nil {
 		st, _ := status.FromError(errs)
 		if st != nil && span != nil {

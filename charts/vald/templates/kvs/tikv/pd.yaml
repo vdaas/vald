@@ -131,6 +131,4 @@ spec:
   podManagementPolicy: Parallel
   updateStrategy:
     type: RollingUpdate
-    rollingUpdate:
-      partition: 3
 {{- end }}

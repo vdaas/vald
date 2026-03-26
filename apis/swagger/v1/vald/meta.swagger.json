@@ -24,8 +24,12 @@
       "name": "UpsertWithMetadata"
     }
   ],
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/insert/metadata": {
       "post": {
@@ -57,7 +61,9 @@
             }
           }
         ],
-        "tags": ["InsertWithMetadata"]
+        "tags": [
+          "InsertWithMetadata"
+        ]
       }
     },
     "/insert/multiple/metadata": {
@@ -90,7 +96,9 @@
             }
           }
         ],
-        "tags": ["InsertWithMetadata"]
+        "tags": [
+          "InsertWithMetadata"
+        ]
       }
     },
     "/linearsearch/id/metadata": {
@@ -123,7 +131,9 @@
             }
           }
         ],
-        "tags": ["SearchWithMetadata"]
+        "tags": [
+          "SearchWithMetadata"
+        ]
       }
     },
     "/linearsearch/id/multiple/metadata": {
@@ -156,7 +166,9 @@
             }
           }
         ],
-        "tags": ["SearchWithMetadata"]
+        "tags": [
+          "SearchWithMetadata"
+        ]
       }
     },
     "/linearsearch/metadata": {
@@ -189,7 +201,9 @@
             }
           }
         ],
-        "tags": ["SearchWithMetadata"]
+        "tags": [
+          "SearchWithMetadata"
+        ]
       }
     },
     "/linearsearch/multiple/metadata": {
@@ -222,7 +236,9 @@
             }
           }
         ],
-        "tags": ["SearchWithMetadata"]
+        "tags": [
+          "SearchWithMetadata"
+        ]
       }
     },
     "/object/list/metadata": {
@@ -252,7 +268,9 @@
             }
           }
         },
-        "tags": ["ObjectWithMetadata"]
+        "tags": [
+          "ObjectWithMetadata"
+        ]
       }
     },
     "/object/{id.id}/metadata": {
@@ -282,7 +300,9 @@
             "type": "string"
           }
         ],
-        "tags": ["ObjectWithMetadata"]
+        "tags": [
+          "ObjectWithMetadata"
+        ]
       }
     },
     "/remove/metadata": {
@@ -315,7 +335,9 @@
             }
           }
         ],
-        "tags": ["RemoveWithMetadata"]
+        "tags": [
+          "RemoveWithMetadata"
+        ]
       }
     },
     "/remove/multiple/metadata": {
@@ -348,7 +370,9 @@
             }
           }
         ],
-        "tags": ["RemoveWithMetadata"]
+        "tags": [
+          "RemoveWithMetadata"
+        ]
       }
     },
     "/remove/timestamp/metadata": {
@@ -381,7 +405,9 @@
             }
           }
         ],
-        "tags": ["RemoveWithMetadata"]
+        "tags": [
+          "RemoveWithMetadata"
+        ]
       }
     },
     "/search/id/metadata": {
@@ -414,7 +440,9 @@
             }
           }
         ],
-        "tags": ["SearchWithMetadata"]
+        "tags": [
+          "SearchWithMetadata"
+        ]
       }
     },
     "/search/id/multiple/metadata": {
@@ -447,7 +475,9 @@
             }
           }
         ],
-        "tags": ["SearchWithMetadata"]
+        "tags": [
+          "SearchWithMetadata"
+        ]
       }
     },
     "/search/metadata": {
@@ -480,7 +510,9 @@
             }
           }
         ],
-        "tags": ["SearchWithMetadata"]
+        "tags": [
+          "SearchWithMetadata"
+        ]
       }
     },
     "/search/multiple/metadata": {
@@ -513,7 +545,9 @@
             }
           }
         ],
-        "tags": ["SearchWithMetadata"]
+        "tags": [
+          "SearchWithMetadata"
+        ]
       }
     },
     "/update/metadata": {
@@ -546,7 +580,9 @@
             }
           }
         ],
-        "tags": ["UpdateWithMetadata"]
+        "tags": [
+          "UpdateWithMetadata"
+        ]
       }
     },
     "/update/multiple/metadata": {
@@ -579,7 +615,9 @@
             }
           }
         ],
-        "tags": ["UpdateWithMetadata"]
+        "tags": [
+          "UpdateWithMetadata"
+        ]
       }
     },
     "/update/timestamp/metadata": {
@@ -611,7 +649,9 @@
             }
           }
         ],
-        "tags": ["UpdateWithMetadata"]
+        "tags": [
+          "UpdateWithMetadata"
+        ]
       }
     },
     "/upsert/metadata": {
@@ -644,7 +684,9 @@
             }
           }
         ],
-        "tags": ["UpsertWithMetadata"]
+        "tags": [
+          "UpsertWithMetadata"
+        ]
       }
     },
     "/upsert/multiple/metadata": {
@@ -677,7 +719,9 @@
             }
           }
         ],
-        "tags": ["UpsertWithMetadata"]
+        "tags": [
+          "UpsertWithMetadata"
+        ]
       }
     }
   },
@@ -836,7 +880,14 @@
     },
     "TimestampOperator": {
       "type": "string",
-      "enum": ["Eq", "Ne", "Ge", "Gt", "Le", "Lt"],
+      "enum": [
+        "Eq",
+        "Ne",
+        "Ge",
+        "Gt",
+        "Le",
+        "Lt"
+      ],
       "default": "Eq",
       "description": "Operator is enum of each conditional operator.\n\n - Eq: The timestamp is equal to the specified value in the request.\n - Ne: The timestamp is not equal to the specified value in the request.\n - Ge: The timestamp is greater than or equal to the specified value in the\nrequest.\n - Gt: The timestamp is greater than the specified value in the request.\n - Le: The timestamp is less than or equal to the specified value in the\nrequest.\n - Lt: The timestamp is less than the specified value in the request."
     },
@@ -1081,6 +1132,11 @@
           "type": "integer",
           "format": "int64",
           "description": "Search nprobe."
+        },
+        "edgeSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Search edge size"
         }
       },
       "description": "Represent search configuration."

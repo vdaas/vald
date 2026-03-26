@@ -21,15 +21,32 @@ import (
 
 	tikvcfg "github.com/tikv/client-go/v2/config"
 	"github.com/tikv/client-go/v2/rawkv"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/observability/trace"
 )
+
+const apiName = "vald/internal/client/v1/client/meta"
 
 type rawKVClient struct {
 	cli *rawkv.Client
 }
 
 func NewRawKVClient(ctx context.Context, addrs []string) (ManagedMetadataClient, error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/NewRawKVClient")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
 	cli, err := rawkv.NewClient(ctx, addrs, tikvcfg.DefaultConfig().Security)
 	if err != nil {
+		err = errors.ErrNewTiKVRawClientFailed(err)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
 		return nil, err
 	}
 	return &rawKVClient{
@@ -38,17 +55,70 @@ func NewRawKVClient(ctx context.Context, addrs []string) (ManagedMetadataClient,
 }
 
 func (c *rawKVClient) Close() error {
-	return c.cli.Close()
+	err := c.cli.Close()
+	if err != nil {
+		return errors.ErrTiKVRawClientCloseOperationFailed(err)
+	}
+	return nil
 }
 
 func (c *rawKVClient) Get(ctx context.Context, key []byte) ([]byte, error) {
-	return c.cli.Get(ctx, key)
+	ctx, span := trace.StartSpan(ctx, apiName+"/Get")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	val, err := c.cli.Get(ctx, key)
+	if err != nil {
+		err = errors.ErrTiKVGetOperationFailed(key, err)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	return val, nil
 }
 
 func (c *rawKVClient) Put(ctx context.Context, key, val []byte) error {
-	return c.cli.Put(ctx, key, val)
+	ctx, span := trace.StartSpan(ctx, apiName+"/Put")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	err := c.cli.Put(ctx, key, val)
+	if err != nil {
+		err = errors.ErrTiKVSetOperationFailed(key, val, err)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+	}
+	return err
 }
 
 func (c *rawKVClient) Delete(ctx context.Context, key []byte) error {
-	return c.cli.Delete(ctx, key)
+	ctx, span := trace.StartSpan(ctx, apiName+"/Delete")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	err := c.cli.Delete(ctx, key)
+	if err != nil {
+		err = errors.ErrTiKVDeleteOperationFailed(key, err)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+	}
+	return err
 }

@@ -9,8 +9,12 @@
       "name": "Meta"
     }
   ],
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/meta": {
       "post": {
@@ -39,7 +43,9 @@
             }
           }
         ],
-        "tags": ["Meta"]
+        "tags": [
+          "Meta"
+        ]
       }
     },
     "/meta/{key}": {
@@ -67,7 +73,9 @@
             "type": "string"
           }
         ],
-        "tags": ["Meta"]
+        "tags": [
+          "Meta"
+        ]
       },
       "delete": {
         "operationId": "Meta_Delete",
@@ -93,7 +101,9 @@
             "type": "string"
           }
         ],
-        "tags": ["Meta"]
+        "tags": [
+          "Meta"
+        ]
       }
     }
   },

@@ -230,21 +230,20 @@ func (s *server) RemoveByTimestampWithMetadata(
 		return locs, err
 	}
 
-	var wg sync.WaitGroup
 	var emu sync.Mutex
+	eg, ectx := errgroup.New(ctx)
+	eg.SetLimit(s.multiConcurrency)
 	for i, loc := range locs.Locations {
 		idx, id := i, loc.Uuid
-		wg.Add(1)
-		s.eg.Go(safety.RecoverFunc(func() error {
-			defer wg.Done()
+		eg.Go(safety.RecoverFunc(func() error {
 			ti := "errgroup.Go/id-" + strconv.Itoa(idx)
-			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, ti), apiName+"/Metadata/"+ti)
+			ectx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ectx, ti), apiName+"/Metadata/"+ti)
 			defer func() {
 				if sspan != nil {
 					sspan.End()
 				}
 			}()
-			err := s.metadataClient.Delete(ctx, []byte(id))
+			err := s.metadataClient.Delete(ectx, []byte(id))
 			if err != nil {
 				st, _ := status.FromError(err)
 				if st != nil && sspan != nil {
@@ -264,7 +263,15 @@ func (s *server) RemoveByTimestampWithMetadata(
 			return nil
 		}))
 	}
-	wg.Wait()
+	if err := eg.Wait(); err != nil {
+		emu.Lock()
+		if errs != nil {
+			errs = errors.Join(errs, err)
+		} else {
+			errs = err
+		}
+		emu.Unlock()
+	}
 	if errs != nil {
 		st, _ := status.FromError(errs)
 		if st != nil && span != nil {
