@@ -30,6 +30,7 @@ type (
 
 var (
 	AllowUnexported  = cmp.AllowUnexported
+	EquateComparable = cmpopts.EquateComparable
 	IgnoreUnexported = cmpopts.IgnoreUnexported
 	Comparer         = cmp.Comparer
 	Diff             = cmp.Diff

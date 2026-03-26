@@ -17,6 +17,7 @@
 package grpc
 
 import (
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -32,6 +33,7 @@ import (
 var serverComparer = []comparator.Option{
 	comparator.AllowUnexported(Server{}),
 	comparator.IgnoreFields(Server{}, "opts", "quit", "done", "channelzRemoveOnce", "channelz"),
+	comparator.EquateComparable(atomic.Bool{}),
 	comparator.MutexComparer,
 	comparator.CondComparer,
 	comparator.WaitGroupComparer,
