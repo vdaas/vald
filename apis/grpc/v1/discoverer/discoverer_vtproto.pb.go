@@ -105,19 +105,20 @@ type DiscovererServer interface {
 }
 
 // UnimplementedDiscovererServer must be embedded to have forward compatible implementations.
-type UnimplementedDiscovererServer struct {
-}
+type UnimplementedDiscovererServer struct{}
 
 func (UnimplementedDiscovererServer) Pods(
 	context.Context, *payload.Discoverer_Request,
 ) (*payload.Info_Pods, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Pods not implemented")
 }
+
 func (UnimplementedDiscovererServer) Nodes(
 	context.Context, *payload.Discoverer_Request,
 ) (*payload.Info_Nodes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Nodes not implemented")
 }
+
 func (UnimplementedDiscovererServer) Services(
 	context.Context, *payload.Discoverer_Request,
 ) (*payload.Info_Services, error) {
