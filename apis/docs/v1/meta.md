@@ -61,12 +61,12 @@ InsertWithMetadata RPC is the method to add a new single vector and metadata.
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                     |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
-    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
+    |   field   | type   | label    | description                                                                                                               |
+    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id     | string |          | The vector ID.                                                                                                            |
+    |  vector   | float  | repeated | The vector.                                                                                                               |
+    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
+    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
   - Insert.Config
 
@@ -187,12 +187,12 @@ It's the recommended method to insert a large number of vectors.
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                     |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
-    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
+    |   field   | type   | label    | description                                                                                                               |
+    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id     | string |          | The vector ID.                                                                                                            |
+    |  vector   | float  | repeated | The vector.                                                                                                               |
+    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
+    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
   - Insert.Config
 
@@ -338,12 +338,12 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                     |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
-    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
+    |   field   | type   | label    | description                                                                                                               |
+    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id     | string |          | The vector ID.                                                                                                            |
+    |  vector   | float  | repeated | The vector.                                                                                                               |
+    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
+    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
   - Insert.Config
 
@@ -512,12 +512,12 @@ GetObjectWithMetadata RPC is the method to get the metadata of a vector inserted
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                     |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
-    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
+    |   field   | type   | label    | description                                                                                                               |
+    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id     | string |          | The vector ID.                                                                                                            |
+    |  vector   | float  | repeated | The vector.                                                                                                               |
+    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
+    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -631,12 +631,12 @@ Each Upsert request and response are independent.
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                     |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
-    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
+    |   field   | type   | label    | description                                                                                                               |
+    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id     | string |          | The vector ID.                                                                                                            |
+    |  vector   | float  | repeated | The vector.                                                                                                               |
+    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
+    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -712,12 +712,12 @@ A method to get all the vectors with server streaming
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                     |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
-    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
+    |   field   | type   | label    | description                                                                                                               |
+    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id     | string |          | The vector ID.                                                                                                            |
+    |  vector   | float  | repeated | The vector.                                                                                                               |
+    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
+    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -1316,11 +1316,11 @@ SearchWithMetadata RPC is the method to search vector(s) similar to the request 
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -1463,11 +1463,11 @@ The vector with the same requested ID should be indexed into the `vald-lb-gatewa
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -1623,11 +1623,11 @@ Each Search request and response are independent.
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -1783,11 +1783,11 @@ Each SearchByID request and response are independent.
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -1954,11 +1954,11 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -2125,11 +2125,11 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -2271,11 +2271,11 @@ LinearSearchWithMetadata RPC is the method to linear search vector(s) similar to
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -2419,11 +2419,11 @@ You will get a `NOT_FOUND` error if the vector isn't stored.
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -2579,11 +2579,11 @@ Each LinearSearch request and response are independent.
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -2739,11 +2739,11 @@ Each LinearSearchByID request and response are independent.
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -2910,11 +2910,11 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -3082,11 +3082,11 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -3181,12 +3181,12 @@ UpdateWithMetadata RPC is the method to update a single vector.
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                     |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
-    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
+    |   field   | type   | label    | description                                                                                                               |
+    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id     | string |          | The vector ID.                                                                                                            |
+    |  vector   | float  | repeated | The vector.                                                                                                               |
+    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
+    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
   - Update.Config
 
@@ -3314,12 +3314,12 @@ It's the recommended method to update the large amount of vectors.
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                     |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
-    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
+    |   field   | type   | label    | description                                                                                                               |
+    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id     | string |          | The vector ID.                                                                                                            |
+    |  vector   | float  | repeated | The vector.                                                                                                               |
+    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
+    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
   - Update.Config
 
@@ -3471,12 +3471,12 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                     |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
-    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
+    |   field   | type   | label    | description                                                                                                               |
+    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id     | string |          | The vector ID.                                                                                                            |
+    |  vector   | float  | repeated | The vector.                                                                                                               |
+    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
+    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
   - Update.Config
 
@@ -3583,12 +3583,12 @@ A method to update timestamp an indexed vector and metadata.
 
   - Update.TimestampRequest
 
-    |   field   | type   | label    | description                                       |
-    | :-------: | :----- | :------- | :------------------------------------------------ |
-    |    id     | string |          | The vector ID.                                    |
-    | timestamp | int64  |          | timestamp represents when this vector inserted.   |
-    |   force   | bool   |          | force represents forcefully update the timestamp. |
-    | metadata  | bytes  | optional | The metadata is related to the request vector.    |
+    |   field   | type   | label    | description                                                                                                               |
+    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id     | string |          | The vector ID.                                                                                                            |
+    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
+    |   force   | bool   |          | force represents forcefully update the timestamp.                                                                         |
+    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Output
 
@@ -3688,12 +3688,12 @@ UpsertWithMetadata RPC is the method to update the inserted vector and metadata 
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                     |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
-    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
+    |   field   | type   | label    | description                                                                                                               |
+    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id     | string |          | The vector ID.                                                                                                            |
+    |  vector   | float  | repeated | The vector.                                                                                                               |
+    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
+    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
   - Upsert.Config
 
@@ -3820,12 +3820,12 @@ It’s the recommended method to upsert a large number of vectors.
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                     |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
-    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
+    |   field   | type   | label    | description                                                                                                               |
+    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id     | string |          | The vector ID.                                                                                                            |
+    |  vector   | float  | repeated | The vector.                                                                                                               |
+    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
+    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
   - Upsert.Config
 
@@ -3976,12 +3976,12 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                     |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
-    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
+    |   field   | type   | label    | description                                                                                                               |
+    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id     | string |          | The vector ID.                                                                                                            |
+    |  vector   | float  | repeated | The vector.                                                                                                               |
+    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
+    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
   - Upsert.Config
 

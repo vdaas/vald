@@ -93,7 +93,7 @@
         "metadata": {
           "type": "string",
           "format": "byte",
-          "description": "The metadata is related to the request vector."
+          "description": "Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway."
         }
       },
       "description": "Represent the ID and distance pair."
@@ -121,7 +121,7 @@
         "metadata": {
           "type": "string",
           "format": "byte",
-          "description": "The metadata is related to the request vector."
+          "description": "Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway."
         }
       },
       "description": "Represent a vector."

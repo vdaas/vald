@@ -108,8 +108,7 @@ func (cli *client) Portforward(
 }
 
 func (cli *client) GetPod(ctx context.Context, namespace,
-	name string,
-) (*corev1.Pod, error) {
+	name string) (*corev1.Pod, error) {
 	pod, err := cli.clientset.CoreV1().Pods(
 		namespace,
 	).Get(ctx, name, metav1.GetOptions{})
