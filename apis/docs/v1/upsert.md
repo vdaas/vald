@@ -62,12 +62,12 @@ Upsert RPC is the method to update the inserted vector to a new single vector or
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                     |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
-    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
+    |   field   | type   | label    | description                                                                                                               |
+    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id     | string |          | The vector ID.                                                                                                            |
+    |  vector   | float  | repeated | The vector.                                                                                                               |
+    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
+    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
   - Upsert.Config
 
@@ -194,12 +194,12 @@ It’s the recommended method to upsert a large number of vectors.
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                     |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
-    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
+    |   field   | type   | label    | description                                                                                                               |
+    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id     | string |          | The vector ID.                                                                                                            |
+    |  vector   | float  | repeated | The vector.                                                                                                               |
+    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
+    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
   - Upsert.Config
 
@@ -350,12 +350,12 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                     |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
-    | metadata  | bytes  | optional | The metadata is related to the request vector.  |
+    |   field   | type   | label    | description                                                                                                               |
+    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id     | string |          | The vector ID.                                                                                                            |
+    |  vector   | float  | repeated | The vector.                                                                                                               |
+    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
+    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
   - Upsert.Config
 

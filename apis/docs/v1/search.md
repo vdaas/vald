@@ -135,11 +135,11 @@ Search RPC is the method to search vector(s) similar to the request vector.
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -282,11 +282,11 @@ The vector with the same requested ID should be indexed into the `vald-agent` be
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -442,11 +442,11 @@ Each Search request and response are independent.
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -602,11 +602,11 @@ Each SearchByID request and response are independent.
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -773,11 +773,11 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -944,11 +944,11 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -1090,11 +1090,11 @@ LinearSearch RPC is the method to linear search vector(s) similar to the request
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -1238,11 +1238,11 @@ You will get a `NOT_FOUND` error if the vector isn't stored.
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -1398,11 +1398,11 @@ Each LinearSearch request and response are independent.
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -1558,11 +1558,11 @@ Each LinearSearchByID request and response are independent.
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -1729,11 +1729,11 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -1901,11 +1901,11 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 

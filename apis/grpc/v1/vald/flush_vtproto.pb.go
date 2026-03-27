@@ -93,7 +93,8 @@ type FlushServer interface {
 }
 
 // UnimplementedFlushServer must be embedded to have forward compatible implementations.
-type UnimplementedFlushServer struct{}
+type UnimplementedFlushServer struct {
+}
 
 func (UnimplementedFlushServer) Flush(
 	context.Context, *payload.Flush_Request,

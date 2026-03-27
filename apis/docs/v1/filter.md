@@ -139,11 +139,11 @@ SearchObject RPC is the method to search object(s) similar to request object.
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -294,11 +294,11 @@ Each Search request and response are independent.
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -444,11 +444,11 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                    |
-    | :------: | :----- | :------- | :--------------------------------------------- |
-    |    id    | string |          | The vector ID.                                 |
-    | distance | float  |          | The distance.                                  |
-    | metadata | bytes  | optional | The metadata is related to the request vector. |
+    |  field   | type   | label    | description                                                                                                               |
+    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
+    |    id    | string |          | The vector ID.                                                                                                            |
+    | distance | float  |          | The distance.                                                                                                             |
+    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 

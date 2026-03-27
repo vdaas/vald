@@ -1921,7 +1921,7 @@ type Update_TimestampRequest struct {
 	Timestamp int64 `protobuf:"varint,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 	// force represents forcefully update the timestamp.
 	Force bool `protobuf:"varint,3,opt,name=force,proto3" json:"force,omitempty"`
-	// The metadata is related to the request vector.
+	// Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway.
 	Metadata      []byte `protobuf:"bytes,4,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -2700,7 +2700,7 @@ type Object_Distance struct {
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// The distance.
 	Distance float32 `protobuf:"fixed32,2,opt,name=distance,proto3" json:"distance,omitempty"`
-	// The metadata is related to the request vector.
+	// Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway.
 	Metadata      []byte `protobuf:"bytes,3,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -2941,7 +2941,7 @@ type Object_Vector struct {
 	Vector []float32 `protobuf:"fixed32,2,rep,packed,name=vector,proto3" json:"vector,omitempty"`
 	// timestamp represents when this vector inserted.
 	Timestamp int64 `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	// The metadata is related to the request vector.
+	// Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway.
 	Metadata      []byte `protobuf:"bytes,4,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache

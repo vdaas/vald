@@ -771,11 +771,11 @@ Represent the binary object.
 
 Represent the ID and distance pair.
 
-| Field    | Type              | Label    | Description                                    |
-| -------- | ----------------- | -------- | ---------------------------------------------- |
-| id       | [string](#string) |          | The vector ID.                                 |
-| distance | [float](#float)   |          | The distance.                                  |
-| metadata | [bytes](#bytes)   | optional | The metadata is related to the request vector. |
+| Field    | Type              | Label    | Description                                                                                                               |
+| -------- | ----------------- | -------- | ------------------------------------------------------------------------------------------------------------------------- |
+| id       | [string](#string) |          | The vector ID.                                                                                                            |
+| distance | [float](#float)   |          | The distance.                                                                                                             |
+| metadata | [bytes](#bytes)   | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 <a name="payload-v1-Object-ID"></a>
 
@@ -920,12 +920,12 @@ Represent a request to fetch vector meta data.
 
 Represent a vector.
 
-| Field     | Type              | Label    | Description                                     |
-| --------- | ----------------- | -------- | ----------------------------------------------- |
-| id        | [string](#string) |          | The vector ID.                                  |
-| vector    | [float](#float)   | repeated | The vector.                                     |
-| timestamp | [int64](#int64)   |          | timestamp represents when this vector inserted. |
-| metadata  | [bytes](#bytes)   | optional | The metadata is related to the request vector.  |
+| Field     | Type              | Label    | Description                                                                                                               |
+| --------- | ----------------- | -------- | ------------------------------------------------------------------------------------------------------------------------- |
+| id        | [string](#string) |          | The vector ID.                                                                                                            |
+| vector    | [float](#float)   | repeated | The vector.                                                                                                               |
+| timestamp | [int64](#int64)   |          | timestamp represents when this vector inserted.                                                                           |
+| metadata  | [bytes](#bytes)   | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 <a name="payload-v1-Object-VectorRequest"></a>
 
@@ -1198,12 +1198,12 @@ Represent the update request.
 
 Represent a vector meta data.
 
-| Field     | Type              | Label    | Description                                       |
-| --------- | ----------------- | -------- | ------------------------------------------------- |
-| id        | [string](#string) |          | The vector ID.                                    |
-| timestamp | [int64](#int64)   |          | timestamp represents when this vector inserted.   |
-| force     | [bool](#bool)     |          | force represents forcefully update the timestamp. |
-| metadata  | [bytes](#bytes)   | optional | The metadata is related to the request vector.    |
+| Field     | Type              | Label    | Description                                                                                                               |
+| --------- | ----------------- | -------- | ------------------------------------------------------------------------------------------------------------------------- |
+| id        | [string](#string) |          | The vector ID.                                                                                                            |
+| timestamp | [int64](#int64)   |          | timestamp represents when this vector inserted.                                                                           |
+| force     | [bool](#bool)     |          | force represents forcefully update the timestamp.                                                                         |
+| metadata  | [bytes](#bytes)   | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 
 <a name="payload-v1-Upsert"></a>
 

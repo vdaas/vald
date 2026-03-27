@@ -968,74 +968,64 @@ type SearchWithMetadataServer interface {
 }
 
 // UnimplementedSearchWithMetadataServer must be embedded to have forward compatible implementations.
-type UnimplementedSearchWithMetadataServer struct{}
+type UnimplementedSearchWithMetadataServer struct {
+}
 
 func (UnimplementedSearchWithMetadataServer) SearchWithMetadata(
 	context.Context, *payload.Search_Request,
 ) (*payload.Search_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SearchWithMetadata not implemented")
 }
-
 func (UnimplementedSearchWithMetadataServer) SearchByIDWithMetadata(
 	context.Context, *payload.Search_IDRequest,
 ) (*payload.Search_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SearchByIDWithMetadata not implemented")
 }
-
 func (UnimplementedSearchWithMetadataServer) StreamSearchWithMetadata(
 	SearchWithMetadata_StreamSearchWithMetadataServer,
 ) error {
 	return status.Errorf(codes.Unimplemented, "method StreamSearchWithMetadata not implemented")
 }
-
 func (UnimplementedSearchWithMetadataServer) StreamSearchByIDWithMetadata(
 	SearchWithMetadata_StreamSearchByIDWithMetadataServer,
 ) error {
 	return status.Errorf(codes.Unimplemented, "method StreamSearchByIDWithMetadata not implemented")
 }
-
 func (UnimplementedSearchWithMetadataServer) MultiSearchWithMetadata(
 	context.Context, *payload.Search_MultiRequest,
 ) (*payload.Search_Responses, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiSearchWithMetadata not implemented")
 }
-
 func (UnimplementedSearchWithMetadataServer) MultiSearchByIDWithMetadata(
 	context.Context, *payload.Search_MultiIDRequest,
 ) (*payload.Search_Responses, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiSearchByIDWithMetadata not implemented")
 }
-
 func (UnimplementedSearchWithMetadataServer) LinearSearchWithMetadata(
 	context.Context, *payload.Search_Request,
 ) (*payload.Search_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LinearSearchWithMetadata not implemented")
 }
-
 func (UnimplementedSearchWithMetadataServer) LinearSearchByIDWithMetadata(
 	context.Context, *payload.Search_IDRequest,
 ) (*payload.Search_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LinearSearchByIDWithMetadata not implemented")
 }
-
 func (UnimplementedSearchWithMetadataServer) StreamLinearSearchWithMetadata(
 	SearchWithMetadata_StreamLinearSearchWithMetadataServer,
 ) error {
 	return status.Errorf(codes.Unimplemented, "method StreamLinearSearchWithMetadata not implemented")
 }
-
 func (UnimplementedSearchWithMetadataServer) StreamLinearSearchByIDWithMetadata(
 	SearchWithMetadata_StreamLinearSearchByIDWithMetadataServer,
 ) error {
 	return status.Errorf(codes.Unimplemented, "method StreamLinearSearchByIDWithMetadata not implemented")
 }
-
 func (UnimplementedSearchWithMetadataServer) MultiLinearSearchWithMetadata(
 	context.Context, *payload.Search_MultiRequest,
 ) (*payload.Search_Responses, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiLinearSearchWithMetadata not implemented")
 }
-
 func (UnimplementedSearchWithMetadataServer) MultiLinearSearchByIDWithMetadata(
 	context.Context, *payload.Search_MultiIDRequest,
 ) (*payload.Search_Responses, error) {
@@ -1654,20 +1644,19 @@ type InsertWithMetadataServer interface {
 }
 
 // UnimplementedInsertWithMetadataServer must be embedded to have forward compatible implementations.
-type UnimplementedInsertWithMetadataServer struct{}
+type UnimplementedInsertWithMetadataServer struct {
+}
 
 func (UnimplementedInsertWithMetadataServer) InsertWithMetadata(
 	context.Context, *payload.Insert_Request,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InsertWithMetadata not implemented")
 }
-
 func (UnimplementedInsertWithMetadataServer) StreamInsertWithMetadata(
 	InsertWithMetadata_StreamInsertWithMetadataServer,
 ) error {
 	return status.Errorf(codes.Unimplemented, "method StreamInsertWithMetadata not implemented")
 }
-
 func (UnimplementedInsertWithMetadataServer) MultiInsertWithMetadata(
 	context.Context, *payload.Insert_MultiRequest,
 ) (*payload.Object_Locations, error) {
@@ -2007,20 +1996,19 @@ type ObjectWithMetadataServer interface {
 }
 
 // UnimplementedObjectWithMetadataServer must be embedded to have forward compatible implementations.
-type UnimplementedObjectWithMetadataServer struct{}
+type UnimplementedObjectWithMetadataServer struct {
+}
 
 func (UnimplementedObjectWithMetadataServer) GetObjectWithMetadata(
 	context.Context, *payload.Object_VectorRequest,
 ) (*payload.Object_Vector, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetObjectWithMetadata not implemented")
 }
-
 func (UnimplementedObjectWithMetadataServer) StreamGetObjectWithMetadata(
 	ObjectWithMetadata_StreamGetObjectWithMetadataServer,
 ) error {
 	return status.Errorf(codes.Unimplemented, "method StreamGetObjectWithMetadata not implemented")
 }
-
 func (UnimplementedObjectWithMetadataServer) StreamListObjectWithMetadata(
 	*payload.Object_List_Request, ObjectWithMetadata_StreamListObjectWithMetadataServer,
 ) error {
@@ -2464,26 +2452,24 @@ type RemoveWithMetadataServer interface {
 }
 
 // UnimplementedRemoveWithMetadataServer must be embedded to have forward compatible implementations.
-type UnimplementedRemoveWithMetadataServer struct{}
+type UnimplementedRemoveWithMetadataServer struct {
+}
 
 func (UnimplementedRemoveWithMetadataServer) RemoveWithMetadata(
 	context.Context, *payload.Remove_Request,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveWithMetadata not implemented")
 }
-
 func (UnimplementedRemoveWithMetadataServer) RemoveByTimestampWithMetadata(
 	context.Context, *payload.Remove_TimestampRequest,
 ) (*payload.Object_Locations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveByTimestampWithMetadata not implemented")
 }
-
 func (UnimplementedRemoveWithMetadataServer) StreamRemoveWithMetadata(
 	RemoveWithMetadata_StreamRemoveWithMetadataServer,
 ) error {
 	return status.Errorf(codes.Unimplemented, "method StreamRemoveWithMetadata not implemented")
 }
-
 func (UnimplementedRemoveWithMetadataServer) MultiRemoveWithMetadata(
 	context.Context, *payload.Remove_MultiRequest,
 ) (*payload.Object_Locations, error) {
@@ -2908,26 +2894,24 @@ type UpdateWithMetadataServer interface {
 }
 
 // UnimplementedUpdateWithMetadataServer must be embedded to have forward compatible implementations.
-type UnimplementedUpdateWithMetadataServer struct{}
+type UnimplementedUpdateWithMetadataServer struct {
+}
 
 func (UnimplementedUpdateWithMetadataServer) UpdateWithMetadata(
 	context.Context, *payload.Update_Request,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateWithMetadata not implemented")
 }
-
 func (UnimplementedUpdateWithMetadataServer) StreamUpdateWithMetadata(
 	UpdateWithMetadata_StreamUpdateWithMetadataServer,
 ) error {
 	return status.Errorf(codes.Unimplemented, "method StreamUpdateWithMetadata not implemented")
 }
-
 func (UnimplementedUpdateWithMetadataServer) MultiUpdateWithMetadata(
 	context.Context, *payload.Update_MultiRequest,
 ) (*payload.Object_Locations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiUpdateWithMetadata not implemented")
 }
-
 func (UnimplementedUpdateWithMetadataServer) UpdateTimestampWithMetadata(
 	context.Context, *payload.Update_TimestampRequest,
 ) (*payload.Object_Location, error) {
@@ -3317,20 +3301,19 @@ type UpsertWithMetadataServer interface {
 }
 
 // UnimplementedUpsertWithMetadataServer must be embedded to have forward compatible implementations.
-type UnimplementedUpsertWithMetadataServer struct{}
+type UnimplementedUpsertWithMetadataServer struct {
+}
 
 func (UnimplementedUpsertWithMetadataServer) UpsertWithMetadata(
 	context.Context, *payload.Upsert_Request,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpsertWithMetadata not implemented")
 }
-
 func (UnimplementedUpsertWithMetadataServer) StreamUpsertWithMetadata(
 	UpsertWithMetadata_StreamUpsertWithMetadataServer,
 ) error {
 	return status.Errorf(codes.Unimplemented, "method StreamUpsertWithMetadata not implemented")
 }
-
 func (UnimplementedUpsertWithMetadataServer) MultiUpsertWithMetadata(
 	context.Context, *payload.Upsert_MultiRequest,
 ) (*payload.Object_Locations, error) {
