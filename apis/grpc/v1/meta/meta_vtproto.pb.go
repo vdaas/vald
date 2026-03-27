@@ -99,19 +99,20 @@ type MetaServer interface {
 }
 
 // UnimplementedMetaServer must be embedded to have forward compatible implementations.
-type UnimplementedMetaServer struct {
-}
+type UnimplementedMetaServer struct{}
 
 func (UnimplementedMetaServer) Get(
 	context.Context, *payload.Meta_Key,
 ) (*payload.Meta_Value, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
 }
+
 func (UnimplementedMetaServer) Set(
 	context.Context, *payload.Meta_KeyValue,
 ) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Set not implemented")
 }
+
 func (UnimplementedMetaServer) Delete(context.Context, *payload.Meta_Key) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }

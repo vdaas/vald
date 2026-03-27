@@ -77,8 +77,7 @@ type StatsServer interface {
 }
 
 // UnimplementedStatsServer must be embedded to have forward compatible implementations.
-type UnimplementedStatsServer struct {
-}
+type UnimplementedStatsServer struct{}
 
 func (UnimplementedStatsServer) ResourceStats(
 	context.Context, *payload.Empty,
