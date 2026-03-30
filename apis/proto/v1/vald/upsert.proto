@@ -52,7 +52,7 @@ service Upsert {
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
   // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
   // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
-  // | ALREADY_EXISTS    | Requested pair of ID and vector is already inserted                                                                                                 | Change request payload or nothing to do if update is unnecessary.                        |
+  // | ALREADY_EXISTS    | The requested ID/vector pair is already inserted.                                                                                                   | Change request payload or nothing to do if update is unnecessary.                        |
   // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
   rpc Upsert(payload.v1.Upsert.Request) returns (payload.v1.Object.Location) {
     option (google.api.http) = {
@@ -65,7 +65,7 @@ service Upsert {
   // StreamUpsert RPC is the method to update multiple existing vectors or add new multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
   // Using the bidirectional streaming RPC, the upsert request can be communicated in any order between the client and server.
   // Each Upsert request and response are independent.
-  // It’s the recommended method to upsert a large number of vectors.
+  // This is the recommended method to upsert many vectors.
   // ---
   // Status Code
   // |  0   | OK                |
@@ -87,7 +87,7 @@ service Upsert {
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
   // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
   // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
-  // | ALREADY_EXISTS    | Requested pair of ID and vector is already inserted                                                                                                 | Change request payload or nothing to do if update is unnecessary.                        |
+  // | ALREADY_EXISTS    | The requested ID/vector pair is already inserted.                                                                                                   | Change request payload or nothing to do if update is unnecessary.                        |
   // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
   rpc StreamUpsert(stream payload.v1.Upsert.Request) returns (stream payload.v1.Object.StreamLocation) {}
 
@@ -119,7 +119,7 @@ service Upsert {
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
   // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
   // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
-  // | ALREADY_EXISTS    | Requested pair of ID and vector is already inserted                                                                                                 | Change request payload or nothing to do if update is unnecessary.                        |
+  // | ALREADY_EXISTS    | The requested ID/vector pair is already inserted.                                                                                                   | Change request payload or nothing to do if update is unnecessary.                        |
   // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
   rpc MultiUpsert(payload.v1.Upsert.MultiRequest) returns (payload.v1.Object.Locations) {
     option (google.api.http) = {

@@ -63,7 +63,7 @@ service Insert {
   // StreamInsert RPC is the method to add new multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
   // Using the bidirectional streaming RPC, the insert request can be communicated in any order between client and server.
   // Each Insert request and response are independent.
-  // It's the recommended method to insert a large number of vectors.
+  // This is the recommended method to insert many vectors.
   // ---
   // Status Code
   // |  0   | OK                |

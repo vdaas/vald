@@ -57,7 +57,7 @@ service Object {
   }
 
   // Overview
-  // GetObject RPC is the method to get the metadata of a vector inserted into the `vald-agent`.
+  // GetObject RPC is the method to get a vector inserted into the `vald-agent`.
   // ---
   // Status Code
   // |  0   | OK                |
@@ -111,7 +111,7 @@ service Object {
   rpc StreamGetObject(stream payload.v1.Object.VectorRequest) returns (stream payload.v1.Object.StreamVector) {}
 
   // Overview
-  // A method to get all the vectors with server streaming
+  // A method to get all vectors via server streaming.
   // ---
   // Status Code
   // TODO
