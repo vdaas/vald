@@ -9,8 +9,12 @@
       "name": "Filter"
     }
   ],
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/insert/object": {
       "post": {
@@ -41,7 +45,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/insert/object/multiple": {
@@ -73,7 +79,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/search/object": {
@@ -105,7 +113,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/search/object/multiple": {
@@ -137,7 +147,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/update/object": {
@@ -169,7 +181,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/update/object/multiple": {
@@ -202,7 +216,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/upsert/object": {
@@ -234,7 +250,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/upsert/object/multiple": {
@@ -267,7 +285,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     }
   },
@@ -317,7 +337,7 @@
         "metadata": {
           "type": "string",
           "format": "byte",
-          "description": "Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway."
+          "description": "Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway."
         }
       },
       "description": "Represent the ID and distance pair."
@@ -654,7 +674,7 @@
       "properties": {
         "skipStrictExistCheck": {
           "type": "boolean",
-          "description": "A flag to skip exist check during upsert operation."
+          "description": "A flag to skip the existence check during upsert operation."
         },
         "filters": {
           "$ref": "#/definitions/v1FilterConfig",

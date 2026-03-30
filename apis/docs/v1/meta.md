@@ -2,7 +2,7 @@
 
 ## Overview
 
-InsertWithMetadata Service is responsible for inserting new vectors into the `vald-agent` and set metadata.
+InsertWithMetadata Service is responsible for inserting new vectors into the `vald-agent` and setting metadata.
 
 ```rpc
 service InsertWithMetadata {
@@ -16,7 +16,7 @@ service InsertWithMetadata {
 
 ## InsertWithMetadata RPC
 
-InsertWithMetadata RPC is the method to add a new single vector and metadata.
+InsertWithMetadata RPC is the method to add a new single vector with metadata.
 
 ### Input
 
@@ -54,41 +54,40 @@ InsertWithMetadata RPC is the method to add a new single vector and metadata.
 
   - Insert.Request
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    | vector | Object.Vector |       | The vector to be inserted.               |
-    | config | Insert.Config |       | The configuration of the insert request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | vector | Object.Vector |  | The vector to be inserted. |
+    | config | Insert.Config |  | The configuration of the insert request. |
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                                                                                               |
-    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
-    |    id     | string |          | The vector ID.                                                                                                            |
-    |  vector   | float  | repeated | The vector.                                                                                                               |
-    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
-    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | vector | float | repeated | The vector. |
+    | timestamp | int64 |  | timestamp represents when this vector inserted. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
   - Insert.Config
 
-    |          field          | type          | label | description                                         |
-    | :---------------------: | :------------ | :---- | :-------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       | A flag to skip exist check during insert operation. |
-    |         filters         | Filter.Config |       | Filter configurations.                              |
-    |        timestamp        | int64         |       | Insert timestamp.                                   |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | skip_strict_exist_check | bool |  | A flag to skip exist check during insert operation. |
+    | filters | Filter.Config |  | Filter configurations. |
+    | timestamp | int64 |  | Insert timestamp. |
 
   - Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
   - Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Object.Location`
@@ -104,24 +103,25 @@ InsertWithMetadata RPC is the method to add a new single vector and metadata.
 
   - Object.Location
 
-    | field | type   | label    | description                                                      |
-    | :---: | :----- | :------- | :--------------------------------------------------------------- |
-    | name  | string |          | The name of the location.                                        |
-    | uuid  | string |          | TODO(v2): Use id instead to unify names. The UUID of the vector. |
-    |  ips  | string | repeated | The IP list.                                                     |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | name | string |  | The name of the location. |
+    | uuid | string |  | TODO(v2): Use id instead to unify names. The UUID of the vector. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
 | code | description       |
 | :--: | :---------------- |
-|  0   | OK                |
-|  1   | CANCELLED         |
-|  3   | INVALID_ARGUMENT  |
-|  4   | DEADLINE_EXCEEDED |
-|  5   | NOT_FOUND         |
-|  13  | INTERNAL          |
+| 0    | OK                |
+| 1    | CANCELLED         |
+| 3    | INVALID_ARGUMENT  |
+| 4    | DEADLINE_EXCEEDED |
+| 5    | NOT_FOUND         |
+| 13   | INTERNAL          |
 
 Please refer to [Response Status Code](../status.md) for more details.
+
 
 ### Troubleshooting
 
@@ -136,13 +136,12 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | ALREADY_EXISTS    | Request ID is already inserted.                                                                                                                     | Change request ID.                                                                       |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## StreamInsertWithMetadata RPC
 
 StreamInsertWithMetadata RPC is the method to add new multiple vectors and metadata using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
 Using the bidirectional streaming RPC, the insert request can be communicated in any order between client and server.
 Each Insert request and response are independent.
-It's the recommended method to insert a large number of vectors.
+This is the recommended method to insert many vectors.
 
 ### Input
 
@@ -180,41 +179,40 @@ It's the recommended method to insert a large number of vectors.
 
   - Insert.Request
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    | vector | Object.Vector |       | The vector to be inserted.               |
-    | config | Insert.Config |       | The configuration of the insert request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | vector | Object.Vector |  | The vector to be inserted. |
+    | config | Insert.Config |  | The configuration of the insert request. |
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                                                                                               |
-    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
-    |    id     | string |          | The vector ID.                                                                                                            |
-    |  vector   | float  | repeated | The vector.                                                                                                               |
-    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
-    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | vector | float | repeated | The vector. |
+    | timestamp | int64 |  | timestamp represents when this vector inserted. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
   - Insert.Config
 
-    |          field          | type          | label | description                                         |
-    | :---------------------: | :------------ | :---- | :-------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       | A flag to skip exist check during insert operation. |
-    |         filters         | Filter.Config |       | Filter configurations.                              |
-    |        timestamp        | int64         |       | Insert timestamp.                                   |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | skip_strict_exist_check | bool |  | A flag to skip exist check during insert operation. |
+    | filters | Filter.Config |  | Filter configurations. |
+    | timestamp | int64 |  | Insert timestamp. |
 
   - Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
   - Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Object.StreamLocation`
@@ -235,18 +233,18 @@ It's the recommended method to insert a large number of vectors.
 
   - Object.StreamLocation
 
-    |  field   | type              | label | description           |
-    | :------: | :---------------- | :---- | :-------------------- |
-    | location | Object.Location   |       | The vector location.  |
-    |  status  | google.rpc.Status |       | The RPC error status. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | location | Object.Location |  | The vector location. |
+    | status | google.rpc.Status |  | The RPC error status. |
 
   - Object.Location
 
-    | field | type   | label    | description                                                      |
-    | :---: | :----- | :------- | :--------------------------------------------------------------- |
-    | name  | string |          | The name of the location.                                        |
-    | uuid  | string |          | TODO(v2): Use id instead to unify names. The UUID of the vector. |
-    |  ips  | string | repeated | The IP list.                                                     |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | name | string |  | The name of the location. |
+    | uuid | string |  | TODO(v2): Use id instead to unify names. The UUID of the vector. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -262,6 +260,7 @@ It's the recommended method to insert a large number of vectors.
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -275,7 +274,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | ALREADY_EXISTS    | Request ID is already inserted.                                                                                                                     | Change request ID.                                                                       |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## MultiInsertWithMetadata RPC
 
 MultiInsertWithMetadata RPC is the method to add multiple new vectors and metadata in **1** request.
@@ -325,47 +323,46 @@ Please be careful that the size of the request exceeds the limit.
 
   - Insert.MultiRequest
 
-    |  field   | type           | label    | description                                |
-    | :------: | :------------- | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | requests | Insert.Request | repeated | Represent multiple insert request content. |
 
   - Insert.Request
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    | vector | Object.Vector |       | The vector to be inserted.               |
-    | config | Insert.Config |       | The configuration of the insert request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | vector | Object.Vector |  | The vector to be inserted. |
+    | config | Insert.Config |  | The configuration of the insert request. |
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                                                                                               |
-    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
-    |    id     | string |          | The vector ID.                                                                                                            |
-    |  vector   | float  | repeated | The vector.                                                                                                               |
-    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
-    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | vector | float | repeated | The vector. |
+    | timestamp | int64 |  | timestamp represents when this vector inserted. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
   - Insert.Config
 
-    |          field          | type          | label | description                                         |
-    | :---------------------: | :------------ | :---- | :-------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       | A flag to skip exist check during insert operation. |
-    |         filters         | Filter.Config |       | Filter configurations.                              |
-    |        timestamp        | int64         |       | Insert timestamp.                                   |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | skip_strict_exist_check | bool |  | A flag to skip exist check during insert operation. |
+    | filters | Filter.Config |  | Filter configurations. |
+    | timestamp | int64 |  | Insert timestamp. |
 
   - Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
   - Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Object.Locations`
@@ -385,17 +382,17 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Locations
 
-    |   field   | type            | label    | description |
-    | :-------: | :-------------- | :------- | :---------- |
-    | locations | Object.Location | repeated |             |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | locations | Object.Location | repeated |  |
 
   - Object.Location
 
-    | field | type   | label    | description                                                      |
-    | :---: | :----- | :------- | :--------------------------------------------------------------- |
-    | name  | string |          | The name of the location.                                        |
-    | uuid  | string |          | TODO(v2): Use id instead to unify names. The UUID of the vector. |
-    |  ips  | string | repeated | The IP list.                                                     |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | name | string |  | The name of the location. |
+    | uuid | string |  | TODO(v2): Use id instead to unify names. The UUID of the vector. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -411,6 +408,7 @@ Please be careful that the size of the request exceeds the limit.
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -424,7 +422,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | ALREADY_EXISTS    | Request ID is already inserted.                                                                                                                     | Change request ID.                                                                       |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
-
 # Vald ObjectWithMetadata APIs
 
 ## Overview
@@ -443,7 +440,7 @@ service ObjectWithMetadata {
 
 ## GetObjectWithMetadata RPC
 
-GetObjectWithMetadata RPC is the method to get the metadata of a vector inserted into the `vald-agent` and metadata.
+GetObjectWithMetadata RPC is the method to get a vector inserted into the `vald-agent` and its metadata.
 
 ### Input
 
@@ -472,30 +469,29 @@ GetObjectWithMetadata RPC is the method to get the metadata of a vector inserted
 
   - Object.VectorRequest
 
-    |  field  | type          | label | description                  |
-    | :-----: | :------------ | :---- | :--------------------------- |
-    |   id    | Object.ID     |       | The vector ID to be fetched. |
-    | filters | Filter.Config |       | Filter configurations.       |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | Object.ID |  | The vector ID to be fetched. |
+    | filters | Filter.Config |  | Filter configurations. |
 
   - Object.ID
 
-    | field | type   | label | description |
-    | :---: | :----- | :---- | :---------- |
-    |  id   | string |       |             |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  |  |
 
   - Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
   - Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Object.Vector`
@@ -512,12 +508,12 @@ GetObjectWithMetadata RPC is the method to get the metadata of a vector inserted
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                                                                                               |
-    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
-    |    id     | string |          | The vector ID.                                                                                                            |
-    |  vector   | float  | repeated | The vector.                                                                                                               |
-    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
-    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | vector | float | repeated | The vector. |
+    | timestamp | int64 |  | timestamp represents when this vector inserted. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -532,6 +528,7 @@ GetObjectWithMetadata RPC is the method to get the metadata of a vector inserted
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -545,7 +542,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## StreamGetObjectWithMetadata RPC
 
 StreamGetObjectWithMetadata RPC is the method to get the metadata of multiple existing vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
@@ -579,30 +575,29 @@ Each Upsert request and response are independent.
 
   - Object.VectorRequest
 
-    |  field  | type          | label | description                  |
-    | :-----: | :------------ | :---- | :--------------------------- |
-    |   id    | Object.ID     |       | The vector ID to be fetched. |
-    | filters | Filter.Config |       | Filter configurations.       |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | Object.ID |  | The vector ID to be fetched. |
+    | filters | Filter.Config |  | Filter configurations. |
 
   - Object.ID
 
-    | field | type   | label | description |
-    | :---: | :----- | :---- | :---------- |
-    |  id   | string |       |             |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  |  |
 
   - Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
   - Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Object.StreamVector`
@@ -624,19 +619,19 @@ Each Upsert request and response are independent.
 
   - Object.StreamVector
 
-    | field  | type              | label | description           |
-    | :----: | :---------------- | :---- | :-------------------- |
-    | vector | Object.Vector     |       | The vector.           |
-    | status | google.rpc.Status |       | The RPC error status. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | vector | Object.Vector |  | The vector. |
+    | status | google.rpc.Status |  | The RPC error status. |
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                                                                                               |
-    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
-    |    id     | string |          | The vector ID.                                                                                                            |
-    |  vector   | float  | repeated | The vector.                                                                                                               |
-    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
-    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | vector | float | repeated | The vector. |
+    | timestamp | int64 |  | timestamp represents when this vector inserted. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -651,6 +646,7 @@ Each Upsert request and response are independent.
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -664,10 +660,9 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## StreamListObjectWithMetadata RPC
 
-A method to get all the vectors with server streaming
+A method to get all vectors via server streaming.
 
 ### Input
 
@@ -683,7 +678,6 @@ A method to get all the vectors with server streaming
   - Object.List.Request
 
     empty
-
 ### Output
 
 - the scheme of `payload.v1.Object.List.Response`
@@ -705,33 +699,32 @@ A method to get all the vectors with server streaming
 
   - Object.List.Response
 
-    | field  | type              | label | description           |
-    | :----: | :---------------- | :---- | :-------------------- |
-    | vector | Object.Vector     |       | The vector            |
-    | status | google.rpc.Status |       | The RPC error status. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | vector | Object.Vector |  | The vector |
+    | status | google.rpc.Status |  | The RPC error status. |
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                                                                                               |
-    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
-    |    id     | string |          | The vector ID.                                                                                                            |
-    |  vector   | float  | repeated | The vector.                                                                                                               |
-    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
-    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | vector | float | repeated | The vector. |
+    | timestamp | int64 |  | timestamp represents when this vector inserted. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
-| code | description |
-| :--: | :---------- |
-
+| code | description       |
+| :--: | :---------------- |
 TODO
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 TODO
-
 # Vald RemoveWithMetadata APIs
 
 ## Overview
@@ -751,7 +744,7 @@ service RemoveWithMetadata {
 
 ## RemoveWithMetadata RPC
 
-RemoveWithMetadata RPC is the method to remove a single vector and metadata.
+RemoveWithMetadata RPC is the method to remove a single vector with metadata.
 
 ### Input
 
@@ -776,24 +769,23 @@ RemoveWithMetadata RPC is the method to remove a single vector and metadata.
 
   - Remove.Request
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    |   id   | Object.ID     |       | The object ID to be removed.             |
-    | config | Remove.Config |       | The configuration of the remove request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | Object.ID |  | The object ID to be removed. |
+    | config | Remove.Config |  | The configuration of the remove request. |
 
   - Object.ID
 
-    | field | type   | label | description |
-    | :---: | :----- | :---- | :---------- |
-    |  id   | string |       |             |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  |  |
 
   - Remove.Config
 
-    |          field          | type  | label | description                                         |
-    | :---------------------: | :---- | :---- | :-------------------------------------------------- |
-    | skip_strict_exist_check | bool  |       | A flag to skip exist check during upsert operation. |
-    |        timestamp        | int64 |       | Remove timestamp.                                   |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | skip_strict_exist_check | bool |  | A flag to skip the existence check during remove operation. |
+    | timestamp | int64 |  | Remove timestamp. |
 ### Output
 
 - the scheme of `payload.v1.Object.Location`
@@ -809,11 +801,11 @@ RemoveWithMetadata RPC is the method to remove a single vector and metadata.
 
   - Object.Location
 
-    | field | type   | label    | description                                                      |
-    | :---: | :----- | :------- | :--------------------------------------------------------------- |
-    | name  | string |          | The name of the location.                                        |
-    | uuid  | string |          | TODO(v2): Use id instead to unify names. The UUID of the vector. |
-    |  ips  | string | repeated | The IP list.                                                     |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | name | string |  | The name of the location. |
+    | uuid | string |  | TODO(v2): Use id instead to unify names. The UUID of the vector. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -829,6 +821,7 @@ RemoveWithMetadata RPC is the method to remove a single vector and metadata.
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -842,7 +835,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## RemoveByTimestampWithMetadata RPC
 
 RemoveByTimestampWithMetadata RPC is the method to remove vectors and metadata based on timestamp.
@@ -880,18 +872,17 @@ This design allows for versatile deletion operations, facilitating tasks such as
 
   - Remove.TimestampRequest
 
-        | field | type | label | description |
-        | :---: | :--- | :---- | :---------- |
-        | timestamps | Remove.Timestamp | repeated | The timestamp comparison list. If more than one is specified, the `AND`
-
-    search is applied. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | timestamps | Remove.Timestamp | repeated | The timestamp comparison list. If more than one is specified, the `AND`
+search is applied. |
 
   - Remove.Timestamp
 
-    |   field   | type                      | label | description               |
-    | :-------: | :------------------------ | :---- | :------------------------ |
-    | timestamp | int64                     |       | The timestamp.            |
-    | operator  | Remove.Timestamp.Operator |       | The conditional operator. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | timestamp | int64 |  | The timestamp. |
+    | operator | Remove.Timestamp.Operator |  | The conditional operator. |
 
 ### Output
 
@@ -912,17 +903,17 @@ This design allows for versatile deletion operations, facilitating tasks such as
 
   - Object.Locations
 
-    |   field   | type            | label    | description |
-    | :-------: | :-------------- | :------- | :---------- |
-    | locations | Object.Location | repeated |             |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | locations | Object.Location | repeated |  |
 
   - Object.Location
 
-    | field | type   | label    | description                                                      |
-    | :---: | :----- | :------- | :--------------------------------------------------------------- |
-    | name  | string |          | The name of the location.                                        |
-    | uuid  | string |          | TODO(v2): Use id instead to unify names. The UUID of the vector. |
-    |  ips  | string | repeated | The IP list.                                                     |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | name | string |  | The name of the location. |
+    | uuid | string |  | TODO(v2): Use id instead to unify names. The UUID of the vector. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -936,6 +927,7 @@ This design allows for versatile deletion operations, facilitating tasks such as
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -947,8 +939,7 @@ Here are some common reasons and how to resolve each error.
 | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.                              |
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed.                             |
 | NOT_FOUND         | No vectors in the system match the specified timestamp conditions.                              | Check whether vectors matching the specified timestamp conditions exist in the system, and fix conditions if needed. |
-| INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.                                 |
-
+| INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.
 ## StreamRemoveWithMetadata RPC
 
 A method to remove multiple with metadata indexed vectors and metadata by bidirectional streaming.
@@ -956,7 +947,7 @@ A method to remove multiple with metadata indexed vectors and metadata by bidire
 StreamRemoveWithMetadata RPC is the method to remove multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
 Using the bidirectional streaming RPC, the remove request can be communicated in any order between client and server.
 Each Remove request and response are independent.
-It's the recommended method to remove a large number of vectors.
+This is the recommended method to remove many vectors.
 
 ### Input
 
@@ -981,24 +972,23 @@ It's the recommended method to remove a large number of vectors.
 
   - Remove.Request
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    |   id   | Object.ID     |       | The object ID to be removed.             |
-    | config | Remove.Config |       | The configuration of the remove request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | Object.ID |  | The object ID to be removed. |
+    | config | Remove.Config |  | The configuration of the remove request. |
 
   - Object.ID
 
-    | field | type   | label | description |
-    | :---: | :----- | :---- | :---------- |
-    |  id   | string |       |             |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  |  |
 
   - Remove.Config
 
-    |          field          | type  | label | description                                         |
-    | :---------------------: | :---- | :---- | :-------------------------------------------------- |
-    | skip_strict_exist_check | bool  |       | A flag to skip exist check during upsert operation. |
-    |        timestamp        | int64 |       | Remove timestamp.                                   |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | skip_strict_exist_check | bool |  | A flag to skip the existence check during remove operation. |
+    | timestamp | int64 |  | Remove timestamp. |
 ### Output
 
 - the scheme of `payload.v1.Object.StreamLocation`
@@ -1019,18 +1009,18 @@ It's the recommended method to remove a large number of vectors.
 
   - Object.StreamLocation
 
-    |  field   | type              | label | description           |
-    | :------: | :---------------- | :---- | :-------------------- |
-    | location | Object.Location   |       | The vector location.  |
-    |  status  | google.rpc.Status |       | The RPC error status. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | location | Object.Location |  | The vector location. |
+    | status | google.rpc.Status |  | The RPC error status. |
 
   - Object.Location
 
-    | field | type   | label    | description                                                      |
-    | :---: | :----- | :------- | :--------------------------------------------------------------- |
-    | name  | string |          | The name of the location.                                        |
-    | uuid  | string |          | TODO(v2): Use id instead to unify names. The UUID of the vector. |
-    |  ips  | string | repeated | The IP list.                                                     |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | name | string |  | The name of the location. |
+    | uuid | string |  | TODO(v2): Use id instead to unify names. The UUID of the vector. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -1046,6 +1036,7 @@ It's the recommended method to remove a large number of vectors.
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -1059,7 +1050,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## MultiRemoveWithMetadata RPC
 
 MultiRemoveWithMetadata is the method to remove multiple vectors and metadata in **1** request.
@@ -1096,30 +1086,29 @@ Please be careful that the size of the request exceeds the limit.
 
   - Remove.MultiRequest
 
-    |  field   | type           | label    | description                                    |
-    | :------: | :------------- | :------- | :--------------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | requests | Remove.Request | repeated | Represent the multiple remove request content. |
 
   - Remove.Request
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    |   id   | Object.ID     |       | The object ID to be removed.             |
-    | config | Remove.Config |       | The configuration of the remove request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | Object.ID |  | The object ID to be removed. |
+    | config | Remove.Config |  | The configuration of the remove request. |
 
   - Object.ID
 
-    | field | type   | label | description |
-    | :---: | :----- | :---- | :---------- |
-    |  id   | string |       |             |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  |  |
 
   - Remove.Config
 
-    |          field          | type  | label | description                                         |
-    | :---------------------: | :---- | :---- | :-------------------------------------------------- |
-    | skip_strict_exist_check | bool  |       | A flag to skip exist check during upsert operation. |
-    |        timestamp        | int64 |       | Remove timestamp.                                   |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | skip_strict_exist_check | bool |  | A flag to skip the existence check during remove operation. |
+    | timestamp | int64 |  | Remove timestamp. |
 ### Output
 
 - the scheme of `payload.v1.Object.Locations`
@@ -1139,17 +1128,17 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Locations
 
-    |   field   | type            | label    | description |
-    | :-------: | :-------------- | :------- | :---------- |
-    | locations | Object.Location | repeated |             |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | locations | Object.Location | repeated |  |
 
   - Object.Location
 
-    | field | type   | label    | description                                                      |
-    | :---: | :----- | :------- | :--------------------------------------------------------------- |
-    | name  | string |          | The name of the location.                                        |
-    | uuid  | string |          | TODO(v2): Use id instead to unify names. The UUID of the vector. |
-    |  ips  | string | repeated | The IP list.                                                     |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | name | string |  | The name of the location. |
+    | uuid | string |  | TODO(v2): Use id instead to unify names. The UUID of the vector. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -1165,6 +1154,7 @@ Please be careful that the size of the request exceeds the limit.
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -1178,7 +1168,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |
-
 # Vald SearchWithMetadata APIs
 
 ## Overview
@@ -1254,41 +1243,41 @@ SearchWithMetadata RPC is the method to search vector(s) similar to the request 
 
   - Search.Request
 
-    | field  | type          | label    | description                              |
-    | :----: | :------------ | :------- | :--------------------------------------- |
-    | vector | float         | repeated | The vector to be searched.               |
-    | config | Search.Config |          | The configuration of the search request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | vector | float | repeated | The vector to be searched. |
+    | config | Search.Config |  | The configuration of the search request. |
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | request_id | string |  | Unique request ID. |
+    | num | uint32 |  | Maximum number of result to be returned. |
+    | radius | float |  | Search radius. |
+    | epsilon | float |  | Search coefficient. |
+    | timeout | int64 |  | Search timeout in nanoseconds. |
+    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
+    | egress_filters | Filter.Config |  | Egress filter configurations. |
+    | min_num | uint32 |  | Minimum number of result to be returned. |
+    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
+    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
+    | nprobe | uint32 |  | Search nprobe. |
+    | edge_size | int32 |  | Search edge size |
 
   - Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
 
   - Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Search.Response`
@@ -1309,18 +1298,18 @@ SearchWithMetadata RPC is the method to search vector(s) similar to the request 
 
   - Search.Response
 
-    |   field    | type            | label    | description            |
-    | :--------: | :-------------- | :------- | :--------------------- |
-    | request_id | string          |          | The unique request ID. |
-    |  results   | Object.Distance | repeated | Search results.        |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | request_id | string |  | The unique request ID. |
+    | results | Object.Distance | repeated | Search results. |
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                                                                                               |
-    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
-    |    id    | string |          | The vector ID.                                                                                                            |
-    | distance | float  |          | The distance.                                                                                                             |
-    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | distance | float |  | The distance. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -1336,6 +1325,7 @@ SearchWithMetadata RPC is the method to search vector(s) similar to the request 
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -1349,7 +1339,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## SearchByIDWithMetadata RPC
 
 SearchByIDWithMetadata RPC is the method to search similar vectors using a user-defined vector ID and to get metadata.<br>
@@ -1401,41 +1390,41 @@ The vector with the same requested ID should be indexed into the `vald-lb-gatewa
 
   - Search.IDRequest
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    |   id   | string        |       | The vector ID to be searched.            |
-    | config | Search.Config |       | The configuration of the search request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID to be searched. |
+    | config | Search.Config |  | The configuration of the search request. |
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | request_id | string |  | Unique request ID. |
+    | num | uint32 |  | Maximum number of result to be returned. |
+    | radius | float |  | Search radius. |
+    | epsilon | float |  | Search coefficient. |
+    | timeout | int64 |  | Search timeout in nanoseconds. |
+    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
+    | egress_filters | Filter.Config |  | Egress filter configurations. |
+    | min_num | uint32 |  | Minimum number of result to be returned. |
+    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
+    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
+    | nprobe | uint32 |  | Search nprobe. |
+    | edge_size | int32 |  | Search edge size |
 
   - Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
 
   - Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Search.Response`
@@ -1456,18 +1445,18 @@ The vector with the same requested ID should be indexed into the `vald-lb-gatewa
 
   - Search.Response
 
-    |   field    | type            | label    | description            |
-    | :--------: | :-------------- | :------- | :--------------------- |
-    | request_id | string          |          | The unique request ID. |
-    |  results   | Object.Distance | repeated | Search results.        |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | request_id | string |  | The unique request ID. |
+    | results | Object.Distance | repeated | Search results. |
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                                                                                               |
-    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
-    |    id    | string |          | The vector ID.                                                                                                            |
-    | distance | float  |          | The distance.                                                                                                             |
-    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | distance | float |  | The distance. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -1483,6 +1472,7 @@ The vector with the same requested ID should be indexed into the `vald-lb-gatewa
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -1496,7 +1486,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## StreamSearchWithMetadata RPC
 
 StreamSearchWithMetadata RPC is the method to search vectors and to get metadata with multi queries(vectors) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
@@ -1549,41 +1538,41 @@ Each Search request and response are independent.
 
   - Search.Request
 
-    | field  | type          | label    | description                              |
-    | :----: | :------------ | :------- | :--------------------------------------- |
-    | vector | float         | repeated | The vector to be searched.               |
-    | config | Search.Config |          | The configuration of the search request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | vector | float | repeated | The vector to be searched. |
+    | config | Search.Config |  | The configuration of the search request. |
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | request_id | string |  | Unique request ID. |
+    | num | uint32 |  | Maximum number of result to be returned. |
+    | radius | float |  | Search radius. |
+    | epsilon | float |  | Search coefficient. |
+    | timeout | int64 |  | Search timeout in nanoseconds. |
+    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
+    | egress_filters | Filter.Config |  | Egress filter configurations. |
+    | min_num | uint32 |  | Minimum number of result to be returned. |
+    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
+    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
+    | nprobe | uint32 |  | Search nprobe. |
+    | edge_size | int32 |  | Search edge size |
 
   - Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
 
   - Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Search.StreamResponse`
@@ -1609,25 +1598,25 @@ Each Search request and response are independent.
 
   - Search.StreamResponse
 
-    |  field   | type              | label | description                    |
-    | :------: | :---------------- | :---- | :----------------------------- |
-    | response | Search.Response   |       | Represent the search response. |
-    |  status  | google.rpc.Status |       | The RPC error status.          |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | response | Search.Response |  | Represent the search response. |
+    | status | google.rpc.Status |  | The RPC error status. |
 
   - Search.Response
 
-    |   field    | type            | label    | description            |
-    | :--------: | :-------------- | :------- | :--------------------- |
-    | request_id | string          |          | The unique request ID. |
-    |  results   | Object.Distance | repeated | Search results.        |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | request_id | string |  | The unique request ID. |
+    | results | Object.Distance | repeated | Search results. |
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                                                                                               |
-    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
-    |    id    | string |          | The vector ID.                                                                                                            |
-    | distance | float  |          | The distance.                                                                                                             |
-    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | distance | float |  | The distance. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -1643,6 +1632,7 @@ Each Search request and response are independent.
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -1656,7 +1646,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## StreamSearchByIDWithMetadata RPC
 
 StreamSearchByIDWithMetadata RPC is the method to search vectors and to get metadata with multi queries(IDs) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
@@ -1709,41 +1698,41 @@ Each SearchByID request and response are independent.
 
   - Search.IDRequest
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    |   id   | string        |       | The vector ID to be searched.            |
-    | config | Search.Config |       | The configuration of the search request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID to be searched. |
+    | config | Search.Config |  | The configuration of the search request. |
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | request_id | string |  | Unique request ID. |
+    | num | uint32 |  | Maximum number of result to be returned. |
+    | radius | float |  | Search radius. |
+    | epsilon | float |  | Search coefficient. |
+    | timeout | int64 |  | Search timeout in nanoseconds. |
+    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
+    | egress_filters | Filter.Config |  | Egress filter configurations. |
+    | min_num | uint32 |  | Minimum number of result to be returned. |
+    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
+    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
+    | nprobe | uint32 |  | Search nprobe. |
+    | edge_size | int32 |  | Search edge size |
 
   - Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
 
   - Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Search.StreamResponse`
@@ -1769,25 +1758,25 @@ Each SearchByID request and response are independent.
 
   - Search.StreamResponse
 
-    |  field   | type              | label | description                    |
-    | :------: | :---------------- | :---- | :----------------------------- |
-    | response | Search.Response   |       | Represent the search response. |
-    |  status  | google.rpc.Status |       | The RPC error status.          |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | response | Search.Response |  | Represent the search response. |
+    | status | google.rpc.Status |  | The RPC error status. |
 
   - Search.Response
 
-    |   field    | type            | label    | description            |
-    | :--------: | :-------------- | :------- | :--------------------- |
-    | request_id | string          |          | The unique request ID. |
-    |  results   | Object.Distance | repeated | Search results.        |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | request_id | string |  | The unique request ID. |
+    | results | Object.Distance | repeated | Search results. |
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                                                                                               |
-    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
-    |    id    | string |          | The vector ID.                                                                                                            |
-    | distance | float  |          | The distance.                                                                                                             |
-    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | distance | float |  | The distance. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -1803,6 +1792,7 @@ Each SearchByID request and response are independent.
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -1816,7 +1806,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## MultiSearchWithMetadata RPC
 
 MultiSearchWithMetadata RPC is the method to search vectors and to get metadata with multiple vectors in **1** request.
@@ -1876,47 +1865,47 @@ Please be careful that the size of the request exceeds the limit.
 
   - Search.MultiRequest
 
-    |  field   | type           | label    | description                                    |
-    | :------: | :------------- | :------- | :--------------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | requests | Search.Request | repeated | Represent the multiple search request content. |
 
   - Search.Request
 
-    | field  | type          | label    | description                              |
-    | :----: | :------------ | :------- | :--------------------------------------- |
-    | vector | float         | repeated | The vector to be searched.               |
-    | config | Search.Config |          | The configuration of the search request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | vector | float | repeated | The vector to be searched. |
+    | config | Search.Config |  | The configuration of the search request. |
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | request_id | string |  | Unique request ID. |
+    | num | uint32 |  | Maximum number of result to be returned. |
+    | radius | float |  | Search radius. |
+    | epsilon | float |  | Search coefficient. |
+    | timeout | int64 |  | Search timeout in nanoseconds. |
+    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
+    | egress_filters | Filter.Config |  | Egress filter configurations. |
+    | min_num | uint32 |  | Minimum number of result to be returned. |
+    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
+    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
+    | nprobe | uint32 |  | Search nprobe. |
+    | edge_size | int32 |  | Search edge size |
 
   - Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
 
   - Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Search.Responses`
@@ -1941,24 +1930,24 @@ Please be careful that the size of the request exceeds the limit.
 
   - Search.Responses
 
-    |   field   | type            | label    | description                                     |
-    | :-------: | :-------------- | :------- | :---------------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | responses | Search.Response | repeated | Represent the multiple search response content. |
 
   - Search.Response
 
-    |   field    | type            | label    | description            |
-    | :--------: | :-------------- | :------- | :--------------------- |
-    | request_id | string          |          | The unique request ID. |
-    |  results   | Object.Distance | repeated | Search results.        |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | request_id | string |  | The unique request ID. |
+    | results | Object.Distance | repeated | Search results. |
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                                                                                               |
-    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
-    |    id    | string |          | The vector ID.                                                                                                            |
-    | distance | float  |          | The distance.                                                                                                             |
-    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | distance | float |  | The distance. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -1974,6 +1963,7 @@ Please be careful that the size of the request exceeds the limit.
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -1987,7 +1977,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## MultiSearchByIDWithMetadata RPC
 
 MultiSearchByIDWithMetadata RPC is the method to search vectors and to get metadata with multiple IDs in **1** request.
@@ -2047,47 +2036,47 @@ Please be careful that the size of the request exceeds the limit.
 
   - Search.MultiIDRequest
 
-    |  field   | type             | label    | description                                          |
-    | :------: | :--------------- | :------- | :--------------------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | requests | Search.IDRequest | repeated | Represent the multiple search by ID request content. |
 
   - Search.IDRequest
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    |   id   | string        |       | The vector ID to be searched.            |
-    | config | Search.Config |       | The configuration of the search request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID to be searched. |
+    | config | Search.Config |  | The configuration of the search request. |
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | request_id | string |  | Unique request ID. |
+    | num | uint32 |  | Maximum number of result to be returned. |
+    | radius | float |  | Search radius. |
+    | epsilon | float |  | Search coefficient. |
+    | timeout | int64 |  | Search timeout in nanoseconds. |
+    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
+    | egress_filters | Filter.Config |  | Egress filter configurations. |
+    | min_num | uint32 |  | Minimum number of result to be returned. |
+    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
+    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
+    | nprobe | uint32 |  | Search nprobe. |
+    | edge_size | int32 |  | Search edge size |
 
   - Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
 
   - Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Search.Responses`
@@ -2112,24 +2101,24 @@ Please be careful that the size of the request exceeds the limit.
 
   - Search.Responses
 
-    |   field   | type            | label    | description                                     |
-    | :-------: | :-------------- | :------- | :---------------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | responses | Search.Response | repeated | Represent the multiple search response content. |
 
   - Search.Response
 
-    |   field    | type            | label    | description            |
-    | :--------: | :-------------- | :------- | :--------------------- |
-    | request_id | string          |          | The unique request ID. |
-    |  results   | Object.Distance | repeated | Search results.        |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | request_id | string |  | The unique request ID. |
+    | results | Object.Distance | repeated | Search results. |
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                                                                                               |
-    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
-    |    id    | string |          | The vector ID.                                                                                                            |
-    | distance | float  |          | The distance.                                                                                                             |
-    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | distance | float |  | The distance. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -2145,6 +2134,7 @@ Please be careful that the size of the request exceeds the limit.
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -2158,7 +2148,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## LinearSearchWithMetadata RPC
 
 LinearSearchWithMetadata RPC is the method to linear search vector(s) similar to the request vector and to get metadata.
@@ -2209,41 +2198,41 @@ LinearSearchWithMetadata RPC is the method to linear search vector(s) similar to
 
   - Search.Request
 
-    | field  | type          | label    | description                              |
-    | :----: | :------------ | :------- | :--------------------------------------- |
-    | vector | float         | repeated | The vector to be searched.               |
-    | config | Search.Config |          | The configuration of the search request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | vector | float | repeated | The vector to be searched. |
+    | config | Search.Config |  | The configuration of the search request. |
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | request_id | string |  | Unique request ID. |
+    | num | uint32 |  | Maximum number of result to be returned. |
+    | radius | float |  | Search radius. |
+    | epsilon | float |  | Search coefficient. |
+    | timeout | int64 |  | Search timeout in nanoseconds. |
+    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
+    | egress_filters | Filter.Config |  | Egress filter configurations. |
+    | min_num | uint32 |  | Minimum number of result to be returned. |
+    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
+    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
+    | nprobe | uint32 |  | Search nprobe. |
+    | edge_size | int32 |  | Search edge size |
 
   - Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
 
   - Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Search.Response`
@@ -2264,18 +2253,18 @@ LinearSearchWithMetadata RPC is the method to linear search vector(s) similar to
 
   - Search.Response
 
-    |   field    | type            | label    | description            |
-    | :--------: | :-------------- | :------- | :--------------------- |
-    | request_id | string          |          | The unique request ID. |
-    |  results   | Object.Distance | repeated | Search results.        |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | request_id | string |  | The unique request ID. |
+    | results | Object.Distance | repeated | Search results. |
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                                                                                               |
-    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
-    |    id    | string |          | The vector ID.                                                                                                            |
-    | distance | float  |          | The distance.                                                                                                             |
-    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | distance | float |  | The distance. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -2291,6 +2280,7 @@ LinearSearchWithMetadata RPC is the method to linear search vector(s) similar to
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -2304,7 +2294,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## LinearSearchByIDWithMetadata RPC
 
 LinearSearchByIDWithMetadata RPC is the method to linear search similar vectors using a user-defined vector ID and to get metadata.<br>
@@ -2357,41 +2346,41 @@ You will get a `NOT_FOUND` error if the vector isn't stored.
 
   - Search.IDRequest
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    |   id   | string        |       | The vector ID to be searched.            |
-    | config | Search.Config |       | The configuration of the search request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID to be searched. |
+    | config | Search.Config |  | The configuration of the search request. |
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | request_id | string |  | Unique request ID. |
+    | num | uint32 |  | Maximum number of result to be returned. |
+    | radius | float |  | Search radius. |
+    | epsilon | float |  | Search coefficient. |
+    | timeout | int64 |  | Search timeout in nanoseconds. |
+    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
+    | egress_filters | Filter.Config |  | Egress filter configurations. |
+    | min_num | uint32 |  | Minimum number of result to be returned. |
+    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
+    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
+    | nprobe | uint32 |  | Search nprobe. |
+    | edge_size | int32 |  | Search edge size |
 
   - Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
 
   - Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Search.Response`
@@ -2412,18 +2401,18 @@ You will get a `NOT_FOUND` error if the vector isn't stored.
 
   - Search.Response
 
-    |   field    | type            | label    | description            |
-    | :--------: | :-------------- | :------- | :--------------------- |
-    | request_id | string          |          | The unique request ID. |
-    |  results   | Object.Distance | repeated | Search results.        |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | request_id | string |  | The unique request ID. |
+    | results | Object.Distance | repeated | Search results. |
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                                                                                               |
-    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
-    |    id    | string |          | The vector ID.                                                                                                            |
-    | distance | float  |          | The distance.                                                                                                             |
-    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | distance | float |  | The distance. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -2439,6 +2428,7 @@ You will get a `NOT_FOUND` error if the vector isn't stored.
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -2452,7 +2442,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## StreamLinearSearchWithMetadata RPC
 
 StreamLinearSearchWithMetadata RPC is the method to linear search vectors and to get metadata with multi queries(vectors) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
@@ -2505,41 +2494,41 @@ Each LinearSearch request and response are independent.
 
   - Search.Request
 
-    | field  | type          | label    | description                              |
-    | :----: | :------------ | :------- | :--------------------------------------- |
-    | vector | float         | repeated | The vector to be searched.               |
-    | config | Search.Config |          | The configuration of the search request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | vector | float | repeated | The vector to be searched. |
+    | config | Search.Config |  | The configuration of the search request. |
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | request_id | string |  | Unique request ID. |
+    | num | uint32 |  | Maximum number of result to be returned. |
+    | radius | float |  | Search radius. |
+    | epsilon | float |  | Search coefficient. |
+    | timeout | int64 |  | Search timeout in nanoseconds. |
+    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
+    | egress_filters | Filter.Config |  | Egress filter configurations. |
+    | min_num | uint32 |  | Minimum number of result to be returned. |
+    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
+    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
+    | nprobe | uint32 |  | Search nprobe. |
+    | edge_size | int32 |  | Search edge size |
 
   - Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
 
   - Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Search.StreamResponse`
@@ -2565,25 +2554,25 @@ Each LinearSearch request and response are independent.
 
   - Search.StreamResponse
 
-    |  field   | type              | label | description                    |
-    | :------: | :---------------- | :---- | :----------------------------- |
-    | response | Search.Response   |       | Represent the search response. |
-    |  status  | google.rpc.Status |       | The RPC error status.          |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | response | Search.Response |  | Represent the search response. |
+    | status | google.rpc.Status |  | The RPC error status. |
 
   - Search.Response
 
-    |   field    | type            | label    | description            |
-    | :--------: | :-------------- | :------- | :--------------------- |
-    | request_id | string          |          | The unique request ID. |
-    |  results   | Object.Distance | repeated | Search results.        |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | request_id | string |  | The unique request ID. |
+    | results | Object.Distance | repeated | Search results. |
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                                                                                               |
-    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
-    |    id    | string |          | The vector ID.                                                                                                            |
-    | distance | float  |          | The distance.                                                                                                             |
-    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | distance | float |  | The distance. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -2599,6 +2588,7 @@ Each LinearSearch request and response are independent.
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -2612,7 +2602,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## StreamLinearSearchByIDWithMetadata RPC
 
 StreamLinearSearchByIDWithMetadata RPC is the method to linear search vectors and to get metadata with multi queries(IDs) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
@@ -2665,41 +2654,41 @@ Each LinearSearchByID request and response are independent.
 
   - Search.IDRequest
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    |   id   | string        |       | The vector ID to be searched.            |
-    | config | Search.Config |       | The configuration of the search request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID to be searched. |
+    | config | Search.Config |  | The configuration of the search request. |
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | request_id | string |  | Unique request ID. |
+    | num | uint32 |  | Maximum number of result to be returned. |
+    | radius | float |  | Search radius. |
+    | epsilon | float |  | Search coefficient. |
+    | timeout | int64 |  | Search timeout in nanoseconds. |
+    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
+    | egress_filters | Filter.Config |  | Egress filter configurations. |
+    | min_num | uint32 |  | Minimum number of result to be returned. |
+    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
+    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
+    | nprobe | uint32 |  | Search nprobe. |
+    | edge_size | int32 |  | Search edge size |
 
   - Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
 
   - Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Search.StreamResponse`
@@ -2725,25 +2714,25 @@ Each LinearSearchByID request and response are independent.
 
   - Search.StreamResponse
 
-    |  field   | type              | label | description                    |
-    | :------: | :---------------- | :---- | :----------------------------- |
-    | response | Search.Response   |       | Represent the search response. |
-    |  status  | google.rpc.Status |       | The RPC error status.          |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | response | Search.Response |  | Represent the search response. |
+    | status | google.rpc.Status |  | The RPC error status. |
 
   - Search.Response
 
-    |   field    | type            | label    | description            |
-    | :--------: | :-------------- | :------- | :--------------------- |
-    | request_id | string          |          | The unique request ID. |
-    |  results   | Object.Distance | repeated | Search results.        |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | request_id | string |  | The unique request ID. |
+    | results | Object.Distance | repeated | Search results. |
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                                                                                               |
-    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
-    |    id    | string |          | The vector ID.                                                                                                            |
-    | distance | float  |          | The distance.                                                                                                             |
-    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | distance | float |  | The distance. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -2759,6 +2748,7 @@ Each LinearSearchByID request and response are independent.
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -2772,7 +2762,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## MultiLinearSearchWithMetadata RPC
 
 MultiLinearSearchWithMetadata RPC is the method to linear search vectors and to get metadata with multiple vectors in **1** request.
@@ -2832,47 +2821,47 @@ Please be careful that the size of the request exceeds the limit.
 
   - Search.MultiRequest
 
-    |  field   | type           | label    | description                                    |
-    | :------: | :------------- | :------- | :--------------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | requests | Search.Request | repeated | Represent the multiple search request content. |
 
   - Search.Request
 
-    | field  | type          | label    | description                              |
-    | :----: | :------------ | :------- | :--------------------------------------- |
-    | vector | float         | repeated | The vector to be searched.               |
-    | config | Search.Config |          | The configuration of the search request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | vector | float | repeated | The vector to be searched. |
+    | config | Search.Config |  | The configuration of the search request. |
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | request_id | string |  | Unique request ID. |
+    | num | uint32 |  | Maximum number of result to be returned. |
+    | radius | float |  | Search radius. |
+    | epsilon | float |  | Search coefficient. |
+    | timeout | int64 |  | Search timeout in nanoseconds. |
+    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
+    | egress_filters | Filter.Config |  | Egress filter configurations. |
+    | min_num | uint32 |  | Minimum number of result to be returned. |
+    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
+    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
+    | nprobe | uint32 |  | Search nprobe. |
+    | edge_size | int32 |  | Search edge size |
 
   - Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
 
   - Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Search.Responses`
@@ -2897,24 +2886,24 @@ Please be careful that the size of the request exceeds the limit.
 
   - Search.Responses
 
-    |   field   | type            | label    | description                                     |
-    | :-------: | :-------------- | :------- | :---------------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | responses | Search.Response | repeated | Represent the multiple search response content. |
 
   - Search.Response
 
-    |   field    | type            | label    | description            |
-    | :--------: | :-------------- | :------- | :--------------------- |
-    | request_id | string          |          | The unique request ID. |
-    |  results   | Object.Distance | repeated | Search results.        |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | request_id | string |  | The unique request ID. |
+    | results | Object.Distance | repeated | Search results. |
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                                                                                               |
-    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
-    |    id    | string |          | The vector ID.                                                                                                            |
-    | distance | float  |          | The distance.                                                                                                             |
-    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | distance | float |  | The distance. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -2930,6 +2919,7 @@ Please be careful that the size of the request exceeds the limit.
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -2943,7 +2933,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## MultiLinearSearchByIDWithMetadata RPC
 
 MultiLinearSearchByIDWithMetadata RPC is the method to linear search vectors and to get metadata with multiple IDs in **1** request.
@@ -3004,47 +2993,47 @@ Please be careful that the size of the request exceeds the limit.
 
   - Search.MultiIDRequest
 
-    |  field   | type             | label    | description                                          |
-    | :------: | :--------------- | :------- | :--------------------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | requests | Search.IDRequest | repeated | Represent the multiple search by ID request content. |
 
   - Search.IDRequest
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    |   id   | string        |       | The vector ID to be searched.            |
-    | config | Search.Config |       | The configuration of the search request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID to be searched. |
+    | config | Search.Config |  | The configuration of the search request. |
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | request_id | string |  | Unique request ID. |
+    | num | uint32 |  | Maximum number of result to be returned. |
+    | radius | float |  | Search radius. |
+    | epsilon | float |  | Search coefficient. |
+    | timeout | int64 |  | Search timeout in nanoseconds. |
+    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
+    | egress_filters | Filter.Config |  | Egress filter configurations. |
+    | min_num | uint32 |  | Minimum number of result to be returned. |
+    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
+    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
+    | nprobe | uint32 |  | Search nprobe. |
+    | edge_size | int32 |  | Search edge size |
 
   - Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
 
   - Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Search.Responses`
@@ -3069,24 +3058,24 @@ Please be careful that the size of the request exceeds the limit.
 
   - Search.Responses
 
-    |   field   | type            | label    | description                                     |
-    | :-------: | :-------------- | :------- | :---------------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | responses | Search.Response | repeated | Represent the multiple search response content. |
 
   - Search.Response
 
-    |   field    | type            | label    | description            |
-    | :--------: | :-------------- | :------- | :--------------------- |
-    | request_id | string          |          | The unique request ID. |
-    |  results   | Object.Distance | repeated | Search results.        |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | request_id | string |  | The unique request ID. |
+    | results | Object.Distance | repeated | Search results. |
 
   - Object.Distance
 
-    |  field   | type   | label    | description                                                                                                               |
-    | :------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
-    |    id    | string |          | The vector ID.                                                                                                            |
-    | distance | float  |          | The distance.                                                                                                             |
-    | metadata | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | distance | float |  | The distance. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -3102,6 +3091,7 @@ Please be careful that the size of the request exceeds the limit.
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -3115,12 +3105,11 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
-
 # Vald UpdateWithMetadata APIs
 
 ## Overview
 
-UpdateWithMetadata Service updates to new vector from inserted vector in the `vald-agent` components and updates to new metadata from set metadata.
+UpdateWithMetadata Service updates vectors in the `vald-agent` components and refreshes their metadata.
 
 ```rpc
 service UpdateWithMetadata {
@@ -3174,44 +3163,42 @@ UpdateWithMetadata RPC is the method to update a single vector.
 
   - Update.Request
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    | vector | Object.Vector |       | The vector to be updated.                |
-    | config | Update.Config |       | The configuration of the update request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | vector | Object.Vector |  | The vector to be updated. |
+    | config | Update.Config |  | The configuration of the update request. |
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                                                                                               |
-    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
-    |    id     | string |          | The vector ID.                                                                                                            |
-    |  vector   | float  | repeated | The vector.                                                                                                               |
-    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
-    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | vector | float | repeated | The vector. |
+    | timestamp | int64 |  | timestamp represents when this vector inserted. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
   - Update.Config
 
-        | field | type | label | description |
-        | :---: | :--- | :---- | :---------- |
-        | skip_strict_exist_check | bool |  | A flag to skip exist check during update operation. |
-        | filters | Filter.Config |  | Filter configuration. |
-        | timestamp | int64 |  | Update timestamp. |
-        | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
-
-    during update operation. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | skip_strict_exist_check | bool |  | A flag to skip exist check during update operation. |
+    | filters | Filter.Config |  | Filter configuration. |
+    | timestamp | int64 |  | Update timestamp. |
+    | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
+during update operation. |
 
   - Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
   - Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Object.Location`
@@ -3227,11 +3214,11 @@ UpdateWithMetadata RPC is the method to update a single vector.
 
   - Object.Location
 
-    | field | type   | label    | description                                                      |
-    | :---: | :----- | :------- | :--------------------------------------------------------------- |
-    | name  | string |          | The name of the location.                                        |
-    | uuid  | string |          | TODO(v2): Use id instead to unify names. The UUID of the vector. |
-    |  ips  | string | repeated | The IP list.                                                     |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | name | string |  | The name of the location. |
+    | uuid | string |  | TODO(v2): Use id instead to unify names. The UUID of the vector. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -3248,6 +3235,7 @@ UpdateWithMetadata RPC is the method to update a single vector.
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -3260,15 +3248,14 @@ Here are some common reasons and how to resolve each error.
 | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | Requested ID is NOT inserted.                                                                                                                       | Send a request with an ID that is already inserted.                                      |
-| ALREADY_EXISTS    | Request pair of ID and vector is already inserted.                                                                                                  | Change request ID.                                                                       |
+| ALREADY_EXISTS    | The requested ID/vector pair is already inserted.                                                                                                   | Change request ID.                                                                       |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## StreamUpdateWithMetadata RPC
 
 StreamUpdateWithMetadata RPC is the method to update multiple vectors and metadata using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
 Using the bidirectional streaming RPC, the update request can be communicated in any order between client and server.
 Each Update request and response are independent.
-It's the recommended method to update the large amount of vectors.
+This is the recommended method to update many vectors.
 
 ### Input
 
@@ -3307,44 +3294,42 @@ It's the recommended method to update the large amount of vectors.
 
   - Update.Request
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    | vector | Object.Vector |       | The vector to be updated.                |
-    | config | Update.Config |       | The configuration of the update request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | vector | Object.Vector |  | The vector to be updated. |
+    | config | Update.Config |  | The configuration of the update request. |
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                                                                                               |
-    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
-    |    id     | string |          | The vector ID.                                                                                                            |
-    |  vector   | float  | repeated | The vector.                                                                                                               |
-    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
-    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | vector | float | repeated | The vector. |
+    | timestamp | int64 |  | timestamp represents when this vector inserted. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
   - Update.Config
 
-        | field | type | label | description |
-        | :---: | :--- | :---- | :---------- |
-        | skip_strict_exist_check | bool |  | A flag to skip exist check during update operation. |
-        | filters | Filter.Config |  | Filter configuration. |
-        | timestamp | int64 |  | Update timestamp. |
-        | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
-
-    during update operation. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | skip_strict_exist_check | bool |  | A flag to skip exist check during update operation. |
+    | filters | Filter.Config |  | Filter configuration. |
+    | timestamp | int64 |  | Update timestamp. |
+    | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
+during update operation. |
 
   - Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
   - Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Object.StreamLocation`
@@ -3365,18 +3350,18 @@ It's the recommended method to update the large amount of vectors.
 
   - Object.StreamLocation
 
-    |  field   | type              | label | description           |
-    | :------: | :---------------- | :---- | :-------------------- |
-    | location | Object.Location   |       | The vector location.  |
-    |  status  | google.rpc.Status |       | The RPC error status. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | location | Object.Location |  | The vector location. |
+    | status | google.rpc.Status |  | The RPC error status. |
 
   - Object.Location
 
-    | field | type   | label    | description                                                      |
-    | :---: | :----- | :------- | :--------------------------------------------------------------- |
-    | name  | string |          | The name of the location.                                        |
-    | uuid  | string |          | TODO(v2): Use id instead to unify names. The UUID of the vector. |
-    |  ips  | string | repeated | The IP list.                                                     |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | name | string |  | The name of the location. |
+    | uuid | string |  | TODO(v2): Use id instead to unify names. The UUID of the vector. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -3393,6 +3378,7 @@ It's the recommended method to update the large amount of vectors.
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -3405,9 +3391,8 @@ Here are some common reasons and how to resolve each error.
 | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | Requested ID is NOT inserted.                                                                                                                       | Send a request with an ID that is already inserted.                                      |
-| ALREADY_EXISTS    | Request pair of ID and vector is already inserted.                                                                                                  | Change request ID.                                                                       |
+| ALREADY_EXISTS    | The requested ID/vector pair is already inserted.                                                                                                   | Change request ID.                                                                       |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## MultiUpdateWithMetadata RPC
 
 MultiUpdateWithMetadata is the method to update multiple vectors and metadata in **1** request.
@@ -3458,50 +3443,48 @@ Please be careful that the size of the request exceeds the limit.
 
   - Update.MultiRequest
 
-    |  field   | type           | label    | description                                    |
-    | :------: | :------------- | :------- | :--------------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | requests | Update.Request | repeated | Represent the multiple update request content. |
 
   - Update.Request
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    | vector | Object.Vector |       | The vector to be updated.                |
-    | config | Update.Config |       | The configuration of the update request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | vector | Object.Vector |  | The vector to be updated. |
+    | config | Update.Config |  | The configuration of the update request. |
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                                                                                               |
-    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
-    |    id     | string |          | The vector ID.                                                                                                            |
-    |  vector   | float  | repeated | The vector.                                                                                                               |
-    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
-    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | vector | float | repeated | The vector. |
+    | timestamp | int64 |  | timestamp represents when this vector inserted. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
   - Update.Config
 
-        | field | type | label | description |
-        | :---: | :--- | :---- | :---------- |
-        | skip_strict_exist_check | bool |  | A flag to skip exist check during update operation. |
-        | filters | Filter.Config |  | Filter configuration. |
-        | timestamp | int64 |  | Update timestamp. |
-        | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
-
-    during update operation. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | skip_strict_exist_check | bool |  | A flag to skip exist check during update operation. |
+    | filters | Filter.Config |  | Filter configuration. |
+    | timestamp | int64 |  | Update timestamp. |
+    | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
+during update operation. |
 
   - Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
   - Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Object.Locations`
@@ -3521,17 +3504,17 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Locations
 
-    |   field   | type            | label    | description |
-    | :-------: | :-------------- | :------- | :---------- |
-    | locations | Object.Location | repeated |             |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | locations | Object.Location | repeated |  |
 
   - Object.Location
 
-    | field | type   | label    | description                                                      |
-    | :---: | :----- | :------- | :--------------------------------------------------------------- |
-    | name  | string |          | The name of the location.                                        |
-    | uuid  | string |          | TODO(v2): Use id instead to unify names. The UUID of the vector. |
-    |  ips  | string | repeated | The IP list.                                                     |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | name | string |  | The name of the location. |
+    | uuid | string |  | TODO(v2): Use id instead to unify names. The UUID of the vector. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -3548,6 +3531,7 @@ Please be careful that the size of the request exceeds the limit.
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -3560,12 +3544,11 @@ Here are some common reasons and how to resolve each error.
 | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | Requested ID is NOT inserted.                                                                                                                       | Send a request with an ID that is already inserted.                                      |
-| ALREADY_EXISTS    | Request pair of ID and vector is already inserted.                                                                                                  | Change request ID.                                                                       |
+| ALREADY_EXISTS    | The requested ID/vector pair is already inserted.                                                                                                   | Change request ID.                                                                       |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## UpdateTimestampWithMetadata RPC
 
-A method to update timestamp an indexed vector and metadata.
+A method to update the timestamp of an indexed vector and its metadata.
 
 ### Input
 
@@ -3583,13 +3566,12 @@ A method to update timestamp an indexed vector and metadata.
 
   - Update.TimestampRequest
 
-    |   field   | type   | label    | description                                                                                                               |
-    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
-    |    id     | string |          | The vector ID.                                                                                                            |
-    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
-    |   force   | bool   |          | force represents forcefully update the timestamp.                                                                         |
-    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | timestamp | int64 |  | timestamp represents when this vector inserted. |
+    | force | bool |  | force represents forcefully update the timestamp. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 ### Output
 
 - the scheme of `payload.v1.Object.Location`
@@ -3605,30 +3587,29 @@ A method to update timestamp an indexed vector and metadata.
 
   - Object.Location
 
-    | field | type   | label    | description                                                      |
-    | :---: | :----- | :------- | :--------------------------------------------------------------- |
-    | name  | string |          | The name of the location.                                        |
-    | uuid  | string |          | TODO(v2): Use id instead to unify names. The UUID of the vector. |
-    |  ips  | string | repeated | The IP list.                                                     |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | name | string |  | The name of the location. |
+    | uuid | string |  | TODO(v2): Use id instead to unify names. The UUID of the vector. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
-| code | description |
-| :--: | :---------- |
-
+| code | description       |
+| :--: | :---------------- |
 TODO
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 TODO
-
 # Vald UpsertWithMetadata APIs
 
 ## Overview
 
-UpsertWithMetadata Service is responsible for updating existing vectors and metadata in the `vald-agent` or inserting new vectors into the `vald-agent` and metadata if the vector does not exist.
+UpsertWithMetadata Service is responsible for updating existing vectors and metadata in the `vald-agent`, or inserting new vectors and metadata if they do not exist.
 
 ```rpc
 service UpsertWithMetadata {
@@ -3642,7 +3623,7 @@ service UpsertWithMetadata {
 
 ## UpsertWithMetadata RPC
 
-UpsertWithMetadata RPC is the method to update the inserted vector and metadata to a new single vector and metadata or add a new single vector and metadata if not inserted before.
+UpsertWithMetadata RPC is the method to update an existing vector and metadata, or add a new vector and metadata if it does not already exist.
 
 ### Input
 
@@ -3681,44 +3662,42 @@ UpsertWithMetadata RPC is the method to update the inserted vector and metadata 
 
   - Upsert.Request
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    | vector | Object.Vector |       | The vector to be upserted.               |
-    | config | Upsert.Config |       | The configuration of the upsert request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | vector | Object.Vector |  | The vector to be upserted. |
+    | config | Upsert.Config |  | The configuration of the upsert request. |
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                                                                                               |
-    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
-    |    id     | string |          | The vector ID.                                                                                                            |
-    |  vector   | float  | repeated | The vector.                                                                                                               |
-    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
-    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | vector | float | repeated | The vector. |
+    | timestamp | int64 |  | timestamp represents when this vector inserted. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
   - Upsert.Config
 
-        | field | type | label | description |
-        | :---: | :--- | :---- | :---------- |
-        | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
-        | filters | Filter.Config |  | Filter configuration. |
-        | timestamp | int64 |  | Upsert timestamp. |
-        | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
-
-    during update operation. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | skip_strict_exist_check | bool |  | A flag to skip the existence check during upsert operation. |
+    | filters | Filter.Config |  | Filter configuration. |
+    | timestamp | int64 |  | Upsert timestamp. |
+    | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
+during update operation. |
 
   - Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
   - Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Object.Location`
@@ -3734,11 +3713,11 @@ UpsertWithMetadata RPC is the method to update the inserted vector and metadata 
 
   - Object.Location
 
-    | field | type   | label    | description                                                      |
-    | :---: | :----- | :------- | :--------------------------------------------------------------- |
-    | name  | string |          | The name of the location.                                        |
-    | uuid  | string |          | TODO(v2): Use id instead to unify names. The UUID of the vector. |
-    |  ips  | string | repeated | The IP list.                                                     |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | name | string |  | The name of the location. |
+    | uuid | string |  | TODO(v2): Use id instead to unify names. The UUID of the vector. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -3755,6 +3734,7 @@ UpsertWithMetadata RPC is the method to update the inserted vector and metadata 
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -3766,15 +3746,14 @@ Here are some common reasons and how to resolve each error.
 | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
 | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
-| ALREADY_EXISTS    | Requested pair of ID and vector is already inserted                                                                                                 | Change request payload or nothing to do if update is unnecessary.                        |
+| ALREADY_EXISTS    | The requested ID/vector pair is already inserted.                                                                                                   | Change request payload or nothing to do if update is unnecessary.                        |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## StreamUpsertWithMetadata RPC
 
 StreamUpsertWithMetadata RPC is the method to update multiple existing vectors and metadata or add new multiple vectors and metadata using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
 Using the bidirectional streaming RPC, the upsert request can be communicated in any order between the client and server.
 Each Upsert request and response are independent.
-It’s the recommended method to upsert a large number of vectors.
+This is the recommended method to upsert many vectors.
 
 ### Input
 
@@ -3813,44 +3792,42 @@ It’s the recommended method to upsert a large number of vectors.
 
   - Upsert.Request
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    | vector | Object.Vector |       | The vector to be upserted.               |
-    | config | Upsert.Config |       | The configuration of the upsert request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | vector | Object.Vector |  | The vector to be upserted. |
+    | config | Upsert.Config |  | The configuration of the upsert request. |
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                                                                                               |
-    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
-    |    id     | string |          | The vector ID.                                                                                                            |
-    |  vector   | float  | repeated | The vector.                                                                                                               |
-    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
-    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | vector | float | repeated | The vector. |
+    | timestamp | int64 |  | timestamp represents when this vector inserted. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
   - Upsert.Config
 
-        | field | type | label | description |
-        | :---: | :--- | :---- | :---------- |
-        | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
-        | filters | Filter.Config |  | Filter configuration. |
-        | timestamp | int64 |  | Upsert timestamp. |
-        | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
-
-    during update operation. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | skip_strict_exist_check | bool |  | A flag to skip the existence check during upsert operation. |
+    | filters | Filter.Config |  | Filter configuration. |
+    | timestamp | int64 |  | Upsert timestamp. |
+    | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
+during update operation. |
 
   - Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
   - Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Object.StreamLocation`
@@ -3871,18 +3848,18 @@ It’s the recommended method to upsert a large number of vectors.
 
   - Object.StreamLocation
 
-    |  field   | type              | label | description           |
-    | :------: | :---------------- | :---- | :-------------------- |
-    | location | Object.Location   |       | The vector location.  |
-    |  status  | google.rpc.Status |       | The RPC error status. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | location | Object.Location |  | The vector location. |
+    | status | google.rpc.Status |  | The RPC error status. |
 
   - Object.Location
 
-    | field | type   | label    | description                                                      |
-    | :---: | :----- | :------- | :--------------------------------------------------------------- |
-    | name  | string |          | The name of the location.                                        |
-    | uuid  | string |          | TODO(v2): Use id instead to unify names. The UUID of the vector. |
-    |  ips  | string | repeated | The IP list.                                                     |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | name | string |  | The name of the location. |
+    | uuid | string |  | TODO(v2): Use id instead to unify names. The UUID of the vector. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -3899,6 +3876,7 @@ It’s the recommended method to upsert a large number of vectors.
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -3910,9 +3888,8 @@ Here are some common reasons and how to resolve each error.
 | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
 | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
-| ALREADY_EXISTS    | Requested pair of ID and vector is already inserted                                                                                                 | Change request payload or nothing to do if update is unnecessary.                        |
+| ALREADY_EXISTS    | The requested ID/vector pair is already inserted.                                                                                                   | Change request payload or nothing to do if update is unnecessary.                        |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## MultiUpsertWithMetadata RPC
 
 MultiUpsertWithMetadata is the method to update existing multiple vectors and metadata and add new multiple vectors and metadata in **1** request.
@@ -3963,50 +3940,48 @@ Please be careful that the size of the request exceeds the limit.
 
   - Upsert.MultiRequest
 
-    |  field   | type           | label    | description                                    |
-    | :------: | :------------- | :------- | :--------------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | requests | Upsert.Request | repeated | Represent the multiple upsert request content. |
 
   - Upsert.Request
 
-    | field  | type          | label | description                              |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    | vector | Object.Vector |       | The vector to be upserted.               |
-    | config | Upsert.Config |       | The configuration of the upsert request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | vector | Object.Vector |  | The vector to be upserted. |
+    | config | Upsert.Config |  | The configuration of the upsert request. |
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                                                                                               |
-    | :-------: | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------ |
-    |    id     | string |          | The vector ID.                                                                                                            |
-    |  vector   | float  | repeated | The vector.                                                                                                               |
-    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                           |
-    | metadata  | bytes  | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | vector | float | repeated | The vector. |
+    | timestamp | int64 |  | timestamp represents when this vector inserted. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
   - Upsert.Config
 
-        | field | type | label | description |
-        | :---: | :--- | :---- | :---------- |
-        | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
-        | filters | Filter.Config |  | Filter configuration. |
-        | timestamp | int64 |  | Upsert timestamp. |
-        | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
-
-    during update operation. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | skip_strict_exist_check | bool |  | A flag to skip the existence check during upsert operation. |
+    | filters | Filter.Config |  | Filter configuration. |
+    | timestamp | int64 |  | Upsert timestamp. |
+    | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
+during update operation. |
 
   - Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
   - Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Object.Locations`
@@ -4026,17 +4001,17 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Locations
 
-    |   field   | type            | label    | description |
-    | :-------: | :-------------- | :------- | :---------- |
-    | locations | Object.Location | repeated |             |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | locations | Object.Location | repeated |  |
 
   - Object.Location
 
-    | field | type   | label    | description                                                      |
-    | :---: | :----- | :------- | :--------------------------------------------------------------- |
-    | name  | string |          | The name of the location.                                        |
-    | uuid  | string |          | TODO(v2): Use id instead to unify names. The UUID of the vector. |
-    |  ips  | string | repeated | The IP list.                                                     |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | name | string |  | The name of the location. |
+    | uuid | string |  | TODO(v2): Use id instead to unify names. The UUID of the vector. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -4053,6 +4028,7 @@ Please be careful that the size of the request exceeds the limit.
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -4064,5 +4040,5 @@ Here are some common reasons and how to resolve each error.
 | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
 | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
-| ALREADY_EXISTS    | Requested pair of ID and vector is already inserted                                                                                                 | Change request payload or nothing to do if update is unnecessary.                        |
+| ALREADY_EXISTS    | The requested ID/vector pair is already inserted.                                                                                                   | Change request payload or nothing to do if update is unnecessary.                        |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
