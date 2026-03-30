@@ -23,15 +23,16 @@
 package payload
 
 import (
+	reflect "reflect"
+	unsafe "unsafe"
+
 	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
+	sync "github.com/vdaas/vald/internal/sync"
 	status "google.golang.org/genproto/googleapis/rpc/status"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	anypb "google.golang.org/protobuf/types/known/anypb"
 	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
-	reflect "reflect"
-	sync "github.com/vdaas/vald/internal/sync"
-	unsafe "unsafe"
 )
 
 const (
@@ -1920,7 +1921,7 @@ type Update_TimestampRequest struct {
 	Timestamp int64 `protobuf:"varint,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 	// force represents forcefully update the timestamp.
 	Force bool `protobuf:"varint,3,opt,name=force,proto3" json:"force,omitempty"`
-	// Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway.
+	// Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway.
 	Metadata      []byte `protobuf:"bytes,4,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -2113,7 +2114,7 @@ func (x *Upsert_Request) GetConfig() *Upsert_Config {
 	return nil
 }
 
-// Represent the multiple upsert request.
+// Represent mthe ultiple upsert request.
 type Upsert_MultiRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Represent the multiple upsert request content.
@@ -2272,7 +2273,7 @@ func (x *Upsert_MultiObjectRequest) GetRequests() []*Upsert_ObjectRequest {
 // Represent the upsert configuration.
 type Upsert_Config struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// A flag to skip the existence check during upsert operation.
+	// A flag to skip exist check during upsert operation.
 	SkipStrictExistCheck bool `protobuf:"varint,1,opt,name=skip_strict_exist_check,json=skipStrictExistCheck,proto3" json:"skip_strict_exist_check,omitempty"`
 	// Filter configuration.
 	Filters *Filter_Config `protobuf:"bytes,2,opt,name=filters,proto3" json:"filters,omitempty"`
@@ -2549,7 +2550,7 @@ func (x *Remove_Timestamp) GetOperator() Remove_Timestamp_Operator {
 // Represent the remove configuration.
 type Remove_Config struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// A flag to skip the existence check during remove operation.
+	// A flag to skip exist check during upsert operation.
 	SkipStrictExistCheck bool `protobuf:"varint,1,opt,name=skip_strict_exist_check,json=skipStrictExistCheck,proto3" json:"skip_strict_exist_check,omitempty"`
 	// Remove timestamp.
 	Timestamp     int64 `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
@@ -2699,7 +2700,7 @@ type Object_Distance struct {
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// The distance.
 	Distance float32 `protobuf:"fixed32,2,opt,name=distance,proto3" json:"distance,omitempty"`
-	// Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway.
+	// Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway.
 	Metadata      []byte `protobuf:"bytes,3,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -2940,7 +2941,7 @@ type Object_Vector struct {
 	Vector []float32 `protobuf:"fixed32,2,rep,packed,name=vector,proto3" json:"vector,omitempty"`
 	// timestamp represents when this vector inserted.
 	Timestamp int64 `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	// Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway.
+	// Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway.
 	Metadata      []byte `protobuf:"bytes,4,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -4986,7 +4987,7 @@ type Info_Index_Statistics struct {
 	MinNumberOfOutdegree             uint64                 `protobuf:"varint,7,opt,name=min_number_of_outdegree,json=minNumberOfOutdegree,proto3" json:"min_number_of_outdegree,omitempty"`
 	ModeIndegree                     uint64                 `protobuf:"varint,8,opt,name=mode_indegree,json=modeIndegree,proto3" json:"mode_indegree,omitempty"`
 	ModeOutdegree                    uint64                 `protobuf:"varint,9,opt,name=mode_outdegree,json=modeOutdegree,proto3" json:"mode_outdegree,omitempty"`
-	NodesSkippedFor10Edges          uint64                 `protobuf:"varint,10,opt,name=nodes_skipped_for_10_edges,json=nodesSkippedFor10Edges,proto3" json:"nodes_skipped_for_10_edges,omitempty"`
+	NodesSkippedFor10Edges           uint64                 `protobuf:"varint,10,opt,name=nodes_skipped_for_10_edges,json=nodesSkippedFor10Edges,proto3" json:"nodes_skipped_for_10_edges,omitempty"`
 	NodesSkippedForIndegreeDistance  uint64                 `protobuf:"varint,11,opt,name=nodes_skipped_for_indegree_distance,json=nodesSkippedForIndegreeDistance,proto3" json:"nodes_skipped_for_indegree_distance,omitempty"`
 	NumberOfEdges                    uint64                 `protobuf:"varint,12,opt,name=number_of_edges,json=numberOfEdges,proto3" json:"number_of_edges,omitempty"`
 	NumberOfIndexedObjects           uint64                 `protobuf:"varint,13,opt,name=number_of_indexed_objects,json=numberOfIndexedObjects,proto3" json:"number_of_indexed_objects,omitempty"`
@@ -5000,8 +5001,8 @@ type Info_Index_Statistics struct {
 	VarianceOfIndegree               float64                `protobuf:"fixed64,21,opt,name=variance_of_indegree,json=varianceOfIndegree,proto3" json:"variance_of_indegree,omitempty"`
 	VarianceOfOutdegree              float64                `protobuf:"fixed64,22,opt,name=variance_of_outdegree,json=varianceOfOutdegree,proto3" json:"variance_of_outdegree,omitempty"`
 	MeanEdgeLength                   float64                `protobuf:"fixed64,23,opt,name=mean_edge_length,json=meanEdgeLength,proto3" json:"mean_edge_length,omitempty"`
-	MeanEdgeLengthFor10Edges        float64                `protobuf:"fixed64,24,opt,name=mean_edge_length_for_10_edges,json=meanEdgeLengthFor10Edges,proto3" json:"mean_edge_length_for_10_edges,omitempty"`
-	MeanIndegreeDistanceFor10Edges  float64                `protobuf:"fixed64,25,opt,name=mean_indegree_distance_for_10_edges,json=meanIndegreeDistanceFor10Edges,proto3" json:"mean_indegree_distance_for_10_edges,omitempty"`
+	MeanEdgeLengthFor10Edges         float64                `protobuf:"fixed64,24,opt,name=mean_edge_length_for_10_edges,json=meanEdgeLengthFor10Edges,proto3" json:"mean_edge_length_for_10_edges,omitempty"`
+	MeanIndegreeDistanceFor10Edges   float64                `protobuf:"fixed64,25,opt,name=mean_indegree_distance_for_10_edges,json=meanIndegreeDistanceFor10Edges,proto3" json:"mean_indegree_distance_for_10_edges,omitempty"`
 	MeanNumberOfEdgesPerNode         float64                `protobuf:"fixed64,26,opt,name=mean_number_of_edges_per_node,json=meanNumberOfEdgesPerNode,proto3" json:"mean_number_of_edges_per_node,omitempty"`
 	C1Indegree                       float64                `protobuf:"fixed64,27,opt,name=c1_indegree,json=c1Indegree,proto3" json:"c1_indegree,omitempty"`
 	C5Indegree                       float64                `protobuf:"fixed64,28,opt,name=c5_indegree,json=c5Indegree,proto3" json:"c5_indegree,omitempty"`

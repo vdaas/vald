@@ -20,9 +20,7 @@
 
 package errdetails
 
-import (
-	"google.golang.org/protobuf/encoding/protojson"
-)
+import "google.golang.org/protobuf/encoding/protojson"
 
 // MarshalJSON implements json.Marshaler
 func (msg *ErrorInfo) MarshalJSON() ([]byte, error) {

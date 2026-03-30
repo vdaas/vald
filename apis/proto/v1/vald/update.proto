@@ -53,7 +53,7 @@ service Update {
   // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
   // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
   // | NOT_FOUND         | Requested ID is NOT inserted.                                                                                                                       | Send a request with an ID that is already inserted.                                      |
-  // | ALREADY_EXISTS    | The requested ID/vector pair is already inserted.                                                                                                   | Change request ID.                                                                       |
+  // | ALREADY_EXISTS    | Request pair of ID and vector is already inserted.                                                                                                  | Change request ID.                                                                       |
   // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
   rpc Update(payload.v1.Update.Request) returns (payload.v1.Object.Location) {
     option (google.api.http) = {
@@ -66,7 +66,7 @@ service Update {
   // StreamUpdate RPC is the method to update multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
   // Using the bidirectional streaming RPC, the update request can be communicated in any order between client and server.
   // Each Update request and response are independent.
-  // This is the recommended method to update many vectors.
+  // It's the recommended method to update the large amount of vectors.
   // ---
   // Status Code
   // |  0   | OK                |
@@ -89,7 +89,7 @@ service Update {
   // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
   // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
   // | NOT_FOUND         | Requested ID is NOT inserted.                                                                                                                       | Send a request with an ID that is already inserted.                                      |
-  // | ALREADY_EXISTS    | The requested ID/vector pair is already inserted.                                                                                                   | Change request ID.                                                                       |
+  // | ALREADY_EXISTS    | Request pair of ID and vector is already inserted.                                                                                                  | Change request ID.                                                                       |
   // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
   rpc StreamUpdate(stream payload.v1.Update.Request) returns (stream payload.v1.Object.StreamLocation) {}
 
@@ -122,7 +122,7 @@ service Update {
   // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
   // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
   // | NOT_FOUND         | Requested ID is NOT inserted.                                                                                                                       | Send a request with an ID that is already inserted.                                      |
-  // | ALREADY_EXISTS    | The requested ID/vector pair is already inserted.                                                                                                   | Change request ID.                                                                       |
+  // | ALREADY_EXISTS    | Request pair of ID and vector is already inserted.                                                                                                  | Change request ID.                                                                       |
   // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
   rpc MultiUpdate(payload.v1.Update.MultiRequest) returns (payload.v1.Object.Locations) {
     option (google.api.http) = {
@@ -132,7 +132,7 @@ service Update {
   }
 
   // Overview
-  // A method to update the timestamp of an indexed vector.
+  // A method to update timestamp an indexed vector.
   // ---
   // Status Code
   // TODO
