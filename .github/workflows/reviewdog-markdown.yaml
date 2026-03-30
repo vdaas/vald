@@ -52,7 +52,7 @@ jobs:
           patterns: "apis/**/*.md apis/**/*.md.gotmpl charts/**/*.md !charts/vald/README.md !charts/vald-with-tikv/README.md"
           level: warning
           language: en-US
-          disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES,ENGLISH_WORD_REPEAT_RULE,UNLIKELY_OPENING_PUNCTUATION"
+          disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES,ENGLISH_WORD_REPEAT_RULE,UNLIKELY_OPENING_PUNCTUATION,EN_UNPAIRED_QUOTES"
           disabled_categories: "TYPOS,TYPOGRAPHY,STYLE,CASING"
   languagetool-docs:
     timeout-minutes: 30
