@@ -1915,7 +1915,7 @@
     | :---: | :--- | :---- | :---------- |
     | id | string |  | The vector ID. |
     | distance | float |  | The distance. |
-    | metadata | bytes | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Object.ID" }}
@@ -2000,7 +2000,7 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | name | string |  | The name of the location. |
-    | uuid | string |  | TODO(v2): Use id instead to unify names. The UUID of the vector. |
+    | uuid | string |  | The UUID of the vector. |
     | ips | string | repeated | The IP list. |
 {{- end -}}
 
@@ -2145,7 +2145,7 @@
     | id | string |  | The vector ID. |
     | vector | float | repeated | The vector. |
     | timestamp | int64 |  | timestamp represents when this vector inserted. |
-    | metadata | bytes | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Object.VectorRequest" }}
@@ -2565,7 +2565,7 @@ during update operation. |
     | id | string |  | The vector ID. |
     | timestamp | int64 |  | timestamp represents when this vector inserted. |
     | force | bool |  | force represents forcefully update the timestamp. |
-    | metadata | bytes | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Upsert" }}

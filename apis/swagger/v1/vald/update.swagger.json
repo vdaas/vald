@@ -9,8 +9,12 @@
       "name": "Update"
     }
   ],
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/update": {
       "post": {
@@ -42,7 +46,9 @@
             }
           }
         ],
-        "tags": ["Update"]
+        "tags": [
+          "Update"
+        ]
       }
     },
     "/update/multiple": {
@@ -75,7 +81,9 @@
             }
           }
         ],
-        "tags": ["Update"]
+        "tags": [
+          "Update"
+        ]
       }
     },
     "/update/timestamp": {
@@ -107,7 +115,9 @@
             }
           }
         ],
-        "tags": ["Update"]
+        "tags": [
+          "Update"
+        ]
       }
     }
   },
@@ -163,7 +173,7 @@
         "metadata": {
           "type": "string",
           "format": "byte",
-          "description": "Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway."
+          "description": "Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway."
         }
       },
       "description": "Represent a vector."
@@ -215,7 +225,7 @@
         "metadata": {
           "type": "string",
           "format": "byte",
-          "description": "Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway."
+          "description": "Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway."
         }
       },
       "description": "Represent a vector meta data."
@@ -277,7 +287,7 @@
         },
         "uuid": {
           "type": "string",
-          "description": "TODO(v2): Use id instead to unify names. The UUID of the vector."
+          "description": "The UUID of the vector."
         },
         "ips": {
           "type": "array",

@@ -9,8 +9,12 @@
       "name": "Upsert"
     }
   ],
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/upsert": {
       "post": {
@@ -42,7 +46,9 @@
             }
           }
         ],
-        "tags": ["Upsert"]
+        "tags": [
+          "Upsert"
+        ]
       }
     },
     "/upsert/multiple": {
@@ -67,7 +73,7 @@
         "parameters": [
           {
             "name": "body",
-            "description": "Represent mthe ultiple upsert request.",
+            "description": "Represent the multiple upsert request.",
             "in": "body",
             "required": true,
             "schema": {
@@ -75,7 +81,9 @@
             }
           }
         ],
-        "tags": ["Upsert"]
+        "tags": [
+          "Upsert"
+        ]
       }
     }
   },
@@ -131,7 +139,7 @@
         "metadata": {
           "type": "string",
           "format": "byte",
-          "description": "Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway."
+          "description": "Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway."
         }
       },
       "description": "Represent a vector."
@@ -148,7 +156,7 @@
           "description": "Represent the multiple upsert request content."
         }
       },
-      "description": "Represent mthe ultiple upsert request."
+      "description": "Represent the multiple upsert request."
     },
     "UpsertRequest": {
       "type": "object",
@@ -221,7 +229,7 @@
         },
         "uuid": {
           "type": "string",
-          "description": "TODO(v2): Use id instead to unify names. The UUID of the vector."
+          "description": "The UUID of the vector."
         },
         "ips": {
           "type": "array",
@@ -238,7 +246,7 @@
       "properties": {
         "skipStrictExistCheck": {
           "type": "boolean",
-          "description": "A flag to skip exist check during upsert operation."
+          "description": "A flag to skip the existence check during upsert operation."
         },
         "filters": {
           "$ref": "#/definitions/v1FilterConfig",

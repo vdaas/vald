@@ -9,8 +9,12 @@
       "name": "Filter"
     }
   ],
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/filter/ingress/object": {
       "post": {
@@ -41,7 +45,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/filter/ingress/vector": {
@@ -73,7 +79,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     }
   },
@@ -116,7 +124,7 @@
         "metadata": {
           "type": "string",
           "format": "byte",
-          "description": "Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway."
+          "description": "Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway."
         }
       },
       "description": "Represent a vector."
