@@ -414,10 +414,10 @@ service SearchWithMetadata {
 }
 
 // Overview
-// InsertWithMetadata Service is responsible for inserting new vectors into the `vald-agent` and setting metadata.
+// InsertWithMetadata Service is responsible for inserting new vectors into the `vald-agent` and set metadata.
 service InsertWithMetadata {
   // Overview
-  // InsertWithMetadata RPC is the method to add a new single vector with metadata.
+  // InsertWithMetadata RPC is the method to add a new single vector and metadata.
   // ---
   // Status Code
   // | 0    | OK                |
@@ -450,7 +450,7 @@ service InsertWithMetadata {
   // StreamInsertWithMetadata RPC is the method to add new multiple vectors and metadata using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
   // Using the bidirectional streaming RPC, the insert request can be communicated in any order between client and server.
   // Each Insert request and response are independent.
-  // This is the recommended method to insert many vectors.
+  // It's the recommended method to insert a large number of vectors.
   // ---
   // Status Code
   // |  0   | OK                |
@@ -516,7 +516,7 @@ service InsertWithMetadata {
 // ObjectWithMetadata Service is responsible for getting inserted vectors and metadata, and checking whether vectors are inserted into the `vald-agent`.
 service ObjectWithMetadata {
   // Overview
-  // GetObjectWithMetadata RPC is the method to get a vector inserted into the `vald-agent` and its metadata.
+  // GetObjectWithMetadata RPC is the method to get the metadata of a vector inserted into the `vald-agent` and metadata.
   // ---
   // Status Code
   // |  0   | OK                |
@@ -570,7 +570,7 @@ service ObjectWithMetadata {
   rpc StreamGetObjectWithMetadata(stream payload.v1.Object.VectorRequest) returns (stream payload.v1.Object.StreamVector) {}
 
   // Overview
-  // A method to get all vectors via server streaming.
+  // A method to get all the vectors with server streaming
   // ---
   // Status Code
   // TODO
@@ -586,7 +586,7 @@ service ObjectWithMetadata {
 // RemoveWithMetadata Service is responsible for removing vectors indexed in the `vald-agent`.
 service RemoveWithMetadata {
   // Overview
-  // RemoveWithMetadata RPC is the method to remove a single vector with metadata.
+  // RemoveWithMetadata RPC is the method to remove a single vector and metadata.
   // ---
   // Status Code
   // |  0   | OK                |
@@ -656,7 +656,7 @@ service RemoveWithMetadata {
   // StreamRemoveWithMetadata RPC is the method to remove multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
   // Using the bidirectional streaming RPC, the remove request can be communicated in any order between client and server.
   // Each Remove request and response are independent.
-  // This is the recommended method to remove many vectors.
+  // It's the recommended method to remove a large number of vectors.
   // ---
   // Status Code
   // |  0   | OK                |
@@ -719,7 +719,7 @@ service RemoveWithMetadata {
 }
 
 // Overview
-// UpdateWithMetadata Service updates vectors in the `vald-agent` components and refreshes their metadata.
+// UpdateWithMetadata Service updates to new vector from inserted vector in the `vald-agent` components and updates to new metadata from set metadata.
 service UpdateWithMetadata {
   // Overview
   // UpdateWithMetadata RPC is the method to update a single vector.
@@ -745,7 +745,7 @@ service UpdateWithMetadata {
   // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
   // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
   // | NOT_FOUND         | Requested ID is NOT inserted.                                                                                                                       | Send a request with an ID that is already inserted.                                      |
-  // | ALREADY_EXISTS    | The requested ID/vector pair is already inserted.                                                                                                   | Change request ID.                                                                       |
+  // | ALREADY_EXISTS    | Request pair of ID and vector is already inserted.                                                                                                  | Change request ID.                                                                       |
   // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
   rpc UpdateWithMetadata(payload.v1.Update.Request) returns (payload.v1.Object.Location) {
     option (google.api.http) = {
@@ -758,7 +758,7 @@ service UpdateWithMetadata {
   // StreamUpdateWithMetadata RPC is the method to update multiple vectors and metadata using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
   // Using the bidirectional streaming RPC, the update request can be communicated in any order between client and server.
   // Each Update request and response are independent.
-  // This is the recommended method to update many vectors.
+  // It's the recommended method to update the large amount of vectors.
   // ---
   // Status Code
   // |  0   | OK                |
@@ -781,7 +781,7 @@ service UpdateWithMetadata {
   // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
   // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
   // | NOT_FOUND         | Requested ID is NOT inserted.                                                                                                                       | Send a request with an ID that is already inserted.                                      |
-  // | ALREADY_EXISTS    | The requested ID/vector pair is already inserted.                                                                                                   | Change request ID.                                                                       |
+  // | ALREADY_EXISTS    | Request pair of ID and vector is already inserted.                                                                                                  | Change request ID.                                                                       |
   // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
   rpc StreamUpdateWithMetadata(stream payload.v1.Update.Request) returns (stream payload.v1.Object.StreamLocation) {}
 
@@ -814,7 +814,7 @@ service UpdateWithMetadata {
   // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
   // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
   // | NOT_FOUND         | Requested ID is NOT inserted.                                                                                                                       | Send a request with an ID that is already inserted.                                      |
-  // | ALREADY_EXISTS    | The requested ID/vector pair is already inserted.                                                                                                   | Change request ID.                                                                       |
+  // | ALREADY_EXISTS    | Request pair of ID and vector is already inserted.                                                                                                  | Change request ID.                                                                       |
   // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
   rpc MultiUpdateWithMetadata(payload.v1.Update.MultiRequest) returns (payload.v1.Object.Locations) {
     option (google.api.http) = {
@@ -824,7 +824,7 @@ service UpdateWithMetadata {
   }
 
   // Overview
-  // A method to update the timestamp of an indexed vector and its metadata.
+  // A method to update timestamp an indexed vector and metadata.
   // ---
   // Status Code
   // TODO
@@ -840,10 +840,10 @@ service UpdateWithMetadata {
 }
 
 // Overview
-// UpsertWithMetadata Service is responsible for updating existing vectors and metadata in the `vald-agent`, or inserting new vectors and metadata if they do not exist.
+// UpsertWithMetadata Service is responsible for updating existing vectors and metadata in the `vald-agent` or inserting new vectors into the `vald-agent` and metadata if the vector does not exist.
 service UpsertWithMetadata {
   // Overview
-  // UpsertWithMetadata RPC is the method to update an existing vector and metadata, or add a new vector and metadata if it does not already exist.
+  // UpsertWithMetadata RPC is the method to update the inserted vector and metadata to a new single vector and metadata or add a new single vector and metadata if not inserted before.
   // ---
   // Status Code
   // |  0   | OK                |
@@ -865,7 +865,7 @@ service UpsertWithMetadata {
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
   // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
   // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
-  // | ALREADY_EXISTS    | The requested ID/vector pair is already inserted.                                                                                                   | Change request payload or nothing to do if update is unnecessary.                        |
+  // | ALREADY_EXISTS    | Requested pair of ID and vector is already inserted                                                                                                 | Change request payload or nothing to do if update is unnecessary.                        |
   // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
   rpc UpsertWithMetadata(payload.v1.Upsert.Request) returns (payload.v1.Object.Location) {
     option (google.api.http) = {
@@ -878,7 +878,7 @@ service UpsertWithMetadata {
   // StreamUpsertWithMetadata RPC is the method to update multiple existing vectors and metadata or add new multiple vectors and metadata using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
   // Using the bidirectional streaming RPC, the upsert request can be communicated in any order between the client and server.
   // Each Upsert request and response are independent.
-  // This is the recommended method to upsert many vectors.
+  // It’s the recommended method to upsert a large number of vectors.
   // ---
   // Status Code
   // |  0   | OK                |
@@ -900,7 +900,7 @@ service UpsertWithMetadata {
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
   // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
   // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
-  // | ALREADY_EXISTS    | The requested ID/vector pair is already inserted.                                                                                                   | Change request payload or nothing to do if update is unnecessary.                        |
+  // | ALREADY_EXISTS    | Requested pair of ID and vector is already inserted                                                                                                 | Change request payload or nothing to do if update is unnecessary.                        |
   // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
   rpc StreamUpsertWithMetadata(stream payload.v1.Upsert.Request) returns (stream payload.v1.Object.StreamLocation) {}
 
@@ -932,7 +932,7 @@ service UpsertWithMetadata {
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
   // | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
   // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
-  // | ALREADY_EXISTS    | The requested ID/vector pair is already inserted.                                                                                                   | Change request payload or nothing to do if update is unnecessary.                        |
+  // | ALREADY_EXISTS    | Requested pair of ID and vector is already inserted                                                                                                 | Change request payload or nothing to do if update is unnecessary.                        |
   // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
   rpc MultiUpsertWithMetadata(payload.v1.Upsert.MultiRequest) returns (payload.v1.Object.Locations) {
     option (google.api.http) = {

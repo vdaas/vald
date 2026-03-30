@@ -100,7 +100,7 @@ service Remove {
   // StreamRemove RPC is the method to remove multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
   // Using the bidirectional streaming RPC, the remove request can be communicated in any order between client and server.
   // Each Remove request and response are independent.
-  // This is the recommended method to remove many vectors.
+  // It's the recommended method to remove a large number of vectors.
   // ---
   // Status Code
   // |  0   | OK                |

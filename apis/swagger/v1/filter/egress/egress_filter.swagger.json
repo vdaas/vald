@@ -9,12 +9,8 @@
       "name": "Filter"
     }
   ],
-  "consumes": [
-    "application/json"
-  ],
-  "produces": [
-    "application/json"
-  ],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
   "paths": {
     "/filter/egress/distance": {
       "post": {
@@ -45,9 +41,7 @@
             }
           }
         ],
-        "tags": [
-          "Filter"
-        ]
+        "tags": ["Filter"]
       }
     },
     "/filter/egress/vector": {
@@ -79,9 +73,7 @@
             }
           }
         ],
-        "tags": [
-          "Filter"
-        ]
+        "tags": ["Filter"]
       }
     }
   },
@@ -101,7 +93,7 @@
         "metadata": {
           "type": "string",
           "format": "byte",
-          "description": "Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway."
+          "description": "Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway."
         }
       },
       "description": "Represent the ID and distance pair."
@@ -129,7 +121,7 @@
         "metadata": {
           "type": "string",
           "format": "byte",
-          "description": "Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway."
+          "description": "Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway."
         }
       },
       "description": "Represent a vector."

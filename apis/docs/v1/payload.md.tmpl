@@ -1915,7 +1915,7 @@
     | :---: | :--- | :---- | :---------- |
     | id | string |  | The vector ID. |
     | distance | float |  | The distance. |
-    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
+    | metadata | bytes | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Object.ID" }}
@@ -2145,7 +2145,7 @@
     | id | string |  | The vector ID. |
     | vector | float | repeated | The vector. |
     | timestamp | int64 |  | timestamp represents when this vector inserted. |
-    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
+    | metadata | bytes | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Object.VectorRequest" }}
@@ -2202,7 +2202,7 @@
 
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
-    | skip_strict_exist_check | bool |  | A flag to skip the existence check during remove operation. |
+    | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
     | timestamp | int64 |  | Remove timestamp. |
 {{- end -}}
 
@@ -2565,7 +2565,7 @@ during update operation. |
     | id | string |  | The vector ID. |
     | timestamp | int64 |  | timestamp represents when this vector inserted. |
     | force | bool |  | force represents forcefully update the timestamp. |
-    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
+    | metadata | bytes | optional | Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway. |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Upsert" }}
@@ -2594,7 +2594,7 @@ during update operation. |
 
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
-    | skip_strict_exist_check | bool |  | A flag to skip the existence check during upsert operation. |
+    | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
     | filters | Filter.Config |  | Filter configuration. |
     | timestamp | int64 |  | Upsert timestamp. |
     | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)

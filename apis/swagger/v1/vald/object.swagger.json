@@ -9,12 +9,8 @@
       "name": "Object"
     }
   ],
-  "consumes": [
-    "application/json"
-  ],
-  "produces": [
-    "application/json"
-  ],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
   "paths": {
     "/exists/{id}": {
       "get": {
@@ -43,14 +39,12 @@
             "type": "string"
           }
         ],
-        "tags": [
-          "Object"
-        ]
+        "tags": ["Object"]
       }
     },
     "/object/list": {
       "get": {
-        "summary": "Overview\nA method to get all vectors via server streaming.\n---\nStatus Code\nTODO\n---\nTroubleshooting\nTODO",
+        "summary": "Overview\nA method to get all the vectors with server streaming\n---\nStatus Code\nTODO\n---\nTroubleshooting\nTODO",
         "operationId": "Object_StreamListObject",
         "responses": {
           "200": {
@@ -75,9 +69,7 @@
             }
           }
         },
-        "tags": [
-          "Object"
-        ]
+        "tags": ["Object"]
       }
     },
     "/object/meta/{id.id}": {
@@ -106,14 +98,12 @@
             "type": "string"
           }
         ],
-        "tags": [
-          "Object"
-        ]
+        "tags": ["Object"]
       }
     },
     "/object/{id.id}": {
       "get": {
-        "summary": "Overview\nGetObject RPC is the method to get a vector inserted into the `vald-agent`.\n---\nStatus Code\n|  0   | OK                |\n|  1   | CANCELLED         |\n|  3   | INVALID_ARGUMENT  |\n|  4   | DEADLINE_EXCEEDED |\n|  5   | NOT_FOUND         |\n|  13  | INTERNAL          |\n---\nTroubleshooting\nThe request process may not be completed when the response code is NOT `0 (OK)`.",
+        "summary": "Overview\nGetObject RPC is the method to get the metadata of a vector inserted into the `vald-agent`.\n---\nStatus Code\n|  0   | OK                |\n|  1   | CANCELLED         |\n|  3   | INVALID_ARGUMENT  |\n|  4   | DEADLINE_EXCEEDED |\n|  5   | NOT_FOUND         |\n|  13  | INTERNAL          |\n---\nTroubleshooting\nThe request process may not be completed when the response code is NOT `0 (OK)`.",
         "description": "Here are some common reasons and how to resolve each error.\n\n| name              | common reason                                                                                   | how to resolve                                                                           |\n| :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |\n| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |\n| INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                         | Check request payload and fix request payload.                                           |\n| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |\n| NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |\n| INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |",
         "operationId": "Object_GetObject",
         "responses": {
@@ -138,9 +128,7 @@
             "type": "string"
           }
         ],
-        "tags": [
-          "Object"
-        ]
+        "tags": ["Object"]
       }
     }
   },
@@ -219,7 +207,7 @@
         "metadata": {
           "type": "string",
           "format": "byte",
-          "description": "Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway."
+          "description": "Metadata associated with the request vector; this field is handled only when the request passes through the meta-gateway."
         }
       },
       "description": "Represent a vector."
