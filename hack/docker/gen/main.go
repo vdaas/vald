@@ -98,7 +98,7 @@ const (
 	rustWorkdir = "${HOME}/rust/src/github.com"
 
 	ngtPreprocess         = "make ngt/install"
-	ngtClangLTOPreprocess = `make CFLAGS="-flto=thin" CXXFLAGS="-flto=thin" NGT_EXTRA_CMAKE_FLAGS="-DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld" ngt/install`
+	ngtClangLTOPreprocess = `CC=clang CXX=clang++ make CFLAGS="-flto=thin" CXXFLAGS="-flto=thin" NGT_EXTRA_CMAKE_FLAGS="-DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld" ngt/install`
 	faissPreprocess       = "make faiss/install"
 	usearchPreprocess     = "make usearch/install"
 
@@ -433,8 +433,6 @@ var (
 		"CXX": "g++",
 	}
 	clangLTOEnvironments = map[string]string{
-		"CC":        "clang",
-		"CXX":       "clang++",
 		"RUSTFLAGS": `"-Clinker-plugin-lto -Clinker=clang -Clink-arg=-fuse-ld=lld"`,
 	}
 	goInstallCommands = []string{
