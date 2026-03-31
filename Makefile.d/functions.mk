@@ -21,7 +21,9 @@ pink = printf "\x1b[35m\#\# %s\x1b[0m\n" $1
 cyan = printf "\x1b[36m\#\# %s\x1b[0m\n" $1
 
 define go-tool-install
-	go install tool
+	cat $(ROOTDIR)/hack/go.tools | \
+	xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P $(CORES) \
+	sh -c 'if ! out=$$(go install -ldflags="-w" {} 2>&1 >/dev/null); then echo "--- Failed to install {} ---" >&2; echo "$$out" >&2; exit 255; fi';
 endef
 
 define mkdir
