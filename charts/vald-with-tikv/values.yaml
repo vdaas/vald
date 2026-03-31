@@ -2582,7 +2582,7 @@ agent:
       filename: _MY_POD_NAME_
       # @schema {"name": "agent.sidecar.config.filename_suffix", "type": "string"}
       # agent.sidecar.config.filename_suffix -- suffix for backup filename
-      filename_suffix: ".tar.gz"
+      filename_suffix: .tar.gz
       # @schema {"name": "agent.sidecar.config.blob_storage", "type": "object"}
       blob_storage:
         # @schema {"name": "agent.sidecar.config.blob_storage.storage_type", "type": "string", "enum": ["s3", "cloud_storage"]}
