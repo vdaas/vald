@@ -27,8 +27,7 @@ fn main() -> miette::Result<()> {
 
     println!("cargo:rustc-link-search=native=/usr/local/lib");
     println!("cargo:rustc-link-search=native=/usr/lib");
-    println!("cargo:rustc-link-lib=static=qbg");
-    println!("cargo:rustc-link-lib=static=ngt");
+    println!("cargo:rustc-link-lib=static:+whole-archive=ngt");
     println!("cargo:rustc-link-lib=blas");
     println!("cargo:rustc-link-lib=lapack");
     println!("cargo:rustc-link-lib=dylib=gomp");
