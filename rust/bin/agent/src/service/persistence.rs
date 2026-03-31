@@ -265,7 +265,10 @@ impl PersistenceManager {
 
         let entries = match fs::read_dir(path) {
             Ok(e) => e,
-            Err(_) => return false,
+            Err(err) => {
+                warn!("failed to read index directory {}: {}", path.display(), err);
+                return false
+            },
         };
 
         let files: Vec<_> = entries
@@ -274,6 +277,7 @@ impl PersistenceManager {
             .collect();
 
         if files.is_empty() {
+            warn!("index directory {} is empty, skipping backup", path.display());
             return false;
         }
 
@@ -282,6 +286,10 @@ impl PersistenceManager {
             .iter()
             .any(|f| f.ends_with(".json") || f.ends_with(".kvsdb"));
         if !has_data_files {
+            warn!(
+                "index directory {} has no .json or .kvsdb files, skipping backup",
+                path.display()
+            );
             return false;
         }
 
@@ -294,7 +302,10 @@ impl PersistenceManager {
         // Check metadata content
         match metadata::load(&metadata_path) {
             Ok(meta) => meta.is_invalid || meta.index_count() > 0,
-            Err(_) => false,
+            Err(err) => {
+                warn!("failed to load metadata from {}: {}", metadata_path.display(), err);
+                false
+            },
         }
     }
 
@@ -382,13 +393,20 @@ impl PersistenceManager {
     /// - index_count > 0
     pub fn index_exists(&self) -> bool {
         if !self.paths.primary_path.exists() {
+            warn!(
+                "primary index path {} does not exist",
+                self.paths.primary_path.display()
+            );
             return false;
         }
 
         let metadata_path = self.paths.metadata_path();
         match metadata::load(&metadata_path) {
             Ok(meta) => !meta.is_invalid && meta.index_count() > 0,
-            Err(_) => false,
+            Err(err) => {
+                warn!("failed to load metadata from {}: {}", metadata_path.display(), err);
+                false
+            },
         }
     }
 

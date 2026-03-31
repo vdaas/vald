@@ -257,7 +257,7 @@ impl QBGService {
             unsaved_create_index_count: AtomicU64::new(0),
             processed_vq_count: AtomicU64::new(0),
             broken_index_count: AtomicU64::new(broken_index_count),
-            statistics_enabled: false,
+            statistics_enabled: config.enable_statistics,
             enable_copy_on_write,
             broken_index_history_limit,
             bulk_insert_chunk_size: config.bulk_insert_chunk_size,
@@ -585,15 +585,6 @@ impl ANN for QBGService {
         }
 
         self.is_saving.store(true, Ordering::SeqCst);
-
-        // Determine save path (temp for CoW, primary otherwise)
-        let save_path = if let Some(ref persistence) = self.persistence {
-            persistence.get_save_path().to_string_lossy().to_string()
-        } else {
-            self.path.clone()
-        };
-
-        debug!("saving index to path: {}", save_path);
 
         // Save the core index to the appropriate path
         // Note: QBG save_index uses the path from when the index was created
