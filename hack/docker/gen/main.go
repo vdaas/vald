@@ -97,10 +97,10 @@ const (
 	goWorkdir   = "${GOPATH}/src/github.com"
 	rustWorkdir = "${HOME}/rust/src/github.com"
 
-	ngtPreprocess        = "make ngt/install"
-	ngtClangLTOPreprocess = "make CMAKE_INTERPROCEDURAL_OPTIMIZATION=ON ngt/install"
-	faissPreprocess      = "make faiss/install"
-	usearchPreprocess    = "make usearch/install"
+	ngtPreprocess         = "make ngt/install"
+	ngtClangLTOPreprocess = `make CFLAGS="-flto=thin" CXXFLAGS="-flto=thin" NGT_EXTRA_CMAKE_FLAGS="-DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld" ngt/install`
+	faissPreprocess       = "make faiss/install"
+	usearchPreprocess     = "make usearch/install"
 
 	helmOperatorRootdir   = "/opt/helm"
 	helmOperatorWatchFile = helmOperatorRootdir + "/watches.yaml"

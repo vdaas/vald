@@ -90,7 +90,7 @@ RUN --mount=type=bind,target=.,rw \
     && apt-get autoclean -y \
     && apt-get autoremove -y \
     && make RUST_VERSION="${RUST_VERSION}" rust/install \
-    && make CMAKE_INTERPROCEDURAL_OPTIMIZATION=ON ngt/install \
+    && make CFLAGS="-flto=thin" CXXFLAGS="-flto=thin" NGT_EXTRA_CMAKE_FLAGS="-DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld" ngt/install \
     && make faiss/install \
     && make rust/target/release/${APP_NAME} \
     && mv "rust/target/release/${APP_NAME}" "/usr/bin/${APP_NAME}" \
