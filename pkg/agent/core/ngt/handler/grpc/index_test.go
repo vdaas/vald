@@ -628,9 +628,9 @@ func Test_server_SaveIndex(t *testing.T) {
 				return err
 			}
 
-			wantVec := ir.GetVector()
+			wantVec := *ir.GetVector()
 			wantVec.Timestamp = obj.GetTimestamp()
-			if !reflect.DeepEqual(obj, wantVec) {
+			if !reflect.DeepEqual(obj, &wantVec) {
 				return errors.Errorf("vector is not match, got: %v, want: %v", obj, ir)
 			}
 		}
@@ -1171,9 +1171,9 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 				return err
 			}
 
-			wantVec := ir.GetVector()
+			wantVec := *ir.GetVector()
 			wantVec.Timestamp = obj.GetTimestamp()
-			if !reflect.DeepEqual(obj, wantVec) {
+			if !reflect.DeepEqual(obj, &wantVec) {
 				return errors.Errorf("vector is not match, got: %v, want: %v", obj, ir)
 			}
 		}
