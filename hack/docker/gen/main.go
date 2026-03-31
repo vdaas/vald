@@ -97,9 +97,10 @@ const (
 	goWorkdir   = "${GOPATH}/src/github.com"
 	rustWorkdir = "${HOME}/rust/src/github.com"
 
-	ngtPreprocess     = "make ngt/install"
-	faissPreprocess   = "make faiss/install"
-	usearchPreprocess = "make usearch/install"
+	ngtPreprocess        = "make ngt/install"
+	ngtClangLTOPreprocess = "make CMAKE_INTERPROCEDURAL_OPTIMIZATION=ON ngt/install"
+	faissPreprocess      = "make faiss/install"
+	usearchPreprocess    = "make usearch/install"
 
 	helmOperatorRootdir   = "/opt/helm"
 	helmOperatorWatchFile = helmOperatorRootdir + "/watches.yaml"
@@ -431,6 +432,11 @@ var (
 		"CC":  "gcc",
 		"CXX": "g++",
 	}
+	clangLTOEnvironments = map[string]string{
+		"CC":        "clang",
+		"CXX":       "clang++",
+		"RUSTFLAGS": `"-Clinker-plugin-lto -Clinker=clang -Clink-arg=-fuse-ld=lld"`,
+	}
 	goInstallCommands = []string{
 		"make GOPATH=\"${GOPATH}\" GOROOT=\"${GOROOT}\" GO_VERSION=\"${GO_VERSION}\" go/install",
 		"make GOPATH=\"${GOPATH}\" GOROOT=\"${GOROOT}\" GO_VERSION=\"${GO_VERSION}\" go/download",
@@ -485,6 +491,10 @@ var (
 		"pkg-config",
 		"protobuf-compiler",
 		"libprotobuf-dev",
+	}
+	clangLTOBuildDeps = []string{
+		"clang",
+		"lld",
 	}
 	devContainerDeps = []string{
 		"file",
@@ -688,9 +698,10 @@ func main() {
 			ContainerType: Rust,
 			RuntimeImage:  "gcr.io/distroless/cc-debian12",
 			ExtraPackages: append(clangBuildDeps,
-				append(ngtBuildDeps, rustBuildDeps...)...),
+				append(ngtBuildDeps,
+					append(rustBuildDeps, clangLTOBuildDeps...)...)...),
 			Preprocess: []string{
-				ngtPreprocess,
+				ngtClangLTOPreprocess,
 				faissPreprocess,
 			},
 		},
@@ -1111,7 +1122,7 @@ jobs:
 				mounts = append(mounts, goDefaultMounts...)
 				data.RunMounts = mounts
 			case Rust:
-				data.Environments = appendM(data.Environments, rustDefaultEnvironments)
+				data.Environments = appendM(data.Environments, rustDefaultEnvironments, clangLTOEnvironments)
 				data.RootDir = rustWorkdir
 				commands := make([]string, 0, len(rustInstallCommands)+len(data.Preprocess)+len(rustBuildCommands))
 				commands = append(commands, rustInstallCommands...)

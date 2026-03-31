@@ -28,6 +28,8 @@ ARG TARGETOS
 ARG GO_VERSION
 ARG RUST_VERSION
 ENV APP_NAME=agent
+ENV CC=clang
+ENV CXX=clang++
 ENV DEBIAN_FRONTEND=noninteractive
 ENV HOME=/root
 ENV INITRD=No
@@ -37,6 +39,7 @@ ENV LC_ALL=en_US.UTF-8
 ENV ORG=vdaas
 ENV PKG=agent/core/agent
 ENV REPO=vald
+ENV RUSTFLAGS="-Clinker-plugin-lto -Clinker=clang -Clink-arg=-fuse-ld=lld"
 ENV RUST_HOME=/usr/local/lib/rust
 ENV TZ=Etc/UTC
 ENV USER=root
@@ -75,6 +78,8 @@ RUN --mount=type=bind,target=.,rw \
     pkg-config \
     protobuf-compiler \
     libprotobuf-dev \
+    clang \
+    lld \
     && ldconfig \
     && echo "${LANG} UTF-8" > /etc/locale.gen \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
@@ -85,7 +90,7 @@ RUN --mount=type=bind,target=.,rw \
     && apt-get autoclean -y \
     && apt-get autoremove -y \
     && make RUST_VERSION="${RUST_VERSION}" rust/install \
-    && make ngt/install \
+    && make CMAKE_INTERPROCEDURAL_OPTIMIZATION=ON ngt/install \
     && make faiss/install \
     && make rust/target/release/${APP_NAME} \
     && mv "rust/target/release/${APP_NAME}" "/usr/bin/${APP_NAME}" \
