@@ -26,6 +26,8 @@ fn main() -> miette::Result<()> {
         .compile("qbg-rs");
 
     println!("cargo:rustc-link-search=native=/usr/local/lib");
+    println!("cargo:rustc-link-search=native=/usr/lib");
+    println!("cargo:rustc-link-lib=static=qbg");
     println!("cargo:rustc-link-lib=static=ngt");
     println!("cargo:rustc-link-lib=blas");
     println!("cargo:rustc-link-lib=lapack");
