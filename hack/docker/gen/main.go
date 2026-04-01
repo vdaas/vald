@@ -365,6 +365,7 @@ type (
 		RuntimeImage      string
 		RuntimeUser       string
 		Preprocess        []string
+		BuildCommands     []string
 		ExtraImages       []string
 		StageFiles        []string
 		RunMounts         []string
@@ -446,6 +447,10 @@ var (
 		"make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}/${REPO}\" NAME=\"${REPO}\" cmd/${PKG}/${APP_NAME}",
 		"mv \"cmd/${PKG}/${APP_NAME}\" \"{{$.BinDir}}/${APP_NAME}\"",
 	}
+	ngtGoBuildCommands = []string{
+		"CFLAGS=\"-O1\" make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}/${REPO}\" NAME=\"${REPO}\" cmd/${PKG}/${APP_NAME}",
+		"mv \"cmd/${PKG}/${APP_NAME}\" \"{{$.BinDir}}/${APP_NAME}\"",
+	}
 	goExampleBuildCommands = []string{
 		"make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}/${REPO}\" NAME=\"${REPO}\" ${PKG}/${APP_NAME}",
 		"mv \"${PKG}/${APP_NAME}\" \"{{$.BinDir}}/${APP_NAME}\"",
@@ -462,7 +467,7 @@ var (
 
 	defaultMounts = []string{
 		"--mount=type=bind,target=.,rw",
-		"--mount=type=tmpfs,target=/tmp",
+		"--mount=type=tmpfs,target=/tmp,size=4g",
 		"--mount=type=cache,target=/var/lib/apt,sharing=locked,id=lib-${APP_NAME}-${TARGETARCH}",
 		"--mount=type=cache,target=/var/cache/apt,sharing=locked,id=cache-${APP_NAME}-${TARGETARCH}",
 	}
@@ -679,8 +684,9 @@ func main() {
 	eg, egctx := errgroup.New(ctx)
 	for n, d := range map[string]Data{
 		vald + "-" + agentNGT: {
-			AppName:    "ngt",
-			PackageDir: agent + "/core/ngt",
+			AppName:       "ngt",
+			PackageDir:    agent + "/core/ngt",
+			BuildCommands: ngtGoBuildCommands,
 			// RuntimeImage:  "gcr.io/distroless/cc-debian12",
 			ExtraPackages: append(clangBuildDeps, ngtBuildDeps...),
 			Preprocess:    []string{ngtPreprocess},
@@ -1110,7 +1116,11 @@ jobs:
 					commands = append(commands, data.Preprocess...)
 				}
 				if file.Exists(file.Join(os.Args[1], "cmd", data.PackageDir)) {
-					commands = append(commands, goBuildCommands...)
+					buildCmds := goBuildCommands
+					if data.BuildCommands != nil {
+						buildCmds = data.BuildCommands
+					}
+					commands = append(commands, buildCmds...)
 				} else if strings.HasPrefix(data.PackageDir, "example") && file.Exists(file.Join(os.Args[1], data.PackageDir)) {
 					commands = append(commands, goExampleBuildCommands...)
 				} else if strings.HasPrefix(data.PackageDir, e2eV2TestPath+"/"+e2e) && file.Exists(file.Join(os.Args[1], data.PackageDir)) {

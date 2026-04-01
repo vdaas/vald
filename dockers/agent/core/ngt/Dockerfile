@@ -47,7 +47,7 @@ WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 #skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
 RUN --mount=type=bind,target=.,rw \
-    --mount=type=tmpfs,target=/tmp \
+    --mount=type=tmpfs,target=/tmp,size=4g \
     --mount=type=cache,target=/var/lib/apt,sharing=locked,id=lib-${APP_NAME}-${TARGETARCH} \
     --mount=type=cache,target=/var/cache/apt,sharing=locked,id=cache-${APP_NAME}-${TARGETARCH} \
     --mount=type=cache,target="${GOPATH}/pkg",id="go-pkg-${TARGETARCH}" \
@@ -87,7 +87,7 @@ RUN --mount=type=bind,target=.,rw \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/install \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/download \
     && make ngt/install \
-    && make GOARCH="${TARGETARCH}" GOOS="${TARGETOS}" REPO="${ORG}/${REPO}" NAME="${REPO}" cmd/${PKG}/${APP_NAME} \
+    && CFLAGS="-O1" make GOARCH="${TARGETARCH}" GOOS="${TARGETOS}" REPO="${ORG}/${REPO}" NAME="${REPO}" cmd/${PKG}/${APP_NAME} \
     && mv "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
 # skipcq: DOK-DL3026,DOK-DL3007
 FROM gcr.io/distroless/static:nonroot

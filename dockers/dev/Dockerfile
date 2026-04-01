@@ -52,7 +52,7 @@ WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 #skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
 RUN --mount=type=bind,target=.,rw \
-    --mount=type=tmpfs,target=/tmp \
+    --mount=type=tmpfs,target=/tmp,size=4g \
     --mount=type=cache,target=/var/lib/apt,sharing=locked,id=lib-${APP_NAME}-${TARGETARCH} \
     --mount=type=cache,target=/var/cache/apt,sharing=locked,id=cache-${APP_NAME}-${TARGETARCH} \
     --mount=type=cache,target="${GOPATH}/pkg",id="go-pkg-${TARGETARCH}" \
