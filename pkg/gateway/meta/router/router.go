@@ -57,12 +57,28 @@ func New(opts ...Option) http.Handler {
 				HandlerFunc: h.Search,
 			},
 			{
+				Name: "Search With Metadata",
+				Methods: []string{
+					http.MethodPost,
+				},
+				Pattern:     "/search/metadata",
+				HandlerFunc: h.SearchWithMetadata,
+			},
+			{
 				Name: "Search By ID",
 				Methods: []string{
 					http.MethodGet,
 				},
 				Pattern:     "/search/{id}",
 				HandlerFunc: h.SearchByID,
+			},
+			{
+				Name: "Search By ID With Metadata",
+				Methods: []string{
+					http.MethodPost,
+				},
+				Pattern:     "/search/id/metadata",
+				HandlerFunc: h.SearchByIDWithMetadata,
 			},
 			{
 				Name: "Multi Search",
@@ -73,12 +89,28 @@ func New(opts ...Option) http.Handler {
 				HandlerFunc: h.MultiSearch,
 			},
 			{
+				Name: "Multi Search With Metadata",
+				Methods: []string{
+					http.MethodPost,
+				},
+				Pattern:     "/search/multiple/metadata",
+				HandlerFunc: h.MultiSearchWithMetadata,
+			},
+			{
 				Name: "Multi Search By ID",
 				Methods: []string{
 					http.MethodGet,
 				},
 				Pattern:     "/search/multi/{id}",
 				HandlerFunc: h.MultiSearchByID,
+			},
+			{
+				Name: "Multi Search By ID With Metadata",
+				Methods: []string{
+					http.MethodPost,
+				},
+				Pattern:     "/search/id/multiple/metadata",
+				HandlerFunc: h.MultiSearchByIDWithMetadata,
 			},
 			{
 				Name: "Linear_Search",
@@ -89,12 +121,28 @@ func New(opts ...Option) http.Handler {
 				HandlerFunc: h.LinearSearch,
 			},
 			{
+				Name: "Linear Search With Metadata",
+				Methods: []string{
+					http.MethodPost,
+				},
+				Pattern:     "/linearsearch/metadata",
+				HandlerFunc: h.LinearSearchWithMetadata,
+			},
+			{
 				Name: "Linear_Search By ID",
 				Methods: []string{
 					http.MethodGet,
 				},
 				Pattern:     "/linearsearch/{id}",
 				HandlerFunc: h.LinearSearchByID,
+			},
+			{
+				Name: "Linear Search By ID With Metadata",
+				Methods: []string{
+					http.MethodPost,
+				},
+				Pattern:     "/linearsearch/id/metadata",
+				HandlerFunc: h.LinearSearchByIDWithMetadata,
 			},
 			{
 				Name: "Multi Linear_Search",
@@ -105,12 +153,28 @@ func New(opts ...Option) http.Handler {
 				HandlerFunc: h.MultiLinearSearch,
 			},
 			{
+				Name: "Multi Linear Search With Metadata",
+				Methods: []string{
+					http.MethodPost,
+				},
+				Pattern:     "/linearsearch/multiple/metadata",
+				HandlerFunc: h.MultiLinearSearchWithMetadata,
+			},
+			{
 				Name: "Multi Linear_Search By ID",
 				Methods: []string{
 					http.MethodGet,
 				},
 				Pattern:     "/linearsearch/multi/{id}",
 				HandlerFunc: h.MultiLinearSearchByID,
+			},
+			{
+				Name: "Multi Linear Search By ID With Metadata",
+				Methods: []string{
+					http.MethodPost,
+				},
+				Pattern:     "/linearsearch/id/multiple/metadata",
+				HandlerFunc: h.MultiLinearSearchByIDWithMetadata,
 			},
 			{
 				Name: "Insert",
@@ -121,12 +185,28 @@ func New(opts ...Option) http.Handler {
 				HandlerFunc: h.Insert,
 			},
 			{
+				Name: "Insert With Metadata",
+				Methods: []string{
+					http.MethodPost,
+				},
+				Pattern:     "/insert/metadata",
+				HandlerFunc: h.InsertWithMetadata,
+			},
+			{
 				Name: "Multiple Insert",
 				Methods: []string{
 					http.MethodPost,
 				},
 				Pattern:     "/insert/multi",
 				HandlerFunc: h.MultiInsert,
+			},
+			{
+				Name: "Multiple Insert With Metadata",
+				Methods: []string{
+					http.MethodPost,
+				},
+				Pattern:     "/insert/multiple/metadata",
+				HandlerFunc: h.MultiInsertWithMetadata,
 			},
 			{
 				Name: "Update",
@@ -139,6 +219,14 @@ func New(opts ...Option) http.Handler {
 				HandlerFunc: h.Update,
 			},
 			{
+				Name: "Update With Metadata",
+				Methods: []string{
+					http.MethodPost,
+				},
+				Pattern:     "/update/metadata",
+				HandlerFunc: h.UpdateWithMetadata,
+			},
+			{
 				Name: "Multiple Update",
 				Methods: []string{
 					http.MethodPost,
@@ -147,6 +235,22 @@ func New(opts ...Option) http.Handler {
 				},
 				Pattern:     "/update/multi",
 				HandlerFunc: h.MultiUpdate,
+			},
+			{
+				Name: "Multiple Update With Metadata",
+				Methods: []string{
+					http.MethodPost,
+				},
+				Pattern:     "/update/multiple/metadata",
+				HandlerFunc: h.MultiUpdateWithMetadata,
+			},
+			{
+				Name: "Update Timestamp With Metadata",
+				Methods: []string{
+					http.MethodPost,
+				},
+				Pattern:     "/update/timestamp/metadata",
+				HandlerFunc: h.UpdateTimestampWithMetadata,
 			},
 			{
 				Name: "Upsert",
@@ -159,6 +263,14 @@ func New(opts ...Option) http.Handler {
 				HandlerFunc: h.Upsert,
 			},
 			{
+				Name: "Upsert With Metadata",
+				Methods: []string{
+					http.MethodPost,
+				},
+				Pattern:     "/upsert/metadata",
+				HandlerFunc: h.UpsertWithMetadata,
+			},
+			{
 				Name: "Multiple Upsert",
 				Methods: []string{
 					http.MethodPost,
@@ -169,12 +281,28 @@ func New(opts ...Option) http.Handler {
 				HandlerFunc: h.MultiUpsert,
 			},
 			{
+				Name: "Multiple Upsert With Metadata",
+				Methods: []string{
+					http.MethodPost,
+				},
+				Pattern:     "/upsert/multiple/metadata",
+				HandlerFunc: h.MultiUpsertWithMetadata,
+			},
+			{
 				Name: "Remove",
 				Methods: []string{
 					http.MethodDelete,
 				},
 				Pattern:     "/delete/{id}",
 				HandlerFunc: h.Remove,
+			},
+			{
+				Name: "Remove With Metadata",
+				Methods: []string{
+					http.MethodPost,
+				},
+				Pattern:     "/remove/metadata",
+				HandlerFunc: h.RemoveWithMetadata,
 			},
 			{
 				Name: "Multiple Remove",
@@ -184,6 +312,22 @@ func New(opts ...Option) http.Handler {
 				},
 				Pattern:     "/delete/multi",
 				HandlerFunc: h.MultiRemove,
+			},
+			{
+				Name: "Multiple Remove With Metadata",
+				Methods: []string{
+					http.MethodPost,
+				},
+				Pattern:     "/remove/multiple/metadata",
+				HandlerFunc: h.MultiRemoveWithMetadata,
+			},
+			{
+				Name: "Remove By Timestamp With Metadata",
+				Methods: []string{
+					http.MethodPost,
+				},
+				Pattern:     "/remove/timestamp/metadata",
+				HandlerFunc: h.RemoveByTimestampWithMetadata,
 			},
 			{
 				Name: "Flush",
@@ -200,6 +344,22 @@ func New(opts ...Option) http.Handler {
 				},
 				Pattern:     "/object/{id}",
 				HandlerFunc: h.GetObject,
+			},
+			{
+				Name: "StreamListObject With Metadata",
+				Methods: []string{
+					http.MethodGet,
+				},
+				Pattern:     "/object/list/metadata",
+				HandlerFunc: h.StreamListObjectWithMetadata,
+			},
+			{
+				Name: "GetObject With Metadata",
+				Methods: []string{
+					http.MethodGet,
+				},
+				Pattern:     "/object/{id}/metadata",
+				HandlerFunc: h.GetObjectWithMetadata,
 			},
 		}...))
 }
