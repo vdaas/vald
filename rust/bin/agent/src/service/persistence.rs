@@ -267,8 +267,8 @@ impl PersistenceManager {
             Ok(e) => e,
             Err(err) => {
                 warn!("failed to read index directory {}: {}", path.display(), err);
-                return false
-            },
+                return false;
+            }
         };
 
         let files: Vec<_> = entries
@@ -277,7 +277,10 @@ impl PersistenceManager {
             .collect();
 
         if files.is_empty() {
-            warn!("index directory {} is empty, skipping backup", path.display());
+            warn!(
+                "index directory {} is empty, skipping backup",
+                path.display()
+            );
             return false;
         }
 
@@ -303,9 +306,13 @@ impl PersistenceManager {
         match metadata::load(&metadata_path) {
             Ok(meta) => meta.is_invalid || meta.index_count() > 0,
             Err(err) => {
-                warn!("failed to load metadata from {}: {}", metadata_path.display(), err);
+                warn!(
+                    "failed to load metadata from {}: {}",
+                    metadata_path.display(),
+                    err
+                );
                 false
-            },
+            }
         }
     }
 
@@ -404,9 +411,13 @@ impl PersistenceManager {
         match metadata::load(&metadata_path) {
             Ok(meta) => !meta.is_invalid && meta.index_count() > 0,
             Err(err) => {
-                warn!("failed to load metadata from {}: {}", metadata_path.display(), err);
+                warn!(
+                    "failed to load metadata from {}: {}",
+                    metadata_path.display(),
+                    err
+                );
                 false
-            },
+            }
         }
     }
 
