@@ -100,6 +100,8 @@ replace (
 	github.com/quic-go/quic-go => github.com/quic-go/quic-go upgrade
 	github.com/quic-go/qpack => github.com/quic-go/qpack upgrade
 	github.com/chzyer/test => github.com/chzyer/test upgrade
+	github.com/clipperhouse/displaywidth => github.com/clipperhouse/displaywidth v0.6.0
+	github.com/clipperhouse/uax29/v2 => github.com/clipperhouse/uax29/v2 v2.3.0
 	github.com/cncf/udpa/go => github.com/cncf/udpa/go upgrade
 	github.com/cncf/xds/go => github.com/cncf/xds/go upgrade
 	github.com/cockroachdb/apd => github.com/cockroachdb/apd upgrade

@@ -102,6 +102,8 @@ replace (
 	github.com/chzyer/logex => github.com/chzyer/logex v1.2.1
 	github.com/chzyer/readline => github.com/chzyer/readline v1.5.1
 	github.com/chzyer/test => github.com/chzyer/test v1.0.0
+	github.com/clipperhouse/displaywidth => github.com/clipperhouse/displaywidth v0.6.0
+	github.com/clipperhouse/uax29/v2 => github.com/clipperhouse/uax29/v2 v2.3.0
 	github.com/cncf/udpa/go => github.com/cncf/udpa/go v0.0.0-20220112060539-c52dc94e7fbe
 	github.com/cncf/xds/go => github.com/cncf/xds/go v0.0.0-20260202195803-dba9d589def2
 	github.com/cockroachdb/apd => github.com/cockroachdb/apd v1.1.0
