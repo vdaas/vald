@@ -102,7 +102,9 @@ func (h *handler) Search(w http.ResponseWriter, r *http.Request) (code int, err 
 	return h.SearchWithMetadata(w, r)
 }
 
-func (h *handler) SearchByIDWithMetadata(w http.ResponseWriter, r *http.Request) (code int, err error) {
+func (h *handler) SearchByIDWithMetadata(
+	w http.ResponseWriter, r *http.Request,
+) (code int, err error) {
 	var req *payload.Search_IDRequest
 	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.SearchByIDWithMetadata(r.Context(), req)
@@ -113,7 +115,9 @@ func (h *handler) SearchByID(w http.ResponseWriter, r *http.Request) (code int, 
 	return h.SearchByIDWithMetadata(w, r)
 }
 
-func (h *handler) MultiSearchWithMetadata(w http.ResponseWriter, r *http.Request) (code int, err error) {
+func (h *handler) MultiSearchWithMetadata(
+	w http.ResponseWriter, r *http.Request,
+) (code int, err error) {
 	var req *payload.Search_MultiRequest
 	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.MultiSearchWithMetadata(r.Context(), req)
@@ -124,7 +128,9 @@ func (h *handler) MultiSearch(w http.ResponseWriter, r *http.Request) (code int,
 	return h.MultiSearchWithMetadata(w, r)
 }
 
-func (h *handler) MultiSearchByIDWithMetadata(w http.ResponseWriter, r *http.Request) (code int, err error) {
+func (h *handler) MultiSearchByIDWithMetadata(
+	w http.ResponseWriter, r *http.Request,
+) (code int, err error) {
 	var req *payload.Search_MultiIDRequest
 	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.MultiSearchByIDWithMetadata(r.Context(), req)
@@ -135,7 +141,9 @@ func (h *handler) MultiSearchByID(w http.ResponseWriter, r *http.Request) (code 
 	return h.MultiSearchByIDWithMetadata(w, r)
 }
 
-func (h *handler) LinearSearchWithMetadata(w http.ResponseWriter, r *http.Request) (code int, err error) {
+func (h *handler) LinearSearchWithMetadata(
+	w http.ResponseWriter, r *http.Request,
+) (code int, err error) {
 	var req *payload.Search_Request
 	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.LinearSearchWithMetadata(r.Context(), req)
@@ -146,7 +154,9 @@ func (h *handler) LinearSearch(w http.ResponseWriter, r *http.Request) (code int
 	return h.LinearSearchWithMetadata(w, r)
 }
 
-func (h *handler) LinearSearchByIDWithMetadata(w http.ResponseWriter, r *http.Request) (code int, err error) {
+func (h *handler) LinearSearchByIDWithMetadata(
+	w http.ResponseWriter, r *http.Request,
+) (code int, err error) {
 	var req *payload.Search_IDRequest
 	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.LinearSearchByIDWithMetadata(r.Context(), req)
@@ -157,7 +167,9 @@ func (h *handler) LinearSearchByID(w http.ResponseWriter, r *http.Request) (code
 	return h.LinearSearchByIDWithMetadata(w, r)
 }
 
-func (h *handler) MultiLinearSearchWithMetadata(w http.ResponseWriter, r *http.Request) (code int, err error) {
+func (h *handler) MultiLinearSearchWithMetadata(
+	w http.ResponseWriter, r *http.Request,
+) (code int, err error) {
 	var req *payload.Search_MultiRequest
 	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.MultiLinearSearchWithMetadata(r.Context(), req)
@@ -194,7 +206,9 @@ func (h *handler) Insert(w http.ResponseWriter, r *http.Request) (code int, err 
 	return h.InsertWithMetadata(w, r)
 }
 
-func (h *handler) MultiInsertWithMetadata(w http.ResponseWriter, r *http.Request) (code int, err error) {
+func (h *handler) MultiInsertWithMetadata(
+	w http.ResponseWriter, r *http.Request,
+) (code int, err error) {
 	var req *payload.Insert_MultiRequest
 	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.MultiInsertWithMetadata(r.Context(), req)
@@ -216,7 +230,9 @@ func (h *handler) Update(w http.ResponseWriter, r *http.Request) (code int, err 
 	return h.UpdateWithMetadata(w, r)
 }
 
-func (h *handler) MultiUpdateWithMetadata(w http.ResponseWriter, r *http.Request) (code int, err error) {
+func (h *handler) MultiUpdateWithMetadata(
+	w http.ResponseWriter, r *http.Request,
+) (code int, err error) {
 	var req *payload.Update_MultiRequest
 	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.MultiUpdateWithMetadata(r.Context(), req)
@@ -227,7 +243,9 @@ func (h *handler) MultiUpdate(w http.ResponseWriter, r *http.Request) (code int,
 	return h.MultiUpdateWithMetadata(w, r)
 }
 
-func (h *handler) UpdateTimestampWithMetadata(w http.ResponseWriter, r *http.Request) (code int, err error) {
+func (h *handler) UpdateTimestampWithMetadata(
+	w http.ResponseWriter, r *http.Request,
+) (code int, err error) {
 	var req *payload.Update_TimestampRequest
 	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.UpdateTimestampWithMetadata(r.Context(), req)
@@ -245,7 +263,9 @@ func (h *handler) Upsert(w http.ResponseWriter, r *http.Request) (code int, err 
 	return h.UpsertWithMetadata(w, r)
 }
 
-func (h *handler) MultiUpsertWithMetadata(w http.ResponseWriter, r *http.Request) (code int, err error) {
+func (h *handler) MultiUpsertWithMetadata(
+	w http.ResponseWriter, r *http.Request,
+) (code int, err error) {
 	var req *payload.Upsert_MultiRequest
 	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.MultiUpsertWithMetadata(r.Context(), req)
@@ -267,14 +287,18 @@ func (h *handler) Remove(w http.ResponseWriter, r *http.Request) (code int, err 
 	return h.RemoveWithMetadata(w, r)
 }
 
-func (h *handler) RemoveByTimestampWithMetadata(w http.ResponseWriter, r *http.Request) (code int, err error) {
+func (h *handler) RemoveByTimestampWithMetadata(
+	w http.ResponseWriter, r *http.Request,
+) (code int, err error) {
 	var req *payload.Remove_TimestampRequest
 	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.RemoveByTimestampWithMetadata(r.Context(), req)
 	})
 }
 
-func (h *handler) MultiRemoveWithMetadata(w http.ResponseWriter, r *http.Request) (code int, err error) {
+func (h *handler) MultiRemoveWithMetadata(
+	w http.ResponseWriter, r *http.Request,
+) (code int, err error) {
 	var req *payload.Remove_MultiRequest
 	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.MultiRemoveWithMetadata(r.Context(), req)
@@ -292,7 +316,9 @@ func (h *handler) Flush(w http.ResponseWriter, r *http.Request) (code int, err e
 	})
 }
 
-func (h *handler) GetObjectWithMetadata(w http.ResponseWriter, r *http.Request) (code int, err error) {
+func (h *handler) GetObjectWithMetadata(
+	w http.ResponseWriter, r *http.Request,
+) (code int, err error) {
 	var req *payload.Object_VectorRequest
 	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.GetObjectWithMetadata(r.Context(), req)
@@ -303,7 +329,9 @@ func (h *handler) GetObject(w http.ResponseWriter, r *http.Request) (code int, e
 	return h.GetObjectWithMetadata(w, r)
 }
 
-func (h *handler) StreamListObjectWithMetadata(w http.ResponseWriter, r *http.Request) (code int, err error) {
+func (h *handler) StreamListObjectWithMetadata(
+	w http.ResponseWriter, r *http.Request,
+) (code int, err error) {
 	var req *payload.Object_List_Request
 	return json.Handler(w, r, &req, func() (any, error) {
 		srv := &listObjectWithMetadataHTTPServer{
@@ -366,5 +394,7 @@ func (*listObjectWithMetadataHTTPServer) RecvMsg(any) error {
 	return nil
 }
 
-var _ vald.ObjectWithMetadata_StreamListObjectWithMetadataServer = (*listObjectWithMetadataHTTPServer)(nil)
-var _ ggrpc.ServerStream = (*listObjectWithMetadataHTTPServer)(nil)
+var (
+	_ vald.ObjectWithMetadata_StreamListObjectWithMetadataServer = (*listObjectWithMetadataHTTPServer)(nil)
+	_ ggrpc.ServerStream                                         = (*listObjectWithMetadataHTTPServer)(nil)
+)
