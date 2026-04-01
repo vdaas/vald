@@ -181,7 +181,11 @@ TEST_LDFLAGS = $(TEST_LDFLAGS_BASE) $(CGO_LDFLAGS)
 ifeq ($(GOARCH),amd64)
 CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
 CXXFLAGS ?= $(CFLAGS)
+ifeq ($(GOOS),darwin)
 EXTLDFLAGS ?= -m64
+else
+EXTLDFLAGS ?= -m64 -Wl,--no-keep-memory
+endif
 else ifeq ($(GOARCH),arm64)
 CFLAGS ?=
 ifeq ($(GOOS),darwin)
@@ -189,13 +193,19 @@ HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lz -ldl -lm
 CFLAGS = -I $(shell brew --prefix hdf5)/include
 CGO_CFLAGS ?= $(CFLAGS)
 CGO_LDFLAGS = -L $(shell brew --prefix hdf5)/lib -L $(shell brew --prefix zlib)/lib $(HDF5_LDFLAGS)
+EXTLDFLAGS ?= -march=armv8-a
+else
+EXTLDFLAGS ?= -march=armv8-a -Wl,--no-keep-memory
 endif
 CXXFLAGS ?= $(CFLAGS)
-EXTLDFLAGS ?= -march=armv8-a
 else
 CFLAGS ?=
 CXXFLAGS ?= $(CFLAGS)
+ifeq ($(GOOS),darwin)
 EXTLDFLAGS ?=
+else
+EXTLDFLAGS ?= -Wl,--no-keep-memory
+endif
 endif
 
 BENCH_DATASET_MD5S := $(eval BENCH_DATASET_MD5S := $(shell find $(BENCH_DATASET_MD5_DIR) -type f -regex ".*\.md5"))$(BENCH_DATASET_MD5S)
