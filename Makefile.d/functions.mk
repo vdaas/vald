@@ -60,6 +60,8 @@ define go-build
 	CFLAGS="$(CFLAGS)" \
 	CXXFLAGS="$(CXXFLAGS)" \
 	CGO_ENABLED=$(CGO_ENABLED) \
+	CGO_CFLAGS_ALLOW="-flto=.*|-ffat-lto-objects" \
+	CGO_CFLAGS="$(CFLAGS) -flto=auto -ffat-lto-objects" \
 	CGO_CXXFLAGS="$3" \
 	CGO_FFLAGS="$3" \
 	CGO_LDFLAGS="$3" \
@@ -99,6 +101,8 @@ define go-example-build
 	CFLAGS="$(CFLAGS)" \
 	CXXFLAGS="$(CXXFLAGS)" \
 	CGO_ENABLED=$(CGO_ENABLED) \
+	CGO_CFLAGS_ALLOW="-flto=.*|-ffat-lto-objects" \
+	CGO_CFLAGS="$(CFLAGS) -flto=auto -ffat-lto-objects" \
 	CGO_CXXFLAGS="$3" \
 	CGO_FFLAGS="$3" \
 	CGO_LDFLAGS="$3" \
@@ -127,6 +131,8 @@ define go-e2e-build
 	CFLAGS="$(CFLAGS)" \
 	CXXFLAGS="$(CXXFLAGS)" \
 	CGO_ENABLED=$(CGO_ENABLED) \
+	CGO_CFLAGS_ALLOW="-flto=.*|-ffat-lto-objects" \
+	CGO_CFLAGS="$(CFLAGS) -flto=auto -ffat-lto-objects" \
 	CGO_CXXFLAGS="$2" \
 	CGO_FFLAGS="$2" \
 	CGO_LDFLAGS="$2" \
