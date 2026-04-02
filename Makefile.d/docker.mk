@@ -124,6 +124,7 @@ else
 	@echo "starting local build for $(IMAGE):$(TAG)"
 	DOCKER_BUILDKIT=1 $(DOCKER) build \
 	$(DOCKER_OPTS) \
+	--network host \
 	--build-arg BUILDKIT_INLINE_CACHE=$(BUILDKIT_INLINE_CACHE) \
 	--build-arg GO_VERSION=$(GO_VERSION) \
 	--build-arg RUST_VERSION=$(RUST_VERSION) \
