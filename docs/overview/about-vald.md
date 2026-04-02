@@ -10,7 +10,7 @@ Vald is a highly scalable distributed fast approximate nearest neighbor dense ve
 
 Vald is designed and implemented based on Cloud-Native architecture.
 
-It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to search neighbors.
+It uses the fastest ANN Algorithm [NGT](https://github.com/NGT-labs/NGT) to search neighbors.
 
 Vald has automatic vector indexing and index backup, and horizontal scaling which made for searching from billions of feature vector data.
 
@@ -66,7 +66,7 @@ Vald supports similarity searching.
 Vald is based on Kubernetes and Cloud-Native architecture, which means Vald is highly scalable.
 You can easily scale Vald by changing Vald's configuration.
 
-Vald uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to search neighbors by default, but users can switch to another vector searching engine in Vald to support the best performance for your use case.
+Vald uses the fastest ANN Algorithm [NGT](https://github.com/NGT-labs/NGT) to search neighbors by default, but users can switch to another vector searching engine in Vald to support the best performance for your use case.
 
 Also, Vald supports auto-healing, to reduce running and maintenance costs. Vald implements the backup mechanism to support disaster recovery.
 Whenever one of the Vald Agent instances is down, the new Vald Agent instance will be created automatically and the data will be recovered automatically.
