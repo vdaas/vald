@@ -236,6 +236,7 @@ func (r *runner) processExecution(
 			ttt.Helper()
 			switch e.Type {
 			case config.OpSearch,
+				config.OpSearchMeta,
 				config.OpSearchByID,
 				config.OpLinearSearch,
 				config.OpLinearSearchByID,
@@ -263,6 +264,7 @@ func (r *runner) processExecution(
 				}
 				switch e.Type {
 				case config.OpSearch,
+					config.OpSearchMeta,
 					config.OpSearchByID,
 					config.OpLinearSearch,
 					config.OpLinearSearchByID:
