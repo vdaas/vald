@@ -223,21 +223,21 @@ func dirwalk(dir string) ([]string, error) {
 			".whitesource":
 		default:
 			switch f.Name() {
-			case
-				"AUTHORS",
-				"LICENSE",
+			case "AUTHORS",
 				"CONTRIBUTORS",
 				"FAISS_VERSION",
+				"go.tools",
 				"GO_VERSION",
-				"NGT_VERSION",
-				"Pipefile",
-				"VALD_VERSION",
 				"grp",
+				"LICENSE",
+				"NGT_VERSION",
 				"obj",
+				"Pipefile",
 				"prf",
 				"rust-toolchain",
 				"src",
-				"tre":
+				"tre",
+				"VALD_VERSION":
 			default:
 				path := file.Join(dir, f.Name())
 				log.Info(path)

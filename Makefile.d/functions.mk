@@ -21,7 +21,9 @@ pink = printf "\x1b[35m\#\# %s\x1b[0m\n" $1
 cyan = printf "\x1b[36m\#\# %s\x1b[0m\n" $1
 
 define go-tool-install
-	go install tool
+	cat $(ROOTDIR)/hack/go.tools | \
+	xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P $(CORES) \
+	sh -c 'if ! out=$$(go install -ldflags="-w" {} 2>&1 >/dev/null); then echo "--- Failed to install {} ---" >&2; echo "$$out" >&2; exit 255; fi';
 endef
 
 define mkdir
@@ -58,6 +60,8 @@ define go-build
 	CFLAGS="$(CFLAGS)" \
 	CXXFLAGS="$(CXXFLAGS)" \
 	CGO_ENABLED=$(CGO_ENABLED) \
+	CGO_CFLAGS_ALLOW="-flto=.*|-ffat-lto-objects" \
+	CGO_CFLAGS="$(CFLAGS) -flto=auto -ffat-lto-objects" \
 	CGO_CXXFLAGS="$3" \
 	CGO_FFLAGS="$3" \
 	CGO_LDFLAGS="$3" \
@@ -97,6 +101,8 @@ define go-example-build
 	CFLAGS="$(CFLAGS)" \
 	CXXFLAGS="$(CXXFLAGS)" \
 	CGO_ENABLED=$(CGO_ENABLED) \
+	CGO_CFLAGS_ALLOW="-flto=.*|-ffat-lto-objects" \
+	CGO_CFLAGS="$(CFLAGS) -flto=auto -ffat-lto-objects" \
 	CGO_CXXFLAGS="$3" \
 	CGO_FFLAGS="$3" \
 	CGO_LDFLAGS="$3" \
@@ -125,6 +131,8 @@ define go-e2e-build
 	CFLAGS="$(CFLAGS)" \
 	CXXFLAGS="$(CXXFLAGS)" \
 	CGO_ENABLED=$(CGO_ENABLED) \
+	CGO_CFLAGS_ALLOW="-flto=.*|-ffat-lto-objects" \
+	CGO_CFLAGS="$(CFLAGS) -flto=auto -ffat-lto-objects" \
 	CGO_CXXFLAGS="$2" \
 	CGO_FFLAGS="$2" \
 	CGO_LDFLAGS="$2" \
