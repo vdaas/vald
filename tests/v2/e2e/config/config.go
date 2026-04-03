@@ -442,6 +442,7 @@ func (e *Execution) Bind(parentMetrics *Metrics) (bound *Execution, err error) {
 	}
 	switch e.Type {
 	case OpSearch,
+		OpSearchMeta,
 		OpSearchByID,
 		OpLinearSearch,
 		OpLinearSearchByID,
@@ -468,6 +469,7 @@ func (e *Execution) Bind(parentMetrics *Metrics) (bound *Execution, err error) {
 		}
 		switch e.Type {
 		case OpSearch,
+			OpSearchMeta,
 			OpSearchByID,
 			OpLinearSearch,
 			OpLinearSearchByID:
@@ -480,8 +482,11 @@ func (e *Execution) Bind(parentMetrics *Metrics) (bound *Execution, err error) {
 				e.Search = sq
 			}
 		case OpInsert,
+			OpInsertMeta,
 			OpUpdate,
+			OpUpdateMeta,
 			OpUpsert,
+			OpUpsertMeta,
 			OpRemove,
 			OpRemoveByTimestamp:
 			if e.Modification != nil {
@@ -585,6 +590,8 @@ func (ot OperationType) Bind() (bound OperationType, err error) {
 	switch strings.TrimForCompare(config.GetActualValue(ot)) {
 	case "search", "ser", "s":
 		return OpSearch, nil
+	case "searchmeta", "sermeta", "sm":
+		return OpSearchMeta, nil
 	case "searchbyid", "serid", "sid", "sbyid":
 		return OpSearchByID, nil
 	case "linearsearch", "lsearch", "lser", "ls":
@@ -593,15 +600,15 @@ func (ot OperationType) Bind() (bound OperationType, err error) {
 		return OpLinearSearchByID, nil
 	case "insert", "ins", "i":
 		return OpInsert, nil
-	case "insert_meta", "insertmeta", "ins_meta", "insmeta", "im":
+	case "insertmeta", "insmeta", "im":
 		return OpInsertMeta, nil
 	case "update", "upd", "u":
 		return OpUpdate, nil
-	case "update_meta", "updatemeta", "upd_meta", "updmeta", "um":
+	case "updatemeta", "updmeta", "um":
 		return OpUpdateMeta, nil
 	case "upsert", "usert", "upst", "us":
 		return OpUpsert, nil
-	case "upsert_meta", "upsertmeta", "uerst_meta", "usertmeta", "upst_meta", "upstmeta", "usm":
+	case "upsertmeta", "usertmeta", "upstmeta", "usm":
 		return OpUpsertMeta, nil
 	case "remove", "rem", "r", "delete", "del", "d":
 		return OpRemove, nil

@@ -24,6 +24,7 @@ type OperationType string
 
 const (
 	OpSearch           OperationType = "search"
+	OpSearchMeta       OperationType = "search_meta"
 	OpSearchByID       OperationType = "search_by_id"
 	OpLinearSearch     OperationType = "linear_search"
 	OpLinearSearchByID OperationType = "linear_search_by_id"

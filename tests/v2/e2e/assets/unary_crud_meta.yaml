@@ -210,7 +210,7 @@ strategies:
       - name: Search Operation
         executions:
           - name: Search with ConcurrentQueue
-            type: search
+            type: search_meta
             mode: unary
             parallelism: _E2E_PARALLELISM_
             num: _E2E_SEARCH_COUNT_
@@ -218,7 +218,7 @@ strategies:
               timeout: 3s
               algorithm: cq
           - name: Search with SortSlice
-            type: search
+            type: search_meta
             mode: unary
             parallelism: _E2E_PARALLELISM_
             num: _E2E_SEARCH_COUNT_
@@ -226,7 +226,7 @@ strategies:
               timeout: 3s
               algorithm: ss
           - name: Search with SortPoolSlice
-            type: search
+            type: search_meta
             mode: unary
             parallelism: _E2E_PARALLELISM_
             num: _E2E_SEARCH_COUNT_
@@ -234,7 +234,7 @@ strategies:
               timeout: 3s
               algorithm: ps
           - name: Search with PairingHeap
-            type: search
+            type: search_meta
             mode: unary
             parallelism: _E2E_PARALLELISM_
             num: _E2E_SEARCH_COUNT_
