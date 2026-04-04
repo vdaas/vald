@@ -28,6 +28,7 @@ kvs = { version = "0.1.0", path = "../../libs/kvs" }
 observability = { version = "0.1.0", path = "../../libs/observability" }
 anyhow = "1.0.102"
 async-trait = "0.1"
+cargo = "0.95.0"
 chrono = "0.4.44"
 backtrace = "0.3.76"
 clap = { version = "4.6", features = ["derive"] }
