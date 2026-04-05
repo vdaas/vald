@@ -61,9 +61,9 @@ define go-build
 	CXXFLAGS="$(CXXFLAGS)" \
 	CGO_ENABLED=$(CGO_ENABLED) \
 	CGO_CFLAGS_ALLOW="-flto=.*|-ffat-lto-objects" \
-	CGO_CFLAGS="$(CFLAGS) -flto=auto -ffat-lto-objects" \
-	CGO_CXXFLAGS="$3" \
-	CGO_FFLAGS="$3" \
+	CGO_CFLAGS="$(CFLAGS) -flto=auto -ffat-lto-objects -DNGT_LARGE_DATASET" \
+	CGO_CXXFLAGS="$(CXXFLAGS) -flto=auto -ffat-lto-objects -DNGT_LARGE_DATASET" \
+	CGO_FFLAGS="$(CFLAGS) -flto=auto -ffat-lto-objects" \
 	CGO_LDFLAGS="$3" \
 	GO111MODULE=on \
 	GOARCH=$(GOARCH) \
@@ -102,9 +102,9 @@ define go-example-build
 	CXXFLAGS="$(CXXFLAGS)" \
 	CGO_ENABLED=$(CGO_ENABLED) \
 	CGO_CFLAGS_ALLOW="-flto=.*|-ffat-lto-objects" \
-	CGO_CFLAGS="$(CFLAGS) -flto=auto -ffat-lto-objects" \
-	CGO_CXXFLAGS="$3" \
-	CGO_FFLAGS="$3" \
+	CGO_CFLAGS="$(CFLAGS) -flto=auto -ffat-lto-objects -DNGT_LARGE_DATASET" \
+	CGO_CXXFLAGS="$(CXXFLAGS) -flto=auto -ffat-lto-objects -DNGT_LARGE_DATASET" \
+	CGO_FFLAGS="$(CFLAGS) -flto=auto -ffat-lto-objects" \
 	CGO_LDFLAGS="$3" \
 	GO111MODULE=on \
 	GOARCH=$(GOARCH) \

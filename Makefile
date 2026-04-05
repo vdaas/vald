@@ -62,7 +62,7 @@ VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
 
 NGT_REPO = github.com/NGT-labs/NGT
 
-NGT_EXTRA_CMAKE_FLAGS ?=
+NGT_EXTRA_CMAKE_FLAGS ?= -DNGT_AVX2=ON
 
 TEST_NOT_IMPL_PLACEHOLDER = NOT IMPLEMENTED BELOW
 
@@ -168,14 +168,14 @@ PROTO_VALD_API_DOCS := $(PROTO_VALD_APIS:$(ROOTDIR)/apis/proto/v1/vald/%.proto=$
 PROTO_MIRROR_APIS := $(eval PROTO_MIRROR_APIS := $(filter $(ROOTDIR)/apis/proto/v1/mirror/%.proto,$(PROTOS)))$(PROTO_MIRROR_APIS)
 PROTO_MIRROR_API_DOCS := $(PROTO_MIRROR_APIS:$(ROOTDIR)/apis/proto/v1/mirror/%.proto=$(ROOTDIR)/apis/docs/v1/%.md)
 
-LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -ffat-lto-objects -march=native -mtune=native -fno-plt -O3 -ffast-math -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
+LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lm -z relro -z now -ffat-lto-objects -march=native -mtune=native -fno-plt -O3 -ffast-math -ffp-contract=fast -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections -Wl,--whole-archive -lpthread -lstdc++ -Wl,--no-whole-archive
 
 NGT_LDFLAGS = -fopenmp -lopenblas -llapack -lgfortran
 FAISS_LDFLAGS = $(NGT_LDFLAGS)
 HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl -lm
 CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
 # TEST_LDFLAGS without -static to avoid conflicts with CGO and glibc dynamic linking requirements
-TEST_LDFLAGS_BASE = -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -ffat-lto-objects -march=native -mtune=native -fno-plt -O3 -ffast-math -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
+TEST_LDFLAGS_BASE = -fPIC -pthread -std=gnu++23 -lm -z relro -z now -ffat-lto-objects -march=native -mtune=native -fno-plt -O3 -ffast-math -ffp-contract=fast -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections -Wl,--whole-archive -lpthread -lstdc++ -Wl,--no-whole-archive
 TEST_LDFLAGS = $(TEST_LDFLAGS_BASE) $(CGO_LDFLAGS)
 
 ifeq ($(GOARCH),amd64)
