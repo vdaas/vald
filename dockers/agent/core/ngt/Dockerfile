@@ -62,14 +62,17 @@ RUN --mount=type=bind,target=.,rw \
     && apt-get install -y --no-install-recommends --fix-missing \
     build-essential \
     ca-certificates \
+    clang \
+    lld \
+    libc++-dev \
+    libc++abi-dev \
     curl \
     tzdata \
     locales \
     git \
     cmake \
-    g++ \
-    gcc \
     libssl-dev \
+    llvm \
     unzip \
     liblapack-dev \
     libomp-dev \
@@ -86,8 +89,8 @@ RUN --mount=type=bind,target=.,rw \
     && apt-get autoremove -y \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/install \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/download \
-    && make ngt/install \
-    && make GOARCH="${TARGETARCH}" GOOS="${TARGETOS}" REPO="${ORG}/${REPO}" NAME="${REPO}" cmd/${PKG}/${APP_NAME} \
+    && make CC=clang CXX=clang++ AR=llvm-ar NM=llvm-nm RANLIB=llvm-ranlib ngt/install \
+    && make CC=clang CXX=clang++ AR=llvm-ar NM=llvm-nm RANLIB=llvm-ranlib GOARCH="${TARGETARCH}" GOOS="${TARGETOS}" REPO="${ORG}/${REPO}" NAME="${REPO}" cmd/${PKG}/${APP_NAME} \
     && mv "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
 # skipcq: DOK-DL3026,DOK-DL3007
 FROM gcr.io/distroless/static:nonroot

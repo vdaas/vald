@@ -2398,6 +2398,7 @@ tests/v2/e2e/assets/index_correction.yaml
 tests/v2/e2e/assets/multi_crud.yaml
 tests/v2/e2e/assets/readreplica.yaml
 tests/v2/e2e/assets/rollout.yaml
+tests/v2/e2e/assets/standalone_crud.yaml
 tests/v2/e2e/assets/stream_crud.yaml
 tests/v2/e2e/assets/unary_crud.yaml
 tests/v2/e2e/config/config.go

@@ -56,7 +56,7 @@ e2e/build: \
 cmd/agent/core/ngt/ngt: \
 	ngt/install
 	$(eval CGO_ENABLED = 1)
-	$(call go-build,agent/core/ngt,-linkmode 'external',$(LDFLAGS) $(NGT_LDFLAGS) $(EXTLDFLAGS), cgo,NGT-$(NGT_VERSION),$@)
+	$(call go-build,agent/core/ngt,-linkmode 'external' -extld '$(CXX)',$(LDFLAGS) $(NGT_LDFLAGS) $(EXTLDFLAGS), cgo,NGT-$(NGT_VERSION),$@)
 
 cmd/agent/core/faiss/faiss: \
 	faiss/install
