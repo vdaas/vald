@@ -493,6 +493,7 @@ var (
 	clangLTOBuildDeps = []string{
 		"clang",
 		"lld",
+		"llvm",
 	}
 	devContainerDeps = []string{
 		"file",
