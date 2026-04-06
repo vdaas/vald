@@ -140,7 +140,7 @@
       "properties": {
         "skipStrictExistCheck": {
           "type": "boolean",
-          "description": "A flag to skip exist check during upsert operation."
+          "description": "A flag to skip the existence check during remove operation."
         },
         "timestamp": {
           "type": "string",

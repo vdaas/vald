@@ -1904,6 +1904,7 @@
   message Object.Distance {
     string id = 1;
     float distance = 2;
+    optional bytes metadata = 3;
   }
 {{- end -}}
 
@@ -1914,6 +1915,7 @@
     | :---: | :--- | :---- | :---------- |
     | id | string |  | The vector ID. |
     | distance | float |  | The distance. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Object.ID" }}
@@ -2131,6 +2133,7 @@
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 {{- end -}}
 
@@ -2142,6 +2145,7 @@
     | id | string |  | The vector ID. |
     | vector | float | repeated | The vector. |
     | timestamp | int64 |  | timestamp represents when this vector inserted. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Object.VectorRequest" }}
@@ -2549,6 +2553,7 @@ during update operation. |
     string id = 1;
     int64 timestamp = 2;
     bool force = 3;
+    optional bytes metadata = 4;
   }
 {{- end -}}
 
@@ -2560,6 +2565,7 @@ during update operation. |
     | id | string |  | The vector ID. |
     | timestamp | int64 |  | timestamp represents when this vector inserted. |
     | force | bool |  | force represents forcefully update the timestamp. |
+    | metadata | bytes | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Upsert" }}

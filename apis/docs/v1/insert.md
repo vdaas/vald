@@ -32,6 +32,7 @@ Insert RPC is the method to add a new single vector.
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 
   message Insert.Config {
@@ -60,11 +61,12 @@ Insert RPC is the method to add a new single vector.
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                     |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    |   field   | type   | label    | description                                                                                                        |
+    | :-------: | :----- | :------- | :----------------------------------------------------------------------------------------------------------------- |
+    |    id     | string |          | The vector ID.                                                                                                     |
+    |  vector   | float  | repeated | The vector.                                                                                                        |
+    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                    |
+    | metadata  | bytes  | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
   - Insert.Config
 
@@ -156,6 +158,7 @@ It's the recommended method to insert a large number of vectors.
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 
   message Insert.Config {
@@ -184,11 +187,12 @@ It's the recommended method to insert a large number of vectors.
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                     |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    |   field   | type   | label    | description                                                                                                        |
+    | :-------: | :----- | :------- | :----------------------------------------------------------------------------------------------------------------- |
+    |    id     | string |          | The vector ID.                                                                                                     |
+    |  vector   | float  | repeated | The vector.                                                                                                        |
+    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                    |
+    | metadata  | bytes  | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
   - Insert.Config
 
@@ -299,6 +303,7 @@ Please be careful that the size of the request exceeds the limit.
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 
   message Insert.Config {
@@ -333,11 +338,12 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                     |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    |   field   | type   | label    | description                                                                                                        |
+    | :-------: | :----- | :------- | :----------------------------------------------------------------------------------------------------------------- |
+    |    id     | string |          | The vector ID.                                                                                                     |
+    |  vector   | float  | repeated | The vector.                                                                                                        |
+    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                    |
+    | metadata  | bytes  | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
   - Insert.Config
 

@@ -32,6 +32,7 @@ docker/build: \
 	docker/build/example-client \
 	docker/build/gateway-filter \
 	docker/build/gateway-lb \
+	docker/build/gateway-meta \
 	docker/build/gateway-mirror \
 	docker/build/operator/helm \
 	docker/build/index-correction \
@@ -63,6 +64,7 @@ docker/xpanes/build:
 	docker/build/example-client \
 	docker/build/gateway-filter \
 	docker/build/gateway-lb \
+	docker/build/gateway-meta \
 	docker/build/gateway-mirror \
 	docker/build/index-correction \
 	docker/build/index-creation \
@@ -238,6 +240,18 @@ docker/name/gateway-filter:
 docker/build/gateway-filter:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/gateway/filter/Dockerfile" \
 	IMAGE=$(FILTER_GATEWAY_IMAGE) \
+	docker/build/image
+
+.PHONY: docker/name/gateway-meta
+## print gateway-meta image name
+docker/name/gateway-meta:
+	@echo "$(ORG)/$(META_GATEWAY_IMAGE)"
+
+.PHONY: docker/build/gateway-meta
+## build gateway-meta image
+docker/build/gateway-meta:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/gateway/meta/Dockerfile" \
+	IMAGE=$(META_GATEWAY_IMAGE) \
 	docker/build/image
 
 .PHONY: docker/name/gateway-mirror

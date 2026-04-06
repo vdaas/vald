@@ -1920,7 +1920,9 @@ type Update_TimestampRequest struct {
 	// timestamp represents when this vector inserted.
 	Timestamp int64 `protobuf:"varint,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 	// force represents forcefully update the timestamp.
-	Force         bool `protobuf:"varint,3,opt,name=force,proto3" json:"force,omitempty"`
+	Force bool `protobuf:"varint,3,opt,name=force,proto3" json:"force,omitempty"`
+	// Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway.
+	Metadata      []byte `protobuf:"bytes,4,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1974,6 +1976,13 @@ func (x *Update_TimestampRequest) GetForce() bool {
 		return x.Force
 	}
 	return false
+}
+
+func (x *Update_TimestampRequest) GetMetadata() []byte {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
 }
 
 // Represent the update configuration.
@@ -2105,7 +2114,7 @@ func (x *Upsert_Request) GetConfig() *Upsert_Config {
 	return nil
 }
 
-// Represent mthe ultiple upsert request.
+// Represent the multiple upsert request.
 type Upsert_MultiRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Represent the multiple upsert request content.
@@ -2264,7 +2273,7 @@ func (x *Upsert_MultiObjectRequest) GetRequests() []*Upsert_ObjectRequest {
 // Represent the upsert configuration.
 type Upsert_Config struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// A flag to skip exist check during upsert operation.
+	// A flag to skip the existence check during upsert operation.
 	SkipStrictExistCheck bool `protobuf:"varint,1,opt,name=skip_strict_exist_check,json=skipStrictExistCheck,proto3" json:"skip_strict_exist_check,omitempty"`
 	// Filter configuration.
 	Filters *Filter_Config `protobuf:"bytes,2,opt,name=filters,proto3" json:"filters,omitempty"`
@@ -2541,7 +2550,7 @@ func (x *Remove_Timestamp) GetOperator() Remove_Timestamp_Operator {
 // Represent the remove configuration.
 type Remove_Config struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// A flag to skip exist check during upsert operation.
+	// A flag to skip the existence check during remove operation.
 	SkipStrictExistCheck bool `protobuf:"varint,1,opt,name=skip_strict_exist_check,json=skipStrictExistCheck,proto3" json:"skip_strict_exist_check,omitempty"`
 	// Remove timestamp.
 	Timestamp     int64 `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
@@ -2690,7 +2699,9 @@ type Object_Distance struct {
 	// The vector ID.
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// The distance.
-	Distance      float32 `protobuf:"fixed32,2,opt,name=distance,proto3" json:"distance,omitempty"`
+	Distance float32 `protobuf:"fixed32,2,opt,name=distance,proto3" json:"distance,omitempty"`
+	// Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway.
+	Metadata      []byte `protobuf:"bytes,3,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2737,6 +2748,13 @@ func (x *Object_Distance) GetDistance() float32 {
 		return x.Distance
 	}
 	return 0
+}
+
+func (x *Object_Distance) GetMetadata() []byte {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
 }
 
 // Represent stream response of distances.
@@ -2922,7 +2940,9 @@ type Object_Vector struct {
 	// The vector.
 	Vector []float32 `protobuf:"fixed32,2,rep,packed,name=vector,proto3" json:"vector,omitempty"`
 	// timestamp represents when this vector inserted.
-	Timestamp     int64 `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Timestamp int64 `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	// Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway.
+	Metadata      []byte `protobuf:"bytes,4,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2976,6 +2996,13 @@ func (x *Object_Vector) GetTimestamp() int64 {
 		return x.Timestamp
 	}
 	return 0
+}
+
+func (x *Object_Vector) GetMetadata() []byte {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
 }
 
 // Represent a request to fetch vector meta data.
@@ -6067,7 +6094,7 @@ const file_v1_payload_payload_proto_rawDesc = "" +
 	"\x06Config\x125\n" +
 	"\x17skip_strict_exist_check\x18\x01 \x01(\bR\x14skipStrictExistCheck\x123\n" +
 	"\afilters\x18\x02 \x01(\v2\x19.payload.v1.Filter.ConfigR\afilters\x12\x1c\n" +
-	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\"\xfe\x05\n" +
+	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\"\xad\x06\n" +
 	"\x06Update\x1ay\n" +
 	"\aRequest\x12;\n" +
 	"\x06vector\x18\x01 \x01(\v2\x19.payload.v1.Object.VectorB\b\xbaH\x05\x92\x01\x02\b\x02R\x06vector\x121\n" +
@@ -6081,11 +6108,13 @@ const file_v1_payload_payload_proto_rawDesc = "" +
 	"vectorizer\x18\x03 \x01(\v2\x19.payload.v1.Filter.TargetR\n" +
 	"vectorizer\x1aR\n" +
 	"\x12MultiObjectRequest\x12<\n" +
-	"\brequests\x18\x01 \x03(\v2 .payload.v1.Update.ObjectRequestR\brequests\x1a_\n" +
+	"\brequests\x18\x01 \x03(\v2 .payload.v1.Update.ObjectRequestR\brequests\x1a\x8d\x01\n" +
 	"\x10TimestampRequest\x12\x17\n" +
 	"\x02id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x02id\x12\x1c\n" +
 	"\ttimestamp\x18\x02 \x01(\x03R\ttimestamp\x12\x14\n" +
-	"\x05force\x18\x03 \x01(\bR\x05force\x1a\xca\x01\n" +
+	"\x05force\x18\x03 \x01(\bR\x05force\x12\x1f\n" +
+	"\bmetadata\x18\x04 \x01(\fH\x00R\bmetadata\x88\x01\x01B\v\n" +
+	"\t_metadata\x1a\xca\x01\n" +
 	"\x06Config\x125\n" +
 	"\x17skip_strict_exist_check\x18\x01 \x01(\bR\x14skipStrictExistCheck\x123\n" +
 	"\afilters\x18\x02 \x01(\v2\x19.payload.v1.Filter.ConfigR\afilters\x12\x1c\n" +
@@ -6134,14 +6163,16 @@ const file_v1_payload_payload_proto_rawDesc = "" +
 	"\x17skip_strict_exist_check\x18\x01 \x01(\bR\x14skipStrictExistCheck\x12\x1c\n" +
 	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\"\x12\n" +
 	"\x05Flush\x1a\t\n" +
-	"\aRequest\"\xb1\v\n" +
+	"\aRequest\"\x8e\f\n" +
 	"\x06Object\x1au\n" +
 	"\rVectorRequest\x12/\n" +
 	"\x02id\x18\x01 \x01(\v2\x15.payload.v1.Object.IDB\b\xbaH\x05\x92\x01\x02\b\x02R\x02id\x123\n" +
-	"\afilters\x18\x02 \x01(\v2\x19.payload.v1.Filter.ConfigR\afilters\x1a6\n" +
+	"\afilters\x18\x02 \x01(\v2\x19.payload.v1.Filter.ConfigR\afilters\x1ad\n" +
 	"\bDistance\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
-	"\bdistance\x18\x02 \x01(\x02R\bdistance\x1a\x84\x01\n" +
+	"\bdistance\x18\x02 \x01(\x02R\bdistance\x12\x1f\n" +
+	"\bmetadata\x18\x03 \x01(\fH\x00R\bmetadata\x88\x01\x01B\v\n" +
+	"\t_metadata\x1a\x84\x01\n" +
 	"\x0eStreamDistance\x129\n" +
 	"\bdistance\x18\x01 \x01(\v2\x1b.payload.v1.Object.DistanceH\x00R\bdistance\x12,\n" +
 	"\x06status\x18\x02 \x01(\v2\x12.google.rpc.StatusH\x00R\x06statusB\t\n" +
@@ -6149,11 +6180,13 @@ const file_v1_payload_payload_proto_rawDesc = "" +
 	"\x02ID\x12\x17\n" +
 	"\x02id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x02id\x1a\x17\n" +
 	"\x03IDs\x12\x10\n" +
-	"\x03ids\x18\x01 \x03(\tR\x03ids\x1aa\n" +
+	"\x03ids\x18\x01 \x03(\tR\x03ids\x1a\x8f\x01\n" +
 	"\x06Vector\x12\x17\n" +
 	"\x02id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x02id\x12 \n" +
 	"\x06vector\x18\x02 \x03(\x02B\b\xbaH\x05\x92\x01\x02\b\x02R\x06vector\x12\x1c\n" +
-	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\x1aC\n" +
+	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\x12\x1f\n" +
+	"\bmetadata\x18\x04 \x01(\fH\x00R\bmetadata\x88\x01\x01B\v\n" +
+	"\t_metadata\x1aC\n" +
 	"\x10TimestampRequest\x12/\n" +
 	"\x02id\x18\x01 \x01(\v2\x15.payload.v1.Object.IDB\b\xbaH\x05\x92\x01\x02\b\x02R\x02id\x1aB\n" +
 	"\tTimestamp\x12\x17\n" +
@@ -6615,10 +6648,13 @@ func file_v1_payload_payload_proto_init() {
 		(*Search_StreamResponse_Response)(nil),
 		(*Search_StreamResponse_Status)(nil),
 	}
+	file_v1_payload_payload_proto_msgTypes[35].OneofWrappers = []any{}
+	file_v1_payload_payload_proto_msgTypes[49].OneofWrappers = []any{}
 	file_v1_payload_payload_proto_msgTypes[50].OneofWrappers = []any{
 		(*Object_StreamDistance_Distance)(nil),
 		(*Object_StreamDistance_Status)(nil),
 	}
+	file_v1_payload_payload_proto_msgTypes[53].OneofWrappers = []any{}
 	file_v1_payload_payload_proto_msgTypes[57].OneofWrappers = []any{
 		(*Object_StreamVector_Vector)(nil),
 		(*Object_StreamVector_Status)(nil),

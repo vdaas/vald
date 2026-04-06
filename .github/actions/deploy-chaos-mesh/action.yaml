@@ -50,7 +50,9 @@ runs:
       run: |
         make kubectl/install
 
-        curl -sSL "https://mirrors.chaos-mesh.org/v${CHAOS_MESH_VERSION}/install.sh" | bash -s -- --k3s
+        helm repo add chaos-mesh https://charts.chaos-mesh.org
+        kubectl create ns chaos-mesh
+        helm install chaos-mesh chaos-mesh/chaos-mesh -n=chaos-mesh --version "${CHAOS_MESH_VERSION}"
 
         helm install \
             ${HELM_EXTRA_OPTIONS} \

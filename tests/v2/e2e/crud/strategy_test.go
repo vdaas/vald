@@ -240,8 +240,11 @@ func (r *runner) processExecution(
 				config.OpLinearSearch,
 				config.OpLinearSearchByID,
 				config.OpInsert,
+				config.OpInsertMeta,
 				config.OpUpdate,
+				config.OpUpdateMeta,
 				config.OpUpsert,
+				config.OpUpsertMeta,
 				config.OpRemove,
 				config.OpRemoveByTimestamp,
 				config.OpObject,
@@ -265,8 +268,11 @@ func (r *runner) processExecution(
 					config.OpLinearSearchByID:
 					return r.processSearch(ttt, ctx, train, test, neighbors, e)
 				case config.OpInsert,
+					config.OpInsertMeta,
 					config.OpUpdate,
+					config.OpUpdateMeta,
 					config.OpUpsert,
+					config.OpUpsertMeta,
 					config.OpRemove,
 					config.OpRemoveByTimestamp:
 					return r.processModification(ttt, ctx, train, e)

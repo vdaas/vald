@@ -155,6 +155,11 @@
           "type": "string",
           "format": "int64",
           "description": "timestamp represents when this vector inserted."
+        },
+        "metadata": {
+          "type": "string",
+          "format": "byte",
+          "description": "Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway."
         }
       },
       "description": "Represent a vector."

@@ -1624,6 +1624,279 @@ gateway:
     # gateway.filter.serviceAccountName -- serviceAccountName -- Name of the service account to use.
     # If not set, a service account is created.
     serviceAccountName: ""
+  # @schema {"name": "gateway.meta", "type": "object"}
+  meta:
+    # @schema {"name": "gateway.meta.enabled", "type": "boolean"}
+    # gateway.meta.enabled -- gateway enabled
+    enabled: false
+    # @schema {"name": "gateway.meta.version", "type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]$", "anchor": "version"}
+    # gateway.meta.version -- version of gateway config
+    version: v0.0.0
+    # @schema {"name": "gateway.meta.time_zone", "type": "string"}
+    # gateway.meta.time_zone -- Time zone
+    time_zone: ""
+    # @schema {"name": "gateway.meta.logging", "alias": "logging"}
+    # gateway.meta.logging -- logging config (overrides defaults.logging)
+    logging: {}
+    # @schema {"name": "gateway.meta.name", "type": "string"}
+    # gateway.meta.name -- name of meta gateway deployment
+    name: vald-meta-gateway
+    # @schema {"name": "gateway.meta.kind", "type": "string", "enum": ["Deployment", "DaemonSet"]}
+    # gateway.meta.kind -- deployment kind: Deployment or DaemonSet
+    kind: Deployment
+    # @schema {"name": "gateway.meta.serviceType", "type": "string", "enum": ["ClusterIP", "LoadBalancer", "NodePort"]}
+    # gateway.meta.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
+    serviceType: ClusterIP
+    # @schema {"name": "gateway.meta.externalTrafficPolicy", "type": "string"}
+    # gateway.meta.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+    externalTrafficPolicy: ""
+    # @schema {"name": "gateway.meta.internalTrafficPolicy", "type": "string"}
+    # gateway.meta.internalTrafficPolicy -- internal traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+    internalTrafficPolicy: ""
+    # @schema {"name": "gateway.meta.progressDeadlineSeconds", "type": "integer"}
+    # gateway.meta.progressDeadlineSeconds -- progress deadline seconds
+    progressDeadlineSeconds: 600
+    # @schema {"name": "gateway.meta.minReplicas", "type": "integer", "minimum": 0}
+    # gateway.meta.minReplicas -- minimum number of replicas.
+    # if HPA is disabled, the replicas will be set to this value
+    minReplicas: 3
+    # @schema {"name": "gateway.meta.maxReplicas", "type": "integer", "minimum": 0}
+    # gateway.meta.maxReplicas -- maximum number of replicas.
+    # if HPA is disabled, this value will be ignored.
+    maxReplicas: 9
+    # @schema {"name": "gateway.meta.maxUnavailable", "type": "string"}
+    # gateway.meta.maxUnavailable -- maximum number of unavailable replicas
+    maxUnavailable: 50%
+    # @schema {"name": "gateway.meta.unhealthyPodEvictionPolicy", "type": "string", "enum": ["AlwaysAllow", "IfHealthyBudget"]}
+    # gateway.meta.unhealthyPodEvictionPolicy -- controls whether unhealthy pods can be evicted based on the application's healthy pod count, supporting either cautious or permissive eviction.
+    unhealthyPodEvictionPolicy: "AlwaysAllow"
+    # @schema {"name": "gateway.meta.revisionHistoryLimit", "type": "integer", "minimum": 0}
+    # gateway.meta.revisionHistoryLimit -- number of old history to retain to allow rollback
+    revisionHistoryLimit: 2
+    # @schema {"name": "gateway.meta.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
+    # gateway.meta.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
+    terminationGracePeriodSeconds: 30
+    # @schema {"name": "gateway.meta.podSecurityContext", "type": "object"}
+    # gateway.meta.podSecurityContext -- security context for pod
+    podSecurityContext:
+      runAsUser: 65532
+      runAsNonRoot: true
+      runAsGroup: 65532
+      fsGroup: 65532
+      fsGroupChangePolicy: "OnRootMismatch"
+    # @schema {"name": "gateway.meta.securityContext", "type": "object"}
+    # gateway.meta.securityContext -- security context for container
+    securityContext:
+      runAsUser: 65532
+      runAsNonRoot: true
+      runAsGroup: 65532
+      privileged: false
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+          - ALL
+    # @schema {"name": "gateway.meta.podPriority", "type": "object", "anchor": "podPriority"}
+    podPriority:
+      # @schema {"name": "gateway.meta.podPriority.enabled", "type": "boolean"}
+      # gateway.meta.podPriority.enabled -- gateway pod PriorityClass enabled
+      enabled: true
+      # @schema {"name": "gateway.meta.podPriority.value", "type": "integer"}
+      # gateway.meta.podPriority.value -- gateway pod PriorityClass value
+      value: 1000000
+    # @schema {"name": "gateway.meta.annotations", "type": "object"}
+    # gateway.meta.annotations -- deployment annotations
+    annotations: {}
+    # @schema {"name": "gateway.meta.podAnnotations", "type": "object"}
+    # gateway.meta.podAnnotations -- pod annotations
+    podAnnotations: {}
+    # @schema {"name": "gateway.meta.service", "type": "object", "anchor": "service"}
+    service:
+      # @schema {"name": "gateway.meta.service.annotations", "type": "object"}
+      # gateway.meta.service.annotations -- service annotations
+      annotations: {}
+      # @schema {"name": "gateway.meta.service.labels", "type": "object"}
+      # gateway.meta.service.labels -- service labels
+      labels: {}
+    # @schema {"name": "gateway.meta.hpa", "type": "object", "anchor": "hpa"}
+    hpa:
+      # @schema {"name": "gateway.meta.hpa.enabled", "type": "boolean"}
+      # gateway.meta.hpa.enabled -- HPA enabled
+      enabled: true
+      # @schema {"name": "gateway.meta.hpa.targetCPUUtilizationPercentage", "type": "integer"}
+      # gateway.meta.hpa.targetCPUUtilizationPercentage -- HPA CPU utilization percentage
+      targetCPUUtilizationPercentage: 80
+    # @schema {"name": "gateway.meta.image", "type": "object", "anchor": "image"}
+    image:
+      # @schema {"name": "gateway.meta.image.repository", "type": "string"}
+      # gateway.meta.image.repository -- image repository
+      repository: vdaas/vald-meta-gateway
+      # @schema {"name": "gateway.meta.image.tag", "type": "string"}
+      # gateway.meta.image.tag -- image tag (overrides defaults.image.tag)
+      tag: ""
+      # @schema {"name": "gateway.meta.image.pullPolicy", "type": "string", "enum": ["Always", "Never", "IfNotPresent"]}
+      # gateway.meta.image.pullPolicy -- image pull policy
+      pullPolicy: Always
+    # @schema {"name": "gateway.meta.rollingUpdate", "type": "object", "anchor": "rollingUpdate"}
+    rollingUpdate:
+      # @schema {"name": "gateway.meta.rollingUpdate.maxSurge", "type": "string"}
+      # gateway.meta.rollingUpdate.maxSurge -- max surge of rolling update
+      maxSurge: 25%
+      # @schema {"name": "gateway.meta.rollingUpdate.maxUnavailable", "type": "string"}
+      # gateway.meta.rollingUpdate.maxUnavailable -- max unavailable of rolling update
+      maxUnavailable: 25%
+    # @schema {"name": "gateway.meta.initContainers", "type": "array", "items": {"type": "object"}, "anchor": "initContainers"}
+    # gateway.meta.initContainers -- init containers
+    initContainers:
+      - type: wait-for
+        name: wait-for-gateway-lb
+        target: gateway-lb
+        image: busybox:1.37.0
+        imagePullPolicy: Always
+        sleepDuration: 2
+    # @schema {"name": "gateway.meta.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
+    # gateway.meta.env -- environment variables
+    env:
+      - name: MY_NODE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
+      - name: MY_POD_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name
+      - name: MY_POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
+    # @schema {"name": "gateway.meta.volumeMounts", "type": "array", "items": {"type": "object"}, "anchor": "volumeMounts"}
+    # gateway.meta.volumeMounts -- volume mounts
+    volumeMounts: []
+    # @schema {"name": "gateway.meta.volumes", "type": "array", "items": {"type": "object"}, "anchor": "volumes"}
+    # gateway.meta.volumes -- volumes
+    volumes: []
+    # @schema {"name": "gateway.meta.nodeName", "type": "string"}
+    # gateway.meta.nodeName -- node name
+    nodeName: ""
+    # @schema {"name": "gateway.meta.nodeSelector", "type": "object", "anchor": "nodeSelector"}
+    # gateway.meta.nodeSelector -- node selector
+    nodeSelector: {}
+    # @schema {"name": "gateway.meta.tolerations", "type": "array", "items": {"type": "object"}, "anchor": "tolerations"}
+    # gateway.meta.tolerations -- tolerations
+    tolerations: []
+    # @schema {"name": "gateway.meta.affinity", "type": "object", "anchor": "affinity"}
+    affinity:
+      # @schema {"name": "gateway.meta.affinity.nodeAffinity", "type": "object"}
+      nodeAffinity:
+        # @schema {"name": "gateway.meta.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
+        # gateway.meta.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+        preferredDuringSchedulingIgnoredDuringExecution: []
+        # @schema {"name": "gateway.meta.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution", "type": "object"}
+        requiredDuringSchedulingIgnoredDuringExecution:
+          # @schema {"name": "gateway.meta.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms", "type": "array", "items": {"type": "object"}}
+          # gateway.meta.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+          nodeSelectorTerms: []
+      # @schema {"name": "gateway.meta.affinity.podAffinity", "type": "object"}
+      podAffinity:
+        # @schema {"name": "gateway.meta.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
+        # gateway.meta.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+        preferredDuringSchedulingIgnoredDuringExecution: []
+        # @schema {"name": "gateway.meta.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
+        # gateway.meta.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+        requiredDuringSchedulingIgnoredDuringExecution: []
+      # @schema {"name": "gateway.meta.affinity.podAntiAffinity", "type": "object"}
+      podAntiAffinity:
+        # @schema {"name": "gateway.meta.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
+        # gateway.meta.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - vald-meta-gateway
+        # @schema {"name": "gateway.meta.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
+        # gateway.meta.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+        requiredDuringSchedulingIgnoredDuringExecution: []
+    # @schema {"name": "gateway.meta.topologySpreadConstraints", "type": "array", "items": {"type": "object"}, "anchor": "topologySpreadConstraints"}
+    # gateway.meta.topologySpreadConstraints -- topology spread constraints of gateway pods
+    topologySpreadConstraints: []
+    # @schema {"name": "gateway.meta.server_config", "alias": "server_config"}
+    # gateway.meta.server_config -- server config (overrides defaults.server_config)
+    server_config:
+      servers:
+        rest: {}
+        grpc: {}
+      healths:
+        liveness: {}
+        readiness: {}
+        startup: {}
+      metrics:
+        pprof: {}
+    # @schema {"name": "gateway.meta.observability", "alias": "observability"}
+    # gateway.meta.observability -- observability config (overrides defaults.observability)
+    observability:
+      otlp:
+        attribute:
+          service_name: vald-meta-gateway
+    # @schema {"name": "gateway.meta.ingress", "type": "object"}
+    ingress:
+      # @schema {"name": "gateway.meta.ingress.pathType", "type": "string"}
+      # gateway.meta.ingress.pathType -- gateway ingress pathType
+      pathType: ImplementationSpecific
+      # @schema {"name": "gateway.meta.ingress.enabled", "type": "boolean"}
+      # gateway.meta.ingress.enabled -- gateway ingress enabled
+      enabled: false
+      # @schema {"name": "gateway.meta.ingress.annotations", "type": "object"}
+      # gateway.meta.ingress.annotations -- annotations for ingress
+      annotations:
+        nginx.ingress.kubernetes.io/grpc-backend: "true"
+      # @schema {"name": "gateway.meta.ingress.host", "type": "string"}
+      # gateway.meta.ingress.host -- ingress hostname
+      host: meta.gateway.vald.vdaas.org
+      # @schema {"name": "gateway.meta.ingress.servicePort", "type": "string"}
+      # gateway.meta.ingress.servicePort -- service port to be exposed by ingress
+      servicePort: grpc
+      # @schema {"name": "gateway.meta.ingress.tls", "type": "array", "items": {"type": "object"}}
+      # gateway.meta.ingress.tls -- ingress tls config
+      tls:
+        - hosts: []
+          secretName: ""
+      # @schema {"name": "gateway.meta.ingress.defaultBackend", "type": "object"}
+      # gateway.meta.ingress.defaultBackend -- defaultBackend config
+      defaultBackend:
+        # @schema {"name": "gateway.meta.ingress.defaultBackend.enabled", "type": "boolean"}
+        # gateway.meta.ingress.defaultBackend.enabled -- gateway ingress defaultBackend enabled
+        enabled: true
+    # @schema {"name": "gateway.meta.resources", "type": "object", "anchor": "resources"}
+    # gateway.meta.resources -- compute resources
+    resources:
+      # @schema {"name": "gateway.meta.resources.requests", "type": "object"}
+      requests:
+        cpu: 200m
+        memory: 150Mi
+      # @schema {"name": "gateway.meta.resources.limits", "type": "object"}
+      limits:
+        cpu: 2000m
+        memory: 700Mi
+    # @schema {"name": "gateway.meta.gateway_config", "type": "object"}
+    gateway_config:
+      # @schema {"name": "gateway.meta.gateway_config.gateway_client", "alias": "grpc.client"}
+      # gateway.meta.gateway_config.gateway_client -- gRPC client for lb gateway (overrides defaults.grpc.client)
+      gateway_client: {}
+      # @schema {"name": "gateway.meta.gateway_config.metadata_store", "type": "object"}
+      # gateway.meta.gateway_config.metadata_store -- metadata store (TiKV) connection config
+      metadata_store:
+        # @schema {"name": "gateway.meta.gateway_config.metadata_store.addrs", "type": "array", "items": {"type": "string"}}
+        # gateway.meta.gateway_config.metadata_store.addrs -- TiKV PD server addresses
+        addrs: []
+    # @schema {"name": "gateway.meta.serviceAccountName", "type": "string"}
+    # gateway.meta.serviceAccountName -- serviceAccountName -- Name of the service account to use.
+    # If not set, a service account is created.
+    serviceAccountName: ""
   # @schema {"name": "gateway.mirror", "type": "object"}
   mirror:
     # @schema {"name": "gateway.mirror.enabled", "type": "boolean"}
@@ -4239,3 +4512,128 @@ manager:
       # @schema {"name": "manager.index.operator.rotation_job_concurrency", "type": "integer", "minimum": 1}
       # manager.index.operator.rotation_job_concurrency -- maximum concurrent rotator job run.
       rotation_job_concurrency: 2
+# @schema {"name": "tidbCluster", "type": "object"}
+tidbCluster:
+  # @schema {"name": "tidbCluster.enabled", "type": "boolean"}
+  # tidbCluster.enabled -- Enable or disable the TiDB Cluster deployment.
+  enabled: false
+  # @schema {"name": "tidbCluster.name", "type": "string"}
+  # tidbCluster.name -- The name of the TiDB Cluster instance.
+  name: "tikv"
+  # @schema {"name": "tidbCluster.version", "type": "string"}
+  # tidbCluster.version -- TiDB Cluster version tag.
+  version: "v8.5.2"
+  # @schema {"name": "tidbCluster.timezone", "type": "string"}
+  # tidbCluster.timezone -- Timezone for the cluster components.
+  timezone: UTC
+  # @schema {"name": "tidbCluster.pd", "type": "object"}
+  pd:
+    # @schema {"name": "tidbCluster.pd.baseImage", "type": "string"}
+    # tidbCluster.pd.baseImage -- Docker image for Placement Driver (PD).
+    baseImage: pingcap/pd
+    # @schema {"name": "tidbCluster.pd.replicas", "type": "integer"}
+    # tidbCluster.pd.replicas -- Number of PD replicas.
+    replicas: 3
+    # @schema {"name": "tidbCluster.pd.requests", "type": "object"}
+    requests:
+      # @schema {"name": "tidbCluster.pd.requests.storage", "type": "string"}
+      # tidbCluster.pd.requests.storage -- PD requested storage size.
+      storage: "10Gi"
+      # @schema {"name": "tidbCluster.pd.requests.cpu", "type": "string"}
+      # tidbCluster.pd.requests.cpu -- PD requested CPU.
+      cpu: "100m"
+      # @schema {"name": "tidbCluster.pd.requests.memory", "type": "string"}
+      # tidbCluster.pd.requests.memory -- PD requested memory.
+      memory: "1Gi"
+    # @schema {"name": "tidbCluster.pd.limits", "type": "object"}
+    limits:
+      # @schema {"name": "tidbCluster.pd.limits.cpu", "type": "string"}
+      # tidbCluster.pd.limits.cpu -- PD CPU limit.
+      cpu: "1"
+      # @schema {"name": "tidbCluster.pd.limits.memory", "type": "string"}
+      # tidbCluster.pd.limits.memory -- PD memory limit.
+      memory: "2Gi"
+    # @schema {"name": "tidbCluster.pd.config", "type": "object"}
+    # tidbCluster.pd.config -- PD configuration.
+    config: {}
+  # @schema {"name": "tidbCluster.tikv", "type": "object"}
+  tikv:
+    # @schema {"name": "tidbCluster.tikv.baseImage", "type": "string"}
+    # tidbCluster.tikv.baseImage -- Docker image for TiKV storage nodes.
+    baseImage: pingcap/tikv
+    # @schema {"name": "tidbCluster.tikv.replicas", "type": "integer"}
+    # tidbCluster.tikv.replicas -- Number of TiKV replicas.
+    replicas: 3
+    # @schema {"name": "tidbCluster.tikv.requests", "type": "object"}
+    requests:
+      # @schema {"name": "tidbCluster.tikv.requests.storage", "type": "string"}
+      # tidbCluster.tikv.requests.storage -- TiKV requested storage size.
+      storage: "100Gi"
+      # @schema {"name": "tidbCluster.tikv.requests.cpu", "type": "string"}
+      # tidbCluster.tikv.requests.cpu -- TiKV requested CPU.
+      cpu: "200m"
+      # @schema {"name": "tidbCluster.tikv.requests.memory", "type": "string"}
+      # tidbCluster.tikv.requests.memory -- TiKV requested memory.
+      memory: "4Gi"
+    # @schema {"name": "tidbCluster.tikv.limits", "type": "object"}
+    limits:
+      # @schema {"name": "tidbCluster.tikv.limits.cpu", "type": "string"}
+      # tidbCluster.tikv.limits.cpu -- TiKV CPU limit.
+      cpu: "2"
+      # @schema {"name": "tidbCluster.tikv.limits.memory", "type": "string"}
+      # tidbCluster.tikv.limits.memory -- TiKV memory limit.
+      memory: "8Gi"
+    # @schema {"name": "tidbCluster.tikv.config", "type": "object"}
+    # tidbCluster.tikv.config -- TiKV configuration.
+    config: {}
+  # @schema {"name": "tidbCluster.tidb", "type": "object"}
+  tidb:
+    # @schema {"name": "tidbCluster.tidb.baseImage", "type": "string"}
+    # tidbCluster.tidb.baseImage -- Docker image for TiDB SQL layer nodes.
+    baseImage: pingcap/tidb
+    # @schema {"name": "tidbCluster.tidb.replicas", "type": "integer"}
+    # tidbCluster.tidb.replicas -- Number of TiDB SQL nodes.
+    replicas: 0
+    # @schema {"name": "tidbCluster.tidb.requests", "type": "object"}
+    requests:
+      # @schema {"name": "tidbCluster.tidb.requests.cpu", "type": "string"}
+      # tidbCluster.tidb.requests.cpu -- TiDB requested CPU.
+      cpu: "200m"
+      # @schema {"name": "tidbCluster.tidb.requests.memory", "type": "string"}
+      # tidbCluster.tidb.requests.memory -- TiDB requested memory.
+      memory: "2Gi"
+    # @schema {"name": "tidbCluster.tidb.limits", "type": "object"}
+    limits:
+      # @schema {"name": "tidbCluster.tidb.limits.cpu", "type": "string"}
+      # tidbCluster.tidb.limits.cpu -- TiDB CPU limit.
+      cpu: "2"
+      # @schema {"name": "tidbCluster.tidb.limits.memory", "type": "string"}
+      # tidbCluster.tidb.limits.memory -- TiDB memory limit.
+      memory: "4Gi"
+  # @schema {"name": "tidbCluster.discovery", "type": "object"}
+  discovery:
+    # @schema {"name": "tidbCluster.discovery.baseImage", "type": "string"}
+    # tidbCluster.discovery.baseImage -- Docker image for tidb-discovery.
+    baseImage: pingcap/tidb-operator
+    # @schema {"name": "tidbCluster.discovery.version", "type": "string"}
+    # tidbCluster.discovery.version -- Version tag for tidb-discovery.
+    version: "v1.6.3"
+    # @schema {"name": "tidbCluster.discovery.replicas", "type": "integer"}
+    # tidbCluster.discovery.replicas -- Number of discovery replicas.
+    replicas: 1
+    # @schema {"name": "tidbCluster.discovery.requests", "type": "object"}
+    requests:
+      # @schema {"name": "tidbCluster.discovery.requests.cpu", "type": "string"}
+      # tidbCluster.discovery.requests.cpu -- Discovery requested CPU.
+      cpu: "50m"
+      # @schema {"name": "tidbCluster.discovery.requests.memory", "type": "string"}
+      # tidbCluster.discovery.requests.memory -- Discovery requested memory.
+      memory: "100Mi"
+    # @schema {"name": "tidbCluster.discovery.limits", "type": "object"}
+    limits:
+      # @schema {"name": "tidbCluster.discovery.limits.cpu", "type": "string"}
+      # tidbCluster.discovery.limits.cpu -- Discovery CPU limit.
+      cpu: "100m"
+      # @schema {"name": "tidbCluster.discovery.limits.memory", "type": "string"}
+      # tidbCluster.discovery.limits.memory -- Discovery memory limit.
+      memory: "200Mi"
