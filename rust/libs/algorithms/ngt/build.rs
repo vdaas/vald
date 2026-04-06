@@ -22,6 +22,7 @@ fn main() -> miette::Result<()> {
         .file("src/input.cpp")
         .flag_if_supported("-std=c++20")
         .flag_if_supported("-fopenmp")
+        .flag_if_supported("-static-openmp")
         .flag_if_supported("-flto=thin")
         .flag_if_supported("-DNGT_BFLOAT_DISABLED")
         .compile("ngt-rs");
@@ -32,7 +33,7 @@ fn main() -> miette::Result<()> {
     println!("cargo:rustc-link-lib=static=ngt");
     println!("cargo:rustc-link-lib=static=blas");
     println!("cargo:rustc-link-lib=static=gfortran");
-    println!("cargo:rustc-link-lib=static=gomp");
+    println!("cargo:rustc-link-lib=static=omp");
 
     Ok(())
 }

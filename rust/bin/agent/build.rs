@@ -67,9 +67,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("cargo:rustc-env=BUILD_CPU_INFO_FLAGS={}", cpu_flags);
     }
 
-    println!("cargo:rustc-env=CGO_ENABLED=true");
-    println!("cargo:rustc-env=CGO_CALL=1");
-
     Ok(())
 }
 
