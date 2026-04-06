@@ -28,8 +28,8 @@ ARG TARGETOS
 ARG GO_VERSION
 ARG RUST_VERSION
 ENV APP_NAME=dev-container
-ENV CC=gcc
-ENV CXX=g++
+ENV CC=clang
+ENV CXX=clang++
 ENV DEBIAN_FRONTEND=noninteractive
 ENV GO111MODULE=on
 ENV GOPATH=/go
@@ -74,8 +74,11 @@ RUN --mount=type=bind,target=.,rw \
     git \
     sudo \
     cmake \
-    g++ \
-    gcc \
+    clang \
+    llvm \
+    lld \
+    libc++-dev \
+    libc++abi-dev \
     libssl-dev \
     unzip \
     liblapack-dev \

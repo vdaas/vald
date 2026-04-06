@@ -24,6 +24,11 @@ test: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/...
 	$(MAKE) certs/clean
@@ -40,6 +45,11 @@ test/tparse: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
@@ -58,6 +68,11 @@ test/cmd/tparse: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
@@ -76,6 +91,11 @@ test/internal/tparse: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/internal/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
@@ -94,6 +114,11 @@ test/pkg/tparse: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/pkg/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
@@ -112,6 +137,11 @@ test/hack/tparse: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=vendor -json -cover \
 	$(ROOTDIR)/hack/gorules/... \
@@ -135,6 +165,11 @@ test/all/tparse: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
@@ -153,6 +188,11 @@ test/gotestfmt: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	GODEBUG=$(GODEBUG) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/... \
@@ -172,6 +212,11 @@ test/cmd/gotestfmt: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	GODEBUG=$(GODEBUG) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) -ldflags="-linkmode=external" $(ROOTDIR)/cmd/... \
@@ -191,6 +236,11 @@ test/internal/gotestfmt: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	GODEBUG=$(GODEBUG) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) -ldflags="-linkmode=external" $(ROOTDIR)/internal/... \
@@ -210,6 +260,11 @@ test/pkg/gotestfmt: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	GODEBUG=$(GODEBUG) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) -ldflags="-linkmode=external" $(ROOTDIR)/pkg/... \
@@ -229,6 +284,11 @@ test/hack/gotestfmt: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	GODEBUG=$(GODEBUG) \
 	go test -short -shuffle=on -race -mod=vendor -json -cover -ldflags="-linkmode=external" \
@@ -253,6 +313,11 @@ test/all/gotestfmt: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	GODEBUG=$(GODEBUG) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) -ldflags="-linkmode=external" $(ROOTDIR)/... \
@@ -296,6 +361,11 @@ test/pkg: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -cover $(ROOTDIR)/pkg/...
 	$(MAKE) certs/clean
@@ -309,6 +379,11 @@ test/internal: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -cover $(ROOTDIR)/internal/...
 	$(MAKE) certs/clean
@@ -322,6 +397,11 @@ test/cmd: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -cover $(ROOTDIR)/cmd/...
 	$(MAKE) certs/clean
@@ -335,16 +415,41 @@ test/rust: \
 .PHONY: test/rust/qbg
 ## run tests for qbg
 test/rust/qbg:
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	cargo test --manifest-path rust/Cargo.toml --package qbg --lib -- tests::test_ffi_qbg --exact --show-output
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	cargo test --manifest-path rust/Cargo.toml --package qbg --lib -- tests::test_ffi_qbg_prebuilt --exact --show-output
 	rm -rf rust/libs/algorithms/qbg/index/
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	cargo test --manifest-path rust/Cargo.toml --package qbg --lib -- tests::test_property --exact --show-output
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	cargo test --manifest-path rust/Cargo.toml --package qbg --lib -- tests::test_index --exact --show-output
 	rm -rf rust/libs/algorithms/qbg/index/
 
 .PHONY: test/rust/agent
 ## run tests for agent
 test/rust/agent:
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	cargo test --manifest-path rust/Cargo.toml --package agent -- handler::common::tests --show-output
 
 .PHONY: test/hack
@@ -358,6 +463,11 @@ test/hack: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=vendor -cover \
 	$(ROOTDIR)/hack/gorules/... \
@@ -376,6 +486,11 @@ test/all: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -cover $(ROOTDIR)/...
 	$(MAKE) certs/clean
@@ -389,6 +504,11 @@ coverage: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -v -race -covermode=atomic -timeout=$(GOTEST_TIMEOUT) -coverprofile=coverage.out $(ROOTDIR)/...
 	GOPRIVATE=$(GOPRIVATE) \

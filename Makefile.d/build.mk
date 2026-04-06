@@ -56,7 +56,7 @@ e2e/build: \
 cmd/agent/core/ngt/ngt: \
 	ngt/install
 	$(eval CGO_ENABLED = 1)
-	$(call go-build,agent/core/ngt,-linkmode 'external',$(LDFLAGS) $(NGT_LDFLAGS) $(EXTLDFLAGS), cgo,NGT-$(NGT_VERSION),$@)
+	$(call go-build,agent/core/ngt,-linkmode 'external' -extld '$(CXX)',$(LDFLAGS) $(NGT_LDFLAGS) $(EXTLDFLAGS), cgo,NGT-$(NGT_VERSION),$@)
 
 cmd/agent/core/faiss/faiss: \
 	faiss/install
@@ -128,10 +128,24 @@ example/client/client:
 	$(call go-example-build,example/client,-linkmode 'external',$(LDFLAGS) $(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
 
 rust/target/release/agent:
-	pushd rust && cargo build -p agent --release && popd
+	pushd rust && \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
+	cargo build -p agent --release && \
+	popd
 
 rust/target/debug/agent:
-	pushd rust && cargo build -p agent && popd
+	pushd rust && \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
+	cargo build -p agent && \
+	popd
 
 tests/v2/e2e/e2e:
 	$(eval CGO_ENABLED = 1)

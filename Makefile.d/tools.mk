@@ -338,7 +338,7 @@ $(LIB_PATH)/libz.a: $(LIB_PATH)
 	&& cd $(TEMP_DIR)/zlib \
 	&& mkdir -p build \
 	&& cd build \
-	&& cmake	-DCMAKE_BUILD_TYPE=Release \
+	cmake	-DCMAKE_BUILD_TYPE=Release \
 	-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
 	-DBUILD_SHARED_LIBS=OFF \
 	-DBUILD_STATIC_EXECS=ON \
@@ -347,13 +347,28 @@ $(LIB_PATH)/libz.a: $(LIB_PATH)
 	-DZLIB_BUILD_STATIC=ON \
 	-DZLIB_COMPAT=ON \
 	-DZLIB_USE_STATIC_LIBS=ON \
+	-DCMAKE_C_COMPILER="$(CC)" \
+	-DCMAKE_CXX_COMPILER="$(CXX)" \
+	-DCMAKE_AR="$(AR)" \
+	-DCMAKE_NM="$(NM)" \
+	-DCMAKE_RANLIB="$(RANLIB)" \
 	-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
 	-DCMAKE_C_FLAGS="$(CFLAGS)" \
 	-DCMAKE_INSTALL_LIBDIR=$(LIB_PATH) \
 	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
 	-B $(TEMP_DIR)/zlib/build $(TEMP_DIR)/zlib \
-	&& make -j$(CORES) \
-	&& make install \
+	&& $(MAKE) -j$(CORES) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
+	&& $(MAKE) install \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	&& cd $(ROOTDIR) \
 	&& rm -rf $(TEMP_DIR)/zlib-$(ZLIB_VERSION).tar.gz $(TEMP_DIR)/zlib $(LIB_PATH)/libz.s*
 
@@ -380,13 +395,28 @@ $(LIB_PATH)/libhdf5.a: $(LIB_PATH) \
 	-DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
 	-DH5_ZLIB_INCLUDE_DIR=$(USR_LOCAL)/include \
 	-DH5_ZLIB_LIBRARY=$(LIB_PATH)/libz.a \
+	-DCMAKE_C_COMPILER="$(CC)" \
+	-DCMAKE_CXX_COMPILER="$(CXX)" \
+	-DCMAKE_AR="$(AR)" \
+	-DCMAKE_NM="$(NM)" \
+	-DCMAKE_RANLIB="$(RANLIB)" \
 	-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
 	-DCMAKE_C_FLAGS="$(CFLAGS)" \
 	-DCMAKE_INSTALL_LIBDIR=$(LIB_PATH) \
 	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
 	-B $(TEMP_DIR)/hdf5/build $(TEMP_DIR)/hdf5 \
-	&& make -j$(CORES) \
-	&& make install \
+	&& $(MAKE) -j$(CORES) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
+	&& $(MAKE) install \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	&& cd $(ROOTDIR) \
 	&& rm -rf $(TEMP_DIR)/hdf5.tar.gz $(TEMP_DIR)/hdf5 \
 	&& ldconfig

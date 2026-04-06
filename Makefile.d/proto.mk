@@ -58,7 +58,7 @@ proto/gen/code: \
 	@$(call green, "generating pb.go and swagger.json files and documents for API v1...")
 	buf format -w
 	buf generate
-	make proto/replace
+	$(MAKE) CC="$(CC)" CXX="$(CXX)" AR="$(AR)" NM="$(NM)" RANLIB="$(RANLIB)" proto/replace
 
 .PHONY: proto/gen/api/docs
 ## generate proto api docs

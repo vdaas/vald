@@ -13,23 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+[target.x86_64-unknown-linux-gnu]
+linker = "clang"
+rustflags = ["-C", "link-arg=-fuse-ld=lld", "-C", "target-cpu=native"]
 
-bench:
-	CC="$(CC)" \
-	CXX="$(CXX)" \
-	AR="$(AR)" \
-	NM="$(NM)" \
-	RANLIB="$(RANLIB)" \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	go test -count=5 -run=NONE -bench . -benchmem
-
-bench-lite:
-	CC="$(CC)" \
-	CXX="$(CXX)" \
-	AR="$(AR)" \
-	NM="$(NM)" \
-	RANLIB="$(RANLIB)" \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	go test -count=1 -run=NONE -bench . -benchmem
+[target.aarch64-unknown-linux-gnu]
+linker = "clang"
+rustflags = ["-C", "link-arg=-fuse-ld=lld", "-C", "target-cpu=native"]

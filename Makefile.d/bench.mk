@@ -146,6 +146,11 @@ pprof/core/ngt/sequential.bin: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	-mod=readonly \
@@ -174,6 +179,11 @@ pprof/core/ngt/parallel.bin: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	-mod=readonly \
@@ -209,6 +219,11 @@ pprof/agent/stream.bin: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	-mod=readonly \
@@ -236,6 +251,11 @@ pprof/agent/sequential/grpc.bin: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	-mod=readonly \
@@ -267,6 +287,11 @@ pprof/gateway/sequential.bin: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	-mod=readonly \
@@ -316,6 +341,11 @@ $(ROOTDIR)/metrics.gob:
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	-mod=readonly \

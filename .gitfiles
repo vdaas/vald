@@ -2272,6 +2272,7 @@ pkg/tools/benchmark/operator/usecase/benchmarkd.go
 pkg/tools/benchmark/operator/usecase/benchmarkd_test.go
 pkg/tools/benchmark/operator/usecase/doc.go
 renovate.json
+rust/.cargo/config.toml
 rust/Cargo.lock
 rust/Cargo.toml
 rust/bin/agent/Cargo.toml

@@ -62,7 +62,7 @@ VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
 
 NGT_REPO = github.com/NGT-labs/NGT
 
-NGT_EXTRA_CMAKE_FLAGS ?=
+NGT_EXTRA_CMAKE_FLAGS ?= -DNGT_AVX2=ON
 
 TEST_NOT_IMPL_PLACEHOLDER = NOT IMPLEMENTED BELOW
 
@@ -168,21 +168,27 @@ PROTO_VALD_API_DOCS := $(PROTO_VALD_APIS:$(ROOTDIR)/apis/proto/v1/vald/%.proto=$
 PROTO_MIRROR_APIS := $(eval PROTO_MIRROR_APIS := $(filter $(ROOTDIR)/apis/proto/v1/mirror/%.proto,$(PROTOS)))$(PROTO_MIRROR_APIS)
 PROTO_MIRROR_API_DOCS := $(PROTO_MIRROR_APIS:$(ROOTDIR)/apis/proto/v1/mirror/%.proto=$(ROOTDIR)/apis/docs/v1/%.md)
 
-LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -ffat-lto-objects -march=native -mtune=native -fno-plt -O3 -ffast-math -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
+CC = clang
+CXX = clang++
+AR = llvm-ar
+NM = llvm-nm
+RANLIB = llvm-ranlib
 
-NGT_LDFLAGS = -fopenmp -lopenblas -llapack -lgfortran
+export CC CXX AR NM RANLIB LDFLAGS CFLAGS CXXFLAGS
+
+LDFLAGS_BASE = -fuse-ld=lld -fPIC -pthread -lm -z relro -z now -flto=thin -march=native -mtune=native -fno-plt -O3 -ffast-math -ffp-contract=fast -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections -Wl,--whole-archive -lpthread -Wl,--no-whole-archive -Wl,--export-dynamic -fopenmp=libgomp
+LDFLAGS = -static $(LDFLAGS_BASE)
+NGT_LDFLAGS = -L/usr/local/lib -fopenmp=libgomp -lopenblas -llapack -lgfortran
 FAISS_LDFLAGS = $(NGT_LDFLAGS)
 HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl -lm
-CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
-# TEST_LDFLAGS without -static to avoid conflicts with CGO and glibc dynamic linking requirements
-TEST_LDFLAGS_BASE = -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -ffat-lto-objects -march=native -mtune=native -fno-plt -O3 -ffast-math -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
-TEST_LDFLAGS = $(TEST_LDFLAGS_BASE) $(CGO_LDFLAGS)
+CGO_LDFLAGS = -fuse-ld=lld $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
+TEST_LDFLAGS = $(LDFLAGS_BASE) $(CGO_LDFLAGS)
 
 ifeq ($(GOARCH),amd64)
-CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
-CXXFLAGS ?= $(CFLAGS)
+CFLAGS = -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
+CXXFLAGS = $(CFLAGS) -std=gnu++23
 ifeq ($(GOOS),darwin)
-EXTLDFLAGS ?= -m64
+EXTLDFLAGS ?= -m64 -stdlib=libc++
 else
 EXTLDFLAGS ?= -m64 -Wl,--no-keep-memory
 endif
@@ -193,16 +199,18 @@ HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lz -ldl -lm
 CFLAGS = -I $(shell brew --prefix hdf5)/include
 CGO_CFLAGS ?= $(CFLAGS)
 CGO_LDFLAGS = -L $(shell brew --prefix hdf5)/lib -L $(shell brew --prefix zlib)/lib $(HDF5_LDFLAGS)
-EXTLDFLAGS ?= -march=armv8-a
+EXTLDFLAGS ?= -march=armv8-a -stdlib=libc++
 else
 EXTLDFLAGS ?= -march=armv8-a -Wl,--no-keep-memory
 endif
 CXXFLAGS ?= $(CFLAGS)
+CXXFLAGS += -std=gnu++23
 else
 CFLAGS ?=
 CXXFLAGS ?= $(CFLAGS)
+CXXFLAGS += -std=gnu++23
 ifeq ($(GOOS),darwin)
-EXTLDFLAGS ?=
+EXTLDFLAGS ?= -stdlib=libc++
 else
 EXTLDFLAGS ?= -Wl,--no-keep-memory
 endif
@@ -847,16 +855,39 @@ $(USR_LOCAL)/include/NGT/Capi.h:
 	-DBUILD_TESTING=OFF \
 	-DNGT_LARGE_DATASET=ON \
 	-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
-	-DCMAKE_C_FLAGS="$(CFLAGS) -flto=auto -ffat-lto-objects" \
-	-DCMAKE_CXX_FLAGS="$(CXXFLAGS) -flto=auto -ffat-lto-objects" \
+	-DCMAKE_C_COMPILER="$(CC)" \
+	-DCMAKE_CXX_COMPILER="$(CXX)" \
+	-DCMAKE_AR="$(AR)" \
+	-DCMAKE_NM="$(NM)" \
+	-DCMAKE_RANLIB="$(RANLIB)" \
+	-DCMAKE_C_FLAGS="$(CFLAGS) $(LDFLAGS)" \
+	-DCMAKE_CXX_FLAGS="$(CXXFLAGS) $(LDFLAGS)" \
 	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+	-DBLA_VENDOR=OpenBLAS \
+	-DBLA_STATIC=ON \
+	-DOpenMP_C_FLAGS="-fopenmp" \
+	-DOpenMP_C_LIB_NAMES="gomp" \
+	-DOpenMP_CXX_FLAGS="-fopenmp" \
+	-DOpenMP_CXX_LIB_NAMES="gomp" \
 	$(NGT_EXTRA_CMAKE_FLAGS) \
 	-B $(TEMP_DIR)/NGT-$(NGT_VERSION)/build $(TEMP_DIR)/NGT-$(NGT_VERSION)
-	make -C $(TEMP_DIR)/NGT-$(NGT_VERSION)/build -j$(CORES) ngt
-	make -C $(TEMP_DIR)/NGT-$(NGT_VERSION)/build install
+	$(MAKE) -C $(TEMP_DIR)/NGT-$(NGT_VERSION)/build -j$(CORES) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
+	ngt
+	sudo $(MAKE) -C $(TEMP_DIR)/NGT-$(NGT_VERSION)/build \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
+	install
 	cd $(ROOTDIR)
 	rm -rf $(TEMP_DIR)/NGT-$(NGT_VERSION)
-	ldconfig
+	sudo ldconfig
 
 .PHONY: faiss/install
 ## install Faiss
@@ -873,12 +904,29 @@ $(LIB_PATH)/libfaiss.a:
 	-DFAISS_ENABLE_PYTHON=OFF \
 	-DFAISS_ENABLE_GPU=OFF \
 	-DBLA_VENDOR=OpenBLAS \
+	-DCMAKE_C_COMPILER="$(CC)" \
+	-DCMAKE_CXX_COMPILER="$(CXX)" \
+	-DCMAKE_AR="$(AR)" \
+	-DCMAKE_NM="$(NM)" \
+	-DCMAKE_RANLIB="$(RANLIB)" \
 	-DCMAKE_C_FLAGS="$(LDFLAGS)" \
 	-DCMAKE_EXE_LINKER_FLAGS="$(FAISS_LDFLAGS)" \
 	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
 	-B $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build $(TEMP_DIR)/faiss-$(FAISS_VERSION)
-	make -C $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build -j$(CORES) faiss
-	make -C $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build install
+	$(MAKE) -C $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build -j$(CORES) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
+	faiss
+	sudo $(MAKE) -C $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
+	install
 	cd $(ROOTDIR)
 	rm -rf $(TEMP_DIR)/v$(FAISS_VERSION).tar.gz $(TEMP_DIR)/faiss-$(FAISS_VERSION)
 	ldconfig
@@ -898,13 +946,18 @@ $(USR_LOCAL)/include/usearch.h:
 	-DUSEARCH_USE_OPENMP=ON \
 	-DUSEARCH_USE_SIMSIMD=ON \
 	-DUSEARCH_USE_JEMALLOC=ON \
+	-DCMAKE_C_COMPILER="$(CC)" \
+	-DCMAKE_CXX_COMPILER="$(CXX)" \
+	-DCMAKE_AR="$(AR)" \
+	-DCMAKE_NM="$(NM)" \
+	-DCMAKE_RANLIB="$(RANLIB)" \
 	-DCMAKE_C_FLAGS="$(CFLAGS)" \
 	-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
 	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
 	-DCMAKE_INSTALL_LIBDIR=$(LIB_PATH) \
 	-B $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
 	cmake --build $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build -j$(CORES)
-	cmake --install $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build --prefix=$(USR_LOCAL)
+	sudo cmake --install $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build --prefix=$(USR_LOCAL)
 	cd $(ROOTDIR)
 	cp $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build/libusearch_static_c.a $(LIB_PATH)/libusearch_c.a
 	cp $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build/libusearch_static_c.a $(LIB_PATH)/libusearch_static_c.a
@@ -921,12 +974,29 @@ cmake/install:
 	cmake -DCMAKE_BUILD_TYPE=Release \
 	-DBUILD_SHARED_LIBS=OFF \
 	-DBUILD_TESTING=OFF \
+	-DCMAKE_C_COMPILER="$(CC)" \
+	-DCMAKE_CXX_COMPILER="$(CXX)" \
+	-DCMAKE_AR="$(AR)" \
+	-DCMAKE_NM="$(NM)" \
+	-DCMAKE_RANLIB="$(RANLIB)" \
 	-DCMAKE_C_FLAGS="$(CFLAGS)" \
 	-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
 	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
 	-B $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)
-	make -C $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build -j$(CORES) cmake
-	make -C $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build install
+	$(MAKE) -C $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build -j$(CORES) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
+	cmake
+	sudo $(MAKE) -C $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
+	install
 	cd $(ROOTDIR)
 	rm -rf $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)
 	ldconfig

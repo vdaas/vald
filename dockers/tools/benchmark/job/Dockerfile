@@ -67,8 +67,11 @@ RUN --mount=type=bind,target=.,rw \
     locales \
     git \
     cmake \
-    g++ \
-    gcc \
+    clang \
+    llvm \
+    lld \
+    libc++-dev \
+    libc++abi-dev \
     libssl-dev \
     unzip \
     libaec-dev \

@@ -97,10 +97,9 @@ const (
 	goWorkdir   = "${GOPATH}/src/github.com"
 	rustWorkdir = "${HOME}/rust/src/github.com"
 
-	ngtPreprocess         = "make ngt/install"
-	ngtClangLTOPreprocess = `CC=clang CXX=clang++ make CFLAGS="-flto=thin" CXXFLAGS="-flto=thin" NGT_EXTRA_CMAKE_FLAGS="-DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld" ngt/install`
-	faissPreprocess       = "make faiss/install"
-	usearchPreprocess     = "make usearch/install"
+	ngtPreprocess     = "make ngt/install"
+	faissPreprocess   = "make faiss/install"
+	usearchPreprocess = "make usearch/install"
 
 	helmOperatorRootdir   = "/opt/helm"
 	helmOperatorWatchFile = helmOperatorRootdir + "/watches.yaml"
@@ -429,8 +428,8 @@ var (
 		"PATH":        "${PATH}:${RUSTUP_HOME}/bin:${CARGO_HOME}/bin:" + usrLocalBinaryDir,
 	}
 	clangDefaultEnvironments = map[string]string{
-		"CC":  "gcc",
-		"CXX": "g++",
+		"CC":  "clang",
+		"CXX": "clang++",
 	}
 	clangLTOEnvironments = map[string]string{
 		"RUSTFLAGS": `"-Clinker=clang -Clink-arg=-fuse-ld=lld"`,
@@ -474,8 +473,11 @@ var (
 
 	clangBuildDeps = []string{
 		"cmake",
-		"g++",
-		"gcc",
+		"clang",
+		"llvm",
+		"lld",
+		"libc++-dev",
+		"libc++abi-dev",
 		"libssl-dev",
 		"unzip",
 	}
@@ -701,7 +703,7 @@ func main() {
 				append(ngtBuildDeps,
 					append(rustBuildDeps, clangLTOBuildDeps...)...)...),
 			Preprocess: []string{
-				ngtClangLTOPreprocess,
+				ngtPreprocess,
 				faissPreprocess,
 			},
 		},

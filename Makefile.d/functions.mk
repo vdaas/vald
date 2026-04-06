@@ -23,7 +23,7 @@ cyan = printf "\x1b[36m\#\# %s\x1b[0m\n" $1
 define go-tool-install
 	cat $(ROOTDIR)/hack/go.tools | \
 	xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P $(CORES) \
-	sh -c 'if ! out=$$(go install -ldflags="-w" {} 2>&1 >/dev/null); then echo "--- Failed to install {} ---" >&2; echo "$$out" >&2; exit 255; fi';
+	sh -c 'if ! out=$$(CC="$(CC)" CXX="$(CXX)" AR="$(AR)" NM="$(NM)" RANLIB="$(RANLIB)" go install -ldflags="-w" {} 2>&1 >/dev/null); then echo "--- Failed to install {} ---" >&2; echo "$$out" >&2; exit 255; fi';
 endef
 
 define mkdir
@@ -57,13 +57,18 @@ define go-build
 	echo $(PBGOS)
 	echo $(shell find $(ROOTDIR)/cmd/$1 -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	echo $(shell find $(ROOTDIR)/pkg/$1 -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CFLAGS="$(CFLAGS)" \
 	CXXFLAGS="$(CXXFLAGS)" \
 	CGO_ENABLED=$(CGO_ENABLED) \
-	CGO_CFLAGS_ALLOW="-flto=.*|-ffat-lto-objects" \
-	CGO_CFLAGS="$(CFLAGS) -flto=auto -ffat-lto-objects" \
-	CGO_CXXFLAGS="$3" \
-	CGO_FFLAGS="$3" \
+	CGO_CFLAGS_ALLOW="-flto=thin" \
+	CGO_CFLAGS="$(CFLAGS) -flto=thin -DNGT_LARGE_DATASET" \
+	CGO_CXXFLAGS="$(CXXFLAGS) -flto=thin -DNGT_LARGE_DATASET" \
+	CGO_FFLAGS="$(CFLAGS) -flto=thin" \
 	CGO_LDFLAGS="$3" \
 	GO111MODULE=on \
 	GOARCH=$(GOARCH) \
@@ -98,13 +103,18 @@ define go-example-build
 	echo $(PBGOS)
 	echo $(shell find $(ROOTDIR)/$1 -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	cd $(ROOTDIR)/$1 && \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CFLAGS="$(CFLAGS)" \
 	CXXFLAGS="$(CXXFLAGS)" \
 	CGO_ENABLED=$(CGO_ENABLED) \
-	CGO_CFLAGS_ALLOW="-flto=.*|-ffat-lto-objects" \
-	CGO_CFLAGS="$(CFLAGS) -flto=auto -ffat-lto-objects" \
-	CGO_CXXFLAGS="$3" \
-	CGO_FFLAGS="$3" \
+	CGO_CFLAGS_ALLOW="-flto=thin" \
+	CGO_CFLAGS="$(CFLAGS) -flto=thin -DNGT_LARGE_DATASET" \
+	CGO_CXXFLAGS="$(CXXFLAGS) -flto=thin -DNGT_LARGE_DATASET" \
+	CGO_FFLAGS="$(CFLAGS) -flto=thin" \
 	CGO_LDFLAGS="$3" \
 	GO111MODULE=on \
 	GOARCH=$(GOARCH) \
@@ -128,11 +138,16 @@ define go-e2e-build
 	echo $(GO_SOURCES_INTERNAL)
 	echo $(PBGOS)
 	echo $(shell find $(ROOTDIR)/$1 -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CFLAGS="$(CFLAGS)" \
 	CXXFLAGS="$(CXXFLAGS)" \
 	CGO_ENABLED=$(CGO_ENABLED) \
-	CGO_CFLAGS_ALLOW="-flto=.*|-ffat-lto-objects" \
-	CGO_CFLAGS="$(CFLAGS) -flto=auto -ffat-lto-objects" \
+	CGO_CFLAGS_ALLOW="-flto=thin" \
+	CGO_CFLAGS="$(CFLAGS) -flto=thin" \
 	CGO_CXXFLAGS="$2" \
 	CGO_FFLAGS="$2" \
 	CGO_LDFLAGS="$2" \
@@ -175,6 +190,11 @@ define run-v2-e2e-crud-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_CFLAGS="$(CGO_CFLAGS)" \
 	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
 	E2E_ADDR="$(E2E_BIND_HOST):$(E2E_BIND_PORT)" \
@@ -205,6 +225,11 @@ define run-e2e-crud-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	-race \
@@ -244,6 +269,11 @@ define run-e2e-crud-faiss-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	-race \
@@ -270,6 +300,11 @@ define run-e2e-multi-crud-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	-race \
@@ -300,6 +335,11 @@ define run-e2e-max-dim-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	-race \
@@ -322,6 +362,11 @@ define run-e2e-sidecar-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	-race \
@@ -404,6 +449,11 @@ define gen-license
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	go build -modcacherw \
 	-mod=readonly \
 	-a \
@@ -422,6 +472,11 @@ define gen-dockerfile
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	go build -modcacherw \
 	-mod=readonly \
 	-a \
@@ -443,6 +498,11 @@ define gen-vald-helm-schema
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	go build -modcacherw \
 	-mod=readonly \
 	-a \
@@ -463,6 +523,11 @@ define gen-vald-crd
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	go build -modcacherw \
 	-mod=readonly \
 	-a \
@@ -523,6 +588,11 @@ define gen-deadlink-checker
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	go build -modcacherw \
 	-mod=readonly \
 	-a \
