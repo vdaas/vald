@@ -15,6 +15,7 @@
 //
 
 use futures::StreamExt;
+use std::sync::OnceLock;
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::Mutex;
 use tokio::sync::mpsc;
@@ -23,15 +24,19 @@ use tonic::{Request, Response, Status, Streaming};
 use tonic_types::{ErrorDetails, FieldViolation};
 
 #[macro_export]
+/// Builds a tonic streaming response type for the given item type.
 macro_rules! stream_type {
     ($t:ty) => {
         tokio_stream::wrappers::ReceiverStream<Result<$t, tonic::Status>>
     };
 }
 
+/// Lazily initialized domain name for error details.
+pub static DOMAIN: OnceLock<String> = OnceLock::new();
+
+/// Builds rich gRPC error details for Vald APIs.
 pub fn build_error_details(
     err_msg: impl ToString,
-    domain: &str,
     id: &str,
     request_bytes: Vec<u8>,
     resource_type: &str,
@@ -40,7 +45,11 @@ pub fn build_error_details(
 ) -> ErrorDetails {
     let mut err_details = ErrorDetails::new();
     let metadata = HashMap::new();
-    err_details.set_error_info(err_msg.to_string(), domain, metadata);
+    err_details.set_error_info(
+        err_msg.to_string(),
+        DOMAIN.get_or_init(|| gethostname::gethostname().to_str().unwrap().to_string()),
+        metadata,
+    );
     err_details.set_request_info(
         id,
         String::from_utf8(request_bytes).unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
@@ -52,6 +61,7 @@ pub fn build_error_details(
     err_details
 }
 
+/// Runs a bidirectional stream with bounded concurrency and ordered draining.
 pub async fn bidirectional_stream<Q, R, F, Fut>(
     request_stream: Request<Streaming<Q>>,
     concurrency: usize,
@@ -135,14 +145,13 @@ mod tests {
         transport::{Channel, Server},
     };
 
-    // tonic-mock uses old version of http_body, so we need to implement below ourselves.
     #[derive(Clone)]
-    pub struct MockBody {
+    struct MockBody {
         data: VecDeque<Bytes>,
     }
 
     impl MockBody {
-        pub fn new(data: Vec<impl Message>) -> Self {
+        fn new(data: Vec<impl Message>) -> Self {
             let mut queue: VecDeque<Bytes> = VecDeque::with_capacity(16);
             for msg in data {
                 let buf = Self::encode(msg);
@@ -152,7 +161,7 @@ mod tests {
             MockBody { data: queue }
         }
 
-        pub fn is_empty(&self) -> bool {
+        fn is_empty(&self) -> bool {
             self.data.is_empty()
         }
 
@@ -204,10 +213,10 @@ mod tests {
     }
 
     #[derive(Debug, Clone, Default)]
-    pub struct ProstDecoder<U>(PhantomData<U>);
+    struct ProstDecoder<U>(PhantomData<U>);
 
     impl<U> ProstDecoder<U> {
-        pub fn new() -> Self {
+        fn new() -> Self {
             Self(PhantomData)
         }
     }
@@ -297,15 +306,17 @@ mod tests {
             &self,
             _: Request<list::Request>,
         ) -> Result<Response<Self::StreamListObjectStream>, Status> {
-            todo!()
+            Err(Status::unimplemented(
+                "stream_list_object is not implemented",
+            ))
         }
 
         async fn exists(&self, _: Request<Id>) -> Result<Response<Id>, Status> {
-            todo!()
+            Err(Status::unimplemented("exists is not implemented"))
         }
 
         async fn get_object(&self, _: Request<VectorRequest>) -> Result<Response<Vector>, Status> {
-            todo!()
+            Err(Status::unimplemented("get_object is not implemented"))
         }
 
         async fn stream_get_object(
@@ -323,7 +334,7 @@ mod tests {
             &self,
             _: Request<TimestampRequest>,
         ) -> Result<Response<Timestamp>, Status> {
-            todo!()
+            Err(Status::unimplemented("get_timestamp is not implemented"))
         }
     }
 

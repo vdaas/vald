@@ -23,7 +23,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
 use tracing::instrument;
-use wincode::{SchemaRead, SchemaWrite};
+use wincode::{SchemaRead, SchemaWrite, config::DefaultConfig};
 
 use crate::map::{
     codec::Codec,
@@ -74,7 +74,7 @@ pub trait MapBase: Sized + Sync + Send + 'static {
     fn get<Q>(&self, key: &Q) -> impl Future<Output = Result<(Self::V, u128), Error>> + Send
     where
         Self::K: Borrow<Q>,
-        Q: Serialize + SchemaWrite<Src = Q> + ?Sized + Sync;
+        Q: Serialize + SchemaWrite<DefaultConfig, Src = Q> + ?Sized + Sync;
 
     /// Inserts or updates a key-value pair with a specified timestamp.
     ///
@@ -98,7 +98,7 @@ pub trait MapBase: Sized + Sync + Send + 'static {
     fn delete<Q>(&self, key: &Q) -> impl Future<Output = Result<Self::V, Error>> + Send
     where
         Self::K: Borrow<Q>,
-        Q: Serialize + SchemaWrite<Src = Q> + ?Sized + Sync;
+        Q: Serialize + SchemaWrite<DefaultConfig, Src = Q> + ?Sized + Sync;
 
     /// Iterates over all key-value pairs using a callback function.
     ///
@@ -160,6 +160,12 @@ pub trait MapBase: Sized + Sync + Send + 'static {
         self._len().load(Ordering::Relaxed)
     }
 
+    /// Checks if the map is empty.
+    #[instrument(skip(self))]
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     /// Flushes all pending writes to the disk, ensuring durability.
     #[instrument(skip(self))]
     fn flush(&self) -> impl Future<Output = Result<(), Error>> + Send {
@@ -179,8 +185,11 @@ pub trait MapBase: Sized + Sync + Send + 'static {
         tree: &Tree,
     ) -> impl Future<Output = Result<(Output, u128), Error>> + Send
     where
-        Input: Serialize + SchemaWrite<Src = Input> + ?Sized + Sync,
-        Output: DeserializeOwned + for<'de> SchemaRead<'de, Dst = Output> + Send + 'static,
+        Input: Serialize + SchemaWrite<DefaultConfig, Src = Input> + ?Sized + Sync,
+        Output: DeserializeOwned
+            + for<'de> SchemaRead<'de, DefaultConfig, Dst = Output>
+            + Send
+            + 'static,
     {
         let tree = tree.clone();
         let codec = self._codec().clone();
@@ -241,8 +250,11 @@ pub trait MapBase: Sized + Sync + Send + 'static {
         f: F,
     ) -> impl Future<Output = Result<Output, Error>> + Send
     where
-        Input: Serialize + SchemaWrite<Src = Input> + ?Sized + Sync,
-        Output: DeserializeOwned + for<'de> SchemaRead<'de, Dst = Output> + Send + 'static,
+        Input: Serialize + SchemaWrite<DefaultConfig, Src = Input> + ?Sized + Sync,
+        Output: DeserializeOwned
+            + for<'de> SchemaRead<'de, DefaultConfig, Dst = Output>
+            + Send
+            + 'static,
         F: FnOnce(Vec<u8>) -> Result<Option<Vec<u8>>, TransactionError<Error>> + Send + 'static,
     {
         let codec = self._codec().clone();

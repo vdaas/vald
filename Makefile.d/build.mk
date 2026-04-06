@@ -127,11 +127,11 @@ example/client/client:
 	$(eval CGO_ENABLED = 1)
 	$(call go-example-build,example/client,-linkmode 'external',$(LDFLAGS) $(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
 
-rust/target/release/agent:
-	pushd rust && cargo build -p agent --release && popd
+rust/target/release/agent: llvm-openmp/install
+	cargo build --manifest-path rust/Cargo.toml -p agent --release
 
-rust/target/debug/agent:
-	pushd rust && cargo build -p agent && popd
+rust/target/debug/agent: llvm-openmp/install
+	cargo build --manifest-path rust/Cargo.toml -p agent
 
 tests/v2/e2e/e2e:
 	$(eval CGO_ENABLED = 1)
