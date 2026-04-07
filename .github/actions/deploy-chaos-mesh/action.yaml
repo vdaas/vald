@@ -51,7 +51,7 @@ runs:
         make kubectl/install
 
         helm repo add chaos-mesh https://charts.chaos-mesh.org
-        kubectl create ns chaos-mesh
+        kubectl create ns chaos-mesh --dry-run=client -o yaml | kubectl apply -f -
         helm install chaos-mesh chaos-mesh/chaos-mesh -n=chaos-mesh --version "${CHAOS_MESH_VERSION}" --wait --timeout 5m
         kubectl wait -n chaos-mesh --for=condition=Available deployment --all --timeout=300s
         kubectl wait -n chaos-mesh --for=condition=Ready pod -l app.kubernetes.io/instance=chaos-mesh --timeout=300s
