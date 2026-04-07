@@ -56,7 +56,7 @@ runs:
         kubectl wait -n chaos-mesh --for=condition=Available deployment --all --timeout=300s
         kubectl wait -n chaos-mesh --for=condition=Ready pod -l app.kubernetes.io/instance=chaos-mesh --timeout=300s
 
-        helm install \
+        helm upgrade --install \
             ${HELM_EXTRA_OPTIONS} \
             vald-chaos-test tests/chaos/chart
       env:
