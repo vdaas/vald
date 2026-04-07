@@ -28,8 +28,8 @@ ARG TARGETOS
 ARG GO_VERSION
 ARG RUST_VERSION
 ENV APP_NAME=dev-container
-ENV CC=gcc
-ENV CXX=g++
+ENV CC=clang
+ENV CXX=clang++
 ENV DEBIAN_FRONTEND=noninteractive
 ENV GO111MODULE=on
 ENV GOPATH=/go
@@ -85,6 +85,10 @@ RUN --mount=type=bind,target=.,rw \
     pkgconf \
     protobuf-compiler \
     libprotobuf-dev \
+    clang \
+    lld \
+    llvm \
+    python3-minimal \
     file \
     gawk \
     git-lfs \
@@ -126,7 +130,8 @@ RUN --mount=type=bind,target=.,rw \
     && make telepresence/install \
     && make yq/install \
     && make docker-cli/install \
-    && make ngt/install \
+    && make llvm-openmp/install \
+    && CC=clang CXX=clang++ make CFLAGS="-flto=thin" CXXFLAGS="-flto=thin" NGT_EXTRA_CMAKE_FLAGS="-DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld" ngt/install \
     && make faiss/install \
     && make usearch/install \
     && rm -rf ${GOPATH}/src/github.com/${ORG}/${REPO}/*

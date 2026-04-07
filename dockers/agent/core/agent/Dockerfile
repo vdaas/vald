@@ -78,6 +78,8 @@ RUN --mount=type=bind,target=.,rw \
     libprotobuf-dev \
     clang \
     lld \
+    llvm \
+    python3-minimal \
     && ldconfig \
     && echo "${LANG} UTF-8" > /etc/locale.gen \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
@@ -88,13 +90,14 @@ RUN --mount=type=bind,target=.,rw \
     && apt-get autoclean -y \
     && apt-get autoremove -y \
     && make RUST_VERSION="${RUST_VERSION}" rust/install \
+    && make llvm-openmp/install \
     && CC=clang CXX=clang++ make CFLAGS="-flto=thin" CXXFLAGS="-flto=thin" NGT_EXTRA_CMAKE_FLAGS="-DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld" ngt/install \
     && make faiss/install \
     && make rust/target/release/${APP_NAME} \
     && mv "rust/target/release/${APP_NAME}" "/usr/bin/${APP_NAME}" \
     && rm -rf rust/target
 # skipcq: DOK-DL3026,DOK-DL3007
-FROM gcr.io/distroless/cc-debian12:nonroot
+FROM gcr.io/distroless/cc-debian13:nonroot
 LABEL maintainer="vdaas.org vald team <vald@vdaas.org>"
 COPY --from=builder /usr/bin/agent /usr/bin/agent
 # skipcq: DOK-DL3002

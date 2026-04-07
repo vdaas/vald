@@ -101,6 +101,7 @@ const (
 	ngtClangLTOPreprocess = `CC=clang CXX=clang++ make CFLAGS="-flto=thin" CXXFLAGS="-flto=thin" NGT_EXTRA_CMAKE_FLAGS="-DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld" ngt/install`
 	faissPreprocess       = "make faiss/install"
 	usearchPreprocess     = "make usearch/install"
+	libompStaticPreprocess = "make llvm-openmp/install"
 
 	helmOperatorRootdir   = "/opt/helm"
 	helmOperatorWatchFile = helmOperatorRootdir + "/watches.yaml"
@@ -139,6 +140,7 @@ const (
 	goVersionPath          = versionsPath + "/GO_VERSION"
 	rustVersionPath        = versionsPath + "/RUST_VERSION"
 	faissVersionPath       = versionsPath + "/FAISS_VERSION"
+	llvmOpenMPVersionPath  = versionsPath + "/LLVM_OPENMP_VERSION"
 	ngtVersionPath         = versionsPath + "/NGT_VERSION"
 	// usearchVersionPath     = versionsPath + "/USEARCH_VERSION" // TODO Future work.
 
@@ -429,8 +431,8 @@ var (
 		"PATH":        "${PATH}:${RUSTUP_HOME}/bin:${CARGO_HOME}/bin:" + usrLocalBinaryDir,
 	}
 	clangDefaultEnvironments = map[string]string{
-		"CC":  "gcc",
-		"CXX": "g++",
+		"CC":  "clang",
+		"CXX": "clang++",
 	}
 	clangLTOEnvironments = map[string]string{
 		"RUSTFLAGS": `"-Clinker=clang -Clink-arg=-fuse-ld=lld"`,
@@ -493,6 +495,8 @@ var (
 	clangLTOBuildDeps = []string{
 		"clang",
 		"lld",
+		"llvm",
+		"python3-minimal",
 	}
 	devContainerDeps = []string{
 		"file",
@@ -696,14 +700,14 @@ func main() {
 			AppName:       agent,
 			PackageDir:    agent + "/core/" + agent,
 			ContainerType: Rust,
-			RuntimeImage:  "gcr.io/distroless/cc-debian12",
+			RuntimeImage:  "gcr.io/distroless/cc-debian13",
 			ExtraPackages: append(clangBuildDeps,
 				append(ngtBuildDeps,
 					append(rustBuildDeps, clangLTOBuildDeps...)...)...),
-			Preprocess: []string{
+			Preprocess: append([]string{libompStaticPreprocess},
 				ngtClangLTOPreprocess,
 				faissPreprocess,
-			},
+			),
 		},
 		vald + "-" + agentSidecar: {
 			AppName:    "sidecar",
@@ -819,11 +823,12 @@ func main() {
 			ExtraPackages: append([]string{"sudo"}, append(clangBuildDeps,
 				append(ngtBuildDeps,
 					append(rustBuildDeps,
-						devContainerDeps...)...)...)...),
+						append(clangLTOBuildDeps, devContainerDeps...)...)...)...)...),
 			Preprocess: append(devContainerPreprocess,
-				ngtPreprocess,
-				faissPreprocess,
-				usearchPreprocess),
+				append([]string{libompStaticPreprocess},
+					ngtClangLTOPreprocess,
+					faissPreprocess,
+					usearchPreprocess)...),
 		},
 		vald + "-" + exampleContainer: {
 			AppName:       "client",
@@ -894,6 +899,7 @@ func main() {
 					goModPath,
 					goSumPath,
 					goVersionPath,
+					llvmOpenMPVersionPath,
 				)
 			case Go:
 				data.PullRequestPaths = append(data.PullRequestPaths,
@@ -948,6 +954,7 @@ func main() {
 					rustNgtPath,
 					rustProtoPath,
 					rustVersionPath,
+					llvmOpenMPVersionPath,
 				)
 			}
 			if strings.EqualFold(data.Name, agentFaiss) || data.ContainerType == Rust {

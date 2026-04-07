@@ -111,6 +111,7 @@ K3S_VERSION := $(eval K3S_VERSION := $(shell cat versions/K3S_VERSION))$(K3S_VER
 KIND_VERSION := $(eval KIND_VERSION := $(shell cat versions/KIND_VERSION))$(KIND_VERSION)
 KUBECTL_VERSION := $(eval KUBECTL_VERSION := $(shell cat versions/KUBECTL_VERSION))$(KUBECTL_VERSION)
 KUBELINTER_VERSION := $(eval KUBELINTER_VERSION := $(shell cat versions/KUBELINTER_VERSION))$(KUBELINTER_VERSION)
+LLVM_OPENMP_VERSION := $(eval LLVM_OPENMP_VERSION := $(shell cat versions/LLVM_OPENMP_VERSION))$(LLVM_OPENMP_VERSION)
 NGT_VERSION := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VERSION)
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 OTEL_OPERATOR_VERSION := $(eval OTEL_OPERATOR_VERSION := $(shell cat versions/OTEL_OPERATOR_VERSION))$(OTEL_OPERATOR_VERSION)
@@ -826,6 +827,10 @@ version/kind:
 version/helm:
 	@echo $(HELM_VERSION)
 
+.PHONY: version/llvm-openmp
+version/llvm-openmp:
+	@echo $(LLVM_OPENMP_VERSION)
+
 .PHONY: version/yq
 version/yq:
 	@echo $(YQ_VERSION)
@@ -840,6 +845,7 @@ ngt/install: $(USR_LOCAL)/include/NGT/Capi.h
 $(USR_LOCAL)/include/NGT/Capi.h:
 	git clone --depth 1 --branch v$(NGT_VERSION) https://github.com/NGT-labs/NGT $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	cd $(TEMP_DIR)/NGT-$(NGT_VERSION) && \
+	sed -i '5,16d' CMakeLists.txt && \
 	cmake -DCMAKE_BUILD_TYPE=Release \
 	-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
 	-DBUILD_SHARED_LIBS=OFF \
@@ -856,6 +862,37 @@ $(USR_LOCAL)/include/NGT/Capi.h:
 	make -C $(TEMP_DIR)/NGT-$(NGT_VERSION)/build install
 	cd $(ROOTDIR)
 	rm -rf $(TEMP_DIR)/NGT-$(NGT_VERSION)
+	ldconfig
+
+.PHONY: llvm-openmp/install
+## install LLVM OpenMP static runtime
+llvm-openmp/install: $(LIB_PATH)/libomp.a
+$(LIB_PATH)/libomp.a:
+	curl -fsSL https://github.com/llvm/llvm-project/releases/download/llvmorg-$(LLVM_OPENMP_VERSION)/llvm-project-$(LLVM_OPENMP_VERSION).src.tar.xz -o $(TEMP_DIR)/llvm-project-$(LLVM_OPENMP_VERSION).src.tar.xz
+	tar -C $(TEMP_DIR) -xf $(TEMP_DIR)/llvm-project-$(LLVM_OPENMP_VERSION).src.tar.xz
+	cmake -S $(TEMP_DIR)/llvm-project-$(LLVM_OPENMP_VERSION).src/openmp \
+	-B $(TEMP_DIR)/llvm-openmp-build \
+	-DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
+	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+	-DCMAKE_C_COMPILER=clang \
+	-DCMAKE_CXX_COMPILER=clang++ \
+	-DCMAKE_C_FLAGS="-flto=thin" \
+	-DCMAKE_CXX_FLAGS="-flto=thin" \
+	-DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" \
+	-DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld" \
+	-DCMAKE_MODULE_LINKER_FLAGS="-fuse-ld=lld" \
+	-DLIBOMP_ENABLE_SHARED=OFF \
+	-DLIBOMP_USE_HWLOC=OFF \
+	-DOPENMP_ENABLE_LIBOMP_PROFILING=OFF \
+	-DOPENMP_ENABLE_LIBOMPTARGET=OFF \
+	-DOPENMP_ENABLE_OMPT_TOOLS=OFF
+	cmake --build $(TEMP_DIR)/llvm-openmp-build --target omp -j$(CORES)
+	install -Dm644 $(TEMP_DIR)/llvm-openmp-build/runtime/src/libomp.a $(LIB_PATH)/libomp.a
+	rm -rf \
+	$(TEMP_DIR)/llvm-project-$(LLVM_OPENMP_VERSION).src.tar.xz \
+	$(TEMP_DIR)/llvm-project-$(LLVM_OPENMP_VERSION).src \
+	$(TEMP_DIR)/llvm-openmp-build
 	ldconfig
 
 .PHONY: faiss/install

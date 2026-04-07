@@ -24,11 +24,11 @@
 //! The implementation uses `sled` as its underlying persistent storage engine to leverage
 //! its robust transactional capabilities, ensuring data consistency for bidirectional mappings.
 
-use std::{path::Path, sync::Arc};
+use std::sync::Arc;
 
+/// Map implementations and shared map traits.
 pub mod map;
-
-use crate::map::{
+pub use crate::map::{
     base::MapBase,
     codec::{Codec, WincodeCodec},
     error::Error,
@@ -57,7 +57,7 @@ impl<M: MapBase<C = WincodeCodec>> MapBuilder<M, WincodeCodec> {
     pub fn new(path: impl AsRef<str>) -> Self {
         Self {
             path: path.as_ref().to_string(),
-            codec: WincodeCodec::default(),
+            codec: WincodeCodec,
             config: Config::default(),
             scan_on_startup: true,
             _marker: std::marker::PhantomData,
@@ -139,9 +139,7 @@ impl<M: MapBase<C = C>, C: Codec> MapBuilder<M, C> {
             tokio::fs::create_dir_all(dir).await?;
         }
 
-        let db =
-            tokio::task::spawn_blocking(move || self.config.path(Path::new(&self.path)).open())
-                .await??;
+        let db = tokio::task::spawn_blocking(move || self.config.path(&self.path).open()).await??;
 
         let map = Arc::new(M::new(db, self.scan_on_startup, self.codec)?);
 
@@ -263,7 +261,7 @@ mod integration_tests {
     }
 
     async fn test_range_callback<M: MapBase<K = String, V = String, C = WincodeCodec>>(path: &str) {
-        let map = MapBuilder::<M>::new(&path).build().await.unwrap();
+        let map = MapBuilder::<M>::new(path).build().await.unwrap();
         let mut expected = HashMap::new();
         for i in 0..10 {
             let k = format!("key{}", i);
@@ -336,13 +334,13 @@ mod integration_tests {
         path: &str,
     ) {
         {
-            let map = MapBuilder::<M>::new(&path).build().await.unwrap();
+            let map = MapBuilder::<M>::new(path).build().await.unwrap();
             map.set("a".to_string(), "1".to_string(), 1).await.unwrap();
             map.set("b".to_string(), "2".to_string(), 2).await.unwrap();
             map.flush().await.unwrap();
         }
 
-        let map = MapBuilder::<M>::new(&path)
+        let map = MapBuilder::<M>::new(path)
             .disable_scan_on_startup()
             .build()
             .await
@@ -375,7 +373,7 @@ mod integration_tests {
         Fut1: Future<Output = ()> + Send,
         Fut2: Future<Output = ()> + Send,
     {
-        let map = MapBuilder::<M>::new(&path).build().await.unwrap();
+        let map = MapBuilder::<M>::new(path).build().await.unwrap();
 
         let num_items = 100;
         let items: Vec<_> = (0..num_items)
@@ -439,7 +437,7 @@ mod integration_tests {
                   key: String,
                   value: String,
                   i: usize| async move {
-            if i % 2 == 0 {
+            if i.is_multiple_of(2) {
                 let deleted_v = map.delete(key.as_str()).await.unwrap();
                 assert_eq!(deleted_v, value);
             } else {

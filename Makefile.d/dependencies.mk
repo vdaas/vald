@@ -35,6 +35,7 @@ update/libs: \
 	update/kind \
 	update/kube-linter \
 	update/kubectl \
+	update/llvm-openmp \
 	update/ngt \
 	update/prometheus-stack \
 	update/protobuf \
@@ -108,7 +109,7 @@ rust/deps: \
 	rust/install
 	rustup toolchain install $(RUST_VERSION)
 	rustup default $(RUST_VERSION)
-	$(CARGO_HOME)/bin/cargo install cargo-edit --force
+	$(CARGO_HOME)/bin/cargo install cargo-edit cargo-llvm-cov --force
 	cd $(ROOTDIR)/rust \
 		&& $(CARGO_HOME)/bin/cargo update \
 		&& $(CARGO_HOME)/bin/cargo upgrade --incompatible \
@@ -247,6 +248,12 @@ update/jaeger-operator:
 update/kube-linter:
 	curl -fsSL https://api.github.com/repos/stackrox/kube-linter/releases/latest | \
 	grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/KUBELINTER_VERSION
+
+.PHONY: update/llvm-openmp
+## update llvm openmp version
+update/llvm-openmp:
+	curl -fsSL https://api.github.com/repos/llvm/llvm-project/releases/latest | \
+	grep -Po '"tag_name": "\Kllvmorg-\K.*?(?=")' > $(ROOTDIR)/versions/LLVM_OPENMP_VERSION
 
 # .PHONY: update/otel-operator
 # ## update otel-operator version

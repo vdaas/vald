@@ -14,8 +14,11 @@
 // limitations under the License.
 //
 
+/// Codec implementations for map serialization.
 pub mod codec;
+/// Map error types.
 pub mod error;
+/// Key/value trait bounds for maps.
 pub mod types;
 
 pub(crate) mod base;

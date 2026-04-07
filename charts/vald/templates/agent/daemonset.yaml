@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 {{- $agent := .Values.agent -}}
+{{- $algorithmConfig := index $agent (lower $agent.algorithm) -}}
 {{- if and $agent.enabled (eq $agent.kind "DaemonSet") }}
 apiVersion: apps/v1
 kind: DaemonSet
@@ -167,7 +168,7 @@ spec:
         {{- toYaml $agent.podSecurityContext | nindent 8 }}
       {{- end }}
       terminationGracePeriodSeconds: {{ $agent.terminationGracePeriodSeconds }}
-      {{- if and $agent.serviceAccountName $agent.ngt.enable_export_index_info_to_k8s }}
+      {{- if and $agent.serviceAccountName $algorithmConfig.enable_export_index_info_to_k8s }}
       serviceAccountName: {{ $agent.serviceAccountName }}
       {{- end }}
       volumes:

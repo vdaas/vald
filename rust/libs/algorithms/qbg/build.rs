@@ -16,22 +16,25 @@
 fn main() -> miette::Result<()> {
     let current_dir = std::env::current_dir().unwrap();
     println!("cargo:rustc-link-search=native={}", current_dir.display());
+    println!("cargo:rerun-if-changed=src/*");
 
     cxx_build::bridge("src/lib.rs")
         .file("src/input.cpp")
         .flag_if_supported("-std=c++20")
         .flag_if_supported("-fopenmp")
+        .flag_if_supported("-static-openmp")
         .flag_if_supported("-flto=thin")
         .flag_if_supported("-DNGT_BFLOAT_DISABLED")
+        .flag_if_supported("-march=native")
         .compile("qbg-rs");
 
     println!("cargo:rustc-link-search=native=/usr/local/lib");
-    println!("cargo:rustc-link-search=native=/usr/lib");
-    println!("cargo:rustc-link-lib=static:+whole-archive=ngt");
-    println!("cargo:rustc-link-lib=blas");
-    println!("cargo:rustc-link-lib=lapack");
-    println!("cargo:rustc-link-lib=dylib=gomp");
-    println!("cargo:rerun-if-changed=src/*");
+    println!("cargo:rustc-link-search=native=/usr/lib/x86_64-linux-gnu");
+    println!("cargo:rustc-link-search=native=/usr/lib/gcc/x86_64-linux-gnu/13");
+    println!("cargo:rustc-link-lib=static=ngt");
+    println!("cargo:rustc-link-lib=static=blas");
+    println!("cargo:rustc-link-lib=static=gfortran");
+    println!("cargo:rustc-link-lib=static=omp");
 
     Ok(())
 }

@@ -14,9 +14,21 @@
 // limitations under the License.
 //
 
+/// Configuration types for OpenTelemetry exporters.
 pub mod config;
+/// Error types for observability operations.
+pub mod error;
+/// Observability-related helper macros.
 pub mod macros;
+/// OpenTelemetry lifecycle management helpers.
 pub mod observability;
+/// Tracing initialization helpers.
+pub mod tracing;
 
 #[doc(hidden)]
 pub use paste;
+
+// Re-export commonly used items
+pub use crate::tracing::{TracingConfig, init_tracing, shutdown_tracing};
+pub use config::Config;
+pub use observability::{Observability, ObservabilityImpl};
