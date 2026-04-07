@@ -46,7 +46,7 @@ update/libs: \
 	update/yq \
 	update/zlib \
 	update/snapshotter \
-	update/csi-driver-host-path \
+	update/csi-driver-host-path
 	# update/usearch \
 
 .PHONY: go/download
