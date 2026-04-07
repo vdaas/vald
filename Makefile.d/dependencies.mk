@@ -35,6 +35,7 @@ update/libs: \
 	update/kind \
 	update/kube-linter \
 	update/kubectl \
+	update/llvm-openmp \
 	update/ngt \
 	update/prometheus-stack \
 	update/protobuf \
@@ -45,7 +46,7 @@ update/libs: \
 	update/yq \
 	update/zlib \
 	update/snapshotter \
-	update/csi-driver-host-path
+	update/csi-driver-host-path \
 	# update/usearch \
 
 .PHONY: go/download
@@ -253,6 +254,12 @@ update/kube-linter:
 # update/otel-operator:
 #	curl -fsSL https://api.github.com/repos/open-telemetry/opentelemetry-operator/releases/latest | \
 #	grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/OTEL_OPERATOR_VERSION
+
+.PHONY: update/llvm-openmp
+## update llvm openmp version
+update/llvm-openmp:
+	curl -fsSL https://api.github.com/repos/llvm/llvm-project/releases/latest | \
+	grep -Po '"tag_name": "\Kllvmorg-\K.*?(?=")' > $(ROOTDIR)/versions/LLVM_OPENMP_VERSION
 
 .PHONY: update/ngt
 ## update NGT-labs/NGT version
