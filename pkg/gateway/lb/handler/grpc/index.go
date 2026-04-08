@@ -492,12 +492,13 @@ func mergeInfoIndexStatistics(
 	var indegrees, outdegrees []int32
 	var indegreeCounts [][]int64
 	var outdegreeHistograms, indegreeHistograms [][]uint64
-	merged.Valid = true
+	var validCounts int
 
 	for _, stat := range stats {
 		if !stat.Valid {
 			continue
 		}
+		validCounts++
 		indegrees = append(indegrees, stat.MedianIndegree)
 		outdegrees = append(outdegrees, stat.MedianOutdegree)
 
@@ -544,6 +545,11 @@ func mergeInfoIndexStatistics(
 		merged.C99Outdegree += stat.C99Outdegree
 	}
 
+	if validCounts == 0 {
+		return merged
+	}
+
+	merged.Valid = true
 	merged.MedianIndegree = calculateMedian(indegrees)
 	merged.MedianOutdegree = calculateMedian(outdegrees)
 	merged.IndegreeCount = make([]int64, len(indegreeCounts[0]))
@@ -569,18 +575,18 @@ func mergeInfoIndexStatistics(
 		merged.IndegreeHistogram = sumHistograms(merged.IndegreeHistogram, hist)
 	}
 
-	merged.ModeIndegree /= uint64(len(stats))
-	merged.ModeOutdegree /= uint64(len(stats))
-	merged.VarianceOfIndegree /= float64(len(stats))
-	merged.VarianceOfOutdegree /= float64(len(stats))
-	merged.MeanEdgeLength /= float64(len(stats))
-	merged.MeanEdgeLengthFor10Edges /= float64(len(stats))
-	merged.MeanIndegreeDistanceFor10Edges /= float64(len(stats))
-	merged.MeanNumberOfEdgesPerNode /= float64(len(stats))
-	merged.C1Indegree /= float64(len(stats))
-	merged.C5Indegree /= float64(len(stats))
-	merged.C95Outdegree /= float64(len(stats))
-	merged.C99Outdegree /= float64(len(stats))
+	merged.ModeIndegree /= uint64(validCounts)
+	merged.ModeOutdegree /= uint64(validCounts)
+	merged.VarianceOfIndegree /= float64(validCounts)
+	merged.VarianceOfOutdegree /= float64(validCounts)
+	merged.MeanEdgeLength /= float64(validCounts)
+	merged.MeanEdgeLengthFor10Edges /= float64(validCounts)
+	merged.MeanIndegreeDistanceFor10Edges /= float64(validCounts)
+	merged.MeanNumberOfEdgesPerNode /= float64(validCounts)
+	merged.C1Indegree /= float64(validCounts)
+	merged.C5Indegree /= float64(validCounts)
+	merged.C95Outdegree /= float64(validCounts)
+	merged.C99Outdegree /= float64(validCounts)
 
 	return merged
 }
