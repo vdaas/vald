@@ -20,6 +20,7 @@ import (
 	"context"
 
 	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
+	stats "github.com/vdaas/vald/apis/grpc/v1/rpc/stats"
 	vald "github.com/vdaas/vald/apis/grpc/v1/vald"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -81,6 +82,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		server.WithGRPCRegisterar(func(srv *grpc.Server) {
 			agent.RegisterAgentServer(srv, g)
 			vald.RegisterValdServer(srv, g)
+			stats.RegisterStatsDetailServer(srv, g)
 		}),
 		server.WithPreStartFunc(func() error {
 			return nil
