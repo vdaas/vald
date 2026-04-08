@@ -50,8 +50,8 @@ var (
 		ts, skip := toModificationConfig(plan)
 
 		// Generate pre-vector metadata for testing
-		// Format: idx,id,operation
-		metadataValue := fmt.Sprintf("%d,%s,insert", idx, id)
+		// Format: idx,id
+		metadataValue := fmt.Sprintf("%d,%s", idx, id)
 		metadata := []byte(metadataValue)
 
 		return &payload.Insert_Request{
@@ -90,8 +90,8 @@ var (
 		ts, skip := toModificationConfig(plan)
 
 		// Generate pre-vector metadata for testing
-		// Format: idx,id,operation
-		metadataValue := fmt.Sprintf("%d,%s,update", idx, id)
+		// Format: idx,id
+		metadataValue := fmt.Sprintf("%d,%s", idx, id)
 		metadata := []byte(metadataValue)
 
 		return &payload.Update_Request{
@@ -130,8 +130,8 @@ var (
 		ts, skip := toModificationConfig(plan)
 
 		// Generate pre-vector metadata for testing
-		// Format: idx,id,operation
-		metadataValue := fmt.Sprintf("%d,%s,upsert", idx, id)
+		// Format: idx,id
+		metadataValue := fmt.Sprintf("%d,%s", idx, id)
 		metadata := []byte(metadataValue)
 
 		return &payload.Upsert_Request{

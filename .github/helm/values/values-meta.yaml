@@ -54,9 +54,9 @@ agent:
       cpu: 100m
       memory: 50Mi
   ngt:
-    auto_index_duration_limit: 2m
-    auto_index_check_duration: 30s
-    auto_index_length: 1000
+    auto_index_duration_limit: 4m
+    auto_index_check_duration: 2m
+    auto_index_length: 9000
     dimension: 784
 discoverer:
   minReplicas: 1
@@ -74,9 +74,9 @@ manager:
         cpu: 100m
         memory: 30Mi
     indexer:
-      auto_index_duration_limit: 2m
-      auto_index_check_duration: 30s
-      auto_index_length: 1000
+      auto_index_duration_limit: 4m
+      auto_index_check_duration: 2m
+      auto_index_length: 9000
     corrector:
       enabled: true
       # suspend because you do not want corrector to start automatically in CI

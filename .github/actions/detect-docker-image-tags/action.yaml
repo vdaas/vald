@@ -75,4 +75,5 @@ runs:
         echo "IMAGE_TAGS=${IMAGE_TAGS}" >> $GITHUB_OUTPUT
       env:
         IMAGES: ${{ inputs.images }}
-        TAGS: ${{ inputs.tags }}
+        #TAGS: ${{ inputs.tags }}
+        TAGS: "pr-3493 nightly"

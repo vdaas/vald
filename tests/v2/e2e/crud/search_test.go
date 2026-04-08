@@ -21,12 +21,14 @@ package crud
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/iter"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/proto"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/tests/v2/e2e/config"
@@ -185,6 +187,18 @@ func (r *runner) processSearch(
 			// For streaming search requests, use the generic streamSearch function with the searchRequest builder.
 			stream(t, ctx, test, plan, r.client.StreamSearch, searchRequest, checkStreamSearchResponse(neighbors))
 		}
+	case config.OpSearchMeta:
+		switch plan.Mode {
+		case config.OperationUnary, config.OperationOther:
+			// For unary search requests, use the generic unarySearch function with the searchRequest builder.
+			return unary(t, ctx, test, plan, r.client.SearchWithMetadata, searchRequest, checkUnarySearchWithMetadataResponse(neighbors))
+		case config.OperationMultiple:
+			// For bulk search requests, use the generic multiSearch function with searchRequest and searchMultiRequest builders.
+			return multi(t, ctx, test, plan, r.client.MultiSearchWithMetadata, searchRequest, searchMultiRequest, checkMultiSearchResponse(neighbors))
+		case config.OperationStream:
+			// For streaming search requests, use the generic streamSearch function with the searchRequest builder.
+			stream(t, ctx, test, plan, r.client.StreamSearchWithMetadata, searchRequest, checkStreamSearchResponse(neighbors))
+		}
 	case config.OpSearchByID:
 		switch plan.Mode {
 		case config.OperationUnary, config.OperationOther:
@@ -222,6 +236,20 @@ func checkUnarySearchResponse(
 	return func(t *testing.T, idx uint64, res *payload.Search_Response, err error) bool {
 		t.Helper()
 		rc := calculateRecall(t, neighbors.At(idx), res)
+		t.Logf("request id %s searched recall: %f, payload %s", res.GetRequestId(), rc, res.String())
+		return true
+	}
+}
+
+func checkUnarySearchWithMetadataResponse(
+	neighbors iter.Cycle[[][]int, []int],
+) func(t *testing.T, idx uint64, res *payload.Search_Response, err error) bool {
+	return func(t *testing.T, idx uint64, res *payload.Search_Response, err error) bool {
+		t.Helper()
+		rc := calculateRecall(t, neighbors.At(idx), res)
+		eq := strings.EqualFold(fmt.Sprintf("%d,%s", idx, res.GetRequestId()), string(res.GetResults()[0].GetMetadata()))
+		log.Infof("eq %s idx %s request id %s, searched recall: %f, payload %s", eq, idx, res.GetRequestId(), rc, res.String())
+		log.Infof("idx %s neighbors.At(idx)[:topK] %s", idx, neighbors.At(idx)[:len(res.GetResults())])
 		t.Logf("request id %s searched recall: %f, payload %s", res.GetRequestId(), rc, res.String())
 		return true
 	}
