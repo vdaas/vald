@@ -248,8 +248,8 @@ func checkUnarySearchWithMetadataResponse(
 		t.Helper()
 		rc := calculateRecall(t, neighbors.At(idx), res)
 		eq := strings.EqualFold(fmt.Sprintf("%d,%s", idx, res.GetRequestId()), string(res.GetResults()[0].GetMetadata()))
-		log.Infof("eq %s idx %s request id %s, searched recall: %f, payload %s", eq, idx, res.GetRequestId(), rc, res.String())
-		log.Infof("idx %s neighbors.At(idx)[:topK] %s", idx, neighbors.At(idx)[:len(res.GetResults())])
+		log.Infof("eq %t idx %d request id %s, searched recall: %f, payload %s", eq, idx, res.GetRequestId(), rc, res.String())
+		log.Infof("idx %d neighbors.At(idx)[:topK] %v", idx, neighbors.At(idx)[:len(res.GetResults())])
 		t.Logf("request id %s searched recall: %f, payload %s", res.GetRequestId(), rc, res.String())
 		return true
 	}
