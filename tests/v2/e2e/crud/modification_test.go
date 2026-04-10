@@ -21,7 +21,6 @@ package crud
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -48,18 +47,12 @@ var (
 	}
 	insertWithMetadataRequest newRequest[*payload.Insert_Request] = func(t *testing.T, idx uint64, id string, vec []float32, plan *config.Execution) *payload.Insert_Request {
 		ts, skip := toModificationConfig(plan)
-
-		// Generate pre-vector metadata for testing
-		// Format: idx,id
-		metadataValue := fmt.Sprintf("%d,%s", idx, id)
-		metadata := []byte(metadataValue)
-
 		return &payload.Insert_Request{
 			Vector: &payload.Object_Vector{
 				Id:        id,
 				Vector:    vec,
 				Timestamp: ts,
-				Metadata:  metadata,
+				Metadata:  []byte("metadata"),
 			},
 			Config: &payload.Insert_Config{
 				Timestamp:            ts,
@@ -88,18 +81,12 @@ var (
 	}
 	updateWithMetadataRequest newRequest[*payload.Update_Request] = func(t *testing.T, idx uint64, id string, vec []float32, plan *config.Execution) *payload.Update_Request {
 		ts, skip := toModificationConfig(plan)
-
-		// Generate pre-vector metadata for testing
-		// Format: idx,id
-		metadataValue := fmt.Sprintf("%d,%s", idx, id)
-		metadata := []byte(metadataValue)
-
 		return &payload.Update_Request{
 			Vector: &payload.Object_Vector{
 				Id:        id,
 				Vector:    vec,
 				Timestamp: ts,
-				Metadata:  metadata,
+				Metadata:  []byte("metadata"),
 			},
 			Config: &payload.Update_Config{
 				Timestamp:            ts,
@@ -128,18 +115,12 @@ var (
 	}
 	upsertWithMetadataRequest newRequest[*payload.Upsert_Request] = func(t *testing.T, idx uint64, id string, vec []float32, plan *config.Execution) *payload.Upsert_Request {
 		ts, skip := toModificationConfig(plan)
-
-		// Generate pre-vector metadata for testing
-		// Format: idx,id
-		metadataValue := fmt.Sprintf("%d,%s", idx, id)
-		metadata := []byte(metadataValue)
-
 		return &payload.Upsert_Request{
 			Vector: &payload.Object_Vector{
 				Id:        id,
 				Vector:    vec,
 				Timestamp: ts,
-				Metadata:  metadata,
+				Metadata:  []byte("metadata"),
 			},
 			Config: &payload.Upsert_Config{
 				Timestamp:            ts,
