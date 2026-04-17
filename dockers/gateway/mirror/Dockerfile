@@ -27,6 +27,16 @@ ARG TARGETARCH
 ARG TARGETOS
 ARG GO_VERSION
 ARG RUST_VERSION
+ARG CC
+ARG CXX
+ARG LLD
+ARG AR
+ARG NM
+ARG RANLIB
+ARG CFLAGS
+ARG CXXFLAGS
+ARG LDFLAGS
+ARG SUDO
 ENV APP_NAME=mirror
 ENV DEBIAN_FRONTEND=noninteractive
 ENV GO111MODULE=on
@@ -42,7 +52,18 @@ ENV PKG=gateway/mirror
 ENV REPO=vald
 ENV TZ=Etc/UTC
 ENV USER=root
+ENV YEAR=2026
 ENV PATH=${GOPATH}/bin:${GOROOT}/bin:/usr/local/bin:${PATH}
+ENV CC=${CC:-${CC}}
+ENV CXX=${CXX:-${CXX}}
+ENV LLD=${LLD:-${LLD}}
+ENV AR=${AR:-${AR}}
+ENV NM=${NM:-${NM}}
+ENV RANLIB=${RANLIB:-${RANLIB}}
+ENV CFLAGS=${CFLAGS:-${CFLAGS}}
+ENV CXXFLAGS=${CXXFLAGS:-${CXXFLAGS}}
+ENV LDFLAGS=${LDFLAGS:-${LDFLAGS}}
+ENV SUDO=${SUDO:-${SUDO}}
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 #skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
@@ -60,7 +81,6 @@ RUN --mount=type=bind,target=.,rw \
     && apt-get update -y \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends --fix-missing \
-    build-essential \
     ca-certificates \
     curl \
     tzdata \

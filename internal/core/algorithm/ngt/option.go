@@ -17,7 +17,7 @@
 package ngt
 
 /*
-#cgo LDFLAGS: -lngt
+#cgo LDFLAGS: -L/usr/local/lib -lngt
 #include <NGT/Capi.h>
 */
 import "C"

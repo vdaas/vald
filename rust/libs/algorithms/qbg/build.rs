@@ -22,15 +22,26 @@ fn main() -> miette::Result<()> {
         .flag_if_supported("-std=c++20")
         .flag_if_supported("-fopenmp")
         .flag_if_supported("-flto=thin")
+        .flag_if_supported("-mavx2")
+        .flag_if_supported("-mno-avx512f")
+        .flag_if_supported("-mno-avx512dq")
+        .flag_if_supported("-mno-avx512cd")
+        .flag_if_supported("-mno-avx512bw")
+        .flag_if_supported("-mno-avx512vl")
         .flag_if_supported("-DNGT_BFLOAT_DISABLED")
+        .flag_if_supported("-DNGT_LARGE_DATASET")
         .compile("qbg-rs");
 
     println!("cargo:rustc-link-search=native=/usr/local/lib");
-    println!("cargo:rustc-link-search=native=/usr/lib");
+    println!("cargo:rustc-link-search=native=/usr/lib/x86_64-linux-gnu");
+    println!("cargo:rustc-link-search=native=/usr/lib/gcc/x86_64-linux-gnu/15");
     println!("cargo:rustc-link-lib=static:+whole-archive=ngt");
-    println!("cargo:rustc-link-lib=blas");
-    println!("cargo:rustc-link-lib=lapack");
-    println!("cargo:rustc-link-lib=dylib=gomp");
+    println!("cargo:rustc-link-lib=static=blas");
+    println!("cargo:rustc-link-lib=static=lapack");
+    println!("cargo:rustc-link-lib=static=gfortran");
+    println!("cargo:rustc-link-lib=static=quadmath");
+    println!("cargo:rustc-link-lib=static=z");
+    println!("cargo:rustc-link-lib=static=omp");
     println!("cargo:rerun-if-changed=src/*");
 
     Ok(())

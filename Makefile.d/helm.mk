@@ -40,76 +40,49 @@ $(BINDIR)/helm-docs:
 	&& tar -xzvf "$(TEMP_DIR)/$${TAR_NAME}" \
 	&& mv helm-docs $(BINDIR)/helm-docs
 
-.PHONY: helm/package/vald
-## packaging Helm chart for Vald
-helm/package/vald:
-	helm package $(ROOTDIR)/charts/vald
+.PHONY: helm/lint/%
+## run lint for Helm chart (charts/%)
+helm/lint/%:
+	helm lint $(ROOTDIR)/charts/$*
 
-.PHONY: helm/package/vald-helm-operator
-## packaging Helm chart for vald-helm-operator
+.PHONY: helm/repo/add
+
+.PHONY: helm/package/%
+## packaging Helm chart (charts/%)
+helm/package/%:
+	helm package $(ROOTDIR)/charts/$*
+
 helm/package/vald-helm-operator: \
 	helm/schema/crd/vald \
 	helm/schema/crd/vald-helm-operator
-	helm package $(ROOTDIR)/charts/vald-helm-operator
 
-.PHONY: helm/package/vald-benchmark-operator
-## packaging Helm chart for vald-helm-operator
 helm/package/vald-benchmark-operator: \
 	helm/schema/crd/vald-benchmark-job \
 	helm/schema/crd/vald-benchmark-scenario \
 	helm/schema/crd/vald-benchmark-operator
-	helm package $(ROOTDIR)/charts/vald-benchmark-operator
 
-.PHONY: helm/package/vald-readreplica
-## packaging Helm chart for vald-readreplica
-helm/package/vald-readreplica:
-	helm package $(ROOTDIR)/charts/vald-readreplica
-
-.PHONY: helm/repo/add
 ## add Helm chart repository
 helm/repo/add:
 	helm repo add vald https://vald.vdaas.org/charts
 
-.PHONY: helm/docs/vald
-helm/docs/vald: $(ROOTDIR)/charts/vald/README.md
+.PHONY: helm/repo/index
+## index Helm chart repository
+helm/repo/index:
+	helm repo index --url https://vald.vdaas.org/charts charts/
 
-# force to rebuild
-.PHONY: $(ROOTDIR)/charts/vald/README.md
-$(ROOTDIR)/charts/vald/README.md: \
-	$(ROOTDIR)/charts/vald/README.md.gotmpl \
-	$(ROOTDIR)/charts/vald/values.yaml
-	helm-docs
+.PHONY: helm/docs/%
+## generate docs for Helm Chart (charts/%)
+helm/docs/%: $(ROOTDIR)/charts/%/README.md
+	@echo "generated docs for $*"
 
-.PHONY: helm/docs/vald-helm-operator
-helm/docs/vald-helm-operator: $(ROOTDIR)/charts/vald-helm-operator/README.md
-
-# force to rebuild
-.PHONY: $(ROOTDIR)/charts/vald-helm-operator/README.md
-$(ROOTDIR)/charts/vald-helm-operator/README.md: \
-	$(ROOTDIR)/charts/vald-helm-operator/README.md.gotmpl \
-	$(ROOTDIR)/charts/vald-helm-operator/values.yaml
-	helm-docs
-
-.PHONY: helm/docs/vald-readreplica
-helm/docs/vald-readreplica: $(ROOTDIR)/charts/vald-readreplica/README.md
-
-.PHONY: helm/docs/vald-benchmark-operator
-helm/docs/vald-benchmark-operator: $(ROOTDIR)/charts/vald-benchmark-operator/README.md
-
-.PHONY: $(ROOTDIR)/charts/vald-benchmark-operator/README.md
-$(ROOTDIR)/charts/vald-benchmark-operator/README.md: \
-	$(ROOTDIR)/charts/vald-benchmark-operator/README.md.gotmpl \
-	$(ROOTDIR)/charts/vald-benchmark-operator/values.yaml
-	helm-docs
-
-# force to rebuild
-.PHONY: $(ROOTDIR)/charts/vald-readreplica/README.md
-$(ROOTDIR)/charts/vald-readreplica/README.md: \
-	$(ROOTDIR)/charts/vald-readreplica/README.md.gotmpl \
-	$(ROOTDIR)/charts/vald-readreplica/values.yaml
+.PHONY: $(ROOTDIR)/charts/%/README.md
+$(ROOTDIR)/charts/%/README.md: \
+	$(ROOTDIR)/charts/%/README.md.gotmpl \
+	$(ROOTDIR)/charts/%/values.yaml
 	helm-docs
 
 .PHONY: helm/schema/all
+## generate json schemas for all Helm Charts
 helm/schema/all: \
 	helm/schema/vald \
 	helm/schema/vald-helm-operator \

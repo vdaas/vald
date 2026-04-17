@@ -472,7 +472,7 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 					Timestamps: []*payload.Remove_Timestamp{
 						{
 							Timestamp: defaultTimestamp,
-							Operator:  payload.Remove_Timestamp_Eq,
+							Operator:  payload.Remove_Timestamp_EQ,
 						},
 					},
 				},
@@ -489,7 +489,7 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 					Timestamps: []*payload.Remove_Timestamp{
 						{
 							Timestamp: defaultTimestamp,
-							Operator:  payload.Remove_Timestamp_Ge,
+							Operator:  payload.Remove_Timestamp_GE,
 						},
 					},
 				},
@@ -506,11 +506,11 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 					Timestamps: []*payload.Remove_Timestamp{
 						{
 							Timestamp: defaultTimestamp,
-							Operator:  payload.Remove_Timestamp_Gt,
+							Operator:  payload.Remove_Timestamp_GT,
 						},
 						{
 							Timestamp: defaultTimestamp + 2,
-							Operator:  payload.Remove_Timestamp_Lt,
+							Operator:  payload.Remove_Timestamp_LT,
 						},
 					},
 				},
@@ -548,7 +548,7 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 					Timestamps: []*payload.Remove_Timestamp{
 						{
 							Timestamp: defaultTimestamp,
-							Operator:  payload.Remove_Timestamp_Le,
+							Operator:  payload.Remove_Timestamp_LE,
 						},
 					},
 				},
@@ -565,11 +565,11 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 					Timestamps: []*payload.Remove_Timestamp{
 						{
 							Timestamp: defaultTimestamp / 2,
-							Operator:  payload.Remove_Timestamp_Gt,
+							Operator:  payload.Remove_Timestamp_GT,
 						},
 						{
 							Timestamp: defaultTimestamp * 2,
-							Operator:  payload.Remove_Timestamp_Lt,
+							Operator:  payload.Remove_Timestamp_LT,
 						},
 					},
 				},
@@ -586,7 +586,7 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 					Timestamps: []*payload.Remove_Timestamp{
 						{
 							Timestamp: defaultTimestamp * 2,
-							Operator:  payload.Remove_Timestamp_Eq,
+							Operator:  payload.Remove_Timestamp_EQ,
 						},
 					},
 				},
@@ -602,7 +602,7 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 					Timestamps: []*payload.Remove_Timestamp{
 						{
 							Timestamp: defaultTimestamp * 2,
-							Operator:  payload.Remove_Timestamp_Gt,
+							Operator:  payload.Remove_Timestamp_GT,
 						},
 					},
 				},
@@ -618,7 +618,7 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 					Timestamps: []*payload.Remove_Timestamp{
 						{
 							Timestamp: defaultTimestamp / 2,
-							Operator:  payload.Remove_Timestamp_Lt,
+							Operator:  payload.Remove_Timestamp_LT,
 						},
 					},
 				},
@@ -699,7 +699,7 @@ func Test_timestampOpsFunc(t *testing.T) {
 				ts: []*payload.Remove_Timestamp{
 					{
 						Timestamp: 1000,
-						Operator:  payload.Remove_Timestamp_Eq,
+						Operator:  payload.Remove_Timestamp_EQ,
 					},
 				},
 			},
@@ -714,11 +714,11 @@ func Test_timestampOpsFunc(t *testing.T) {
 				ts: []*payload.Remove_Timestamp{
 					{
 						Timestamp: 1000,
-						Operator:  payload.Remove_Timestamp_Gt,
+						Operator:  payload.Remove_Timestamp_GT,
 					},
 					{
 						Timestamp: 2000,
-						Operator:  payload.Remove_Timestamp_Lt,
+						Operator:  payload.Remove_Timestamp_LT,
 					},
 				},
 			},
@@ -733,11 +733,11 @@ func Test_timestampOpsFunc(t *testing.T) {
 				ts: []*payload.Remove_Timestamp{
 					{
 						Timestamp: 1000,
-						Operator:  payload.Remove_Timestamp_Gt,
+						Operator:  payload.Remove_Timestamp_GT,
 					},
 					{
 						Timestamp: 2000,
-						Operator:  payload.Remove_Timestamp_Lt,
+						Operator:  payload.Remove_Timestamp_LT,
 					},
 				},
 			},
@@ -800,7 +800,7 @@ func Test_timestampOpFunc(t *testing.T) {
 				timestamp: 1000,
 				ts: &payload.Remove_Timestamp{
 					Timestamp: 1000,
-					Operator:  payload.Remove_Timestamp_Eq,
+					Operator:  payload.Remove_Timestamp_EQ,
 				},
 			},
 			want: want{
@@ -813,7 +813,7 @@ func Test_timestampOpFunc(t *testing.T) {
 				timestamp: 1100,
 				ts: &payload.Remove_Timestamp{
 					Timestamp: 1000,
-					Operator:  payload.Remove_Timestamp_Ne,
+					Operator:  payload.Remove_Timestamp_NE,
 				},
 			},
 			want: want{
@@ -826,7 +826,7 @@ func Test_timestampOpFunc(t *testing.T) {
 				timestamp: 1000,
 				ts: &payload.Remove_Timestamp{
 					Timestamp: 1000,
-					Operator:  payload.Remove_Timestamp_Ge,
+					Operator:  payload.Remove_Timestamp_GE,
 				},
 			},
 			want: want{
@@ -839,7 +839,7 @@ func Test_timestampOpFunc(t *testing.T) {
 				timestamp: 1100,
 				ts: &payload.Remove_Timestamp{
 					Timestamp: 1000,
-					Operator:  payload.Remove_Timestamp_Gt,
+					Operator:  payload.Remove_Timestamp_GT,
 				},
 			},
 			want: want{
@@ -852,7 +852,7 @@ func Test_timestampOpFunc(t *testing.T) {
 				timestamp: 1000,
 				ts: &payload.Remove_Timestamp{
 					Timestamp: 1000,
-					Operator:  payload.Remove_Timestamp_Le,
+					Operator:  payload.Remove_Timestamp_LE,
 				},
 			},
 			want: want{
@@ -865,7 +865,7 @@ func Test_timestampOpFunc(t *testing.T) {
 				timestamp: 900,
 				ts: &payload.Remove_Timestamp{
 					Timestamp: 1000,
-					Operator:  payload.Remove_Timestamp_Lt,
+					Operator:  payload.Remove_Timestamp_LT,
 				},
 			},
 			want: want{
@@ -892,7 +892,7 @@ func Test_timestampOpFunc(t *testing.T) {
 				timestamp: 1100,
 				ts: &payload.Remove_Timestamp{
 					Timestamp: 1000,
-					Operator:  payload.Remove_Timestamp_Eq,
+					Operator:  payload.Remove_Timestamp_EQ,
 				},
 			},
 			want: want{
@@ -905,7 +905,7 @@ func Test_timestampOpFunc(t *testing.T) {
 				timestamp: 1000,
 				ts: &payload.Remove_Timestamp{
 					Timestamp: 1000,
-					Operator:  payload.Remove_Timestamp_Ne,
+					Operator:  payload.Remove_Timestamp_NE,
 				},
 			},
 			want: want{
@@ -918,7 +918,7 @@ func Test_timestampOpFunc(t *testing.T) {
 				timestamp: 900,
 				ts: &payload.Remove_Timestamp{
 					Timestamp: 1000,
-					Operator:  payload.Remove_Timestamp_Ge,
+					Operator:  payload.Remove_Timestamp_GE,
 				},
 			},
 			want: want{
@@ -931,7 +931,7 @@ func Test_timestampOpFunc(t *testing.T) {
 				timestamp: 900,
 				ts: &payload.Remove_Timestamp{
 					Timestamp: 1000,
-					Operator:  payload.Remove_Timestamp_Gt,
+					Operator:  payload.Remove_Timestamp_GT,
 				},
 			},
 			want: want{
@@ -944,7 +944,7 @@ func Test_timestampOpFunc(t *testing.T) {
 				timestamp: 1100,
 				ts: &payload.Remove_Timestamp{
 					Timestamp: 1000,
-					Operator:  payload.Remove_Timestamp_Le,
+					Operator:  payload.Remove_Timestamp_LE,
 				},
 			},
 			want: want{
@@ -957,7 +957,7 @@ func Test_timestampOpFunc(t *testing.T) {
 				timestamp: 1100,
 				ts: &payload.Remove_Timestamp{
 					Timestamp: 1000,
-					Operator:  payload.Remove_Timestamp_Lt,
+					Operator:  payload.Remove_Timestamp_LT,
 				},
 			},
 			want: want{

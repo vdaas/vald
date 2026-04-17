@@ -825,23 +825,23 @@ pub mod remove {
             /// (if the ProtoBuf definition does not change) and safe for programmatic use.
             pub fn as_str_name(&self) -> &'static str {
                 match self {
-                    Self::Eq => "Eq",
-                    Self::Ne => "Ne",
-                    Self::Ge => "Ge",
-                    Self::Gt => "Gt",
-                    Self::Le => "Le",
-                    Self::Lt => "Lt",
+                    Self::Eq => "EQ",
+                    Self::Ne => "NE",
+                    Self::Ge => "GE",
+                    Self::Gt => "GT",
+                    Self::Le => "LE",
+                    Self::Lt => "LT",
                 }
             }
             /// Creates an enum from field names used in the ProtoBuf definition.
             pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
                 match value {
-                    "Eq" => Some(Self::Eq),
-                    "Ne" => Some(Self::Ne),
-                    "Ge" => Some(Self::Ge),
-                    "Gt" => Some(Self::Gt),
-                    "Le" => Some(Self::Le),
-                    "Lt" => Some(Self::Lt),
+                    "EQ" => Some(Self::Eq),
+                    "NE" => Some(Self::Ne),
+                    "GE" => Some(Self::Ge),
+                    "GT" => Some(Self::Gt),
+                    "LE" => Some(Self::Le),
+                    "LT" => Some(Self::Lt),
                     _ => None,
                 }
             }
