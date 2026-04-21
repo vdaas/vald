@@ -392,17 +392,23 @@ $(USR_LOCAL)/include/usearch.h: | clang/install
 .PHONY: cmake/install
 ## install CMAKE
 cmake/install:
-	$(call cmake-install,https://github.com/Kitware/CMake/releases/download/v$(CMAKE_VERSION)/cmake-$(CMAKE_VERSION).tar.gz,cmake)
+	CMAKE_ARCH=$$(if [ "$(ARCH)" = "aarch64" ] || [ "$(ARCH)" = "arm64" ]; then echo "aarch64"; else echo "x86_64"; fi); \
+	TAR_NAME="cmake-$(CMAKE_VERSION)-linux-$${CMAKE_ARCH}.tar.gz" \
+	&& curl -fsSL "https://github.com/Kitware/CMake/releases/download/v$(CMAKE_VERSION)/$${TAR_NAME}" -o "$(TEMP_DIR)/$${TAR_NAME}" \
+	&& $(SUDO) tar -xzf "$(TEMP_DIR)/$${TAR_NAME}" -C $(USR_LOCAL) --strip-components 1 \
+	&& rm -rf "$(TEMP_DIR)/$${TAR_NAME}" \
+	&& cmake --version
 
 .PHONY: ninja/install
 ## install ninja-build
 ninja/install:
-	$(call cmake-install,https://github.com/ninja-build/ninja.git,ninja, \
-		, \
-		, \
-		v$(NINJA_VERSION), \
-		, \
-		ninja)
+	NINJA_ARCH=$$(if [ "$(ARCH)" = "aarch64" ] || [ "$(ARCH)" = "arm64" ]; then echo "-aarch64"; else echo ""; fi); \
+	TAR_NAME="ninja-linux$${NINJA_ARCH}.zip" \
+	&& curl -fsSL "https://github.com/ninja-build/ninja/releases/download/v$(NINJA_VERSION)/$${TAR_NAME}" -o "$(TEMP_DIR)/$${TAR_NAME}" \
+	&& $(SUDO) unzip -q -o "$(TEMP_DIR)/$${TAR_NAME}" -d $(USR_LOCAL)/bin \
+	&& rm -rf "$(TEMP_DIR)/$${TAR_NAME}" \
+	&& $(SUDO) chmod +x $(USR_LOCAL)/bin/ninja \
+	&& ninja --version
 
 .PHONY: yq/install
 ## install yq
