@@ -64,64 +64,64 @@ cmd/agent/core/faiss/faiss: \
 	$(call go-build,agent/core/faiss,-linkmode 'external',$(LDFLAGS) $(FAISS_LDFLAGS), cgo,FAISS-$(FAISS_VERSION),$@)
 
 cmd/agent/sidecar/sidecar:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,agent/sidecar,,,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,agent/sidecar,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/discoverer/k8s/discoverer:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,discoverer/k8s,,,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,discoverer/k8s,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/gateway/lb/lb:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,gateway/lb,,,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,gateway/lb,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/gateway/filter/filter:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,gateway/filter,,,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,gateway/filter,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/gateway/mirror/mirror:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,gateway/mirror,,,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,gateway/mirror,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/manager/index/index:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,manager/index,,,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,manager/index,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/index/job/correction/index-correction:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,index/job/correction,,,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,index/job/correction,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/index/job/creation/index-creation:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,index/job/creation,,,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,index/job/creation,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/index/job/deletion/index-deletion:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,index/job/deletion,,,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,index/job/deletion,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/index/job/exportation/index-exportation:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,index/job/exportation,,,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,index/job/exportation,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/index/job/save/index-save:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,index/job/save,,,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,index/job/save,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/index/job/readreplica/rotate/readreplica-rotate:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,index/job/readreplica/rotate,,,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,index/job/readreplica/rotate,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/index/operator/index-operator:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,index/operator,,,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,index/operator,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/tools/benchmark/job/job:
 	$(eval CGO_ENABLED = 1)
 	$(call go-build,tools/benchmark/job,-linkmode 'external',$(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
 
 cmd/tools/benchmark/operator/operator:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,tools/benchmark/operator,,,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,tools/benchmark/operator,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 example/client/client:
 	$(eval CGO_ENABLED = 1)

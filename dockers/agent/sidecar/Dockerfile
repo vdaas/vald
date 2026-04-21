@@ -86,6 +86,16 @@ RUN --mount=type=bind,target=.,rw \
     tzdata \
     locales \
     git \
+    build-essential \
+    clang \
+    cmake \
+    libomp-18-dev \
+    libssl-dev \
+    lld \
+    llvm \
+    ninja-build \
+    python3 \
+    unzip \
     && ldconfig \
     && echo "${LANG} UTF-8" > /etc/locale.gen \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \

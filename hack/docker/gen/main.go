@@ -494,6 +494,7 @@ var (
 		"python3",
 		"libssl-dev",
 		"unzip",
+		"libomp-18-dev",
 	}
 	ngtBuildDeps = []string{
 		"liblapack-dev",
@@ -712,7 +713,7 @@ func main() {
 			AppName:       agent,
 			PackageDir:    agent + "/core/" + agent,
 			ContainerType: Rust,
-			RuntimeImage:  defaultCCRuntimeImage,
+			RuntimeImage:  defaultRuntimeImage,
 			ExtraPackages: clangNgtBuildDeps,
 			Preprocess: []string{
 				ngtPreprocess,
@@ -1037,13 +1038,11 @@ func prepareData(name string, data Data, maintainer string, year int, rootDir st
 	}
 	data.Environments = appendM(data.Environments, defaultEnvironments)
 
-	cppInstallCommands := []string{
-		"make ninja/install",
-		"make cmake/install",
-		"make clang/install",
-	}
+	cppInstallCommands := []string{}
 	switch data.ContainerType {
 	case Go:
+		data.BuildCmakeClang = true
+		data.ExtraPackages = append(data.ExtraPackages, clangBuildDeps...)
 		data.Environments = appendM(data.Environments, goDefaultEnvironments)
 		data.RootDir = goWorkdir
 		commands := make([]string, 0, len(cppInstallCommands)+len(goInstallCommands)+len(data.Preprocess)+len(goBuildCommands))

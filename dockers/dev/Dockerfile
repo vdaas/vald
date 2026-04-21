@@ -101,6 +101,7 @@ RUN --mount=type=bind,target=.,rw \
     jq \
     libaec-dev \
     liblapack-dev \
+    libomp-18-dev \
     libopenblas-dev \
     libssl-dev \
     lld \
@@ -121,9 +122,6 @@ RUN --mount=type=bind,target=.,rw \
     && apt-get clean \
     && apt-get autoclean -y \
     && apt-get autoremove -y \
-    && make ninja/install \
-    && make cmake/install \
-    && make clang/install \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/install \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/download \
     && make RUST_VERSION="${RUST_VERSION}" rust/install \

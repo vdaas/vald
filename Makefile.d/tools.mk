@@ -300,7 +300,7 @@ clang/install: $(USR_LOCAL)/bin/clang
 openmp/install: $(USR_LOCAL)/bin/clang
 
 $(USR_LOCAL)/bin/clang:
-	$(call cmake-install,https://github.com/llvm/llvm-project.git,llvm, \
+	$(call cmake-install,https://github.com/llvm/llvm-project/releases/download/llvmorg-$(LLVM_VERSION)/llvm-project-$(LLVM_VERSION).src.tar.xz,llvm, \
 		-DLLVM_ENABLE_PROJECTS="clang;lld" \
 		-DLLVM_ENABLE_RUNTIMES="openmp;libcxx;libcxxabi;libunwind" \
 		-DLLVM_TARGETS_TO_BUILD="X86;AArch64" \
@@ -315,16 +315,14 @@ $(USR_LOCAL)/bin/clang:
 		-DLLVM_ENABLE_OCAMLDOC=OFF \
 		-DLLVM_ENABLE_DOXYGEN=OFF \
 		-DLLVM_ENABLE_SPHINX=OFF \
-		-DLIBOMP_INSTALL_ALIASES=ON, \
-		, \
-		llvmorg-$(LLVM_VERSION), \
+		-DLIBOMP_INSTALL_ALIASES=ON,,, \
 		llvm)
 
 .PHONY: zlib/install
 ## install zlib
 zlib/install: $(LIB_PATH)/libz.a
 
-$(LIB_PATH)/libz.a: $(LIB_PATH) | clang/install
+$(LIB_PATH)/libz.a: $(LIB_PATH)
 	$(call cmake-install,https://github.com/madler/zlib/releases/download/v$(ZLIB_VERSION)/zlib-$(ZLIB_VERSION).tar.gz,zlib, \
 		-DZLIB_BUILD_SHARED=OFF \
 		-DZLIB_BUILD_STATIC=ON \
@@ -351,11 +349,12 @@ $(LIB_PATH)/libhdf5.a: $(LIB_PATH) zlib/install
 ## install NGT
 ngt/install: $(USR_LOCAL)/include/NGT/Capi.h
 
-$(USR_LOCAL)/include/NGT/Capi.h: | clang/install
+$(USR_LOCAL)/include/NGT/Capi.h:
 	$(call cmake-install,https://github.com/NGT-labs/NGT.git,ngt, \
 		-DNGT_LARGE_DATASET=ON \
+		-DBUILD_STATIC_EXECS=OFF \
 		$(NGT_EXTRA_CMAKE_FLAGS), \
-		, \
+		mkdir -p $(TEMP_DIR)/ngt/build/bin/ngt $(TEMP_DIR)/ngt/build/bin/qbg && touch $(TEMP_DIR)/ngt/build/bin/ngt/ngt $(TEMP_DIR)/ngt/build/bin/qbg/qbg, \
 		v$(NGT_VERSION), \
 		, \
 		ngt)
@@ -364,7 +363,7 @@ $(USR_LOCAL)/include/NGT/Capi.h: | clang/install
 ## install Faiss
 faiss/install: $(LIB_PATH)/libfaiss.a
 
-$(LIB_PATH)/libfaiss.a: | clang/install
+$(LIB_PATH)/libfaiss.a:
 	$(call cmake-install,https://github.com/facebookresearch/faiss/archive/v$(FAISS_VERSION).tar.gz,faiss, \
 		-DFAISS_ENABLE_PYTHON=OFF \
 		-DFAISS_ENABLE_GPU=OFF \
@@ -379,7 +378,7 @@ $(LIB_PATH)/libfaiss.a: | clang/install
 ## install usearch
 usearch/install: $(USR_LOCAL)/include/usearch.h
 
-$(USR_LOCAL)/include/usearch.h: | clang/install
+$(USR_LOCAL)/include/usearch.h:
 	$(call cmake-install,https://github.com/unum-cloud/usearch.git,usearch, \
 		-DUSEARCH_BUILD_LIB_C=ON \
 		-DUSEARCH_USE_FP16LIB=ON \

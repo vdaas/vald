@@ -80,11 +80,11 @@ BUN_GLOBAL_BIN ?= $(eval BUN_GLOBAL_BIN := $(shell command -v bun >/dev/null 2>&
 
 GOPRIVATE := $(GOPKG),$(GOPKG)/apis,$(GOPKG)-client-go
 GOPROXY ?= https://proxy.golang.org,direct
-GOPATH ?= $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
-GOARCH ?= $(eval GOARCH := $(shell go env GOARCH))$(GOARCH)
-GOBIN ?= $(eval GOBIN := $(or $(shell go env GOBIN),$(GOPATH)/bin))$(GOBIN)
-GOCACHE ?= $(eval GOCACHE := $(shell go env GOCACHE))$(GOCACHE)
-GOOS ?= $(eval GOOS := $(shell go env GOOS))$(GOOS)
+GOPATH ?= $(eval GOPATH := $(shell go env GOPATH 2>/dev/null))$(GOPATH)
+GOARCH ?= $(eval GOARCH := $(shell go env GOARCH 2>/dev/null))$(GOARCH)
+GOBIN ?= $(eval GOBIN := $(or $(shell go env GOBIN 2>/dev/null),$(GOPATH)/bin))$(GOBIN)
+GOCACHE ?= $(eval GOCACHE := $(shell go env GOCACHE 2>/dev/null))$(GOCACHE)
+GOOS ?= $(eval GOOS := $(shell go env GOOS 2>/dev/null))$(GOOS)
 GOEXPERIMENT := "greenteagc,cgocheck2,newinliner,synchashtriemap,jsonv2"
 GO_CLEAN_DEPS := true
 GOTEST_TIMEOUT = 30m
@@ -244,7 +244,7 @@ CXXFLAGS = $(CFLAGS) -std=gnu++23
 ifeq ($(GOOS),darwin)
 EXTLDFLAGS ?= -m64 -L$(LIB_PATH) -stdlib=libc++
 else
-EXTLDFLAGS ?= -m64 -L$(LIB_PATH) -Wl,--no-keep-memory
+EXTLDFLAGS ?= -m64 -L$(LIB_PATH) -stdlib=libc++ -Wl,--no-keep-memory
 endif
 
 else ifeq ($(GOARCH),arm64)
@@ -269,7 +269,7 @@ CXXFLAGS = $(CFLAGS) -std=gnu++23
 ifeq ($(GOOS),darwin)
 EXTLDFLAGS ?= -L$(LIB_PATH) -stdlib=libc++
 else
-EXTLDFLAGS ?= -L$(LIB_PATH) -Wl,--no-keep-memory
+EXTLDFLAGS ?= -L$(LIB_PATH) -stdlib=libc++ -Wl,--no-keep-memory
 endif
 endif
 

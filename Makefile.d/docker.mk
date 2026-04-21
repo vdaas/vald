@@ -44,9 +44,9 @@ docker/build: \
 	docker/build/readreplica-rotate \
 	docker/build/e2e
 
-.PHONY: docker/xpanes/build
+.PHONY: docker/xpanes/build docker/build/xpanes
 ## build all docker images using xpanes
-docker/xpanes/build:
+docker/xpanes/build docker/build/xpanes:
 	@xpanes -s -c "make -f $(ROOTDIR)/Makefile {}" \
 	docker/build/agent \
 	docker/build/agent-faiss \

@@ -90,6 +90,7 @@ RUN --mount=type=bind,target=.,rw \
     clang \
     cmake \
     libaec-dev \
+    libomp-18-dev \
     libssl-dev \
     lld \
     llvm \
@@ -105,9 +106,6 @@ RUN --mount=type=bind,target=.,rw \
     && apt-get clean \
     && apt-get autoclean -y \
     && apt-get autoremove -y \
-    && make ninja/install \
-    && make cmake/install \
-    && make clang/install \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/install \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/download \
     && make hdf5/install \

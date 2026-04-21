@@ -89,6 +89,7 @@ RUN --mount=type=bind,target=.,rw \
     cmake \
     gfortran \
     liblapack-dev \
+    libomp-18-dev \
     libopenblas-dev \
     libssl-dev \
     lld \
@@ -105,9 +106,6 @@ RUN --mount=type=bind,target=.,rw \
     && apt-get clean \
     && apt-get autoclean -y \
     && apt-get autoremove -y \
-    && make ninja/install \
-    && make cmake/install \
-    && make clang/install \
     && make RUST_VERSION="${RUST_VERSION}" rust/install \
     && make ngt/install \
     && make faiss/install \
@@ -115,7 +113,7 @@ RUN --mount=type=bind,target=.,rw \
     && mv "rust/target/release/${APP_NAME}" "/usr/bin/${APP_NAME}" \
     && rm -rf rust/target
 # skipcq: DOK-DL3026,DOK-DL3007
-FROM gcr.io/distroless/cc-debian12:nonroot
+FROM gcr.io/distroless/static:nonroot
 LABEL maintainer="vdaas.org vald team <vald@vdaas.org>"
 COPY --from=builder /usr/bin/agent /usr/bin/agent
 # skipcq: DOK-DL3002
