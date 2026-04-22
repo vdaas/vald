@@ -176,7 +176,7 @@ type SearchQuery struct {
 	K               uint32                              `yaml:"k,omitempty"         json:"k,omitempty"`
 	Radius          float32                             `yaml:"radius,omitempty"    json:"radius,omitempty"`
 	Epsilon         float32                             `yaml:"epsilon,omitempty"   json:"epsilon,omitempty"`
-	AlgorithmString string                              `yaml:"algorithm,omitempty" json:"algorithm_string,omitempty"`
+	AlgorithmString string                              `yaml:"algorithm,omitempty" json:"algorithm,omitempty"`
 	MinNum          uint32                              `yaml:"min_num,omitempty"   json:"min_num,omitempty"`
 	Ratio           float32                             `yaml:"ratio,omitempty"     json:"ratio,omitempty"`
 	Nprobe          uint32                              `yaml:"nprobe,omitempty"    json:"nprobe,omitempty"`
@@ -442,9 +442,13 @@ func (e *Execution) Bind(parentMetrics *Metrics) (bound *Execution, err error) {
 	}
 	switch e.Type {
 	case OpSearch,
+		OpSearchMeta,
 		OpSearchByID,
+		OpSearchByIDMeta,
 		OpLinearSearch,
+		OpLinearSearchMeta,
 		OpLinearSearchByID,
+		OpLinearSearchByIDMeta,
 		OpInsert,
 		OpInsertMeta,
 		OpUpdate,
@@ -468,9 +472,13 @@ func (e *Execution) Bind(parentMetrics *Metrics) (bound *Execution, err error) {
 		}
 		switch e.Type {
 		case OpSearch,
+			OpSearchMeta,
 			OpSearchByID,
+			OpSearchByIDMeta,
 			OpLinearSearch,
-			OpLinearSearchByID:
+			OpLinearSearchMeta,
+			OpLinearSearchByID,
+			OpLinearSearchByIDMeta:
 			if e.Search == nil {
 				return nil, errors.Errorf("missing required fields on SearchQuery for Execution %s of type %s", e.Name, e.Type)
 			}
@@ -480,8 +488,11 @@ func (e *Execution) Bind(parentMetrics *Metrics) (bound *Execution, err error) {
 				e.Search = sq
 			}
 		case OpInsert,
+			OpInsertMeta,
 			OpUpdate,
+			OpUpdateMeta,
 			OpUpsert,
+			OpUpsertMeta,
 			OpRemove,
 			OpRemoveByTimestamp:
 			if e.Modification != nil {
@@ -585,23 +596,31 @@ func (ot OperationType) Bind() (bound OperationType, err error) {
 	switch strings.TrimForCompare(config.GetActualValue(ot)) {
 	case "search", "ser", "s":
 		return OpSearch, nil
+	case "searchmeta", "sermeta", "sm":
+		return OpSearchMeta, nil
 	case "searchbyid", "serid", "sid", "sbyid":
 		return OpSearchByID, nil
+	case "searchbyidmeta", "seridmeta", "sidm", "sbyidm":
+		return OpSearchByIDMeta, nil
 	case "linearsearch", "lsearch", "lser", "ls":
 		return OpLinearSearch, nil
+	case "linearsearchmeta", "lsearchmeta", "lserm", "lsm":
+		return OpLinearSearchMeta, nil
 	case "linearsearchbyid", "lsearchbyid", "lserid", "lsbyid":
 		return OpLinearSearchByID, nil
+	case "linearsearchbyidmeta", "lsearchbyidmeta", "lseridm", "lsbyidm":
+		return OpLinearSearchByIDMeta, nil
 	case "insert", "ins", "i":
 		return OpInsert, nil
-	case "insert_meta", "insertmeta", "ins_meta", "insmeta", "im":
+	case "insertmeta", "insmeta", "im":
 		return OpInsertMeta, nil
 	case "update", "upd", "u":
 		return OpUpdate, nil
-	case "update_meta", "updatemeta", "upd_meta", "updmeta", "um":
+	case "updatemeta", "updmeta", "um":
 		return OpUpdateMeta, nil
 	case "upsert", "usert", "upst", "us":
 		return OpUpsert, nil
-	case "upsert_meta", "upsertmeta", "uerst_meta", "usertmeta", "upst_meta", "upstmeta", "usm":
+	case "upsertmeta", "usertmeta", "upstmeta", "usm":
 		return OpUpsertMeta, nil
 	case "remove", "rem", "r", "delete", "del", "d":
 		return OpRemove, nil

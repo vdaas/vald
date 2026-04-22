@@ -176,9 +176,9 @@ strategies:
                 op: ge
                 value: 3
   - concurrency: 1
-    name: Initial Insert and Wait
+    name: Initial InsertMeta and Wait
     operations:
-      - name: Insert -> IndexInfo
+      - name: InsertMeta -> IndexInfo
         executions:
           - name: Flush
             mode: unary
@@ -189,154 +189,154 @@ strategies:
             type: index_info
             expect:
               - value: {}
-          - name: Insert
+          - name: InsertMeta
             type: insert_meta
             mode: unary
             parallelism: _E2E_PARALLELISM_
             num: _E2E_INSERT_COUNT_
             qps: _E2E_QPS_
-            wait: 2m
+            wait: 5m
           - mode: unary
             name: IndexInfo
             type: index_info
-            retry_until_success_timeout: 5m
+            retry_until_success_timeout: 30m
             expect:
               - status_code: ok
                 path: $.stored
                 value: _E2E_EXPECTED_INDEX_
   - concurrency: 4
-    name: Parallel Search Opeation (Search, SearchByID, LinearSearch, LinearSearchByID) x (ConcurrentQueue, SortSlice, SortPoolSlice, PairingHeap) = 16
+    name: Parallel SearchMeta Opeation (SearchMeta, SearchByIDMeta, LinearSearchMeta, LinearSearchByIDMeta) x (ConcurrentQueue, SortSlice, SortPoolSlice, PairingHeap) = 16
     operations:
-      - name: Search Operation
+      - name: SearchMeta Operation
         executions:
-          - name: Search with ConcurrentQueue
-            type: search
+          - name: SearchMeta with ConcurrentQueue
+            type: search_meta
             mode: unary
             parallelism: _E2E_PARALLELISM_
             num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: cq
-          - name: Search with SortSlice
-            type: search
+          - name: SearchMeta with SortSlice
+            type: search_meta
             mode: unary
             parallelism: _E2E_PARALLELISM_
             num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: ss
-          - name: Search with SortPoolSlice
-            type: search
+          - name: SearchMeta with SortPoolSlice
+            type: search_meta
             mode: unary
             parallelism: _E2E_PARALLELISM_
             num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: ps
-          - name: Search with PairingHeap
-            type: search
+          - name: SearchMeta with PairingHeap
+            type: search_meta
             mode: unary
             parallelism: _E2E_PARALLELISM_
             num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: ph
-      - name: SearchByID Operation
+      - name: SearchByIDMeta Operation
         executions:
-          - name: SearchByID with ConcurrentQueue
-            type: search_by_id
+          - name: SearchByIDMeta with ConcurrentQueue
+            type: search_by_id_meta
             mode: unary
             parallelism: _E2E_PARALLELISM_
             num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: cq
-          - name: SearchByID with SortSlice
-            type: search_by_id
+          - name: SearchByIDMeta with SortSlice
+            type: search_by_id_meta
             mode: unary
             parallelism: _E2E_PARALLELISM_
             num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: ss
-          - name: SearchByID with SortPoolSlice
-            type: search_by_id
+          - name: SearchByIDMeta with SortPoolSlice
+            type: search_by_id_meta
             mode: unary
             parallelism: _E2E_PARALLELISM_
             num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: ps
-          - name: SearchByID with PairingHeap
-            type: search_by_id
+          - name: SearchByIDMeta with PairingHeap
+            type: search_by_id_meta
             mode: unary
             parallelism: _E2E_PARALLELISM_
             num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: ph
-      - name: LinearSearch Operation
+      - name: LinearSearchMeta Operation
         executions:
-          - name: LinearSearch with ConcurrentQueue
-            type: linear_search
+          - name: LinearSearchMeta with ConcurrentQueue
+            type: linear_search_meta
             mode: unary
             parallelism: _E2E_PARALLELISM_
             num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: cq
-          - name: LinearSearch with SortSlice
-            type: linear_search
+          - name: LinearSearchMeta with SortSlice
+            type: linear_search_meta
             mode: unary
             parallelism: _E2E_PARALLELISM_
             num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: ss
-          - name: LinearSearch with SortPoolSlice
-            type: linear_search
+          - name: LinearSearchMeta with SortPoolSlice
+            type: linear_search_meta
             mode: unary
             parallelism: _E2E_PARALLELISM_
             num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: ps
-          - name: LinearSearch with PairingHeap
-            type: linear_search
+          - name: LinearSearchMeta with PairingHeap
+            type: linear_search_meta
             mode: unary
             parallelism: _E2E_PARALLELISM_
             num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: ph
-      - name: LinearSearchByID Operation
+      - name: LinearSearchByIDMeta Operation
         executions:
-          - name: LinearSearchByID with ConcurrentQueue
-            type: linear_search_by_id
+          - name: LinearSearchByIDMeta with ConcurrentQueue
+            type: linear_search_by_id_meta
             mode: unary
             parallelism: _E2E_PARALLELISM_
             num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: cq
-          - name: LinearSearchByID with SortSlice
-            type: linear_search_by_id
+          - name: LinearSearchByIDMeta with SortSlice
+            type: linear_search_by_id_meta
             mode: unary
             parallelism: _E2E_PARALLELISM_
             num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: ss
-          - name: LinearSearchByID with SortPoolSlice
-            type: linear_search_by_id
+          - name: LinearSearchByIDMeta with SortPoolSlice
+            type: linear_search_by_id_meta
             mode: unary
             parallelism: _E2E_PARALLELISM_
             num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: ps
-          - name: LinearSearchByID with PairingHeap
-            type: linear_search_by_id
+          - name: LinearSearchByIDMeta with PairingHeap
+            type: linear_search_by_id_meta
             mode: unary
             parallelism: _E2E_PARALLELISM_
             num: _E2E_SEARCH_COUNT_

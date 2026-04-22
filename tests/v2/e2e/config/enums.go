@@ -23,10 +23,14 @@ package config
 type OperationType string
 
 const (
-	OpSearch           OperationType = "search"
-	OpSearchByID       OperationType = "search_by_id"
-	OpLinearSearch     OperationType = "linear_search"
-	OpLinearSearchByID OperationType = "linear_search_by_id"
+	OpSearch               OperationType = "search"
+	OpSearchMeta           OperationType = "search_meta"
+	OpSearchByID           OperationType = "search_by_id"
+	OpSearchByIDMeta       OperationType = "search_by_id_meta"
+	OpLinearSearch         OperationType = "linear_search"
+	OpLinearSearchMeta     OperationType = "linear_search_meta"
+	OpLinearSearchByID     OperationType = "linear_search_by_id"
+	OpLinearSearchByIDMeta OperationType = "linear_search_by_id_meta"
 
 	OpInsert            OperationType = "insert"
 	OpInsertMeta        OperationType = "insert_meta"
