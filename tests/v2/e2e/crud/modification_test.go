@@ -241,8 +241,19 @@ func (r *runner) processModification(
 		case config.OperationStream:
 			stream(t, ctx, train, plan, r.client.StreamRemove, removeRequest)
 		}
+	case config.OpRemoveMeta:
+		switch plan.Mode {
+		case config.OperationUnary, config.OperationOther:
+			return unary(t, ctx, train, plan, r.client.RemoveWithMetadata, removeRequest)
+		case config.OperationMultiple:
+			return multi(t, ctx, train, plan, r.client.MultiRemoveWithMetadata, removeRequest, removeMultipleRequest)
+		case config.OperationStream:
+			stream(t, ctx, train, plan, r.client.StreamRemoveWithMetadata, removeRequest)
+		}
 	case config.OpRemoveByTimestamp:
 		return single(t, ctx, 0, plan, removeByTimestampRequest(t, 0, "", nil, plan), r.client.RemoveByTimestamp)
+	case config.OpRemoveByTimestampMeta:
+		return single(t, ctx, 0, plan, removeByTimestampRequest(t, 0, "", nil, plan), r.client.RemoveByTimestampWithMetadata)
 	}
 	return nil
 }

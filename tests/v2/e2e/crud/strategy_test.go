@@ -250,7 +250,9 @@ func (r *runner) processExecution(
 				config.OpUpsert,
 				config.OpUpsertMeta,
 				config.OpRemove,
+				config.OpRemoveMeta,
 				config.OpRemoveByTimestamp,
+				config.OpRemoveByTimestampMeta,
 				config.OpObject,
 				config.OpListObject,
 				config.OpTimestamp,
@@ -282,7 +284,9 @@ func (r *runner) processExecution(
 					config.OpUpsert,
 					config.OpUpsertMeta,
 					config.OpRemove,
-					config.OpRemoveByTimestamp:
+					config.OpRemoveMeta,
+					config.OpRemoveByTimestamp,
+					config.OpRemoveByTimestampMeta:
 					return r.processModification(ttt, ctx, train, e)
 				case config.OpObject,
 					config.OpListObject,

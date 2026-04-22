@@ -456,7 +456,9 @@ func (e *Execution) Bind(parentMetrics *Metrics) (bound *Execution, err error) {
 		OpUpsert,
 		OpUpsertMeta,
 		OpRemove,
+		OpRemoveMeta,
 		OpRemoveByTimestamp,
+		OpRemoveByTimestampMeta,
 		OpObject,
 		OpListObject,
 		OpTimestamp,
@@ -494,7 +496,9 @@ func (e *Execution) Bind(parentMetrics *Metrics) (bound *Execution, err error) {
 			OpUpsert,
 			OpUpsertMeta,
 			OpRemove,
-			OpRemoveByTimestamp:
+			OpRemoveMeta,
+			OpRemoveByTimestamp,
+			OpRemoveByTimestampMeta:
 			if e.Modification != nil {
 				if m, err := e.Modification.Bind(); err != nil {
 					return nil, errors.Wrapf(err, "failed to bind ModificationConfig for Execution %s of type %s", e.Name, e.Type)
@@ -624,8 +628,12 @@ func (ot OperationType) Bind() (bound OperationType, err error) {
 		return OpUpsertMeta, nil
 	case "remove", "rem", "r", "delete", "del", "d":
 		return OpRemove, nil
+	case "removemeta", "remmeta", "rm", "deletemeta", "delmeta", "dm":
+		return OpRemoveMeta, nil
 	case "removebytimestamp", "removets", "remts", "rmts", "dts":
 		return OpRemoveByTimestamp, nil
+	case "removebytimestampmeta", "removetsmeta", "remtsm", "rmtsm", "dtsm":
+		return OpRemoveByTimestampMeta, nil
 	case "object", "obj", "o":
 		return OpObject, nil
 	case "listobject", "listobj", "lobj", "lo":
