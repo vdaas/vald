@@ -14,23 +14,5 @@
 // limitations under the License.
 //
 
-package grpc
-
-import (
-	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/pkg/tools/embedder/service"
-)
-
-type Option func(*server) error
-
-var defaultOptions = []Option{}
-
-func WithEmbedder(e service.Embedder) Option {
-	return func(s *server) error {
-		if e == nil {
-			return errors.New("embedder is nil")
-		}
-		s.embedder = e
-		return nil
-	}
-}
+// Package main provides the embedder tool entrypoint.
+package main

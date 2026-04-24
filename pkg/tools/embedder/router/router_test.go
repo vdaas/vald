@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package router provides implementation of Go API for routing http Handler wrapped by rest.Func
 package router
 
 import (
@@ -23,7 +22,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/net/http/routing"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/tools/embedder/handler/rest"
@@ -31,189 +29,50 @@ import (
 
 func TestNew(t *testing.T) {
 	t.Parallel()
-	type args struct {
-		opts []Option
+	defer goleak.VerifyNone(t, goleak.IgnoreCurrent())
+
+	h := rest.New()
+	got := New(WithHandler(h), WithErrGroup(errgroup.Get()))
+	gh, ok := got.(*mux.Router)
+	if !ok {
+		t.Fatal("type cast got failed")
 	}
-	type want struct {
-		routes []routing.Route
+
+	routes := map[string]string{
+		"Index":                "/",
+		"Search":               "/search",
+		"LinearSearch":         "/linearsearch",
+		"Insert":               "/insert",
+		"Insert With Metadata": "/insert/with-metadata",
+		"Update":               "/update",
+		"Update With Metadata": "/update/with-metadata",
+		"Upsert":               "/upsert",
+		"Upsert With Metadata": "/upsert/with-metadata",
+		"Remove":               "/remove",
+		"Remove With Metadata": "/remove/with-metadata",
+		"Embedding":            "/embedding",
 	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, http.Handler) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, got http.Handler) error {
-		gh, ok := got.(*mux.Router)
-		if !ok {
-			return errors.New("type cast got failed")
+	for name, pattern := range routes {
+		route := gh.Get(name)
+		if route == nil {
+			t.Fatal(errors.Errorf("route not found: %s", name))
 		}
-		for _, r := range w.routes {
-			gotR := gh.Get(r.Name)
-			if gotR == nil {
-				return errors.Errorf("route not found: %s", r.Name)
-			}
-
-			if gotR.GetHandler() == nil {
-				return errors.Errorf("handler not found: %s", r.Name)
-			}
-
-			gotP, err := gotR.GetPathRegexp()
-			if err != nil {
-				return err
-			}
-			if gotP == "" {
-				return errors.Errorf("pattern is empty: %s", r.Name)
-			}
+		methods, err := route.GetMethods()
+		if err != nil {
+			t.Fatal(err)
 		}
-		return nil
-	}
-	tests := []test{
-		func() test {
-			h := rest.New()
-			eg := errgroup.Get()
-
-			return test{
-				name: "return handlers",
-				args: args{
-					opts: []Option{
-						WithHandler(h),
-						WithErrGroup(eg),
-					},
-				},
-				want: want{
-					routes: []routing.Route{
-						{
-							Name: "Index",
-							Methods: []string{
-								http.MethodGet,
-							},
-							Pattern:     "/",
-							HandlerFunc: h.Index,
-						},
-						{
-							Name: "Search",
-							Methods: []string{
-								http.MethodPost,
-							},
-							Pattern:     "/search",
-							HandlerFunc: h.Search,
-						},
-						{
-							Name: "Search By ID",
-							Methods: []string{
-								http.MethodPost,
-							},
-							Pattern:     "/id/search",
-							HandlerFunc: h.SearchByID,
-						},
-						{
-							Name: "Insert",
-							Methods: []string{
-								http.MethodPost,
-							},
-							Pattern:     "/insert",
-							HandlerFunc: h.Insert,
-						},
-						{
-							Name: "Multiple Insert",
-							Methods: []string{
-								http.MethodPost,
-							},
-							Pattern:     "/insert/multi",
-							HandlerFunc: h.MultiInsert,
-						},
-						{
-							Name: "Update",
-							Methods: []string{
-								http.MethodPost,
-								http.MethodPatch,
-								http.MethodPut,
-							},
-							Pattern:     "/update",
-							HandlerFunc: h.Update,
-						},
-						{
-							Name: "Multiple Update",
-							Methods: []string{
-								http.MethodPost,
-								http.MethodPatch,
-								http.MethodPut,
-							},
-							Pattern:     "/update/multi",
-							HandlerFunc: h.MultiUpdate,
-						},
-						{
-							Name: "Remove",
-							Methods: []string{
-								http.MethodDelete,
-							},
-							Pattern:     "/delete",
-							HandlerFunc: h.Remove,
-						},
-						{
-							Name: "Multiple Remove",
-							Methods: []string{
-								http.MethodDelete,
-								http.MethodPost,
-							},
-							Pattern:     "/delete/multi",
-							HandlerFunc: h.MultiRemove,
-						},
-						{
-							Name: "Create Index",
-							Methods: []string{
-								http.MethodPost,
-							},
-							Pattern:     "/index/create",
-							HandlerFunc: h.CreateIndex,
-						},
-						{
-							Name: "Save Index",
-							Methods: []string{
-								http.MethodGet,
-							},
-							Pattern:     "/index/save",
-							HandlerFunc: h.SaveIndex,
-						},
-						{
-							Name: "GetObject",
-							Methods: []string{
-								http.MethodGet,
-							},
-							Pattern:     "/object/{id}",
-							HandlerFunc: h.GetObject,
-						},
-					},
-				},
-			}
-		}(),
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			got := New(test.args.opts...)
-			if err := checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
+		if name == "Index" && methods[0] != http.MethodGet {
+			t.Errorf("method = %s, want %s", methods[0], http.MethodGet)
+		}
+		if name != "Index" && methods[0] != http.MethodPost {
+			t.Errorf("method = %s, want %s", methods[0], http.MethodPost)
+		}
+		gotPattern, err := route.GetPathTemplate()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if gotPattern != pattern {
+			t.Errorf("pattern = %s, want %s", gotPattern, pattern)
+		}
 	}
 }
-
-// NOT IMPLEMENTED BELOW

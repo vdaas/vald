@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -19,15 +19,13 @@ package usecase
 import (
 	"context"
 
-	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
-	vald "github.com/vdaas/vald/apis/grpc/v1/vald"
+	embedderpb "github.com/vdaas/vald/apis/grpc/v1/embedder"
+	vclient "github.com/vdaas/vald/internal/client/v1/client/vald"
 	iconf "github.com/vdaas/vald/internal/config"
-	"github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability"
 	infometrics "github.com/vdaas/vald/internal/observability/metrics/info"
 	memmetrics "github.com/vdaas/vald/internal/observability/metrics/mem"
-	ngtmetrics "github.com/vdaas/vald/internal/observability/metrics/tools/embedder"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -42,123 +40,67 @@ import (
 
 type run struct {
 	eg            errgroup.Group
-	cfg           *config.Data
-	ngt           service.NGT
+	valdClient    vclient.Client
+	metaClient    service.MetaClient
 	server        starter.Server
 	observability observability.Observability
 }
 
-const (
-	fieldManager = "vald-agent-index-controller"
-)
-
-func New(cfg *config.Data) (r runner.Runner, err error) {
-	serviceOpts := []service.Option{
-		service.WithErrGroup(errgroup.Get()),
-		service.WithEnableInMemoryMode(cfg.NGT.EnableInMemoryMode),
-		service.WithIndexPath(cfg.NGT.IndexPath),
-		service.WithAutoIndexCheckDuration(cfg.NGT.AutoIndexCheckDuration),
-		service.WithAutoIndexDurationLimit(cfg.NGT.AutoIndexDurationLimit),
-		service.WithAutoSaveIndexDuration(cfg.NGT.AutoSaveIndexDuration),
-		service.WithAutoIndexLength(cfg.NGT.AutoIndexLength),
-		service.WithInitialDelayMaxDuration(cfg.NGT.InitialDelayMaxDuration),
-		service.WithMinLoadIndexTimeout(cfg.NGT.MinLoadIndexTimeout),
-		service.WithMaxLoadIndexTimeout(cfg.NGT.MaxLoadIndexTimeout),
-		service.WithLoadIndexTimeoutFactor(cfg.NGT.LoadIndexTimeoutFactor),
-		service.WithDefaultPoolSize(cfg.NGT.DefaultPoolSize),
-		service.WithDefaultRadius(cfg.NGT.DefaultRadius),
-		service.WithDefaultEpsilon(cfg.NGT.DefaultEpsilon),
-		service.WithProactiveGC(cfg.NGT.EnableProactiveGC),
-		service.WithCopyOnWrite(cfg.NGT.EnableCopyOnWrite),
-		service.WithIsReadReplica(cfg.NGT.IsReadReplica),
-		service.WithEnableStatistics(cfg.NGT.EnableStatistics),
+func New(cfg *config.Data) (runner.Runner, error) {
+	eg := errgroup.Get()
+	copts, err := cfg.Client.Opts()
+	if err != nil {
+		return nil, err
 	}
-	if cfg.NGT.EnableExportIndexInfoToK8s {
-		patcher, err := client.NewPatcher(fieldManager)
+	valdClient, err := vclient.New(vclient.WithClient(grpc.New("Embedder Vald Client", append(copts, grpc.WithErrGroup(eg))...)))
+	if err != nil {
+		return nil, err
+	}
+	openAI, err := service.NewOpenAI(service.WithToken(cfg.LLM.OpenAI.Token), service.WithOpenAIModel(cfg.LLM.OpenAI.Model))
+	if err != nil {
+		return nil, err
+	}
+	serviceOpts := []service.Option{service.WithValdClient(valdClient), service.WithLLM(openAI)}
+	var metaClient service.MetaClient
+	if cfg.Meta != nil && cfg.Meta.Client != nil && len(cfg.Meta.Client.Addrs) != 0 {
+		mopts, err := cfg.Meta.Client.Opts()
 		if err != nil {
 			return nil, err
 		}
-		serviceOpts = append(serviceOpts,
-			service.WithPatcher(patcher),
-			service.WithExportIndexInfoDuration(cfg.NGT.ExportIndexInfoDuration),
-		)
+		metaClient, err = service.NewMetaClient(grpc.New("Embedder Meta Client", append(mopts, grpc.WithErrGroup(eg))...))
+		if err != nil {
+			return nil, err
+		}
+		serviceOpts = append(serviceOpts, service.WithMetaClient(metaClient))
 	}
-	ngt, err := service.New(
-		cfg.NGT,
-		serviceOpts...,
-	)
+	embedderService, err := service.New(serviceOpts...)
 	if err != nil {
 		return nil, err
 	}
-
-	g, err := handler.New(
-		handler.WithNGT(ngt),
-		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
-	)
+	g, err := handler.New(handler.WithEmbedder(embedderService))
 	if err != nil {
 		return nil, err
 	}
-	eg := errgroup.Get()
-
-	grpcServerOptions := []server.Option{
-		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-			agent.RegisterAgentServer(srv, g)
-			vald.RegisterValdServer(srv, g)
-		}),
-		server.WithPreStartFunc(func() error {
-			return nil
-		}),
-		server.WithPreStopFunction(func() error {
-			return nil
-		}),
-	}
-
 	var obs observability.Observability
 	if cfg.Observability != nil && cfg.Observability.Enabled {
-		obs, err = observability.NewWithConfig(
-			cfg.Observability,
-			ngtmetrics.New(ngt),
-			infometrics.New("agent_core_ngt_info", "Agent NGT info", *cfg.NGT),
-			memmetrics.New(),
-		)
+		obs, err = observability.NewWithConfig(cfg.Observability, infometrics.New("embedder_info", "Embedder info", cfg.GlobalConfig), memmetrics.New())
 		if err != nil {
 			return nil, err
 		}
 	}
-
 	srv, err := starter.New(
 		starter.WithConfig(cfg.Server),
 		starter.WithREST(func(sc *iconf.Server) []server.Option {
-			return []server.Option{
-				server.WithHTTPHandler(
-					router.New(
-						router.WithTimeout(sc.HTTP.HandlerTimeout),
-						router.WithErrGroup(eg),
-						router.WithHandler(
-							rest.New(
-								rest.WithAgent(g),
-							),
-						),
-					),
-				),
-			}
+			return []server.Option{server.WithHTTPHandler(router.New(router.WithTimeout(sc.HTTP.HandlerTimeout), router.WithErrGroup(eg), router.WithHandler(rest.New(rest.WithEmbedder(g)))))}
 		}),
 		starter.WithGRPC(func(sc *iconf.Server) []server.Option {
-			return grpcServerOptions
+			return []server.Option{server.WithGRPCRegisterar(func(srv *grpc.Server) { embedderpb.RegisterEmbedderServer(srv, g) })}
 		}),
-		// TODO add GraphQL handler
 	)
 	if err != nil {
 		return nil, err
 	}
-
-	return &run{
-		eg:            eg,
-		ngt:           ngt,
-		cfg:           cfg,
-		server:        srv,
-		observability: obs,
-	}, nil
+	return &run{eg: eg, valdClient: valdClient, metaClient: metaClient, server: srv, observability: obs}, nil
 }
 
 func (r *run) PreStart(ctx context.Context) error {
@@ -169,21 +111,31 @@ func (r *run) PreStart(ctx context.Context) error {
 }
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 3)
-	var oech, nech, sech <-chan error
+	ech := make(chan error, 4)
+	var oech, vech, mech, sech <-chan error
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
 		if r.observability != nil {
 			oech = r.observability.Start(ctx)
 		}
-		nech = r.ngt.Start(ctx)
+		vech, err = r.valdClient.Start(ctx)
+		if err != nil {
+			return err
+		}
+		if r.metaClient != nil {
+			mech, err = r.metaClient.Start(ctx)
+			if err != nil {
+				return err
+			}
+		}
 		sech = r.server.ListenAndServe(ctx)
 		for {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
 			case err = <-oech:
-			case err = <-nech:
+			case err = <-vech:
+			case err = <-mech:
 			case err = <-sech:
 			}
 			if err != nil {
@@ -198,7 +150,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (*run) PreStop(ctx context.Context) error {
+func (*run) PreStop(context.Context) error {
 	return nil
 }
 
@@ -206,10 +158,19 @@ func (r *run) Stop(ctx context.Context) error {
 	if r.observability != nil {
 		r.observability.Stop(ctx)
 	}
+	if r.metaClient != nil {
+		if err := r.metaClient.Stop(ctx); err != nil {
+			return err
+		}
+	}
+	if r.valdClient != nil {
+		if err := r.valdClient.Stop(ctx); err != nil {
+			return err
+		}
+	}
 	return r.server.Shutdown(ctx)
 }
 
-func (r *run) PostStop(ctx context.Context) error {
-	r.ngt.Close(ctx)
+func (*run) PostStop(context.Context) error {
 	return nil
 }

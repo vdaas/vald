@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -26,31 +26,130 @@ option java_multiple_files = true;
 option java_outer_classname = "ValdEmbedder";
 option java_package = "org.vdaas.vald.api.v1.embedder";
 
-service Embedder {
-  rpc Insert(payload.v1.Object.Blob) returns (payload.v1.Object.Location) {
-    option (google.api.http) = {
-      post: "/insert"
-      body: "*"
-    };
-  }
+message Text {
+  string text = 1;
+}
 
-  rpc Search(payload.v1.Object.Blob) returns (payload.v1.Search.Response) {
+message Document {
+  string id = 1;
+  string text = 2;
+  int64 timestamp = 3;
+}
+
+message SearchRequest {
+  string text = 1;
+  payload.v1.Search.Config config = 2;
+}
+
+message InsertRequest {
+  Document document = 1;
+  payload.v1.Insert.Config config = 2;
+}
+
+message InsertWithMetadataRequest {
+  InsertRequest request = 1;
+  payload.v1.Meta.Value metadata = 2;
+}
+
+message UpdateRequest {
+  Document document = 1;
+  payload.v1.Update.Config config = 2;
+}
+
+message UpdateWithMetadataRequest {
+  UpdateRequest request = 1;
+  payload.v1.Meta.Value metadata = 2;
+}
+
+message UpsertRequest {
+  Document document = 1;
+  payload.v1.Upsert.Config config = 2;
+}
+
+message UpsertWithMetadataRequest {
+  UpsertRequest request = 1;
+  payload.v1.Meta.Value metadata = 2;
+}
+
+message RemoveRequest {
+  string id = 1;
+  payload.v1.Remove.Config config = 2;
+}
+
+service Embedder {
+  rpc Search(SearchRequest) returns (payload.v1.Search.Response) {
     option (google.api.http) = {
       post: "/search"
       body: "*"
     };
   }
 
-  rpc Embedding(payload.v1.Object.Blob) returns (payload.v1.Object.Vector) {
+  rpc LinearSearch(SearchRequest) returns (payload.v1.Search.Response) {
     option (google.api.http) = {
-      post: "/embedding"
+      post: "/linearsearch"
       body: "*"
     };
   }
 
-  rpc Commit(payload.v1.Empty) returns (payload.v1.Empty) {
+  rpc Insert(InsertRequest) returns (payload.v1.Object.Location) {
     option (google.api.http) = {
-      post: "/commit"
+      post: "/insert"
+      body: "*"
+    };
+  }
+
+  rpc InsertWithMetadata(InsertWithMetadataRequest) returns (payload.v1.Object.Location) {
+    option (google.api.http) = {
+      post: "/insert/with-metadata"
+      body: "*"
+    };
+  }
+
+  rpc Update(UpdateRequest) returns (payload.v1.Object.Location) {
+    option (google.api.http) = {
+      post: "/update"
+      body: "*"
+    };
+  }
+
+  rpc UpdateWithMetadata(UpdateWithMetadataRequest) returns (payload.v1.Object.Location) {
+    option (google.api.http) = {
+      post: "/update/with-metadata"
+      body: "*"
+    };
+  }
+
+  rpc Upsert(UpsertRequest) returns (payload.v1.Object.Location) {
+    option (google.api.http) = {
+      post: "/upsert"
+      body: "*"
+    };
+  }
+
+  rpc UpsertWithMetadata(UpsertWithMetadataRequest) returns (payload.v1.Object.Location) {
+    option (google.api.http) = {
+      post: "/upsert/with-metadata"
+      body: "*"
+    };
+  }
+
+  rpc Remove(RemoveRequest) returns (payload.v1.Object.Location) {
+    option (google.api.http) = {
+      post: "/remove"
+      body: "*"
+    };
+  }
+
+  rpc RemoveWithMetadata(RemoveRequest) returns (payload.v1.Object.Location) {
+    option (google.api.http) = {
+      post: "/remove/with-metadata"
+      body: "*"
+    };
+  }
+
+  rpc Embedding(Text) returns (payload.v1.Object.Vector) {
+    option (google.api.http) = {
+      post: "/embedding"
       body: "*"
     };
   }

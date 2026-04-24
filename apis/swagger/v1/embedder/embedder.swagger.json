@@ -12,37 +12,6 @@
   "consumes": ["application/json"],
   "produces": ["application/json"],
   "paths": {
-    "/commit": {
-      "post": {
-        "operationId": "Embedder_Commit",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1Empty"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "description": "Represent an empty message.",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/v1Empty"
-            }
-          }
-        ],
-        "tags": ["Embedder"]
-      }
-    },
     "/embedding": {
       "post": {
         "operationId": "Embedder_Embedding",
@@ -63,11 +32,10 @@
         "parameters": [
           {
             "name": "body",
-            "description": "Represent the binary object.",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/ObjectBlob"
+              "$ref": "#/definitions/v1Text"
             }
           }
         ],
@@ -94,11 +62,130 @@
         "parameters": [
           {
             "name": "body",
-            "description": "Represent the binary object.",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/ObjectBlob"
+              "$ref": "#/definitions/v1InsertRequest"
+            }
+          }
+        ],
+        "tags": ["Embedder"]
+      }
+    },
+    "/insert/with-metadata": {
+      "post": {
+        "operationId": "Embedder_InsertWithMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ObjectLocation"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1InsertWithMetadataRequest"
+            }
+          }
+        ],
+        "tags": ["Embedder"]
+      }
+    },
+    "/linearsearch": {
+      "post": {
+        "operationId": "Embedder_LinearSearch",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/SearchResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SearchRequest"
+            }
+          }
+        ],
+        "tags": ["Embedder"]
+      }
+    },
+    "/remove": {
+      "post": {
+        "operationId": "Embedder_Remove",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ObjectLocation"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RemoveRequest"
+            }
+          }
+        ],
+        "tags": ["Embedder"]
+      }
+    },
+    "/remove/with-metadata": {
+      "post": {
+        "operationId": "Embedder_RemoveWithMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ObjectLocation"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RemoveRequest"
             }
           }
         ],
@@ -112,7 +199,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1SearchResponse"
+              "$ref": "#/definitions/SearchResponse"
             }
           },
           "default": {
@@ -125,11 +212,130 @@
         "parameters": [
           {
             "name": "body",
-            "description": "Represent the binary object.",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/ObjectBlob"
+              "$ref": "#/definitions/v1SearchRequest"
+            }
+          }
+        ],
+        "tags": ["Embedder"]
+      }
+    },
+    "/update": {
+      "post": {
+        "operationId": "Embedder_Update",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ObjectLocation"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateRequest"
+            }
+          }
+        ],
+        "tags": ["Embedder"]
+      }
+    },
+    "/update/with-metadata": {
+      "post": {
+        "operationId": "Embedder_UpdateWithMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ObjectLocation"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateWithMetadataRequest"
+            }
+          }
+        ],
+        "tags": ["Embedder"]
+      }
+    },
+    "/upsert": {
+      "post": {
+        "operationId": "Embedder_Upsert",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ObjectLocation"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpsertRequest"
+            }
+          }
+        ],
+        "tags": ["Embedder"]
+      }
+    },
+    "/upsert/with-metadata": {
+      "post": {
+        "operationId": "Embedder_UpsertWithMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ObjectLocation"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpsertWithMetadataRequest"
             }
           }
         ],
@@ -138,20 +344,28 @@
     }
   },
   "definitions": {
-    "ObjectBlob": {
+    "FilterTarget": {
       "type": "object",
       "properties": {
-        "id": {
+        "host": {
           "type": "string",
-          "description": "The object ID."
+          "description": "The target hostname."
         },
-        "object": {
-          "type": "string",
-          "format": "byte",
-          "description": "The binary object."
+        "port": {
+          "type": "integer",
+          "format": "int64",
+          "description": "The target port."
         }
       },
-      "description": "Represent the binary object."
+      "description": "Represent the target filter server."
+    },
+    "MetaValue": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "$ref": "#/definitions/protobufAny"
+        }
+      }
     },
     "ObjectDistance": {
       "type": "object",
@@ -191,6 +405,36 @@
       },
       "description": "Represent a vector."
     },
+    "SearchAggregationAlgorithm": {
+      "type": "string",
+      "enum": [
+        "Unknown",
+        "ConcurrentQueue",
+        "SortSlice",
+        "SortPoolSlice",
+        "PairingHeap"
+      ],
+      "default": "Unknown",
+      "title": "AggregationAlgorithm is enum of each aggregation algorithms"
+    },
+    "SearchResponse": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string",
+          "description": "The unique request ID."
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/ObjectDistance"
+          },
+          "description": "Search results."
+        }
+      },
+      "description": "Represent a search response."
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -225,9 +469,75 @@
       },
       "description": "The `Status` type defines a logical error model that is suitable for\ndifferent programming environments, including REST APIs and RPC APIs. It is\nused by [gRPC](https://github.com/grpc). Each `Status` message contains\nthree pieces of data: error code, error message, and error details.\n\nYou can find out more about this error model and how to work with it in the\n[API Design Guide](https://cloud.google.com/apis/design/errors)."
     },
-    "v1Empty": {
+    "v1Document": {
       "type": "object",
-      "description": "Represent an empty message."
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "v1FilterConfig": {
+      "type": "object",
+      "properties": {
+        "targets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/FilterTarget"
+          },
+          "description": "Represent the filter target configuration."
+        }
+      },
+      "description": "Represent filter configuration."
+    },
+    "v1InsertConfig": {
+      "type": "object",
+      "properties": {
+        "skipStrictExistCheck": {
+          "type": "boolean",
+          "description": "A flag to skip exist check during insert operation."
+        },
+        "filters": {
+          "$ref": "#/definitions/v1FilterConfig",
+          "description": "Filter configurations."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "int64",
+          "description": "Insert timestamp."
+        }
+      },
+      "description": "Represent insert configurations."
+    },
+    "v1InsertRequest": {
+      "type": "object",
+      "properties": {
+        "document": {
+          "$ref": "#/definitions/v1Document"
+        },
+        "config": {
+          "$ref": "#/definitions/v1InsertConfig"
+        }
+      }
+    },
+    "v1InsertWithMetadataRequest": {
+      "type": "object",
+      "properties": {
+        "request": {
+          "$ref": "#/definitions/v1InsertRequest"
+        },
+        "metadata": {
+          "$ref": "#/definitions/MetaValue"
+        }
+      }
     },
     "v1ObjectLocation": {
       "type": "object",
@@ -250,23 +560,202 @@
       },
       "description": "Represent the vector location."
     },
-    "v1SearchResponse": {
+    "v1RemoveConfig": {
+      "type": "object",
+      "properties": {
+        "skipStrictExistCheck": {
+          "type": "boolean",
+          "description": "A flag to skip exist check during upsert operation."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "int64",
+          "description": "Remove timestamp."
+        }
+      },
+      "description": "Represent the remove configuration."
+    },
+    "v1RemoveRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "config": {
+          "$ref": "#/definitions/v1RemoveConfig"
+        }
+      }
+    },
+    "v1SearchConfig": {
       "type": "object",
       "properties": {
         "requestId": {
           "type": "string",
-          "description": "The unique request ID."
+          "description": "Unique request ID."
         },
-        "results": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/ObjectDistance"
-          },
-          "description": "Search results."
+        "num": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Maximum number of result to be returned."
+        },
+        "radius": {
+          "type": "number",
+          "format": "float",
+          "description": "Search radius."
+        },
+        "epsilon": {
+          "type": "number",
+          "format": "float",
+          "description": "Search coefficient."
+        },
+        "timeout": {
+          "type": "string",
+          "format": "int64",
+          "description": "Search timeout in nanoseconds."
+        },
+        "ingressFilters": {
+          "$ref": "#/definitions/v1FilterConfig",
+          "description": "Ingress filter configurations."
+        },
+        "egressFilters": {
+          "$ref": "#/definitions/v1FilterConfig",
+          "description": "Egress filter configurations."
+        },
+        "minNum": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Minimum number of result to be returned."
+        },
+        "aggregationAlgorithm": {
+          "$ref": "#/definitions/SearchAggregationAlgorithm",
+          "title": "Aggregation Algorithm"
+        },
+        "ratio": {
+          "type": "number",
+          "format": "float",
+          "description": "Search ratio for agent return result number."
+        },
+        "nprobe": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Search nprobe."
+        },
+        "edgeSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Search edge size"
         }
       },
-      "description": "Represent a search response."
+      "description": "Represent search configuration."
+    },
+    "v1SearchRequest": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "config": {
+          "$ref": "#/definitions/v1SearchConfig"
+        }
+      }
+    },
+    "v1Text": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        }
+      }
+    },
+    "v1UpdateConfig": {
+      "type": "object",
+      "properties": {
+        "skipStrictExistCheck": {
+          "type": "boolean",
+          "description": "A flag to skip exist check during update operation."
+        },
+        "filters": {
+          "$ref": "#/definitions/v1FilterConfig",
+          "description": "Filter configuration."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "int64",
+          "description": "Update timestamp."
+        },
+        "disableBalancedUpdate": {
+          "type": "boolean",
+          "description": "A flag to disable balanced update (split remove -\u003e insert operation)\nduring update operation."
+        }
+      },
+      "description": "Represent the update configuration."
+    },
+    "v1UpdateRequest": {
+      "type": "object",
+      "properties": {
+        "document": {
+          "$ref": "#/definitions/v1Document"
+        },
+        "config": {
+          "$ref": "#/definitions/v1UpdateConfig"
+        }
+      }
+    },
+    "v1UpdateWithMetadataRequest": {
+      "type": "object",
+      "properties": {
+        "request": {
+          "$ref": "#/definitions/v1UpdateRequest"
+        },
+        "metadata": {
+          "$ref": "#/definitions/MetaValue"
+        }
+      }
+    },
+    "v1UpsertConfig": {
+      "type": "object",
+      "properties": {
+        "skipStrictExistCheck": {
+          "type": "boolean",
+          "description": "A flag to skip exist check during upsert operation."
+        },
+        "filters": {
+          "$ref": "#/definitions/v1FilterConfig",
+          "description": "Filter configuration."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "int64",
+          "description": "Upsert timestamp."
+        },
+        "disableBalancedUpdate": {
+          "type": "boolean",
+          "description": "A flag to disable balanced update (split remove -\u003e insert operation)\nduring update operation."
+        }
+      },
+      "description": "Represent the upsert configuration."
+    },
+    "v1UpsertRequest": {
+      "type": "object",
+      "properties": {
+        "document": {
+          "$ref": "#/definitions/v1Document"
+        },
+        "config": {
+          "$ref": "#/definitions/v1UpsertConfig"
+        }
+      }
+    },
+    "v1UpsertWithMetadataRequest": {
+      "type": "object",
+      "properties": {
+        "request": {
+          "$ref": "#/definitions/v1UpsertRequest"
+        },
+        "metadata": {
+          "$ref": "#/definitions/MetaValue"
+        }
+      }
     }
   }
 }

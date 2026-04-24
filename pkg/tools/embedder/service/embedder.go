@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -17,24 +17,29 @@ import (
 	"context"
 	"reflect"
 
+	embedderpb "github.com/vdaas/vald/apis/grpc/v1/embedder"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	agent "github.com/vdaas/vald/internal/client/v1/client/agent/core"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errors"
-	grpc "google.golang.org/grpc"
 )
 
 type Embedder interface {
-	Insert(ctx context.Context, id, doc string) (*payload.Object_Location, error)
-	Search(ctx context.Context, doc string) (*payload.Search_Response, error)
-	Commit(ctx context.Context, in *payload.Control_CreateIndexRequest, opts ...grpc.CallOption) error
-	Embed(ctx context.Context, doc string) (*payload.Object_Vector, error)
-	SetLLM(llm LLM) Embedder
+	Search(context.Context, *embedderpb.SearchRequest) (*payload.Search_Response, error)
+	LinearSearch(context.Context, *embedderpb.SearchRequest) (*payload.Search_Response, error)
+	Insert(context.Context, *embedderpb.InsertRequest) (*payload.Object_Location, error)
+	InsertWithMetadata(context.Context, *embedderpb.InsertWithMetadataRequest) (*payload.Object_Location, error)
+	Update(context.Context, *embedderpb.UpdateRequest) (*payload.Object_Location, error)
+	UpdateWithMetadata(context.Context, *embedderpb.UpdateWithMetadataRequest) (*payload.Object_Location, error)
+	Upsert(context.Context, *embedderpb.UpsertRequest) (*payload.Object_Location, error)
+	UpsertWithMetadata(context.Context, *embedderpb.UpsertWithMetadataRequest) (*payload.Object_Location, error)
+	Remove(context.Context, *embedderpb.RemoveRequest) (*payload.Object_Location, error)
+	RemoveWithMetadata(context.Context, *embedderpb.RemoveRequest) (*payload.Object_Location, error)
+	Embedding(context.Context, *embedderpb.Text) (*payload.Object_Vector, error)
 }
 
 type embedder struct {
 	client  vald.Client
-	aclient agent.Client
+	mclient MetaClient
 	llm     LLM
 }
 
@@ -45,52 +50,178 @@ func New(opt ...Option) (Embedder, error) {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(o))
 		}
 	}
-	// TODO: Validate fields
+	if e.client == nil {
+		return nil, errors.New("vald client is nil")
+	}
+	if e.llm == nil {
+		return nil, errors.New("llm is nil")
+	}
 	return e, nil
 }
 
-func (e *embedder) SetLLM(llm LLM) Embedder {
-	e.llm = llm
-	return e
-}
-
-func (e *embedder) Insert(ctx context.Context, id, doc string) (*payload.Object_Location, error) {
-	vec, err := e.Embed(ctx, doc)
+func (e *embedder) Search(
+	ctx context.Context, req *embedderpb.SearchRequest,
+) (*payload.Search_Response, error) {
+	vec, err := e.embeddingFromText(ctx, req.GetText())
 	if err != nil {
 		return nil, err
 	}
-	vec.Id = id
-	return e.client.Insert(ctx, &payload.Insert_Request{
-		Vector: vec,
+	return e.client.Search(ctx, &payload.Search_Request{Vector: vec.GetVector(), Config: req.GetConfig()})
+}
+
+func (e *embedder) LinearSearch(
+	ctx context.Context, req *embedderpb.SearchRequest,
+) (*payload.Search_Response, error) {
+	vec, err := e.embeddingFromText(ctx, req.GetText())
+	if err != nil {
+		return nil, err
+	}
+	return e.client.LinearSearch(ctx, &payload.Search_Request{Vector: vec.GetVector(), Config: req.GetConfig()})
+}
+
+func (e *embedder) Insert(
+	ctx context.Context, req *embedderpb.InsertRequest,
+) (*payload.Object_Location, error) {
+	vec, err := e.vectorFromDocument(ctx, req.GetDocument())
+	if err != nil {
+		return nil, err
+	}
+	return e.client.Insert(ctx, &payload.Insert_Request{Vector: vec, Config: req.GetConfig()})
+}
+
+func (e *embedder) InsertWithMetadata(
+	ctx context.Context, req *embedderpb.InsertWithMetadataRequest,
+) (*payload.Object_Location, error) {
+	loc, err := e.Insert(ctx, req.GetRequest())
+	if err != nil {
+		return nil, err
+	}
+	if err = e.setMetadata(ctx, req.GetRequest().GetDocument().GetId(), req.GetMetadata()); err != nil {
+		return nil, err
+	}
+	return loc, nil
+}
+
+func (e *embedder) Update(
+	ctx context.Context, req *embedderpb.UpdateRequest,
+) (*payload.Object_Location, error) {
+	vec, err := e.vectorFromDocument(ctx, req.GetDocument())
+	if err != nil {
+		return nil, err
+	}
+	return e.client.Update(ctx, &payload.Update_Request{Vector: vec, Config: req.GetConfig()})
+}
+
+func (e *embedder) UpdateWithMetadata(
+	ctx context.Context, req *embedderpb.UpdateWithMetadataRequest,
+) (*payload.Object_Location, error) {
+	loc, err := e.Update(ctx, req.GetRequest())
+	if err != nil {
+		return nil, err
+	}
+	if err = e.setMetadata(ctx, req.GetRequest().GetDocument().GetId(), req.GetMetadata()); err != nil {
+		return nil, err
+	}
+	return loc, nil
+}
+
+func (e *embedder) Upsert(
+	ctx context.Context, req *embedderpb.UpsertRequest,
+) (*payload.Object_Location, error) {
+	vec, err := e.vectorFromDocument(ctx, req.GetDocument())
+	if err != nil {
+		return nil, err
+	}
+	return e.client.Upsert(ctx, &payload.Upsert_Request{Vector: vec, Config: req.GetConfig()})
+}
+
+func (e *embedder) UpsertWithMetadata(
+	ctx context.Context, req *embedderpb.UpsertWithMetadataRequest,
+) (*payload.Object_Location, error) {
+	loc, err := e.Upsert(ctx, req.GetRequest())
+	if err != nil {
+		return nil, err
+	}
+	if err = e.setMetadata(ctx, req.GetRequest().GetDocument().GetId(), req.GetMetadata()); err != nil {
+		return nil, err
+	}
+	return loc, nil
+}
+
+func (e *embedder) Remove(
+	ctx context.Context, req *embedderpb.RemoveRequest,
+) (*payload.Object_Location, error) {
+	return e.client.Remove(ctx, &payload.Remove_Request{
+		Id:     &payload.Object_ID{Id: req.GetId()},
+		Config: req.GetConfig(),
 	})
 }
 
-func (e *embedder) Search(ctx context.Context, doc string) (*payload.Search_Response, error) {
-	vec, err := e.Embed(ctx, doc)
+func (e *embedder) RemoveWithMetadata(
+	ctx context.Context, req *embedderpb.RemoveRequest,
+) (*payload.Object_Location, error) {
+	loc, err := e.Remove(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	return e.client.Search(ctx, &payload.Search_Request{
-		Vector: vec.GetVector(),
-	})
-}
-
-func (e *embedder) Commit(
-	ctx context.Context, in *payload.Control_CreateIndexRequest, opts ...grpc.CallOption,
-) error {
-	_, err := e.aclient.CreateAndSaveIndex(ctx, in, opts...)
-	if err != nil {
-		return err
+	if err = e.deleteMetadata(ctx, req.GetId()); err != nil {
+		return nil, err
 	}
-	return nil
+	return loc, nil
 }
 
-func (e *embedder) Embed(ctx context.Context, doc string) (*payload.Object_Vector, error) {
-	vec, err := e.llm.Embed(ctx, doc)
+func (e *embedder) Embedding(
+	ctx context.Context, req *embedderpb.Text,
+) (*payload.Object_Vector, error) {
+	return e.embeddingFromText(ctx, req.GetText())
+}
+
+func (e *embedder) embeddingFromText(
+	ctx context.Context, text string,
+) (*payload.Object_Vector, error) {
+	if text == "" {
+		return nil, errors.New("text is empty")
+	}
+	vec, err := e.llm.Embed(ctx, text)
 	if err != nil {
 		return nil, err
 	}
-	return &payload.Object_Vector{
-		Vector: vec,
-	}, nil
+	return &payload.Object_Vector{Vector: vec}, nil
+}
+
+func (e *embedder) vectorFromDocument(
+	ctx context.Context, doc *embedderpb.Document,
+) (*payload.Object_Vector, error) {
+	if doc == nil {
+		return nil, errors.New("document is nil")
+	}
+	if doc.GetId() == "" {
+		return nil, errors.New("document id is empty")
+	}
+	vec, err := e.embeddingFromText(ctx, doc.GetText())
+	if err != nil {
+		return nil, err
+	}
+	vec.Id = doc.GetId()
+	vec.Timestamp = doc.GetTimestamp()
+	return vec, nil
+}
+
+func (e *embedder) setMetadata(ctx context.Context, id string, metadata *payload.Meta_Value) error {
+	if metadata == nil {
+		return errors.New("metadata is nil")
+	}
+	if e.mclient == nil {
+		return errors.New("meta client is not configured")
+	}
+	_, err := e.mclient.Set(ctx, &payload.Meta_KeyValue{Key: &payload.Meta_Key{Key: id}, Value: metadata})
+	return err
+}
+
+func (e *embedder) deleteMetadata(ctx context.Context, id string) error {
+	if e.mclient == nil {
+		return errors.New("meta client is not configured")
+	}
+	_, err := e.mclient.Delete(ctx, &payload.Meta_Key{Key: id})
+	return err
 }

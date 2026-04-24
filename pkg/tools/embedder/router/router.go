@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package router provides implementation of Go API for routing http Handler wrapped by rest.Func
 package router
 
 import (
@@ -32,139 +31,26 @@ type router struct {
 	timeout string
 }
 
-// New returns REST route&method information from handler interface.
 func New(opts ...Option) http.Handler {
 	r := new(router)
-
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(r)
 	}
-
 	h := r.handler
-
 	return routing.New(
-		routing.WithMiddleware(
-			middleware.NewTimeout(
-				middleware.WithTimeout(r.timeout),
-				middleware.WithErrorGroup(r.eg),
-			)),
+		routing.WithMiddleware(middleware.NewTimeout(middleware.WithTimeout(r.timeout), middleware.WithErrorGroup(r.eg))),
 		routing.WithRoutes([]routing.Route{
-			{
-				Name: "Index",
-				Methods: []string{
-					http.MethodGet,
-				},
-				Pattern:     "/",
-				HandlerFunc: h.Index,
-			},
-			{
-				Name: "Search",
-				Methods: []string{
-					http.MethodPost,
-				},
-				Pattern:     "/search",
-				HandlerFunc: h.Search,
-			},
-			{
-				Name: "Search By ID",
-				Methods: []string{
-					http.MethodPost,
-				},
-				Pattern:     "/id/search",
-				HandlerFunc: h.SearchByID,
-			},
-			{
-				Name: "LinearSearch",
-				Methods: []string{
-					http.MethodPost,
-				},
-				Pattern:     "/linearsearch",
-				HandlerFunc: h.LinearSearch,
-			},
-			{
-				Name: "LinearSearch By ID",
-				Methods: []string{
-					http.MethodPost,
-				},
-				Pattern:     "/id/linearsearch",
-				HandlerFunc: h.LinearSearchByID,
-			},
-			{
-				Name: "Insert",
-				Methods: []string{
-					http.MethodPost,
-				},
-				Pattern:     "/insert",
-				HandlerFunc: h.Insert,
-			},
-			{
-				Name: "Multiple Insert",
-				Methods: []string{
-					http.MethodPost,
-				},
-				Pattern:     "/insert/multi",
-				HandlerFunc: h.MultiInsert,
-			},
-			{
-				Name: "Update",
-				Methods: []string{
-					http.MethodPost,
-					http.MethodPatch,
-					http.MethodPut,
-				},
-				Pattern:     "/update",
-				HandlerFunc: h.Update,
-			},
-			{
-				Name: "Multiple Update",
-				Methods: []string{
-					http.MethodPost,
-					http.MethodPatch,
-					http.MethodPut,
-				},
-				Pattern:     "/update/multi",
-				HandlerFunc: h.MultiUpdate,
-			},
-			{
-				Name: "Remove",
-				Methods: []string{
-					http.MethodDelete,
-				},
-				Pattern:     "/delete",
-				HandlerFunc: h.Remove,
-			},
-			{
-				Name: "Multiple Remove",
-				Methods: []string{
-					http.MethodDelete,
-					http.MethodPost,
-				},
-				Pattern:     "/delete/multi",
-				HandlerFunc: h.MultiRemove,
-			},
-			{
-				Name: "Create Index",
-				Methods: []string{
-					http.MethodPost,
-				},
-				Pattern:     "/index/create",
-				HandlerFunc: h.CreateIndex,
-			},
-			{
-				Name: "Save Index",
-				Methods: []string{
-					http.MethodGet,
-				},
-				Pattern:     "/index/save",
-				HandlerFunc: h.SaveIndex,
-			},
-			{
-				Name: "GetObject",
-				Methods: []string{
-					http.MethodGet,
-				},
-				Pattern:     "/object/{id}",
-				HandlerFunc: h.GetObject,
-			},
+			{Name: "Index", Methods: []string{http.MethodGet}, Pattern: "/", HandlerFunc: h.Index},
+			{Name: "Search", Methods: []string{http.MethodPost}, Pattern: "/search", HandlerFunc: h.Search},
+			{Name: "LinearSearch", Methods: []string{http.MethodPost}, Pattern: "/linearsearch", HandlerFunc: h.LinearSearch},
+			{Name: "Insert", Methods: []string{http.MethodPost}, Pattern: "/insert", HandlerFunc: h.Insert},
+			{Name: "Insert With Metadata", Methods: []string{http.MethodPost}, Pattern: "/insert/with-metadata", HandlerFunc: h.InsertWithMetadata},
+			{Name: "Update", Methods: []string{http.MethodPost}, Pattern: "/update", HandlerFunc: h.Update},
+			{Name: "Update With Metadata", Methods: []string{http.MethodPost}, Pattern: "/update/with-metadata", HandlerFunc: h.UpdateWithMetadata},
+			{Name: "Upsert", Methods: []string{http.MethodPost}, Pattern: "/upsert", HandlerFunc: h.Upsert},
+			{Name: "Upsert With Metadata", Methods: []string{http.MethodPost}, Pattern: "/upsert/with-metadata", HandlerFunc: h.UpsertWithMetadata},
+			{Name: "Remove", Methods: []string{http.MethodPost}, Pattern: "/remove", HandlerFunc: h.Remove},
+			{Name: "Remove With Metadata", Methods: []string{http.MethodPost}, Pattern: "/remove/with-metadata", HandlerFunc: h.RemoveWithMetadata},
+			{Name: "Embedding", Methods: []string{http.MethodPost}, Pattern: "/embedding", HandlerFunc: h.Embedding},
 		}...))
 }

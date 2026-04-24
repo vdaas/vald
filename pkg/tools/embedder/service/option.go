@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -17,45 +17,40 @@
 package service
 
 import (
-	agent "github.com/vdaas/vald/internal/client/v1/client/agent/core"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errors"
 )
 
-// Option represent the functional option for ngt.
-type Option func(n *embedder) error
+type Option func(*embedder) error
 
 var defaultOptions = []Option{}
 
-// WithValdClient returns the functional option to set the vald client.
 func WithValdClient(c vald.Client) Option {
-	return func(n *embedder) error {
+	return func(e *embedder) error {
 		if c == nil {
 			return errors.New("vald client is nil")
 		}
-		n.client = c
+		e.client = c
 		return nil
 	}
 }
 
-// WithAgentClient returns the functional option to set the agent client.
-func WithAgentClient(c agent.Client) Option {
-	return func(n *embedder) error {
+func WithMetaClient(c MetaClient) Option {
+	return func(e *embedder) error {
 		if c == nil {
-			return errors.New("agent client is nil")
+			return errors.New("meta client is nil")
 		}
-		n.aclient = c
+		e.mclient = c
 		return nil
 	}
 }
 
-// WithLLM returns the functional option to set the LLM client.
 func WithLLM(c LLM) Option {
-	return func(n *embedder) error {
+	return func(e *embedder) error {
 		if c == nil {
 			return errors.New("LLM client is nil")
 		}
-		n.llm = c
+		e.llm = c
 		return nil
 	}
 }

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package rest provides rest api logic
 package rest
 
 import "github.com/vdaas/vald/pkg/tools/embedder/handler/grpc"
@@ -23,8 +22,14 @@ type Option func(*handler)
 
 var defaultOptions = []Option{}
 
+func WithEmbedder(e grpc.Server) Option {
+	return func(h *handler) {
+		h.embedder = e
+	}
+}
+
 func WithAgent(a grpc.Server) Option {
 	return func(h *handler) {
-		h.agent = a
+		h.embedder = a
 	}
 }
