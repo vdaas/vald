@@ -15,8 +15,8 @@
 //
 pub mod embedder_client {
     #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
-    use tonic::codegen::*;
     use tonic::codegen::http::Uri;
+    use tonic::codegen::*;
     #[derive(Debug, Clone)]
     pub struct EmbedderClient<T> {
         inner: tonic::client::Grpc<T>,
@@ -55,14 +55,13 @@ pub mod embedder_client {
             F: tonic::service::Interceptor,
             T::ResponseBody: Default,
             T: tonic::codegen::Service<
-                http::Request<tonic::body::BoxBody>,
-                Response = http::Response<
-                    <T as tonic::client::GrpcService<tonic::body::BoxBody>>::ResponseBody,
+                    http::Request<tonic::body::BoxBody>,
+                    Response = http::Response<
+                        <T as tonic::client::GrpcService<tonic::body::BoxBody>>::ResponseBody,
+                    >,
                 >,
-            >,
-            <T as tonic::codegen::Service<
-                http::Request<tonic::body::BoxBody>,
-            >>::Error: Into<StdError> + Send + Sync,
+            <T as tonic::codegen::Service<http::Request<tonic::body::BoxBody>>>::Error:
+                Into<StdError> + Send + Sync,
         {
             EmbedderClient::new(InterceptedService::new(inner, interceptor))
         }
@@ -99,26 +98,19 @@ pub mod embedder_client {
         }
         pub async fn insert(
             &mut self,
-            request: impl tonic::IntoRequest<
-                super::super::super::payload::v1::object::Blob,
-            >,
+            request: impl tonic::IntoRequest<super::super::super::payload::v1::object::Blob>,
         ) -> std::result::Result<
             tonic::Response<super::super::super::payload::v1::object::Location>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::new(
+                    tonic::Code::Unknown,
+                    format!("Service was not ready: {}", e.into()),
+                )
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/embedder.v1.Embedder/Insert",
-            );
+            let path = http::uri::PathAndQuery::from_static("/embedder.v1.Embedder/Insert");
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(GrpcMethod::new("embedder.v1.Embedder", "Insert"));
@@ -127,26 +119,19 @@ pub mod embedder_client {
         ///
         pub async fn search(
             &mut self,
-            request: impl tonic::IntoRequest<
-                super::super::super::payload::v1::object::Blob,
-            >,
+            request: impl tonic::IntoRequest<super::super::super::payload::v1::object::Blob>,
         ) -> std::result::Result<
             tonic::Response<super::super::super::payload::v1::search::Response>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::new(
+                    tonic::Code::Unknown,
+                    format!("Service was not ready: {}", e.into()),
+                )
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/embedder.v1.Embedder/Search",
-            );
+            let path = http::uri::PathAndQuery::from_static("/embedder.v1.Embedder/Search");
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(GrpcMethod::new("embedder.v1.Embedder", "Search"));
@@ -155,26 +140,19 @@ pub mod embedder_client {
         ///
         pub async fn embedding(
             &mut self,
-            request: impl tonic::IntoRequest<
-                super::super::super::payload::v1::object::Blob,
-            >,
+            request: impl tonic::IntoRequest<super::super::super::payload::v1::object::Blob>,
         ) -> std::result::Result<
             tonic::Response<super::super::super::payload::v1::object::Vector>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::new(
+                    tonic::Code::Unknown,
+                    format!("Service was not ready: {}", e.into()),
+                )
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/embedder.v1.Embedder/Embedding",
-            );
+            let path = http::uri::PathAndQuery::from_static("/embedder.v1.Embedder/Embedding");
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(GrpcMethod::new("embedder.v1.Embedder", "Embedding"));
@@ -188,19 +166,14 @@ pub mod embedder_client {
             tonic::Response<super::super::super::payload::v1::Empty>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::new(
+                    tonic::Code::Unknown,
+                    format!("Service was not ready: {}", e.into()),
+                )
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/embedder.v1.Embedder/Commit",
-            );
+            let path = http::uri::PathAndQuery::from_static("/embedder.v1.Embedder/Commit");
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(GrpcMethod::new("embedder.v1.Embedder", "Commit"));
@@ -268,10 +241,7 @@ pub mod embedder_server {
                 max_encoding_message_size: None,
             }
         }
-        pub fn with_interceptor<F>(
-            inner: T,
-            interceptor: F,
-        ) -> InterceptedService<Self, F>
+        pub fn with_interceptor<F>(inner: T, interceptor: F) -> InterceptedService<Self, F>
         where
             F: tonic::service::Interceptor,
         {
@@ -326,26 +296,18 @@ pub mod embedder_server {
                 "/embedder.v1.Embedder/Insert" => {
                     #[allow(non_camel_case_types)]
                     struct InsertSvc<T: Embedder>(pub Arc<T>);
-                    impl<
-                        T: Embedder,
-                    > tonic::server::UnaryService<
-                        super::super::super::payload::v1::object::Blob,
-                    > for InsertSvc<T> {
+                    impl<T: Embedder>
+                        tonic::server::UnaryService<super::super::super::payload::v1::object::Blob>
+                        for InsertSvc<T>
+                    {
                         type Response = super::super::super::payload::v1::object::Location;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
-                            request: tonic::Request<
-                                super::super::super::payload::v1::object::Blob,
-                            >,
+                            request: tonic::Request<super::super::super::payload::v1::object::Blob>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Embedder>::insert(&inner, request).await
-                            };
+                            let fut = async move { <T as Embedder>::insert(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -374,26 +336,18 @@ pub mod embedder_server {
                 "/embedder.v1.Embedder/Search" => {
                     #[allow(non_camel_case_types)]
                     struct SearchSvc<T: Embedder>(pub Arc<T>);
-                    impl<
-                        T: Embedder,
-                    > tonic::server::UnaryService<
-                        super::super::super::payload::v1::object::Blob,
-                    > for SearchSvc<T> {
+                    impl<T: Embedder>
+                        tonic::server::UnaryService<super::super::super::payload::v1::object::Blob>
+                        for SearchSvc<T>
+                    {
                         type Response = super::super::super::payload::v1::search::Response;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
-                            request: tonic::Request<
-                                super::super::super::payload::v1::object::Blob,
-                            >,
+                            request: tonic::Request<super::super::super::payload::v1::object::Blob>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Embedder>::search(&inner, request).await
-                            };
+                            let fut = async move { <T as Embedder>::search(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -422,26 +376,19 @@ pub mod embedder_server {
                 "/embedder.v1.Embedder/Embedding" => {
                     #[allow(non_camel_case_types)]
                     struct EmbeddingSvc<T: Embedder>(pub Arc<T>);
-                    impl<
-                        T: Embedder,
-                    > tonic::server::UnaryService<
-                        super::super::super::payload::v1::object::Blob,
-                    > for EmbeddingSvc<T> {
+                    impl<T: Embedder>
+                        tonic::server::UnaryService<super::super::super::payload::v1::object::Blob>
+                        for EmbeddingSvc<T>
+                    {
                         type Response = super::super::super::payload::v1::object::Vector;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
-                            request: tonic::Request<
-                                super::super::super::payload::v1::object::Blob,
-                            >,
+                            request: tonic::Request<super::super::super::payload::v1::object::Blob>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Embedder>::embedding(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Embedder>::embedding(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -470,26 +417,18 @@ pub mod embedder_server {
                 "/embedder.v1.Embedder/Commit" => {
                     #[allow(non_camel_case_types)]
                     struct CommitSvc<T: Embedder>(pub Arc<T>);
-                    impl<
-                        T: Embedder,
-                    > tonic::server::UnaryService<
-                        super::super::super::payload::v1::Empty,
-                    > for CommitSvc<T> {
+                    impl<T: Embedder>
+                        tonic::server::UnaryService<super::super::super::payload::v1::Empty>
+                        for CommitSvc<T>
+                    {
                         type Response = super::super::super::payload::v1::Empty;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
-                            request: tonic::Request<
-                                super::super::super::payload::v1::Empty,
-                            >,
+                            request: tonic::Request<super::super::super::payload::v1::Empty>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Embedder>::commit(&inner, request).await
-                            };
+                            let fut = async move { <T as Embedder>::commit(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -515,21 +454,17 @@ pub mod embedder_server {
                     };
                     Box::pin(fut)
                 }
-                _ => {
-                    Box::pin(async move {
-                        Ok(
-                            http::Response::builder()
-                                .status(200)
-                                .header("grpc-status", tonic::Code::Unimplemented as i32)
-                                .header(
-                                    http::header::CONTENT_TYPE,
-                                    tonic::metadata::GRPC_CONTENT_TYPE,
-                                )
-                                .body(empty_body())
-                                .unwrap(),
+                _ => Box::pin(async move {
+                    Ok(http::Response::builder()
+                        .status(200)
+                        .header("grpc-status", tonic::Code::Unimplemented as i32)
+                        .header(
+                            http::header::CONTENT_TYPE,
+                            tonic::metadata::GRPC_CONTENT_TYPE,
                         )
-                    })
-                }
+                        .body(empty_body())
+                        .unwrap())
+                }),
             }
         }
     }

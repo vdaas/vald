@@ -57,22 +57,23 @@ func TestNew(t *testing.T) {
 		if route == nil {
 			t.Fatal(errors.Errorf("route not found: %s", name))
 		}
-		methods, err := route.GetMethods()
-		if err != nil {
-			t.Fatal(err)
-		}
-		if name == "Index" && methods[0] != http.MethodGet {
-			t.Errorf("method = %s, want %s", methods[0], http.MethodGet)
-		}
-		if name != "Index" && methods[0] != http.MethodPost {
-			t.Errorf("method = %s, want %s", methods[0], http.MethodPost)
-		}
 		gotPattern, err := route.GetPathTemplate()
 		if err != nil {
 			t.Fatal(err)
 		}
 		if gotPattern != pattern {
 			t.Errorf("pattern = %s, want %s", gotPattern, pattern)
+		}
+		req, err := http.NewRequest(http.MethodGet, pattern, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if name != "Index" {
+			req.Method = http.MethodPost
+		}
+		match := new(mux.RouteMatch)
+		if !route.Match(req, match) {
+			t.Fatalf("route %s does not match %s %s", name, req.Method, pattern)
 		}
 	}
 }
