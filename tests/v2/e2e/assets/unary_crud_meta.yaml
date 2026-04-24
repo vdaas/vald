@@ -370,9 +370,9 @@ strategies:
   - concurrency: 1
     name: Update -> Index Detail
     operations:
-      - name: Update Index Detail Operation
+      - name: UpdateMeta Index Detail Operation
         executions:
-          - name: Update
+          - name: UpdateMeta
             type: update_meta
             mode: unary
             parallelism: _E2E_PARALLELISM_
@@ -383,12 +383,12 @@ strategies:
             type: index_detail
             mode: unary
   - concurrency: 2
-    name: Remove with Upsert -> Index stats and detail
+    name: RemoveMeta with UpsertMeta -> Index stats and detail
     operations:
-      - name: Remove IndexStatistics Operation
+      - name: RemoveMeta IndexStatistics Operation
         executions:
-          - name: Remove
-            type: remove
+          - name: RemoveMeta
+            type: remove_meta
             mode: unary
             parallelism: _E2E_PARALLELISM_
             num: _E2E_UPDATE_COUNT_
@@ -397,7 +397,7 @@ strategies:
             mode: unary
       - name: Upsert IndexDetail Operation
         executions:
-          - name: Upsert
+          - name: UpsertMeta
             type: upsert_meta
             mode: unary
             parallelism: _E2E_PARALLELISM_
@@ -407,19 +407,19 @@ strategies:
             mode: unary
     wait: 2m
   - concurrency: 1
-    name: RemoveByTimestamp -> IndexDetail -> Upsert -> IndexDetail
+    name: RemoveByTimestampMeta -> IndexDetail -> UpsertMeta -> IndexDetail
     operations:
-      - name: RemoveByTimestamp IndexDetail Upsert Operation
+      - name: RemoveByTimestampMeta IndexDetail UpsertMeta Operation
         executions:
-          - name: RemoveByTimestamp
+          - name: RemoveByTimestampMeta
             mode: unary
-            type: remove_by_timestamp
+            type: remove_by_timestamp_meta
             wait: 2m
             num: 1
           - name: IndexDetail
             mode: unary
             type: index_detail
-          - name: Upsert
+          - name: UpsertMeta
             parallelism: _E2E_PARALLELISM_
             mode: unary
             num: _E2E_UPDATE_COUNT_
