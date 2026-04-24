@@ -67,7 +67,7 @@
         "parameters": [
           {
             "name": "body",
-            "description": "Represent mthe ultiple upsert request.",
+            "description": "Represent the multiple upsert request.",
             "in": "body",
             "required": true,
             "schema": {
@@ -127,6 +127,11 @@
           "type": "string",
           "format": "int64",
           "description": "timestamp represents when this vector inserted."
+        },
+        "metadata": {
+          "type": "string",
+          "format": "byte",
+          "description": "Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway."
         }
       },
       "description": "Represent a vector."
@@ -143,7 +148,7 @@
           "description": "Represent the multiple upsert request content."
         }
       },
-      "description": "Represent mthe ultiple upsert request."
+      "description": "Represent the multiple upsert request."
     },
     "UpsertRequest": {
       "type": "object",
@@ -233,7 +238,7 @@
       "properties": {
         "skipStrictExistCheck": {
           "type": "boolean",
-          "description": "A flag to skip exist check during upsert operation."
+          "description": "A flag to skip the existence check during upsert operation."
         },
         "filters": {
           "$ref": "#/definitions/v1FilterConfig",

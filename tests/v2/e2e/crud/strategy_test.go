@@ -236,14 +236,23 @@ func (r *runner) processExecution(
 			ttt.Helper()
 			switch e.Type {
 			case config.OpSearch,
+				config.OpSearchMeta,
 				config.OpSearchByID,
+				config.OpSearchByIDMeta,
 				config.OpLinearSearch,
+				config.OpLinearSearchMeta,
 				config.OpLinearSearchByID,
+				config.OpLinearSearchByIDMeta,
 				config.OpInsert,
+				config.OpInsertMeta,
 				config.OpUpdate,
+				config.OpUpdateMeta,
 				config.OpUpsert,
+				config.OpUpsertMeta,
 				config.OpRemove,
+				config.OpRemoveMeta,
 				config.OpRemoveByTimestamp,
+				config.OpRemoveByTimestampMeta,
 				config.OpObject,
 				config.OpListObject,
 				config.OpTimestamp,
@@ -260,15 +269,24 @@ func (r *runner) processExecution(
 				}
 				switch e.Type {
 				case config.OpSearch,
+					config.OpSearchMeta,
 					config.OpSearchByID,
+					config.OpSearchByIDMeta,
 					config.OpLinearSearch,
-					config.OpLinearSearchByID:
-					return r.processSearch(ttt, ctx, train, test, neighbors, e)
+					config.OpLinearSearchMeta,
+					config.OpLinearSearchByID,
+					config.OpLinearSearchByIDMeta:
+					return r.processSearch(ttt, ctx, test, train, neighbors, e)
 				case config.OpInsert,
+					config.OpInsertMeta,
 					config.OpUpdate,
+					config.OpUpdateMeta,
 					config.OpUpsert,
+					config.OpUpsertMeta,
 					config.OpRemove,
-					config.OpRemoveByTimestamp:
+					config.OpRemoveMeta,
+					config.OpRemoveByTimestamp,
+					config.OpRemoveByTimestampMeta:
 					return r.processModification(ttt, ctx, train, e)
 				case config.OpObject,
 					config.OpListObject,

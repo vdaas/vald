@@ -145,17 +145,19 @@ GetObject RPC is the method to get the metadata of a vector inserted into the `v
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 
   ```
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                     |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    |   field   | type   | label    | description                                                                                                        |
+    | :-------: | :----- | :------- | :----------------------------------------------------------------------------------------------------------------- |
+    |    id     | string |          | The vector ID.                                                                                                     |
+    |  vector   | float  | repeated | The vector.                                                                                                        |
+    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                    |
+    | metadata  | bytes  | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -255,6 +257,7 @@ Each Upsert request and response are independent.
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 
   ```
@@ -268,11 +271,12 @@ Each Upsert request and response are independent.
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                     |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    |   field   | type   | label    | description                                                                                                        |
+    | :-------: | :----- | :------- | :----------------------------------------------------------------------------------------------------------------- |
+    |    id     | string |          | The vector ID.                                                                                                     |
+    |  vector   | float  | repeated | The vector.                                                                                                        |
+    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                    |
+    | metadata  | bytes  | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -334,6 +338,7 @@ A method to get all the vectors with server streaming
     string id = 1;
     repeated float vector = 2;
     int64 timestamp = 3;
+    optional bytes metadata = 4;
   }
 
   ```
@@ -347,11 +352,12 @@ A method to get all the vectors with server streaming
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                     |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    |   field   | type   | label    | description                                                                                                        |
+    | :-------: | :----- | :------- | :----------------------------------------------------------------------------------------------------------------- |
+    |    id     | string |          | The vector ID.                                                                                                     |
+    |  vector   | float  | repeated | The vector.                                                                                                        |
+    | timestamp | int64  |          | timestamp represents when this vector inserted.                                                                    |
+    | metadata  | bytes  | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 

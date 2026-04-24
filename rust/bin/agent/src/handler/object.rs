@@ -76,6 +76,7 @@ async fn get_object(
                 id: uuid,
                 vector: vec,
                 timestamp: ts,
+                metadata: None,
             }),
         }
     }

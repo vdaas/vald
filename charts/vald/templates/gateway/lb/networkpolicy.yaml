@@ -17,6 +17,7 @@
 {{- $agent := .Values.agent -}}
 {{- $lb := .Values.gateway.lb -}}
 {{- $filter := .Values.gateway.filter -}}
+{{- $meta := .Values.gateway.meta -}}
 {{- $mirror := .Values.gateway.mirror -}}
 {{- $discoverer := .Values.discoverer -}}
 {{- $corrector  := .Values.manager.index.corrector -}}
@@ -43,6 +44,12 @@ spec:
         podSelector:
           matchLabels:
             app: {{ $filter.name }}
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: {{ .Release.Namespace }}
+        podSelector:
+          matchLabels:
+            app: {{ $meta.name }}
       - namespaceSelector:
           matchLabels:
             kubernetes.io/metadata.name: {{ .Release.Namespace }}

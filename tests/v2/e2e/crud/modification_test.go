@@ -45,6 +45,21 @@ var (
 			},
 		}
 	}
+	insertWithMetadataRequest newRequest[*payload.Insert_Request] = func(t *testing.T, idx uint64, id string, vec []float32, plan *config.Execution) *payload.Insert_Request {
+		ts, skip := toModificationConfig(plan)
+		return &payload.Insert_Request{
+			Vector: &payload.Object_Vector{
+				Id:        id,
+				Vector:    vec,
+				Timestamp: ts,
+				Metadata:  []byte("metadata"),
+			},
+			Config: &payload.Insert_Config{
+				Timestamp:            ts,
+				SkipStrictExistCheck: skip,
+			},
+		}
+	}
 	insertMultipleRequest newMultiRequest[*payload.Insert_Request, *payload.Insert_MultiRequest] = func(t *testing.T, reqs ...*payload.Insert_Request) *payload.Insert_MultiRequest {
 		return &payload.Insert_MultiRequest{
 			Requests: reqs,
@@ -64,6 +79,21 @@ var (
 			},
 		}
 	}
+	updateWithMetadataRequest newRequest[*payload.Update_Request] = func(t *testing.T, idx uint64, id string, vec []float32, plan *config.Execution) *payload.Update_Request {
+		ts, skip := toModificationConfig(plan)
+		return &payload.Update_Request{
+			Vector: &payload.Object_Vector{
+				Id:        id,
+				Vector:    vec,
+				Timestamp: ts,
+				Metadata:  []byte("metadata"),
+			},
+			Config: &payload.Update_Config{
+				Timestamp:            ts,
+				SkipStrictExistCheck: skip,
+			},
+		}
+	}
 	updateMultipleRequest newMultiRequest[*payload.Update_Request, *payload.Update_MultiRequest] = func(t *testing.T, reqs ...*payload.Update_Request) *payload.Update_MultiRequest {
 		return &payload.Update_MultiRequest{
 			Requests: reqs,
@@ -76,6 +106,21 @@ var (
 				Id:        id,
 				Vector:    vec,
 				Timestamp: ts,
+			},
+			Config: &payload.Upsert_Config{
+				Timestamp:            ts,
+				SkipStrictExistCheck: skip,
+			},
+		}
+	}
+	upsertWithMetadataRequest newRequest[*payload.Upsert_Request] = func(t *testing.T, idx uint64, id string, vec []float32, plan *config.Execution) *payload.Upsert_Request {
+		ts, skip := toModificationConfig(plan)
+		return &payload.Upsert_Request{
+			Vector: &payload.Object_Vector{
+				Id:        id,
+				Vector:    vec,
+				Timestamp: ts,
+				Metadata:  []byte("metadata"),
 			},
 			Config: &payload.Upsert_Config{
 				Timestamp:            ts,
@@ -142,6 +187,15 @@ func (r *runner) processModification(
 		case config.OperationStream:
 			stream(t, ctx, train, plan, r.client.StreamInsert, insertRequest)
 		}
+	case config.OpInsertMeta:
+		switch plan.Mode {
+		case config.OperationUnary, config.OperationOther:
+			return unary(t, ctx, train, plan, r.client.InsertWithMetadata, insertWithMetadataRequest)
+		case config.OperationMultiple:
+			return multi(t, ctx, train, plan, r.client.MultiInsertWithMetadata, insertWithMetadataRequest, insertMultipleRequest)
+		case config.OperationStream:
+			stream(t, ctx, train, plan, r.client.StreamInsertWithMetadata, insertWithMetadataRequest)
+		}
 	case config.OpUpdate:
 		switch plan.Mode {
 		case config.OperationUnary, config.OperationOther:
@@ -150,6 +204,15 @@ func (r *runner) processModification(
 			return multi(t, ctx, train, plan, r.client.MultiUpdate, updateRequest, updateMultipleRequest)
 		case config.OperationStream:
 			stream(t, ctx, train, plan, r.client.StreamUpdate, updateRequest)
+		}
+	case config.OpUpdateMeta:
+		switch plan.Mode {
+		case config.OperationUnary, config.OperationOther:
+			return unary(t, ctx, train, plan, r.client.UpdateWithMetadata, updateWithMetadataRequest)
+		case config.OperationMultiple:
+			return multi(t, ctx, train, plan, r.client.MultiUpdateWithMetadata, updateWithMetadataRequest, updateMultipleRequest)
+		case config.OperationStream:
+			stream(t, ctx, train, plan, r.client.StreamUpdateWithMetadata, updateWithMetadataRequest)
 		}
 	case config.OpUpsert:
 		switch plan.Mode {
@@ -160,6 +223,15 @@ func (r *runner) processModification(
 		case config.OperationStream:
 			stream(t, ctx, train, plan, r.client.StreamUpsert, upsertRequest)
 		}
+	case config.OpUpsertMeta:
+		switch plan.Mode {
+		case config.OperationUnary, config.OperationOther:
+			return unary(t, ctx, train, plan, r.client.UpsertWithMetadata, upsertWithMetadataRequest)
+		case config.OperationMultiple:
+			return multi(t, ctx, train, plan, r.client.MultiUpsertWithMetadata, upsertWithMetadataRequest, upsertMultipleRequest)
+		case config.OperationStream:
+			stream(t, ctx, train, plan, r.client.StreamUpsertWithMetadata, upsertWithMetadataRequest)
+		}
 	case config.OpRemove:
 		switch plan.Mode {
 		case config.OperationUnary, config.OperationOther:
@@ -169,8 +241,19 @@ func (r *runner) processModification(
 		case config.OperationStream:
 			stream(t, ctx, train, plan, r.client.StreamRemove, removeRequest)
 		}
+	case config.OpRemoveMeta:
+		switch plan.Mode {
+		case config.OperationUnary, config.OperationOther:
+			return unary(t, ctx, train, plan, r.client.RemoveWithMetadata, removeRequest)
+		case config.OperationMultiple:
+			return multi(t, ctx, train, plan, r.client.MultiRemoveWithMetadata, removeRequest, removeMultipleRequest)
+		case config.OperationStream:
+			stream(t, ctx, train, plan, r.client.StreamRemoveWithMetadata, removeRequest)
+		}
 	case config.OpRemoveByTimestamp:
 		return single(t, ctx, 0, plan, removeByTimestampRequest(t, 0, "", nil, plan), r.client.RemoveByTimestamp)
+	case config.OpRemoveByTimestampMeta:
+		return single(t, ctx, 0, plan, removeByTimestampRequest(t, 0, "", nil, plan), r.client.RemoveByTimestampWithMetadata)
 	}
 	return nil
 }

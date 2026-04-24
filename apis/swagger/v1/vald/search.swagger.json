@@ -304,6 +304,11 @@
           "type": "number",
           "format": "float",
           "description": "The distance."
+        },
+        "metadata": {
+          "type": "string",
+          "format": "byte",
+          "description": "Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway."
         }
       },
       "description": "Represent the ID and distance pair."

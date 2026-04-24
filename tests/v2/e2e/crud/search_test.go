@@ -185,6 +185,18 @@ func (r *runner) processSearch(
 			// For streaming search requests, use the generic streamSearch function with the searchRequest builder.
 			stream(t, ctx, test, plan, r.client.StreamSearch, searchRequest, checkStreamSearchResponse(neighbors))
 		}
+	case config.OpSearchMeta:
+		switch plan.Mode {
+		case config.OperationUnary, config.OperationOther:
+			// For unary search requests, use the generic unarySearch function with the searchRequest builder.
+			return unary(t, ctx, test, plan, r.client.SearchWithMetadata, searchRequest, checkUnarySearchWithMetadataResponse(neighbors))
+		case config.OperationMultiple:
+			// For bulk search requests, use the generic multiSearch function with searchRequest and searchMultiRequest builders.
+			return multi(t, ctx, test, plan, r.client.MultiSearchWithMetadata, searchRequest, searchMultiRequest, checkMultiSearchWithMetadataResponse(neighbors))
+		case config.OperationStream:
+			// For streaming search requests, use the generic streamSearch function with the searchRequest builder.
+			stream(t, ctx, test, plan, r.client.StreamSearchWithMetadata, searchRequest, checkStreamSearchWithMetadataResponse(neighbors))
+		}
 	case config.OpSearchByID:
 		switch plan.Mode {
 		case config.OperationUnary, config.OperationOther:
@@ -193,6 +205,15 @@ func (r *runner) processSearch(
 			return multi(t, ctx, train, plan, r.client.MultiSearchByID, searchIDRequest, searchMultiIDRequest, checkMultiSearchResponse(neighbors))
 		case config.OperationStream:
 			stream(t, ctx, train, plan, r.client.StreamSearchByID, searchIDRequest, checkStreamSearchResponse(neighbors))
+		}
+	case config.OpSearchByIDMeta:
+		switch plan.Mode {
+		case config.OperationUnary, config.OperationOther:
+			return unary(t, ctx, train, plan, r.client.SearchByIDWithMetadata, searchIDRequest, checkUnarySearchWithMetadataResponse(neighbors))
+		case config.OperationMultiple:
+			return multi(t, ctx, train, plan, r.client.MultiSearchByIDWithMetadata, searchIDRequest, searchMultiIDRequest, checkMultiSearchWithMetadataResponse(neighbors))
+		case config.OperationStream:
+			stream(t, ctx, train, plan, r.client.StreamSearchByIDWithMetadata, searchIDRequest, checkStreamSearchWithMetadataResponse(neighbors))
 		}
 	case config.OpLinearSearch:
 		switch plan.Mode {
@@ -203,6 +224,15 @@ func (r *runner) processSearch(
 		case config.OperationStream:
 			stream(t, ctx, test, plan, r.client.StreamLinearSearch, searchRequest, checkStreamSearchResponse(neighbors))
 		}
+	case config.OpLinearSearchMeta:
+		switch plan.Mode {
+		case config.OperationUnary, config.OperationOther:
+			return unary(t, ctx, test, plan, r.client.LinearSearchWithMetadata, searchRequest, checkUnarySearchWithMetadataResponse(neighbors))
+		case config.OperationMultiple:
+			return multi(t, ctx, test, plan, r.client.MultiLinearSearchWithMetadata, searchRequest, searchMultiRequest, checkMultiSearchWithMetadataResponse(neighbors))
+		case config.OperationStream:
+			stream(t, ctx, test, plan, r.client.StreamLinearSearchWithMetadata, searchRequest, checkStreamSearchWithMetadataResponse(neighbors))
+		}
 	case config.OpLinearSearchByID:
 		switch plan.Mode {
 		case config.OperationUnary, config.OperationOther:
@@ -211,6 +241,15 @@ func (r *runner) processSearch(
 			return multi(t, ctx, train, plan, r.client.MultiLinearSearchByID, searchIDRequest, searchMultiIDRequest, checkMultiSearchResponse(neighbors))
 		case config.OperationStream:
 			stream(t, ctx, train, plan, r.client.StreamLinearSearchByID, searchIDRequest, checkStreamSearchResponse(neighbors))
+		}
+	case config.OpLinearSearchByIDMeta:
+		switch plan.Mode {
+		case config.OperationUnary, config.OperationOther:
+			return unary(t, ctx, test, plan, r.client.LinearSearchByIDWithMetadata, searchIDRequest, checkUnarySearchWithMetadataResponse(neighbors))
+		case config.OperationMultiple:
+			return multi(t, ctx, train, plan, r.client.MultiLinearSearchByIDWithMetadata, searchIDRequest, searchMultiIDRequest, checkMultiSearchWithMetadataResponse(neighbors))
+		case config.OperationStream:
+			stream(t, ctx, train, plan, r.client.StreamLinearSearchByIDWithMetadata, searchIDRequest, checkStreamSearchWithMetadataResponse(neighbors))
 		}
 	}
 	return nil
@@ -227,6 +266,18 @@ func checkUnarySearchResponse(
 	}
 }
 
+func checkUnarySearchWithMetadataResponse(
+	neighbors iter.Cycle[[][]int, []int],
+) func(t *testing.T, idx uint64, res *payload.Search_Response, err error) bool {
+	return func(t *testing.T, idx uint64, res *payload.Search_Response, err error) bool {
+		t.Helper()
+		rc := calculateRecall(t, neighbors.At(idx), res)
+		eq := strings.EqualFold("metadata", string(res.GetResults()[0].GetMetadata()))
+		t.Logf("request id %s searched recall: %f, payload %s", res.GetRequestId(), rc, res.String())
+		return eq
+	}
+}
+
 func checkMultiSearchResponse(
 	neighbors iter.Cycle[[][]int, []int],
 ) func(t *testing.T, idx uint64, res *payload.Search_Responses, err error) bool {
@@ -235,6 +286,21 @@ func checkMultiSearchResponse(
 		// For each response in the bulk response, log the recall.
 		for _, r := range res.GetResponses() {
 			if !checkUnarySearchResponse(neighbors)(t, getIndexFromSearchResponse(t, r), r, err) {
+				return false
+			}
+		}
+		return true
+	}
+}
+
+func checkMultiSearchWithMetadataResponse(
+	neighbors iter.Cycle[[][]int, []int],
+) func(t *testing.T, idx uint64, res *payload.Search_Responses, err error) bool {
+	return func(t *testing.T, idx uint64, res *payload.Search_Responses, err error) bool {
+		t.Helper()
+		// For each response in the bulk response, log the recall.
+		for _, r := range res.GetResponses() {
+			if !checkUnarySearchWithMetadataResponse(neighbors)(t, getIndexFromSearchResponse(t, r), r, err) {
 				return false
 			}
 		}
@@ -257,6 +323,24 @@ func checkStreamSearchResponse(
 			return true
 		}
 		return checkUnarySearchResponse(neighbors)(t, getIndexFromSearchResponse(t, r), r, err)
+	}
+}
+
+func checkStreamSearchWithMetadataResponse(
+	neighbors iter.Cycle[[][]int, []int],
+) func(t *testing.T, idx uint64, res *payload.Search_StreamResponse, err error) bool {
+	return func(t *testing.T, idx uint64, res *payload.Search_StreamResponse, err error) bool {
+		t.Helper()
+		if err != nil {
+			st := res.GetStatus()
+			t.Error(st.String())
+		}
+		r := res.GetResponse()
+		if r == nil {
+			t.Error("search stream response is nil, it can be timeout")
+			return true
+		}
+		return checkUnarySearchWithMetadataResponse(neighbors)(t, getIndexFromSearchResponse(t, r), r, err)
 	}
 }
 

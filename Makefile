@@ -46,6 +46,7 @@ INDEX_OPERATOR_IMAGE = $(NAME)-index-operator
 INDEX_SAVE_IMAGE = $(NAME)-index-save
 LB_GATEWAY_IMAGE = $(NAME)-lb-gateway
 MANAGER_INDEX_IMAGE = $(NAME)-manager-index
+META_GATEWAY_IMAGE = $(NAME)-meta-gateway
 MIRROR_GATEWAY_IMAGE = $(NAME)-mirror-gateway
 READREPLICA_ROTATE_IMAGE = $(NAME)-readreplica-rotate
 E2E_IMAGE = $(NAME)-e2e

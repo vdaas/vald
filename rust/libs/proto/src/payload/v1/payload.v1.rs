@@ -556,6 +556,9 @@ pub mod update {
         /// force represents forcefully update the timestamp.
         #[prost(bool, tag = "3")]
         pub force: bool,
+        /// Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway.
+        #[prost(bytes = "vec", optional, tag = "4")]
+        pub metadata: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
     }
     impl ::prost::Name for TimestampRequest {
         const NAME: &'static str = "TimestampRequest";
@@ -630,7 +633,7 @@ pub mod upsert {
             "/payload.v1.Upsert.Request".into()
         }
     }
-    /// Represent mthe ultiple upsert request.
+    /// Represent the multiple upsert request.
     #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct MultiRequest {
         /// Represent the multiple upsert request content.
@@ -690,7 +693,7 @@ pub mod upsert {
     /// Represent the upsert configuration.
     #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct Config {
-        /// A flag to skip exist check during upsert operation.
+        /// A flag to skip the existence check during upsert operation.
         #[prost(bool, tag = "1")]
         pub skip_strict_exist_check: bool,
         /// Filter configuration.
@@ -860,7 +863,7 @@ pub mod remove {
     /// Represent the remove configuration.
     #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
     pub struct Config {
-        /// A flag to skip exist check during upsert operation.
+        /// A flag to skip the existence check during remove operation.
         #[prost(bool, tag = "1")]
         pub skip_strict_exist_check: bool,
         /// Remove timestamp.
@@ -950,6 +953,9 @@ pub mod object {
         /// The distance.
         #[prost(float, tag = "2")]
         pub distance: f32,
+        /// Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway.
+        #[prost(bytes = "vec", optional, tag = "3")]
+        pub metadata: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
     }
     impl ::prost::Name for Distance {
         const NAME: &'static str = "Distance";
@@ -1033,6 +1039,9 @@ pub mod object {
         /// timestamp represents when this vector inserted.
         #[prost(int64, tag = "3")]
         pub timestamp: i64,
+        /// Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway.
+        #[prost(bytes = "vec", optional, tag = "4")]
+        pub metadata: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
     }
     impl ::prost::Name for Vector {
         const NAME: &'static str = "Vector";

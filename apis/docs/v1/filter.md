@@ -125,6 +125,7 @@ SearchObject RPC is the method to search object(s) similar to request object.
   message Object.Distance {
     string id = 1;
     float distance = 2;
+    optional bytes metadata = 3;
   }
 
   ```
@@ -138,10 +139,11 @@ SearchObject RPC is the method to search object(s) similar to request object.
 
   - Object.Distance
 
-    |  field   | type   | label | description    |
-    | :------: | :----- | :---- | :------------- |
-    |    id    | string |       | The vector ID. |
-    | distance | float  |       | The distance.  |
+    |  field   | type   | label    | description                                                                                                        |
+    | :------: | :----- | :------- | :----------------------------------------------------------------------------------------------------------------- |
+    |    id    | string |          | The vector ID.                                                                                                     |
+    | distance | float  |          | The distance.                                                                                                      |
+    | metadata | bytes  | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -272,6 +274,7 @@ Each Search request and response are independent.
   message Object.Distance {
     string id = 1;
     float distance = 2;
+    optional bytes metadata = 3;
   }
 
   ```
@@ -291,10 +294,11 @@ Each Search request and response are independent.
 
   - Object.Distance
 
-    |  field   | type   | label | description    |
-    | :------: | :----- | :---- | :------------- |
-    |    id    | string |       | The vector ID. |
-    | distance | float  |       | The distance.  |
+    |  field   | type   | label    | description                                                                                                        |
+    | :------: | :----- | :------- | :----------------------------------------------------------------------------------------------------------------- |
+    |    id    | string |          | The vector ID.                                                                                                     |
+    | distance | float  |          | The distance.                                                                                                      |
+    | metadata | bytes  | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 
@@ -419,6 +423,7 @@ Please be careful that the size of the request exceeds the limit.
   message Object.Distance {
     string id = 1;
     float distance = 2;
+    optional bytes metadata = 3;
   }
 
   ```
@@ -439,10 +444,11 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Distance
 
-    |  field   | type   | label | description    |
-    | :------: | :----- | :---- | :------------- |
-    |    id    | string |       | The vector ID. |
-    | distance | float  |       | The distance.  |
+    |  field   | type   | label    | description                                                                                                        |
+    | :------: | :----- | :------- | :----------------------------------------------------------------------------------------------------------------- |
+    |    id    | string |          | The vector ID.                                                                                                     |
+    | distance | float  |          | The distance.                                                                                                      |
+    | metadata | bytes  | optional | Metadata associated with this vector; this field is handled only when the request passes through the meta-gateway. |
 
 ### Status Code
 

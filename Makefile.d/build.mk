@@ -27,6 +27,7 @@ binary/build/go: \
 	cmd/discoverer/k8s/discoverer \
 	cmd/gateway/filter/filter \
 	cmd/gateway/lb/lb \
+	cmd/gateway/meta/meta \
 	cmd/gateway/mirror/mirror \
 	cmd/index/job/correction/index-correction \
 	cmd/index/job/creation/index-creation \
@@ -78,6 +79,10 @@ cmd/gateway/lb/lb:
 cmd/gateway/filter/filter:
 	$(eval CGO_ENABLED = 0)
 	$(call go-build,gateway/filter,,-static,,,$@)
+
+cmd/gateway/meta/meta:
+	$(eval CGO_ENABLED = 0)
+	$(call go-build,gateway/meta,,-static,,,$@)
 
 cmd/gateway/mirror/mirror:
 	$(eval CGO_ENABLED = 0)
@@ -192,6 +197,10 @@ artifacts/vald-benchmark-job-$(GOOS)-$(GOARCH).zip: cmd/tools/benchmark/job/job
 	zip --junk-paths $@ $<
 
 artifacts/vald-benchmark-operator-$(GOOS)-$(GOARCH).zip: cmd/tools/benchmark/operator/operator
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-meta-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/meta/meta
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
 

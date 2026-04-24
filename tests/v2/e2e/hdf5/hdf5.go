@@ -84,10 +84,11 @@ func HDF5ToDataset(name string) (*Dataset, error) {
 		return nil, err
 	}
 
-	neighbors, err := ReadDataset[int](file, "neighbors")
+	rawNeighbors, err := ReadDataset[int32](file, "neighbors")
 	if err != nil {
 		return nil, err
 	}
+	neighbors := toIntMatrix(rawNeighbors)
 
 	return &Dataset{
 		Train:     train,
@@ -95,6 +96,17 @@ func HDF5ToDataset(name string) (*Dataset, error) {
 		Neighbors: neighbors,
 		maxLen:    uint64(max(len(train), len(test), len(neighbors))),
 	}, nil
+}
+
+func toIntMatrix(src [][]int32) [][]int {
+	dst := make([][]int, len(src))
+	for i := range src {
+		dst[i] = make([]int, len(src[i]))
+		for j := range src[i] {
+			dst[i][j] = int(src[i][j])
+		}
+	}
+	return dst
 }
 
 func ReadDataset[T any](file *hdf5.File, name string) ([][]T, error) {
