@@ -13,12 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-.claude/settings.local.json
-apis/grpc/v1/embedder/embedder.pb.json.go
-cmd/tools/embedder/doc.go
-cmd/tools/embedder/main.go
-cmd/tools/embedder/sample.yaml
-pkg/tools/embedder/service/meta.go
 .all-contributorsrc
 .coderabbit.yaml
 .commit_template
@@ -200,6 +194,7 @@ apis/grpc/v1/agent/sidecar/sidecar_vtproto.pb.go
 apis/grpc/v1/discoverer/discoverer.pb.go
 apis/grpc/v1/discoverer/discoverer_vtproto.pb.go
 apis/grpc/v1/embedder/embedder.pb.go
+apis/grpc/v1/embedder/embedder.pb.json.go
 apis/grpc/v1/embedder/embedder_vtproto.pb.go
 apis/grpc/v1/filter/egress/egress_filter.pb.go
 apis/grpc/v1/filter/egress/egress_filter_vtproto.pb.go
@@ -616,6 +611,9 @@ cmd/tools/cli/benchmark/core/main_test.go
 cmd/tools/cli/vdctl/doc.go
 cmd/tools/cli/vdctl/main.go
 cmd/tools/cli/vdctl/main_test.go
+cmd/tools/embedder/doc.go
+cmd/tools/embedder/main.go
+cmd/tools/embedder/sample.yaml
 codecov.yaml
 design/Vald Architecture Assets.drawio
 design/Vald Architecture Dataflow.drawio
@@ -2299,10 +2297,10 @@ pkg/tools/embedder/service/doc.go
 pkg/tools/embedder/service/embedder.go
 pkg/tools/embedder/service/llm.go
 pkg/tools/embedder/service/llm_option.go
+pkg/tools/embedder/service/meta.go
 pkg/tools/embedder/service/option.go
 pkg/tools/embedder/usecase/agentd.go
 pkg/tools/embedder/usecase/embedder.go
-qemu_make_20250512-042753_18331.core
 renovate.json
 rust/Cargo.lock
 rust/Cargo.toml
