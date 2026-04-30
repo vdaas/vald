@@ -194,9 +194,9 @@
     },
     "TimestampOperator": {
       "type": "string",
-      "enum": ["Eq", "Ne", "Ge", "Gt", "Le", "Lt"],
-      "default": "Eq",
-      "description": "Operator is enum of each conditional operator.\n\n - Eq: The timestamp is equal to the specified value in the request.\n - Ne: The timestamp is not equal to the specified value in the request.\n - Ge: The timestamp is greater than or equal to the specified value in the\nrequest.\n - Gt: The timestamp is greater than the specified value in the request.\n - Le: The timestamp is less than or equal to the specified value in the\nrequest.\n - Lt: The timestamp is less than the specified value in the request."
+      "enum": ["EQ", "NE", "GE", "GT", "LE", "LT"],
+      "default": "EQ",
+      "description": "Operator is enum of each conditional operator.\n\n - EQ: The timestamp is equal to the specified value in the request.\n - NE: The timestamp is not equal to the specified value in the request.\n - GE: The timestamp is greater than or equal to the specified value in the\nrequest.\n - GT: The timestamp is greater than the specified value in the request.\n - LE: The timestamp is less than or equal to the specified value in the\nrequest.\n - LT: The timestamp is less than the specified value in the request."
     },
     "protobufAny": {
       "type": "object",

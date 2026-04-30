@@ -57,9 +57,9 @@ jobs:
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: "Install fossa-cli"
+      - name: Install FOSSA CLI
         run: |
-          curl -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/fossas/fossa-cli/master/install.sh | bash
+          make fossa/install
       - name: "Run for main branch"
         if: github.ref == 'refs/heads/main'
         run: |

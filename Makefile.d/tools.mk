@@ -28,167 +28,130 @@ $(BINDIR)/golangci-lint:
 goimports/install: \
 	$(GOBIN)/goimports
 
-$(GOBIN)/goimports:
-	$(call go-tool-install)
-
 .PHONY: strictgoimports/install
 ## install strictgoimports
 strictgoimports/install: \
 	$(GOBIN)/strictgoimports
-
-$(GOBIN)/strictgoimports:
-	$(call go-tool-install)
 
 .PHONY: gofumpt/install
 ## install gofumpt
 gofumpt/install: \
 	$(GOBIN)/gofumpt
 
-$(GOBIN)/gofumpt:
-	$(call go-tool-install)
-
 .PHONY: golines/install
 ## install golines
 golines/install: \
 	$(GOBIN)/golines
-
-$(GOBIN)/golines:
-	$(call go-tool-install)
 
 .PHONY: crlfmt/install
 ## install crlfmt
 crlfmt/install: \
 	$(GOBIN)/crlfmt
 
-$(GOBIN)/crlfmt:
-	$(call go-tool-install)
-
 .PHONY: actionlint/install
 ## install actionlint
 actionlint/install: \
 	$(GOBIN)/actionlint
-
-$(GOBIN)/actionlint:
-	$(call go-tool-install)
 
 .PHONY: ghalint/install
 ## install ghalint
 ghalint/install: \
 	$(GOBIN)/ghalint
 
-$(GOBIN)/ghalint:
-	$(call go-tool-install)
-
 .PHONY: pinact/install
 ## install pinact
 pinact/install: \
 	$(GOBIN)/pinact
-
-$(GOBIN)/pinact:
-	$(call go-tool-install)
 
 .PHONY: ghatm/install
 ## install ghatm
 ghatm/install: \
 	$(GOBIN)/ghatm
 
-$(GOBIN)/ghatm:
-	$(call go-tool-install)
-
 .PHONY: buf/install
 ## install buf
 buf/install: \
 	$(GOBIN)/buf
-
-$(GOBIN)/buf:
-	$(call go-tool-install)
 
 .PHONY: k9s/install
 ## install k9s
 k9s/install: \
 	$(GOBIN)/k9s
 
-$(GOBIN)/k9s:
-	$(call go-tool-install)
-
 .PHONY: stern/install
 ## install stern
 stern/install: \
 	$(GOBIN)/stern
-
-$(GOBIN)/stern:
-	$(call go-tool-install)
 
 .PHONY: yamlfmt/install
 ## install yamlfmt
 yamlfmt/install: \
 	$(GOBIN)/yamlfmt
 
-$(GOBIN)/yamlfmt:
-	$(call go-tool-install)
-
 .PHONY: gomodifytags/install
 ## install gomodifytags
 gomodifytags/install: \
 	$(GOBIN)/gomodifytags
-
-$(GOBIN)/gomodifytags:
-	$(call go-tool-install)
 
 .PHONY: impl/install
 ## install impl
 impl/install: \
 	$(GOBIN)/impl
 
-$(GOBIN)/impl:
-	$(call go-tool-install)
-
 .PHONY: delve/install
 ## install delve
 delve/install: \
 	$(GOBIN)/dlv
-
-$(GOBIN)/dlv:
-	$(call go-tool-install)
 
 .PHONY: staticcheck/install
 ## install staticcheck
 staticcheck/install: \
 	$(GOBIN)/staticcheck
 
-$(GOBIN)/staticcheck:
-	$(call go-tool-install)
-
 .PHONY: tparse/install
 ## install tparse
 tparse/install: \
 	$(GOBIN)/tparse
-
-$(GOBIN)/tparse:
-	$(call go-tool-install)
 
 .PHONY: gotestfmt/install
 ## install gotestfmt
 gotestfmt/install: \
 	$(GOBIN)/gotestfmt
 
-$(GOBIN)/gotestfmt:
-	$(call go-tool-install)
-
 .PHONY: gotests/install
 ## install gotests
 gotests/install: \
 	$(GOBIN)/gotests
-
-$(GOBIN)/gotests:
-	$(call go-tool-install)
 
 .PHONY: protoc-gen-doc/install
 ## install protoc-gen-doc
 protoc-gen-doc/install: \
 	$(GOBIN)/protoc-gen-doc
 
-$(GOBIN)/protoc-gen-doc:
+GO_BINS = \
+	$(GOBIN)/goimports \
+	$(GOBIN)/strictgoimports \
+	$(GOBIN)/gofumpt \
+	$(GOBIN)/golines \
+	$(GOBIN)/crlfmt \
+	$(GOBIN)/actionlint \
+	$(GOBIN)/ghalint \
+	$(GOBIN)/pinact \
+	$(GOBIN)/ghatm \
+	$(GOBIN)/buf \
+	$(GOBIN)/k9s \
+	$(GOBIN)/stern \
+	$(GOBIN)/yamlfmt \
+	$(GOBIN)/gomodifytags \
+	$(GOBIN)/impl \
+	$(GOBIN)/dlv \
+	$(GOBIN)/staticcheck \
+	$(GOBIN)/tparse \
+	$(GOBIN)/gotestfmt \
+	$(GOBIN)/gotests \
+	$(GOBIN)/protoc-gen-doc
+
+$(GO_BINS):
 	$(call go-tool-install)
 
 .PHONY: go/tools/install
@@ -202,7 +165,7 @@ gopls/install: \
 	$(GOBIN)/gopls
 
 $(GOBIN)/gopls:
-	GO111MODULE=on go install -mod=readonly golang.org/x/tools/gopls@latest
+	$(GO_ENV_VARS) go install -mod=readonly golang.org/x/tools/gopls@latest
 
 .PHONY: prettier/install
 ## Install prettier via Bun (global)
@@ -304,7 +267,8 @@ $(GOROOT)/bin/go:
 	&& mkdir -p $(TEMP_DIR)/go \
 	&& tar -xzvf "$(TEMP_DIR)/$${TAR_NAME}" -C $(TEMP_DIR)/go --strip-components 1 \
 	&& rm -rf "$(TEMP_DIR)/$${TAR_NAME}" \
-	&& mv $(TEMP_DIR)/go $(GOROOT) \
+	&& $(SUDO) rm -rf $(GOROOT) \
+	&& $(SUDO) mv $(TEMP_DIR)/go $(GOROOT) \
 	&& $(GOROOT)/bin/go version
 
 .PHONY: rust/install
@@ -312,10 +276,10 @@ $(GOROOT)/bin/go:
 rust/install: $(CARGO_HOME)/bin/cargo
 
 $(CARGO_HOME)/bin/cargo:
-	curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} sh -s -- --default-toolchain $(RUST_VERSION) -y
-	rustup toolchain install $(RUST_VERSION)
-	rustup default $(RUST_VERSION)
-	source "${CARGO_HOME}/env"
+	curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | CARGO_HOME=$(CARGO_HOME) RUSTUP_HOME=$(RUSTUP_HOME) sh -s -- --default-toolchain $(RUST_VERSION) -y && \
+	$(CARGO_HOME)/bin/rustup toolchain install $(RUST_VERSION) && \
+	$(CARGO_HOME)/bin/rustup default $(RUST_VERSION) && \
+	$(CARGO_HOME)/bin/rustup component add rust-src rust-analyzer rust-docs rustfmt clippy
 
 .PHONY: rustfmt/install
 ## install rustfmt
@@ -327,69 +291,123 @@ rustfmt/install:
 	$(MAKE) rust/install
 	$(MAKE) $(CARGO_HOME)/bin/rustfmt
 
+.PHONY: clang/install
+## install clang, lld, and llvm from source
+clang/install: $(USR_LOCAL)/bin/clang
+
+.PHONY: openmp/install
+## install openmp from source
+openmp/install: $(USR_LOCAL)/bin/clang
+
+$(USR_LOCAL)/bin/clang:
+	$(call cmake-install,https://github.com/llvm/llvm-project/releases/download/llvmorg-$(LLVM_VERSION)/llvm-project-$(LLVM_VERSION).src.tar.xz,llvm, \
+		-DLLVM_ENABLE_PROJECTS="clang;lld" \
+		-DLLVM_ENABLE_RUNTIMES="openmp;libcxx;libcxxabi;libunwind" \
+		-DLLVM_TARGETS_TO_BUILD="X86;AArch64" \
+		-DLLVM_INCLUDE_TESTS=OFF \
+		-DLLVM_INCLUDE_EXAMPLES=OFF \
+		-DLLVM_ENABLE_RTTI=ON \
+		-DLLVM_ENABLE_ZLIB=ON \
+		-DLLVM_ENABLE_ZSTD=ON \
+		-DLLVM_ENABLE_LIBXML2=OFF \
+		-DLLVM_ENABLE_TERMINFO=OFF \
+		-DLLVM_ENABLE_BINDINGS=OFF \
+		-DLLVM_ENABLE_OCAMLDOC=OFF \
+		-DLLVM_ENABLE_DOXYGEN=OFF \
+		-DLLVM_ENABLE_SPHINX=OFF \
+		-DLIBOMP_INSTALL_ALIASES=ON,,, \
+		llvm)
+
 .PHONY: zlib/install
 ## install zlib
 zlib/install: $(LIB_PATH)/libz.a
 
 $(LIB_PATH)/libz.a: $(LIB_PATH)
-	curl -fsSL https://github.com/madler/zlib/releases/download/v$(ZLIB_VERSION)/zlib-$(ZLIB_VERSION).tar.gz -o $(TEMP_DIR)/zlib-$(ZLIB_VERSION).tar.gz \
-	&& mkdir -p $(TEMP_DIR)/zlib \
-	&& tar -xzvf $(TEMP_DIR)/zlib-$(ZLIB_VERSION).tar.gz -C $(TEMP_DIR)/zlib --strip-components 1 \
-	&& cd $(TEMP_DIR)/zlib \
-	&& mkdir -p build \
-	&& cd build \
-	&& cmake	-DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
-	-DBUILD_SHARED_LIBS=OFF \
-	-DBUILD_STATIC_EXECS=ON \
-	-DBUILD_TESTING=OFF \
-	-DZLIB_BUILD_SHARED=OFF \
-	-DZLIB_BUILD_STATIC=ON \
-	-DZLIB_COMPAT=ON \
-	-DZLIB_USE_STATIC_LIBS=ON \
-	-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
-	-DCMAKE_C_FLAGS="$(CFLAGS)" \
-	-DCMAKE_INSTALL_LIBDIR=$(LIB_PATH) \
-	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
-	-B $(TEMP_DIR)/zlib/build $(TEMP_DIR)/zlib \
-	&& make -j$(CORES) \
-	&& make install \
-	&& cd $(ROOTDIR) \
-	&& rm -rf $(TEMP_DIR)/zlib-$(ZLIB_VERSION).tar.gz $(TEMP_DIR)/zlib $(LIB_PATH)/libz.s*
+	$(call cmake-install,https://github.com/madler/zlib/releases/download/v$(ZLIB_VERSION)/zlib-$(ZLIB_VERSION).tar.gz,zlib, \
+		-DZLIB_BUILD_SHARED=OFF \
+		-DZLIB_BUILD_STATIC=ON \
+		-DZLIB_COMPAT=ON \
+		-DZLIB_USE_STATIC_LIBS=ON, \
+		$(SUDO) rm -f $(USR_LOCAL)/include/zlib.h $(USR_LOCAL)/include/zconf.h $(LIB_PATH)/libz.a $(USR_LOCAL)/share/man/man3/zlib.3,,,zlibstatic)
 
 .PHONY: hdf5/install
 ## install hdf5
 hdf5/install: $(LIB_PATH)/libhdf5.a
 
-$(LIB_PATH)/libhdf5.a: $(LIB_PATH) \
-	zlib/install
-	mkdir -p $(TEMP_DIR)/hdf5 \
-	&& curl -fsSL https://github.com/HDFGroup/hdf5/archive/refs/tags/$(HDF5_VERSION).tar.gz -o $(TEMP_DIR)/hdf5.tar.gz \
-	&& tar -xzvf $(TEMP_DIR)/hdf5.tar.gz -C $(TEMP_DIR)/hdf5 --strip-components 1 \
-	&& mkdir -p $(TEMP_DIR)/hdf5/build \
-	&& cd $(TEMP_DIR)/hdf5/build \
-	&& cmake -DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
-	-DBUILD_SHARED_LIBS=OFF \
-	-DBUILD_STATIC_EXECS=ON \
-	-DBUILD_TESTING=OFF \
-	-DHDF5_BUILD_CPP_LIB=OFF \
-	-DHDF5_BUILD_HL_LIB=ON \
-	-DHDF5_BUILD_STATIC_EXECS=ON \
-	-DHDF5_BUILD_TOOLS=OFF \
-	-DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
-	-DH5_ZLIB_INCLUDE_DIR=$(USR_LOCAL)/include \
-	-DH5_ZLIB_LIBRARY=$(LIB_PATH)/libz.a \
-	-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
-	-DCMAKE_C_FLAGS="$(CFLAGS)" \
-	-DCMAKE_INSTALL_LIBDIR=$(LIB_PATH) \
-	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
-	-B $(TEMP_DIR)/hdf5/build $(TEMP_DIR)/hdf5 \
-	&& make -j$(CORES) \
-	&& make install \
-	&& cd $(ROOTDIR) \
-	&& rm -rf $(TEMP_DIR)/hdf5.tar.gz $(TEMP_DIR)/hdf5 \
-	&& ldconfig
+$(LIB_PATH)/libhdf5.a: $(LIB_PATH) zlib/install
+	$(call cmake-install,https://github.com/HDFGroup/hdf5/archive/refs/tags/$(HDF5_VERSION).tar.gz,hdf5, \
+		-DHDF5_BUILD_CPP_LIB=OFF \
+		-DHDF5_BUILD_HL_LIB=ON \
+		-DHDF5_BUILD_STATIC_EXECS=ON \
+		-DHDF5_BUILD_TOOLS=OFF \
+		-DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
+		-DH5_ZLIB_INCLUDE_DIR=$(USR_LOCAL)/include \
+		-DH5_ZLIB_LIBRARY=$(LIB_PATH)/libz.a, \
+		$(SUDO) rm -f $(USR_LOCAL)/include/H5*.h $(USR_LOCAL)/include/hdf5*.h $(LIB_PATH)/libhdf5*)
+
+.PHONY: ngt/install
+## install NGT
+ngt/install: $(USR_LOCAL)/include/NGT/Capi.h
+
+$(USR_LOCAL)/include/NGT/Capi.h:
+	$(call cmake-install,https://github.com/NGT-labs/NGT.git,ngt, \
+		-DNGT_LARGE_DATASET=ON \
+		-DBUILD_STATIC_EXECS=OFF \
+		$(NGT_EXTRA_CMAKE_FLAGS), \
+		mkdir -p $(TEMP_DIR)/ngt/build/bin/ngt $(TEMP_DIR)/ngt/build/bin/qbg && touch $(TEMP_DIR)/ngt/build/bin/ngt/ngt $(TEMP_DIR)/ngt/build/bin/qbg/qbg, \
+		v$(NGT_VERSION), \
+		, \
+		ngt)
+
+.PHONY: faiss/install
+## install Faiss
+faiss/install: $(LIB_PATH)/libfaiss.a
+
+$(LIB_PATH)/libfaiss.a:
+	$(call cmake-install,https://github.com/facebookresearch/faiss/archive/v$(FAISS_VERSION).tar.gz,faiss, \
+		-DFAISS_ENABLE_PYTHON=OFF \
+		-DFAISS_ENABLE_GPU=OFF \
+		-DBLA_VENDOR=OpenBLAS \
+		-DCMAKE_EXE_LINKER_FLAGS="$(FAISS_LDFLAGS)", \
+		, \
+		, \
+		, \
+		faiss)
+
+.PHONY: usearch/install
+## install usearch
+usearch/install: $(USR_LOCAL)/include/usearch.h
+
+$(USR_LOCAL)/include/usearch.h:
+	$(call cmake-install,https://github.com/unum-cloud/usearch.git,usearch, \
+		-DUSEARCH_BUILD_LIB_C=ON \
+		-DUSEARCH_USE_FP16LIB=ON \
+		-DUSEARCH_USE_OPENMP=ON \
+		-DUSEARCH_USE_SIMSIMD=ON \
+		-DUSEARCH_USE_JEMALLOC=ON, \
+		cp $(TEMP_DIR)/usearch/build/libusearch_static_c.a $(LIB_PATH)/libusearch_c.a && cp $(TEMP_DIR)/usearch/build/libusearch_static_c.a $(LIB_PATH)/libusearch_static_c.a && cp $(TEMP_DIR)/usearch/build/libusearch_c.so $(LIB_PATH)/libusearch_c.so && cp $(TEMP_DIR)/usearch/c/usearch.h $(USR_LOCAL)/include/usearch.h, \
+		v$(USEARCH_VERSION))
+
+.PHONY: cmake/install
+## install CMAKE
+cmake/install:
+	CMAKE_ARCH=$$(if [ "$(ARCH)" = "aarch64" ] || [ "$(ARCH)" = "arm64" ]; then echo "aarch64"; else echo "x86_64"; fi); \
+	TAR_NAME="cmake-$(CMAKE_VERSION)-linux-$${CMAKE_ARCH}.tar.gz" \
+	&& curl -fsSL "https://github.com/Kitware/CMake/releases/download/v$(CMAKE_VERSION)/$${TAR_NAME}" -o "$(TEMP_DIR)/$${TAR_NAME}" \
+	&& $(SUDO) tar -xzf "$(TEMP_DIR)/$${TAR_NAME}" -C $(USR_LOCAL) --strip-components 1 \
+	&& rm -rf "$(TEMP_DIR)/$${TAR_NAME}" \
+	&& cmake --version
+
+.PHONY: ninja/install
+## install ninja-build
+ninja/install:
+	NINJA_ARCH=$$(if [ "$(ARCH)" = "aarch64" ] || [ "$(ARCH)" = "arm64" ]; then echo "-aarch64"; else echo ""; fi); \
+	TAR_NAME="ninja-linux$${NINJA_ARCH}.zip" \
+	&& curl -fsSL "https://github.com/ninja-build/ninja/releases/download/v$(NINJA_VERSION)/$${TAR_NAME}" -o "$(TEMP_DIR)/$${TAR_NAME}" \
+	&& $(SUDO) unzip -q -o "$(TEMP_DIR)/$${TAR_NAME}" -d $(USR_LOCAL)/bin \
+	&& rm -rf "$(TEMP_DIR)/$${TAR_NAME}" \
+	&& $(SUDO) chmod +x $(USR_LOCAL)/bin/ninja \
+	&& ninja --version
 
 .PHONY: yq/install
 ## install yq
@@ -410,9 +428,16 @@ $(BINDIR)/docker: $(BINDIR)
 	curl -fsSL https://download.docker.com/linux/static/stable/$(shell uname -m)/docker-$(shell echo $(DOCKER_VERSION) | cut -c2-).tgz -o $(TEMP_DIR)/docker.tgz \
 	&& tar -xzvf $(TEMP_DIR)/docker.tgz -C $(TEMP_DIR) \
 	&& mv $(TEMP_DIR)/docker/docker $(BINDIR) \
-	&& rm -rf $(TEMP_DIR)/docker{.tgz,}
+	&& rm -rf $(TEMP_DIR)/docker $(TEMP_DIR)/docker.tgz
+
+.PHONY: fossa/install
+## install fossa
+fossa/install: $(BINDIR)/fossa
+
+$(BINDIR)/fossa:
+	curl -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/fossas/fossa-cli/master/install.sh | sh -s -- -b $(BINDIR)
 
 .PHONY: replace/busybox
 ## replace busybox version
 replace/busybox:
-	find . -type f \( -name "*.yaml" -o -name "*.md" \) -exec sed -i -E 's/busybox:([0-9]+\.[0-9]+\.[0-9]+|latest)/busybox:$(BUSYBOX_VERSION)/g' {} +
+	cat $(ROOTDIR)/.gitfiles | grep -E '\.(yaml|md)$$' | sed -e 's%^%$(ROOTDIR)/%' | xargs -I {} -P $(CORES) sed -i -E 's/busybox:([0-9]+\.[0-9]+\.[0-9]+|latest)/busybox:$(BUSYBOX_VERSION)/g' "{}"

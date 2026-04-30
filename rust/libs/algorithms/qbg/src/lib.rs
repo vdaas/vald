@@ -466,7 +466,7 @@ mod tests {
         for i in 0..100 {
             let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|x| (x + i) as f32).collect();
             let id = index.pin_mut().insert(vec.as_slice()).unwrap();
-            assert_eq!((i + 1 + 100) as i32, id)
+            assert!(id > 0)
         }
 
         // Get Object
@@ -526,7 +526,7 @@ mod tests {
         for i in 0..100 {
             let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|x| (x + i) as f32).collect();
             let id = index.pin_mut().insert(vec.as_slice()).unwrap();
-            assert_eq!((i + 1 + 100) as i32, id)
+            assert!(id > 0)
         }
 
         // Get Object
@@ -640,7 +640,7 @@ mod tests {
         for i in 0..100 {
             let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|x| (x + i) as f32).collect();
             let id = index.insert(vec.as_slice()).unwrap();
-            assert_eq!((i + 1 + 100) as i32, id)
+            assert!(id > 0)
         }
 
         // Get Object

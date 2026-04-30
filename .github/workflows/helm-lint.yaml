@@ -66,7 +66,7 @@ jobs:
           make helm/schema/vald
       - name: Run lint for charts/vald
         run: |
-          helm lint charts/vald
+          make helm/lint/vald
   lint-vald-helm-operator-chart:
     timeout-minutes: 30
     permissions:
@@ -92,7 +92,7 @@ jobs:
           make helm/schema/vald-helm-operator
       - name: Run lint for charts/vald-helm-operator
         run: |
-          helm lint charts/vald-helm-operator
+          make helm/lint/vald-helm-operator
   lint-values-schema:
     timeout-minutes: 30
     permissions:

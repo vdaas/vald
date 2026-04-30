@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 $(BENCH_DATASETS): $(BENCH_DATASET_MD5S) $(BENCH_DATASET_HDF5_DIR)
 	@$(call green, "downloading datasets for benchmark...")
 	curl -fsSL -o $@ https://ann-benchmarks.com/$(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,%.hdf5,$@)
@@ -142,23 +143,8 @@ bench/core/ngt/sequential: \
 ## run pprof of benchmark for NGT core sequential methods
 pprof/core/ngt/sequential.bin: \
 	hack/benchmark/core/ngt/ngt_bench_test.go
-	mkdir -p $(dir $@)
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test \
-	-mod=readonly \
-	-count=1 \
-	-timeout=1h \
-	-bench=NGTSequential \
-	-benchmem \
-	-o $@ \
-	-cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
-	-memprofile $(patsubst %.bin,%.mem.out,$@) \
-	-trace $(patsubst %.bin,%.trace.out,$@) \
-	$< \
-	-dataset=$(DATASET_ARGS)
+	$(call go-bench,NGTSequential,$@,$< \
+	-dataset=$(DATASET_ARGS))
 
 .PHONY: bench/core/ngt/parallel
 ## run benchmark for NGT core parallel methods
@@ -170,23 +156,8 @@ bench/core/ngt/parallel: \
 ## run pprof of benchmark for NGT core parallel methods
 pprof/core/ngt/parallel.bin: \
 	hack/benchmark/core/ngt/ngt_bench_test.go
-	mkdir -p $(dir $@)
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test \
-	-mod=readonly \
-	-count=1 \
-	-timeout=1h \
-	-bench=NGTParallel \
-	-benchmem \
-	-o $@ \
-	-cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
-	-memprofile $(patsubst %.bin,%.mem.out,$@) \
-	-trace $(patsubst %.bin,%.trace.out,$@) \
-	$< \
-	-dataset=$(DATASET_ARGS)
+	$(call go-bench,NGTParallel,$@,$< \
+	-dataset=$(DATASET_ARGS))
 
 .PHONY: bench/agent
 ## run benchmarks for vald agent
@@ -205,23 +176,8 @@ bench/agent/stream: \
 pprof/agent/stream.bin: \
 	hack/benchmark/e2e/agent/core/ngt/ngt_bench_test.go \
 	ngt/install
-	mkdir -p $(dir $@)
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test \
-	-mod=readonly \
-	-count=1 \
-	-timeout=1h \
-	-bench=gRPC_Stream \
-	-benchmem \
-	-o $@ \
-	-cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
-	-memprofile $(patsubst %.bin,%.mem.out,$@) \
-	-trace $(patsubst %.bin,%.trace.out,$@) \
-	$< \
-	-dataset=$(DATASET_ARGS)
+	$(call go-bench,gRPC_Stream,$@,$< \
+	-dataset=$(DATASET_ARGS))
 
 .PHONY: bench/agent/sequential/grpc
 ## run benchmark for agent gRPC sequential
@@ -232,23 +188,8 @@ bench/agent/sequential/grpc: \
 pprof/agent/sequential/grpc.bin: \
 	hack/benchmark/e2e/agent/core/ngt/ngt_bench_test.go \
 	ngt/install
-	mkdir -p $(dir $@)
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test \
-	-mod=readonly \
-	-count=1 \
-	-timeout=1h \
-	-bench=gRPC_Sequential \
-	-benchmem \
-	-o $@ \
-	-cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
-	-memprofile $(patsubst %.bin,%.mem.out,$@) \
-	-trace $(patsubst %.bin,%.trace.out,$@) \
-	$< \
-	-dataset=$(DATASET_ARGS)
+	$(call go-bench,gRPC_Sequential,$@,$< \
+	-dataset=$(DATASET_ARGS))
 
 .PHONY: bench/gateway
 ## run benchmarks for gateway
@@ -263,23 +204,8 @@ bench/gateway/sequential: \
 pprof/gateway/sequential.bin: \
 	hack/benchmark/e2e/gateway/vald/vald_bench_test.go \
 	ngt/install
-	mkdir -p $(dir $@)
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test \
-	-mod=readonly \
-	-count=1 \
-	-timeout=1h \
-	-bench=Sequential \
-	-benchmem \
-	-o $@ \
-	-cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
-	-memprofile $(patsubst %.bin,%.mem.out,$@) \
-	-trace $(patsubst %.bin,%.trace.out,$@) \
-	$< \
-	-dataset=$(DATASET_ARGS)
+	$(call go-bench,Sequential,$@,$< \
+	-dataset=$(DATASET_ARGS))
 
 .PHONY: profile
 ## execute profile
@@ -313,10 +239,7 @@ metrics/agent: \
 metrics/agent/core/ngt: $(ROOTDIR)/metrics.gob
 
 $(ROOTDIR)/metrics.gob:
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
+	$(GO_TEST_ENV) \
 	go test \
 	-mod=readonly \
 	-v --timeout=1h \
@@ -328,9 +251,7 @@ $(ROOTDIR)/metrics.gob:
 metrics/chart: $(ROOTDIR)/assets/image/metrics.svg
 
 $(ROOTDIR)/assets/image/metrics.svg: $(ROOTDIR)/metrics.gob
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
+	$(GO_ENV_VARS) \
 	go run \
 	$(ROOTDIR)/hack/tools/metrics/main.go \
 	-title "Recall-QPS" \

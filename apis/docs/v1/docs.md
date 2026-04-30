@@ -1265,12 +1265,12 @@ Operator is enum of each conditional operator.
 
 | Name | Number | Description                                                                   |
 | ---- | ------ | ----------------------------------------------------------------------------- |
-| Eq   | 0      | The timestamp is equal to the specified value in the request.                 |
-| Ne   | 1      | The timestamp is not equal to the specified value in the request.             |
-| Ge   | 2      | The timestamp is greater than or equal to the specified value in the request. |
-| Gt   | 3      | The timestamp is greater than the specified value in the request.             |
-| Le   | 4      | The timestamp is less than or equal to the specified value in the request.    |
-| Lt   | 5      | The timestamp is less than the specified value in the request.                |
+| EQ   | 0      | The timestamp is equal to the specified value in the request.                 |
+| NE   | 1      | The timestamp is not equal to the specified value in the request.             |
+| GE   | 2      | The timestamp is greater than or equal to the specified value in the request. |
+| GT   | 3      | The timestamp is greater than the specified value in the request.             |
+| LE   | 4      | The timestamp is less than or equal to the specified value in the request.    |
+| LT   | 5      | The timestamp is less than the specified value in the request.                |
 
 <a name="payload-v1-Search-AggregationAlgorithm"></a>
 

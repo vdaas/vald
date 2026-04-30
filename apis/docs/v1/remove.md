@@ -134,12 +134,12 @@ This design allows for versatile deletion operations, facilitating tasks such as
   }
 
   enum Remove.Timestamp.Operator {
-    Eq = 0;
-    Ne = 1;
-    Ge = 2;
-    Gt = 3;
-    Le = 4;
-    Lt = 5;
+    EQ = 0;
+    NE = 1;
+    GE = 2;
+    GT = 3;
+    LE = 4;
+    LT = 5;
   }
 
   ```

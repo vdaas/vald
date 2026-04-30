@@ -17,7 +17,7 @@
 package ngt
 
 /*
-#cgo LDFLAGS: -lngt
+#cgo LDFLAGS: -L/usr/local/lib -lngt
 #include <NGT/Capi.h>
 #include <stdlib.h>
 */
@@ -716,6 +716,10 @@ func (n *ngt) Search(
 		return nil, errors.ErrIncompatibleDimensionSize(len(vec), int(n.dimension))
 	}
 
+	var pinner runtime.Pinner
+	pinner.Pin(&vec[0])
+	defer pinner.Unpin()
+
 	ne := n.GetErrorBuffer()
 	results := C.ngt_create_empty_results(ne.err)
 	defer C.ngt_destroy_results(results)
@@ -742,7 +746,6 @@ func (n *ngt) Search(
 		results,
 		C.int(edgeSize),
 		ne.err)
-	vec = nil
 	if ret == ErrorCode {
 		n.rUnlock(true)
 		return nil, n.newGoError(ne)
@@ -799,6 +802,10 @@ func (n *ngt) LinearSearch(
 		return nil, errors.ErrIncompatibleDimensionSize(len(vec), int(n.dimension))
 	}
 
+	var pinner runtime.Pinner
+	pinner.Pin(&vec[0])
+	defer pinner.Unpin()
+
 	ne := n.GetErrorBuffer()
 	results := C.ngt_create_empty_results(ne.err)
 	defer C.ngt_destroy_results(results)
@@ -815,7 +822,6 @@ func (n *ngt) LinearSearch(
 		*(*C.size_t)(unsafe.Pointer(&size)),
 		results,
 		ne.err)
-	vec = nil
 
 	if ret == ErrorCode {
 		n.rUnlock(true)
@@ -874,6 +880,11 @@ func (n *ngt) Insert(vec []float32) (id uint, err error) {
 	if len(vec) != int(n.dimension) {
 		return 0, errors.ErrIncompatibleDimensionSize(len(vec), int(n.dimension))
 	}
+
+	var pinner runtime.Pinner
+	pinner.Pin(&vec[0])
+	defer pinner.Unpin()
+
 	dim := C.uint32_t(n.dimension)
 	cvec := (*C.float)(&vec[0])
 	ne := n.GetErrorBuffer()
@@ -881,9 +892,6 @@ func (n *ngt) Insert(vec []float32) (id uint, err error) {
 	oid := C.ngt_insert_index_as_float(n.index, cvec, dim, ne.err)
 	n.unlock(true)
 	id = uint(oid)
-	cvec = nil
-	vec = vec[:0:0]
-	vec = nil
 	if id == 0 {
 		return 0, n.newGoError(ne)
 	}

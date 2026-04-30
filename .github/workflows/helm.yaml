@@ -74,7 +74,7 @@ jobs:
           git checkout .
           git checkout gh-pages
           mv -f vald-*.tgz charts/
-          helm repo index --url https://vald.vdaas.org/charts charts/
+          make helm/repo/index
 
           git add charts
           git commit -S --signoff -m ":robot: Automatically update Helm charts"
