@@ -221,10 +221,10 @@ func (e *embedder) vectorFromDocument(
 
 func (e *embedder) setMetadata(ctx context.Context, id string, metadata *payload.Meta_Value) error {
 	if metadata == nil {
-		return errors.New("metadata is nil")
+		return nil
 	}
 	if e.mclient == nil {
-		return errors.New("meta client is not configured")
+		return nil
 	}
 	_, err := e.mclient.Set(ctx, &payload.Meta_KeyValue{Key: &payload.Meta_Key{Key: id}, Value: metadata})
 	return err
@@ -232,7 +232,7 @@ func (e *embedder) setMetadata(ctx context.Context, id string, metadata *payload
 
 func (e *embedder) deleteMetadata(ctx context.Context, id string) error {
 	if e.mclient == nil {
-		return errors.New("meta client is not configured")
+		return nil
 	}
 	_, err := e.mclient.Delete(ctx, &payload.Meta_Key{Key: id})
 	return err
