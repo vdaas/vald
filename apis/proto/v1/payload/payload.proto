@@ -543,7 +543,7 @@ message Info {
     }
     // Represent the index count for each Agents message.
     message Detail {
-      // count infos for each agents
+      // count infos for each agent
       map<string, Count> counts = 1;
       // index replica of vald cluster
       uint32 replica = 2;
@@ -602,7 +602,7 @@ message Info {
 
     // Represents index Statistics for each Agents
     message StatisticsDetail {
-      // count infos for each agents
+      // count infos for each agent
       map<string, Statistics> details = 1;
     }
 

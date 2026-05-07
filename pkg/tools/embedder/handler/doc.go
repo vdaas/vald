@@ -14,4 +14,5 @@
 // limitations under the License.
 //
 
+// Package handler provides common interfaces for embedder request handlers.
 package handler

@@ -844,6 +844,7 @@ hack/tools/deadlink/main.go
 hack/tools/kvsdb/main.go
 hack/tools/metrics/main.go
 hack/tools/metrics/main_test.go
+hack/tools/openai-embedding-mock/main.go
 internal/backoff/backoff.go
 internal/backoff/backoff_test.go
 internal/backoff/context.go
@@ -2300,6 +2301,7 @@ pkg/tools/embedder/service/llm_option.go
 pkg/tools/embedder/service/meta.go
 pkg/tools/embedder/service/option.go
 pkg/tools/embedder/usecase/agentd.go
+pkg/tools/embedder/usecase/doc.go
 pkg/tools/embedder/usecase/embedder.go
 renovate.json
 rust/Cargo.lock
@@ -2359,6 +2361,9 @@ rust/libs/proto/src/discoverer/mod.rs
 rust/libs/proto/src/discoverer/v1/discoverer.v1.tonic.rs
 rust/libs/proto/src/discoverer/v1/mod.rs
 rust/libs/proto/src/embedder.v1.tonic.rs
+rust/libs/proto/src/embedder/v1/embedder.v1.rs
+rust/libs/proto/src/embedder/v1/embedder.v1.serde.rs
+rust/libs/proto/src/embedder/v1/embedder.v1.tonic.rs
 rust/libs/proto/src/filter/egress/mod.rs
 rust/libs/proto/src/filter/egress/v1/filter.egress.v1.tonic.rs
 rust/libs/proto/src/filter/egress/v1/mod.rs
@@ -2425,6 +2430,7 @@ tests/e2e/pkg/agent/core/ngt/service/ngt_e2s_test.go
 tests/e2e/sidecar/sidecar_test.go
 tests/performance/max_vector_dim_test.go
 tests/v2/e2e/assets/agent_crud.yaml
+tests/v2/e2e/assets/embedder.yaml
 tests/v2/e2e/assets/index_correction.yaml
 tests/v2/e2e/assets/multi_crud.yaml
 tests/v2/e2e/assets/readreplica.yaml
@@ -2436,6 +2442,7 @@ tests/v2/e2e/config/enums.go
 tests/v2/e2e/crud/agent_test.go
 tests/v2/e2e/crud/crud_test.go
 tests/v2/e2e/crud/dataset_test.go
+tests/v2/e2e/crud/embedder_test.go
 tests/v2/e2e/crud/grpc_test.go
 tests/v2/e2e/crud/index_test.go
 tests/v2/e2e/crud/kubernetes_test.go

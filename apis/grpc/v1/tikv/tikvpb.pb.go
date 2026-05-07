@@ -58,7 +58,6 @@ var file_v1_tikv_tikvpb_proto_goTypes = []any{
 	(*RawDeleteResponse)(nil),      // 10: tikv.RawDeleteResponse
 	(*RawBatchDeleteResponse)(nil), // 11: tikv.RawBatchDeleteResponse
 }
-
 var file_v1_tikv_tikvpb_proto_depIdxs = []int32{
 	0,  // 0: tikv.Tikv.RawGet:input_type -> tikv.RawGetRequest
 	1,  // 1: tikv.Tikv.RawBatchGet:input_type -> tikv.RawBatchGetRequest
@@ -88,7 +87,7 @@ func file_v1_tikv_tikvpb_proto_init() {
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
-			GoPackagePath: reflect.TypeFor[x]().PkgPath(),
+			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_v1_tikv_tikvpb_proto_rawDesc), len(file_v1_tikv_tikvpb_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   0,

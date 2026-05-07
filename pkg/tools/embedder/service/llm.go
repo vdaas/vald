@@ -16,6 +16,7 @@ package service
 import (
 	"context"
 	"reflect"
+	"time"
 
 	openai "github.com/sashabaranov/go-openai"
 	"github.com/vdaas/vald/internal/errors"
@@ -30,9 +31,10 @@ type OpenAI interface {
 }
 
 type openAI struct {
-	model  openai.EmbeddingModel
-	token  string
-	client *openai.Client
+	model   openai.EmbeddingModel
+	token   string
+	baseURL string
+	client  *openai.Client
 }
 
 func NewOpenAI(opts ...OpenAIOption) (OpenAI, error) {
@@ -42,11 +44,23 @@ func NewOpenAI(opts ...OpenAIOption) (OpenAI, error) {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
-	o.client = openai.NewClient(o.token)
+	if o.token == "" {
+		return nil, errors.NewErrInvalidOption("token", o.token, errors.New("token must not be empty"))
+	}
+	cfg := openai.DefaultConfig(o.token)
+	if o.baseURL != "" {
+		cfg.BaseURL = o.baseURL
+	}
+	o.client = openai.NewClientWithConfig(cfg)
 	return o, nil
 }
 
 func (o *openAI) Embed(ctx context.Context, doc string) ([]float32, error) {
+	if _, ok := ctx.Deadline(); !ok {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, 30*time.Second)
+		defer cancel()
+	}
 	embeddings, err := o.client.CreateEmbeddings(ctx, openai.EmbeddingRequest{
 		Model: o.model,
 		Input: doc,
@@ -59,5 +73,5 @@ func (o *openAI) Embed(ctx context.Context, doc string) ([]float32, error) {
 			return embedding.Embedding, nil
 		}
 	}
-	return nil, nil
+	return nil, errors.New("openai: no embedding returned for input")
 }

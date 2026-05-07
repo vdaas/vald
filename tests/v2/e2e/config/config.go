@@ -152,6 +152,8 @@ type Execution struct {
 	Expect       []Expect            `yaml:"expect,omitempty"       json:"expect,omitempty"`
 	Collector    metrics.Collector   `yaml:"-"                      json:"-"`
 	Metrics      *Metrics            `yaml:"metrics,omitempty"      json:"metrics,omitempty"`
+	Text         string              `yaml:"text,omitempty"         json:"text,omitempty"`
+	DocumentID   string              `yaml:"document_id,omitempty"  json:"document_id,omitempty"`
 }
 
 // TimeConfig holds time-related configuration values.
@@ -516,6 +518,25 @@ func (e *Execution) Bind(parentMetrics *Metrics) (bound *Execution, err error) {
 		// do nothing
 	case OpWait:
 		// do nothing
+	case OpEmbedding:
+		// do nothing
+	case OpEmbedderInsert:
+		if e.Text == "" {
+			return nil, errors.Wrapf(errors.ErrInvalidConfig, "Text is required for Execution %s of type %s", e.Name, e.Type)
+		}
+	case OpEmbedderInsertWithMetadata,
+		OpEmbedderUpdate,
+		OpEmbedderUpdateWithMetadata,
+		OpEmbedderUpsert,
+		OpEmbedderUpsertWithMetadata:
+		if e.Text == "" {
+			return nil, errors.Wrapf(errors.ErrInvalidConfig, "Text is required for Execution %s of type %s", e.Name, e.Type)
+		}
+	case OpEmbedderRemove,
+		OpEmbedderRemoveWithMetadata:
+		if e.DocumentID == "" {
+			return nil, errors.Wrapf(errors.ErrInvalidConfig, "DocumentID is required for Execution %s of type %s", e.Name, e.Type)
+		}
 	default:
 		return nil, errors.Wrapf(errors.ErrInvalidConfig, "unsupported operation type %s for Execution %s", e.Type, e.Name)
 	}
@@ -624,6 +645,24 @@ func (ot OperationType) Bind() (bound OperationType, err error) {
 		return OpClient, nil
 	case "wait":
 		return OpWait, nil
+	case "embedding", "embed", "emb":
+		return OpEmbedding, nil
+	case "embedderinsert", "embinsert", "eins":
+		return OpEmbedderInsert, nil
+	case "embedderinsertwithmetadata", "embinsertwithmetadata", "einsmeta":
+		return OpEmbedderInsertWithMetadata, nil
+	case "embedderupdate", "embupdate", "eupd":
+		return OpEmbedderUpdate, nil
+	case "embedderupdatewithmetadata", "embupdatewithmetadata", "eupdmeta":
+		return OpEmbedderUpdateWithMetadata, nil
+	case "embedderupsert", "embupsert", "eups":
+		return OpEmbedderUpsert, nil
+	case "embedderupsertwithmetadata", "embupsertwithmetadata", "eupsmeta":
+		return OpEmbedderUpsertWithMetadata, nil
+	case "embedderremove", "embremove", "erem":
+		return OpEmbedderRemove, nil
+	case "embedderremovewithmetadata", "embremovewithmetadata", "eremmeta":
+		return OpEmbedderRemoveWithMetadata, nil
 	}
 	return bound, nil
 }

@@ -24,13 +24,15 @@ import (
 type GlobalConfig = iconf.GlobalConfig
 
 type OpenAI struct {
-	Token string `json:"token" yaml:"token"`
-	Model string `json:"model" yaml:"model"`
+	Token   string `json:"token"    yaml:"token"`
+	Model   string `json:"model"    yaml:"model"`
+	BaseURL string `json:"base_url" yaml:"base_url"`
 }
 
 func (o *OpenAI) Bind() *OpenAI {
 	o.Token = iconf.GetActualValue(o.Token)
 	o.Model = iconf.GetActualValue(o.Model)
+	o.BaseURL = iconf.GetActualValue(o.BaseURL)
 	return o
 }
 

@@ -80,13 +80,7 @@ func (m *SearchRequest) CloneVT() *SearchRequest {
 	}
 	r := new(SearchRequest)
 	r.Text = m.Text
-	if rhs := m.Config; rhs != nil {
-		if vtpb, ok := any(rhs).(interface{ CloneVT() *payload.Search_Config }); ok {
-			r.Config = vtpb.CloneVT()
-		} else {
-			r.Config = proto.Clone(rhs).(*payload.Search_Config)
-		}
-	}
+	r.Config = m.Config.CloneVT()
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
 		copy(r.unknownFields, m.unknownFields)
@@ -104,13 +98,7 @@ func (m *InsertRequest) CloneVT() *InsertRequest {
 	}
 	r := new(InsertRequest)
 	r.Document = m.Document.CloneVT()
-	if rhs := m.Config; rhs != nil {
-		if vtpb, ok := any(rhs).(interface{ CloneVT() *payload.Insert_Config }); ok {
-			r.Config = vtpb.CloneVT()
-		} else {
-			r.Config = proto.Clone(rhs).(*payload.Insert_Config)
-		}
-	}
+	r.Config = m.Config.CloneVT()
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
 		copy(r.unknownFields, m.unknownFields)
@@ -128,13 +116,7 @@ func (m *InsertWithMetadataRequest) CloneVT() *InsertWithMetadataRequest {
 	}
 	r := new(InsertWithMetadataRequest)
 	r.Request = m.Request.CloneVT()
-	if rhs := m.Metadata; rhs != nil {
-		if vtpb, ok := any(rhs).(interface{ CloneVT() *payload.Meta_Value }); ok {
-			r.Metadata = vtpb.CloneVT()
-		} else {
-			r.Metadata = proto.Clone(rhs).(*payload.Meta_Value)
-		}
-	}
+	r.Metadata = m.Metadata.CloneVT()
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
 		copy(r.unknownFields, m.unknownFields)
@@ -152,13 +134,7 @@ func (m *UpdateRequest) CloneVT() *UpdateRequest {
 	}
 	r := new(UpdateRequest)
 	r.Document = m.Document.CloneVT()
-	if rhs := m.Config; rhs != nil {
-		if vtpb, ok := any(rhs).(interface{ CloneVT() *payload.Update_Config }); ok {
-			r.Config = vtpb.CloneVT()
-		} else {
-			r.Config = proto.Clone(rhs).(*payload.Update_Config)
-		}
-	}
+	r.Config = m.Config.CloneVT()
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
 		copy(r.unknownFields, m.unknownFields)
@@ -176,13 +152,7 @@ func (m *UpdateWithMetadataRequest) CloneVT() *UpdateWithMetadataRequest {
 	}
 	r := new(UpdateWithMetadataRequest)
 	r.Request = m.Request.CloneVT()
-	if rhs := m.Metadata; rhs != nil {
-		if vtpb, ok := any(rhs).(interface{ CloneVT() *payload.Meta_Value }); ok {
-			r.Metadata = vtpb.CloneVT()
-		} else {
-			r.Metadata = proto.Clone(rhs).(*payload.Meta_Value)
-		}
-	}
+	r.Metadata = m.Metadata.CloneVT()
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
 		copy(r.unknownFields, m.unknownFields)
@@ -200,13 +170,7 @@ func (m *UpsertRequest) CloneVT() *UpsertRequest {
 	}
 	r := new(UpsertRequest)
 	r.Document = m.Document.CloneVT()
-	if rhs := m.Config; rhs != nil {
-		if vtpb, ok := any(rhs).(interface{ CloneVT() *payload.Upsert_Config }); ok {
-			r.Config = vtpb.CloneVT()
-		} else {
-			r.Config = proto.Clone(rhs).(*payload.Upsert_Config)
-		}
-	}
+	r.Config = m.Config.CloneVT()
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
 		copy(r.unknownFields, m.unknownFields)
@@ -224,13 +188,7 @@ func (m *UpsertWithMetadataRequest) CloneVT() *UpsertWithMetadataRequest {
 	}
 	r := new(UpsertWithMetadataRequest)
 	r.Request = m.Request.CloneVT()
-	if rhs := m.Metadata; rhs != nil {
-		if vtpb, ok := any(rhs).(interface{ CloneVT() *payload.Meta_Value }); ok {
-			r.Metadata = vtpb.CloneVT()
-		} else {
-			r.Metadata = proto.Clone(rhs).(*payload.Meta_Value)
-		}
-	}
+	r.Metadata = m.Metadata.CloneVT()
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
 		copy(r.unknownFields, m.unknownFields)
@@ -248,13 +206,7 @@ func (m *RemoveRequest) CloneVT() *RemoveRequest {
 	}
 	r := new(RemoveRequest)
 	r.Id = m.Id
-	if rhs := m.Config; rhs != nil {
-		if vtpb, ok := any(rhs).(interface{ CloneVT() *payload.Remove_Config }); ok {
-			r.Config = vtpb.CloneVT()
-		} else {
-			r.Config = proto.Clone(rhs).(*payload.Remove_Config)
-		}
-	}
+	r.Config = m.Config.CloneVT()
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
 		copy(r.unknownFields, m.unknownFields)
@@ -285,7 +237,6 @@ func (this *Text) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
-
 func (this *Document) EqualVT(that *Document) bool {
 	if this == that {
 		return true
@@ -311,7 +262,6 @@ func (this *Document) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
-
 func (this *SearchRequest) EqualVT(that *SearchRequest) bool {
 	if this == that {
 		return true
@@ -321,13 +271,7 @@ func (this *SearchRequest) EqualVT(that *SearchRequest) bool {
 	if this.Text != that.Text {
 		return false
 	}
-	if equal, ok := any(this.Config).(interface {
-		EqualVT(*payload.Search_Config) bool
-	}); ok {
-		if !equal.EqualVT(that.Config) {
-			return false
-		}
-	} else if !proto.Equal(this.Config, that.Config) {
+	if !this.Config.EqualVT(that.Config) {
 		return false
 	}
 	return string(this.unknownFields) == string(that.unknownFields)
@@ -340,7 +284,6 @@ func (this *SearchRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
-
 func (this *InsertRequest) EqualVT(that *InsertRequest) bool {
 	if this == that {
 		return true
@@ -350,13 +293,7 @@ func (this *InsertRequest) EqualVT(that *InsertRequest) bool {
 	if !this.Document.EqualVT(that.Document) {
 		return false
 	}
-	if equal, ok := any(this.Config).(interface {
-		EqualVT(*payload.Insert_Config) bool
-	}); ok {
-		if !equal.EqualVT(that.Config) {
-			return false
-		}
-	} else if !proto.Equal(this.Config, that.Config) {
+	if !this.Config.EqualVT(that.Config) {
 		return false
 	}
 	return string(this.unknownFields) == string(that.unknownFields)
@@ -369,7 +306,6 @@ func (this *InsertRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
-
 func (this *InsertWithMetadataRequest) EqualVT(that *InsertWithMetadataRequest) bool {
 	if this == that {
 		return true
@@ -379,13 +315,7 @@ func (this *InsertWithMetadataRequest) EqualVT(that *InsertWithMetadataRequest) 
 	if !this.Request.EqualVT(that.Request) {
 		return false
 	}
-	if equal, ok := any(this.Metadata).(interface {
-		EqualVT(*payload.Meta_Value) bool
-	}); ok {
-		if !equal.EqualVT(that.Metadata) {
-			return false
-		}
-	} else if !proto.Equal(this.Metadata, that.Metadata) {
+	if !this.Metadata.EqualVT(that.Metadata) {
 		return false
 	}
 	return string(this.unknownFields) == string(that.unknownFields)
@@ -398,7 +328,6 @@ func (this *InsertWithMetadataRequest) EqualMessageVT(thatMsg proto.Message) boo
 	}
 	return this.EqualVT(that)
 }
-
 func (this *UpdateRequest) EqualVT(that *UpdateRequest) bool {
 	if this == that {
 		return true
@@ -408,13 +337,7 @@ func (this *UpdateRequest) EqualVT(that *UpdateRequest) bool {
 	if !this.Document.EqualVT(that.Document) {
 		return false
 	}
-	if equal, ok := any(this.Config).(interface {
-		EqualVT(*payload.Update_Config) bool
-	}); ok {
-		if !equal.EqualVT(that.Config) {
-			return false
-		}
-	} else if !proto.Equal(this.Config, that.Config) {
+	if !this.Config.EqualVT(that.Config) {
 		return false
 	}
 	return string(this.unknownFields) == string(that.unknownFields)
@@ -427,7 +350,6 @@ func (this *UpdateRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
-
 func (this *UpdateWithMetadataRequest) EqualVT(that *UpdateWithMetadataRequest) bool {
 	if this == that {
 		return true
@@ -437,13 +359,7 @@ func (this *UpdateWithMetadataRequest) EqualVT(that *UpdateWithMetadataRequest) 
 	if !this.Request.EqualVT(that.Request) {
 		return false
 	}
-	if equal, ok := any(this.Metadata).(interface {
-		EqualVT(*payload.Meta_Value) bool
-	}); ok {
-		if !equal.EqualVT(that.Metadata) {
-			return false
-		}
-	} else if !proto.Equal(this.Metadata, that.Metadata) {
+	if !this.Metadata.EqualVT(that.Metadata) {
 		return false
 	}
 	return string(this.unknownFields) == string(that.unknownFields)
@@ -456,7 +372,6 @@ func (this *UpdateWithMetadataRequest) EqualMessageVT(thatMsg proto.Message) boo
 	}
 	return this.EqualVT(that)
 }
-
 func (this *UpsertRequest) EqualVT(that *UpsertRequest) bool {
 	if this == that {
 		return true
@@ -466,13 +381,7 @@ func (this *UpsertRequest) EqualVT(that *UpsertRequest) bool {
 	if !this.Document.EqualVT(that.Document) {
 		return false
 	}
-	if equal, ok := any(this.Config).(interface {
-		EqualVT(*payload.Upsert_Config) bool
-	}); ok {
-		if !equal.EqualVT(that.Config) {
-			return false
-		}
-	} else if !proto.Equal(this.Config, that.Config) {
+	if !this.Config.EqualVT(that.Config) {
 		return false
 	}
 	return string(this.unknownFields) == string(that.unknownFields)
@@ -485,7 +394,6 @@ func (this *UpsertRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
-
 func (this *UpsertWithMetadataRequest) EqualVT(that *UpsertWithMetadataRequest) bool {
 	if this == that {
 		return true
@@ -495,13 +403,7 @@ func (this *UpsertWithMetadataRequest) EqualVT(that *UpsertWithMetadataRequest) 
 	if !this.Request.EqualVT(that.Request) {
 		return false
 	}
-	if equal, ok := any(this.Metadata).(interface {
-		EqualVT(*payload.Meta_Value) bool
-	}); ok {
-		if !equal.EqualVT(that.Metadata) {
-			return false
-		}
-	} else if !proto.Equal(this.Metadata, that.Metadata) {
+	if !this.Metadata.EqualVT(that.Metadata) {
 		return false
 	}
 	return string(this.unknownFields) == string(that.unknownFields)
@@ -514,7 +416,6 @@ func (this *UpsertWithMetadataRequest) EqualMessageVT(thatMsg proto.Message) boo
 	}
 	return this.EqualVT(that)
 }
-
 func (this *RemoveRequest) EqualVT(that *RemoveRequest) bool {
 	if this == that {
 		return true
@@ -524,13 +425,7 @@ func (this *RemoveRequest) EqualVT(that *RemoveRequest) bool {
 	if this.Id != that.Id {
 		return false
 	}
-	if equal, ok := any(this.Config).(interface {
-		EqualVT(*payload.Remove_Config) bool
-	}); ok {
-		if !equal.EqualVT(that.Config) {
-			return false
-		}
-	} else if !proto.Equal(this.Config, that.Config) {
+	if !this.Config.EqualVT(that.Config) {
 		return false
 	}
 	return string(this.unknownFields) == string(that.unknownFields)
@@ -714,68 +609,59 @@ type EmbedderServer interface {
 }
 
 // UnimplementedEmbedderServer must be embedded to have forward compatible implementations.
-type UnimplementedEmbedderServer struct{}
+type UnimplementedEmbedderServer struct {
+}
 
 func (UnimplementedEmbedderServer) Search(
 	context.Context, *SearchRequest,
 ) (*payload.Search_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Search not implemented")
 }
-
 func (UnimplementedEmbedderServer) LinearSearch(
 	context.Context, *SearchRequest,
 ) (*payload.Search_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LinearSearch not implemented")
 }
-
 func (UnimplementedEmbedderServer) Insert(
 	context.Context, *InsertRequest,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Insert not implemented")
 }
-
 func (UnimplementedEmbedderServer) InsertWithMetadata(
 	context.Context, *InsertWithMetadataRequest,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InsertWithMetadata not implemented")
 }
-
 func (UnimplementedEmbedderServer) Update(
 	context.Context, *UpdateRequest,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
 }
-
 func (UnimplementedEmbedderServer) UpdateWithMetadata(
 	context.Context, *UpdateWithMetadataRequest,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateWithMetadata not implemented")
 }
-
 func (UnimplementedEmbedderServer) Upsert(
 	context.Context, *UpsertRequest,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Upsert not implemented")
 }
-
 func (UnimplementedEmbedderServer) UpsertWithMetadata(
 	context.Context, *UpsertWithMetadataRequest,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpsertWithMetadata not implemented")
 }
-
 func (UnimplementedEmbedderServer) Remove(
 	context.Context, *RemoveRequest,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Remove not implemented")
 }
-
 func (UnimplementedEmbedderServer) RemoveWithMetadata(
 	context.Context, *RemoveRequest,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveWithMetadata not implemented")
 }
-
 func (UnimplementedEmbedderServer) Embedding(
 	context.Context, *Text,
 ) (*payload.Object_Vector, error) {
@@ -1193,24 +1079,12 @@ func (m *SearchRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if m.Config != nil {
-		if vtmsg, ok := any(m.Config).(interface {
-			MarshalToSizedBufferVT([]byte) (int, error)
-		}); ok {
-			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
-		} else {
-			encoded, err := proto.Marshal(m.Config)
-			if err != nil {
-				return 0, err
-			}
-			i -= len(encoded)
-			copy(dAtA[i:], encoded)
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(encoded)))
+		size, err := m.Config.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -1255,24 +1129,12 @@ func (m *InsertRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if m.Config != nil {
-		if vtmsg, ok := any(m.Config).(interface {
-			MarshalToSizedBufferVT([]byte) (int, error)
-		}); ok {
-			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
-		} else {
-			encoded, err := proto.Marshal(m.Config)
-			if err != nil {
-				return 0, err
-			}
-			i -= len(encoded)
-			copy(dAtA[i:], encoded)
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(encoded)))
+		size, err := m.Config.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -1320,24 +1182,12 @@ func (m *InsertWithMetadataRequest) MarshalToSizedBufferVT(dAtA []byte) (int, er
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if m.Metadata != nil {
-		if vtmsg, ok := any(m.Metadata).(interface {
-			MarshalToSizedBufferVT([]byte) (int, error)
-		}); ok {
-			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
-		} else {
-			encoded, err := proto.Marshal(m.Metadata)
-			if err != nil {
-				return 0, err
-			}
-			i -= len(encoded)
-			copy(dAtA[i:], encoded)
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(encoded)))
+		size, err := m.Metadata.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -1385,24 +1235,12 @@ func (m *UpdateRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if m.Config != nil {
-		if vtmsg, ok := any(m.Config).(interface {
-			MarshalToSizedBufferVT([]byte) (int, error)
-		}); ok {
-			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
-		} else {
-			encoded, err := proto.Marshal(m.Config)
-			if err != nil {
-				return 0, err
-			}
-			i -= len(encoded)
-			copy(dAtA[i:], encoded)
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(encoded)))
+		size, err := m.Config.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -1450,24 +1288,12 @@ func (m *UpdateWithMetadataRequest) MarshalToSizedBufferVT(dAtA []byte) (int, er
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if m.Metadata != nil {
-		if vtmsg, ok := any(m.Metadata).(interface {
-			MarshalToSizedBufferVT([]byte) (int, error)
-		}); ok {
-			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
-		} else {
-			encoded, err := proto.Marshal(m.Metadata)
-			if err != nil {
-				return 0, err
-			}
-			i -= len(encoded)
-			copy(dAtA[i:], encoded)
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(encoded)))
+		size, err := m.Metadata.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -1515,24 +1341,12 @@ func (m *UpsertRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if m.Config != nil {
-		if vtmsg, ok := any(m.Config).(interface {
-			MarshalToSizedBufferVT([]byte) (int, error)
-		}); ok {
-			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
-		} else {
-			encoded, err := proto.Marshal(m.Config)
-			if err != nil {
-				return 0, err
-			}
-			i -= len(encoded)
-			copy(dAtA[i:], encoded)
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(encoded)))
+		size, err := m.Config.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -1580,24 +1394,12 @@ func (m *UpsertWithMetadataRequest) MarshalToSizedBufferVT(dAtA []byte) (int, er
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if m.Metadata != nil {
-		if vtmsg, ok := any(m.Metadata).(interface {
-			MarshalToSizedBufferVT([]byte) (int, error)
-		}); ok {
-			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
-		} else {
-			encoded, err := proto.Marshal(m.Metadata)
-			if err != nil {
-				return 0, err
-			}
-			i -= len(encoded)
-			copy(dAtA[i:], encoded)
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(encoded)))
+		size, err := m.Metadata.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -1645,24 +1447,12 @@ func (m *RemoveRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if m.Config != nil {
-		if vtmsg, ok := any(m.Config).(interface {
-			MarshalToSizedBufferVT([]byte) (int, error)
-		}); ok {
-			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
-		} else {
-			encoded, err := proto.Marshal(m.Config)
-			if err != nil {
-				return 0, err
-			}
-			i -= len(encoded)
-			copy(dAtA[i:], encoded)
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(encoded)))
+		size, err := m.Config.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -1799,24 +1589,12 @@ func (m *SearchRequest) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if m.Config != nil {
-		if vtmsg, ok := any(m.Config).(interface {
-			MarshalToSizedBufferVTStrict([]byte) (int, error)
-		}); ok {
-			size, err := vtmsg.MarshalToSizedBufferVTStrict(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
-		} else {
-			encoded, err := proto.Marshal(m.Config)
-			if err != nil {
-				return 0, err
-			}
-			i -= len(encoded)
-			copy(dAtA[i:], encoded)
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(encoded)))
+		size, err := m.Config.MarshalToSizedBufferVTStrict(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -1861,24 +1639,12 @@ func (m *InsertRequest) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if m.Config != nil {
-		if vtmsg, ok := any(m.Config).(interface {
-			MarshalToSizedBufferVTStrict([]byte) (int, error)
-		}); ok {
-			size, err := vtmsg.MarshalToSizedBufferVTStrict(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
-		} else {
-			encoded, err := proto.Marshal(m.Config)
-			if err != nil {
-				return 0, err
-			}
-			i -= len(encoded)
-			copy(dAtA[i:], encoded)
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(encoded)))
+		size, err := m.Config.MarshalToSizedBufferVTStrict(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -1926,24 +1692,12 @@ func (m *InsertWithMetadataRequest) MarshalToSizedBufferVTStrict(dAtA []byte) (i
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if m.Metadata != nil {
-		if vtmsg, ok := any(m.Metadata).(interface {
-			MarshalToSizedBufferVTStrict([]byte) (int, error)
-		}); ok {
-			size, err := vtmsg.MarshalToSizedBufferVTStrict(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
-		} else {
-			encoded, err := proto.Marshal(m.Metadata)
-			if err != nil {
-				return 0, err
-			}
-			i -= len(encoded)
-			copy(dAtA[i:], encoded)
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(encoded)))
+		size, err := m.Metadata.MarshalToSizedBufferVTStrict(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -1991,24 +1745,12 @@ func (m *UpdateRequest) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if m.Config != nil {
-		if vtmsg, ok := any(m.Config).(interface {
-			MarshalToSizedBufferVTStrict([]byte) (int, error)
-		}); ok {
-			size, err := vtmsg.MarshalToSizedBufferVTStrict(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
-		} else {
-			encoded, err := proto.Marshal(m.Config)
-			if err != nil {
-				return 0, err
-			}
-			i -= len(encoded)
-			copy(dAtA[i:], encoded)
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(encoded)))
+		size, err := m.Config.MarshalToSizedBufferVTStrict(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -2056,24 +1798,12 @@ func (m *UpdateWithMetadataRequest) MarshalToSizedBufferVTStrict(dAtA []byte) (i
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if m.Metadata != nil {
-		if vtmsg, ok := any(m.Metadata).(interface {
-			MarshalToSizedBufferVTStrict([]byte) (int, error)
-		}); ok {
-			size, err := vtmsg.MarshalToSizedBufferVTStrict(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
-		} else {
-			encoded, err := proto.Marshal(m.Metadata)
-			if err != nil {
-				return 0, err
-			}
-			i -= len(encoded)
-			copy(dAtA[i:], encoded)
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(encoded)))
+		size, err := m.Metadata.MarshalToSizedBufferVTStrict(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -2121,24 +1851,12 @@ func (m *UpsertRequest) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if m.Config != nil {
-		if vtmsg, ok := any(m.Config).(interface {
-			MarshalToSizedBufferVTStrict([]byte) (int, error)
-		}); ok {
-			size, err := vtmsg.MarshalToSizedBufferVTStrict(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
-		} else {
-			encoded, err := proto.Marshal(m.Config)
-			if err != nil {
-				return 0, err
-			}
-			i -= len(encoded)
-			copy(dAtA[i:], encoded)
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(encoded)))
+		size, err := m.Config.MarshalToSizedBufferVTStrict(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -2186,24 +1904,12 @@ func (m *UpsertWithMetadataRequest) MarshalToSizedBufferVTStrict(dAtA []byte) (i
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if m.Metadata != nil {
-		if vtmsg, ok := any(m.Metadata).(interface {
-			MarshalToSizedBufferVTStrict([]byte) (int, error)
-		}); ok {
-			size, err := vtmsg.MarshalToSizedBufferVTStrict(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
-		} else {
-			encoded, err := proto.Marshal(m.Metadata)
-			if err != nil {
-				return 0, err
-			}
-			i -= len(encoded)
-			copy(dAtA[i:], encoded)
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(encoded)))
+		size, err := m.Metadata.MarshalToSizedBufferVTStrict(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -2251,24 +1957,12 @@ func (m *RemoveRequest) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if m.Config != nil {
-		if vtmsg, ok := any(m.Config).(interface {
-			MarshalToSizedBufferVTStrict([]byte) (int, error)
-		}); ok {
-			size, err := vtmsg.MarshalToSizedBufferVTStrict(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
-		} else {
-			encoded, err := proto.Marshal(m.Config)
-			if err != nil {
-				return 0, err
-			}
-			i -= len(encoded)
-			copy(dAtA[i:], encoded)
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(encoded)))
+		size, err := m.Config.MarshalToSizedBufferVTStrict(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -2328,13 +2022,7 @@ func (m *SearchRequest) SizeVT() (n int) {
 		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
 	}
 	if m.Config != nil {
-		if size, ok := any(m.Config).(interface {
-			SizeVT() int
-		}); ok {
-			l = size.SizeVT()
-		} else {
-			l = proto.Size(m.Config)
-		}
+		l = m.Config.SizeVT()
 		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
 	}
 	n += len(m.unknownFields)
@@ -2352,13 +2040,7 @@ func (m *InsertRequest) SizeVT() (n int) {
 		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
 	}
 	if m.Config != nil {
-		if size, ok := any(m.Config).(interface {
-			SizeVT() int
-		}); ok {
-			l = size.SizeVT()
-		} else {
-			l = proto.Size(m.Config)
-		}
+		l = m.Config.SizeVT()
 		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
 	}
 	n += len(m.unknownFields)
@@ -2376,13 +2058,7 @@ func (m *InsertWithMetadataRequest) SizeVT() (n int) {
 		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
 	}
 	if m.Metadata != nil {
-		if size, ok := any(m.Metadata).(interface {
-			SizeVT() int
-		}); ok {
-			l = size.SizeVT()
-		} else {
-			l = proto.Size(m.Metadata)
-		}
+		l = m.Metadata.SizeVT()
 		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
 	}
 	n += len(m.unknownFields)
@@ -2400,13 +2076,7 @@ func (m *UpdateRequest) SizeVT() (n int) {
 		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
 	}
 	if m.Config != nil {
-		if size, ok := any(m.Config).(interface {
-			SizeVT() int
-		}); ok {
-			l = size.SizeVT()
-		} else {
-			l = proto.Size(m.Config)
-		}
+		l = m.Config.SizeVT()
 		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
 	}
 	n += len(m.unknownFields)
@@ -2424,13 +2094,7 @@ func (m *UpdateWithMetadataRequest) SizeVT() (n int) {
 		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
 	}
 	if m.Metadata != nil {
-		if size, ok := any(m.Metadata).(interface {
-			SizeVT() int
-		}); ok {
-			l = size.SizeVT()
-		} else {
-			l = proto.Size(m.Metadata)
-		}
+		l = m.Metadata.SizeVT()
 		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
 	}
 	n += len(m.unknownFields)
@@ -2448,13 +2112,7 @@ func (m *UpsertRequest) SizeVT() (n int) {
 		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
 	}
 	if m.Config != nil {
-		if size, ok := any(m.Config).(interface {
-			SizeVT() int
-		}); ok {
-			l = size.SizeVT()
-		} else {
-			l = proto.Size(m.Config)
-		}
+		l = m.Config.SizeVT()
 		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
 	}
 	n += len(m.unknownFields)
@@ -2472,13 +2130,7 @@ func (m *UpsertWithMetadataRequest) SizeVT() (n int) {
 		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
 	}
 	if m.Metadata != nil {
-		if size, ok := any(m.Metadata).(interface {
-			SizeVT() int
-		}); ok {
-			l = size.SizeVT()
-		} else {
-			l = proto.Size(m.Metadata)
-		}
+		l = m.Metadata.SizeVT()
 		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
 	}
 	n += len(m.unknownFields)
@@ -2496,13 +2148,7 @@ func (m *RemoveRequest) SizeVT() (n int) {
 		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
 	}
 	if m.Config != nil {
-		if size, ok := any(m.Config).(interface {
-			SizeVT() int
-		}); ok {
-			l = size.SizeVT()
-		} else {
-			l = proto.Size(m.Config)
-		}
+		l = m.Config.SizeVT()
 		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
 	}
 	n += len(m.unknownFields)
@@ -2592,7 +2238,6 @@ func (m *Text) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *Document) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2727,7 +2372,6 @@ func (m *Document) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *SearchRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2821,16 +2465,8 @@ func (m *SearchRequest) UnmarshalVT(dAtA []byte) error {
 			if m.Config == nil {
 				m.Config = &payload.Search_Config{}
 			}
-			if unmarshal, ok := any(m.Config).(interface {
-				UnmarshalVT([]byte) error
-			}); ok {
-				if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-			} else {
-				if err := proto.Unmarshal(dAtA[iNdEx:postIndex], m.Config); err != nil {
-					return err
-				}
+			if err := m.Config.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
 			}
 			iNdEx = postIndex
 		default:
@@ -2855,7 +2491,6 @@ func (m *SearchRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *InsertRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2953,16 +2588,8 @@ func (m *InsertRequest) UnmarshalVT(dAtA []byte) error {
 			if m.Config == nil {
 				m.Config = &payload.Insert_Config{}
 			}
-			if unmarshal, ok := any(m.Config).(interface {
-				UnmarshalVT([]byte) error
-			}); ok {
-				if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-			} else {
-				if err := proto.Unmarshal(dAtA[iNdEx:postIndex], m.Config); err != nil {
-					return err
-				}
+			if err := m.Config.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
 			}
 			iNdEx = postIndex
 		default:
@@ -2987,7 +2614,6 @@ func (m *InsertRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *InsertWithMetadataRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3085,16 +2711,8 @@ func (m *InsertWithMetadataRequest) UnmarshalVT(dAtA []byte) error {
 			if m.Metadata == nil {
 				m.Metadata = &payload.Meta_Value{}
 			}
-			if unmarshal, ok := any(m.Metadata).(interface {
-				UnmarshalVT([]byte) error
-			}); ok {
-				if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-			} else {
-				if err := proto.Unmarshal(dAtA[iNdEx:postIndex], m.Metadata); err != nil {
-					return err
-				}
+			if err := m.Metadata.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
 			}
 			iNdEx = postIndex
 		default:
@@ -3119,7 +2737,6 @@ func (m *InsertWithMetadataRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *UpdateRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3217,16 +2834,8 @@ func (m *UpdateRequest) UnmarshalVT(dAtA []byte) error {
 			if m.Config == nil {
 				m.Config = &payload.Update_Config{}
 			}
-			if unmarshal, ok := any(m.Config).(interface {
-				UnmarshalVT([]byte) error
-			}); ok {
-				if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-			} else {
-				if err := proto.Unmarshal(dAtA[iNdEx:postIndex], m.Config); err != nil {
-					return err
-				}
+			if err := m.Config.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
 			}
 			iNdEx = postIndex
 		default:
@@ -3251,7 +2860,6 @@ func (m *UpdateRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *UpdateWithMetadataRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3349,16 +2957,8 @@ func (m *UpdateWithMetadataRequest) UnmarshalVT(dAtA []byte) error {
 			if m.Metadata == nil {
 				m.Metadata = &payload.Meta_Value{}
 			}
-			if unmarshal, ok := any(m.Metadata).(interface {
-				UnmarshalVT([]byte) error
-			}); ok {
-				if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-			} else {
-				if err := proto.Unmarshal(dAtA[iNdEx:postIndex], m.Metadata); err != nil {
-					return err
-				}
+			if err := m.Metadata.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
 			}
 			iNdEx = postIndex
 		default:
@@ -3383,7 +2983,6 @@ func (m *UpdateWithMetadataRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *UpsertRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3481,16 +3080,8 @@ func (m *UpsertRequest) UnmarshalVT(dAtA []byte) error {
 			if m.Config == nil {
 				m.Config = &payload.Upsert_Config{}
 			}
-			if unmarshal, ok := any(m.Config).(interface {
-				UnmarshalVT([]byte) error
-			}); ok {
-				if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-			} else {
-				if err := proto.Unmarshal(dAtA[iNdEx:postIndex], m.Config); err != nil {
-					return err
-				}
+			if err := m.Config.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
 			}
 			iNdEx = postIndex
 		default:
@@ -3515,7 +3106,6 @@ func (m *UpsertRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *UpsertWithMetadataRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3613,16 +3203,8 @@ func (m *UpsertWithMetadataRequest) UnmarshalVT(dAtA []byte) error {
 			if m.Metadata == nil {
 				m.Metadata = &payload.Meta_Value{}
 			}
-			if unmarshal, ok := any(m.Metadata).(interface {
-				UnmarshalVT([]byte) error
-			}); ok {
-				if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-			} else {
-				if err := proto.Unmarshal(dAtA[iNdEx:postIndex], m.Metadata); err != nil {
-					return err
-				}
+			if err := m.Metadata.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
 			}
 			iNdEx = postIndex
 		default:
@@ -3647,7 +3229,6 @@ func (m *UpsertWithMetadataRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *RemoveRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3741,16 +3322,8 @@ func (m *RemoveRequest) UnmarshalVT(dAtA []byte) error {
 			if m.Config == nil {
 				m.Config = &payload.Remove_Config{}
 			}
-			if unmarshal, ok := any(m.Config).(interface {
-				UnmarshalVT([]byte) error
-			}); ok {
-				if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-			} else {
-				if err := proto.Unmarshal(dAtA[iNdEx:postIndex], m.Config); err != nil {
-					return err
-				}
+			if err := m.Config.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
 			}
 			iNdEx = postIndex
 		default:
@@ -3775,7 +3348,6 @@ func (m *RemoveRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *Text) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3863,7 +3435,6 @@ func (m *Text) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *Document) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4006,7 +3577,6 @@ func (m *Document) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *SearchRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4104,16 +3674,8 @@ func (m *SearchRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 			if m.Config == nil {
 				m.Config = &payload.Search_Config{}
 			}
-			if unmarshal, ok := any(m.Config).(interface {
-				UnmarshalVTUnsafe([]byte) error
-			}); ok {
-				if err := unmarshal.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-			} else {
-				if err := proto.Unmarshal(dAtA[iNdEx:postIndex], m.Config); err != nil {
-					return err
-				}
+			if err := m.Config.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
+				return err
 			}
 			iNdEx = postIndex
 		default:
@@ -4138,7 +3700,6 @@ func (m *SearchRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *InsertRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4236,16 +3797,8 @@ func (m *InsertRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 			if m.Config == nil {
 				m.Config = &payload.Insert_Config{}
 			}
-			if unmarshal, ok := any(m.Config).(interface {
-				UnmarshalVTUnsafe([]byte) error
-			}); ok {
-				if err := unmarshal.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-			} else {
-				if err := proto.Unmarshal(dAtA[iNdEx:postIndex], m.Config); err != nil {
-					return err
-				}
+			if err := m.Config.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
+				return err
 			}
 			iNdEx = postIndex
 		default:
@@ -4270,7 +3823,6 @@ func (m *InsertRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *InsertWithMetadataRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4368,16 +3920,8 @@ func (m *InsertWithMetadataRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 			if m.Metadata == nil {
 				m.Metadata = &payload.Meta_Value{}
 			}
-			if unmarshal, ok := any(m.Metadata).(interface {
-				UnmarshalVTUnsafe([]byte) error
-			}); ok {
-				if err := unmarshal.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-			} else {
-				if err := proto.Unmarshal(dAtA[iNdEx:postIndex], m.Metadata); err != nil {
-					return err
-				}
+			if err := m.Metadata.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
+				return err
 			}
 			iNdEx = postIndex
 		default:
@@ -4402,7 +3946,6 @@ func (m *InsertWithMetadataRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *UpdateRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4500,16 +4043,8 @@ func (m *UpdateRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 			if m.Config == nil {
 				m.Config = &payload.Update_Config{}
 			}
-			if unmarshal, ok := any(m.Config).(interface {
-				UnmarshalVTUnsafe([]byte) error
-			}); ok {
-				if err := unmarshal.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-			} else {
-				if err := proto.Unmarshal(dAtA[iNdEx:postIndex], m.Config); err != nil {
-					return err
-				}
+			if err := m.Config.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
+				return err
 			}
 			iNdEx = postIndex
 		default:
@@ -4534,7 +4069,6 @@ func (m *UpdateRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *UpdateWithMetadataRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4632,16 +4166,8 @@ func (m *UpdateWithMetadataRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 			if m.Metadata == nil {
 				m.Metadata = &payload.Meta_Value{}
 			}
-			if unmarshal, ok := any(m.Metadata).(interface {
-				UnmarshalVTUnsafe([]byte) error
-			}); ok {
-				if err := unmarshal.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-			} else {
-				if err := proto.Unmarshal(dAtA[iNdEx:postIndex], m.Metadata); err != nil {
-					return err
-				}
+			if err := m.Metadata.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
+				return err
 			}
 			iNdEx = postIndex
 		default:
@@ -4666,7 +4192,6 @@ func (m *UpdateWithMetadataRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *UpsertRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4764,16 +4289,8 @@ func (m *UpsertRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 			if m.Config == nil {
 				m.Config = &payload.Upsert_Config{}
 			}
-			if unmarshal, ok := any(m.Config).(interface {
-				UnmarshalVTUnsafe([]byte) error
-			}); ok {
-				if err := unmarshal.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-			} else {
-				if err := proto.Unmarshal(dAtA[iNdEx:postIndex], m.Config); err != nil {
-					return err
-				}
+			if err := m.Config.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
+				return err
 			}
 			iNdEx = postIndex
 		default:
@@ -4798,7 +4315,6 @@ func (m *UpsertRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *UpsertWithMetadataRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4896,16 +4412,8 @@ func (m *UpsertWithMetadataRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 			if m.Metadata == nil {
 				m.Metadata = &payload.Meta_Value{}
 			}
-			if unmarshal, ok := any(m.Metadata).(interface {
-				UnmarshalVTUnsafe([]byte) error
-			}); ok {
-				if err := unmarshal.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-			} else {
-				if err := proto.Unmarshal(dAtA[iNdEx:postIndex], m.Metadata); err != nil {
-					return err
-				}
+			if err := m.Metadata.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
+				return err
 			}
 			iNdEx = postIndex
 		default:
@@ -4930,7 +4438,6 @@ func (m *UpsertWithMetadataRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *RemoveRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -5028,16 +4535,8 @@ func (m *RemoveRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 			if m.Config == nil {
 				m.Config = &payload.Remove_Config{}
 			}
-			if unmarshal, ok := any(m.Config).(interface {
-				UnmarshalVTUnsafe([]byte) error
-			}); ok {
-				if err := unmarshal.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-			} else {
-				if err := proto.Unmarshal(dAtA[iNdEx:postIndex], m.Config); err != nil {
-					return err
-				}
+			if err := m.Config.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
+				return err
 			}
 			iNdEx = postIndex
 		default:

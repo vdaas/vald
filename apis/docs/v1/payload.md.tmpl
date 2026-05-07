@@ -1203,7 +1203,7 @@
 
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
-    | counts | Info.Index.Detail.CountsEntry | repeated | count infos for each agents |
+    | counts | Info.Index.Detail.CountsEntry | repeated | count infos for each agent |
     | replica | uint32 |  | index replica of vald cluster |
     | live_agents | uint32 |  | live agent replica of vald cluster |
 {{- end -}}
@@ -1425,7 +1425,7 @@
 
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
-    | details | Info.Index.StatisticsDetail.DetailsEntry | repeated | count infos for each agents |
+    | details | Info.Index.StatisticsDetail.DetailsEntry | repeated | count infos for each agent |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.Index.StatisticsDetail.DetailsEntry" }}

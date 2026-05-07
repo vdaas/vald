@@ -92,6 +92,9 @@ func (e *embedder) Insert(
 func (e *embedder) InsertWithMetadata(
 	ctx context.Context, req *embedderpb.InsertWithMetadataRequest,
 ) (*payload.Object_Location, error) {
+	if req == nil || req.GetRequest() == nil || req.GetRequest().GetDocument() == nil {
+		return nil, errors.New("insert request is nil")
+	}
 	loc, err := e.Insert(ctx, req.GetRequest())
 	if err != nil {
 		return nil, err
@@ -115,6 +118,9 @@ func (e *embedder) Update(
 func (e *embedder) UpdateWithMetadata(
 	ctx context.Context, req *embedderpb.UpdateWithMetadataRequest,
 ) (*payload.Object_Location, error) {
+	if req == nil || req.GetRequest() == nil || req.GetRequest().GetDocument() == nil {
+		return nil, errors.New("update request is nil")
+	}
 	loc, err := e.Update(ctx, req.GetRequest())
 	if err != nil {
 		return nil, err
@@ -138,6 +144,9 @@ func (e *embedder) Upsert(
 func (e *embedder) UpsertWithMetadata(
 	ctx context.Context, req *embedderpb.UpsertWithMetadataRequest,
 ) (*payload.Object_Location, error) {
+	if req == nil || req.GetRequest() == nil || req.GetRequest().GetDocument() == nil {
+		return nil, errors.New("upsert request is nil")
+	}
 	loc, err := e.Upsert(ctx, req.GetRequest())
 	if err != nil {
 		return nil, err
@@ -185,6 +194,9 @@ func (e *embedder) embeddingFromText(
 	vec, err := e.llm.Embed(ctx, text)
 	if err != nil {
 		return nil, err
+	}
+	if vec == nil {
+		return nil, errors.New("embedding vector is nil")
 	}
 	return &payload.Object_Vector{Vector: vec}, nil
 }

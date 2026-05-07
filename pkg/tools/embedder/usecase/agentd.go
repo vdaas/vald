@@ -56,7 +56,11 @@ func New(cfg *config.Data) (runner.Runner, error) {
 	if err != nil {
 		return nil, err
 	}
-	openAI, err := service.NewOpenAI(service.WithToken(cfg.LLM.OpenAI.Token), service.WithOpenAIModel(cfg.LLM.OpenAI.Model))
+	openAI, err := service.NewOpenAI(
+		service.WithToken(cfg.LLM.OpenAI.Token),
+		service.WithOpenAIModel(cfg.LLM.OpenAI.Model),
+		service.WithOpenAIBaseURL(cfg.LLM.OpenAI.BaseURL),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -81,6 +85,8 @@ func New(cfg *config.Data) (runner.Runner, error) {
 	if err != nil {
 		return nil, err
 	}
+	rh := rest.New(rest.WithEmbedder(g))
+	httpHandler := router.New(router.WithTimeout("30s"), router.WithErrGroup(eg), router.WithHandler(rh))
 	var obs observability.Observability
 	if cfg.Observability != nil && cfg.Observability.Enabled {
 		obs, err = observability.NewWithConfig(cfg.Observability, infometrics.New("embedder_info", "Embedder info", cfg.GlobalConfig), memmetrics.New())
@@ -91,7 +97,7 @@ func New(cfg *config.Data) (runner.Runner, error) {
 	srv, err := starter.New(
 		starter.WithConfig(cfg.Server),
 		starter.WithREST(func(sc *iconf.Server) []server.Option {
-			return []server.Option{server.WithHTTPHandler(router.New(router.WithTimeout(sc.HTTP.HandlerTimeout), router.WithErrGroup(eg), router.WithHandler(rest.New(rest.WithEmbedder(g)))))}
+			return []server.Option{server.WithHTTPHandler(httpHandler)}
 		}),
 		starter.WithGRPC(func(sc *iconf.Server) []server.Option {
 			return []server.Option{server.WithGRPCRegisterar(func(srv *grpc.Server) { embedderpb.RegisterEmbedderServer(srv, g) })}
@@ -130,13 +136,33 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 		}
 		sech = r.server.ListenAndServe(ctx)
 		for {
+			var ok bool
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case err = <-oech:
-			case err = <-vech:
-			case err = <-mech:
-			case err = <-sech:
+			case err, ok = <-oech:
+				if !ok {
+					oech = nil
+					continue
+				}
+			case err, ok = <-vech:
+				if !ok {
+					vech = nil
+					continue
+				}
+			case err, ok = <-mech:
+				if !ok {
+					mech = nil
+					continue
+				}
+			case err, ok = <-sech:
+				if !ok {
+					sech = nil
+					continue
+				}
+			}
+			if oech == nil && vech == nil && mech == nil && sech == nil {
+				return nil
 			}
 			if err != nil {
 				select {

@@ -18,6 +18,7 @@ package rest
 
 import "github.com/vdaas/vald/pkg/tools/embedder/handler/grpc"
 
+// Option represents the functional option for the REST handler.
 type Option func(*handler)
 
 var defaultOptions = []Option{}
@@ -28,6 +29,7 @@ func WithEmbedder(e grpc.Server) Option {
 	}
 }
 
+// WithAgent returns the option to set embedder gRPC server for compatibility.
 func WithAgent(a grpc.Server) Option {
 	return func(h *handler) {
 		h.embedder = a

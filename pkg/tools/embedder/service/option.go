@@ -28,7 +28,7 @@ var defaultOptions = []Option{}
 func WithValdClient(c vald.Client) Option {
 	return func(e *embedder) error {
 		if c == nil {
-			return errors.New("vald client is nil")
+			return errors.NewErrInvalidOption("ValdClient", c, errors.New("vald client is nil"))
 		}
 		e.client = c
 		return nil
@@ -38,7 +38,7 @@ func WithValdClient(c vald.Client) Option {
 func WithMetaClient(c MetaClient) Option {
 	return func(e *embedder) error {
 		if c == nil {
-			return errors.New("meta client is nil")
+			return errors.NewErrInvalidOption("MetaClient", c, errors.New("meta client is nil"))
 		}
 		e.mclient = c
 		return nil
@@ -48,7 +48,7 @@ func WithMetaClient(c MetaClient) Option {
 func WithLLM(c LLM) Option {
 	return func(e *embedder) error {
 		if c == nil {
-			return errors.New("LLM client is nil")
+			return errors.NewErrInvalidOption("LLM", c, errors.New("llm is nil"))
 		}
 		e.llm = c
 		return nil

@@ -21,7 +21,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
-// Option represent the functional option for ngt.
+// OpenAIOption represents functional options for OpenAI embedder client.
 type OpenAIOption func(o *openAI) error
 
 var defaultOpenAIOptions = []OpenAIOption{
@@ -40,6 +40,9 @@ func WithOpenAIModel(mstr string) OpenAIOption {
 		model = openai.LargeEmbedding3
 	}
 	return func(o *openAI) error {
+		if model == "" {
+			return errors.NewErrInvalidOption("OpenAIModel", mstr, errors.New("supported models: adav2, small3, large3"))
+		}
 		o.model = model
 		return nil
 	}
@@ -49,9 +52,17 @@ func WithOpenAIModel(mstr string) OpenAIOption {
 func WithToken(token string) OpenAIOption {
 	return func(o *openAI) error {
 		if token == "" {
-			return errors.New("token is empty")
+			return errors.NewErrCriticalOption("token", token, errors.New("token must not be empty"))
 		}
 		o.token = token
+		return nil
+	}
+}
+
+// WithOpenAIBaseURL returns the functional option to set the openai compatible base URL.
+func WithOpenAIBaseURL(baseURL string) OpenAIOption {
+	return func(o *openAI) error {
+		o.baseURL = baseURL
 		return nil
 	}
 }

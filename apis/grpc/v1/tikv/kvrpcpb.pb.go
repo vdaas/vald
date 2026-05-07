@@ -452,9 +452,9 @@ func (WriteConflict_Reason) EnumDescriptor() ([]byte, []int) {
 
 type RawGetRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Context       *Context               `                   protobuf:"bytes,1,opt,name=context,proto3" json:"context,omitempty"`
-	Key           []byte                 `                   protobuf:"bytes,2,opt,name=key,proto3"     json:"key,omitempty"`
-	Cf            string                 `                   protobuf:"bytes,3,opt,name=cf,proto3"      json:"cf,omitempty"`
+	Context       *Context               `protobuf:"bytes,1,opt,name=context,proto3" json:"context,omitempty"`
+	Key           []byte                 `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+	Cf            string                 `protobuf:"bytes,3,opt,name=cf,proto3" json:"cf,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -512,10 +512,10 @@ func (x *RawGetRequest) GetCf() string {
 
 type RawGetResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	RegionError   *Error                 `                   protobuf:"bytes,1,opt,name=region_error,json=regionError,proto3" json:"region_error,omitempty"`
-	Error         string                 `                   protobuf:"bytes,2,opt,name=error,proto3"                         json:"error,omitempty"`
-	Value         []byte                 `                   protobuf:"bytes,3,opt,name=value,proto3"                         json:"value,omitempty"`
-	NotFound      bool                   `                   protobuf:"varint,4,opt,name=not_found,json=notFound,proto3"      json:"not_found,omitempty"`
+	RegionError   *Error                 `protobuf:"bytes,1,opt,name=region_error,json=regionError,proto3" json:"region_error,omitempty"`
+	Error         string                 `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+	Value         []byte                 `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
+	NotFound      bool                   `protobuf:"varint,4,opt,name=not_found,json=notFound,proto3" json:"not_found,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -580,9 +580,9 @@ func (x *RawGetResponse) GetNotFound() bool {
 
 type RawBatchGetRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Context       *Context               `                   protobuf:"bytes,1,opt,name=context,proto3" json:"context,omitempty"`
-	Keys          [][]byte               `                   protobuf:"bytes,2,rep,name=keys,proto3"    json:"keys,omitempty"`
-	Cf            string                 `                   protobuf:"bytes,3,opt,name=cf,proto3"      json:"cf,omitempty"`
+	Context       *Context               `protobuf:"bytes,1,opt,name=context,proto3" json:"context,omitempty"`
+	Keys          [][]byte               `protobuf:"bytes,2,rep,name=keys,proto3" json:"keys,omitempty"`
+	Cf            string                 `protobuf:"bytes,3,opt,name=cf,proto3" json:"cf,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -640,8 +640,8 @@ func (x *RawBatchGetRequest) GetCf() string {
 
 type RawBatchGetResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	RegionError   *Error                 `                   protobuf:"bytes,1,opt,name=region_error,json=regionError,proto3" json:"region_error,omitempty"`
-	Pairs         []*KvPair              `                   protobuf:"bytes,2,rep,name=pairs,proto3"                         json:"pairs,omitempty"`
+	RegionError   *Error                 `protobuf:"bytes,1,opt,name=region_error,json=regionError,proto3" json:"region_error,omitempty"`
+	Pairs         []*KvPair              `protobuf:"bytes,2,rep,name=pairs,proto3" json:"pairs,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -692,12 +692,12 @@ func (x *RawBatchGetResponse) GetPairs() []*KvPair {
 
 type RawPutRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Context       *Context               `                   protobuf:"bytes,1,opt,name=context,proto3"              json:"context,omitempty"`
-	Key           []byte                 `                   protobuf:"bytes,2,opt,name=key,proto3"                  json:"key,omitempty"`
-	Value         []byte                 `                   protobuf:"bytes,3,opt,name=value,proto3"                json:"value,omitempty"`
-	Cf            string                 `                   protobuf:"bytes,4,opt,name=cf,proto3"                   json:"cf,omitempty"`
-	Ttl           uint64                 `                   protobuf:"varint,5,opt,name=ttl,proto3"                 json:"ttl,omitempty"`
-	ForCas        bool                   `                   protobuf:"varint,6,opt,name=for_cas,json=forCas,proto3" json:"for_cas,omitempty"`
+	Context       *Context               `protobuf:"bytes,1,opt,name=context,proto3" json:"context,omitempty"`
+	Key           []byte                 `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+	Value         []byte                 `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
+	Cf            string                 `protobuf:"bytes,4,opt,name=cf,proto3" json:"cf,omitempty"`
+	Ttl           uint64                 `protobuf:"varint,5,opt,name=ttl,proto3" json:"ttl,omitempty"`
+	ForCas        bool                   `protobuf:"varint,6,opt,name=for_cas,json=forCas,proto3" json:"for_cas,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -776,8 +776,8 @@ func (x *RawPutRequest) GetForCas() bool {
 
 type RawPutResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	RegionError   *Error                 `                   protobuf:"bytes,1,opt,name=region_error,json=regionError,proto3" json:"region_error,omitempty"`
-	Error         string                 `                   protobuf:"bytes,2,opt,name=error,proto3"                         json:"error,omitempty"`
+	RegionError   *Error                 `protobuf:"bytes,1,opt,name=region_error,json=regionError,proto3" json:"region_error,omitempty"`
+	Error         string                 `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -828,11 +828,11 @@ func (x *RawPutResponse) GetError() string {
 
 type RawBatchPutRequest struct {
 	state   protoimpl.MessageState `protogen:"open.v1"`
-	Context *Context               `                   protobuf:"bytes,1,opt,name=context,proto3" json:"context,omitempty"`
-	Pairs   []*KvPair              `                   protobuf:"bytes,2,rep,name=pairs,proto3"   json:"pairs,omitempty"`
-	Cf      string                 `                   protobuf:"bytes,3,opt,name=cf,proto3"      json:"cf,omitempty"`
+	Context *Context               `protobuf:"bytes,1,opt,name=context,proto3" json:"context,omitempty"`
+	Pairs   []*KvPair              `protobuf:"bytes,2,rep,name=pairs,proto3" json:"pairs,omitempty"`
+	Cf      string                 `protobuf:"bytes,3,opt,name=cf,proto3" json:"cf,omitempty"`
 	// Deprecated: Marked as deprecated in v1/tikv/kvrpcpb.proto.
-	Ttl    uint64 `protobuf:"varint,4,opt,name=ttl,proto3"                 json:"ttl,omitempty"`
+	Ttl    uint64 `protobuf:"varint,4,opt,name=ttl,proto3" json:"ttl,omitempty"`
 	ForCas bool   `protobuf:"varint,5,opt,name=for_cas,json=forCas,proto3" json:"for_cas,omitempty"`
 	// The time-to-live for each keys in seconds, and if the length of `ttls`
 	// is exactly one, the ttl will be applied to all keys. Otherwise, the length
@@ -917,8 +917,8 @@ func (x *RawBatchPutRequest) GetTtls() []uint64 {
 
 type RawBatchPutResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	RegionError   *Error                 `                   protobuf:"bytes,1,opt,name=region_error,json=regionError,proto3" json:"region_error,omitempty"`
-	Error         string                 `                   protobuf:"bytes,2,opt,name=error,proto3"                         json:"error,omitempty"`
+	RegionError   *Error                 `protobuf:"bytes,1,opt,name=region_error,json=regionError,proto3" json:"region_error,omitempty"`
+	Error         string                 `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -969,10 +969,10 @@ func (x *RawBatchPutResponse) GetError() string {
 
 type RawDeleteRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Context       *Context               `                   protobuf:"bytes,1,opt,name=context,proto3"              json:"context,omitempty"`
-	Key           []byte                 `                   protobuf:"bytes,2,opt,name=key,proto3"                  json:"key,omitempty"`
-	Cf            string                 `                   protobuf:"bytes,3,opt,name=cf,proto3"                   json:"cf,omitempty"`
-	ForCas        bool                   `                   protobuf:"varint,4,opt,name=for_cas,json=forCas,proto3" json:"for_cas,omitempty"`
+	Context       *Context               `protobuf:"bytes,1,opt,name=context,proto3" json:"context,omitempty"`
+	Key           []byte                 `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+	Cf            string                 `protobuf:"bytes,3,opt,name=cf,proto3" json:"cf,omitempty"`
+	ForCas        bool                   `protobuf:"varint,4,opt,name=for_cas,json=forCas,proto3" json:"for_cas,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1037,8 +1037,8 @@ func (x *RawDeleteRequest) GetForCas() bool {
 
 type RawDeleteResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	RegionError   *Error                 `                   protobuf:"bytes,1,opt,name=region_error,json=regionError,proto3" json:"region_error,omitempty"`
-	Error         string                 `                   protobuf:"bytes,2,opt,name=error,proto3"                         json:"error,omitempty"`
+	RegionError   *Error                 `protobuf:"bytes,1,opt,name=region_error,json=regionError,proto3" json:"region_error,omitempty"`
+	Error         string                 `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1089,10 +1089,10 @@ func (x *RawDeleteResponse) GetError() string {
 
 type RawBatchDeleteRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Context       *Context               `                   protobuf:"bytes,1,opt,name=context,proto3"              json:"context,omitempty"`
-	Keys          [][]byte               `                   protobuf:"bytes,2,rep,name=keys,proto3"                 json:"keys,omitempty"`
-	Cf            string                 `                   protobuf:"bytes,3,opt,name=cf,proto3"                   json:"cf,omitempty"`
-	ForCas        bool                   `                   protobuf:"varint,4,opt,name=for_cas,json=forCas,proto3" json:"for_cas,omitempty"`
+	Context       *Context               `protobuf:"bytes,1,opt,name=context,proto3" json:"context,omitempty"`
+	Keys          [][]byte               `protobuf:"bytes,2,rep,name=keys,proto3" json:"keys,omitempty"`
+	Cf            string                 `protobuf:"bytes,3,opt,name=cf,proto3" json:"cf,omitempty"`
+	ForCas        bool                   `protobuf:"varint,4,opt,name=for_cas,json=forCas,proto3" json:"for_cas,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1157,8 +1157,8 @@ func (x *RawBatchDeleteRequest) GetForCas() bool {
 
 type RawBatchDeleteResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	RegionError   *Error                 `                   protobuf:"bytes,1,opt,name=region_error,json=regionError,proto3" json:"region_error,omitempty"`
-	Error         string                 `                   protobuf:"bytes,2,opt,name=error,proto3"                         json:"error,omitempty"`
+	RegionError   *Error                 `protobuf:"bytes,1,opt,name=region_error,json=regionError,proto3" json:"region_error,omitempty"`
+	Error         string                 `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1210,22 +1210,22 @@ func (x *RawBatchDeleteResponse) GetError() string {
 // Miscellaneous metadata attached to most requests.
 type Context struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
-	RegionId uint64                 `                   protobuf:"varint,1,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
+	RegionId uint64                 `protobuf:"varint,1,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
 	// metapb.RegionEpoch region_epoch = 2;
 	// metapb.Peer peer = 3;
-	Term           uint64         `protobuf:"varint,5,opt,name=term,proto3"                                                         json:"term,omitempty"`
-	Priority       CommandPri     `protobuf:"varint,6,opt,name=priority,proto3,enum=tikv.CommandPri"                                json:"priority,omitempty"`
+	Term           uint64         `protobuf:"varint,5,opt,name=term,proto3" json:"term,omitempty"`
+	Priority       CommandPri     `protobuf:"varint,6,opt,name=priority,proto3,enum=tikv.CommandPri" json:"priority,omitempty"`
 	IsolationLevel IsolationLevel `protobuf:"varint,7,opt,name=isolation_level,json=isolationLevel,proto3,enum=tikv.IsolationLevel" json:"isolation_level,omitempty"`
-	NotFillCache   bool           `protobuf:"varint,8,opt,name=not_fill_cache,json=notFillCache,proto3"                             json:"not_fill_cache,omitempty"`
-	SyncLog        bool           `protobuf:"varint,9,opt,name=sync_log,json=syncLog,proto3"                                        json:"sync_log,omitempty"`
+	NotFillCache   bool           `protobuf:"varint,8,opt,name=not_fill_cache,json=notFillCache,proto3" json:"not_fill_cache,omitempty"`
+	SyncLog        bool           `protobuf:"varint,9,opt,name=sync_log,json=syncLog,proto3" json:"sync_log,omitempty"`
 	// True means execution time statistics should be recorded and returned.
 	RecordTimeStat bool `protobuf:"varint,10,opt,name=record_time_stat,json=recordTimeStat,proto3" json:"record_time_stat,omitempty"`
 	// True means RocksDB scan statistics should be recorded and returned.
 	RecordScanStat bool `protobuf:"varint,11,opt,name=record_scan_stat,json=recordScanStat,proto3" json:"record_scan_stat,omitempty"`
-	ReplicaRead    bool `protobuf:"varint,12,opt,name=replica_read,json=replicaRead,proto3"        json:"replica_read,omitempty"`
+	ReplicaRead    bool `protobuf:"varint,12,opt,name=replica_read,json=replicaRead,proto3" json:"replica_read,omitempty"`
 	// Read requests can ignore locks belonging to these transactions because either
 	// these transactions are rolled back or theirs commit_ts > read request's start_ts.
-	ResolvedLocks          []uint64 `protobuf:"varint,13,rep,packed,name=resolved_locks,json=resolvedLocks,proto3"              json:"resolved_locks,omitempty"`
+	ResolvedLocks          []uint64 `protobuf:"varint,13,rep,packed,name=resolved_locks,json=resolvedLocks,proto3" json:"resolved_locks,omitempty"`
 	MaxExecutionDurationMs uint64   `protobuf:"varint,14,opt,name=max_execution_duration_ms,json=maxExecutionDurationMs,proto3" json:"max_execution_duration_ms,omitempty"`
 	// After a region applies to `applied_index`, we can get a
 	// snapshot for the region even if the peer is a follower.
@@ -1582,9 +1582,9 @@ func (x *ResourceControlContext) GetOverridePriority() uint64 {
 
 type SourceStmt struct {
 	state        protoimpl.MessageState `protogen:"open.v1"`
-	StartTs      uint64                 `                   protobuf:"varint,1,opt,name=start_ts,json=startTs,proto3"           json:"start_ts,omitempty"`
-	ConnectionId uint64                 `                   protobuf:"varint,2,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty"`
-	StmtId       uint64                 `                   protobuf:"varint,3,opt,name=stmt_id,json=stmtId,proto3"             json:"stmt_id,omitempty"`
+	StartTs      uint64                 `protobuf:"varint,1,opt,name=start_ts,json=startTs,proto3" json:"start_ts,omitempty"`
+	ConnectionId uint64                 `protobuf:"varint,2,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty"`
+	StmtId       uint64                 `protobuf:"varint,3,opt,name=stmt_id,json=stmtId,proto3" json:"stmt_id,omitempty"`
 	// session alias set by user
 	SessionAlias  string `protobuf:"bytes,4,opt,name=session_alias,json=sessionAlias,proto3" json:"session_alias,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -1651,18 +1651,18 @@ func (x *SourceStmt) GetSessionAlias() string {
 
 type LockInfo struct {
 	state       protoimpl.MessageState `protogen:"open.v1"`
-	PrimaryLock []byte                 `                   protobuf:"bytes,1,opt,name=primary_lock,json=primaryLock,proto3"  json:"primary_lock,omitempty"`
-	LockVersion uint64                 `                   protobuf:"varint,2,opt,name=lock_version,json=lockVersion,proto3" json:"lock_version,omitempty"`
-	Key         []byte                 `                   protobuf:"bytes,3,opt,name=key,proto3"                            json:"key,omitempty"`
-	LockTtl     uint64                 `                   protobuf:"varint,4,opt,name=lock_ttl,json=lockTtl,proto3"         json:"lock_ttl,omitempty"`
+	PrimaryLock []byte                 `protobuf:"bytes,1,opt,name=primary_lock,json=primaryLock,proto3" json:"primary_lock,omitempty"`
+	LockVersion uint64                 `protobuf:"varint,2,opt,name=lock_version,json=lockVersion,proto3" json:"lock_version,omitempty"`
+	Key         []byte                 `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+	LockTtl     uint64                 `protobuf:"varint,4,opt,name=lock_ttl,json=lockTtl,proto3" json:"lock_ttl,omitempty"`
 	// How many keys this transaction involves in this region.
-	TxnSize         uint64 `protobuf:"varint,5,opt,name=txn_size,json=txnSize,proto3"                   json:"txn_size,omitempty"`
-	LockType        Op     `protobuf:"varint,6,opt,name=lock_type,json=lockType,proto3,enum=tikv.Op"    json:"lock_type,omitempty"`
+	TxnSize         uint64 `protobuf:"varint,5,opt,name=txn_size,json=txnSize,proto3" json:"txn_size,omitempty"`
+	LockType        Op     `protobuf:"varint,6,opt,name=lock_type,json=lockType,proto3,enum=tikv.Op" json:"lock_type,omitempty"`
 	LockForUpdateTs uint64 `protobuf:"varint,7,opt,name=lock_for_update_ts,json=lockForUpdateTs,proto3" json:"lock_for_update_ts,omitempty"`
 	// Fields for transactions that are using Async Commit.
 	UseAsyncCommit bool     `protobuf:"varint,8,opt,name=use_async_commit,json=useAsyncCommit,proto3" json:"use_async_commit,omitempty"`
-	MinCommitTs    uint64   `protobuf:"varint,9,opt,name=min_commit_ts,json=minCommitTs,proto3"       json:"min_commit_ts,omitempty"`
-	Secondaries    [][]byte `protobuf:"bytes,10,rep,name=secondaries,proto3"                          json:"secondaries,omitempty"`
+	MinCommitTs    uint64   `protobuf:"varint,9,opt,name=min_commit_ts,json=minCommitTs,proto3" json:"min_commit_ts,omitempty"`
+	Secondaries    [][]byte `protobuf:"bytes,10,rep,name=secondaries,proto3" json:"secondaries,omitempty"`
 	// The time elapsed since last update of lock wait info when waiting.
 	// It's used in timeout errors. 0 means unknown or not applicable.
 	// It can be used to help the client decide whether to try resolving the lock.
@@ -1789,18 +1789,18 @@ func (x *LockInfo) GetIsTxnFile() bool {
 
 type KeyError struct {
 	state        protoimpl.MessageState `protogen:"open.v1"`
-	Locked       *LockInfo              `                   protobuf:"bytes,1,opt,name=locked,proto3"                          json:"locked,omitempty"`        // Client should backoff or cleanup the lock then retry.
-	Retryable    string                 `                   protobuf:"bytes,2,opt,name=retryable,proto3"                       json:"retryable,omitempty"`     // Client may restart the txn. e.g write conflict.
-	Abort        string                 `                   protobuf:"bytes,3,opt,name=abort,proto3"                           json:"abort,omitempty"`         // Client should abort the txn.
-	Conflict     *WriteConflict         `                   protobuf:"bytes,4,opt,name=conflict,proto3"                        json:"conflict,omitempty"`      // Write conflict is moved from retryable to here.
-	AlreadyExist *AlreadyExist          `                   protobuf:"bytes,5,opt,name=already_exist,json=alreadyExist,proto3" json:"already_exist,omitempty"` // Key already exists
+	Locked       *LockInfo              `protobuf:"bytes,1,opt,name=locked,proto3" json:"locked,omitempty"`                                 // Client should backoff or cleanup the lock then retry.
+	Retryable    string                 `protobuf:"bytes,2,opt,name=retryable,proto3" json:"retryable,omitempty"`                           // Client may restart the txn. e.g write conflict.
+	Abort        string                 `protobuf:"bytes,3,opt,name=abort,proto3" json:"abort,omitempty"`                                   // Client should abort the txn.
+	Conflict     *WriteConflict         `protobuf:"bytes,4,opt,name=conflict,proto3" json:"conflict,omitempty"`                             // Write conflict is moved from retryable to here.
+	AlreadyExist *AlreadyExist          `protobuf:"bytes,5,opt,name=already_exist,json=alreadyExist,proto3" json:"already_exist,omitempty"` // Key already exists
 	// Deadlock deadlock = 6; // Deadlock is used in pessimistic transaction for single statement rollback.
-	CommitTsExpired  *CommitTsExpired  `protobuf:"bytes,7,opt,name=commit_ts_expired,json=commitTsExpired,proto3"    json:"commit_ts_expired,omitempty"`   // Commit ts is earlier than min commit ts of a transaction.
-	TxnNotFound      *TxnNotFound      `protobuf:"bytes,8,opt,name=txn_not_found,json=txnNotFound,proto3"            json:"txn_not_found,omitempty"`       // Txn not found when checking txn status.
+	CommitTsExpired  *CommitTsExpired  `protobuf:"bytes,7,opt,name=commit_ts_expired,json=commitTsExpired,proto3" json:"commit_ts_expired,omitempty"`      // Commit ts is earlier than min commit ts of a transaction.
+	TxnNotFound      *TxnNotFound      `protobuf:"bytes,8,opt,name=txn_not_found,json=txnNotFound,proto3" json:"txn_not_found,omitempty"`                  // Txn not found when checking txn status.
 	CommitTsTooLarge *CommitTsTooLarge `protobuf:"bytes,9,opt,name=commit_ts_too_large,json=commitTsTooLarge,proto3" json:"commit_ts_too_large,omitempty"` // Calculated commit TS exceeds the limit given by the user.
-	AssertionFailed  *AssertionFailed  `protobuf:"bytes,10,opt,name=assertion_failed,json=assertionFailed,proto3"    json:"assertion_failed,omitempty"`    // Assertion of a `Mutation` is evaluated as a failure.
-	PrimaryMismatch  *PrimaryMismatch  `protobuf:"bytes,11,opt,name=primary_mismatch,json=primaryMismatch,proto3"    json:"primary_mismatch,omitempty"`    // CheckTxnStatus is sent to a lock that's not the primary.
-	TxnLockNotFound  *TxnLockNotFound  `protobuf:"bytes,12,opt,name=txn_lock_not_found,json=txnLockNotFound,proto3"  json:"txn_lock_not_found,omitempty"`  // TxnLockNotFound indicates the txn lock is not found.
+	AssertionFailed  *AssertionFailed  `protobuf:"bytes,10,opt,name=assertion_failed,json=assertionFailed,proto3" json:"assertion_failed,omitempty"`       // Assertion of a `Mutation` is evaluated as a failure.
+	PrimaryMismatch  *PrimaryMismatch  `protobuf:"bytes,11,opt,name=primary_mismatch,json=primaryMismatch,proto3" json:"primary_mismatch,omitempty"`       // CheckTxnStatus is sent to a lock that's not the primary.
+	TxnLockNotFound  *TxnLockNotFound  `protobuf:"bytes,12,opt,name=txn_lock_not_found,json=txnLockNotFound,proto3" json:"txn_lock_not_found,omitempty"`   // TxnLockNotFound indicates the txn lock is not found.
 	// Extra information for error debugging
 	DebugInfo     *DebugInfo `protobuf:"bytes,100,opt,name=debug_info,json=debugInfo,proto3" json:"debug_info,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -1923,12 +1923,12 @@ func (x *KeyError) GetDebugInfo() *DebugInfo {
 
 type WriteConflict struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
-	StartTs          uint64                 `                   protobuf:"varint,1,opt,name=start_ts,json=startTs,proto3"                    json:"start_ts,omitempty"`
-	ConflictTs       uint64                 `                   protobuf:"varint,2,opt,name=conflict_ts,json=conflictTs,proto3"              json:"conflict_ts,omitempty"`
-	Key              []byte                 `                   protobuf:"bytes,3,opt,name=key,proto3"                                       json:"key,omitempty"`
-	Primary          []byte                 `                   protobuf:"bytes,4,opt,name=primary,proto3"                                   json:"primary,omitempty"`
-	ConflictCommitTs uint64                 `                   protobuf:"varint,5,opt,name=conflict_commit_ts,json=conflictCommitTs,proto3" json:"conflict_commit_ts,omitempty"`
-	Reason           WriteConflict_Reason   `                   protobuf:"varint,6,opt,name=reason,proto3,enum=tikv.WriteConflict_Reason"    json:"reason,omitempty"`
+	StartTs          uint64                 `protobuf:"varint,1,opt,name=start_ts,json=startTs,proto3" json:"start_ts,omitempty"`
+	ConflictTs       uint64                 `protobuf:"varint,2,opt,name=conflict_ts,json=conflictTs,proto3" json:"conflict_ts,omitempty"`
+	Key              []byte                 `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+	Primary          []byte                 `protobuf:"bytes,4,opt,name=primary,proto3" json:"primary,omitempty"`
+	ConflictCommitTs uint64                 `protobuf:"varint,5,opt,name=conflict_commit_ts,json=conflictCommitTs,proto3" json:"conflict_commit_ts,omitempty"`
+	Reason           WriteConflict_Reason   `protobuf:"varint,6,opt,name=reason,proto3,enum=tikv.WriteConflict_Reason" json:"reason,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -2007,7 +2007,7 @@ func (x *WriteConflict) GetReason() WriteConflict_Reason {
 
 type AlreadyExist struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Key           []byte                 `                   protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	Key           []byte                 `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2051,10 +2051,10 @@ func (x *AlreadyExist) GetKey() []byte {
 
 type CommitTsExpired struct {
 	state             protoimpl.MessageState `protogen:"open.v1"`
-	StartTs           uint64                 `                   protobuf:"varint,1,opt,name=start_ts,json=startTs,proto3"                      json:"start_ts,omitempty"`
-	AttemptedCommitTs uint64                 `                   protobuf:"varint,2,opt,name=attempted_commit_ts,json=attemptedCommitTs,proto3" json:"attempted_commit_ts,omitempty"`
-	Key               []byte                 `                   protobuf:"bytes,3,opt,name=key,proto3"                                         json:"key,omitempty"`
-	MinCommitTs       uint64                 `                   protobuf:"varint,4,opt,name=min_commit_ts,json=minCommitTs,proto3"             json:"min_commit_ts,omitempty"`
+	StartTs           uint64                 `protobuf:"varint,1,opt,name=start_ts,json=startTs,proto3" json:"start_ts,omitempty"`
+	AttemptedCommitTs uint64                 `protobuf:"varint,2,opt,name=attempted_commit_ts,json=attemptedCommitTs,proto3" json:"attempted_commit_ts,omitempty"`
+	Key               []byte                 `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+	MinCommitTs       uint64                 `protobuf:"varint,4,opt,name=min_commit_ts,json=minCommitTs,proto3" json:"min_commit_ts,omitempty"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -2119,8 +2119,8 @@ func (x *CommitTsExpired) GetMinCommitTs() uint64 {
 
 type TxnNotFound struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	StartTs       uint64                 `                   protobuf:"varint,1,opt,name=start_ts,json=startTs,proto3"      json:"start_ts,omitempty"`
-	PrimaryKey    []byte                 `                   protobuf:"bytes,2,opt,name=primary_key,json=primaryKey,proto3" json:"primary_key,omitempty"`
+	StartTs       uint64                 `protobuf:"varint,1,opt,name=start_ts,json=startTs,proto3" json:"start_ts,omitempty"`
+	PrimaryKey    []byte                 `protobuf:"bytes,2,opt,name=primary_key,json=primaryKey,proto3" json:"primary_key,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2171,7 +2171,7 @@ func (x *TxnNotFound) GetPrimaryKey() []byte {
 
 type CommitTsTooLarge struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	CommitTs      uint64                 `                   protobuf:"varint,1,opt,name=commit_ts,json=commitTs,proto3" json:"commit_ts,omitempty"` // The calculated commit TS.
+	CommitTs      uint64                 `protobuf:"varint,1,opt,name=commit_ts,json=commitTs,proto3" json:"commit_ts,omitempty"` // The calculated commit TS.
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2215,11 +2215,11 @@ func (x *CommitTsTooLarge) GetCommitTs() uint64 {
 
 type AssertionFailed struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
-	StartTs          uint64                 `                   protobuf:"varint,1,opt,name=start_ts,json=startTs,proto3"                    json:"start_ts,omitempty"`
-	Key              []byte                 `                   protobuf:"bytes,2,opt,name=key,proto3"                                       json:"key,omitempty"`
-	Assertion        Assertion              `                   protobuf:"varint,3,opt,name=assertion,proto3,enum=tikv.Assertion"            json:"assertion,omitempty"`
-	ExistingStartTs  uint64                 `                   protobuf:"varint,4,opt,name=existing_start_ts,json=existingStartTs,proto3"   json:"existing_start_ts,omitempty"`
-	ExistingCommitTs uint64                 `                   protobuf:"varint,5,opt,name=existing_commit_ts,json=existingCommitTs,proto3" json:"existing_commit_ts,omitempty"`
+	StartTs          uint64                 `protobuf:"varint,1,opt,name=start_ts,json=startTs,proto3" json:"start_ts,omitempty"`
+	Key              []byte                 `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+	Assertion        Assertion              `protobuf:"varint,3,opt,name=assertion,proto3,enum=tikv.Assertion" json:"assertion,omitempty"`
+	ExistingStartTs  uint64                 `protobuf:"varint,4,opt,name=existing_start_ts,json=existingStartTs,proto3" json:"existing_start_ts,omitempty"`
+	ExistingCommitTs uint64                 `protobuf:"varint,5,opt,name=existing_commit_ts,json=existingCommitTs,proto3" json:"existing_commit_ts,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -2291,7 +2291,7 @@ func (x *AssertionFailed) GetExistingCommitTs() uint64 {
 
 type PrimaryMismatch struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	LockInfo      *LockInfo              `                   protobuf:"bytes,1,opt,name=lock_info,json=lockInfo,proto3" json:"lock_info,omitempty"`
+	LockInfo      *LockInfo              `protobuf:"bytes,1,opt,name=lock_info,json=lockInfo,proto3" json:"lock_info,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2335,7 +2335,7 @@ func (x *PrimaryMismatch) GetLockInfo() *LockInfo {
 
 type TxnLockNotFound struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Key           []byte                 `                   protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	Key           []byte                 `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2379,8 +2379,8 @@ func (x *TxnLockNotFound) GetKey() []byte {
 
 type MvccDebugInfo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Key           []byte                 `                   protobuf:"bytes,1,opt,name=key,proto3"  json:"key,omitempty"`
-	Mvcc          *MvccInfo              `                   protobuf:"bytes,2,opt,name=mvcc,proto3" json:"mvcc,omitempty"`
+	Key           []byte                 `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	Mvcc          *MvccInfo              `protobuf:"bytes,2,opt,name=mvcc,proto3" json:"mvcc,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2431,7 +2431,7 @@ func (x *MvccDebugInfo) GetMvcc() *MvccInfo {
 
 type DebugInfo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	MvccInfo      []*MvccDebugInfo       `                   protobuf:"bytes,1,rep,name=mvcc_info,json=mvccInfo,proto3" json:"mvcc_info,omitempty"`
+	MvccInfo      []*MvccDebugInfo       `protobuf:"bytes,1,rep,name=mvcc_info,json=mvccInfo,proto3" json:"mvcc_info,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2656,9 +2656,9 @@ func (x *TimeDetailV2) GetKvGrpcWaitTimeNs() uint64 {
 
 type ScanInfo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Total         int64                  `                   protobuf:"varint,1,opt,name=total,proto3"                     json:"total,omitempty"`
-	Processed     int64                  `                   protobuf:"varint,2,opt,name=processed,proto3"                 json:"processed,omitempty"`
-	ReadBytes     int64                  `                   protobuf:"varint,3,opt,name=read_bytes,json=readBytes,proto3" json:"read_bytes,omitempty"`
+	Total         int64                  `protobuf:"varint,1,opt,name=total,proto3" json:"total,omitempty"`
+	Processed     int64                  `protobuf:"varint,2,opt,name=processed,proto3" json:"processed,omitempty"`
+	ReadBytes     int64                  `protobuf:"varint,3,opt,name=read_bytes,json=readBytes,proto3" json:"read_bytes,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2717,9 +2717,9 @@ func (x *ScanInfo) GetReadBytes() int64 {
 // Only reserved for compatibility.
 type ScanDetail struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Write         *ScanInfo              `                   protobuf:"bytes,1,opt,name=write,proto3" json:"write,omitempty"`
-	Lock          *ScanInfo              `                   protobuf:"bytes,2,opt,name=lock,proto3"  json:"lock,omitempty"`
-	Data          *ScanInfo              `                   protobuf:"bytes,3,opt,name=data,proto3"  json:"data,omitempty"`
+	Write         *ScanInfo              `protobuf:"bytes,1,opt,name=write,proto3" json:"write,omitempty"`
+	Lock          *ScanInfo              `protobuf:"bytes,2,opt,name=lock,proto3" json:"lock,omitempty"`
+	Data          *ScanInfo              `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3256,9 +3256,9 @@ func (x *WriteDetail) GetPessimisticLockWaitNanos() uint64 {
 
 type KvPair struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	Error *KeyError              `                   protobuf:"bytes,1,opt,name=error,proto3" json:"error,omitempty"`
-	Key   []byte                 `                   protobuf:"bytes,2,opt,name=key,proto3"   json:"key,omitempty"`
-	Value []byte                 `                   protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
+	Error *KeyError              `protobuf:"bytes,1,opt,name=error,proto3" json:"error,omitempty"`
+	Key   []byte                 `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+	Value []byte                 `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
 	// The commit timestamp of the key.
 	// If it is zero, it means the commit timestamp is unknown.
 	CommitTs      uint64 `protobuf:"varint,4,opt,name=commit_ts,json=commitTs,proto3" json:"commit_ts,omitempty"`
@@ -3326,15 +3326,15 @@ func (x *KvPair) GetCommitTs() uint64 {
 
 type MvccWrite struct {
 	state                 protoimpl.MessageState `protogen:"open.v1"`
-	Type                  Op                     `                   protobuf:"varint,1,opt,name=type,proto3,enum=tikv.Op"                                  json:"type,omitempty"`
-	StartTs               uint64                 `                   protobuf:"varint,2,opt,name=start_ts,json=startTs,proto3"                              json:"start_ts,omitempty"`
-	CommitTs              uint64                 `                   protobuf:"varint,3,opt,name=commit_ts,json=commitTs,proto3"                            json:"commit_ts,omitempty"`
-	ShortValue            []byte                 `                   protobuf:"bytes,4,opt,name=short_value,json=shortValue,proto3"                         json:"short_value,omitempty"`
-	HasOverlappedRollback bool                   `                   protobuf:"varint,5,opt,name=has_overlapped_rollback,json=hasOverlappedRollback,proto3" json:"has_overlapped_rollback,omitempty"`
-	HasGcFence            bool                   `                   protobuf:"varint,6,opt,name=has_gc_fence,json=hasGcFence,proto3"                       json:"has_gc_fence,omitempty"`
-	GcFence               uint64                 `                   protobuf:"varint,7,opt,name=gc_fence,json=gcFence,proto3"                              json:"gc_fence,omitempty"`
-	LastChangeTs          uint64                 `                   protobuf:"varint,8,opt,name=last_change_ts,json=lastChangeTs,proto3"                   json:"last_change_ts,omitempty"`
-	VersionsToLastChange  uint64                 `                   protobuf:"varint,9,opt,name=versions_to_last_change,json=versionsToLastChange,proto3"  json:"versions_to_last_change,omitempty"`
+	Type                  Op                     `protobuf:"varint,1,opt,name=type,proto3,enum=tikv.Op" json:"type,omitempty"`
+	StartTs               uint64                 `protobuf:"varint,2,opt,name=start_ts,json=startTs,proto3" json:"start_ts,omitempty"`
+	CommitTs              uint64                 `protobuf:"varint,3,opt,name=commit_ts,json=commitTs,proto3" json:"commit_ts,omitempty"`
+	ShortValue            []byte                 `protobuf:"bytes,4,opt,name=short_value,json=shortValue,proto3" json:"short_value,omitempty"`
+	HasOverlappedRollback bool                   `protobuf:"varint,5,opt,name=has_overlapped_rollback,json=hasOverlappedRollback,proto3" json:"has_overlapped_rollback,omitempty"`
+	HasGcFence            bool                   `protobuf:"varint,6,opt,name=has_gc_fence,json=hasGcFence,proto3" json:"has_gc_fence,omitempty"`
+	GcFence               uint64                 `protobuf:"varint,7,opt,name=gc_fence,json=gcFence,proto3" json:"gc_fence,omitempty"`
+	LastChangeTs          uint64                 `protobuf:"varint,8,opt,name=last_change_ts,json=lastChangeTs,proto3" json:"last_change_ts,omitempty"`
+	VersionsToLastChange  uint64                 `protobuf:"varint,9,opt,name=versions_to_last_change,json=versionsToLastChange,proto3" json:"versions_to_last_change,omitempty"`
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
 }
@@ -3434,8 +3434,8 @@ func (x *MvccWrite) GetVersionsToLastChange() uint64 {
 
 type MvccValue struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	StartTs       uint64                 `                   protobuf:"varint,1,opt,name=start_ts,json=startTs,proto3" json:"start_ts,omitempty"`
-	Value         []byte                 `                   protobuf:"bytes,2,opt,name=value,proto3"                  json:"value,omitempty"`
+	StartTs       uint64                 `protobuf:"varint,1,opt,name=start_ts,json=startTs,proto3" json:"start_ts,omitempty"`
+	Value         []byte                 `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3486,18 +3486,18 @@ func (x *MvccValue) GetValue() []byte {
 
 type MvccLock struct {
 	state                protoimpl.MessageState `protogen:"open.v1"`
-	Type                 Op                     `                   protobuf:"varint,1,opt,name=type,proto3,enum=tikv.Op"                                  json:"type,omitempty"`
-	StartTs              uint64                 `                   protobuf:"varint,2,opt,name=start_ts,json=startTs,proto3"                              json:"start_ts,omitempty"`
-	Primary              []byte                 `                   protobuf:"bytes,3,opt,name=primary,proto3"                                             json:"primary,omitempty"`
-	ShortValue           []byte                 `                   protobuf:"bytes,4,opt,name=short_value,json=shortValue,proto3"                         json:"short_value,omitempty"`
-	Ttl                  uint64                 `                   protobuf:"varint,5,opt,name=ttl,proto3"                                                json:"ttl,omitempty"`
-	ForUpdateTs          uint64                 `                   protobuf:"varint,6,opt,name=for_update_ts,json=forUpdateTs,proto3"                     json:"for_update_ts,omitempty"`
-	TxnSize              uint64                 `                   protobuf:"varint,7,opt,name=txn_size,json=txnSize,proto3"                              json:"txn_size,omitempty"`
-	UseAsyncCommit       bool                   `                   protobuf:"varint,8,opt,name=use_async_commit,json=useAsyncCommit,proto3"               json:"use_async_commit,omitempty"`
-	Secondaries          [][]byte               `                   protobuf:"bytes,9,rep,name=secondaries,proto3"                                         json:"secondaries,omitempty"`
-	RollbackTs           []uint64               `                   protobuf:"varint,10,rep,packed,name=rollback_ts,json=rollbackTs,proto3"                json:"rollback_ts,omitempty"`
-	LastChangeTs         uint64                 `                   protobuf:"varint,11,opt,name=last_change_ts,json=lastChangeTs,proto3"                  json:"last_change_ts,omitempty"`
-	VersionsToLastChange uint64                 `                   protobuf:"varint,12,opt,name=versions_to_last_change,json=versionsToLastChange,proto3" json:"versions_to_last_change,omitempty"`
+	Type                 Op                     `protobuf:"varint,1,opt,name=type,proto3,enum=tikv.Op" json:"type,omitempty"`
+	StartTs              uint64                 `protobuf:"varint,2,opt,name=start_ts,json=startTs,proto3" json:"start_ts,omitempty"`
+	Primary              []byte                 `protobuf:"bytes,3,opt,name=primary,proto3" json:"primary,omitempty"`
+	ShortValue           []byte                 `protobuf:"bytes,4,opt,name=short_value,json=shortValue,proto3" json:"short_value,omitempty"`
+	Ttl                  uint64                 `protobuf:"varint,5,opt,name=ttl,proto3" json:"ttl,omitempty"`
+	ForUpdateTs          uint64                 `protobuf:"varint,6,opt,name=for_update_ts,json=forUpdateTs,proto3" json:"for_update_ts,omitempty"`
+	TxnSize              uint64                 `protobuf:"varint,7,opt,name=txn_size,json=txnSize,proto3" json:"txn_size,omitempty"`
+	UseAsyncCommit       bool                   `protobuf:"varint,8,opt,name=use_async_commit,json=useAsyncCommit,proto3" json:"use_async_commit,omitempty"`
+	Secondaries          [][]byte               `protobuf:"bytes,9,rep,name=secondaries,proto3" json:"secondaries,omitempty"`
+	RollbackTs           []uint64               `protobuf:"varint,10,rep,packed,name=rollback_ts,json=rollbackTs,proto3" json:"rollback_ts,omitempty"`
+	LastChangeTs         uint64                 `protobuf:"varint,11,opt,name=last_change_ts,json=lastChangeTs,proto3" json:"last_change_ts,omitempty"`
+	VersionsToLastChange uint64                 `protobuf:"varint,12,opt,name=versions_to_last_change,json=versionsToLastChange,proto3" json:"versions_to_last_change,omitempty"`
 	unknownFields        protoimpl.UnknownFields
 	sizeCache            protoimpl.SizeCache
 }
@@ -3618,9 +3618,9 @@ func (x *MvccLock) GetVersionsToLastChange() uint64 {
 
 type MvccInfo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Lock          *MvccLock              `                   protobuf:"bytes,1,opt,name=lock,proto3"   json:"lock,omitempty"`
-	Writes        []*MvccWrite           `                   protobuf:"bytes,2,rep,name=writes,proto3" json:"writes,omitempty"`
-	Values        []*MvccValue           `                   protobuf:"bytes,3,rep,name=values,proto3" json:"values,omitempty"`
+	Lock          *MvccLock              `protobuf:"bytes,1,opt,name=lock,proto3" json:"lock,omitempty"`
+	Writes        []*MvccWrite           `protobuf:"bytes,2,rep,name=writes,proto3" json:"writes,omitempty"`
+	Values        []*MvccValue           `protobuf:"bytes,3,rep,name=values,proto3" json:"values,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -4008,61 +4008,58 @@ func file_v1_tikv_kvrpcpb_proto_rawDescGZIP() []byte {
 	return file_v1_tikv_kvrpcpb_proto_rawDescData
 }
 
-var (
-	file_v1_tikv_kvrpcpb_proto_enumTypes = make([]protoimpl.EnumInfo, 7)
-	file_v1_tikv_kvrpcpb_proto_msgTypes  = make([]protoimpl.MessageInfo, 40)
-	file_v1_tikv_kvrpcpb_proto_goTypes   = []any{
-		(APIVersion)(0),                // 0: tikv.APIVersion
-		(CommandPri)(0),                // 1: tikv.CommandPri
-		(IsolationLevel)(0),            // 2: tikv.IsolationLevel
-		(DiskFullOpt)(0),               // 3: tikv.DiskFullOpt
-		(Op)(0),                        // 4: tikv.Op
-		(Assertion)(0),                 // 5: tikv.Assertion
-		(WriteConflict_Reason)(0),      // 6: tikv.WriteConflict.Reason
-		(*RawGetRequest)(nil),          // 7: tikv.RawGetRequest
-		(*RawGetResponse)(nil),         // 8: tikv.RawGetResponse
-		(*RawBatchGetRequest)(nil),     // 9: tikv.RawBatchGetRequest
-		(*RawBatchGetResponse)(nil),    // 10: tikv.RawBatchGetResponse
-		(*RawPutRequest)(nil),          // 11: tikv.RawPutRequest
-		(*RawPutResponse)(nil),         // 12: tikv.RawPutResponse
-		(*RawBatchPutRequest)(nil),     // 13: tikv.RawBatchPutRequest
-		(*RawBatchPutResponse)(nil),    // 14: tikv.RawBatchPutResponse
-		(*RawDeleteRequest)(nil),       // 15: tikv.RawDeleteRequest
-		(*RawDeleteResponse)(nil),      // 16: tikv.RawDeleteResponse
-		(*RawBatchDeleteRequest)(nil),  // 17: tikv.RawBatchDeleteRequest
-		(*RawBatchDeleteResponse)(nil), // 18: tikv.RawBatchDeleteResponse
-		(*Context)(nil),                // 19: tikv.Context
-		(*ResourceControlContext)(nil), // 20: tikv.ResourceControlContext
-		(*SourceStmt)(nil),             // 21: tikv.SourceStmt
-		(*LockInfo)(nil),               // 22: tikv.LockInfo
-		(*KeyError)(nil),               // 23: tikv.KeyError
-		(*WriteConflict)(nil),          // 24: tikv.WriteConflict
-		(*AlreadyExist)(nil),           // 25: tikv.AlreadyExist
-		(*CommitTsExpired)(nil),        // 26: tikv.CommitTsExpired
-		(*TxnNotFound)(nil),            // 27: tikv.TxnNotFound
-		(*CommitTsTooLarge)(nil),       // 28: tikv.CommitTsTooLarge
-		(*AssertionFailed)(nil),        // 29: tikv.AssertionFailed
-		(*PrimaryMismatch)(nil),        // 30: tikv.PrimaryMismatch
-		(*TxnLockNotFound)(nil),        // 31: tikv.TxnLockNotFound
-		(*MvccDebugInfo)(nil),          // 32: tikv.MvccDebugInfo
-		(*DebugInfo)(nil),              // 33: tikv.DebugInfo
-		(*TimeDetail)(nil),             // 34: tikv.TimeDetail
-		(*TimeDetailV2)(nil),           // 35: tikv.TimeDetailV2
-		(*ScanInfo)(nil),               // 36: tikv.ScanInfo
-		(*ScanDetail)(nil),             // 37: tikv.ScanDetail
-		(*ScanDetailV2)(nil),           // 38: tikv.ScanDetailV2
-		(*ExecDetails)(nil),            // 39: tikv.ExecDetails
-		(*ExecDetailsV2)(nil),          // 40: tikv.ExecDetailsV2
-		(*WriteDetail)(nil),            // 41: tikv.WriteDetail
-		(*KvPair)(nil),                 // 42: tikv.KvPair
-		(*MvccWrite)(nil),              // 43: tikv.MvccWrite
-		(*MvccValue)(nil),              // 44: tikv.MvccValue
-		(*MvccLock)(nil),               // 45: tikv.MvccLock
-		(*MvccInfo)(nil),               // 46: tikv.MvccInfo
-		(*Error)(nil),                  // 47: tikv.Error
-	}
-)
-
+var file_v1_tikv_kvrpcpb_proto_enumTypes = make([]protoimpl.EnumInfo, 7)
+var file_v1_tikv_kvrpcpb_proto_msgTypes = make([]protoimpl.MessageInfo, 40)
+var file_v1_tikv_kvrpcpb_proto_goTypes = []any{
+	(APIVersion)(0),                // 0: tikv.APIVersion
+	(CommandPri)(0),                // 1: tikv.CommandPri
+	(IsolationLevel)(0),            // 2: tikv.IsolationLevel
+	(DiskFullOpt)(0),               // 3: tikv.DiskFullOpt
+	(Op)(0),                        // 4: tikv.Op
+	(Assertion)(0),                 // 5: tikv.Assertion
+	(WriteConflict_Reason)(0),      // 6: tikv.WriteConflict.Reason
+	(*RawGetRequest)(nil),          // 7: tikv.RawGetRequest
+	(*RawGetResponse)(nil),         // 8: tikv.RawGetResponse
+	(*RawBatchGetRequest)(nil),     // 9: tikv.RawBatchGetRequest
+	(*RawBatchGetResponse)(nil),    // 10: tikv.RawBatchGetResponse
+	(*RawPutRequest)(nil),          // 11: tikv.RawPutRequest
+	(*RawPutResponse)(nil),         // 12: tikv.RawPutResponse
+	(*RawBatchPutRequest)(nil),     // 13: tikv.RawBatchPutRequest
+	(*RawBatchPutResponse)(nil),    // 14: tikv.RawBatchPutResponse
+	(*RawDeleteRequest)(nil),       // 15: tikv.RawDeleteRequest
+	(*RawDeleteResponse)(nil),      // 16: tikv.RawDeleteResponse
+	(*RawBatchDeleteRequest)(nil),  // 17: tikv.RawBatchDeleteRequest
+	(*RawBatchDeleteResponse)(nil), // 18: tikv.RawBatchDeleteResponse
+	(*Context)(nil),                // 19: tikv.Context
+	(*ResourceControlContext)(nil), // 20: tikv.ResourceControlContext
+	(*SourceStmt)(nil),             // 21: tikv.SourceStmt
+	(*LockInfo)(nil),               // 22: tikv.LockInfo
+	(*KeyError)(nil),               // 23: tikv.KeyError
+	(*WriteConflict)(nil),          // 24: tikv.WriteConflict
+	(*AlreadyExist)(nil),           // 25: tikv.AlreadyExist
+	(*CommitTsExpired)(nil),        // 26: tikv.CommitTsExpired
+	(*TxnNotFound)(nil),            // 27: tikv.TxnNotFound
+	(*CommitTsTooLarge)(nil),       // 28: tikv.CommitTsTooLarge
+	(*AssertionFailed)(nil),        // 29: tikv.AssertionFailed
+	(*PrimaryMismatch)(nil),        // 30: tikv.PrimaryMismatch
+	(*TxnLockNotFound)(nil),        // 31: tikv.TxnLockNotFound
+	(*MvccDebugInfo)(nil),          // 32: tikv.MvccDebugInfo
+	(*DebugInfo)(nil),              // 33: tikv.DebugInfo
+	(*TimeDetail)(nil),             // 34: tikv.TimeDetail
+	(*TimeDetailV2)(nil),           // 35: tikv.TimeDetailV2
+	(*ScanInfo)(nil),               // 36: tikv.ScanInfo
+	(*ScanDetail)(nil),             // 37: tikv.ScanDetail
+	(*ScanDetailV2)(nil),           // 38: tikv.ScanDetailV2
+	(*ExecDetails)(nil),            // 39: tikv.ExecDetails
+	(*ExecDetailsV2)(nil),          // 40: tikv.ExecDetailsV2
+	(*WriteDetail)(nil),            // 41: tikv.WriteDetail
+	(*KvPair)(nil),                 // 42: tikv.KvPair
+	(*MvccWrite)(nil),              // 43: tikv.MvccWrite
+	(*MvccValue)(nil),              // 44: tikv.MvccValue
+	(*MvccLock)(nil),               // 45: tikv.MvccLock
+	(*MvccInfo)(nil),               // 46: tikv.MvccInfo
+	(*Error)(nil),                  // 47: tikv.Error
+}
 var file_v1_tikv_kvrpcpb_proto_depIdxs = []int32{
 	19, // 0: tikv.RawGetRequest.context:type_name -> tikv.Context
 	47, // 1: tikv.RawGetResponse.region_error:type_name -> tikv.Error
@@ -4131,7 +4128,7 @@ func file_v1_tikv_kvrpcpb_proto_init() {
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
-			GoPackagePath: reflect.TypeFor[x]().PkgPath(),
+			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_v1_tikv_kvrpcpb_proto_rawDesc), len(file_v1_tikv_kvrpcpb_proto_rawDesc)),
 			NumEnums:      7,
 			NumMessages:   40,

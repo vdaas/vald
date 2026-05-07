@@ -46,13 +46,13 @@ type IndexClient interface {
 	// Represent the RPC to get the index information.
 	IndexInfo(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_Count, error)
 	// Overview
-	// Represent the RPC to get the index information for each agents.
+	// Represent the RPC to get the index information for each agent.
 	IndexDetail(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_Detail, error)
 	// Overview
 	// Represent the RPC to get the index statistics.
 	IndexStatistics(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_Statistics, error)
 	// Overview
-	// Represent the RPC to get the index statistics for each agents.
+	// Represent the RPC to get the index statistics for each agent.
 	IndexStatisticsDetail(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_StatisticsDetail, error)
 	// Overview
 	// Represent the RPC to get the index property.
@@ -130,13 +130,13 @@ type IndexServer interface {
 	// Represent the RPC to get the index information.
 	IndexInfo(context.Context, *payload.Empty) (*payload.Info_Index_Count, error)
 	// Overview
-	// Represent the RPC to get the index information for each agents.
+	// Represent the RPC to get the index information for each agent.
 	IndexDetail(context.Context, *payload.Empty) (*payload.Info_Index_Detail, error)
 	// Overview
 	// Represent the RPC to get the index statistics.
 	IndexStatistics(context.Context, *payload.Empty) (*payload.Info_Index_Statistics, error)
 	// Overview
-	// Represent the RPC to get the index statistics for each agents.
+	// Represent the RPC to get the index statistics for each agent.
 	IndexStatisticsDetail(context.Context, *payload.Empty) (*payload.Info_Index_StatisticsDetail, error)
 	// Overview
 	// Represent the RPC to get the index property.
@@ -145,32 +145,29 @@ type IndexServer interface {
 }
 
 // UnimplementedIndexServer must be embedded to have forward compatible implementations.
-type UnimplementedIndexServer struct{}
+type UnimplementedIndexServer struct {
+}
 
 func (UnimplementedIndexServer) IndexInfo(
 	context.Context, *payload.Empty,
 ) (*payload.Info_Index_Count, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IndexInfo not implemented")
 }
-
 func (UnimplementedIndexServer) IndexDetail(
 	context.Context, *payload.Empty,
 ) (*payload.Info_Index_Detail, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IndexDetail not implemented")
 }
-
 func (UnimplementedIndexServer) IndexStatistics(
 	context.Context, *payload.Empty,
 ) (*payload.Info_Index_Statistics, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IndexStatistics not implemented")
 }
-
 func (UnimplementedIndexServer) IndexStatisticsDetail(
 	context.Context, *payload.Empty,
 ) (*payload.Info_Index_StatisticsDetail, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IndexStatisticsDetail not implemented")
 }
-
 func (UnimplementedIndexServer) IndexProperty(
 	context.Context, *payload.Empty,
 ) (*payload.Info_Index_PropertyDetail, error) {
