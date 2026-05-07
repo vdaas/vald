@@ -19,10 +19,10 @@ pub mod meta_client {
         dead_code,
         missing_docs,
         clippy::wildcard_imports,
-        clippy::let_unit_value,
+        clippy::let_unit_value
     )]
-    use tonic::codegen::*;
     use tonic::codegen::http::Uri;
+    use tonic::codegen::*;
     #[derive(Debug, Clone)]
     pub struct MetaClient<T> {
         inner: tonic::client::Grpc<T>,
@@ -53,22 +53,18 @@ pub mod meta_client {
             let inner = tonic::client::Grpc::with_origin(inner, origin);
             Self { inner }
         }
-        pub fn with_interceptor<F>(
-            inner: T,
-            interceptor: F,
-        ) -> MetaClient<InterceptedService<T, F>>
+        pub fn with_interceptor<F>(inner: T, interceptor: F) -> MetaClient<InterceptedService<T, F>>
         where
             F: tonic::service::Interceptor,
             T::ResponseBody: Default,
             T: tonic::codegen::Service<
-                http::Request<tonic::body::Body>,
-                Response = http::Response<
-                    <T as tonic::client::GrpcService<tonic::body::Body>>::ResponseBody,
+                    http::Request<tonic::body::Body>,
+                    Response = http::Response<
+                        <T as tonic::client::GrpcService<tonic::body::Body>>::ResponseBody,
+                    >,
                 >,
-            >,
-            <T as tonic::codegen::Service<
-                http::Request<tonic::body::Body>,
-            >>::Error: Into<StdError> + std::marker::Send + std::marker::Sync,
+            <T as tonic::codegen::Service<http::Request<tonic::body::Body>>>::Error:
+                Into<StdError> + std::marker::Send + std::marker::Sync,
         {
             MetaClient::new(InterceptedService::new(inner, interceptor))
         }
@@ -110,42 +106,32 @@ pub mod meta_client {
             tonic::Response<super::super::super::payload::v1::meta::Value>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/meta.v1.Meta/Get");
             let mut req = request.into_request();
-            req.extensions_mut().insert(GrpcMethod::new("meta.v1.Meta", "Get"));
+            req.extensions_mut()
+                .insert(GrpcMethod::new("meta.v1.Meta", "Get"));
             self.inner.unary(req, path, codec).await
         }
         ///
         pub async fn set(
             &mut self,
-            request: impl tonic::IntoRequest<
-                super::super::super::payload::v1::meta::KeyValue,
-            >,
+            request: impl tonic::IntoRequest<super::super::super::payload::v1::meta::KeyValue>,
         ) -> std::result::Result<
             tonic::Response<super::super::super::payload::v1::Empty>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/meta.v1.Meta/Set");
             let mut req = request.into_request();
-            req.extensions_mut().insert(GrpcMethod::new("meta.v1.Meta", "Set"));
+            req.extensions_mut()
+                .insert(GrpcMethod::new("meta.v1.Meta", "Set"));
             self.inner.unary(req, path, codec).await
         }
         ///
@@ -156,18 +142,14 @@ pub mod meta_client {
             tonic::Response<super::super::super::payload::v1::Empty>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/meta.v1.Meta/Delete");
             let mut req = request.into_request();
-            req.extensions_mut().insert(GrpcMethod::new("meta.v1.Meta", "Delete"));
+            req.extensions_mut()
+                .insert(GrpcMethod::new("meta.v1.Meta", "Delete"));
             self.inner.unary(req, path, codec).await
         }
     }
@@ -179,7 +161,7 @@ pub mod meta_server {
         dead_code,
         missing_docs,
         clippy::wildcard_imports,
-        clippy::let_unit_value,
+        clippy::let_unit_value
     )]
     use tonic::codegen::*;
     /// Generated trait containing gRPC methods that should be implemented for use with MetaServer.
@@ -230,10 +212,7 @@ pub mod meta_server {
                 max_encoding_message_size: None,
             }
         }
-        pub fn with_interceptor<F>(
-            inner: T,
-            interceptor: F,
-        ) -> InterceptedService<Self, F>
+        pub fn with_interceptor<F>(inner: T, interceptor: F) -> InterceptedService<Self, F>
         where
             F: tonic::service::Interceptor,
         {
@@ -288,26 +267,18 @@ pub mod meta_server {
                 "/meta.v1.Meta/Get" => {
                     #[allow(non_camel_case_types)]
                     struct GetSvc<T: Meta>(pub Arc<T>);
-                    impl<
-                        T: Meta,
-                    > tonic::server::UnaryService<
-                        super::super::super::payload::v1::meta::Key,
-                    > for GetSvc<T> {
+                    impl<T: Meta>
+                        tonic::server::UnaryService<super::super::super::payload::v1::meta::Key>
+                        for GetSvc<T>
+                    {
                         type Response = super::super::super::payload::v1::meta::Value;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
-                            request: tonic::Request<
-                                super::super::super::payload::v1::meta::Key,
-                            >,
+                            request: tonic::Request<super::super::super::payload::v1::meta::Key>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Meta>::get(&inner, request).await
-                            };
+                            let fut = async move { <T as Meta>::get(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -336,16 +307,13 @@ pub mod meta_server {
                 "/meta.v1.Meta/Set" => {
                     #[allow(non_camel_case_types)]
                     struct SetSvc<T: Meta>(pub Arc<T>);
-                    impl<
-                        T: Meta,
-                    > tonic::server::UnaryService<
-                        super::super::super::payload::v1::meta::KeyValue,
-                    > for SetSvc<T> {
+                    impl<T: Meta>
+                        tonic::server::UnaryService<
+                            super::super::super::payload::v1::meta::KeyValue,
+                        > for SetSvc<T>
+                    {
                         type Response = super::super::super::payload::v1::Empty;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<
@@ -353,9 +321,7 @@ pub mod meta_server {
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Meta>::set(&inner, request).await
-                            };
+                            let fut = async move { <T as Meta>::set(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -384,26 +350,18 @@ pub mod meta_server {
                 "/meta.v1.Meta/Delete" => {
                     #[allow(non_camel_case_types)]
                     struct DeleteSvc<T: Meta>(pub Arc<T>);
-                    impl<
-                        T: Meta,
-                    > tonic::server::UnaryService<
-                        super::super::super::payload::v1::meta::Key,
-                    > for DeleteSvc<T> {
+                    impl<T: Meta>
+                        tonic::server::UnaryService<super::super::super::payload::v1::meta::Key>
+                        for DeleteSvc<T>
+                    {
                         type Response = super::super::super::payload::v1::Empty;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
-                            request: tonic::Request<
-                                super::super::super::payload::v1::meta::Key,
-                            >,
+                            request: tonic::Request<super::super::super::payload::v1::meta::Key>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Meta>::delete(&inner, request).await
-                            };
+                            let fut = async move { <T as Meta>::delete(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -429,25 +387,19 @@ pub mod meta_server {
                     };
                     Box::pin(fut)
                 }
-                _ => {
-                    Box::pin(async move {
-                        let mut response = http::Response::new(
-                            tonic::body::Body::default(),
-                        );
-                        let headers = response.headers_mut();
-                        headers
-                            .insert(
-                                tonic::Status::GRPC_STATUS,
-                                (tonic::Code::Unimplemented as i32).into(),
-                            );
-                        headers
-                            .insert(
-                                http::header::CONTENT_TYPE,
-                                tonic::metadata::GRPC_CONTENT_TYPE,
-                            );
-                        Ok(response)
-                    })
-                }
+                _ => Box::pin(async move {
+                    let mut response = http::Response::new(tonic::body::Body::default());
+                    let headers = response.headers_mut();
+                    headers.insert(
+                        tonic::Status::GRPC_STATUS,
+                        (tonic::Code::Unimplemented as i32).into(),
+                    );
+                    headers.insert(
+                        http::header::CONTENT_TYPE,
+                        tonic::metadata::GRPC_CONTENT_TYPE,
+                    );
+                    Ok(response)
+                }),
             }
         }
     }

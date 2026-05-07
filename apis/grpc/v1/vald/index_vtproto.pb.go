@@ -145,29 +145,32 @@ type IndexServer interface {
 }
 
 // UnimplementedIndexServer must be embedded to have forward compatible implementations.
-type UnimplementedIndexServer struct {
-}
+type UnimplementedIndexServer struct{}
 
 func (UnimplementedIndexServer) IndexInfo(
 	context.Context, *payload.Empty,
 ) (*payload.Info_Index_Count, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IndexInfo not implemented")
 }
+
 func (UnimplementedIndexServer) IndexDetail(
 	context.Context, *payload.Empty,
 ) (*payload.Info_Index_Detail, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IndexDetail not implemented")
 }
+
 func (UnimplementedIndexServer) IndexStatistics(
 	context.Context, *payload.Empty,
 ) (*payload.Info_Index_Statistics, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IndexStatistics not implemented")
 }
+
 func (UnimplementedIndexServer) IndexStatisticsDetail(
 	context.Context, *payload.Empty,
 ) (*payload.Info_Index_StatisticsDetail, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IndexStatisticsDetail not implemented")
 }
+
 func (UnimplementedIndexServer) IndexProperty(
 	context.Context, *payload.Empty,
 ) (*payload.Info_Index_PropertyDetail, error) {

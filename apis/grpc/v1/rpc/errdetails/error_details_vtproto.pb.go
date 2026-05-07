@@ -19,6 +19,7 @@ package errdetails
 
 import (
 	fmt "fmt"
+	"maps"
 	unsafe "unsafe"
 
 	protohelpers "github.com/planetscale/vtprotobuf/protohelpers"
@@ -45,9 +46,7 @@ func (m *ErrorInfo) CloneVT() *ErrorInfo {
 	r.Domain = m.Domain
 	if rhs := m.Metadata; rhs != nil {
 		tmpContainer := make(map[string]string, len(rhs))
-		for k, v := range rhs {
-			tmpContainer[k] = v
-		}
+		maps.Copy(tmpContainer, rhs)
 		r.Metadata = tmpContainer
 	}
 	if len(m.unknownFields) > 0 {
@@ -355,6 +354,7 @@ func (this *ErrorInfo) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *RetryInfo) EqualVT(that *RetryInfo) bool {
 	if this == that {
 		return true
@@ -374,6 +374,7 @@ func (this *RetryInfo) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *DebugInfo) EqualVT(that *DebugInfo) bool {
 	if this == that {
 		return true
@@ -402,6 +403,7 @@ func (this *DebugInfo) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *QuotaFailure_Violation) EqualVT(that *QuotaFailure_Violation) bool {
 	if this == that {
 		return true
@@ -424,6 +426,7 @@ func (this *QuotaFailure_Violation) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *QuotaFailure) EqualVT(that *QuotaFailure) bool {
 	if this == that {
 		return true
@@ -457,6 +460,7 @@ func (this *QuotaFailure) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *PreconditionFailure_Violation) EqualVT(that *PreconditionFailure_Violation) bool {
 	if this == that {
 		return true
@@ -482,6 +486,7 @@ func (this *PreconditionFailure_Violation) EqualMessageVT(thatMsg proto.Message)
 	}
 	return this.EqualVT(that)
 }
+
 func (this *PreconditionFailure) EqualVT(that *PreconditionFailure) bool {
 	if this == that {
 		return true
@@ -515,6 +520,7 @@ func (this *PreconditionFailure) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *BadRequest_FieldViolation) EqualVT(that *BadRequest_FieldViolation) bool {
 	if this == that {
 		return true
@@ -537,6 +543,7 @@ func (this *BadRequest_FieldViolation) EqualMessageVT(thatMsg proto.Message) boo
 	}
 	return this.EqualVT(that)
 }
+
 func (this *BadRequest) EqualVT(that *BadRequest) bool {
 	if this == that {
 		return true
@@ -570,6 +577,7 @@ func (this *BadRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *RequestInfo) EqualVT(that *RequestInfo) bool {
 	if this == that {
 		return true
@@ -592,6 +600,7 @@ func (this *RequestInfo) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *ResourceInfo) EqualVT(that *ResourceInfo) bool {
 	if this == that {
 		return true
@@ -620,6 +629,7 @@ func (this *ResourceInfo) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Help_Link) EqualVT(that *Help_Link) bool {
 	if this == that {
 		return true
@@ -642,6 +652,7 @@ func (this *Help_Link) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Help) EqualVT(that *Help) bool {
 	if this == that {
 		return true
@@ -675,6 +686,7 @@ func (this *Help) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *LocalizedMessage) EqualVT(that *LocalizedMessage) bool {
 	if this == that {
 		return true
@@ -697,6 +709,7 @@ func (this *LocalizedMessage) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (m *ErrorInfo) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -2577,6 +2590,7 @@ func (m *ErrorInfo) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *RetryInfo) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2664,6 +2678,7 @@ func (m *RetryInfo) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *DebugInfo) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2779,6 +2794,7 @@ func (m *DebugInfo) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QuotaFailure_Violation) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2894,6 +2910,7 @@ func (m *QuotaFailure_Violation) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QuotaFailure) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2979,6 +2996,7 @@ func (m *QuotaFailure) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *PreconditionFailure_Violation) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3126,6 +3144,7 @@ func (m *PreconditionFailure_Violation) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *PreconditionFailure) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3211,6 +3230,7 @@ func (m *PreconditionFailure) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *BadRequest_FieldViolation) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3326,6 +3346,7 @@ func (m *BadRequest_FieldViolation) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *BadRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3411,6 +3432,7 @@ func (m *BadRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *RequestInfo) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3526,6 +3548,7 @@ func (m *RequestInfo) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *ResourceInfo) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3705,6 +3728,7 @@ func (m *ResourceInfo) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Help_Link) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3820,6 +3844,7 @@ func (m *Help_Link) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Help) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3905,6 +3930,7 @@ func (m *Help) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *LocalizedMessage) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4020,6 +4046,7 @@ func (m *LocalizedMessage) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *ErrorInfo) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4278,6 +4305,7 @@ func (m *ErrorInfo) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *RetryInfo) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4365,6 +4393,7 @@ func (m *RetryInfo) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *DebugInfo) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4488,6 +4517,7 @@ func (m *DebugInfo) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QuotaFailure_Violation) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4611,6 +4641,7 @@ func (m *QuotaFailure_Violation) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QuotaFailure) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4696,6 +4727,7 @@ func (m *QuotaFailure) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *PreconditionFailure_Violation) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4855,6 +4887,7 @@ func (m *PreconditionFailure_Violation) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *PreconditionFailure) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4940,6 +4973,7 @@ func (m *PreconditionFailure) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *BadRequest_FieldViolation) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -5063,6 +5097,7 @@ func (m *BadRequest_FieldViolation) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *BadRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -5148,6 +5183,7 @@ func (m *BadRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *RequestInfo) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -5271,6 +5307,7 @@ func (m *RequestInfo) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *ResourceInfo) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -5466,6 +5503,7 @@ func (m *ResourceInfo) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Help_Link) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -5589,6 +5627,7 @@ func (m *Help_Link) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Help) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -5674,6 +5713,7 @@ func (m *Help) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *LocalizedMessage) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0

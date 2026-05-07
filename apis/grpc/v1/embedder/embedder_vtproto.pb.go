@@ -237,6 +237,7 @@ func (this *Text) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Document) EqualVT(that *Document) bool {
 	if this == that {
 		return true
@@ -262,6 +263,7 @@ func (this *Document) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *SearchRequest) EqualVT(that *SearchRequest) bool {
 	if this == that {
 		return true
@@ -284,6 +286,7 @@ func (this *SearchRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *InsertRequest) EqualVT(that *InsertRequest) bool {
 	if this == that {
 		return true
@@ -306,6 +309,7 @@ func (this *InsertRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *InsertWithMetadataRequest) EqualVT(that *InsertWithMetadataRequest) bool {
 	if this == that {
 		return true
@@ -328,6 +332,7 @@ func (this *InsertWithMetadataRequest) EqualMessageVT(thatMsg proto.Message) boo
 	}
 	return this.EqualVT(that)
 }
+
 func (this *UpdateRequest) EqualVT(that *UpdateRequest) bool {
 	if this == that {
 		return true
@@ -350,6 +355,7 @@ func (this *UpdateRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *UpdateWithMetadataRequest) EqualVT(that *UpdateWithMetadataRequest) bool {
 	if this == that {
 		return true
@@ -372,6 +378,7 @@ func (this *UpdateWithMetadataRequest) EqualMessageVT(thatMsg proto.Message) boo
 	}
 	return this.EqualVT(that)
 }
+
 func (this *UpsertRequest) EqualVT(that *UpsertRequest) bool {
 	if this == that {
 		return true
@@ -394,6 +401,7 @@ func (this *UpsertRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *UpsertWithMetadataRequest) EqualVT(that *UpsertWithMetadataRequest) bool {
 	if this == that {
 		return true
@@ -416,6 +424,7 @@ func (this *UpsertWithMetadataRequest) EqualMessageVT(thatMsg proto.Message) boo
 	}
 	return this.EqualVT(that)
 }
+
 func (this *RemoveRequest) EqualVT(that *RemoveRequest) bool {
 	if this == that {
 		return true
@@ -609,59 +618,68 @@ type EmbedderServer interface {
 }
 
 // UnimplementedEmbedderServer must be embedded to have forward compatible implementations.
-type UnimplementedEmbedderServer struct {
-}
+type UnimplementedEmbedderServer struct{}
 
 func (UnimplementedEmbedderServer) Search(
 	context.Context, *SearchRequest,
 ) (*payload.Search_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Search not implemented")
 }
+
 func (UnimplementedEmbedderServer) LinearSearch(
 	context.Context, *SearchRequest,
 ) (*payload.Search_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LinearSearch not implemented")
 }
+
 func (UnimplementedEmbedderServer) Insert(
 	context.Context, *InsertRequest,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Insert not implemented")
 }
+
 func (UnimplementedEmbedderServer) InsertWithMetadata(
 	context.Context, *InsertWithMetadataRequest,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InsertWithMetadata not implemented")
 }
+
 func (UnimplementedEmbedderServer) Update(
 	context.Context, *UpdateRequest,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
 }
+
 func (UnimplementedEmbedderServer) UpdateWithMetadata(
 	context.Context, *UpdateWithMetadataRequest,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateWithMetadata not implemented")
 }
+
 func (UnimplementedEmbedderServer) Upsert(
 	context.Context, *UpsertRequest,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Upsert not implemented")
 }
+
 func (UnimplementedEmbedderServer) UpsertWithMetadata(
 	context.Context, *UpsertWithMetadataRequest,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpsertWithMetadata not implemented")
 }
+
 func (UnimplementedEmbedderServer) Remove(
 	context.Context, *RemoveRequest,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Remove not implemented")
 }
+
 func (UnimplementedEmbedderServer) RemoveWithMetadata(
 	context.Context, *RemoveRequest,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveWithMetadata not implemented")
 }
+
 func (UnimplementedEmbedderServer) Embedding(
 	context.Context, *Text,
 ) (*payload.Object_Vector, error) {
@@ -2238,6 +2256,7 @@ func (m *Text) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Document) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2372,6 +2391,7 @@ func (m *Document) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *SearchRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2491,6 +2511,7 @@ func (m *SearchRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *InsertRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2614,6 +2635,7 @@ func (m *InsertRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *InsertWithMetadataRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2737,6 +2759,7 @@ func (m *InsertWithMetadataRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *UpdateRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2860,6 +2883,7 @@ func (m *UpdateRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *UpdateWithMetadataRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2983,6 +3007,7 @@ func (m *UpdateWithMetadataRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *UpsertRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3106,6 +3131,7 @@ func (m *UpsertRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *UpsertWithMetadataRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3229,6 +3255,7 @@ func (m *UpsertWithMetadataRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *RemoveRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3348,6 +3375,7 @@ func (m *RemoveRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Text) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3435,6 +3463,7 @@ func (m *Text) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Document) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3577,6 +3606,7 @@ func (m *Document) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *SearchRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3700,6 +3730,7 @@ func (m *SearchRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *InsertRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3823,6 +3854,7 @@ func (m *InsertRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *InsertWithMetadataRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3946,6 +3978,7 @@ func (m *InsertWithMetadataRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *UpdateRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4069,6 +4102,7 @@ func (m *UpdateRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *UpdateWithMetadataRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4192,6 +4226,7 @@ func (m *UpdateWithMetadataRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *UpsertRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4315,6 +4350,7 @@ func (m *UpsertRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *UpsertWithMetadataRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4438,6 +4474,7 @@ func (m *UpsertWithMetadataRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *RemoveRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0

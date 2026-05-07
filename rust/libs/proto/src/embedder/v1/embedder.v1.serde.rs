@@ -40,7 +40,8 @@ impl serde::Serialize for Document {
         if self.timestamp != 0 {
             #[allow(clippy::needless_borrow)]
             #[allow(clippy::needless_borrows_for_generic_args)]
-            struct_ser.serialize_field("timestamp", ToString::to_string(&self.timestamp).as_str())?;
+            struct_ser
+                .serialize_field("timestamp", ToString::to_string(&self.timestamp).as_str())?;
         }
         struct_ser.end()
     }
@@ -51,11 +52,7 @@ impl<'de> serde::Deserialize<'de> for Document {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[
-            "id",
-            "text",
-            "timestamp",
-        ];
+        const FIELDS: &[&str] = &["id", "text", "timestamp"];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -73,7 +70,10 @@ impl<'de> serde::Deserialize<'de> for Document {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                    fn expecting(
+                        &self,
+                        formatter: &mut std::fmt::Formatter<'_>,
+                    ) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -102,8 +102,8 @@ impl<'de> serde::Deserialize<'de> for Document {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<Document, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
+            where
+                V: serde::de::MapAccess<'de>,
             {
                 let mut id__ = None;
                 let mut text__ = None;
@@ -126,9 +126,10 @@ impl<'de> serde::Deserialize<'de> for Document {
                             if timestamp__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("timestamp"));
                             }
-                            timestamp__ = 
-                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
-                            ;
+                            timestamp__ = Some(
+                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
+                                    .0,
+                            );
                         }
                     }
                 }
@@ -172,10 +173,7 @@ impl<'de> serde::Deserialize<'de> for InsertRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[
-            "document",
-            "config",
-        ];
+        const FIELDS: &[&str] = &["document", "config"];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -192,7 +190,10 @@ impl<'de> serde::Deserialize<'de> for InsertRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                    fn expecting(
+                        &self,
+                        formatter: &mut std::fmt::Formatter<'_>,
+                    ) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -220,8 +221,8 @@ impl<'de> serde::Deserialize<'de> for InsertRequest {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<InsertRequest, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
+            where
+                V: serde::de::MapAccess<'de>,
             {
                 let mut document__ = None;
                 let mut config__ = None;
@@ -264,7 +265,8 @@ impl serde::Serialize for InsertWithMetadataRequest {
         if self.metadata.is_some() {
             len += 1;
         }
-        let mut struct_ser = serializer.serialize_struct("embedder.v1.InsertWithMetadataRequest", len)?;
+        let mut struct_ser =
+            serializer.serialize_struct("embedder.v1.InsertWithMetadataRequest", len)?;
         if let Some(v) = self.request.as_ref() {
             struct_ser.serialize_field("request", v)?;
         }
@@ -280,10 +282,7 @@ impl<'de> serde::Deserialize<'de> for InsertWithMetadataRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[
-            "request",
-            "metadata",
-        ];
+        const FIELDS: &[&str] = &["request", "metadata"];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -300,7 +299,10 @@ impl<'de> serde::Deserialize<'de> for InsertWithMetadataRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                    fn expecting(
+                        &self,
+                        formatter: &mut std::fmt::Formatter<'_>,
+                    ) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -327,9 +329,12 @@ impl<'de> serde::Deserialize<'de> for InsertWithMetadataRequest {
                 formatter.write_str("struct embedder.v1.InsertWithMetadataRequest")
             }
 
-            fn visit_map<V>(self, mut map_: V) -> std::result::Result<InsertWithMetadataRequest, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(
+                self,
+                mut map_: V,
+            ) -> std::result::Result<InsertWithMetadataRequest, V::Error>
+            where
+                V: serde::de::MapAccess<'de>,
             {
                 let mut request__ = None;
                 let mut metadata__ = None;
@@ -355,7 +360,11 @@ impl<'de> serde::Deserialize<'de> for InsertWithMetadataRequest {
                 })
             }
         }
-        deserializer.deserialize_struct("embedder.v1.InsertWithMetadataRequest", FIELDS, GeneratedVisitor)
+        deserializer.deserialize_struct(
+            "embedder.v1.InsertWithMetadataRequest",
+            FIELDS,
+            GeneratedVisitor,
+        )
     }
 }
 impl serde::Serialize for RemoveRequest {
@@ -388,10 +397,7 @@ impl<'de> serde::Deserialize<'de> for RemoveRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[
-            "id",
-            "config",
-        ];
+        const FIELDS: &[&str] = &["id", "config"];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -408,7 +414,10 @@ impl<'de> serde::Deserialize<'de> for RemoveRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                    fn expecting(
+                        &self,
+                        formatter: &mut std::fmt::Formatter<'_>,
+                    ) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -436,8 +445,8 @@ impl<'de> serde::Deserialize<'de> for RemoveRequest {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<RemoveRequest, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
+            where
+                V: serde::de::MapAccess<'de>,
             {
                 let mut id__ = None;
                 let mut config__ = None;
@@ -496,10 +505,7 @@ impl<'de> serde::Deserialize<'de> for SearchRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[
-            "text",
-            "config",
-        ];
+        const FIELDS: &[&str] = &["text", "config"];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -516,7 +522,10 @@ impl<'de> serde::Deserialize<'de> for SearchRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                    fn expecting(
+                        &self,
+                        formatter: &mut std::fmt::Formatter<'_>,
+                    ) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -544,8 +553,8 @@ impl<'de> serde::Deserialize<'de> for SearchRequest {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<SearchRequest, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
+            where
+                V: serde::de::MapAccess<'de>,
             {
                 let mut text__ = None;
                 let mut config__ = None;
@@ -598,9 +607,7 @@ impl<'de> serde::Deserialize<'de> for Text {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[
-            "text",
-        ];
+        const FIELDS: &[&str] = &["text"];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -616,7 +623,10 @@ impl<'de> serde::Deserialize<'de> for Text {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                    fn expecting(
+                        &self,
+                        formatter: &mut std::fmt::Formatter<'_>,
+                    ) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -643,8 +653,8 @@ impl<'de> serde::Deserialize<'de> for Text {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<Text, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
+            where
+                V: serde::de::MapAccess<'de>,
             {
                 let mut text__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -695,10 +705,7 @@ impl<'de> serde::Deserialize<'de> for UpdateRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[
-            "document",
-            "config",
-        ];
+        const FIELDS: &[&str] = &["document", "config"];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -715,7 +722,10 @@ impl<'de> serde::Deserialize<'de> for UpdateRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                    fn expecting(
+                        &self,
+                        formatter: &mut std::fmt::Formatter<'_>,
+                    ) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -743,8 +753,8 @@ impl<'de> serde::Deserialize<'de> for UpdateRequest {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<UpdateRequest, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
+            where
+                V: serde::de::MapAccess<'de>,
             {
                 let mut document__ = None;
                 let mut config__ = None;
@@ -787,7 +797,8 @@ impl serde::Serialize for UpdateWithMetadataRequest {
         if self.metadata.is_some() {
             len += 1;
         }
-        let mut struct_ser = serializer.serialize_struct("embedder.v1.UpdateWithMetadataRequest", len)?;
+        let mut struct_ser =
+            serializer.serialize_struct("embedder.v1.UpdateWithMetadataRequest", len)?;
         if let Some(v) = self.request.as_ref() {
             struct_ser.serialize_field("request", v)?;
         }
@@ -803,10 +814,7 @@ impl<'de> serde::Deserialize<'de> for UpdateWithMetadataRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[
-            "request",
-            "metadata",
-        ];
+        const FIELDS: &[&str] = &["request", "metadata"];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -823,7 +831,10 @@ impl<'de> serde::Deserialize<'de> for UpdateWithMetadataRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                    fn expecting(
+                        &self,
+                        formatter: &mut std::fmt::Formatter<'_>,
+                    ) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -850,9 +861,12 @@ impl<'de> serde::Deserialize<'de> for UpdateWithMetadataRequest {
                 formatter.write_str("struct embedder.v1.UpdateWithMetadataRequest")
             }
 
-            fn visit_map<V>(self, mut map_: V) -> std::result::Result<UpdateWithMetadataRequest, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(
+                self,
+                mut map_: V,
+            ) -> std::result::Result<UpdateWithMetadataRequest, V::Error>
+            where
+                V: serde::de::MapAccess<'de>,
             {
                 let mut request__ = None;
                 let mut metadata__ = None;
@@ -878,7 +892,11 @@ impl<'de> serde::Deserialize<'de> for UpdateWithMetadataRequest {
                 })
             }
         }
-        deserializer.deserialize_struct("embedder.v1.UpdateWithMetadataRequest", FIELDS, GeneratedVisitor)
+        deserializer.deserialize_struct(
+            "embedder.v1.UpdateWithMetadataRequest",
+            FIELDS,
+            GeneratedVisitor,
+        )
     }
 }
 impl serde::Serialize for UpsertRequest {
@@ -911,10 +929,7 @@ impl<'de> serde::Deserialize<'de> for UpsertRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[
-            "document",
-            "config",
-        ];
+        const FIELDS: &[&str] = &["document", "config"];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -931,7 +946,10 @@ impl<'de> serde::Deserialize<'de> for UpsertRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                    fn expecting(
+                        &self,
+                        formatter: &mut std::fmt::Formatter<'_>,
+                    ) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -959,8 +977,8 @@ impl<'de> serde::Deserialize<'de> for UpsertRequest {
             }
 
             fn visit_map<V>(self, mut map_: V) -> std::result::Result<UpsertRequest, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
+            where
+                V: serde::de::MapAccess<'de>,
             {
                 let mut document__ = None;
                 let mut config__ = None;
@@ -1003,7 +1021,8 @@ impl serde::Serialize for UpsertWithMetadataRequest {
         if self.metadata.is_some() {
             len += 1;
         }
-        let mut struct_ser = serializer.serialize_struct("embedder.v1.UpsertWithMetadataRequest", len)?;
+        let mut struct_ser =
+            serializer.serialize_struct("embedder.v1.UpsertWithMetadataRequest", len)?;
         if let Some(v) = self.request.as_ref() {
             struct_ser.serialize_field("request", v)?;
         }
@@ -1019,10 +1038,7 @@ impl<'de> serde::Deserialize<'de> for UpsertWithMetadataRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[
-            "request",
-            "metadata",
-        ];
+        const FIELDS: &[&str] = &["request", "metadata"];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
@@ -1039,7 +1055,10 @@ impl<'de> serde::Deserialize<'de> for UpsertWithMetadataRequest {
                 impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
                     type Value = GeneratedField;
 
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                    fn expecting(
+                        &self,
+                        formatter: &mut std::fmt::Formatter<'_>,
+                    ) -> std::fmt::Result {
                         write!(formatter, "expected one of: {:?}", &FIELDS)
                     }
 
@@ -1066,9 +1085,12 @@ impl<'de> serde::Deserialize<'de> for UpsertWithMetadataRequest {
                 formatter.write_str("struct embedder.v1.UpsertWithMetadataRequest")
             }
 
-            fn visit_map<V>(self, mut map_: V) -> std::result::Result<UpsertWithMetadataRequest, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
+            fn visit_map<V>(
+                self,
+                mut map_: V,
+            ) -> std::result::Result<UpsertWithMetadataRequest, V::Error>
+            where
+                V: serde::de::MapAccess<'de>,
             {
                 let mut request__ = None;
                 let mut metadata__ = None;
@@ -1094,6 +1116,10 @@ impl<'de> serde::Deserialize<'de> for UpsertWithMetadataRequest {
                 })
             }
         }
-        deserializer.deserialize_struct("embedder.v1.UpsertWithMetadataRequest", FIELDS, GeneratedVisitor)
+        deserializer.deserialize_struct(
+            "embedder.v1.UpsertWithMetadataRequest",
+            FIELDS,
+            GeneratedVisitor,
+        )
     }
 }

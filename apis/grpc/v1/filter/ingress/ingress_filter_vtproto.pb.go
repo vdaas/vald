@@ -90,14 +90,14 @@ type FilterServer interface {
 }
 
 // UnimplementedFilterServer must be embedded to have forward compatible implementations.
-type UnimplementedFilterServer struct {
-}
+type UnimplementedFilterServer struct{}
 
 func (UnimplementedFilterServer) GenVector(
 	context.Context, *payload.Object_Blob,
 ) (*payload.Object_Vector, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GenVector not implemented")
 }
+
 func (UnimplementedFilterServer) FilterVector(
 	context.Context, *payload.Object_Vector,
 ) (*payload.Object_Vector, error) {
