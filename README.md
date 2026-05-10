@@ -323,3 +323,4 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 Vald released under Apache 2.0 license, refer [LICENSE](https://github.com/vdaas/vald/blob/main/LICENSE) file.
 
 [![FOSSA Status](https://app.fossa.com/api/projects/custom%2B21465%2Fvald.svg?type=large)](https://app.fossa.com/projects/custom%2B21465%2Fvald?ref=badge_large)
+
