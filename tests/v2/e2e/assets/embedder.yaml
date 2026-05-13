@@ -35,6 +35,10 @@ target:
   dial_option:
     insecure: true
     min_connection_timeout: 20s
+    keepalive:
+      permit_without_stream: false
+      time: 60s
+      timeout: 30s
 strategies:
   - concurrency: 1
     name: Embedder test

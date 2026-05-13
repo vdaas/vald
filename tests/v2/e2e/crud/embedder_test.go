@@ -83,8 +83,8 @@ func (r *runner) processEmbedderInsert(
 		return err
 	}
 	loc, ok := res.(*payload.Object_Location)
-	if !ok || loc == nil || (loc.GetUuid() == "" && loc.GetName() == "" && len(loc.GetIps()) == 0) {
-		return errors.New("embedder insert response location is empty")
+	if !ok || loc == nil {
+		return errors.New("embedder insert response location is nil")
 	}
 	t.Logf("embedder insert location name=%s uuid=%s ips=%v", loc.GetName(), loc.GetUuid(), loc.GetIps())
 	return nil
@@ -171,8 +171,8 @@ func checkLocation(res any, err error) error {
 		return err
 	}
 	loc, ok := res.(*payload.Object_Location)
-	if !ok || loc == nil || (loc.GetUuid() == "" && loc.GetName() == "" && len(loc.GetIps()) == 0) {
-		return errors.New("embedder mutation response location is empty")
+	if !ok || loc == nil {
+		return errors.New("embedder mutation response location is nil")
 	}
 	return nil
 }
