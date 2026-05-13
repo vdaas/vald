@@ -17,6 +17,7 @@
 package grpc
 
 import (
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/pkg/tools/embedder/service"
 )
@@ -31,6 +32,16 @@ func WithEmbedder(e service.Embedder) Option {
 			return errors.New("embedder is nil")
 		}
 		s.embedder = e
+		return nil
+	}
+}
+
+func WithValdClient(c vald.Client) Option {
+	return func(s *server) error {
+		if c == nil {
+			return errors.New("vald client is nil")
+		}
+		s.valdClient = c
 		return nil
 	}
 }

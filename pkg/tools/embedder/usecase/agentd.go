@@ -20,6 +20,7 @@ import (
 	"context"
 
 	embedderpb "github.com/vdaas/vald/apis/grpc/v1/embedder"
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	vclient "github.com/vdaas/vald/internal/client/v1/client/vald"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -81,7 +82,7 @@ func New(cfg *config.Data) (runner.Runner, error) {
 	if err != nil {
 		return nil, err
 	}
-	g, err := handler.New(handler.WithEmbedder(embedderService))
+	g, err := handler.New(handler.WithEmbedder(embedderService), handler.WithValdClient(valdClient))
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +101,10 @@ func New(cfg *config.Data) (runner.Runner, error) {
 			return []server.Option{server.WithHTTPHandler(httpHandler)}
 		}),
 		starter.WithGRPC(func(sc *iconf.Server) []server.Option {
-			return []server.Option{server.WithGRPCRegisterar(func(srv *grpc.Server) { embedderpb.RegisterEmbedderServer(srv, g) })}
+			return []server.Option{server.WithGRPCRegisterar(func(srv *grpc.Server) {
+				embedderpb.RegisterEmbedderServer(srv, g)
+				vald.RegisterFlushServer(srv, g)
+			})}
 		}),
 	)
 	if err != nil {

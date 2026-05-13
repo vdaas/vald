@@ -22,6 +22,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/embedder"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/pkg/tools/embedder/service"
@@ -29,11 +30,14 @@ import (
 
 type Server interface {
 	embedder.EmbedderServer
+	vald.FlushServer
 }
 
 type server struct {
-	embedder service.Embedder
+	embedder   service.Embedder
+	valdClient vald.Client
 	embedder.UnimplementedEmbedderServer
+	vald.UnimplementedFlushServer
 }
 
 func New(opts ...Option) (Server, error) {
@@ -116,4 +120,10 @@ func (s *server) Embedding(
 	ctx context.Context, req *embedder.Text,
 ) (*payload.Object_Vector, error) {
 	return s.embedder.Embedding(ctx, req)
+}
+
+func (s *server) Flush(
+	ctx context.Context, req *payload.Flush_Request,
+) (*payload.Info_Index_Count, error) {
+	return s.valdClient.Flush(ctx, req)
 }
