@@ -64,6 +64,10 @@ strategies:
             mode: unary
             document_id: e2e-embedder-doc-1
             text: hello from e2e update
+            expect:
+              - status_code: ok
+              - status_code: not_found
+              - status_code: already_exists
           # - name: Update with metadata via embedder
           #   type: embedder_update_with_metadata
           #   mode: unary
@@ -83,6 +87,9 @@ strategies:
             type: embedder_remove
             mode: unary
             document_id: e2e-embedder-doc-3
+            expect:
+              - status_code: ok
+              - status_code: not_found
           # - name: Remove with metadata via embedder
           #   type: embedder_remove_with_metadata
           #   mode: unary
