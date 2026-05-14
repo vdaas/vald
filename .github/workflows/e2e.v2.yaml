@@ -297,24 +297,25 @@ jobs:
             dial_option:
               insecure: true
               min_connection_timeout: 20s
-          meta:
-            host: 127.0.0.1
-            port: 18082
-            client:
-              addrs:
-                - 127.0.0.1:18082
-              health_check_duration: 30s
-              connection_pool:
-                enable_dns_resolver: true
-                enable_rebalance: true
-                old_conn_close_duration: 3s
-                rebalance_duration: 30m
-                size: 1
-              call_option:
-                wait_for_ready: true
-              dial_option:
-                insecure: true
-                min_connection_timeout: 20s
+          # meta is optional: comment out when vald-meta-gateway is not deployed
+          # meta:
+          #   host: 127.0.0.1
+          #   port: 18082
+          #   client:
+          #     addrs:
+          #       - 127.0.0.1:18082
+          #     health_check_duration: 30s
+          #     connection_pool:
+          #       enable_dns_resolver: true
+          #       enable_rebalance: true
+          #       old_conn_close_duration: 3s
+          #       rebalance_duration: 30m
+          #       size: 1
+          #     call_option:
+          #       wait_for_ready: true
+          #     dial_option:
+          #       insecure: true
+          #       min_connection_timeout: 20s
           llm:
             provider: openai
             openai:
@@ -323,7 +324,13 @@ jobs:
               base_url: http://127.0.0.1:18000/v1
           YAML
           nohup go run ./cmd/tools/embedder -c /tmp/embedder-e2e.yaml >/tmp/embedder-e2e.log 2>&1 &
-          sleep 10
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:3301/readiness >/dev/null 2>&1; then
+              break
+            fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:3301/readiness >/dev/null
 
       - name: Deploy profefe
         if: ${{ matrix.environment == 'profile' }}

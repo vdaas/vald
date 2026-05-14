@@ -54,39 +54,39 @@ strategies:
             mode: unary
             document_id: e2e-embedder-doc-1
             text: hello from e2e insert
-          - name: Insert with metadata via embedder
-            type: embedder_insert_with_metadata
-            mode: unary
-            document_id: e2e-embedder-doc-2
-            text: hello from e2e insert with metadata
+          # - name: Insert with metadata via embedder
+          #   type: embedder_insert_with_metadata
+          #   mode: unary
+          #   document_id: e2e-embedder-doc-2
+          #   text: hello from e2e insert with metadata
           - name: Update via embedder
             type: embedder_update
             mode: unary
             document_id: e2e-embedder-doc-1
             text: hello from e2e update
-          - name: Update with metadata via embedder
-            type: embedder_update_with_metadata
-            mode: unary
-            document_id: e2e-embedder-doc-2
-            text: hello from e2e update with metadata
+          # - name: Update with metadata via embedder
+          #   type: embedder_update_with_metadata
+          #   mode: unary
+          #   document_id: e2e-embedder-doc-2
+          #   text: hello from e2e update with metadata
           - name: Upsert via embedder
             type: embedder_upsert
             mode: unary
             document_id: e2e-embedder-doc-3
             text: hello from e2e upsert
-          - name: Upsert with metadata via embedder
-            type: embedder_upsert_with_metadata
-            mode: unary
-            document_id: e2e-embedder-doc-4
-            text: hello from e2e upsert with metadata
+          # - name: Upsert with metadata via embedder
+          #   type: embedder_upsert_with_metadata
+          #   mode: unary
+          #   document_id: e2e-embedder-doc-4
+          #   text: hello from e2e upsert with metadata
           - name: Remove via embedder
             type: embedder_remove
             mode: unary
             document_id: e2e-embedder-doc-3
-          - name: Remove with metadata via embedder
-            type: embedder_remove_with_metadata
-            mode: unary
-            document_id: e2e-embedder-doc-4
+          # - name: Remove with metadata via embedder
+          #   type: embedder_remove_with_metadata
+          #   mode: unary
+          #   document_id: e2e-embedder-doc-4
           - name: Flush final
             type: flush
             mode: unary
