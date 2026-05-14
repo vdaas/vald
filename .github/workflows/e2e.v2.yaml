@@ -285,7 +285,7 @@ jobs:
           client:
             addrs:
               - 127.0.0.1:18081
-            health_check_duration: 1s
+            health_check_duration: 30s
             connection_pool:
               enable_dns_resolver: true
               enable_rebalance: true
@@ -303,7 +303,7 @@ jobs:
             client:
               addrs:
                 - 127.0.0.1:18082
-              health_check_duration: 1s
+              health_check_duration: 30s
               connection_pool:
                 enable_dns_resolver: true
                 enable_rebalance: true
