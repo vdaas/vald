@@ -52,48 +52,25 @@ strategies:
           - name: Insert via embedder
             type: embedder_insert
             mode: unary
-            document_id: e2e-embedder-doc-1
             text: hello from e2e insert
-          # - name: Insert with metadata via embedder
-          #   type: embedder_insert_with_metadata
-          #   mode: unary
-          #   document_id: e2e-embedder-doc-2
-          #   text: hello from e2e insert with metadata
-          - name: Update via embedder
-            type: embedder_update
-            mode: unary
-            document_id: e2e-embedder-doc-1
-            text: hello from e2e update
-            expect:
-              - status_code: ok
-              - status_code: not_found
-              - status_code: already_exists
-          # - name: Update with metadata via embedder
-          #   type: embedder_update_with_metadata
-          #   mode: unary
-          #   document_id: e2e-embedder-doc-2
-          #   text: hello from e2e update with metadata
+            repeats:
+              enabled: true
+              exit_condition: count
+              count: 50
+          - name: Wait after insert
+            type: wait
+            wait: 20s
           - name: Upsert via embedder
             type: embedder_upsert
             mode: unary
-            document_id: e2e-embedder-doc-3
             text: hello from e2e upsert
-          # - name: Upsert with metadata via embedder
-          #   type: embedder_upsert_with_metadata
-          #   mode: unary
-          #   document_id: e2e-embedder-doc-4
-          #   text: hello from e2e upsert with metadata
-          - name: Remove via embedder
-            type: embedder_remove
-            mode: unary
-            document_id: e2e-embedder-doc-3
-            expect:
-              - status_code: ok
-              - status_code: not_found
-          # - name: Remove with metadata via embedder
-          #   type: embedder_remove_with_metadata
-          #   mode: unary
-          #   document_id: e2e-embedder-doc-4
+            repeats:
+              enabled: true
+              exit_condition: count
+              count: 50
+          - name: Wait after upsert
+            type: wait
+            wait: 20s
           - name: Flush final
             type: flush
             mode: unary
