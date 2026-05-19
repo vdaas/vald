@@ -97,10 +97,10 @@ func New(cfg *config.Data) (runner.Runner, error) {
 	}
 	srv, err := starter.New(
 		starter.WithConfig(cfg.Server),
-		starter.WithREST(func(sc *iconf.Server) []server.Option {
+		starter.WithREST(func(_ *iconf.Server) []server.Option {
 			return []server.Option{server.WithHTTPHandler(httpHandler)}
 		}),
-		starter.WithGRPC(func(sc *iconf.Server) []server.Option {
+		starter.WithGRPC(func(_ *iconf.Server) []server.Option {
 			return []server.Option{server.WithGRPCRegisterar(func(srv *grpc.Server) {
 				embedderpb.RegisterEmbedderServer(srv, g)
 				vald.RegisterFlushServer(srv, g)
@@ -122,9 +122,9 @@ func (r *run) PreStart(ctx context.Context) error {
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 4)
-	var oech, vech, mech, sech <-chan error
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
+		var oech, vech, mech, sech <-chan error
 		if r.observability != nil {
 			oech = r.observability.Start(ctx)
 		}
@@ -139,45 +139,63 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			}
 		}
 		sech = r.server.ListenAndServe(ctx)
-		for {
-			var ok bool
+		return relayErrors(ctx, ech, oech, vech, mech, sech)
+	}))
+	return ech, nil
+}
+
+func relayErrors(
+	ctx context.Context, ech chan<- error,
+	oech, vech, mech, sech <-chan error,
+) error {
+	for {
+		err := recvAny(ctx, &oech, &vech, &mech, &sech)
+		if oech == nil && vech == nil && mech == nil && sech == nil {
+			return nil
+		}
+		if err != nil {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case err, ok = <-oech:
-				if !ok {
-					oech = nil
-					continue
-				}
-			case err, ok = <-vech:
-				if !ok {
-					vech = nil
-					continue
-				}
-			case err, ok = <-mech:
-				if !ok {
-					mech = nil
-					continue
-				}
-			case err, ok = <-sech:
-				if !ok {
-					sech = nil
-					continue
-				}
-			}
-			if oech == nil && vech == nil && mech == nil && sech == nil {
-				return nil
-			}
-			if err != nil {
-				select {
-				case <-ctx.Done():
-					return ctx.Err()
-				case ech <- err:
-				}
+			case ech <- err:
 			}
 		}
-	}))
-	return ech, nil
+	}
+}
+
+func recvAny(
+	ctx context.Context,
+	oech, vech, mech, sech *<-chan error,
+) error {
+	var (
+		err error
+		ok  bool
+	)
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case err, ok = <-*oech:
+		if !ok {
+			*oech = nil
+			return nil
+		}
+	case err, ok = <-*vech:
+		if !ok {
+			*vech = nil
+			return nil
+		}
+	case err, ok = <-*mech:
+		if !ok {
+			*mech = nil
+			return nil
+		}
+	case err, ok = <-*sech:
+		if !ok {
+			*sech = nil
+			return nil
+		}
+	}
+	return err
 }
 
 func (*run) PreStop(context.Context) error {

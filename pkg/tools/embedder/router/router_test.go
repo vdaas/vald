@@ -64,7 +64,7 @@ func TestNew(t *testing.T) {
 		if gotPattern != pattern {
 			t.Errorf("pattern = %s, want %s", gotPattern, pattern)
 		}
-		req, err := http.NewRequest(http.MethodGet, pattern, nil)
+		req, err := http.NewRequest(http.MethodGet, pattern, http.NoBody)
 		if err != nil {
 			t.Fatal(err)
 		}
