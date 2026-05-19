@@ -34,6 +34,7 @@ replace (
 	github.com/quasilyte/go-ruleguard => github.com/quasilyte/go-ruleguard v0.4.5
 	github.com/quasilyte/go-ruleguard/dsl => github.com/quasilyte/go-ruleguard/dsl v0.3.23
 	github.com/quic-go/quic-go => github.com/quic-go/quic-go v0.59.0
+	github.com/sashabaranov/go-openai => github.com/sashabaranov/go-openai v1.41.2
 	github.com/scylladb/gocqlx => github.com/scylladb/gocqlx v1.5.0
 	github.com/stretchr/testify => github.com/stretchr/testify v1.11.1
 	github.com/zeebo/xxh3 => github.com/zeebo/xxh3 v1.1.0
@@ -107,6 +108,7 @@ require (
 	github.com/quasilyte/go-ruleguard v0.0.0-00010101000000-000000000000
 	github.com/quasilyte/go-ruleguard/dsl v0.3.22
 	github.com/quic-go/quic-go v0.0.0-00010101000000-000000000000
+	github.com/sashabaranov/go-openai v1.41.2
 	github.com/scylladb/gocqlx v0.0.0-00010101000000-000000000000
 	github.com/stretchr/testify v1.11.1
 	github.com/zeebo/xxh3 v1.1.0

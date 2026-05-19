@@ -1,0 +1,97 @@
+#
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+version: v0.0.0
+time_zone: JST
+logging:
+  format: raw
+  level: debug
+  logger: glg
+server_config:
+  servers:
+    - name: grpc
+      host: 0.0.0.0
+      port: 8081
+      grpc:
+        bidirectional_stream_concurrency: 20
+      mode: GRPC
+      probe_wait_time: 3s
+      restart: true
+    - name: rest
+      host: 0.0.0.0
+      port: 8080
+      http:
+        handler_timeout: 30s
+        shutdown_duration: 5s
+      mode: REST
+      probe_wait_time: 3s
+      restart: true
+  health_check_servers:
+    - name: liveness
+      host: 0.0.0.0
+      port: 3000
+      http:
+        shutdown_duration: 5s
+      probe_wait_time: 3s
+    - name: readiness
+      host: 0.0.0.0
+      port: 3001
+      http:
+        shutdown_duration: 0s
+      probe_wait_time: 3s
+  startup_strategy:
+    - liveness
+    - grpc
+    - rest
+    - readiness
+  full_shutdown_duration: 600s
+observability:
+  enabled: false
+client:
+  addrs:
+    - vald-lb-gateway.default.svc.cluster.local:8081
+  health_check_duration: 1s
+  connection_pool:
+    enable_dns_resolver: true
+    enable_rebalance: true
+    old_conn_close_duration: 3s
+    rebalance_duration: 30m
+    size: 3
+  call_option:
+    wait_for_ready: true
+  dial_option:
+    insecure: true
+    min_connection_timeout: 20s
+meta:
+  host: vald-meta-gateway.default.svc.cluster.local
+  port: 8081
+  client:
+    health_check_duration: 1s
+    connection_pool:
+      enable_dns_resolver: true
+      enable_rebalance: true
+      old_conn_close_duration: 3s
+      rebalance_duration: 30m
+      size: 3
+    call_option:
+      wait_for_ready: true
+    dial_option:
+      insecure: true
+      min_connection_timeout: 20s
+llm:
+  provider: openai
+  openai:
+    token: ${OPENAI_API_KEY}
+    model: text-embedding-3-small

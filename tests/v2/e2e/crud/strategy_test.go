@@ -316,6 +316,39 @@ func (r *runner) processExecution(
 				// TODO implement gRPC client operation here, eg. start, stop, etc.
 			case config.OpWait:
 				// do nothing
+			case config.OpEmbedding:
+				start := time.Now()
+				log.Infof("started %s execution at %s, type: %s, mode: %s, execution: %d",
+					e.Name, start.Format("2006-01-02 15:04:05"), e.Type, e.Mode, idx)
+				defer func() {
+					log.Infof("finished %s execution in %s, type: %s, mode: %s, execution: %d",
+						e.Name, time.Since(start).String(), e.Type, e.Mode, idx)
+				}()
+				return r.processEmbedding(ttt, ctx, e)
+			case config.OpEmbedderInsert:
+				start := time.Now()
+				log.Infof("started %s execution at %s, type: %s, mode: %s, execution: %d",
+					e.Name, start.Format("2006-01-02 15:04:05"), e.Type, e.Mode, idx)
+				defer func() {
+					log.Infof("finished %s execution in %s, type: %s, mode: %s, execution: %d",
+						e.Name, time.Since(start).String(), e.Type, e.Mode, idx)
+				}()
+				return r.processEmbedderInsert(ttt, ctx, e)
+			case config.OpEmbedderInsertWithMetadata,
+				config.OpEmbedderUpdate,
+				config.OpEmbedderUpdateWithMetadata,
+				config.OpEmbedderUpsert,
+				config.OpEmbedderUpsertWithMetadata,
+				config.OpEmbedderRemove,
+				config.OpEmbedderRemoveWithMetadata:
+				start := time.Now()
+				log.Infof("started %s execution at %s, type: %s, mode: %s, execution: %d",
+					e.Name, start.Format("2006-01-02 15:04:05"), e.Type, e.Mode, idx)
+				defer func() {
+					log.Infof("finished %s execution in %s, type: %s, mode: %s, execution: %d",
+						e.Name, time.Since(start).String(), e.Type, e.Mode, idx)
+				}()
+				return r.processEmbedderMutation(ttt, ctx, e)
 			default:
 				ttt.Errorf("unsupported operation type: %s detected during execution %d", e.Type, idx)
 			}

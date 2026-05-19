@@ -1866,7 +1866,7 @@ pub mod index_client {
             self.inner.unary(req, path, codec).await
         }
         /** Overview
-         Represent the RPC to get the index statistics for each agents.
+         Represent the RPC to get the index statistics for each agent.
         */
         pub async fn index_statistics_detail(
             &mut self,
@@ -1945,7 +1945,7 @@ pub mod index_server {
             tonic::Status,
         >;
         /** Overview
-         Represent the RPC to get the index statistics for each agents.
+         Represent the RPC to get the index statistics for each agent.
         */
         async fn index_statistics_detail(
             &self,

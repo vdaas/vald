@@ -235,7 +235,7 @@ message RequestInfo {
 // Describes the resource that is being accessed.
 message ResourceInfo {
   // A name for the type of resource being accessed, e.g. "sql table",
-  // "cloud storage bucket", "file", "Google calendar"; or the type URL
+  // "cloud storage bucket", "file", "Google Calendar"; or the type URL
   // of the resource: e.g. "type.googleapis.com/google.pubsub.v1.Topic".
   string resource_type = 1;
 

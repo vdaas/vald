@@ -50,9 +50,18 @@ const (
 	OpSaveIndex          OperationType = "save_index"
 	OpCreateAndSaveIndex OperationType = "create_and_save_index"
 
-	OpKubernetes OperationType = "kubernetes"
-	OpClient     OperationType = "client"
-	OpWait       OperationType = "wait"
+	OpKubernetes                 OperationType = "kubernetes"
+	OpClient                     OperationType = "client"
+	OpWait                       OperationType = "wait"
+	OpEmbedding                  OperationType = "embedding"
+	OpEmbedderInsert             OperationType = "embedder_insert"
+	OpEmbedderInsertWithMetadata OperationType = "embedder_insert_with_metadata"
+	OpEmbedderUpdate             OperationType = "embedder_update"
+	OpEmbedderUpdateWithMetadata OperationType = "embedder_update_with_metadata"
+	OpEmbedderUpsert             OperationType = "embedder_upsert"
+	OpEmbedderUpsertWithMetadata OperationType = "embedder_upsert_with_metadata"
+	OpEmbedderRemove             OperationType = "embedder_remove"
+	OpEmbedderRemoveWithMetadata OperationType = "embedder_remove_with_metadata"
 )
 
 type StatusCode string

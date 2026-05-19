@@ -66,6 +66,7 @@ jobs:
               { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "null" },
               { scenario: "unary_crud",  deployment: "helm-chart", cluster: "k3d", environment: "null" },
               { scenario: "multi_crud",  deployment: "helm-chart", cluster: "k3d", environment: "null" },
+              { scenario: "embedder", deployment: "helm-chart", cluster: "k3d", environment: "null" },
               { scenario: "rollout",     deployment: "helm-chart", cluster: "k3d", environment: "null" },
               { scenario: "stream_crud", deployment: "helm-operator", cluster: "k3d", environment: "null" },
               { scenario: "index_correction", deployment: "helm-chart", cluster: "k3d", environment: "management" },
@@ -225,6 +226,112 @@ jobs:
         with:
           helm_extra_options: "--set networkChaos.${{ matrix.environment }}.enabled=true"
 
+      - name: Start Mock OpenAI compatible embedding API
+        if: ${{ matrix.scenario == 'embedder' }}
+        shell: bash
+        run: |
+          nohup go run ./hack/tools/openai-embedding-mock >/tmp/mock-openai.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:18000/healthz >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:18000/healthz >/dev/null
+
+      - name: Start Embedder for E2E smoke scenario
+        if: ${{ matrix.scenario == 'embedder' }}
+        shell: bash
+        run: |
+          kubectl port-forward -n default svc/vald-lb-gateway 18081:8081 >/tmp/vald-port-forward.log 2>&1 &
+          kubectl port-forward -n default svc/vald-meta-gateway 18082:8081 >/tmp/meta-port-forward.log 2>&1 &
+          cat > /tmp/embedder-e2e.yaml <<'YAML'
+          version: v0.0.0
+          time_zone: UTC
+          logging:
+            format: raw
+            level: info
+            logger: glg
+          server_config:
+            servers:
+              - name: grpc
+                host: 0.0.0.0
+                port: 28081
+                grpc:
+                  bidirectional_stream_concurrency: 20
+                mode: GRPC
+                probe_wait_time: 1s
+                restart: true
+            health_check_servers:
+              - name: liveness
+                host: 0.0.0.0
+                port: 3300
+                http:
+                  shutdown_duration: 5s
+                probe_wait_time: 1s
+              - name: readiness
+                host: 0.0.0.0
+                port: 3301
+                http:
+                  shutdown_duration: 0s
+                probe_wait_time: 1s
+            startup_strategy:
+              - liveness
+              - grpc
+              - readiness
+            full_shutdown_duration: 30s
+          observability:
+            enabled: false
+          client:
+            addrs:
+              - 127.0.0.1:18081
+            health_check_duration: 30s
+            connection_pool:
+              enable_dns_resolver: true
+              enable_rebalance: true
+              old_conn_close_duration: 3s
+              rebalance_duration: 30m
+              size: 1
+            call_option:
+              wait_for_ready: true
+            dial_option:
+              insecure: true
+              min_connection_timeout: 20s
+          # meta is optional: comment out when vald-meta-gateway is not deployed
+          # meta:
+          #   host: 127.0.0.1
+          #   port: 18082
+          #   client:
+          #     addrs:
+          #       - 127.0.0.1:18082
+          #     health_check_duration: 30s
+          #     connection_pool:
+          #       enable_dns_resolver: true
+          #       enable_rebalance: true
+          #       old_conn_close_duration: 3s
+          #       rebalance_duration: 30m
+          #       size: 1
+          #     call_option:
+          #       wait_for_ready: true
+          #     dial_option:
+          #       insecure: true
+          #       min_connection_timeout: 20s
+          llm:
+            provider: openai
+            openai:
+              token: test-token
+              model: text-embedding-3-small
+              base_url: http://127.0.0.1:18000/v1
+          YAML
+          nohup go run ./cmd/tools/embedder -c /tmp/embedder-e2e.yaml >/tmp/embedder-e2e.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:3301/readiness >/dev/null 2>&1; then
+              break
+            fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:3301/readiness >/dev/null
+
       - name: Deploy profefe
         if: ${{ matrix.environment == 'profile' }}
         shell: bash
@@ -263,6 +370,14 @@ jobs:
           kubectl get pods
           kubectl describe pods
           kubectl describe pvc
+          if [[ -f /tmp/mock-openai.log ]]; then
+            echo "--- /tmp/mock-openai.log ---"
+            cat /tmp/mock-openai.log
+          fi
+          if [[ -f /tmp/embedder-e2e.log ]]; then
+            echo "--- /tmp/embedder-e2e.log ---"
+            cat /tmp/embedder-e2e.log
+          fi
 
   slack-notification:
     timeout-minutes: 30

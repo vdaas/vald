@@ -117,6 +117,19 @@
   - [Sidecar](#sidecar-v1-Sidecar)
 - [v1/discoverer/discoverer.proto](#v1_discoverer_discoverer-proto)
   - [Discoverer](#discoverer-v1-Discoverer)
+- [v1/embedder/embedder.proto](#v1_embedder_embedder-proto)
+  - [Document](#embedder-v1-Document)
+  - [InsertRequest](#embedder-v1-InsertRequest)
+  - [InsertWithMetadataRequest](#embedder-v1-InsertWithMetadataRequest)
+  - [RemoveRequest](#embedder-v1-RemoveRequest)
+  - [SearchRequest](#embedder-v1-SearchRequest)
+  - [Text](#embedder-v1-Text)
+  - [UpdateRequest](#embedder-v1-UpdateRequest)
+  - [UpdateWithMetadataRequest](#embedder-v1-UpdateWithMetadataRequest)
+  - [UpsertRequest](#embedder-v1-UpsertRequest)
+  - [UpsertWithMetadataRequest](#embedder-v1-UpsertWithMetadataRequest)
+  - [Embedder](#embedder-v1-Embedder)
+
 - [v1/filter/egress/egress_filter.proto](#v1_filter_egress_egress_filter-proto)
   - [Filter](#filter-egress-v1-Filter)
 - [v1/filter/ingress/ingress_filter.proto](#v1_filter_ingress_ingress_filter-proto)
@@ -331,7 +344,7 @@ Represent the index count for each Agents message.
 
 | Field       | Type                                                                       | Label    | Description                        |
 | ----------- | -------------------------------------------------------------------------- | -------- | ---------------------------------- |
-| counts      | [Info.Index.Detail.CountsEntry](#payload-v1-Info-Index-Detail-CountsEntry) | repeated | count infos for each agents        |
+| counts      | [Info.Index.Detail.CountsEntry](#payload-v1-Info-Index-Detail-CountsEntry) | repeated | count infos for each agent         |
 | replica     | [uint32](#uint32)                                                          |          | index replica of vald cluster      |
 | live_agents | [uint32](#uint32)                                                          |          | live agent replica of vald cluster |
 
@@ -455,9 +468,9 @@ Represents index Statistics
 
 Represents index Statistics for each Agents
 
-| Field   | Type                                                                                             | Label    | Description                 |
-| ------- | ------------------------------------------------------------------------------------------------ | -------- | --------------------------- |
-| details | [Info.Index.StatisticsDetail.DetailsEntry](#payload-v1-Info-Index-StatisticsDetail-DetailsEntry) | repeated | count infos for each agents |
+| Field   | Type                                                                                             | Label    | Description                |
+| ------- | ------------------------------------------------------------------------------------------------ | -------- | -------------------------- |
+| details | [Info.Index.StatisticsDetail.DetailsEntry](#payload-v1-Info-Index-StatisticsDetail-DetailsEntry) | repeated | count infos for each agent |
 
 <a name="payload-v1-Info-Index-StatisticsDetail-DetailsEntry"></a>
 
@@ -1337,6 +1350,120 @@ Represent the discoverer service.
 | Nodes       | [.payload.v1.Discoverer.Request](#payload-v1-Discoverer-Request) | [.payload.v1.Info.Nodes](#payload-v1-Info-Nodes)       | Represent the RPC to get the node information.            |
 | Services    | [.payload.v1.Discoverer.Request](#payload-v1-Discoverer-Request) | [.payload.v1.Info.Services](#payload-v1-Info-Services) | Represent the RPC to get the readreplica svc information. |
 
+<a name="v1_embedder_embedder-proto"></a>
+
+<p align="right"><a href="#top">Top</a></p>
+
+## v1/embedder/embedder.proto
+
+<a name="embedder-v1-Document"></a>
+
+### Document
+
+| Field     | Type              | Label | Description |
+| --------- | ----------------- | ----- | ----------- |
+| id        | [string](#string) |       |             |
+| text      | [string](#string) |       |             |
+| timestamp | [int64](#int64)   |       |             |
+
+<a name="embedder-v1-InsertRequest"></a>
+
+### InsertRequest
+
+| Field    | Type                                                  | Label | Description |
+| -------- | ----------------------------------------------------- | ----- | ----------- |
+| document | [Document](#embedder-v1-Document)                     |       |             |
+| config   | [payload.v1.Insert.Config](#payload-v1-Insert-Config) |       |             |
+
+<a name="embedder-v1-InsertWithMetadataRequest"></a>
+
+### InsertWithMetadataRequest
+
+| Field    | Type                                            | Label | Description |
+| -------- | ----------------------------------------------- | ----- | ----------- |
+| request  | [InsertRequest](#embedder-v1-InsertRequest)     |       |             |
+| metadata | [payload.v1.Meta.Value](#payload-v1-Meta-Value) |       |             |
+
+<a name="embedder-v1-RemoveRequest"></a>
+
+### RemoveRequest
+
+| Field  | Type                                                  | Label | Description |
+| ------ | ----------------------------------------------------- | ----- | ----------- |
+| id     | [string](#string)                                     |       |             |
+| config | [payload.v1.Remove.Config](#payload-v1-Remove-Config) |       |             |
+
+<a name="embedder-v1-SearchRequest"></a>
+
+### SearchRequest
+
+| Field  | Type                                                  | Label | Description |
+| ------ | ----------------------------------------------------- | ----- | ----------- |
+| text   | [string](#string)                                     |       |             |
+| config | [payload.v1.Search.Config](#payload-v1-Search-Config) |       |             |
+
+<a name="embedder-v1-Text"></a>
+
+### Text
+
+| Field | Type              | Label | Description |
+| ----- | ----------------- | ----- | ----------- |
+| text  | [string](#string) |       |             |
+
+<a name="embedder-v1-UpdateRequest"></a>
+
+### UpdateRequest
+
+| Field    | Type                                                  | Label | Description |
+| -------- | ----------------------------------------------------- | ----- | ----------- |
+| document | [Document](#embedder-v1-Document)                     |       |             |
+| config   | [payload.v1.Update.Config](#payload-v1-Update-Config) |       |             |
+
+<a name="embedder-v1-UpdateWithMetadataRequest"></a>
+
+### UpdateWithMetadataRequest
+
+| Field    | Type                                            | Label | Description |
+| -------- | ----------------------------------------------- | ----- | ----------- |
+| request  | [UpdateRequest](#embedder-v1-UpdateRequest)     |       |             |
+| metadata | [payload.v1.Meta.Value](#payload-v1-Meta-Value) |       |             |
+
+<a name="embedder-v1-UpsertRequest"></a>
+
+### UpsertRequest
+
+| Field    | Type                                                  | Label | Description |
+| -------- | ----------------------------------------------------- | ----- | ----------- |
+| document | [Document](#embedder-v1-Document)                     |       |             |
+| config   | [payload.v1.Upsert.Config](#payload-v1-Upsert-Config) |       |             |
+
+<a name="embedder-v1-UpsertWithMetadataRequest"></a>
+
+### UpsertWithMetadataRequest
+
+| Field    | Type                                            | Label | Description |
+| -------- | ----------------------------------------------- | ----- | ----------- |
+| request  | [UpsertRequest](#embedder-v1-UpsertRequest)     |       |             |
+| metadata | [payload.v1.Meta.Value](#payload-v1-Meta-Value) |       |             |
+
+<a name="embedder-v1-Embedder"></a>
+
+### Embedder
+
+| Method Name        | Request Type                                                        | Response Type                                              | Description |
+| ------------------ | ------------------------------------------------------------------- | ---------------------------------------------------------- | ----------- |
+| Search             | [SearchRequest](#embedder-v1-SearchRequest)                         | [.payload.v1.Search.Response](#payload-v1-Search-Response) |             |
+| LinearSearch       | [SearchRequest](#embedder-v1-SearchRequest)                         | [.payload.v1.Search.Response](#payload-v1-Search-Response) |             |
+| Insert             | [InsertRequest](#embedder-v1-InsertRequest)                         | [.payload.v1.Object.Location](#payload-v1-Object-Location) |             |
+| InsertWithMetadata | [InsertWithMetadataRequest](#embedder-v1-InsertWithMetadataRequest) | [.payload.v1.Object.Location](#payload-v1-Object-Location) |             |
+| Update             | [UpdateRequest](#embedder-v1-UpdateRequest)                         | [.payload.v1.Object.Location](#payload-v1-Object-Location) |             |
+| UpdateWithMetadata | [UpdateWithMetadataRequest](#embedder-v1-UpdateWithMetadataRequest) | [.payload.v1.Object.Location](#payload-v1-Object-Location) |             |
+| Upsert             | [UpsertRequest](#embedder-v1-UpsertRequest)                         | [.payload.v1.Object.Location](#payload-v1-Object-Location) |             |
+| UpsertWithMetadata | [UpsertWithMetadataRequest](#embedder-v1-UpsertWithMetadataRequest) | [.payload.v1.Object.Location](#payload-v1-Object-Location) |             |
+| Remove             | [RemoveRequest](#embedder-v1-RemoveRequest)                         | [.payload.v1.Object.Location](#payload-v1-Object-Location) |             |
+| RemoveWithMetadata | [RemoveRequest](#embedder-v1-RemoveRequest)                         | [.payload.v1.Object.Location](#payload-v1-Object-Location) |             |
+| Embedding          | [Text](#embedder-v1-Text)                                           | [.payload.v1.Object.Vector](#payload-v1-Object-Vector)     |             |
+
 <a name="v1_filter_egress_egress_filter-proto"></a>
 
 <p align="right"><a href="#top">Top</a></p>
@@ -1624,7 +1751,7 @@ Describes the resource that is being accessed.
 
 | Field         | Type              | Label | Description                                                                                                                                                                                                                                      |
 | ------------- | ----------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| resource_type | [string](#string) |       | A name for the type of resource being accessed, e.g. &#34;sql table&#34;, &#34;cloud storage bucket&#34;, &#34;file&#34;, &#34;Google calendar&#34;; or the type URL of the resource: e.g. &#34;type.googleapis.com/google.pubsub.v1.Topic&#34;. |
+| resource_type | [string](#string) |       | A name for the type of resource being accessed, e.g. &#34;sql table&#34;, &#34;cloud storage bucket&#34;, &#34;file&#34;, &#34;Google Calendar&#34;; or the type URL of the resource: e.g. &#34;type.googleapis.com/google.pubsub.v1.Topic&#34;. |
 | resource_name | [string](#string) |       | The name of the resource being accessed. For example, a shared calendar name: &#34;example.com_4fghdhgsrgh@group.calendar.google.com&#34;, if the current error is [google.rpc.Code.PERMISSION_DENIED][google.rpc.Code.PERMISSION_DENIED].       |
 | owner         | [string](#string) |       | The owner of the resource (optional). For example, &#34;user:&lt;owner email&gt;&#34; or &#34;project:&lt;Google developer project id&gt;&#34;.                                                                                                  |
 | description   | [string](#string) |       | Describes what error is encountered when accessing this resource. For example, updating a cloud project may require the `writer` permission on the developer console project.                                                                    |
@@ -1738,13 +1865,13 @@ Flush Service is responsible for removing all vectors that are indexed and uncom
 Overview
 Represent the index manager service.
 
-| Method Name           | Request Type                           | Response Type                                                                      | Description                                                              |
-| --------------------- | -------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| IndexInfo             | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Count](#payload-v1-Info-Index-Count)                       | Overview Represent the RPC to get the index information.                 |
-| IndexDetail           | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Detail](#payload-v1-Info-Index-Detail)                     | Overview Represent the RPC to get the index information for each agents. |
-| IndexStatistics       | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Statistics](#payload-v1-Info-Index-Statistics)             | Overview Represent the RPC to get the index statistics.                  |
-| IndexStatisticsDetail | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.StatisticsDetail](#payload-v1-Info-Index-StatisticsDetail) | Overview Represent the RPC to get the index statistics for each agents.  |
-| IndexProperty         | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.PropertyDetail](#payload-v1-Info-Index-PropertyDetail)     | Overview Represent the RPC to get the index property.                    |
+| Method Name           | Request Type                           | Response Type                                                                      | Description                                                             |
+| --------------------- | -------------------------------------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| IndexInfo             | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Count](#payload-v1-Info-Index-Count)                       | Overview Represent the RPC to get the index information.                |
+| IndexDetail           | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Detail](#payload-v1-Info-Index-Detail)                     | Overview Represent the RPC to get the index information for each agent. |
+| IndexStatistics       | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Statistics](#payload-v1-Info-Index-Statistics)             | Overview Represent the RPC to get the index statistics.                 |
+| IndexStatisticsDetail | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.StatisticsDetail](#payload-v1-Info-Index-StatisticsDetail) | Overview Represent the RPC to get the index statistics for each agent.  |
+| IndexProperty         | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.PropertyDetail](#payload-v1-Info-Index-PropertyDetail)     | Overview Represent the RPC to get the index property.                   |
 
 <a name="v1_vald_insert-proto"></a>
 

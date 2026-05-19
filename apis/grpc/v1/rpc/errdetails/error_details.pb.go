@@ -471,7 +471,7 @@ func (x *RequestInfo) GetServingData() string {
 type ResourceInfo struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// A name for the type of resource being accessed, e.g. "sql table",
-	// "cloud storage bucket", "file", "Google calendar"; or the type URL
+	// "cloud storage bucket", "file", "Google Calendar"; or the type URL
 	// of the resource: e.g. "type.googleapis.com/google.pubsub.v1.Topic".
 	ResourceType string `protobuf:"bytes,1,opt,name=resource_type,json=resourceType,proto3" json:"resource_type,omitempty"`
 	// The name of the resource being accessed.  For example, a shared calendar
