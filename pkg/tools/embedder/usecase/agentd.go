@@ -144,10 +144,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func relayErrors(
-	ctx context.Context, ech chan<- error,
-	oech, vech, mech, sech <-chan error,
-) error {
+func relayErrors(ctx context.Context, ech chan<- error, oech, vech, mech, sech <-chan error) error {
 	for {
 		err := recvAny(ctx, &oech, &vech, &mech, &sech)
 		if oech == nil && vech == nil && mech == nil && sech == nil {
@@ -163,10 +160,7 @@ func relayErrors(
 	}
 }
 
-func recvAny(
-	ctx context.Context,
-	oech, vech, mech, sech *<-chan error,
-) error {
+func recvAny(ctx context.Context, oech, vech, mech, sech *<-chan error) error {
 	var (
 		err error
 		ok  bool
