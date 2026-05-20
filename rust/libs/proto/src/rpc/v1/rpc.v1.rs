@@ -318,7 +318,7 @@ impl ::prost::Name for RequestInfo {
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct ResourceInfo {
     /// A name for the type of resource being accessed, e.g. "sql table",
-    /// "cloud storage bucket", "file", "Google calendar"; or the type URL
+    /// "cloud storage bucket", "file", "Google Calendar"; or the type URL
     /// of the resource: e.g. "type.googleapis.com/google.pubsub.v1.Topic".
     #[prost(string, tag = "1")]
     pub resource_type: ::prost::alloc::string::String,

@@ -1437,7 +1437,7 @@ pub mod info {
         /// Represent the index count for each Agents message.
         #[derive(Clone, PartialEq, ::prost::Message)]
         pub struct Detail {
-            /// count infos for each agents
+            /// count infos for each agent
             #[prost(map = "string, message", tag = "1")]
             pub counts: ::std::collections::HashMap<::prost::alloc::string::String, Count>,
             /// index replica of vald cluster
@@ -1588,7 +1588,7 @@ pub mod info {
         /// Represents index Statistics for each Agents
         #[derive(Clone, PartialEq, ::prost::Message)]
         pub struct StatisticsDetail {
-            /// count infos for each agents
+            /// count infos for each agent
             #[prost(map = "string, message", tag = "1")]
             pub details: ::std::collections::HashMap<::prost::alloc::string::String, Statistics>,
         }

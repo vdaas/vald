@@ -4850,7 +4850,7 @@ func (x *Info_Index_Count) GetSaving() bool {
 // Represent the index count for each Agents message.
 type Info_Index_Detail struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// count infos for each agents
+	// count infos for each agent
 	Counts map[string]*Info_Index_Count `protobuf:"bytes,1,rep,name=counts,proto3" json:"counts,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	// index replica of vald cluster
 	Replica uint32 `protobuf:"varint,2,opt,name=replica,proto3" json:"replica,omitempty"`
@@ -5252,7 +5252,7 @@ func (x *Info_Index_Statistics) GetIndegreeHistogram() []uint64 {
 // Represents index Statistics for each Agents
 type Info_Index_StatisticsDetail struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// count infos for each agents
+	// count infos for each agent
 	Details       map[string]*Info_Index_Statistics `protobuf:"bytes,1,rep,name=details,proto3" json:"details,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache

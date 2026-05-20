@@ -46,13 +46,13 @@ type IndexClient interface {
 	// Represent the RPC to get the index information.
 	IndexInfo(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_Count, error)
 	// Overview
-	// Represent the RPC to get the index information for each agents.
+	// Represent the RPC to get the index information for each agent.
 	IndexDetail(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_Detail, error)
 	// Overview
 	// Represent the RPC to get the index statistics.
 	IndexStatistics(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_Statistics, error)
 	// Overview
-	// Represent the RPC to get the index statistics for each agents.
+	// Represent the RPC to get the index statistics for each agent.
 	IndexStatisticsDetail(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_StatisticsDetail, error)
 	// Overview
 	// Represent the RPC to get the index property.
@@ -130,13 +130,13 @@ type IndexServer interface {
 	// Represent the RPC to get the index information.
 	IndexInfo(context.Context, *payload.Empty) (*payload.Info_Index_Count, error)
 	// Overview
-	// Represent the RPC to get the index information for each agents.
+	// Represent the RPC to get the index information for each agent.
 	IndexDetail(context.Context, *payload.Empty) (*payload.Info_Index_Detail, error)
 	// Overview
 	// Represent the RPC to get the index statistics.
 	IndexStatistics(context.Context, *payload.Empty) (*payload.Info_Index_Statistics, error)
 	// Overview
-	// Represent the RPC to get the index statistics for each agents.
+	// Represent the RPC to get the index statistics for each agent.
 	IndexStatisticsDetail(context.Context, *payload.Empty) (*payload.Info_Index_StatisticsDetail, error)
 	// Overview
 	// Represent the RPC to get the index property.

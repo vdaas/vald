@@ -14,7 +14,7 @@
   "paths": {
     "/index/detail": {
       "get": {
-        "summary": "Overview\nRepresent the RPC to get the index information for each agents.",
+        "summary": "Overview\nRepresent the RPC to get the index information for each agent.",
         "operationId": "Index_IndexDetail",
         "responses": {
           "200": {
@@ -98,7 +98,7 @@
     },
     "/index/statistics/detail": {
       "get": {
-        "summary": "Overview\nRepresent the RPC to get the index statistics for each agents.",
+        "summary": "Overview\nRepresent the RPC to get the index statistics for each agent.",
         "operationId": "Index_IndexStatisticsDetail",
         "responses": {
           "200": {
@@ -151,7 +151,7 @@
           "additionalProperties": {
             "$ref": "#/definitions/IndexCount"
           },
-          "title": "count infos for each agents"
+          "title": "count infos for each agent"
         },
         "replica": {
           "type": "integer",
@@ -468,7 +468,7 @@
           "additionalProperties": {
             "$ref": "#/definitions/IndexStatistics"
           },
-          "title": "count infos for each agents"
+          "title": "count infos for each agent"
         }
       },
       "title": "Represents index Statistics for each Agents"

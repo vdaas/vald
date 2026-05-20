@@ -34,6 +34,7 @@ replace (
 	github.com/quasilyte/go-ruleguard => github.com/quasilyte/go-ruleguard upgrade
 	github.com/quasilyte/go-ruleguard/dsl => github.com/quasilyte/go-ruleguard/dsl upgrade
 	github.com/quic-go/quic-go => github.com/quic-go/quic-go upgrade
+	github.com/sashabaranov/go-openai => github.com/sashabaranov/go-openai upgrade
 	github.com/scylladb/gocqlx => github.com/scylladb/gocqlx upgrade
 	github.com/stretchr/testify => github.com/stretchr/testify upgrade
 	github.com/zeebo/xxh3 => github.com/zeebo/xxh3 upgrade

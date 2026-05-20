@@ -60,7 +60,7 @@ Represent the RPC to get the index information.
 
 ## IndexDetail RPC
 
-Represent the RPC to get the index information for each agents.
+Represent the RPC to get the index information for each agent.
 
 ### Input
 
@@ -106,7 +106,7 @@ Represent the RPC to get the index information for each agents.
 
     |    field    | type                          | label    | description                        |
     | :---------: | :---------------------------- | :------- | :--------------------------------- |
-    |   counts    | Info.Index.Detail.CountsEntry | repeated | count infos for each agents        |
+    |   counts    | Info.Index.Detail.CountsEntry | repeated | count infos for each agent         |
     |   replica   | uint32                        |          | index replica of vald cluster      |
     | live_agents | uint32                        |          | live agent replica of vald cluster |
 
@@ -228,7 +228,7 @@ Represent the RPC to get the index statistics.
 
 ## IndexStatisticsDetail RPC
 
-Represent the RPC to get the index statistics for each agents.
+Represent the RPC to get the index statistics for each agent.
 
 ### Input
 
@@ -299,9 +299,9 @@ Represent the RPC to get the index statistics for each agents.
 
   - Info.Index.StatisticsDetail
 
-    |  field  | type                                     | label    | description                 |
-    | :-----: | :--------------------------------------- | :------- | :-------------------------- |
-    | details | Info.Index.StatisticsDetail.DetailsEntry | repeated | count infos for each agents |
+    |  field  | type                                     | label    | description                |
+    | :-----: | :--------------------------------------- | :------- | :------------------------- |
+    | details | Info.Index.StatisticsDetail.DetailsEntry | repeated | count infos for each agent |
 
   - Info.Index.StatisticsDetail.DetailsEntry
 
