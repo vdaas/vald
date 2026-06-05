@@ -112,11 +112,11 @@ jobs:
                 --output profiles/${svc}-${t}.pb
             done
           done
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      - uses: actions/upload-artifact@v7
         with:
           name: profiles
           path: profiles/*
-      - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+      - uses: actions/cache@v5
         id: cache
         with:
           path: ./profiles-main
@@ -162,7 +162,7 @@ jobs:
               fi
             done
           done
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      - uses: actions/upload-artifact@v7
         with:
           name: graphs
           path: graphs/*

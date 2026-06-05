@@ -15,11 +15,21 @@
 #
 
 bench:
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
 	go test -count=5 -run=NONE -bench . -benchmem
 
 bench-lite:
+	CC="$(CC)" \
+	CXX="$(CXX)" \
+	AR="$(AR)" \
+	NM="$(NM)" \
+	RANLIB="$(RANLIB)" \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
 	go test -count=1 -run=NONE -bench . -benchmem

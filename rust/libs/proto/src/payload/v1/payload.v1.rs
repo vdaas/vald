@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct Search {}
 /// Nested message and enum types in `Search`.
@@ -825,23 +823,23 @@ pub mod remove {
             /// (if the ProtoBuf definition does not change) and safe for programmatic use.
             pub fn as_str_name(&self) -> &'static str {
                 match self {
-                    Self::Eq => "Eq",
-                    Self::Ne => "Ne",
-                    Self::Ge => "Ge",
-                    Self::Gt => "Gt",
-                    Self::Le => "Le",
-                    Self::Lt => "Lt",
+                    Self::Eq => "EQ",
+                    Self::Ne => "NE",
+                    Self::Ge => "GE",
+                    Self::Gt => "GT",
+                    Self::Le => "LE",
+                    Self::Lt => "LT",
                 }
             }
             /// Creates an enum from field names used in the ProtoBuf definition.
             pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
                 match value {
-                    "Eq" => Some(Self::Eq),
-                    "Ne" => Some(Self::Ne),
-                    "Ge" => Some(Self::Ge),
-                    "Gt" => Some(Self::Gt),
-                    "Le" => Some(Self::Le),
-                    "Lt" => Some(Self::Lt),
+                    "EQ" => Some(Self::Eq),
+                    "NE" => Some(Self::Ne),
+                    "GE" => Some(Self::Ge),
+                    "GT" => Some(Self::Gt),
+                    "LE" => Some(Self::Le),
+                    "LT" => Some(Self::Lt),
                     _ => None,
                 }
             }

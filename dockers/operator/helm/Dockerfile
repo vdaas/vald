@@ -30,6 +30,16 @@ ARG TARGETARCH
 ARG TARGETOS
 ARG GO_VERSION
 ARG RUST_VERSION
+ARG CC
+ARG CXX
+ARG LLD
+ARG AR
+ARG NM
+ARG RANLIB
+ARG CFLAGS
+ARG CXXFLAGS
+ARG LDFLAGS
+ARG SUDO
 ENV APP_NAME=helm-operator
 ENV DEBIAN_FRONTEND=noninteractive
 ENV GO111MODULE=on
@@ -45,7 +55,18 @@ ENV PKG=operator/helm
 ENV REPO=vald
 ENV TZ=Etc/UTC
 ENV USER=root
+ENV YEAR=2026
 ENV PATH=${GOPATH}/bin:${GOROOT}/bin:/usr/local/bin:${PATH}
+ENV CC=${CC:-${CC}}
+ENV CXX=${CXX:-${CXX}}
+ENV LLD=${LLD:-${LLD}}
+ENV AR=${AR:-${AR}}
+ENV NM=${NM:-${NM}}
+ENV RANLIB=${RANLIB:-${RANLIB}}
+ENV CFLAGS=${CFLAGS:-${CFLAGS}}
+ENV CXXFLAGS=${CXXFLAGS:-${CXXFLAGS}}
+ENV LDFLAGS=${LDFLAGS:-${LDFLAGS}}
+ENV SUDO=${SUDO:-${SUDO}}
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 COPY --from=operator /usr/local/bin/${APP_NAME} /usr/bin/${APP_NAME}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -64,12 +85,20 @@ RUN --mount=type=bind,target=.,rw \
     && apt-get update -y \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends --fix-missing \
-    build-essential \
     ca-certificates \
     curl \
     tzdata \
     locales \
     git \
+    build-essential \
+    clang \
+    libomp-dev \
+    libssl-dev \
+    lld \
+    llvm \
+    pkg-config \
+    python3 \
+    unzip \
     upx \
     && ldconfig \
     && echo "${LANG} UTF-8" > /etc/locale.gen \

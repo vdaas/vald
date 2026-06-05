@@ -29,6 +29,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+          fetch-depth: 0
       - uses: ./.github/actions/dump-context
   languagetool-apis-charts:
     timeout-minutes: 30
@@ -41,6 +42,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+          fetch-depth: 0
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
@@ -65,6 +67,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+          fetch-depth: 0
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
@@ -76,7 +79,7 @@ jobs:
           patterns: "**/*.md **/*.md.gotmpl !**/CHANGELOG.md !apis/** !charts/**"
           level: warning
           language: en-US
-          disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES,UPPERCASE_SENTENCE_START"
+          disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES,UPPERCASE_SENTENCE_START,LC_AFTER_PERIOD"
           disabled_categories: "TYPOS,TYPOGRAPHY,STYLE"
   textlint:
     timeout-minutes: 30
@@ -89,6 +92,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+          fetch-depth: 0
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}

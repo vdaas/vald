@@ -30,7 +30,7 @@ jobs:
       ${{ github.event.pull_request.merged == true && startsWith(github.event.pull_request.title, ':bookmark: :robot: Release') }}
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
       - uses: ./.github/actions/dump-context
@@ -42,7 +42,7 @@ jobs:
       - dump-contexts-to-log
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -70,7 +70,7 @@ jobs:
           git push origin ${VERSION}
           echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
       - name: Create release
-        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
+        uses: softprops/action-gh-release@v3
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
         with:

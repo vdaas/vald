@@ -15,6 +15,7 @@
 #
 
 SHELL = bash
+.DEFAULT_GOAL := all
 ORG ?= vdaas
 NAME = vald
 REPO = $(ORG)/$(NAME)
@@ -70,19 +71,20 @@ TEMP_DIR := $(eval TEMP_DIR := $(shell mktemp -d))$(TEMP_DIR)
 USR_LOCAL = /usr/local
 BINDIR = $(USR_LOCAL)/bin
 LIB_PATH = $(USR_LOCAL)/lib
-$(LIB_PATH):
-	mkdir -p $(LIB_PATH)
+INCLUDE_PATH = $(USR_LOCAL)/include
+$(BINDIR) $(LIB_PATH) $(INCLUDE_PATH):
+	mkdir -p $@
 
 BUN_INSTALL ?= $(USR_LOCAL)
-BUN_GLOBAL_BIN ?= $(eval BUN_GLOBAL_BIN := $(shell bun pm bin -g))$(BUN_GLOBAL_BIN)
+BUN_GLOBAL_BIN ?= $(eval BUN_GLOBAL_BIN := $(shell command -v bun >/dev/null 2>&1 && bun pm bin -g 2>/dev/null || echo ""))$(BUN_GLOBAL_BIN)
 
 GOPRIVATE := $(GOPKG),$(GOPKG)/apis,$(GOPKG)-client-go
-GOPROXY := "https://proxy.golang.org,direct"
-GOPATH ?= $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
-GOARCH ?= $(eval GOARCH := $(shell go env GOARCH))$(GOARCH)
-GOBIN ?= $(eval GOBIN := $(or $(shell go env GOBIN),$(GOPATH)/bin))$(GOBIN)
-GOCACHE ?= $(eval GOCACHE := $(shell go env GOCACHE))$(GOCACHE)
-GOOS ?= $(eval GOOS := $(shell go env GOOS))$(GOOS)
+GOPROXY ?= https://proxy.golang.org,direct
+GOPATH ?= $(eval GOPATH := $(shell go env GOPATH 2>/dev/null))$(GOPATH)
+GOARCH ?= $(eval GOARCH := $(shell go env GOARCH 2>/dev/null))$(GOARCH)
+GOBIN ?= $(eval GOBIN := $(or $(shell go env GOBIN 2>/dev/null),$(GOPATH)/bin))$(GOBIN)
+GOCACHE ?= $(eval GOCACHE := $(shell go env GOCACHE 2>/dev/null))$(GOCACHE)
+GOOS ?= $(eval GOOS := $(shell go env GOOS 2>/dev/null))$(GOOS)
 GOEXPERIMENT := "greenteagc,cgocheck2,newinliner,synchashtriemap,jsonv2"
 GO_CLEAN_DEPS := true
 GOTEST_TIMEOUT = 30m
@@ -96,9 +98,9 @@ CARGO_HOME ?= $(RUST_HOME)/cargo
 BUF_VERSION := $(eval BUF_VERSION := $(shell cat versions/BUF_VERSION))$(BUF_VERSION)
 BUSYBOX_VERSION := $(eval BUSYBOX_VERSION := $(shell cat versions/BUSYBOX_VERSION))$(BUSYBOX_VERSION)
 CMAKE_VERSION := $(eval CMAKE_VERSION := $(shell cat versions/CMAKE_VERSION))$(CMAKE_VERSION)
+CSI_DRIVER_HOST_PATH_VERSION := $(eval CSI_DRIVER_HOST_PATH_VERSION := $(shell cat versions/CSI_DRIVER_HOST_PATH_VERSION))$(CSI_DRIVER_HOST_PATH_VERSION)
 DOCKER_VERSION := $(eval DOCKER_VERSION := $(shell cat versions/DOCKER_VERSION))$(DOCKER_VERSION)
 FAISS_VERSION := $(eval FAISS_VERSION := $(shell cat versions/FAISS_VERSION))$(FAISS_VERSION)
-USEARCH_VERSION := $(eval USEARCH_VERSION := $(shell cat versions/USEARCH_VERSION))$(USEARCH_VERSION)
 GOLANGCILINT_VERSION := $(eval GOLANGCILINT_VERSION := $(shell cat versions/GOLANGCILINT_VERSION))$(GOLANGCILINT_VERSION)
 GO_VERSION := $(eval GO_VERSION := $(shell cat versions/GO_VERSION))$(GO_VERSION)
 GRAFANA_VERSION := $(eval GRAFANA_VERSION := $(shell cat versions/GRAFANA_VERSION))$(GRAFANA_VERSION)
@@ -111,18 +113,20 @@ K3S_VERSION := $(eval K3S_VERSION := $(shell cat versions/K3S_VERSION))$(K3S_VER
 KIND_VERSION := $(eval KIND_VERSION := $(shell cat versions/KIND_VERSION))$(KIND_VERSION)
 KUBECTL_VERSION := $(eval KUBECTL_VERSION := $(shell cat versions/KUBECTL_VERSION))$(KUBECTL_VERSION)
 KUBELINTER_VERSION := $(eval KUBELINTER_VERSION := $(shell cat versions/KUBELINTER_VERSION))$(KUBELINTER_VERSION)
+LLVM_VERSION := $(eval LLVM_VERSION := $(shell cat versions/LLVM_VERSION))$(LLVM_VERSION)
 NGT_VERSION := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VERSION)
+NINJA_VERSION := $(eval NINJA_VERSION := $(shell cat versions/NINJA_VERSION))$(NINJA_VERSION)
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 OTEL_OPERATOR_VERSION := $(eval OTEL_OPERATOR_VERSION := $(shell cat versions/OTEL_OPERATOR_VERSION))$(OTEL_OPERATOR_VERSION)
 PROMETHEUS_STACK_VERSION := $(eval PROMETHEUS_STACK_VERSION := $(shell cat versions/PROMETHEUS_STACK_VERSION))$(PROMETHEUS_STACK_VERSION)
 PROTOBUF_VERSION := $(eval PROTOBUF_VERSION := $(shell cat versions/PROTOBUF_VERSION))$(PROTOBUF_VERSION)
 REVIEWDOG_VERSION := $(eval REVIEWDOG_VERSION := $(shell cat versions/REVIEWDOG_VERSION))$(REVIEWDOG_VERSION)
 RUST_VERSION := $(eval RUST_VERSION := $(shell cat versions/RUST_VERSION))$(RUST_VERSION)
+SNAPSHOTTER_VERSION := $(eval SNAPSHOTTER_VERSION := $(shell cat versions/SNAPSHOTTER_VERSION))$(SNAPSHOTTER_VERSION)
 TELEPRESENCE_VERSION := $(eval TELEPRESENCE_VERSION := $(shell cat versions/TELEPRESENCE_VERSION))$(TELEPRESENCE_VERSION)
+USEARCH_VERSION := $(eval USEARCH_VERSION := $(shell cat versions/USEARCH_VERSION))$(USEARCH_VERSION)
 YQ_VERSION := $(eval YQ_VERSION := $(shell cat versions/YQ_VERSION))$(YQ_VERSION)
 ZLIB_VERSION := $(eval ZLIB_VERSION := $(shell cat versions/ZLIB_VERSION))$(ZLIB_VERSION)
-SNAPSHOTTER_VERSION := $(eval SNAPSHOTTER_VERSION := $(shell cat versions/SNAPSHOTTER_VERSION))$(SNAPSHOTTER_VERSION)
-CSI_DRIVER_HOST_PATH_VERSION := $(eval CSI_DRIVER_HOST_PATH_VERSION := $(shell cat versions/CSI_DRIVER_HOST_PATH_VERSION))$(CSI_DRIVER_HOST_PATH_VERSION)
 
 OTEL_OPERATOR_RELEASE_NAME ?= opentelemetry-operator
 PROMETHEUS_RELEASE_NAME ?= prometheus
@@ -150,15 +154,15 @@ endif
 GIT_COMMIT := $(eval GIT_COMMIT := $(shell git rev-list -1 HEAD))$(GIT_COMMIT)
 
 ROOTDIR = $(eval ROOTDIR := $(or $(shell git rev-parse --show-toplevel), $(PWD)))$(ROOTDIR)
-MAKELISTS := Makefile $(shell find $(ROOTDIR)/Makefile.d -type f -regex ".*\.mk")
-PROTODIRS := $(eval PROTODIRS := $(shell find $(ROOTDIR)/apis/proto -type d | sed -e "s%apis/proto/%%g" | grep -v "apis/proto"))$(PROTODIRS)
+MAKELISTS := Makefile $(shell cat $(ROOTDIR)/.gitfiles | grep '^Makefile\.d/.*\.mk$$' | sed -e 's%^%$(ROOTDIR)/%')
+PROTODIRS := $(eval PROTODIRS := $(shell cat $(ROOTDIR)/.gitfiles | grep '^apis/proto/.*\.proto$$' | xargs -n1 dirname | sort -u | sed -e "s%^apis/proto/%%g" | grep -v '^$$'))$(PROTODIRS)
 BENCH_DATASET_BASE_DIR = hack/benchmark/assets
 BENCH_DATASET_MD5_DIR_NAME = checksum
 BENCH_DATASET_HDF5_DIR_NAME = dataset
 BENCH_DATASET_MD5_DIR = $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_MD5_DIR_NAME)
 BENCH_DATASET_HDF5_DIR = $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_HDF5_DIR_NAME)
 
-PROTOS := $(eval PROTOS := $(shell find $(ROOTDIR)/apis/proto -type f -regex ".*\.proto"))$(PROTOS)
+PROTOS := $(eval PROTOS := $(shell cat $(ROOTDIR)/.gitfiles | grep '^apis/proto/.*\.proto$$' | sed -e 's%^%$(ROOTDIR)/%'))$(PROTOS)
 PROTOS_V1 := $(eval PROTOS_V1 := $(filter apis/proto/v1/%.proto,$(PROTOS)))$(PROTOS_V1)
 PBGOS = $(PROTOS:apis/proto/%.proto=apis/grpc/%.pb.go)
 SWAGGERS = $(PROTOS:apis/proto/%.proto=apis/swagger/%.swagger.json)
@@ -168,48 +172,107 @@ PROTO_VALD_API_DOCS := $(PROTO_VALD_APIS:$(ROOTDIR)/apis/proto/v1/vald/%.proto=$
 PROTO_MIRROR_APIS := $(eval PROTO_MIRROR_APIS := $(filter $(ROOTDIR)/apis/proto/v1/mirror/%.proto,$(PROTOS)))$(PROTO_MIRROR_APIS)
 PROTO_MIRROR_API_DOCS := $(PROTO_MIRROR_APIS:$(ROOTDIR)/apis/proto/v1/mirror/%.proto=$(ROOTDIR)/apis/docs/v1/%.md)
 
-LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -ffat-lto-objects -march=native -mtune=native -fno-plt -O3 -ffast-math -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
+select-binary = $(firstword $(wildcard $(BINDIR)/$(1)) $(wildcard /usr/local/bin/$(1)) $(wildcard /usr/bin/$(1)) $(shell which $(1) 2>/dev/null))
 
-NGT_LDFLAGS = -fopenmp -lopenblas -llapack -lgfortran
+CC = $(or $(call select-binary,clang),$(call select-binary,gcc),cc)
+CXX = $(or $(call select-binary,clang++),$(call select-binary,g++),c++)
+AR = $(or $(call select-binary,llvm-ar),$(call select-binary,ar),ar)
+NM = $(or $(call select-binary,llvm-nm),$(call select-binary,nm),nm)
+RANLIB = $(or $(call select-binary,llvm-ranlib),$(call select-binary,ranlib),ranlib)
+LLD = $(or $(call select-binary,ld.lld),$(call select-binary,lld),ld)
+NINJA = $(or $(call select-binary,ninja),ninja)
+
+export CC CXX AR NM RANLIB LDFLAGS CFLAGS CXXFLAGS SUDO
+
+#
+# Common flags
+#
+CFLAGS_BASE = -fPIC
+
+OPT_CFLAGS = \
+	-O3 \
+	-fno-plt \
+	-ffast-math \
+	-ffp-contract=fast \
+	-fmerge-all-constants \
+	-funroll-loops \
+	-falign-functions=32 \
+	-ffunction-sections \
+	-fdata-sections
+
+ARCH_CFLAGS_amd64 = \
+	-march=x86-64-v3
+
+ARCH_CFLAGS_arm64 = \
+	-march=armv8.2-a+sve \
+	-mtune=neoverse-v1
+
+#
+# Linker flags only
+#
+LDFLAGS_BASE = \
+	-L$(LIB_PATH) \
+	-fuse-ld=$(LLD) \
+	-pthread \
+	-Wl,-z,relro \
+	-Wl,-z,now \
+	-Wl,--gc-sections
+
+# Optional/common libs
+LDLIBS_BASE = \
+	-lm
+
+LDFLAGS = $(LDFLAGS_BASE) $(LDLIBS_BASE)
+LIBOMP_A = $(firstword $(wildcard $(LIB_PATH)/libomp.a) $(wildcard /usr/lib/llvm-*/lib/libomp.a) $(wildcard /usr/lib/x86_64-linux-gnu/libomp.a) $(wildcard /usr/lib/aarch64-linux-gnu/libomp.a))
+LIBOMP_SO = $(firstword $(wildcard /usr/lib/llvm-*/lib/libomp.so) $(wildcard /usr/lib/x86_64-linux-gnu/libomp.so) $(wildcard /usr/lib/aarch64-linux-gnu/libomp.so))
+LIBOMP = $(or $(LIBOMP_A),$(LIBOMP_SO))
+NGT_LDFLAGS = -L$(LIB_PATH) $(if $(LIBOMP),-L$(dir $(LIBOMP))) -lomp -lopenblas -llapack -lgfortran -pthread
 FAISS_LDFLAGS = $(NGT_LDFLAGS)
-HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl -lm
+HDF5_LDFLAGS = $(LDFLAGS) -lhdf5 -lhdf5_hl -lz -ldl
 CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
-# TEST_LDFLAGS without -static to avoid conflicts with CGO and glibc dynamic linking requirements
-TEST_LDFLAGS_BASE = -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -ffat-lto-objects -march=native -mtune=native -fno-plt -O3 -ffast-math -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
-TEST_LDFLAGS = $(TEST_LDFLAGS_BASE) $(CGO_LDFLAGS)
+TEST_LDFLAGS = $(LDFLAGS) $(CGO_LDFLAGS)
+
+GO_LDFLAGS = -s -w -extld '$(CXX)'
+GO_STATIC_LDFLAGS = $(GO_LDFLAGS) -linkmode=external -extldflags '-static'
 
 ifeq ($(GOARCH),amd64)
-CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
-CXXFLAGS ?= $(CFLAGS)
+CFLAGS = $(CFLAGS_BASE) $(OPT_CFLAGS) $(ARCH_CFLAGS_amd64)
+CXXFLAGS = $(CFLAGS) -std=gnu++23
+
 ifeq ($(GOOS),darwin)
-EXTLDFLAGS ?= -m64
+EXTLDFLAGS ?= -m64 -L$(LIB_PATH) -stdlib=libc++
 else
-EXTLDFLAGS ?= -m64 -Wl,--no-keep-memory
+EXTLDFLAGS ?= -m64 -L$(LIB_PATH) -lstdc++
 endif
+
 else ifeq ($(GOARCH),arm64)
-CFLAGS ?=
+
 ifeq ($(GOOS),darwin)
-HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lz -ldl -lm
-CFLAGS = -I $(shell brew --prefix hdf5)/include
+CFLAGS = -I$(shell brew --prefix hdf5)/include
 CGO_CFLAGS ?= $(CFLAGS)
-CGO_LDFLAGS = -L $(shell brew --prefix hdf5)/lib -L $(shell brew --prefix zlib)/lib $(HDF5_LDFLAGS)
-EXTLDFLAGS ?= -march=armv8-a
+CGO_LDFLAGS = -L$(shell brew --prefix hdf5)/lib -L$(shell brew --prefix zlib)/lib $(HDF5_LDFLAGS)
+EXTLDFLAGS ?= -L$(LIB_PATH) -stdlib=libc++
+CXXFLAGS ?= $(CFLAGS)
+CXXFLAGS += -std=gnu++23
 else
-EXTLDFLAGS ?= -march=armv8-a -Wl,--no-keep-memory
+CFLAGS = $(CFLAGS_BASE) $(OPT_CFLAGS) $(ARCH_CFLAGS_arm64)
+CXXFLAGS = $(CFLAGS) -std=gnu++23
+EXTLDFLAGS ?= -L$(LIB_PATH) -lstdc++
 endif
-CXXFLAGS ?= $(CFLAGS)
+
 else
-CFLAGS ?=
-CXXFLAGS ?= $(CFLAGS)
+CFLAGS = $(CFLAGS_BASE) $(OPT_CFLAGS)
+CXXFLAGS = $(CFLAGS) -std=gnu++23
+
 ifeq ($(GOOS),darwin)
-EXTLDFLAGS ?=
+EXTLDFLAGS ?= -L$(LIB_PATH) -stdlib=libc++
 else
-EXTLDFLAGS ?= -Wl,--no-keep-memory
+EXTLDFLAGS ?= -L$(LIB_PATH) -lstdc++
 endif
 endif
 
-BENCH_DATASET_MD5S := $(eval BENCH_DATASET_MD5S := $(shell find $(BENCH_DATASET_MD5_DIR) -type f -regex ".*\.md5"))$(BENCH_DATASET_MD5S)
-BENCH_DATASETS = $(BENCH_DATASET_MD5S:$(BENCH_DATASET_MD5_DIR)/%.md5=$(BENCH_DATASET_HDF5_DIR)/%.hdf5)
+BENCH_DATASET_MD5S := $(eval BENCH_DATASET_MD5S := $(shell cat $(ROOTDIR)/.gitfiles | grep '^$(BENCH_DATASET_MD5_DIR)/.*\.md5$$' | sed -e 's%^%$(ROOTDIR)/%'))$(BENCH_DATASET_MD5S)
+BENCH_DATASETS = $(patsubst $(ROOTDIR)/$(BENCH_DATASET_MD5_DIR)/%.md5,$(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_MD5S))
 
 BENCH_LARGE_DATASET_BASE_DIR = $(BENCH_DATASET_BASE_DIR)/large/dataset
 
@@ -269,79 +332,54 @@ PROTO_PATHS = \
 # - internal/compress/zstd
 # - internal/db/storage/blob/s3/sdk/s3
 # - internal/db/rdb/mysql/dbr
-# - internal/test/comparator
-# - internal/test/mock
-GO_SOURCES = $(eval GO_SOURCES := $(shell find \
-	$(ROOTDIR)/cmd \
-	$(ROOTDIR)/hack \
-	$(ROOTDIR)/internal \
-	$(ROOTDIR)/pkg \
-	-not -path '$(ROOTDIR)/cmd/cli/*' \
-	-not -path '$(ROOTDIR)/internal/core/algorithm/ngt/*' \
-	-not -path '$(ROOTDIR)/internal/core/algorithm/faiss/*' \
-	-not -path '$(ROOTDIR)/internal/compress/gob/*' \
-	-not -path '$(ROOTDIR)/internal/compress/gzip/*' \
-	-not -path '$(ROOTDIR)/internal/compress/lz4/*' \
-	-not -path '$(ROOTDIR)/internal/compress/zstd/*' \
-	-not -path '$(ROOTDIR)/internal/db/storage/blob/s3/sdk/s3/*' \
-	-not -path '$(ROOTDIR)/internal/db/rdb/mysql/dbr/*' \
-	-not -path '$(ROOTDIR)/internal/test/comparator/*' \
-	-not -path '$(ROOTDIR)/internal/test/mock/*' \
-	-not -path '$(ROOTDIR)/hack/benchmark/internal/client/ngtd/*' \
-	-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/agent/*' \
-	-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/external/*' \
-	-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/gateway/*' \
-	-not -path '$(ROOTDIR)/hack/gorules/*' \
-	-not -path '$(ROOTDIR)/hack/license/*' \
-	-not -path '$(ROOTDIR)/hack/docker/*' \
-	-not -path '$(ROOTDIR)/hack/swagger/*' \
-	-not -path '$(ROOTDIR)/hack/tools/*' \
-	-not -path '$(ROOTDIR)/tests/*' \
-	-type f \
-	-name '*.go' \
-	-not -regex '.*options?\.go' \
-	-not -name '*_test.go' \
-	-not -name '*_mock.go' \
-	-not -name 'doc.go'))$(GO_SOURCES)
-GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
-	$(ROOTDIR)/cmd \
-	$(ROOTDIR)/hack \
-	$(ROOTDIR)/internal \
-	$(ROOTDIR)/pkg \
-	-not -path '$(ROOTDIR)/cmd/cli/*' \
-	-not -path '$(ROOTDIR)/internal/core/algorithm/ngt/*' \
-	-not -path '$(ROOTDIR)/internal/core/algorithm/faiss/*' \
-	-not -path '$(ROOTDIR)/internal/compress/gob/*' \
-	-not -path '$(ROOTDIR)/internal/compress/gzip/*' \
-	-not -path '$(ROOTDIR)/internal/compress/lz4/*' \
-	-not -path '$(ROOTDIR)/internal/compress/zstd/*' \
-	-not -path '$(ROOTDIR)/internal/db/storage/blob/s3/sdk/s3/*' \
-	-not -path '$(ROOTDIR)/internal/db/rdb/mysql/dbr/*' \
-	-not -path '$(ROOTDIR)/internal/test/comparator/*' \
-	-not -path '$(ROOTDIR)/internal/test/mock/*' \
-	-not -path '$(ROOTDIR)/hack/benchmark/internal/client/ngtd/*' \
-	-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/agent/*' \
-	-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/external/*' \
-	-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/gateway/*' \
-	-not -path '$(ROOTDIR)/hack/gorules/*' \
-	-not -path '$(ROOTDIR)/hack/license/*' \
-	-not -path '$(ROOTDIR)/hack/docker/*' \
-	-not -path '$(ROOTDIR)/hack/swagger/*' \
-	-not -path '$(ROOTDIR)/hack/tools/*' \
-	-not -path '$(ROOTDIR)/tests/*' \
-	-type f \
-	-regex '.*options?\.go' \
-	-not -name '*_test.go' \
-	-not -name '*_mock.go' \
-	-not -name 'doc.go'))$(GO_OPTION_SOURCES)
+space := $() $()
+comma := ,
 
-GO_SOURCES_INTERNAL = $(eval GO_SOURCES_INTERNAL := $(shell find \
-	$(ROOTDIR)/internal \
-	-type f \
-	-name '*.go' \
-	-not -name '*_test.go' \
-	-not -name '*_mock.go' \
-	-not -name 'doc.go'))$(GO_SOURCES_INTERNAL)
+# Directories to exclude from Go sources
+GO_EXCLUDE_DIRS = \
+	cmd/cli \
+	internal/core/algorithm/ngt \
+	internal/core/algorithm/faiss \
+	internal/compress/gob \
+	internal/compress/gzip \
+	internal/compress/lz4 \
+	internal/compress/zstd \
+	internal/db/storage/blob/s3/sdk/s3 \
+	internal/db/rdb/mysql/dbr \
+	internal/test/comparator \
+	internal/test/mock \
+	hack/benchmark/internal/client/ngtd \
+	hack/benchmark/internal/starter/agent \
+	hack/benchmark/internal/starter/external \
+	hack/benchmark/internal/starter/gateway \
+	hack/gorules \
+	hack/license \
+	hack/docker \
+	hack/swagger \
+	hack/tools \
+	tests
+
+GO_EXCLUDE_PATTERN = ^($(subst $(space),|,$(GO_EXCLUDE_DIRS)))/
+
+GO_SOURCES = $(eval GO_SOURCES := $(shell cat $(ROOTDIR)/.gitfiles | \
+	grep -E '^(cmd|hack|internal|pkg)/' | \
+	grep -v -E '$(GO_EXCLUDE_PATTERN)' | \
+	grep '\.go$$' | \
+	grep -v -E 'options?\.go$$|_test\.go$$|_mock\.go$$|doc\.go$$' \
+	))$(GO_SOURCES)
+
+GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell cat $(ROOTDIR)/.gitfiles | \
+	grep -E '^(cmd|hack|internal|pkg)/' | \
+	grep -v -E '$(GO_EXCLUDE_PATTERN)' | \
+	grep -E 'options?\.go$$' | \
+	grep -v -E '_test\.go$$|_mock\.go$$|doc\.go$$' \
+	))$(GO_OPTION_SOURCES)
+
+GO_SOURCES_INTERNAL = $(eval GO_SOURCES_INTERNAL := $(shell cat $(ROOTDIR)/.gitfiles | \
+	grep '^internal/' | \
+	grep '\.go$$' | \
+	grep -v -E '_test\.go$$|_mock\.go$$|doc\.go$$' \
+	))$(GO_SOURCES_INTERNAL)
 
 GO_TEST_SOURCES = $(GO_SOURCES:%.go=%_test.go)
 GO_OPTION_TEST_SOURCES = $(GO_OPTION_SOURCES:%.go=%_test.go)
@@ -371,13 +409,7 @@ HELM_VALUES ?= $(ROOTDIR)/charts/vald/values/dev.yaml
 HELM_EXTRA_OPTIONS ?=
 
 # extra options to pass to textlint
-TEXTLINT_EXTRA_OPTIONS ?=
 # extra options to pass to cspell
-CSPELL_EXTRA_OPTIONS ?=
-
-COMMA := ,
-SHELL = bash
-
 E2E_CONFIG_DIR ?= $(ROOTDIR)/tests/v2/e2e/assets
 E2E_CONFIG_NAME ?= unary_crud.yaml
 E2E_CONFIG ?= $(E2E_CONFIG_DIR)/$(E2E_CONFIG_NAME)
@@ -412,7 +444,36 @@ E2E_UPSERT_FROM ?= 0
 E2E_GET_OBJECT_FROM ?= 0
 E2E_REMOVE_FROM ?= 0
 
+JAEGER_OPERATOR_WAIT_DURATION := 0
+
 TEST_RESULT_DIR ?= /tmp
+
+CERT_DIR ?= $(ROOTDIR)/internal/test/data/tls
+DOMAIN ?= $(NAME).$(ORG).org
+EMAIL ?= $(NAME)@$(ORG).org
+STREET_ADDR ?= 1-3 Kioicho, Tokyo Garden Terrace Kioicho Tower, Chiyoda-ku, Tokyo 102-8282, Japan
+CA_CN ?= $(DOMAIN) Root CA
+CA_DAYS ?= 3650
+END_ENTITY_DAYS ?= 825
+CA_KEY := $(CERT_DIR)/ca.key
+CA_CRT := $(CERT_DIR)/ca.crt
+CA_PEM := $(CERT_DIR)/ca.pem
+CA_SRL := $(CERT_DIR)/ca.srl
+
+SERVER_KEY := $(CERT_DIR)/server.key
+SERVER_CSR := $(CERT_DIR)/server.csr
+SERVER_CRT := $(CERT_DIR)/server.crt
+
+CLIENT_KEY := $(CERT_DIR)/client.key
+CLIENT_CSR := $(CERT_DIR)/client.csr
+CLIENT_CRT := $(CERT_DIR)/client.crt
+
+INVALID_CA := $(CERT_DIR)/invalid-ca.pem
+INVALID_SERVER_CRT := $(CERT_DIR)/invalid-server.crt
+
+TEXTLINT_EXTRA_OPTIONS ?=
+
+CSPELL_EXTRA_OPTIONS ?=
 
 include Makefile.d/functions.mk
 
@@ -424,15 +485,35 @@ maintainer:
 .PHONY: help
 ## print all available commands
 help:
-	@awk '/^[a-zA-Z_0-9%:\\\/-]+:/ { \
-	helpMessage = match(lastLine, /^## (.*)/); \
-	if (helpMessage) { \
-	helpCommand = $$1; \
-	helpMessage = substr(lastLine, RSTART + 3, RLENGTH); \
-	gsub("\\\\", "", helpCommand); \
-	gsub(":+$$", "", helpCommand); \
-	printf "	\x1b[32;01m%-38s\x1b[0m %s\n", helpCommand, helpMessage; \
-	} \
+	@awk 'BEGIN { \
+		while (getline < ".gitfiles" > 0) if ($$0 !~ /^#/) files[$$0] = 1 \
+			} \
+	/^[a-zA-Z_0-9%:\\/-]+:/ { \
+		if (match(lastLine, /^## (.*)/)) { \
+			cmd = $$1; sub(/:+$$/, "", cmd); gsub(/\\\\/, "", cmd); \
+			msg = substr(lastLine, RSTART + 3, RLENGTH); \
+			if (index(cmd, "%") > 0 && match(msg, /\(([^)]+%[^)]*)\)/)) { \
+				pat = substr(msg, RSTART + 1, RLENGTH - 2); \
+				msg = substr(msg, 1, RSTART - 1) substr(msg, RSTART + RLENGTH); \
+				sub(/^[ \t]+|[ \t]+$$/, "", msg); \
+				pre = substr(pat, 1, index(pat, "%") - 1); \
+				suf = substr(pat, index(pat, "%") + 1); \
+				split("", o); \
+				for (f in files) { \
+					if (index(f, pre) == 1) { \
+						r = substr(f, length(pre) + 1); \
+						if (suf == "") { sub(/\/.*/, "", r); if (r != "") o[r] = 1 } \
+						else if (index(r, suf) > 0) { sub(suf ".*", "", r); if (index(r, "/") == 0 && r != "") o[r] = 1 } \
+							} \
+				} \
+				n = 0; split("", a); for (v in o) a[++n] = v; \
+				for (i=1; i<=n; i++) for (j=i+1; j<=n; j++) if (a[i]>a[j]) { t=a[i]; a[i]=a[j]; a[j]=t } \
+					s = ""; \
+					for (i=1; i<=n; i++) s = s (s==""?"":", ") a[i]; \
+						if (s != "") msg = msg " (Available: " s ")"; \
+							} \
+			printf "        \x1b[32;01m%-38s\x1b[0m %s\n", cmd, msg; \
+		} \
 	} \
 	{ lastLine = $$0 }' $(MAKELISTS) | sort -u
 	@printf "\n"
@@ -440,7 +521,12 @@ help:
 .PHONY: perm
 ## set correct permissions for dirs and files
 perm:
-	find $(ROOTDIR) -type d -not -path "$(ROOTDIR)/.git*" -exec chmod 755 {} \;
+	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
+		grep -vE '^\s*#' "$(ROOTDIR)/.gitfiles" \
+		| xargs -n1 dirname | sort -u \
+		| sed -e 's%^%$(ROOTDIR)/%' \
+		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" chmod 755 "{}"; \
+	fi
 	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
 		grep -vE '^\s*#' "$(ROOTDIR)/.gitfiles" | grep -v gitignore \
 		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" chmod 644 "{}"; \
@@ -514,34 +600,6 @@ files:
 		mv $(TEMP_DIR)/.gitfiles.tmp $(ROOTDIR)/.gitfiles; \
 	fi
 
-.PHONY: license
-## add license to files
-license:
-	$(call gen-license,$(ROOTDIR),$(MAINTAINER))
-
-.PHONY: dockerfile
-## generate dockerfiles
-dockerfile:
-	$(call gen-dockerfile,$(ROOTDIR),$(MAINTAINER))
-
-.PHONY: dashboard
-## generate dashboards
-dashboard: k8s/metrics/grafana/dashboards/00-vald-cluster-overview.yaml
-
-# To cache the generated dashboards, making a generated file target
-k8s/metrics/grafana/dashboards/00-vald-cluster-overview.yaml: $(shell find hack/grafana/gen -type f) versions/GRAFANA_VERSION
-	$(call gen-dashboard,$(ROOTDIR),$(MAINTAINER))
-
-.PHONY: workflow
-## generate workflows
-workflow:
-	$(call gen-dockerfile,$(ROOTDIR),$(MAINTAINER))
-
-.PHONY: deadlink-checker
-## generate deadlink-checker
-deadlink-checker:
-	$(call gen-deadlink-checker,$(ROOTDIR),$(MAINTAINER),$(DEADLINK_CHECK_PATH),$(DEADLINK_IGNORE_PATH),$(DEADLINK_CHECK_FORMAT))
-
 .PHONY: init
 ## initialize development environment
 init: \
@@ -572,489 +630,24 @@ update:
 	- @$(MAKE) rust/deps
 	- @$(MAKE) format
 
-.PHONY: format
-## format go codes
-format:
-	- @$(MAKE) format/proto
-	- @$(MAKE) format/json
-	- @$(MAKE) format/md
-	- @$(MAKE) remove/empty/file
-	- @$(MAKE) replace/busybox
-	- @$(MAKE) license
-	- @$(MAKE) dockerfile
-	- @$(MAKE) format/go
-	- @$(MAKE) format/go/test
-	- @$(MAKE) format/yaml
-	- @$(MAKE) format/make
-	- @$(MAKE) format/rust
-
-.PHONY: format/diff
-## format diff
-format/diff:
-	@$(MAKE) format/go/diff
-	@$(MAKE) format/yaml/diff
-
-.PHONY: remove/empty/file
-## removes empty file such as just includes \r \n space tab
-remove/empty/file: \
-	files
-	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
-		grep -vE '^\s*#' "$(ROOTDIR)/.gitfiles" | grep -v gitkeep \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" -n1 sh -c ' \
-		if [ -f "{}" ] && [ -z "$$(tr -d '\''[:space:]'\'' < "{}")" ]; then rm "{}"; fi'; \
-		fi
-
-.PHONY: format/go
-## run golines, gofumpt, goimports for all go files
-format/go: \
-	crlfmt/install \
-	strictgoimports/install \
-	golangci-lint/install \
-	files
-	@echo "Formatting Go files..."
-	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
-		grep -e "\.go$$" "$(ROOTDIR)/.gitfiles" | grep -v "_test\.go$$" \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
-		echo "Formatting Go file {}" && \
-		$(GOBIN)/strictgoimports -w {} && \
-		$(GOBIN)/crlfmt -w -diff=false {} && \
-		$(BINDIR)/golangci-lint fmt --config $(ROOTDIR)/.golangci.json {}'; \
-	fi
-	go fix $(ROOTDIR)/...
-	@echo "Go formatting complete."
-
-.PHONY: format/go/test
-## run golines, gofumpt, goimports for go test files
-format/go/test: \
-	crlfmt/install \
-	strictgoimports/install \
-	golangci-lint/install \
-	files
-	@echo "Formatting Go Test files..."
-	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
-		grep -e "_test\.go$$" "$(ROOTDIR)/.gitfiles" \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
-		echo "Formatting Go Test file {}" && \
-		$(GOBIN)/strictgoimports -w {} && \
-		$(GOBIN)/crlfmt -w -diff=false {} && \
-		$(BINDIR)/golangci-lint fmt --config $(ROOTDIR)/.golangci.json {}'; \
-	fi
-	@echo "Go test file formatting complete."
-
-.PHONY: format/go/diff
-## run golines, gofumpt, goimports for go diff files
-format/go/diff: \
-	crlfmt/install \
-	strictgoimports/install \
-	golangci-lint/install \
-	files
-	@echo "Formatting Go Diff files..."
-	@git diff --name-only --diff-filter=ACM HEAD | grep -e ".go$$" | xargs -I {} -P$(CORES) bash -c ' \
-	echo "Formatting Go file {}" && \
-	$(GOBIN)/strictgoimports -w {} && \
-	$(GOBIN)/crlfmt -w -diff=false {} && \
-	$(BINDIR)/golangci-lint fmt --config $(ROOTDIR)/.golangci.json {}'
-	@echo "Go file formatting complete."
-
-.PHONY: format/rust
-## format rust codes
-format/rust: \
-	rustfmt/install \
-	files
-	@echo "Formatting Rust files..."
-	@cd $(ROOTDIR)/rust && $(CARGO_HOME)/bin/cargo fmt
-	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
-		grep -e "\.rs$$" "$(ROOTDIR)/.gitfiles" \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
-		echo "Formatting Rust file {}" && \
-		$(CARGO_HOME)/bin/rustfmt --edition 2024 --style-edition 2024 {}'; \
-	fi
-	@echo "Rust formatting complete."
-
-.PHONY: format/yaml
-## format yaml file
-format/yaml:
-	- @$(MAKE) prettier/install
-	- @$(MAKE) yamlfmt/install
-	- @$(MAKE) clean/yaml
-	- @$(MAKE) files
-	@echo "Formatting YAML files..."
-	- @if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
-		grep -E '\.ya?ml\b' "$(ROOTDIR)/.gitfiles" | grep -Ev '(templates|s3)' \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
-		echo "Formatting YAML file {}" && \
-		yamlfmt {} && \
-		bunx prettier --write {}'; \
-	fi
-	@echo "YAML file formatting complete."
-
-.PHONY: clean/yaml
-## cleanup empty yaml file
-clean/yaml:
-	- @$(MAKE) files
-	- @if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
-		grep -E '\.ya?ml\b' "$(ROOTDIR)/.gitfiles" | grep -Ev '(templates|s3)' \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
-		if ! grep -qEv "^(\\s*#|---|\\s*)$$" "{}"; then \
-			echo "Deleting {}"; rm -rf "{}"; \
-		fi'; \
-	fi
-
-.PHONY: format/yaml/diff
-format/yaml/diff:
-	- @$(MAKE) prettier/install
-	- @$(MAKE) yamlfmt/install
-	- @$(MAKE) clean/yaml
-	- @$(MAKE) files
-	@echo "Formatting YAML files..."
-	- @git diff --name-only --diff-filter=ACM HEAD | grep -E '\.ya?ml\b' | grep -Ev '(templates|s3)' | xargs -I {} -P$(CORES) bash -c ' \
-	echo "Formatting YAML file {}" && \
-	yamlfmt {} && \
-	bunx prettier --write {}'
-	@echo "YAML file formatting complete."
-
-.PHONY: format/make
-format/make: \
-	mbake/install \
-	files
-	@echo "Formatting Makefile and Makefile.d/*.mk files..."
-	- @if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
-		grep "Makefile" "$(ROOTDIR)/.gitfiles" \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
-		echo "Formatting Makefile file {}" && mbake format {} '; \
-	fi
-	@echo "Makefile formatting complete."
-
-.PHONY: format/md
-format/md: \
-	prettier/install
-	@echo "Formatting Makrdown files..."
-	- @if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
-		grep -E '\.md\b' "$(ROOTDIR)/.gitfiles" \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
-		echo "Formatting Markdown file {}" && \
-		bunx prettier --write {}'; \
-	fi
-	@echo "Markdown file formatting complete."
-
-.PHONY: format/json
-format/json: \
-	prettier/install
-	@echo "Formatting JSON files..."
-	- @if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
-		grep -E '\.json\b' "$(ROOTDIR)/.gitfiles" \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
-		echo "Formatting JSON file {}" && \
-		bunx prettier --write {}'; \
-	fi
-	@echo "JSON file formatting complete."
-
-.PHONY: format/proto
-format/proto: \
-	buf/install
-	buf format -w
-
-.PHONY: deps
-## resolve dependencies
-deps: \
-	proto/deps \
-	deps/install
-
-.PHONY: deps/install
-## install dependencies
-deps/install: \
-	crlfmt/install \
-	golines/install \
-	gofumpt/install \
-	strictgoimports/install \
-	goimports/install \
-	prettier/install \
-	go/deps \
-	go/example/deps \
-	rust/deps
-
-.PHONY: version
-## print vald version
-version: \
-	version/vald
-
-.PHONY: version/vald
-## print vald version
-version/vald:
-	@echo $(VERSION)
-
-.PHONY: version/go
-## print go version
-version/go:
-	@echo $(GO_VERSION)
-
-.PHONY: version/rust
-## print rust version
-version/rust:
-	@echo $(RUST_VERSION)
-
-.PHONY: version/ngt
-## print NGT version
-version/ngt:
-	@echo $(NGT_VERSION)
-
-.PHONY: version/faiss
-## print Faiss version
-version/faiss:
-	@echo $(FAISS_VERSION)
-
-.PHONY: version/usearch
-## print usearch version
-version/usearch:
-	@echo $(USEARCH_VERSION)
-
-.PHONY: version/docker
-## print Kubernetes version
-version/docker:
-	@echo $(DOCKER_VERSION)
-
-.PHONY: version/k8s
-## print Kubernetes version
-version/k8s:
-	@echo $(KUBECTL_VERSION)
-
-.PHONY: version/kind
-version/kind:
-	@echo $(KIND_VERSION)
-
-.PHONY: version/helm
-version/helm:
-	@echo $(HELM_VERSION)
-
-.PHONY: version/yq
-version/yq:
-	@echo $(YQ_VERSION)
-
-.PHONY: version/telepresence
-version/telepresence:
-	@echo $(TELEPRESENCE_VERSION)
-
-.PHONY: ngt/install
-## install NGT
-ngt/install: $(USR_LOCAL)/include/NGT/Capi.h
-$(USR_LOCAL)/include/NGT/Capi.h:
-	git clone --depth 1 --branch v$(NGT_VERSION) https://github.com/NGT-labs/NGT $(TEMP_DIR)/NGT-$(NGT_VERSION)
-	cd $(TEMP_DIR)/NGT-$(NGT_VERSION) && \
-	cmake -DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
-	-DBUILD_SHARED_LIBS=OFF \
-	-DBUILD_STATIC_EXECS=ON \
-	-DBUILD_TESTING=OFF \
-	-DNGT_LARGE_DATASET=ON \
-	-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
-	-DCMAKE_C_FLAGS="$(CFLAGS) -flto=auto -ffat-lto-objects" \
-	-DCMAKE_CXX_FLAGS="$(CXXFLAGS) -flto=auto -ffat-lto-objects" \
-	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
-	$(NGT_EXTRA_CMAKE_FLAGS) \
-	-B $(TEMP_DIR)/NGT-$(NGT_VERSION)/build $(TEMP_DIR)/NGT-$(NGT_VERSION)
-	make -C $(TEMP_DIR)/NGT-$(NGT_VERSION)/build -j$(CORES) ngt
-	make -C $(TEMP_DIR)/NGT-$(NGT_VERSION)/build install
-	cd $(ROOTDIR)
-	rm -rf $(TEMP_DIR)/NGT-$(NGT_VERSION)
-	ldconfig
-
-.PHONY: faiss/install
-## install Faiss
-faiss/install: $(LIB_PATH)/libfaiss.a
-$(LIB_PATH)/libfaiss.a:
-	curl -fsSL https://github.com/facebookresearch/faiss/archive/v$(FAISS_VERSION).tar.gz -o $(TEMP_DIR)/v$(FAISS_VERSION).tar.gz
-	tar zxf $(TEMP_DIR)/v$(FAISS_VERSION).tar.gz -C $(TEMP_DIR)/
-	cd $(TEMP_DIR)/faiss-$(FAISS_VERSION) && \
-	cmake -DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
-	-DBUILD_SHARED_LIBS=OFF \
-	-DBUILD_STATIC_EXECS=ON \
-	-DBUILD_TESTING=OFF \
-	-DFAISS_ENABLE_PYTHON=OFF \
-	-DFAISS_ENABLE_GPU=OFF \
-	-DBLA_VENDOR=OpenBLAS \
-	-DCMAKE_C_FLAGS="$(LDFLAGS)" \
-	-DCMAKE_EXE_LINKER_FLAGS="$(FAISS_LDFLAGS)" \
-	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
-	-B $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build $(TEMP_DIR)/faiss-$(FAISS_VERSION)
-	make -C $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build -j$(CORES) faiss
-	make -C $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build install
-	cd $(ROOTDIR)
-	rm -rf $(TEMP_DIR)/v$(FAISS_VERSION).tar.gz $(TEMP_DIR)/faiss-$(FAISS_VERSION)
-	ldconfig
-
-.PHONY: usearch/install
-## install usearch
-usearch/install: $(USR_LOCAL)/include/usearch.h
-$(USR_LOCAL)/include/usearch.h:
-	git clone --depth 1 --recursive --branch v$(USEARCH_VERSION) https://github.com/unum-cloud/usearch $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
-	cd $(TEMP_DIR)/usearch-$(USEARCH_VERSION) && \
-	cmake -DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
-	-DBUILD_SHARED_LIBS=OFF \
-	-DBUILD_TESTING=OFF \
-	-DUSEARCH_BUILD_LIB_C=ON \
-	-DUSEARCH_USE_FP16LIB=ON \
-	-DUSEARCH_USE_OPENMP=ON \
-	-DUSEARCH_USE_SIMSIMD=ON \
-	-DUSEARCH_USE_JEMALLOC=ON \
-	-DCMAKE_C_FLAGS="$(CFLAGS)" \
-	-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
-	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
-	-DCMAKE_INSTALL_LIBDIR=$(LIB_PATH) \
-	-B $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
-	cmake --build $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build -j$(CORES)
-	cmake --install $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build --prefix=$(USR_LOCAL)
-	cd $(ROOTDIR)
-	cp $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build/libusearch_static_c.a $(LIB_PATH)/libusearch_c.a
-	cp $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build/libusearch_static_c.a $(LIB_PATH)/libusearch_static_c.a
-	cp $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build/libusearch_c.so $(LIB_PATH)/libusearch_c.so
-	cp $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/c/usearch.h $(USR_LOCAL)/include/usearch.h
-	rm -rf $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
-	ldconfig
-
-.PHONY: cmake/install
-## install CMAKE
-cmake/install:
-	git clone --depth 1 --branch v$(CMAKE_VERSION) https://github.com/Kitware/CMake.git $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)
-	cd $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION) && \
-	cmake -DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_SHARED_LIBS=OFF \
-	-DBUILD_TESTING=OFF \
-	-DCMAKE_C_FLAGS="$(CFLAGS)" \
-	-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
-	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
-	-B $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)
-	make -C $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build -j$(CORES) cmake
-	make -C $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build install
-	cd $(ROOTDIR)
-	rm -rf $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)
-	ldconfig
-
-.PHONY: lint
-## run lints
-lint: \
-	docs/lint \
-	files/lint \
-	vet \
-	go/lint \
-	workflow/lint
-
-.PHONY: go/lint
-go/lint:
-	$(call go-lint)
-
-.PHONY: vet
-## run go vet
-vet:
-	$(call go-vet)
-
-.PHONY: docs/lint
-## run lint for document
-docs/lint: \
-	docs/cspell \
-	docs/textlint
-
-.PHONY: files/lint
-## run lint for document
-files/lint: \
-	files/cspell \
-	files/textlint
-
-.PHONY: workflow/lint workflow/fix actionlint/lint ghalint/lint
-## run lint for workflow files
-workflow/lint:
-	@echo "Please run make workflow/fix beforehand"
-	@echo "Linting workflow files..."
-	@printf '%s\0' \
-	"actionlint/lint" \
-	"ghalint/lint" \
-	| xargs -0 -I{} -P$(CORES) $(MAKE) --no-print-directory {}
-	@echo "Workflow linting completed."
-
-## run lint for workflow files
-workflow/fix:
-	@$(MAKE) --no-print-directory pinact/lint
-	@$(MAKE) --no-print-directory ghatm/lint
-
-ACTIONLINT_IGNORES = \
-	-ignore 'when a reusable workflow is called with "uses", "timeout-minutes" is not available' \
-	-ignore 'property "tag" is not defined in object type' \
-	-ignore 'input "file" is not defined in action "codecov/codecov-action@v5"' \
-	-ignore 'label "ubuntu-slim" is unknown.' # TODO: remove this line after https://github.com/rhysd/actionlint/issues/587 is merged
-
-actionlint/lint: actionlint/install
-	@$(GOBIN)/actionlint -shellcheck= $(ACTIONLINT_IGNORES)
-
-ghalint/lint: \
-	ghalint/install
-	@$(GOBIN)/ghalint run .github/workflows
-
-pinact/lint: \
-	pinact/install
-	@GITHUB_TOKEN=$(shell gh auth token 2>/dev/null || :) $(GOBIN)/pinact run
-
-ghatm/lint: \
-	ghatm/install
-	@$(GOBIN)/ghatm set
-
-.PHONY: docs/textlint
-## run textlint for document
-docs/textlint: \
-	textlint/install
-	textlint $(ROOTDIR)/docs/**/*.md $(TEXTLINT_EXTRA_OPTIONS)
-
-.PHONY: files/textlint
-## run textlint for document
-files/textlint: \
-	files \
-	textlint/install
-	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then textlint "$(ROOTDIR)/.gitfiles" $(TEXTLINT_EXTRA_OPTIONS); fi
-
-.PHONY: docs/cspell
-## run cspell for document
-docs/cspell: \
-	cspell/install
-	cspell $(ROOTDIR)/docs/**/*.md --show-suggestions $(CSPELL_EXTRA_OPTIONS)
-
-.PHONY: files/cspell
-## run cspell for document
-files/cspell: \
-	files \
-	cspell/install
-	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then cspell "$(ROOTDIR)/.gitfiles" --show-suggestions $(CSPELL_EXTRA_OPTIONS); fi
-
-.PHONY: changelog/update
-## update changelog
-changelog/update:
-	echo "# CHANGELOG" > $(TEMP_DIR)/CHANGELOG.md
-	echo "" >> $(TEMP_DIR)/CHANGELOG.md
-	$(MAKE) -s changelog/next/print >> $(TEMP_DIR)/CHANGELOG.md
-	echo "" >> $(TEMP_DIR)/CHANGELOG.md
-	tail -n +2 $(ROOTDIR)/CHANGELOG.md >> $(TEMP_DIR)/CHANGELOG.md
-	mv -f $(TEMP_DIR)/CHANGELOG.md $(ROOTDIR)/CHANGELOG.md
-
-.PHONY: changelog/next/print
-## print next changelog entry
-changelog/next/print:
-	@cat $(ROOTDIR)/hack/CHANGELOG.template.md | \
-	sed -e 's/{{ version }}/$(VERSION)/g'
-	@echo "$$BODY"
-
 include Makefile.d/actions.mk
 include Makefile.d/bench.mk
 include Makefile.d/build.mk
 include Makefile.d/dependencies.mk
 include Makefile.d/docker.mk
 include Makefile.d/e2e.mk
+include Makefile.d/format.mk
+include Makefile.d/generate.mk
 include Makefile.d/git.mk
 include Makefile.d/helm.mk
 include Makefile.d/k3d.mk
 include Makefile.d/k0s.mk
 include Makefile.d/k8s.mk
 include Makefile.d/kind.mk
+include Makefile.d/lint.mk
 include Makefile.d/minikube.mk
 include Makefile.d/proto.mk
 include Makefile.d/test.mk
 include Makefile.d/tools.mk
 include Makefile.d/tls.mk
+include Makefile.d/version.mk

@@ -27,9 +27,17 @@ ARG TARGETARCH
 ARG TARGETOS
 ARG GO_VERSION
 ARG RUST_VERSION
+ARG CC
+ARG CXX
+ARG LLD
+ARG AR
+ARG NM
+ARG RANLIB
+ARG CFLAGS
+ARG CXXFLAGS
+ARG LDFLAGS
+ARG SUDO
 ENV APP_NAME=dev-container
-ENV CC=gcc
-ENV CXX=g++
 ENV DEBIAN_FRONTEND=noninteractive
 ENV GO111MODULE=on
 ENV GOPATH=/go
@@ -45,9 +53,20 @@ ENV REPO=vald
 ENV RUST_HOME=/usr/local/lib/rust
 ENV TZ=Etc/UTC
 ENV USER=root
+ENV YEAR=2026
 ENV CARGO_HOME=${RUST_HOME}/cargo
 ENV RUSTUP_HOME=${RUST_HOME}/rustup
 ENV PATH=${CARGO_HOME}/bin:${GOPATH}/bin:${GOROOT}/bin:${RUSTUP_HOME}/bin:/usr/local/bin:${PATH}
+ENV CC=${CC:-${CC}}
+ENV CXX=${CXX:-${CXX}}
+ENV LLD=${LLD:-${LLD}}
+ENV AR=${AR:-${AR}}
+ENV NM=${NM:-${NM}}
+ENV RANLIB=${RANLIB:-${RANLIB}}
+ENV CFLAGS=${CFLAGS:-${CFLAGS}}
+ENV CXXFLAGS=${CXXFLAGS:-${CXXFLAGS}}
+ENV LDFLAGS=${LDFLAGS:-${LDFLAGS}}
+ENV SUDO=${SUDO:-${SUDO}}
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 #skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
@@ -65,35 +84,33 @@ RUN --mount=type=bind,target=.,rw \
     && apt-get update -y \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends --fix-missing \
-    build-essential \
     ca-certificates \
     curl \
-    gnupg \
     tzdata \
     locales \
     git \
-    sudo \
-    cmake \
-    g++ \
-    gcc \
-    libssl-dev \
-    unzip \
-    liblapack-dev \
-    libomp-dev \
-    libopenblas-dev \
-    gfortran \
-    pkgconf \
-    protobuf-compiler \
-    libprotobuf-dev \
+    build-essential \
+    clang \
     file \
     gawk \
+    gfortran \
     git-lfs \
     gnupg2 \
     graphviz \
     jq \
     libaec-dev \
+    liblapack-dev \
+    libomp-dev \
+    libopenblas-dev \
+    libssl-dev \
+    lld \
+    llvm \
     pigz \
+    pkg-config \
+    python3 \
     sed \
+    sudo \
+    unzip \
     zip \
     && ldconfig \
     && echo "${LANG} UTF-8" > /etc/locale.gen \
@@ -104,6 +121,8 @@ RUN --mount=type=bind,target=.,rw \
     && apt-get clean \
     && apt-get autoclean -y \
     && apt-get autoremove -y \
+    && make ninja/install \
+    && make cmake/install \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/install \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/download \
     && make RUST_VERSION="${RUST_VERSION}" rust/install \
@@ -113,7 +132,6 @@ RUN --mount=type=bind,target=.,rw \
     && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} deps GO_CLEAN_DEPS=false \
     && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} golangci-lint/install \
     && make go/tools/install \
-    && make cmake/install \
     && make hdf5/install \
     && make helm-docs/install \
     && make helm/install \

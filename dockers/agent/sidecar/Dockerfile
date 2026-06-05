@@ -27,6 +27,16 @@ ARG TARGETARCH
 ARG TARGETOS
 ARG GO_VERSION
 ARG RUST_VERSION
+ARG CC
+ARG CXX
+ARG LLD
+ARG AR
+ARG NM
+ARG RANLIB
+ARG CFLAGS
+ARG CXXFLAGS
+ARG LDFLAGS
+ARG SUDO
 ENV APP_NAME=sidecar
 ENV DEBIAN_FRONTEND=noninteractive
 ENV GO111MODULE=on
@@ -42,7 +52,18 @@ ENV PKG=agent/sidecar
 ENV REPO=vald
 ENV TZ=Etc/UTC
 ENV USER=root
+ENV YEAR=2026
 ENV PATH=${GOPATH}/bin:${GOROOT}/bin:/usr/local/bin:${PATH}
+ENV CC=${CC:-${CC}}
+ENV CXX=${CXX:-${CXX}}
+ENV LLD=${LLD:-${LLD}}
+ENV AR=${AR:-${AR}}
+ENV NM=${NM:-${NM}}
+ENV RANLIB=${RANLIB:-${RANLIB}}
+ENV CFLAGS=${CFLAGS:-${CFLAGS}}
+ENV CXXFLAGS=${CXXFLAGS:-${CXXFLAGS}}
+ENV LDFLAGS=${LDFLAGS:-${LDFLAGS}}
+ENV SUDO=${SUDO:-${SUDO}}
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 #skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
@@ -60,12 +81,20 @@ RUN --mount=type=bind,target=.,rw \
     && apt-get update -y \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends --fix-missing \
-    build-essential \
     ca-certificates \
     curl \
     tzdata \
     locales \
     git \
+    build-essential \
+    clang \
+    libomp-dev \
+    libssl-dev \
+    lld \
+    llvm \
+    pkg-config \
+    python3 \
+    unzip \
     && ldconfig \
     && echo "${LANG} UTF-8" > /etc/locale.gen \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
@@ -75,6 +104,8 @@ RUN --mount=type=bind,target=.,rw \
     && apt-get clean \
     && apt-get autoclean -y \
     && apt-get autoremove -y \
+    && make ninja/install \
+    && make cmake/install \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/install \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/download \
     && make GOARCH="${TARGETARCH}" GOOS="${TARGETOS}" REPO="${ORG}/${REPO}" NAME="${REPO}" cmd/${PKG}/${APP_NAME} \

@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package net
 
@@ -323,9 +321,19 @@ func TestParse(t *testing.T) {
 			want: want{
 				wantHost: "google.com",
 				wantPort: uint16(8080),
-				isV4:     true,
-				isV6:     false,
 				isLocal:  false,
+			},
+			checkFunc: func(w want, gotHost string, gotPort uint16, gotIsLocal bool, gotIsV4 bool, gotIsV6 bool, err error) error {
+				if gotHost != w.wantHost {
+					return errors.Errorf("gotHost: %q, want: %q", gotHost, w.wantHost)
+				}
+				if gotPort != w.wantPort {
+					return errors.Errorf("gotPort: %d, want: %d", gotPort, w.wantPort)
+				}
+				if gotIsLocal != w.isLocal {
+					return errors.Errorf("gotIsLocal: %v, want: %v", gotIsLocal, w.isLocal)
+				}
+				return nil
 			},
 		},
 		{

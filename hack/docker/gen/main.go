@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package main
 
@@ -82,6 +80,7 @@ const (
 	defaultLanguage       = "en_US.UTF-8"
 	defaultMaintainer     = organization + ".org " + vald + " team <" + vald + "@" + organization + ".org>"
 	defaultRuntimeImage   = "gcr.io/distroless/static"
+	defaultCCRuntimeImage = "gcr.io/distroless/cc-debian12"
 	nonrootUser           = "nonroot"
 	rootUser              = "root"
 	defaultRuntimeTag     = nonrootUser
@@ -97,10 +96,9 @@ const (
 	goWorkdir   = "${GOPATH}/src/github.com"
 	rustWorkdir = "${HOME}/rust/src/github.com"
 
-	ngtPreprocess         = "make ngt/install"
-	ngtClangLTOPreprocess = `CC=clang CXX=clang++ make CFLAGS="-flto=thin" CXXFLAGS="-flto=thin" NGT_EXTRA_CMAKE_FLAGS="-DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld" ngt/install`
-	faissPreprocess       = "make faiss/install"
-	usearchPreprocess     = "make usearch/install"
+	ngtPreprocess     = "make ngt/install"
+	faissPreprocess   = "make faiss/install"
+	usearchPreprocess = "make usearch/install"
 
 	helmOperatorRootdir   = "/opt/helm"
 	helmOperatorWatchFile = helmOperatorRootdir + "/watches.yaml"
@@ -237,9 +235,29 @@ ARG TARGETARCH
 ARG TARGETOS
 ARG GO_VERSION
 ARG RUST_VERSION
+ARG CC
+ARG CXX
+ARG LLD
+ARG AR
+ARG NM
+ARG RANLIB
+ARG CFLAGS
+ARG CXXFLAGS
+ARG LDFLAGS
+ARG SUDO
 {{- range $keyValue := .EnvironmentsSlice }}
 ENV {{$keyValue}}
 {{- end}}
+ENV CC=${CC:-${CC}}
+ENV CXX=${CXX:-${CXX}}
+ENV LLD=${LLD:-${LLD}}
+ENV AR=${AR:-${AR}}
+ENV NM=${NM:-${NM}}
+ENV RANLIB=${RANLIB:-${RANLIB}}
+ENV CFLAGS=${CFLAGS:-${CFLAGS}}
+ENV CXXFLAGS=${CXXFLAGS:-${CXXFLAGS}}
+ENV LDFLAGS=${LDFLAGS:-${LDFLAGS}}
+ENV SUDO=${SUDO:-${SUDO}}
 WORKDIR {{.RootDir}}/${ORG}/${REPO}
 {{- range $files := .ExtraCopies }}
 COPY {{$files}}
@@ -254,12 +272,8 @@ RUN {{RunMounts .RunMounts}} \
     && apt-get update -y \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends --fix-missing \
-    build-essential \
     ca-certificates \
     curl \
-{{- if eq (ContainerName .ContainerType) "%s"}}
-    gnupg \
-{{- end}}
     tzdata \
     locales \
     git \
@@ -296,7 +310,6 @@ ENTRYPOINT [{{Entrypoint .Entrypoints}}]
 ENTRYPOINT ["{{.BinDir}}/{{.AppName}}"]
 {{- end}}
 {{- end}}`, header, DevContainer.String(),
-	DevContainer.String(),
 	DevContainer.String(),
 	DevContainer.String())))
 
@@ -378,6 +391,7 @@ type (
 		Year              int
 		AliasImage        bool
 		ConfigExists      bool
+		BuildCmakeClang   bool
 	}
 	ContainerType int
 )
@@ -428,12 +442,16 @@ var (
 		"CARGO_HOME":  "${RUST_HOME}/cargo",
 		"PATH":        "${PATH}:${RUSTUP_HOME}/bin:${CARGO_HOME}/bin:" + usrLocalBinaryDir,
 	}
-	clangDefaultEnvironments = map[string]string{
-		"CC":  "gcc",
-		"CXX": "g++",
-	}
 	clangLTOEnvironments = map[string]string{
-		"RUSTFLAGS": `"-Clinker=clang -Clink-arg=-fuse-ld=lld"`,
+		// RUSTFLAGS applies to all Rust compilations including build scripts.
+		// -static-libstdc++ and -static-libgcc only affect their specific libraries
+		// and are safe for build scripts (no glibc TLS SIGSEGV risk).
+		// Full libc static linking is NOT used here to avoid NSS/DNS issues.
+		"RUSTFLAGS": `"-Clinker=clang -Clink-arg=-fuse-ld=lld -Clink-arg=-static-libstdc++ -Clink-arg=-static-libgcc"`,
+		// Force per-library static linking via sys crates' env var conventions.
+		"OPENSSL_STATIC":        "1",
+		"LIBZ_STATIC":           "1",
+		"PKG_CONFIG_ALL_STATIC": "1",
 	}
 	goInstallCommands = []string{
 		"make GOPATH=\"${GOPATH}\" GOROOT=\"${GOROOT}\" GO_VERSION=\"${GO_VERSION}\" go/install",
@@ -473,26 +491,20 @@ var (
 	}
 
 	clangBuildDeps = []string{
-		"cmake",
-		"g++",
-		"gcc",
+		"build-essential",
+		"llvm",
+		"clang",
+		"lld",
+		"pkg-config",
+		"python3",
 		"libssl-dev",
 		"unzip",
+		"libomp-dev",
 	}
 	ngtBuildDeps = []string{
 		"liblapack-dev",
-		"libomp-dev",
 		"libopenblas-dev",
 		"gfortran",
-	}
-	rustBuildDeps = []string{
-		"pkgconf",
-		"protobuf-compiler",
-		"libprotobuf-dev",
-	}
-	clangLTOBuildDeps = []string{
-		"clang",
-		"lld",
 	}
 	devContainerDeps = []string{
 		"file",
@@ -514,7 +526,6 @@ var (
 		"make GOARCH=${TARGETARCH} GOOS=${TARGETOS} deps GO_CLEAN_DEPS=false",
 		"make GOARCH=${TARGETARCH} GOOS=${TARGETOS} golangci-lint/install",
 		"make go/tools/install",
-		"make cmake/install",
 		"make hdf5/install",
 		"make helm-docs/install",
 		"make helm/install",
@@ -528,6 +539,14 @@ var (
 		"make yq/install",
 		"make docker-cli/install",
 	}
+
+	clangNgtBuildDeps  = append(clangBuildDeps, ngtBuildDeps...)
+	clangHdf5BuildDeps = append(clangBuildDeps, "libaec-dev")
+	hdf5Preprocesses   = []string{
+		"make hdf5/install",
+	}
+	devContainerExtraPackages = append([]string{"sudo"}, append(clangNgtBuildDeps, devContainerDeps...)...)
+	goRunMounts               = append(defaultMounts, goDefaultMounts...)
 )
 
 func appendM[K comparable](maps ...map[K]string) map[K]string {
@@ -677,33 +696,35 @@ func main() {
 		year = y.Year()
 	}
 	eg, egctx := errgroup.New(ctx)
+
+	rootDir := os.Args[1]
+
 	for n, d := range map[string]Data{
 		vald + "-" + agentNGT: {
-			AppName:    "ngt",
-			PackageDir: agent + "/core/ngt",
-			// RuntimeImage:  "gcr.io/distroless/cc-debian12",
-			ExtraPackages: append(clangBuildDeps, ngtBuildDeps...),
-			Preprocess:    []string{ngtPreprocess},
+			AppName:         "ngt",
+			PackageDir:      agent + "/core/ngt",
+			ExtraPackages:   append(clangNgtBuildDeps, "libprotobuf-dev", "libzstd-dev"),
+			Preprocess:      []string{ngtPreprocess},
+			BuildCmakeClang: true,
 		},
 		vald + "-" + agentFaiss: {
-			AppName:    "faiss",
-			PackageDir: agent + "/core/faiss",
-			// RuntimeImage:  "gcr.io/distroless/cc-debian12",
-			ExtraPackages: append(clangBuildDeps, ngtBuildDeps...),
-			Preprocess:    []string{faissPreprocess},
+			AppName:         "faiss",
+			PackageDir:      agent + "/core/faiss",
+			ExtraPackages:   append(clangNgtBuildDeps, "libprotobuf-dev", "libzstd-dev"),
+			Preprocess:      []string{faissPreprocess},
+			BuildCmakeClang: true,
 		},
 		vald + "-" + agent: {
 			AppName:       agent,
 			PackageDir:    agent + "/core/" + agent,
 			ContainerType: Rust,
-			RuntimeImage:  "gcr.io/distroless/cc-debian12",
-			ExtraPackages: append(clangBuildDeps,
-				append(ngtBuildDeps,
-					append(rustBuildDeps, clangLTOBuildDeps...)...)...),
+			RuntimeImage:  defaultCCRuntimeImage,
+			ExtraPackages: append(clangNgtBuildDeps, "libprotobuf-dev", "libzstd-dev", "protobuf-compiler", "zlib1g-dev"),
 			Preprocess: []string{
-				ngtClangLTOPreprocess,
+				ngtPreprocess,
 				faissPreprocess,
 			},
+			BuildCmakeClang: true,
 		},
 		vald + "-" + agentSidecar: {
 			AppName:    "sidecar",
@@ -758,12 +779,11 @@ func main() {
 			PackageDir: "index/operator",
 		},
 		vald + "-" + benchJob: {
-			AppName:       "job",
-			PackageDir:    "tools/benchmark/job",
-			ExtraPackages: append(clangBuildDeps, "libaec-dev"),
-			Preprocess: []string{
-				"make hdf5/install",
-			},
+			AppName:         "job",
+			PackageDir:      "tools/benchmark/job",
+			ExtraPackages:   clangHdf5BuildDeps,
+			Preprocess:      hdf5Preprocesses,
+			BuildCmakeClang: true,
 		},
 		vald + "-" + benchOperator: {
 			AppName:    "operator",
@@ -816,165 +836,310 @@ func main() {
 			RuntimeUser:   defaultBuildUser,
 			ContainerType: DevContainer,
 			PackageDir:    "dev",
-			ExtraPackages: append([]string{"sudo"}, append(clangBuildDeps,
-				append(ngtBuildDeps,
-					append(rustBuildDeps,
-						devContainerDeps...)...)...)...),
+			ExtraPackages: devContainerExtraPackages,
 			Preprocess: append(devContainerPreprocess,
 				ngtPreprocess,
 				faissPreprocess,
 				usearchPreprocess),
+			BuildCmakeClang: true,
 		},
 		vald + "-" + exampleContainer: {
-			AppName:       "client",
-			PackageDir:    "example/client",
-			ExtraPackages: append(clangBuildDeps, "libaec-dev"),
-			Preprocess: []string{
-				"make hdf5/install",
-			},
+			AppName:         "client",
+			PackageDir:      "example/client",
+			ExtraPackages:   clangHdf5BuildDeps,
+			Preprocess:      hdf5Preprocesses,
+			BuildCmakeClang: true,
 		},
 		vald + "-" + e2e: {
-			AppName:       e2e,
-			PackageDir:    e2eV2TestPath + "/" + e2e,
-			ExtraPackages: append(clangBuildDeps, "libaec-dev"),
-			Preprocess: []string{
-				"make hdf5/install",
-			},
+			AppName:         e2e,
+			PackageDir:      e2eV2TestPath + "/" + e2e,
+			ExtraPackages:   clangHdf5BuildDeps,
+			Preprocess:      hdf5Preprocesses,
+			BuildCmakeClang: true,
 		},
 		vald + "-" + buildbase: {
-			AppName:      buildbase,
-			AliasImage:   true,
-			PackageDir:   buildbase,
-			BuilderImage: "ubuntu",
-			BuilderTag:   "latest",
+			AppName:       buildbase,
+			AliasImage:    true,
+			ContainerType: Other,
+			PackageDir:    buildbase,
+			BuilderImage:  "ubuntu",
+			BuilderTag:    "latest",
 		},
 		vald + "-" + buildkit: {
-			AppName:      buildkit,
-			AliasImage:   true,
-			PackageDir:   buildkit,
-			BuilderImage: "moby/" + buildkit,
-			BuilderTag:   "master",
+			AppName:       buildkit,
+			AliasImage:    true,
+			ContainerType: Other,
+			PackageDir:    buildkit,
+			BuilderImage:  "moby/" + buildkit,
+			BuilderTag:    "master",
 		},
 		vald + "-" + binfmt: {
-			AppName:      binfmt,
-			AliasImage:   true,
-			PackageDir:   binfmt,
-			BuilderImage: "tonistiigi/" + binfmt,
-			BuilderTag:   "master",
+			AppName:       binfmt,
+			AliasImage:    true,
+			ContainerType: Other,
+			PackageDir:    binfmt,
+			BuilderImage:  "tonistiigi/" + binfmt,
+			BuilderTag:    "master",
 		},
 		vald + "-" + buildkitSyftScanner: {
 			AppName:        "scanner",
 			AliasImage:     true,
+			ContainerType:  Other,
 			PackageDir:     buildkit + "/syft/scanner",
 			BuilderImage:   "docker/" + buildkitSyftScanner,
 			BuilderTag:     "edge",
 			BuildStageName: "scanner",
 		},
 	} {
-		name := n
-		data := d
-
+		data := prepareData(n, d, maintainer, year, rootDir)
 		eg.Go(safety.RecoverFunc(func() error {
-			data.Name = strings.TrimPrefix(name, vald+"-")
-			switch data.ContainerType {
-			case HelmOperator:
-				data.PullRequestPaths = append(data.PullRequestPaths,
-					chartPath,
-					valuesPath,
-					templatesPath,
-					helmOperatorChartPath,
-					helmOperatorValuesPath,
-					helmOperatorTemplatesPath,
-					operatorSDKVersionPath,
-				)
-			case DevContainer:
-				data.PullRequestPaths = append(data.PullRequestPaths,
-					apisProtoPath,
-					hackPath,
-					goModPath,
-					goSumPath,
-					goVersionPath,
-				)
-			case Go:
-				data.PullRequestPaths = append(data.PullRequestPaths,
-					apisProtoPath,
-					goModPath,
-					goSumPath,
-					goVersionPath,
-					excludeTestFilesPath,
-					excludeMockFilesPath,
-				)
-				mainFile := file.Join(os.Args[1], "cmd", data.PackageDir, "main.go")
-				if file.Exists(mainFile) {
-					ns, err := buildDependencyTree(os.Args[1], mainFile)
-					if err != nil {
-						log.Error(err)
-					}
-					pkgs := make([]string, 0, len(ns)+1)
-					pkgs = append(pkgs, file.Join("cmd", data.PackageDir))
-					for _, pnode := range ns {
-						pkgs = append(pkgs, pnode.ToSlice()...)
-					}
-					slices.Sort(pkgs)
-					pkgs = slices.Compact(pkgs)
-					root, err := os.Getwd()
-					if err != nil {
-						root = os.Getenv("HOME")
-					}
-					if root != "" && !strings.HasSuffix(root, string(os.PathSeparator)) {
-						root += string(os.PathSeparator)
-					}
-					for i, pkg := range pkgs {
-						const splitWord = "/" + repository + "/"
-						pkg = file.Join(pkg, "*.go")
-						index := strings.LastIndex(pkg, splitWord)
-						if index != -1 {
-							pkg = pkg[index+len(splitWord):]
-						}
-						if root != "" {
-							pkg = strings.TrimPrefix(pkg, root)
-						}
-						pkgs[i] = pkg
-					}
-					data.PullRequestPaths = append(data.PullRequestPaths, pkgs...)
+			return genWorkflow(egctx, rootDir, data)
+		}))
+		eg.Go(safety.RecoverFunc(func() error {
+			return genDockerfile(egctx, rootDir, data)
+		}))
+	}
+	eg.Wait()
+}
+
+// PackageNode represents a node in the dependency tree.
+type PackageNode struct {
+	Name    string
+	Imports []*PackageNode
+}
+
+// ToSlice traverses the dependency tree and returns all dependencies as a slice.
+func (n PackageNode) ToSlice() (pkgs []string) {
+	pkgs = make([]string, 0, len(n.Imports)+1)
+	if n.Name != "command-line-arguments" {
+		pkgs = append(pkgs, n.Name)
+	}
+	for _, node := range n.Imports {
+		pkgs = append(pkgs, node.ToSlice()...)
+	}
+	return pkgs
+}
+
+func prepareData(name string, data Data, maintainer string, year int, rootDir string) Data {
+	data.Name = strings.TrimPrefix(name, vald+"-")
+	data.Year = year
+	data.Maintainer = maintainer
+
+	switch data.ContainerType {
+	case HelmOperator:
+		data.PullRequestPaths = append(data.PullRequestPaths,
+			chartPath,
+			valuesPath,
+			templatesPath,
+			helmOperatorChartPath,
+			helmOperatorValuesPath,
+			helmOperatorTemplatesPath,
+			operatorSDKVersionPath,
+		)
+	case DevContainer:
+		data.PullRequestPaths = append(data.PullRequestPaths,
+			apisProtoPath,
+			hackPath,
+			goModPath,
+			goSumPath,
+			goVersionPath,
+		)
+	case Go:
+		data.PullRequestPaths = append(data.PullRequestPaths,
+			apisProtoPath,
+			goModPath,
+			goSumPath,
+			goVersionPath,
+			excludeTestFilesPath,
+			excludeMockFilesPath,
+		)
+		mainFile := file.Join(rootDir, "cmd", data.PackageDir, "main.go")
+		if file.Exists(mainFile) {
+			ns, err := buildDependencyTree(rootDir, mainFile)
+			if err != nil {
+				log.Error(err)
+			}
+			pkgs := make([]string, 0, len(ns)+1)
+			pkgs = append(pkgs, file.Join("cmd", data.PackageDir))
+			for _, pnode := range ns {
+				pkgs = append(pkgs, pnode.ToSlice()...)
+			}
+			slices.Sort(pkgs)
+			pkgs = slices.Compact(pkgs)
+			root, err := os.Getwd()
+			if err != nil {
+				root = os.Getenv("HOME")
+			}
+			if root != "" && !strings.HasSuffix(root, string(os.PathSeparator)) {
+				root += string(os.PathSeparator)
+			}
+			for i, pkg := range pkgs {
+				const splitWord = "/" + repository + "/"
+				pkg = file.Join(pkg, "*.go")
+				index := strings.LastIndex(pkg, splitWord)
+				if index != -1 {
+					pkg = pkg[index+len(splitWord):]
 				}
-			case Rust:
-				data.PullRequestPaths = append(data.PullRequestPaths,
-					apisProtoPath,
-					cargoLockPath,
-					cargoTomlPath,
-					rustBinAgentDirPath,
-					rustNgtRsPath,
-					rustNgtPath,
-					rustProtoPath,
-					rustVersionPath,
-				)
+				if root != "" {
+					pkg = strings.TrimPrefix(pkg, root)
+				}
+				pkgs[i] = pkg
 			}
-			if strings.EqualFold(data.Name, agentFaiss) || data.ContainerType == Rust {
-				data.PullRequestPaths = append(data.PullRequestPaths, faissVersionPath)
-			}
-			if strings.EqualFold(data.Name, agentNGT) || data.ContainerType == Rust {
-				data.PullRequestPaths = append(data.PullRequestPaths, ngtVersionPath)
-			}
+			data.PullRequestPaths = append(data.PullRequestPaths, pkgs...)
+		}
+	case Rust:
+		data.PullRequestPaths = append(data.PullRequestPaths,
+			apisProtoPath,
+			cargoLockPath,
+			cargoTomlPath,
+			rustBinAgentDirPath,
+			rustNgtRsPath,
+			rustNgtPath,
+			rustProtoPath,
+			rustVersionPath,
+		)
+	}
+	if strings.EqualFold(data.Name, agentFaiss) || data.ContainerType == Rust {
+		data.PullRequestPaths = append(data.PullRequestPaths, faissVersionPath)
+	}
+	if strings.EqualFold(data.Name, agentNGT) || data.ContainerType == Rust {
+		data.PullRequestPaths = append(data.PullRequestPaths, ngtVersionPath)
+	}
 
-			if !data.AliasImage {
-				data.PullRequestPaths = append(data.PullRequestPaths, makefilePath, makefileDirPath)
-			}
+	if !data.AliasImage {
+		data.PullRequestPaths = append(data.PullRequestPaths, makefilePath, makefileDirPath)
+	}
 
-			if data.AliasImage {
-				data.BuildPlatforms = multiPlatforms
-			}
+	if data.AliasImage {
+		data.BuildPlatforms = multiPlatforms
+	}
 
-			data.Year = year
-			if maintainer := os.Getenv(maintainerKey); maintainer != "" {
-				data.Maintainer = maintainer
-			} else {
-				data.Maintainer = defaultMaintainer
-			}
+	if data.BinDir == "" {
+		data.BinDir = defaultBinaryDir
+	}
+	if data.RuntimeImage == "" {
+		data.RuntimeImage = defaultRuntimeImage
+	}
+	if data.RuntimeTag == "" {
+		data.RuntimeTag = defaultRuntimeTag
+	}
+	if data.BuilderImage == "" {
+		data.BuilderImage = defaultBuilderImage
+	}
+	if data.BuilderTag == "" {
+		data.BuilderTag = defaultBuilderTag
+	}
+	if data.RuntimeUser == "" {
+		data.RuntimeUser = defaultRuntimeUser
+	}
+	if data.BuildUser == "" {
+		data.BuildUser = defaultBuildUser
+	}
+	if data.BuildStageName == "" {
+		data.BuildStageName = defaultBuildStageName
+	}
+	if data.Environments == nil {
+		data.Environments = make(map[string]string, len(defaultEnvironments))
+	}
+	data.Environments = appendM(data.Environments, defaultEnvironments)
 
-			log.Infof("Generating %s's workflow", data.Name)
-			workflow := new(Workflow)
-			err := yaml.Unmarshal(conv.Atob(`name: "Build docker image: `+data.Name+`"
+	cppInstallCommands := []string{
+		"make ninja/install",
+		"make cmake/install",
+	}
+	switch data.ContainerType {
+	case Go:
+		data.BuildCmakeClang = true
+		data.ExtraPackages = append(data.ExtraPackages, clangBuildDeps...)
+		data.Environments = appendM(data.Environments, goDefaultEnvironments)
+		data.RootDir = goWorkdir
+		commands := make([]string, 0, len(cppInstallCommands)+len(goInstallCommands)+len(data.Preprocess)+len(goBuildCommands))
+		if data.BuildCmakeClang {
+			commands = append(commands, cppInstallCommands...)
+		}
+		commands = append(commands, goInstallCommands...)
+		if data.Preprocess != nil {
+			commands = append(commands, data.Preprocess...)
+		}
+		if file.Exists(file.Join(rootDir, "cmd", data.PackageDir)) {
+			commands = append(commands, goBuildCommands...)
+		} else if strings.HasPrefix(data.PackageDir, "example") && file.Exists(file.Join(rootDir, data.PackageDir)) {
+			commands = append(commands, goExampleBuildCommands...)
+		} else if strings.HasPrefix(data.PackageDir, e2eV2TestPath+"/"+e2e) && file.Exists(file.Join(rootDir, data.PackageDir)) {
+			commands = append(commands, e2eBuildCommands...)
+		}
+		data.RunCommands = commands
+		data.RunMounts = goRunMounts
+	case Rust:
+		data.Environments = appendM(data.Environments, rustDefaultEnvironments, clangLTOEnvironments)
+		data.RootDir = rustWorkdir
+		commands := make([]string, 0, len(cppInstallCommands)+len(rustInstallCommands)+len(data.Preprocess)+len(rustBuildCommands))
+		if data.BuildCmakeClang {
+			commands = append(commands, cppInstallCommands...)
+		}
+		commands = append(commands, rustInstallCommands...)
+		if data.Preprocess != nil {
+			commands = append(commands, data.Preprocess...)
+		}
+		commands = append(commands, rustBuildCommands...)
+		data.RunCommands = commands
+		data.RunMounts = defaultMounts
+	case DevContainer:
+		data.Environments = appendM(data.Environments, goDefaultEnvironments, rustDefaultEnvironments)
+		data.RootDir = goWorkdir
+		commands := make([]string, 0, len(cppInstallCommands)+len(goInstallCommands)+len(rustInstallCommands)+len(data.Preprocess)+1)
+		if data.BuildCmakeClang {
+			commands = append(commands, cppInstallCommands...)
+		}
+		commands = append(commands, append(goInstallCommands, rustInstallCommands...)...)
+		if data.Preprocess != nil {
+			commands = append(commands, data.Preprocess...)
+		}
+		commands = append(commands, "rm -rf {{.RootDir}}/${ORG}/${REPO}/*")
+		data.RunCommands = commands
+		data.RunMounts = goRunMounts
+	case HelmOperator:
+		data.ExtraPackages = append(data.ExtraPackages, clangBuildDeps...)
+		data.Environments = appendM(data.Environments, goDefaultEnvironments)
+		data.RootDir = goWorkdir
+		commands := make([]string, 0, len(cppInstallCommands)+len(goInstallCommands)+len(data.Preprocess))
+		if data.BuildCmakeClang {
+			commands = append(commands, cppInstallCommands...)
+		}
+		commands = append(commands, goInstallCommands...)
+		if data.Preprocess != nil {
+			commands = append(commands, data.Preprocess...)
+		}
+		data.RunCommands = commands
+		data.RunMounts = goRunMounts
+	default:
+		data.RootDir = "${HOME}"
+		data.Environments["ROOTDIR"] = rootDir
+	}
+	if strings.Contains(data.BuildUser, rootUser) {
+		data.Environments["HOME"] = "/" + rootUser
+		data.Environments["USER"] = rootUser
+	} else {
+		user, _, _ := strings.Cut(data.BuildUser, ":")
+		data.Environments["HOME"] = "/home/" + user
+		data.Environments["USER"] = user
+	}
+
+	data.Environments["APP_NAME"] = data.AppName
+	data.Environments["PKG"] = data.PackageDir
+	data.Environments["YEAR"] = fmt.Sprintf("%d", data.Year)
+	data.EnvironmentsSlice = topologicalSort(data.Environments)
+	data.ConfigExists = file.Exists(file.Join(rootDir, "cmd", data.PackageDir, "sample.yaml"))
+
+	slices.Sort(data.ExtraPackages)
+	data.ExtraPackages = slices.Compact(data.ExtraPackages)
+	return data
+}
+
+func genWorkflow(ctx context.Context, rootDir string, data Data) error {
+	log.Infof("Generating %s's workflow", data.Name)
+	workflow := new(Workflow)
+	err := yaml.Unmarshal(conv.Atob(`name: "Build docker image: `+data.Name+`"
 on:
   schedule:
     - cron: "0 * * * *"
@@ -1007,209 +1172,78 @@ jobs:
       target: "`+data.Name+`"
       platforms: ""
 `), &workflow)
-			if err != nil {
-				return errors.Wrap(err, "failed to decode YAML")
-			}
-
-			if !data.AliasImage {
-				workflow.On.Schedule = nil
-			}
-			workflow.On.PullRequest.Paths = append(workflow.On.PullRequest.Paths, data.PullRequestPaths...)
-			if strings.EqualFold(data.Name, exampleContainer) {
-				workflow.On.PullRequest.Paths = slices.DeleteFunc(workflow.On.PullRequest.Paths, func(path string) bool {
-					return strings.HasPrefix(path, "cmd") || strings.HasPrefix(path, "pkg")
-				})
-				workflow.On.PullRequest.Paths = append(workflow.On.PullRequest.Paths, data.PackageDir+"/**")
-			}
-			slices.Sort(workflow.On.PullRequest.Paths)
-			workflow.On.PullRequest.Paths = slices.Compact(workflow.On.PullRequest.Paths)
-
-			workflow.On.PullRequestTarget.Paths = workflow.On.PullRequest.Paths
-			workflow.Jobs.Build.With.Platforms = data.BuildPlatforms
-
-			workflow.Jobs.Build.Permissions = map[string]string{
-				"contents": "read",
-			}
-
-			workflow.Jobs.Build.Secrets = map[string]string{
-				"PACKAGE_USER":             "${{ secrets.PACKAGE_USER }}",
-				"PACKAGE_TOKEN":            "${{ secrets.PACKAGE_TOKEN }}",
-				"DOCKERHUB_USER":           "${{ secrets.DOCKERHUB_USER }}",
-				"DOCKERHUB_PASS":           "${{ secrets.DOCKERHUB_PASS }}",
-				"SLACK_NOTIFY_WEBHOOK_URL": "${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}",
-			}
-
-			workflowYamlTmp, err := yaml.Marshal(workflow)
-			if err != nil {
-				return errors.Wrap(err, "failed to marshal workflow struct to YAML")
-			}
-
-			// remove the double quotation marks from the generated key "on": (note that the word "on" is a reserved word in sigs.k8s.io/yaml)
-			workflowYaml := strings.Replace(string(workflowYamlTmp), "\"on\":", "on:", 1)
-
-			if len(header) > (int(^uint(0)>>1) - len(workflowYaml)) {
-				return errors.New("size computation for allocation may overflow")
-			}
-			totalLen := len(header) + len(workflowYaml)
-
-			buf := bytes.NewBuffer(make([]byte, 0, totalLen))
-			err = license.Execute(buf, data)
-			if err != nil {
-				return errors.Wrap(err, "failed to execute template")
-			}
-			buf.WriteString("\r\n")
-			buf.WriteString(workflowYaml)
-			fileName := file.Join(os.Args[1], ".github/workflows", "dockers-"+data.Name+"-image.yaml")
-			_, err = file.OverWriteFile(egctx, fileName, buf, fs.ModePerm)
-			if err != nil {
-				return errors.Wrapf(err, "failed to writing workflow file for %s", fileName)
-			}
-			return nil
-		}))
-
-		eg.Go(safety.RecoverFunc(func() error {
-			data.Maintainer = maintainer
-			data.Year = year
-			if data.BinDir == "" {
-				data.BinDir = defaultBinaryDir
-			}
-			if data.RuntimeImage == "" {
-				data.RuntimeImage = defaultRuntimeImage
-			}
-			if data.RuntimeTag == "" {
-				data.RuntimeTag = defaultRuntimeTag
-			}
-			if data.BuilderImage == "" {
-				data.BuilderImage = defaultBuilderImage
-			}
-			if data.BuilderTag == "" {
-				data.BuilderTag = defaultBuilderTag
-			}
-			if data.RuntimeUser == "" {
-				data.RuntimeUser = defaultRuntimeUser
-			}
-			if data.BuildUser == "" {
-				data.BuildUser = defaultBuildUser
-			}
-			if data.BuildStageName == "" {
-				data.BuildStageName = defaultBuildStageName
-			}
-			if data.Environments != nil {
-				data.Environments = appendM(data.Environments, defaultEnvironments)
-			} else {
-				data.Environments = make(map[string]string, len(defaultEnvironments))
-				data.Environments = appendM(data.Environments, defaultEnvironments)
-			}
-			switch data.ContainerType {
-			case Go:
-				data.Environments = appendM(data.Environments, goDefaultEnvironments)
-				data.RootDir = goWorkdir
-				commands := make([]string, 0, len(goInstallCommands)+len(data.Preprocess)+len(goBuildCommands))
-				commands = append(commands, goInstallCommands...)
-				if data.Preprocess != nil {
-					commands = append(commands, data.Preprocess...)
-				}
-				if file.Exists(file.Join(os.Args[1], "cmd", data.PackageDir)) {
-					commands = append(commands, goBuildCommands...)
-				} else if strings.HasPrefix(data.PackageDir, "example") && file.Exists(file.Join(os.Args[1], data.PackageDir)) {
-					commands = append(commands, goExampleBuildCommands...)
-				} else if strings.HasPrefix(data.PackageDir, e2eV2TestPath+"/"+e2e) && file.Exists(file.Join(os.Args[1], data.PackageDir)) {
-					commands = append(commands, e2eBuildCommands...)
-				}
-				data.RunCommands = commands
-				mounts := make([]string, 0, len(defaultMounts)+len(goDefaultMounts))
-				mounts = append(mounts, defaultMounts...)
-				mounts = append(mounts, goDefaultMounts...)
-				data.RunMounts = mounts
-			case Rust:
-				data.Environments = appendM(data.Environments, rustDefaultEnvironments, clangLTOEnvironments)
-				data.RootDir = rustWorkdir
-				commands := make([]string, 0, len(rustInstallCommands)+len(data.Preprocess)+len(rustBuildCommands))
-				commands = append(commands, rustInstallCommands...)
-				if data.Preprocess != nil {
-					commands = append(commands, data.Preprocess...)
-				}
-				commands = append(commands, rustBuildCommands...)
-				data.RunCommands = commands
-				data.RunMounts = defaultMounts
-			case DevContainer:
-				data.Environments = appendM(data.Environments, goDefaultEnvironments, rustDefaultEnvironments, clangDefaultEnvironments)
-				data.RootDir = goWorkdir
-				commands := make([]string, 0, len(goInstallCommands)+len(rustInstallCommands)+len(data.Preprocess)+1)
-				commands = append(commands, append(goInstallCommands, rustInstallCommands...)...)
-				if data.Preprocess != nil {
-					commands = append(commands, data.Preprocess...)
-				}
-				commands = append(commands, "rm -rf {{.RootDir}}/${ORG}/${REPO}/*")
-				data.RunCommands = commands
-				mounts := make([]string, 0, len(defaultMounts)+len(goDefaultMounts))
-				mounts = append(mounts, defaultMounts...)
-				mounts = append(mounts, goDefaultMounts...)
-				data.RunMounts = mounts
-			case HelmOperator:
-				data.Environments = appendM(data.Environments, goDefaultEnvironments)
-				data.RootDir = goWorkdir
-				commands := make([]string, 0, len(goInstallCommands)+len(data.Preprocess))
-				commands = append(commands, goInstallCommands...)
-				if data.Preprocess != nil {
-					commands = append(commands, data.Preprocess...)
-				}
-				data.RunCommands = commands
-				mounts := make([]string, 0, len(defaultMounts)+len(goDefaultMounts))
-				mounts = append(mounts, defaultMounts...)
-				mounts = append(mounts, goDefaultMounts...)
-				data.RunMounts = mounts
-			default:
-				data.RootDir = "${HOME}"
-				data.Environments["ROOTDIR"] = os.Args[1]
-			}
-			if strings.Contains(data.BuildUser, rootUser) {
-				data.Environments["HOME"] = "/" + rootUser
-				data.Environments["USER"] = rootUser
-			} else {
-				user, _, _ := strings.Cut(data.BuildUser, ":")
-				data.Environments["HOME"] = "/home/" + user
-				data.Environments["USER"] = user
-			}
-
-			data.Environments["APP_NAME"] = data.AppName
-			data.Environments["PKG"] = data.PackageDir
-			data.EnvironmentsSlice = topologicalSort(data.Environments)
-			data.ConfigExists = file.Exists(file.Join(os.Args[1], "cmd", data.PackageDir, "sample.yaml"))
-
-			buf := bytes.NewBuffer(make([]byte, 0, 1024))
-			log.Infof("Generating %s's Dockerfile", name)
-			docker.Execute(buf, data)
-			tpl := buf.String()
-			buf.Reset()
-			template.Must(template.New("Dockerfile").Parse(tpl)).Execute(buf, data)
-			fileName := file.Join(os.Args[1], "dockers", data.PackageDir, "Dockerfile")
-			_, err := file.OverWriteFile(egctx, fileName, buf, fs.ModePerm)
-			if err != nil {
-				return errors.Wrapf(err, "failed to writing Dockerfile for %s", fileName)
-			}
-			return nil
-		}))
+	if err != nil {
+		return errors.Wrap(err, "failed to decode YAML")
 	}
-	eg.Wait()
+
+	if !data.AliasImage {
+		workflow.On.Schedule = nil
+	}
+	workflow.On.PullRequest.Paths = append(workflow.On.PullRequest.Paths, data.PullRequestPaths...)
+	if strings.EqualFold(data.Name, exampleContainer) {
+		workflow.On.PullRequest.Paths = slices.DeleteFunc(workflow.On.PullRequest.Paths, func(path string) bool {
+			return strings.HasPrefix(path, "cmd") || strings.HasPrefix(path, "pkg")
+		})
+		workflow.On.PullRequest.Paths = append(workflow.On.PullRequest.Paths, data.PackageDir+"/**")
+	}
+	slices.Sort(workflow.On.PullRequest.Paths)
+	workflow.On.PullRequest.Paths = slices.Compact(workflow.On.PullRequest.Paths)
+
+	workflow.On.PullRequestTarget.Paths = workflow.On.PullRequest.Paths
+	workflow.Jobs.Build.With.Platforms = data.BuildPlatforms
+
+	workflow.Jobs.Build.Permissions = map[string]string{
+		"contents": "read",
+	}
+
+	workflow.Jobs.Build.Secrets = map[string]string{
+		"PACKAGE_USER":             "${{ secrets.PACKAGE_USER }}",
+		"PACKAGE_TOKEN":            "${{ secrets.PACKAGE_TOKEN }}",
+		"DOCKERHUB_USER":           "${{ secrets.DOCKERHUB_USER }}",
+		"DOCKERHUB_PASS":           "${{ secrets.DOCKERHUB_PASS }}",
+		"SLACK_NOTIFY_WEBHOOK_URL": "${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}",
+	}
+
+	workflowYamlTmp, err := yaml.Marshal(workflow)
+	if err != nil {
+		return errors.Wrap(err, "failed to marshal workflow struct to YAML")
+	}
+
+	// remove the double quotation marks from the generated key "on": (note that the word "on" is a reserved word in sigs.k8s.io/yaml)
+	workflowYaml := strings.Replace(string(workflowYamlTmp), "\"on\":", "on:", 1)
+
+	if len(header) > (int(^uint(0)>>1) - len(workflowYaml)) {
+		return errors.New("size computation for allocation may overflow")
+	}
+	totalLen := len(header) + len(workflowYaml)
+
+	buf := bytes.NewBuffer(make([]byte, 0, totalLen))
+	err = license.Execute(buf, data)
+	if err != nil {
+		return errors.Wrap(err, "failed to execute template")
+	}
+	buf.WriteString(workflowYaml)
+	fileName := file.Join(rootDir, ".github/workflows", "dockers-"+data.Name+"-image.yaml")
+	_, err = file.OverWriteFile(ctx, fileName, buf, fs.ModePerm)
+	if err != nil {
+		return errors.Wrapf(err, "failed to writing workflow file for %s", fileName)
+	}
+	return nil
 }
 
-// PackageNode represents a node in the dependency tree.
-type PackageNode struct {
-	Name    string
-	Imports []*PackageNode
-}
-
-// ToSlice traverses the dependency tree and returns all dependencies as a slice.
-func (n PackageNode) ToSlice() (pkgs []string) {
-	pkgs = make([]string, 0, len(n.Imports)+1)
-	if n.Name != "command-line-arguments" {
-		pkgs = append(pkgs, n.Name)
+func genDockerfile(ctx context.Context, rootDir string, data Data) error {
+	buf := bytes.NewBuffer(make([]byte, 0, 1024))
+	log.Infof("Generating %s's Dockerfile", data.Name)
+	docker.Execute(buf, data)
+	tpl := buf.String()
+	buf.Reset()
+	template.Must(template.New("Dockerfile").Parse(tpl)).Execute(buf, data)
+	fileName := file.Join(rootDir, "dockers", data.PackageDir, "Dockerfile")
+	_, err := file.OverWriteFile(ctx, fileName, buf, fs.ModePerm)
+	if err != nil {
+		return errors.Wrapf(err, "failed to writing Dockerfile for %s", fileName)
 	}
-	for _, node := range n.Imports {
-		pkgs = append(pkgs, node.ToSlice()...)
-	}
-	return pkgs
+	return nil
 }
 
 // String returns string of the dependency tree in a readable format.
