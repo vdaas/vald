@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 impl serde::Serialize for Control {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -9299,12 +9297,12 @@ impl serde::Serialize for remove::timestamp::Operator {
         S: serde::Serializer,
     {
         let variant = match self {
-            Self::Eq => "Eq",
-            Self::Ne => "Ne",
-            Self::Ge => "Ge",
-            Self::Gt => "Gt",
-            Self::Le => "Le",
-            Self::Lt => "Lt",
+            Self::Eq => "EQ",
+            Self::Ne => "NE",
+            Self::Ge => "GE",
+            Self::Gt => "GT",
+            Self::Le => "LE",
+            Self::Lt => "LT",
         };
         serializer.serialize_str(variant)
     }
@@ -9315,7 +9313,7 @@ impl<'de> serde::Deserialize<'de> for remove::timestamp::Operator {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["Eq", "Ne", "Ge", "Gt", "Le", "Lt"];
+        const FIELDS: &[&str] = &["EQ", "NE", "GE", "GT", "LE", "LT"];
 
         struct GeneratedVisitor;
 
@@ -9355,12 +9353,12 @@ impl<'de> serde::Deserialize<'de> for remove::timestamp::Operator {
                 E: serde::de::Error,
             {
                 match value {
-                    "Eq" => Ok(remove::timestamp::Operator::Eq),
-                    "Ne" => Ok(remove::timestamp::Operator::Ne),
-                    "Ge" => Ok(remove::timestamp::Operator::Ge),
-                    "Gt" => Ok(remove::timestamp::Operator::Gt),
-                    "Le" => Ok(remove::timestamp::Operator::Le),
-                    "Lt" => Ok(remove::timestamp::Operator::Lt),
+                    "EQ" => Ok(remove::timestamp::Operator::Eq),
+                    "NE" => Ok(remove::timestamp::Operator::Ne),
+                    "GE" => Ok(remove::timestamp::Operator::Ge),
+                    "GT" => Ok(remove::timestamp::Operator::Gt),
+                    "LE" => Ok(remove::timestamp::Operator::Le),
+                    "LT" => Ok(remove::timestamp::Operator::Lt),
                     _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
                 }
             }

@@ -361,27 +361,27 @@ func timestampOpsFunc(ts []*payload.Remove_Timestamp) func(int64) bool {
 
 func timestampOpFunc(ts *payload.Remove_Timestamp) func(int64) bool {
 	switch ts.GetOperator() {
-	case payload.Remove_Timestamp_Eq:
+	case payload.Remove_Timestamp_EQ:
 		return func(t int64) bool {
 			return ts.GetTimestamp() == t
 		}
-	case payload.Remove_Timestamp_Ne:
+	case payload.Remove_Timestamp_NE:
 		return func(t int64) bool {
 			return ts.GetTimestamp() != t
 		}
-	case payload.Remove_Timestamp_Ge:
+	case payload.Remove_Timestamp_GE:
 		return func(t int64) bool {
 			return ts.GetTimestamp() <= t
 		}
-	case payload.Remove_Timestamp_Gt:
+	case payload.Remove_Timestamp_GT:
 		return func(t int64) bool {
 			return ts.GetTimestamp() < t
 		}
-	case payload.Remove_Timestamp_Le:
+	case payload.Remove_Timestamp_LE:
 		return func(t int64) bool {
 			return ts.GetTimestamp() >= t
 		}
-	case payload.Remove_Timestamp_Lt:
+	case payload.Remove_Timestamp_LT:
 		return func(t int64) bool {
 			return ts.GetTimestamp() > t
 		}

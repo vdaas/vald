@@ -14,29 +14,6 @@
 # limitations under the License.
 #
 
-CERT_DIR ?= $(ROOTDIR)/internal/test/data/tls
-DOMAIN ?= $(NAME).$(ORG).org
-EMAIL ?= $(NAME)@$(ORG).org
-STREET_ADDR ?= 1-3 Kioicho, Tokyo Garden Terrace Kioicho Tower, Chiyoda-ku, Tokyo 102-8282, Japan
-
-CA_CN ?= $(DOMAIN) Root CA
-CA_DAYS ?= 3650
-END_ENTITY_DAYS ?= 825
-
-CA_KEY := $(CERT_DIR)/ca.key
-CA_CRT := $(CERT_DIR)/ca.crt
-CA_PEM := $(CERT_DIR)/ca.pem
-CA_SRL := $(CERT_DIR)/ca.srl
-SERVER_KEY := $(CERT_DIR)/server.key
-SERVER_CSR := $(CERT_DIR)/server.csr
-SERVER_CRT := $(CERT_DIR)/server.crt
-CLIENT_KEY := $(CERT_DIR)/client.key
-CLIENT_CSR := $(CERT_DIR)/client.csr
-CLIENT_CRT := $(CERT_DIR)/client.crt
-
-INVALID_CA := $(CERT_DIR)/invalid-ca.pem
-INVALID_SERVER_CRT := $(CERT_DIR)/invalid-server.crt
-
 .PHONY: certs/gen
 ## generates SSL Certrificates for Testing
 certs/gen: certs/clean $(CERT_DIR) $(SERVER_CRT) $(CLIENT_CRT) $(CA_PEM) $(INVALID_CA) $(INVALID_SERVER_CRT) certs/tidy certs/verify

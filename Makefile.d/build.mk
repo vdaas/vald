@@ -64,74 +64,84 @@ cmd/agent/core/faiss/faiss: \
 	$(call go-build,agent/core/faiss,-linkmode 'external',$(LDFLAGS) $(FAISS_LDFLAGS), cgo,FAISS-$(FAISS_VERSION),$@)
 
 cmd/agent/sidecar/sidecar:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,agent/sidecar,,-static,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,agent/sidecar,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/discoverer/k8s/discoverer:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,discoverer/k8s,,-static,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,discoverer/k8s,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/gateway/lb/lb:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,gateway/lb,,-static,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,gateway/lb,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/gateway/filter/filter:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,gateway/filter,,-static,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,gateway/filter,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/gateway/mirror/mirror:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,gateway/mirror,,-static,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,gateway/mirror,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/manager/index/index:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,manager/index,,-static,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,manager/index,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/index/job/correction/index-correction:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,index/job/correction,,-static,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,index/job/correction,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/index/job/creation/index-creation:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,index/job/creation,,-static,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,index/job/creation,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/index/job/deletion/index-deletion:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,index/job/deletion,,-static,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,index/job/deletion,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/index/job/exportation/index-exportation:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,index/job/exportation,,-static,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,index/job/exportation,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/index/job/save/index-save:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,index/job/save,,-static,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,index/job/save,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/index/job/readreplica/rotate/readreplica-rotate:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,index/job/readreplica/rotate,,-static,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,index/job/readreplica/rotate,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/index/operator/index-operator:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,index/operator,,-static,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,index/operator,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 cmd/tools/benchmark/job/job:
 	$(eval CGO_ENABLED = 1)
-	$(call go-build,tools/benchmark/job,-linkmode 'external',$(LDFLAGS) $(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
+	$(call go-build,tools/benchmark/job,-linkmode 'external',$(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
 
 cmd/tools/benchmark/operator/operator:
-	$(eval CGO_ENABLED = 0)
-	$(call go-build,tools/benchmark/operator,,-static,,,$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,tools/benchmark/operator,-linkmode 'external',$(LDFLAGS) $(EXTLDFLAGS), cgo,,$@)
 
 example/client/client:
 	$(eval CGO_ENABLED = 1)
-	$(call go-example-build,example/client,-linkmode 'external',$(LDFLAGS) $(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
+	$(call go-example-build,example/client,-linkmode 'external',$(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
 
 rust/target/release/agent:
-	pushd rust && cargo build -p agent --release && popd
+	pushd rust && \
+	$(CC_ENV_VARS) \
+	OPENSSL_STATIC=1 \
+	PKG_CONFIG_ALL_STATIC=1 \
+	cargo build -p agent --release && \
+	popd
 
 rust/target/debug/agent:
-	pushd rust && cargo build -p agent && popd
+	pushd rust && \
+	$(CC_ENV_VARS) \
+	OPENSSL_STATIC=1 \
+	PKG_CONFIG_ALL_STATIC=1 \
+	cargo build -p agent && \
+	popd
 
 tests/v2/e2e/e2e:
 	$(eval CGO_ENABLED = 1)
@@ -159,74 +169,26 @@ binary/build/zip: \
 	artifacts/vald-mirror-gateway-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-readreplica-rotate-$(GOOS)-$(GOARCH).zip
 
-artifacts/vald-agent-ngt-$(GOOS)-$(GOARCH).zip: cmd/agent/core/ngt/ngt
+artifacts/%.zip:
 	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-agent-faiss-$(GOOS)-$(GOARCH).zip: cmd/agent/core/faiss/faiss
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-agent-sidecar-$(GOOS)-$(GOARCH).zip: cmd/agent/sidecar/sidecar
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-discoverer-k8s-$(GOOS)-$(GOARCH).zip: cmd/discoverer/k8s/discoverer
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-lb-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/lb/lb
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-filter-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/filter/filter
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-manager-index-$(GOOS)-$(GOARCH).zip: cmd/manager/index/index
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-benchmark-job-$(GOOS)-$(GOARCH).zip: cmd/tools/benchmark/job/job
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-benchmark-operator-$(GOOS)-$(GOARCH).zip: cmd/tools/benchmark/operator/operator
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-mirror-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/mirror/mirror
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-index-correction-$(GOOS)-$(GOARCH).zip: cmd/index/job/correction/index-correction
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-index-creation-$(GOOS)-$(GOARCH).zip: cmd/index/job/creation/index-creation
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-index-deletion-$(GOOS)-$(GOARCH).zip: cmd/index/job/deletion/index-deletion
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-index-exportation-$(GOOS)-$(GOARCH).zip: cmd/index/job/exportation/index-exportation
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-index-save-$(GOOS)-$(GOARCH).zip: cmd/index/job/save/index-save
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-readreplica-rotate-$(GOOS)-$(GOARCH).zip: cmd/index/job/readreplica/rotate/readreplica-rotate
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-index-operator-$(GOOS)-$(GOARCH).zip: cmd/index/operator/index-operator
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-example-client-$(GOOS)-$(GOARCH).zip: example/client/client
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
+	@case "$*" in \
+		"vald-agent-ngt-$(GOOS)-$(GOARCH)" ) binary="cmd/agent/core/ngt/ngt" ;; \
+		"vald-agent-faiss-$(GOOS)-$(GOARCH)" ) binary="cmd/agent/core/faiss/faiss" ;; \
+		"vald-agent-sidecar-$(GOOS)-$(GOARCH)" ) binary="cmd/agent/sidecar/sidecar" ;; \
+		"vald-discoverer-k8s-$(GOOS)-$(GOARCH)" ) binary="cmd/discoverer/k8s/discoverer" ;; \
+		"vald-lb-gateway-$(GOOS)-$(GOARCH)" ) binary="cmd/gateway/lb/lb" ;; \
+		"vald-filter-gateway-$(GOOS)-$(GOARCH)" ) binary="cmd/gateway/filter/filter" ;; \
+		"vald-manager-index-$(GOOS)-$(GOARCH)" ) binary="cmd/manager/index/index" ;; \
+		"vald-benchmark-job-$(GOOS)-$(GOARCH)" ) binary="cmd/tools/benchmark/job/job" ;; \
+		"vald-benchmark-operator-$(GOOS)-$(GOARCH)" ) binary="cmd/tools/benchmark/operator/operator" ;; \
+		"vald-mirror-gateway-$(GOOS)-$(GOARCH)" ) binary="cmd/gateway/mirror/mirror" ;; \
+		"vald-index-correction-$(GOOS)-$(GOARCH)" ) binary="cmd/index/job/correction/index-correction" ;; \
+		"vald-index-creation-$(GOOS)-$(GOARCH)" ) binary="cmd/index/job/creation/index-creation" ;; \
+		"vald-index-deletion-$(GOOS)-$(GOARCH)" ) binary="cmd/index/job/deletion/index-deletion" ;; \
+		"vald-index-exportation-$(GOOS)-$(GOARCH)" ) binary="cmd/index/job/exportation/index-exportation" ;; \
+		"vald-index-save-$(GOOS)-$(GOARCH)" ) binary="cmd/index/job/save/index-save" ;; \
+		"vald-readreplica-rotate-$(GOOS)-$(GOARCH)" ) binary="cmd/index/job/readreplica/rotate/readreplica-rotate" ;; \
+		"vald-index-operator-$(GOOS)-$(GOARCH)" ) binary="cmd/index/operator/index-operator" ;; \
+		"vald-example-client-$(GOOS)-$(GOARCH)" ) binary="example/client/client" ;; \
+	esac; \
+	zip --junk-paths $@ $$binary

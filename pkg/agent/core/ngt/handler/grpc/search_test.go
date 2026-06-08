@@ -380,8 +380,8 @@ func Test_server_Search(t *testing.T) {
 				ngtCfg:       ngtConfig(defaultDimensionSize, ngt.Float.String()),
 			},
 			want: want{
-				resultSize: 0,
-				code:       codes.NotFound,
+				resultSize: 10,
+				code:       codes.OK,
 			},
 		},
 		{

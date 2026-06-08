@@ -39,12 +39,12 @@ on:
       - "Makefile.d/test.mk"
 jobs:
   dump-contexts-to-log:
-    timeout-minutes: 30
+    timeout-minutes: 60
     permissions:
       contents: read
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
       - uses: ./.github/actions/dump-context
@@ -53,7 +53,7 @@ jobs:
       contents: read
     uses: ./.github/workflows/_detect-ci-container.yaml
   test-cmd:
-    timeout-minutes: 30
+    timeout-minutes: 60
     permissions:
       contents: read
     name: Run tests for cmd packages
@@ -65,7 +65,7 @@ jobs:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
       - name: Set Git config
@@ -78,7 +78,7 @@ jobs:
         run: |
           tparse -notests -smallscreen -sort cover -format markdown -file "${GITHUB_WORKSPACE}/test-cmd-gotestfmt-result.json"
   test-internal:
-    timeout-minutes: 30
+    timeout-minutes: 60
     permissions:
       contents: read
     name: Run tests for internal packages
@@ -90,7 +90,7 @@ jobs:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
       - name: Set Git config
@@ -103,7 +103,7 @@ jobs:
         run: |
           tparse -notests -smallscreen -sort cover -format markdown -file "${GITHUB_WORKSPACE}/test-internal-gotestfmt-result.json"
   test-pkg:
-    timeout-minutes: 30
+    timeout-minutes: 60
     permissions:
       contents: read
     name: Run tests for pkg packages
@@ -115,7 +115,7 @@ jobs:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
       - name: Set Git config

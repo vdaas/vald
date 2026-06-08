@@ -27,6 +27,16 @@ ARG TARGETARCH
 ARG TARGETOS
 ARG GO_VERSION
 ARG RUST_VERSION
+ARG CC
+ARG CXX
+ARG LLD
+ARG AR
+ARG NM
+ARG RANLIB
+ARG CFLAGS
+ARG CXXFLAGS
+ARG LDFLAGS
+ARG SUDO
 ENV APP_NAME=agent
 ENV DEBIAN_FRONTEND=noninteractive
 ENV HOME=/root
@@ -34,16 +44,30 @@ ENV INITRD=No
 ENV LANG=en_US.UTF-8
 ENV LANGUAGE=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
+ENV LIBZ_STATIC=1
+ENV OPENSSL_STATIC=1
 ENV ORG=vdaas
 ENV PKG=agent/core/agent
+ENV PKG_CONFIG_ALL_STATIC=1
 ENV REPO=vald
-ENV RUSTFLAGS="-Clinker=clang -Clink-arg=-fuse-ld=lld"
+ENV RUSTFLAGS="-Clinker=clang -Clink-arg=-fuse-ld=lld -Clink-arg=-static-libstdc++ -Clink-arg=-static-libgcc"
 ENV RUST_HOME=/usr/local/lib/rust
 ENV TZ=Etc/UTC
 ENV USER=root
+ENV YEAR=2026
 ENV CARGO_HOME=${RUST_HOME}/cargo
 ENV RUSTUP_HOME=${RUST_HOME}/rustup
 ENV PATH=${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:/usr/local/bin:${PATH}
+ENV CC=${CC:-${CC}}
+ENV CXX=${CXX:-${CXX}}
+ENV LLD=${LLD:-${LLD}}
+ENV AR=${AR:-${AR}}
+ENV NM=${NM:-${NM}}
+ENV RANLIB=${RANLIB:-${RANLIB}}
+ENV CFLAGS=${CFLAGS:-${CFLAGS}}
+ENV CXXFLAGS=${CXXFLAGS:-${CXXFLAGS}}
+ENV LDFLAGS=${LDFLAGS:-${LDFLAGS}}
+ENV SUDO=${SUDO:-${SUDO}}
 WORKDIR ${HOME}/rust/src/github.com/${ORG}/${REPO}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 #skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
@@ -58,26 +82,27 @@ RUN --mount=type=bind,target=.,rw \
     && apt-get update -y \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends --fix-missing \
-    build-essential \
     ca-certificates \
     curl \
     tzdata \
     locales \
     git \
-    cmake \
-    g++ \
-    gcc \
-    libssl-dev \
-    unzip \
+    build-essential \
+    clang \
+    gfortran \
     liblapack-dev \
     libomp-dev \
     libopenblas-dev \
-    gfortran \
-    pkgconf \
-    protobuf-compiler \
     libprotobuf-dev \
-    clang \
+    libssl-dev \
+    libzstd-dev \
     lld \
+    llvm \
+    pkg-config \
+    protobuf-compiler \
+    python3 \
+    unzip \
+    zlib1g-dev \
     && ldconfig \
     && echo "${LANG} UTF-8" > /etc/locale.gen \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
@@ -87,8 +112,10 @@ RUN --mount=type=bind,target=.,rw \
     && apt-get clean \
     && apt-get autoclean -y \
     && apt-get autoremove -y \
+    && make ninja/install \
+    && make cmake/install \
     && make RUST_VERSION="${RUST_VERSION}" rust/install \
-    && CC=clang CXX=clang++ make CFLAGS="-flto=thin" CXXFLAGS="-flto=thin" NGT_EXTRA_CMAKE_FLAGS="-DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld" ngt/install \
+    && make ngt/install \
     && make faiss/install \
     && make rust/target/release/${APP_NAME} \
     && mv "rust/target/release/${APP_NAME}" "/usr/bin/${APP_NAME}" \
