@@ -3,7 +3,10 @@
   "title": "Values",
   "type": "object",
   "properties": {
-    "affinity": { "type": "object", "description": "affinity" },
+    "affinity": {
+      "type": "object",
+      "description": "affinity"
+    },
     "annotations": {
       "type": "object",
       "description": "deployment annotations"
@@ -26,10 +29,24 @@
         "pullPolicy": {
           "type": "string",
           "description": "image pull policy",
-          "enum": ["Always", "Never", "IfNotPresent"]
+          "enum": [
+            "Always",
+            "Never",
+            "IfNotPresent"
+          ]
         },
-        "repository": { "type": "string", "description": "image repository" },
-        "tag": { "type": "string", "description": "image tag" }
+        "registry": {
+          "type": "string",
+          "description": "image registry (e.g. \"myregistry.example.com\")"
+        },
+        "repository": {
+          "type": "string",
+          "description": "image repository"
+        },
+        "tag": {
+          "type": "string",
+          "description": "image tag"
+        }
       }
     },
     "leaderElectionID": {
@@ -50,8 +67,14 @@
         "httpGet": {
           "type": "object",
           "properties": {
-            "path": { "type": "string", "description": "readiness probe path" },
-            "port": { "type": "string", "description": "readiness probe port" },
+            "path": {
+              "type": "string",
+              "description": "readiness probe path"
+            },
+            "port": {
+              "type": "string",
+              "description": "readiness probe port"
+            },
             "scheme": {
               "type": "string",
               "description": "readiness probe scheme"
@@ -82,17 +105,28 @@
         "format": {
           "type": "string",
           "description": "logging format of operator (console or json)",
-          "enum": ["console", "json"]
+          "enum": [
+            "console",
+            "json"
+          ]
         },
         "level": {
           "type": "string",
           "description": "logging level of operator (debug, info, or error)",
-          "enum": ["debug", "info", "error"]
+          "enum": [
+            "debug",
+            "info",
+            "error"
+          ]
         },
         "stacktraceLevel": {
           "type": "string",
           "description": "minimum log level triggers stacktrace generation",
-          "enum": ["debug", "info", "error"]
+          "enum": [
+            "debug",
+            "info",
+            "error"
+          ]
         }
       }
     },
@@ -104,7 +138,10 @@
       "type": "integer",
       "description": "port of metrics endpoint"
     },
-    "name": { "type": "string", "description": "name of the deployment" },
+    "name": {
+      "type": "string",
+      "description": "name of the deployment"
+    },
     "namespaced": {
       "type": "boolean",
       "description": "if it is true, operator will behave as a namespace-scoped operator, if it is false, it will behave as a cluster-scoped operator."
@@ -113,7 +150,10 @@
       "type": "object",
       "description": "node labels for pod assignment"
     },
-    "podAnnotations": { "type": "object", "description": "pod annotations" },
+    "podAnnotations": {
+      "type": "object",
+      "description": "pod annotations"
+    },
     "podSecurityContext": {
       "type": "object",
       "description": "security context for pod"
@@ -145,8 +185,14 @@
         "httpGet": {
           "type": "object",
           "properties": {
-            "path": { "type": "string", "description": "readiness probe path" },
-            "port": { "type": "string", "description": "readiness probe port" },
+            "path": {
+              "type": "string",
+              "description": "readiness probe path"
+            },
+            "port": {
+              "type": "string",
+              "description": "readiness probe port"
+            },
             "scheme": {
               "type": "string",
               "description": "readiness probe scheme"
@@ -175,7 +221,10 @@
       "type": "string",
       "description": "reconcile duration of operator"
     },
-    "replicas": { "type": "integer", "description": "number of replicas" },
+    "replicas": {
+      "type": "integer",
+      "description": "number of replicas"
+    },
     "resources": {
       "type": "object",
       "description": "kubernetes resources of pod"
@@ -191,16 +240,26 @@
           "type": "object",
           "description": "service annotations"
         },
-        "enabled": { "type": "boolean", "description": "service enabled" },
+        "enabled": {
+          "type": "boolean",
+          "description": "service enabled"
+        },
         "externalTrafficPolicy": {
           "type": "string",
           "description": "external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local"
         },
-        "labels": { "type": "object", "description": "service labels" },
+        "labels": {
+          "type": "object",
+          "description": "service labels"
+        },
         "type": {
           "type": "string",
           "description": "service type: ClusterIP, LoadBalancer or NodePort",
-          "enum": ["ClusterIP", "LoadBalancer", "NodePort"]
+          "enum": [
+            "ClusterIP",
+            "LoadBalancer",
+            "NodePort"
+          ]
         }
       }
     },
@@ -211,13 +270,18 @@
           "type": "boolean",
           "description": "service account will be created"
         },
-        "name": { "type": "string", "description": "name of service account" }
+        "name": {
+          "type": "string",
+          "description": "name of service account"
+        }
       }
     },
     "tolerations": {
       "type": "array",
       "description": "tolerations",
-      "items": { "type": "object" }
+      "items": {
+        "type": "object"
+      }
     },
     "watchNamespaces": {
       "type": "string",

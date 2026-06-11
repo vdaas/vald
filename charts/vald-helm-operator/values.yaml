@@ -22,6 +22,9 @@ name: vald-helm-operator
 replicas: 2
 # @schema {"name": "image", "type": "object"}
 image:
+  # @schema {"name": "image.registry", "type": "string"}
+  # image.registry -- image registry (e.g. "myregistry.example.com")
+  registry: ""
   # @schema {"name": "image.repository", "type": "string"}
   # image.repository -- image repository
   repository: vdaas/vald-helm-operator

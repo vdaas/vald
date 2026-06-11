@@ -1143,7 +1143,11 @@ spec:
                                 - VerifyIfGiven
                                 - RequireAndVerify
                               type: string
+                            crl:
+                              type: string
                             enabled:
+                              type: boolean
+                            hot_reload:
                               type: boolean
                             insecure_skip_verify:
                               type: boolean
@@ -1162,13 +1166,8 @@ spec:
                           type: object
                           x-kubernetes-preserve-unknown-fields: true
                       type: object
-                    serviceAccount:
-                      properties:
-                        enabled:
-                          type: boolean
-                        name:
-                          type: string
-                      type: object
+                    serviceAccountName:
+                      type: string
                     serviceType:
                       enum:
                         - ClusterIP
@@ -1322,7 +1321,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -2141,7 +2144,11 @@ spec:
                                     - VerifyIfGiven
                                     - RequireAndVerify
                                   type: string
+                                crl:
+                                  type: string
                                 enabled:
+                                  type: boolean
+                                hot_reload:
                                   type: boolean
                                 insecure_skip_verify:
                                   type: boolean
@@ -2378,7 +2385,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -2422,7 +2433,11 @@ spec:
                                     - VerifyIfGiven
                                     - RequireAndVerify
                                   type: string
+                                crl:
+                                  type: string
                                 enabled:
+                                  type: boolean
+                                hot_reload:
                                   type: boolean
                                 insecure_skip_verify:
                                   type: boolean
@@ -2437,6 +2452,8 @@ spec:
                       type: object
                     image:
                       properties:
+                        registry:
+                          type: string
                         tag:
                           type: string
                       type: object
@@ -3148,7 +3165,11 @@ spec:
                                 - VerifyIfGiven
                                 - RequireAndVerify
                               type: string
+                            crl:
+                              type: string
                             enabled:
+                              type: boolean
+                            hot_reload:
                               type: boolean
                             insecure_skip_verify:
                               type: boolean
@@ -3295,7 +3316,11 @@ spec:
                                     - VerifyIfGiven
                                     - RequireAndVerify
                                   type: string
+                                crl:
+                                  type: string
                                 enabled:
+                                  type: boolean
+                                hot_reload:
                                   type: boolean
                                 insecure_skip_verify:
                                   type: boolean
@@ -4137,7 +4162,11 @@ spec:
                                 - VerifyIfGiven
                                 - RequireAndVerify
                               type: string
+                            crl:
+                              type: string
                             enabled:
+                              type: boolean
+                            hot_reload:
                               type: boolean
                             insecure_skip_verify:
                               type: boolean
@@ -4156,13 +4185,8 @@ spec:
                           type: object
                           x-kubernetes-preserve-unknown-fields: true
                       type: object
-                    serviceAccount:
-                      properties:
-                        enabled:
-                          type: boolean
-                        name:
-                          type: string
-                      type: object
+                    serviceAccountName:
+                      type: string
                     serviceType:
                       enum:
                         - ClusterIP
@@ -4432,7 +4456,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -4476,7 +4504,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -4661,7 +4693,11 @@ spec:
                                                 - VerifyIfGiven
                                                 - RequireAndVerify
                                               type: string
+                                            crl:
+                                              type: string
                                             enabled:
+                                              type: boolean
+                                            hot_reload:
                                               type: boolean
                                             insecure_skip_verify:
                                               type: boolean
@@ -4705,7 +4741,11 @@ spec:
                                         - VerifyIfGiven
                                         - RequireAndVerify
                                       type: string
+                                    crl:
+                                      type: string
                                     enabled:
+                                      type: boolean
+                                    hot_reload:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
@@ -4883,7 +4923,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -4927,7 +4971,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -5757,7 +5805,11 @@ spec:
                                     - VerifyIfGiven
                                     - RequireAndVerify
                                   type: string
+                                crl:
+                                  type: string
                                 enabled:
+                                  type: boolean
+                                hot_reload:
                                   type: boolean
                                 insecure_skip_verify:
                                   type: boolean
@@ -5776,13 +5828,8 @@ spec:
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
                           type: object
-                        serviceAccount:
-                          properties:
-                            enabled:
-                              type: boolean
-                            name:
-                              type: string
-                          type: object
+                        serviceAccountName:
+                          type: string
                         serviceType:
                           enum:
                             - ClusterIP
@@ -6052,7 +6099,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -6096,7 +6147,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -6272,7 +6327,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -6316,7 +6375,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -6494,7 +6557,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -6538,7 +6605,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -6574,6 +6645,8 @@ spec:
                                 - Always
                                 - Never
                                 - IfNotPresent
+                              type: string
+                            registry:
                               type: string
                             repository:
                               type: string
@@ -7358,7 +7431,11 @@ spec:
                                     - VerifyIfGiven
                                     - RequireAndVerify
                                   type: string
+                                crl:
+                                  type: string
                                 enabled:
+                                  type: boolean
+                                hot_reload:
                                   type: boolean
                                 insecure_skip_verify:
                                   type: boolean
@@ -7377,13 +7454,8 @@ spec:
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
                           type: object
-                        serviceAccount:
-                          properties:
-                            enabled:
-                              type: boolean
-                            name:
-                              type: string
-                          type: object
+                        serviceAccountName:
+                          type: string
                         serviceType:
                           enum:
                             - ClusterIP
@@ -7663,7 +7735,11 @@ spec:
                                                 - VerifyIfGiven
                                                 - RequireAndVerify
                                               type: string
+                                            crl:
+                                              type: string
                                             enabled:
+                                              type: boolean
+                                            hot_reload:
                                               type: boolean
                                             insecure_skip_verify:
                                               type: boolean
@@ -7707,7 +7783,11 @@ spec:
                                         - VerifyIfGiven
                                         - RequireAndVerify
                                       type: string
+                                    crl:
+                                      type: string
                                     enabled:
+                                      type: boolean
+                                    hot_reload:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
@@ -7791,7 +7871,11 @@ spec:
                                         - VerifyIfGiven
                                         - RequireAndVerify
                                       type: string
+                                    crl:
+                                      type: string
                                     enabled:
+                                      type: boolean
+                                    hot_reload:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
@@ -8606,7 +8690,11 @@ spec:
                                     - VerifyIfGiven
                                     - RequireAndVerify
                                   type: string
+                                crl:
+                                  type: string
                                 enabled:
+                                  type: boolean
+                                hot_reload:
                                   type: boolean
                                 insecure_skip_verify:
                                   type: boolean
@@ -8625,13 +8713,8 @@ spec:
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
                           type: object
-                        serviceAccount:
-                          properties:
-                            enabled:
-                              type: boolean
-                            name:
-                              type: string
-                          type: object
+                        serviceAccountName:
+                          type: string
                         serviceType:
                           enum:
                             - ClusterIP
@@ -8940,7 +9023,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -8984,7 +9071,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -9160,7 +9251,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -9204,7 +9299,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -9390,7 +9489,11 @@ spec:
                                                 - VerifyIfGiven
                                                 - RequireAndVerify
                                               type: string
+                                            crl:
+                                              type: string
                                             enabled:
+                                              type: boolean
+                                            hot_reload:
                                               type: boolean
                                             insecure_skip_verify:
                                               type: boolean
@@ -9434,7 +9537,11 @@ spec:
                                         - VerifyIfGiven
                                         - RequireAndVerify
                                       type: string
+                                    crl:
+                                      type: string
                                     enabled:
+                                      type: boolean
+                                    hot_reload:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
@@ -10146,7 +10253,11 @@ spec:
                                         - VerifyIfGiven
                                         - RequireAndVerify
                                       type: string
+                                    crl:
+                                      type: string
                                     enabled:
+                                      type: boolean
+                                    hot_reload:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
@@ -10156,6 +10267,8 @@ spec:
                                       type: string
                                   type: object
                               type: object
+                            serviceAccountName:
+                              type: string
                             startingDeadlineSeconds:
                               type: integer
                             stream_list_concurrency:
@@ -10394,7 +10507,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -10438,7 +10555,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -10614,7 +10735,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -10658,7 +10783,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -11376,7 +11505,11 @@ spec:
                                         - VerifyIfGiven
                                         - RequireAndVerify
                                       type: string
+                                    crl:
+                                      type: string
                                     enabled:
+                                      type: boolean
+                                    hot_reload:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
@@ -11386,6 +11519,8 @@ spec:
                                       type: string
                                   type: object
                               type: object
+                            serviceAccountName:
+                              type: string
                             startingDeadlineSeconds:
                               type: integer
                             suspend:
@@ -11623,7 +11758,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -11667,7 +11806,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -11843,7 +11986,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -11887,7 +12034,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -12607,7 +12758,11 @@ spec:
                                         - VerifyIfGiven
                                         - RequireAndVerify
                                       type: string
+                                    crl:
+                                      type: string
                                     enabled:
+                                      type: boolean
+                                    hot_reload:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
@@ -12617,6 +12772,8 @@ spec:
                                       type: string
                                   type: object
                               type: object
+                            serviceAccountName:
+                              type: string
                             startingDeadlineSeconds:
                               type: integer
                             suspend:
@@ -12843,7 +13000,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -12887,7 +13048,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -13063,7 +13228,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -13107,7 +13276,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -13279,6 +13452,20 @@ spec:
                             annotations:
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
+                            clusterRole:
+                              properties:
+                                enabled:
+                                  type: boolean
+                                name:
+                                  type: string
+                              type: object
+                            clusterRoleBinding:
+                              properties:
+                                enabled:
+                                  type: boolean
+                                name:
+                                  type: string
+                              type: object
                             enabled:
                               type: boolean
                             env:
@@ -14051,7 +14238,11 @@ spec:
                                         - VerifyIfGiven
                                         - RequireAndVerify
                                       type: string
+                                    crl:
+                                      type: string
                                     enabled:
+                                      type: boolean
+                                    hot_reload:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
@@ -14061,6 +14252,8 @@ spec:
                                       type: string
                                   type: object
                               type: object
+                            serviceAccountName:
+                              type: string
                             terminationGracePeriodSeconds:
                               minimum: 0
                               type: integer
@@ -14825,7 +15018,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -14835,13 +15032,8 @@ spec:
                                           type: string
                                       type: object
                                   type: object
-                                serviceAccount:
-                                  properties:
-                                    enabled:
-                                      type: boolean
-                                    name:
-                                      type: string
-                                  type: object
+                                serviceAccountName:
+                                  type: string
                                 target_read_replica_id_annotations_key:
                                   type: string
                                 ttlSecondsAfterFinished:
@@ -15091,7 +15283,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -15135,7 +15331,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -15311,7 +15511,11 @@ spec:
                                                     - VerifyIfGiven
                                                     - RequireAndVerify
                                                   type: string
+                                                crl:
+                                                  type: string
                                                 enabled:
+                                                  type: boolean
+                                                hot_reload:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
@@ -15355,7 +15559,11 @@ spec:
                                             - VerifyIfGiven
                                             - RequireAndVerify
                                           type: string
+                                        crl:
+                                          type: string
                                         enabled:
+                                          type: boolean
+                                        hot_reload:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
@@ -16073,7 +16281,11 @@ spec:
                                         - VerifyIfGiven
                                         - RequireAndVerify
                                       type: string
+                                    crl:
+                                      type: string
                                     enabled:
+                                      type: boolean
+                                    hot_reload:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
@@ -16083,6 +16295,8 @@ spec:
                                       type: string
                                   type: object
                               type: object
+                            serviceAccountName:
+                              type: string
                             startingDeadlineSeconds:
                               type: integer
                             suspend:
@@ -16710,7 +16924,11 @@ spec:
                                     - VerifyIfGiven
                                     - RequireAndVerify
                                   type: string
+                                crl:
+                                  type: string
                                 enabled:
+                                  type: boolean
+                                hot_reload:
                                   type: boolean
                                 insecure_skip_verify:
                                   type: boolean
@@ -16729,6 +16947,8 @@ spec:
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
                           type: object
+                        serviceAccountName:
+                          type: string
                         serviceType:
                           enum:
                             - ClusterIP
