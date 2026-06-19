@@ -29,54 +29,54 @@ import (
 
 func TestCassandra_Bind(t *testing.T) {
 	type fields struct {
-		Hosts                    []string
-		CQLVersion               string
-		ProtoVersion             int
-		Timeout                  string
-		ConnectTimeout           string
-		Port                     int
-		Keyspace                 string
-		NumConns                 int
+		PoolConfig               *PoolConfig
+		Net                      *Net
+		TLS                      *TLS
+		HostFilter               *HostFilter
+		ReconnectionPolicy       *ReconnectionPolicy
+		RetryPolicy              *RetryPolicy
+		VKTable                  string
+		ReconnectInterval        string
 		Consistency              string
 		SerialConsistency        string
 		Username                 string
 		Password                 string
-		PoolConfig               *PoolConfig
-		RetryPolicy              *RetryPolicy
-		ReconnectionPolicy       *ReconnectionPolicy
-		HostFilter               *HostFilter
+		Keyspace                 string
+		KVTable                  string
+		ConnectTimeout           string
+		Timeout                  string
 		SocketKeepalive          string
-		MaxPreparedStmts         int
-		MaxRoutingKeyInfo        int
-		PageSize                 int
-		TLS                      *TLS
-		Net                      *Net
-		EnableHostVerification   bool
-		DefaultTimestamp         bool
-		ReconnectInterval        string
+		WriteCoalesceWaitTime    string
+		CQLVersion               string
 		MaxWaitSchemaAgreement   string
-		IgnorePeerAddr           bool
-		DisableInitialHostLookup bool
-		DisableNodeStatusEvents  bool
+		VectorBackupTable        string
+		Hosts                    []string
+		MaxRoutingKeyInfo        int
+		MaxPreparedStmts         int
+		ProtoVersion             int
+		PageSize                 int
+		Port                     int
+		NumConns                 int
 		DisableTopologyEvents    bool
+		DefaultTimestamp         bool
 		DisableSchemaEvents      bool
 		DisableSkipMetadata      bool
 		DefaultIdempotence       bool
-		WriteCoalesceWaitTime    string
-		KVTable                  string
-		VKTable                  string
-		VectorBackupTable        string
+		DisableNodeStatusEvents  bool
+		DisableInitialHostLookup bool
+		IgnorePeerAddr           bool
+		EnableHostVerification   bool
 	}
 	type want struct {
 		want *Cassandra
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *Cassandra) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *Cassandra) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -377,55 +377,55 @@ func TestCassandra_Bind(t *testing.T) {
 
 func TestCassandra_Opts(t *testing.T) {
 	type fields struct {
-		Hosts                    []string
-		CQLVersion               string
-		ProtoVersion             int
-		Timeout                  string
-		ConnectTimeout           string
-		Port                     int
-		Keyspace                 string
-		NumConns                 int
+		PoolConfig               *PoolConfig
+		Net                      *Net
+		TLS                      *TLS
+		HostFilter               *HostFilter
+		ReconnectionPolicy       *ReconnectionPolicy
+		RetryPolicy              *RetryPolicy
+		VKTable                  string
+		ReconnectInterval        string
 		Consistency              string
 		SerialConsistency        string
 		Username                 string
 		Password                 string
-		PoolConfig               *PoolConfig
-		RetryPolicy              *RetryPolicy
-		ReconnectionPolicy       *ReconnectionPolicy
-		HostFilter               *HostFilter
+		Keyspace                 string
+		KVTable                  string
+		ConnectTimeout           string
+		Timeout                  string
 		SocketKeepalive          string
-		MaxPreparedStmts         int
-		MaxRoutingKeyInfo        int
-		PageSize                 int
-		TLS                      *TLS
-		Net                      *Net
-		EnableHostVerification   bool
-		DefaultTimestamp         bool
-		ReconnectInterval        string
+		WriteCoalesceWaitTime    string
+		CQLVersion               string
 		MaxWaitSchemaAgreement   string
-		IgnorePeerAddr           bool
-		DisableInitialHostLookup bool
-		DisableNodeStatusEvents  bool
+		VectorBackupTable        string
+		Hosts                    []string
+		MaxRoutingKeyInfo        int
+		MaxPreparedStmts         int
+		ProtoVersion             int
+		PageSize                 int
+		Port                     int
+		NumConns                 int
 		DisableTopologyEvents    bool
+		DefaultTimestamp         bool
 		DisableSchemaEvents      bool
 		DisableSkipMetadata      bool
 		DefaultIdempotence       bool
-		WriteCoalesceWaitTime    string
-		KVTable                  string
-		VKTable                  string
-		VectorBackupTable        string
+		DisableNodeStatusEvents  bool
+		DisableInitialHostLookup bool
+		IgnorePeerAddr           bool
+		EnableHostVerification   bool
 	}
 	type want struct {
-		wantOpts []cassandra.Option
 		err      error
+		wantOpts []cassandra.Option
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, []cassandra.Option, error) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		want       want
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, gotOpts []cassandra.Option, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1014,9 +1014,9 @@ func TestCassandra_Opts(t *testing.T) {
 //
 // func TestRetryPolicy_Bind(t *testing.T) {
 // 	type fields struct {
-// 		NumRetries  int
 // 		MinDuration string
 // 		MaxDuration string
+// 		NumRetries  int
 // 	}
 // 	type want struct {
 // 		want *RetryPolicy
@@ -1041,9 +1041,9 @@ func TestCassandra_Opts(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           NumRetries:0,
 // 		           MinDuration:"",
 // 		           MaxDuration:"",
+// 		           NumRetries:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1062,9 +1062,9 @@ func TestCassandra_Opts(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           NumRetries:0,
 // 		           MinDuration:"",
 // 		           MaxDuration:"",
+// 		           NumRetries:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1095,9 +1095,9 @@ func TestCassandra_Opts(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			rp := &RetryPolicy{
-// 				NumRetries:  test.fields.NumRetries,
 // 				MinDuration: test.fields.MinDuration,
 // 				MaxDuration: test.fields.MaxDuration,
+// 				NumRetries:  test.fields.NumRetries,
 // 			}
 //
 // 			got := rp.Bind()
@@ -1110,8 +1110,8 @@ func TestCassandra_Opts(t *testing.T) {
 //
 // func TestReconnectionPolicy_Bind(t *testing.T) {
 // 	type fields struct {
-// 		MaxRetries      int
 // 		InitialInterval string
+// 		MaxRetries      int
 // 	}
 // 	type want struct {
 // 		want *ReconnectionPolicy
@@ -1136,8 +1136,8 @@ func TestCassandra_Opts(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           MaxRetries:0,
 // 		           InitialInterval:"",
+// 		           MaxRetries:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1156,8 +1156,8 @@ func TestCassandra_Opts(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           MaxRetries:0,
 // 		           InitialInterval:"",
+// 		           MaxRetries:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1188,8 +1188,8 @@ func TestCassandra_Opts(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			rp := &ReconnectionPolicy{
-// 				MaxRetries:      test.fields.MaxRetries,
 // 				InitialInterval: test.fields.InitialInterval,
+// 				MaxRetries:      test.fields.MaxRetries,
 // 			}
 //
 // 			got := rp.Bind()
@@ -1202,9 +1202,9 @@ func TestCassandra_Opts(t *testing.T) {
 //
 // func TestHostFilter_Bind(t *testing.T) {
 // 	type fields struct {
-// 		Enabled    bool
 // 		DataCenter string
 // 		WhiteList  []string
+// 		Enabled    bool
 // 	}
 // 	type want struct {
 // 		want *HostFilter
@@ -1229,9 +1229,9 @@ func TestCassandra_Opts(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           Enabled:false,
 // 		           DataCenter:"",
 // 		           WhiteList:nil,
+// 		           Enabled:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1250,9 +1250,9 @@ func TestCassandra_Opts(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           Enabled:false,
 // 		           DataCenter:"",
 // 		           WhiteList:nil,
+// 		           Enabled:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1283,9 +1283,9 @@ func TestCassandra_Opts(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			hf := &HostFilter{
-// 				Enabled:    test.fields.Enabled,
 // 				DataCenter: test.fields.DataCenter,
 // 				WhiteList:  test.fields.WhiteList,
+// 				Enabled:    test.fields.Enabled,
 // 			}
 //
 // 			got := hf.Bind()

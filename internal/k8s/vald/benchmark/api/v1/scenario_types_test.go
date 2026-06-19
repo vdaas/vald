@@ -21,9 +21,9 @@ package v1
 // 	}
 // 	type fields struct {
 // 		TypeMeta   metav1.TypeMeta
+// 		Status     ValdBenchmarkScenarioStatus
 // 		ObjectMeta metav1.ObjectMeta
 // 		Spec       ValdBenchmarkScenarioSpec
-// 		Status     ValdBenchmarkScenarioStatus
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -48,9 +48,9 @@ package v1
 // 		       },
 // 		       fields: fields {
 // 		           TypeMeta:nil,
+// 		           Status:nil,
 // 		           ObjectMeta:nil,
 // 		           Spec:ValdBenchmarkScenarioSpec{},
-// 		           Status:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -73,9 +73,9 @@ package v1
 // 		           },
 // 		           fields: fields {
 // 		           TypeMeta:nil,
+// 		           Status:nil,
 // 		           ObjectMeta:nil,
 // 		           Spec:ValdBenchmarkScenarioSpec{},
-// 		           Status:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -107,9 +107,9 @@ package v1
 // 			}
 // 			in := &ValdBenchmarkScenario{
 // 				TypeMeta:   test.fields.TypeMeta,
+// 				Status:     test.fields.Status,
 // 				ObjectMeta: test.fields.ObjectMeta,
 // 				Spec:       test.fields.Spec,
-// 				Status:     test.fields.Status,
 // 			}
 //
 // 			in.DeepCopyInto(test.args.out)
@@ -123,9 +123,9 @@ package v1
 // func TestValdBenchmarkScenario_DeepCopy(t *testing.T) {
 // 	type fields struct {
 // 		TypeMeta   metav1.TypeMeta
+// 		Status     ValdBenchmarkScenarioStatus
 // 		ObjectMeta metav1.ObjectMeta
 // 		Spec       ValdBenchmarkScenarioSpec
-// 		Status     ValdBenchmarkScenarioStatus
 // 	}
 // 	type want struct {
 // 		want *ValdBenchmarkScenario
@@ -151,9 +151,9 @@ package v1
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           TypeMeta:nil,
+// 		           Status:nil,
 // 		           ObjectMeta:nil,
 // 		           Spec:ValdBenchmarkScenarioSpec{},
-// 		           Status:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -173,9 +173,9 @@ package v1
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           TypeMeta:nil,
+// 		           Status:nil,
 // 		           ObjectMeta:nil,
 // 		           Spec:ValdBenchmarkScenarioSpec{},
-// 		           Status:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -207,9 +207,9 @@ package v1
 // 			}
 // 			in := &ValdBenchmarkScenario{
 // 				TypeMeta:   test.fields.TypeMeta,
+// 				Status:     test.fields.Status,
 // 				ObjectMeta: test.fields.ObjectMeta,
 // 				Spec:       test.fields.Spec,
-// 				Status:     test.fields.Status,
 // 			}
 //
 // 			got := in.DeepCopy()
@@ -223,9 +223,9 @@ package v1
 // func TestValdBenchmarkScenario_DeepCopyObject(t *testing.T) {
 // 	type fields struct {
 // 		TypeMeta   metav1.TypeMeta
+// 		Status     ValdBenchmarkScenarioStatus
 // 		ObjectMeta metav1.ObjectMeta
 // 		Spec       ValdBenchmarkScenarioSpec
-// 		Status     ValdBenchmarkScenarioStatus
 // 	}
 // 	type want struct {
 // 		want runtime.Object
@@ -251,9 +251,9 @@ package v1
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           TypeMeta:nil,
+// 		           Status:nil,
 // 		           ObjectMeta:nil,
 // 		           Spec:ValdBenchmarkScenarioSpec{},
-// 		           Status:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -273,9 +273,9 @@ package v1
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           TypeMeta:nil,
+// 		           Status:nil,
 // 		           ObjectMeta:nil,
 // 		           Spec:ValdBenchmarkScenarioSpec{},
-// 		           Status:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -307,9 +307,9 @@ package v1
 // 			}
 // 			in := &ValdBenchmarkScenario{
 // 				TypeMeta:   test.fields.TypeMeta,
+// 				Status:     test.fields.Status,
 // 				ObjectMeta: test.fields.ObjectMeta,
 // 				Spec:       test.fields.Spec,
-// 				Status:     test.fields.Status,
 // 			}
 //
 // 			got := in.DeepCopyObject()

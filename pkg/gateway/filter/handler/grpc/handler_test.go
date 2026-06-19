@@ -109,24 +109,24 @@ package grpc
 // 		req *payload.Search_ObjectRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Response
@@ -160,24 +160,24 @@ package grpc
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -200,24 +200,24 @@ package grpc
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -248,24 +248,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			gotRes, err := s.SearchObject(test.args.ctx, test.args.req)
@@ -282,24 +282,24 @@ package grpc
 // 		reqs *payload.Search_MultiObjectRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Responses
@@ -333,24 +333,24 @@ package grpc
 // 		           reqs:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -373,24 +373,24 @@ package grpc
 // 		           reqs:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -421,24 +421,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			gotRes, err := s.MultiSearchObject(test.args.ctx, test.args.reqs)
@@ -454,24 +454,24 @@ package grpc
 // 		stream vald.Filter_StreamSearchObjectServer
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		err error
@@ -500,24 +500,24 @@ package grpc
 // 		           stream:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -539,24 +539,24 @@ package grpc
 // 		           stream:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -587,24 +587,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			err := s.StreamSearchObject(test.args.stream)
@@ -621,24 +621,24 @@ package grpc
 // 		req *payload.Search_ObjectRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		want *payload.Search_Response
@@ -672,24 +672,24 @@ package grpc
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -712,24 +712,24 @@ package grpc
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -760,24 +760,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			got, err := s.LinearSearchObject(test.args.ctx, test.args.req)
@@ -794,24 +794,24 @@ package grpc
 // 		reqs *payload.Search_MultiObjectRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Responses
@@ -845,24 +845,24 @@ package grpc
 // 		           reqs:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -885,24 +885,24 @@ package grpc
 // 		           reqs:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -933,24 +933,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			gotRes, err := s.MultiLinearSearchObject(test.args.ctx, test.args.reqs)
@@ -966,24 +966,24 @@ package grpc
 // 		stream vald.Filter_StreamSearchObjectServer
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		err error
@@ -1012,24 +1012,24 @@ package grpc
 // 		           stream:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1051,24 +1051,24 @@ package grpc
 // 		           stream:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1099,24 +1099,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			err := s.StreamLinearSearchObject(test.args.stream)
@@ -1133,24 +1133,24 @@ package grpc
 // 		req *payload.Insert_ObjectRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		want *payload.Object_Location
@@ -1184,24 +1184,24 @@ package grpc
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1224,24 +1224,24 @@ package grpc
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1272,24 +1272,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			got, err := s.InsertObject(test.args.ctx, test.args.req)
@@ -1305,24 +1305,24 @@ package grpc
 // 		stream vald.Filter_StreamInsertObjectServer
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		err error
@@ -1351,24 +1351,24 @@ package grpc
 // 		           stream:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1390,24 +1390,24 @@ package grpc
 // 		           stream:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1438,24 +1438,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			err := s.StreamInsertObject(test.args.stream)
@@ -1472,24 +1472,24 @@ package grpc
 // 		reqs *payload.Insert_MultiObjectRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		wantLocs *payload.Object_Locations
@@ -1523,24 +1523,24 @@ package grpc
 // 		           reqs:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1563,24 +1563,24 @@ package grpc
 // 		           reqs:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1611,24 +1611,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			gotLocs, err := s.MultiInsertObject(test.args.ctx, test.args.reqs)
@@ -1645,24 +1645,24 @@ package grpc
 // 		req *payload.Update_ObjectRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		want *payload.Object_Location
@@ -1696,24 +1696,24 @@ package grpc
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1736,24 +1736,24 @@ package grpc
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1784,24 +1784,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			got, err := s.UpdateObject(test.args.ctx, test.args.req)
@@ -1817,24 +1817,24 @@ package grpc
 // 		stream vald.Filter_StreamUpdateObjectServer
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		err error
@@ -1863,24 +1863,24 @@ package grpc
 // 		           stream:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1902,24 +1902,24 @@ package grpc
 // 		           stream:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1950,24 +1950,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			err := s.StreamUpdateObject(test.args.stream)
@@ -1984,24 +1984,24 @@ package grpc
 // 		reqs *payload.Update_MultiObjectRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		wantLocs *payload.Object_Locations
@@ -2035,24 +2035,24 @@ package grpc
 // 		           reqs:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2075,24 +2075,24 @@ package grpc
 // 		           reqs:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2123,24 +2123,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			gotLocs, err := s.MultiUpdateObject(test.args.ctx, test.args.reqs)
@@ -2157,24 +2157,24 @@ package grpc
 // 		req *payload.Upsert_ObjectRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		want *payload.Object_Location
@@ -2208,24 +2208,24 @@ package grpc
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2248,24 +2248,24 @@ package grpc
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2296,24 +2296,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			got, err := s.UpsertObject(test.args.ctx, test.args.req)
@@ -2329,24 +2329,24 @@ package grpc
 // 		stream vald.Filter_StreamUpsertObjectServer
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		err error
@@ -2375,24 +2375,24 @@ package grpc
 // 		           stream:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2414,24 +2414,24 @@ package grpc
 // 		           stream:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2462,24 +2462,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			err := s.StreamUpsertObject(test.args.stream)
@@ -2496,24 +2496,24 @@ package grpc
 // 		reqs *payload.Upsert_MultiObjectRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		wantLocs *payload.Object_Locations
@@ -2547,24 +2547,24 @@ package grpc
 // 		           reqs:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2587,24 +2587,24 @@ package grpc
 // 		           reqs:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2635,24 +2635,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			gotLocs, err := s.MultiUpsertObject(test.args.ctx, test.args.reqs)
@@ -2669,24 +2669,24 @@ package grpc
 // 		meta *payload.Object_ID
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		want *payload.Object_ID
@@ -2720,24 +2720,24 @@ package grpc
 // 		           meta:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2760,24 +2760,24 @@ package grpc
 // 		           meta:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2808,24 +2808,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			got, err := s.Exists(test.args.ctx, test.args.meta)
@@ -2842,24 +2842,24 @@ package grpc
 // 		req *payload.Search_Request
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Response
@@ -2893,24 +2893,24 @@ package grpc
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2933,24 +2933,24 @@ package grpc
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2981,24 +2981,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			gotRes, err := s.Search(test.args.ctx, test.args.req)
@@ -3015,24 +3015,24 @@ package grpc
 // 		req *payload.Search_IDRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Response
@@ -3066,24 +3066,24 @@ package grpc
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3106,24 +3106,24 @@ package grpc
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3154,24 +3154,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			gotRes, err := s.SearchByID(test.args.ctx, test.args.req)
@@ -3187,24 +3187,24 @@ package grpc
 // 		stream vald.Search_StreamSearchServer
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		err error
@@ -3233,24 +3233,24 @@ package grpc
 // 		           stream:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3272,24 +3272,24 @@ package grpc
 // 		           stream:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3320,24 +3320,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			err := s.StreamSearch(test.args.stream)
@@ -3353,24 +3353,24 @@ package grpc
 // 		stream vald.Search_StreamSearchByIDServer
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		err error
@@ -3399,24 +3399,24 @@ package grpc
 // 		           stream:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3438,24 +3438,24 @@ package grpc
 // 		           stream:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3486,24 +3486,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			err := s.StreamSearchByID(test.args.stream)
@@ -3520,24 +3520,24 @@ package grpc
 // 		reqs *payload.Search_MultiRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Responses
@@ -3571,24 +3571,24 @@ package grpc
 // 		           reqs:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3611,24 +3611,24 @@ package grpc
 // 		           reqs:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3659,24 +3659,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			gotRes, err := s.MultiSearch(test.args.ctx, test.args.reqs)
@@ -3693,24 +3693,24 @@ package grpc
 // 		reqs *payload.Search_MultiIDRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Responses
@@ -3744,24 +3744,24 @@ package grpc
 // 		           reqs:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3784,24 +3784,24 @@ package grpc
 // 		           reqs:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3832,24 +3832,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			gotRes, err := s.MultiSearchByID(test.args.ctx, test.args.reqs)
@@ -3866,24 +3866,24 @@ package grpc
 // 		req *payload.Search_Request
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Response
@@ -3917,24 +3917,24 @@ package grpc
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3957,24 +3957,24 @@ package grpc
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4005,24 +4005,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			gotRes, err := s.LinearSearch(test.args.ctx, test.args.req)
@@ -4039,24 +4039,24 @@ package grpc
 // 		req *payload.Search_IDRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Response
@@ -4090,24 +4090,24 @@ package grpc
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4130,24 +4130,24 @@ package grpc
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4178,24 +4178,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			gotRes, err := s.LinearSearchByID(test.args.ctx, test.args.req)
@@ -4211,24 +4211,24 @@ package grpc
 // 		stream vald.Search_StreamLinearSearchServer
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		err error
@@ -4257,24 +4257,24 @@ package grpc
 // 		           stream:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4296,24 +4296,24 @@ package grpc
 // 		           stream:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4344,24 +4344,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			err := s.StreamLinearSearch(test.args.stream)
@@ -4377,24 +4377,24 @@ package grpc
 // 		stream vald.Search_StreamLinearSearchByIDServer
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		err error
@@ -4423,24 +4423,24 @@ package grpc
 // 		           stream:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4462,24 +4462,24 @@ package grpc
 // 		           stream:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4510,24 +4510,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			err := s.StreamLinearSearchByID(test.args.stream)
@@ -4544,24 +4544,24 @@ package grpc
 // 		reqs *payload.Search_MultiRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Responses
@@ -4595,24 +4595,24 @@ package grpc
 // 		           reqs:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4635,24 +4635,24 @@ package grpc
 // 		           reqs:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4683,24 +4683,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			gotRes, err := s.MultiLinearSearch(test.args.ctx, test.args.reqs)
@@ -4717,24 +4717,24 @@ package grpc
 // 		reqs *payload.Search_MultiIDRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Responses
@@ -4768,24 +4768,24 @@ package grpc
 // 		           reqs:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4808,24 +4808,24 @@ package grpc
 // 		           reqs:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4856,24 +4856,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			gotRes, err := s.MultiLinearSearchByID(test.args.ctx, test.args.reqs)
@@ -4890,24 +4890,24 @@ package grpc
 // 		req *payload.Insert_Request
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		wantLoc *payload.Object_Location
@@ -4941,24 +4941,24 @@ package grpc
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4981,24 +4981,24 @@ package grpc
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -5029,24 +5029,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			gotLoc, err := s.Insert(test.args.ctx, test.args.req)
@@ -5062,24 +5062,24 @@ package grpc
 // 		stream vald.Insert_StreamInsertServer
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		err error
@@ -5108,24 +5108,24 @@ package grpc
 // 		           stream:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -5147,24 +5147,24 @@ package grpc
 // 		           stream:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -5195,24 +5195,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			err := s.StreamInsert(test.args.stream)
@@ -5229,24 +5229,24 @@ package grpc
 // 		reqs *payload.Insert_MultiRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		wantLocs *payload.Object_Locations
@@ -5280,24 +5280,24 @@ package grpc
 // 		           reqs:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -5320,24 +5320,24 @@ package grpc
 // 		           reqs:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -5368,24 +5368,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			gotLocs, err := s.MultiInsert(test.args.ctx, test.args.reqs)
@@ -5402,24 +5402,24 @@ package grpc
 // 		req *payload.Update_Request
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		wantLoc *payload.Object_Location
@@ -5453,24 +5453,24 @@ package grpc
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -5493,24 +5493,24 @@ package grpc
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -5541,24 +5541,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			gotLoc, err := s.Update(test.args.ctx, test.args.req)
@@ -5574,24 +5574,24 @@ package grpc
 // 		stream vald.Update_StreamUpdateServer
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		err error
@@ -5620,24 +5620,24 @@ package grpc
 // 		           stream:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -5659,24 +5659,24 @@ package grpc
 // 		           stream:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -5707,24 +5707,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			err := s.StreamUpdate(test.args.stream)
@@ -5741,24 +5741,24 @@ package grpc
 // 		reqs *payload.Update_MultiRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		wantLocs *payload.Object_Locations
@@ -5792,24 +5792,24 @@ package grpc
 // 		           reqs:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -5832,24 +5832,24 @@ package grpc
 // 		           reqs:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -5880,24 +5880,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			gotLocs, err := s.MultiUpdate(test.args.ctx, test.args.reqs)
@@ -5914,24 +5914,24 @@ package grpc
 // 		req *payload.Upsert_Request
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		wantLoc *payload.Object_Location
@@ -5965,24 +5965,24 @@ package grpc
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -6005,24 +6005,24 @@ package grpc
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -6053,24 +6053,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			gotLoc, err := s.Upsert(test.args.ctx, test.args.req)
@@ -6086,24 +6086,24 @@ package grpc
 // 		stream vald.Upsert_StreamUpsertServer
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		err error
@@ -6132,24 +6132,24 @@ package grpc
 // 		           stream:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -6171,24 +6171,24 @@ package grpc
 // 		           stream:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -6219,24 +6219,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			err := s.StreamUpsert(test.args.stream)
@@ -6253,24 +6253,24 @@ package grpc
 // 		reqs *payload.Upsert_MultiRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		wantLocs *payload.Object_Locations
@@ -6304,24 +6304,24 @@ package grpc
 // 		           reqs:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -6344,24 +6344,24 @@ package grpc
 // 		           reqs:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -6392,24 +6392,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			gotLocs, err := s.MultiUpsert(test.args.ctx, test.args.reqs)
@@ -6426,24 +6426,24 @@ package grpc
 // 		req *payload.Remove_Request
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		wantLoc *payload.Object_Location
@@ -6477,24 +6477,24 @@ package grpc
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -6517,24 +6517,24 @@ package grpc
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -6565,24 +6565,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			gotLoc, err := s.Remove(test.args.ctx, test.args.req)
@@ -6598,24 +6598,24 @@ package grpc
 // 		stream vald.Remove_StreamRemoveServer
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		err error
@@ -6644,24 +6644,24 @@ package grpc
 // 		           stream:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -6683,24 +6683,24 @@ package grpc
 // 		           stream:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -6731,24 +6731,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			err := s.StreamRemove(test.args.stream)
@@ -6765,24 +6765,24 @@ package grpc
 // 		reqs *payload.Remove_MultiRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		wantLocs *payload.Object_Locations
@@ -6816,24 +6816,24 @@ package grpc
 // 		           reqs:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -6856,24 +6856,24 @@ package grpc
 // 		           reqs:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -6904,24 +6904,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			gotLocs, err := s.MultiRemove(test.args.ctx, test.args.reqs)
@@ -6938,24 +6938,24 @@ package grpc
 // 		req *payload.Flush_Request
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		wantLoc *payload.Info_Index_Count
@@ -6989,24 +6989,24 @@ package grpc
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -7029,24 +7029,24 @@ package grpc
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -7077,24 +7077,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			gotLoc, err := s.Flush(test.args.ctx, test.args.req)
@@ -7111,24 +7111,24 @@ package grpc
 // 		req *payload.Remove_TimestampRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		want *payload.Object_Locations
@@ -7162,24 +7162,24 @@ package grpc
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -7202,24 +7202,24 @@ package grpc
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -7250,24 +7250,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			got, err := s.RemoveByTimestamp(test.args.ctx, test.args.req)
@@ -7284,24 +7284,24 @@ package grpc
 // 		req *payload.Object_VectorRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		wantVec *payload.Object_Vector
@@ -7335,24 +7335,24 @@ package grpc
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -7375,24 +7375,24 @@ package grpc
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -7423,24 +7423,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			gotVec, err := s.GetObject(test.args.ctx, test.args.req)
@@ -7456,24 +7456,24 @@ package grpc
 // 		stream vald.Object_StreamGetObjectServer
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		defaultVectorizer                 string
-// 		defaultFilters                    []string
-// 		name                              string
-// 		ip                                string
+// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
 // 		ingress                           ingress.Client
 // 		egress                            egress.Client
 // 		gateway                           client.Client
-// 		copts                             []grpc.CallOption
-// 		streamConcurrency                 int
+// 		eg                                errgroup.Group
 // 		Vectorizer                        string
+// 		defaultVectorizer                 string
+// 		name                              string
+// 		ip                                string
+// 		copts                             []grpc.CallOption
 // 		DistanceFilters                   []string
 // 		ObjectFilters                     []string
 // 		SearchFilters                     []string
 // 		InsertFilters                     []string
 // 		UpdateFilters                     []string
 // 		UpsertFilters                     []string
-// 		UnimplementedValdServerWithFilter vald.UnimplementedValdServerWithFilter
+// 		defaultFilters                    []string
+// 		streamConcurrency                 int
 // 	}
 // 	type want struct {
 // 		err error
@@ -7502,24 +7502,24 @@ package grpc
 // 		           stream:nil,
 // 		       },
 // 		       fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -7541,24 +7541,24 @@ package grpc
 // 		           stream:nil,
 // 		           },
 // 		           fields: fields {
-// 		           eg:nil,
-// 		           defaultVectorizer:"",
-// 		           defaultFilters:nil,
-// 		           name:"",
-// 		           ip:"",
+// 		           UnimplementedValdServerWithFilter:nil,
 // 		           ingress:nil,
 // 		           egress:nil,
 // 		           gateway:nil,
-// 		           copts:nil,
-// 		           streamConcurrency:0,
+// 		           eg:nil,
 // 		           Vectorizer:"",
+// 		           defaultVectorizer:"",
+// 		           name:"",
+// 		           ip:"",
+// 		           copts:nil,
 // 		           DistanceFilters:nil,
 // 		           ObjectFilters:nil,
 // 		           SearchFilters:nil,
 // 		           InsertFilters:nil,
 // 		           UpdateFilters:nil,
 // 		           UpsertFilters:nil,
-// 		           UnimplementedValdServerWithFilter:nil,
+// 		           defaultFilters:nil,
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -7589,24 +7589,24 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				defaultVectorizer:                 test.fields.defaultVectorizer,
-// 				defaultFilters:                    test.fields.defaultFilters,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
 // 				ingress:                           test.fields.ingress,
 // 				egress:                            test.fields.egress,
 // 				gateway:                           test.fields.gateway,
-// 				copts:                             test.fields.copts,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				eg:                                test.fields.eg,
 // 				Vectorizer:                        test.fields.Vectorizer,
+// 				defaultVectorizer:                 test.fields.defaultVectorizer,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				copts:                             test.fields.copts,
 // 				DistanceFilters:                   test.fields.DistanceFilters,
 // 				ObjectFilters:                     test.fields.ObjectFilters,
 // 				SearchFilters:                     test.fields.SearchFilters,
 // 				InsertFilters:                     test.fields.InsertFilters,
 // 				UpdateFilters:                     test.fields.UpdateFilters,
 // 				UpsertFilters:                     test.fields.UpsertFilters,
-// 				UnimplementedValdServerWithFilter: test.fields.UnimplementedValdServerWithFilter,
+// 				defaultFilters:                    test.fields.defaultFilters,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
 // 			}
 //
 // 			err := s.StreamGetObject(test.args.stream)

@@ -14,6 +14,7 @@
 package operation
 
 import (
+	"errors"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -39,7 +40,8 @@ func (o *operation) Insert(b *testing.B, ds assets.Dataset) (insertedNum int) {
 		}
 		b.ResetTimer()
 
-		for i := 0; i < b.N; i++ {
+		i := 0
+		for b.Loop() {
 			v, err := ds.Train(i % ds.TrainSize())
 			if err != nil {
 				b.Fatal(err)
@@ -53,12 +55,14 @@ func (o *operation) Insert(b *testing.B, ds assets.Dataset) (insertedNum int) {
 				if st.Code() != codes.AlreadyExists {
 					statusError(b, int32(st.Code()), st.Message(), st.Details()...)
 				}
+				i++
 				continue
 			}
 			if loc == nil {
 				b.Error("returned loc is nil")
 			}
 			insertedNum++
+			i++
 		}
 	})
 	return insertedNum
@@ -89,7 +93,7 @@ func (o *operation) StreamInsert(b *testing.B, ds assets.Dataset) int {
 			defer wg.Done()
 			for {
 				res, err := sc.Recv()
-				if err == io.EOF {
+				if errors.Is(err, io.EOF) {
 					return nil
 				}
 
@@ -116,7 +120,8 @@ func (o *operation) StreamInsert(b *testing.B, ds assets.Dataset) int {
 			}
 		})
 
-		for i := 0; i < b.N; i++ {
+		i := 0
+		for b.Loop() {
 			v, err := ds.Train(i % ds.TrainSize())
 			if err != nil {
 				b.Fatal(err)
@@ -127,6 +132,7 @@ func (o *operation) StreamInsert(b *testing.B, ds assets.Dataset) int {
 			if err != nil {
 				b.Error(err)
 			}
+			i++
 		}
 
 		if err := sc.CloseSend(); err != nil {

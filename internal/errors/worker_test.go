@@ -30,12 +30,12 @@ func TestErrWorkerIsNotRunning(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !Is(err, w.err) {
@@ -96,12 +96,12 @@ func TestErrWorkerIsAlreadyRunning(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !Is(err, w.err) {
@@ -159,11 +159,11 @@ func TestErrQueueIsNotRunning(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !Is(err, w.err) {
@@ -209,11 +209,11 @@ func TestErrQueueIsAlreadyRunning(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !Is(err, w.err) {
@@ -259,11 +259,11 @@ func TestErrJobFuncIsNil(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !Is(err, w.err) {
@@ -309,11 +309,11 @@ func TestErrJobFuncNotFound(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !Is(err, w.err) {

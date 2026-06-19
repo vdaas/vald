@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-use bincode::{Encode, config::standard as bincode_standard};
 use serde::Serialize;
 use sled::{
     Db, IVec, Tree,
@@ -25,6 +24,7 @@ use std::{
     sync::{Arc, atomic::AtomicUsize},
 };
 use tracing::instrument;
+use wincode::SchemaWrite;
 
 use crate::map::{
     base::MapBase,
@@ -74,7 +74,7 @@ impl<K: KeyType, V: ValueType, C: Codec> MapBase for BidirectionalMap<K, V, C> {
     fn get<Q>(&self, key: &Q) -> impl Future<Output = Result<(Self::V, u128), Error>> + Send
     where
         Self::K: Borrow<Q>,
-        Q: Serialize + Encode + ?Sized + Sync,
+        Q: Serialize + SchemaWrite<Src = Q> + ?Sized + Sync,
     {
         self.perform_get(key, &self.primary_tree)
     }
@@ -96,7 +96,7 @@ impl<K: KeyType, V: ValueType, C: Codec> MapBase for BidirectionalMap<K, V, C> {
     fn delete<Q>(&self, key: &Q) -> impl Future<Output = Result<Self::V, Error>> + Send
     where
         Self::K: Borrow<Q>,
-        Q: Serialize + Encode + ?Sized + Sync,
+        Q: Serialize + SchemaWrite<Src = Q> + ?Sized + Sync,
     {
         let pt = self.primary_tree.clone();
         let st = self.secondary_tree.clone();
@@ -126,7 +126,7 @@ impl<K: KeyType, V: ValueType, C: Codec> BidirectionalMap<K, V, C> {
     pub fn get_inverse<Q>(&self, value: &Q) -> impl Future<Output = Result<(K, u128), Error>> + Send
     where
         V: Borrow<Q>,
-        Q: Serialize + Encode + ?Sized + Sync,
+        Q: Serialize + SchemaWrite<Src = Q> + ?Sized + Sync,
     {
         self.perform_get(value, &self.secondary_tree)
     }
@@ -136,7 +136,7 @@ impl<K: KeyType, V: ValueType, C: Codec> BidirectionalMap<K, V, C> {
     pub fn delete_inverse<Q>(&self, value: &Q) -> impl Future<Output = Result<K, Error>> + Send
     where
         V: Borrow<Q>,
-        Q: Serialize + Encode + ?Sized + Sync,
+        Q: Serialize + wincode::SchemaWrite<Src = Q> + ?Sized + Sync,
     {
         let pt = self.primary_tree.clone();
         let st = self.secondary_tree.clone();
@@ -153,32 +153,26 @@ fn set_transaction_func(
     t2: Tree,
 ) -> impl FnOnce(Vec<u8>, Vec<u8>, u128) -> Result<bool, TransactionError<Error>> + Send + 'static {
     move |key: Vec<u8>, value: Vec<u8>, timestamp: u128| -> Result<bool, TransactionError<Error>> {
-        let encoded_key_payload =
-            bincode::encode_to_vec((key.clone(), timestamp), bincode_standard()).map_err(|e| {
-                TransactionError::Abort(Error::Codec {
-                    source: Box::new(e),
-                })
-            })?;
-        let encoded_val_payload =
-            bincode::encode_to_vec((value.clone(), timestamp), bincode_standard()).map_err(
-                |e| {
-                    TransactionError::Abort(Error::Codec {
-                        source: Box::new(e),
-                    })
-                },
-            )?;
+        let encoded_key_payload = wincode::serialize(&(key.clone(), timestamp)).map_err(|e| {
+            TransactionError::Abort(Error::Codec {
+                source: Box::new(e),
+            })
+        })?;
+        let encoded_val_payload = wincode::serialize(&(value.clone(), timestamp)).map_err(|e| {
+            TransactionError::Abort(Error::Codec {
+                source: Box::new(e),
+            })
+        })?;
         (&t1, &t2).transaction(move |(tx1, tx2)| {
             let is_new;
             if let Some(old_payload_ivec) = tx1.get(key.as_slice())? {
                 is_new = false;
-                let (old_val_bytes, _): (Vec<u8>, u128) =
-                    bincode::decode_from_slice(&old_payload_ivec, bincode_standard())
-                        .map(|(decoded, _)| decoded)
-                        .map_err(|e| {
-                            ConflictableTransactionError::Abort(Error::Codec {
-                                source: Box::new(e),
-                            })
-                        })?;
+                let (old_val_bytes, _): (Vec<u8>, u128) = wincode::deserialize(&old_payload_ivec)
+                    .map_err(|e| {
+                    ConflictableTransactionError::Abort(Error::Codec {
+                        source: Box::new(e),
+                    })
+                })?;
                 tx2.remove(old_val_bytes.as_slice())?;
             } else {
                 is_new = true;
@@ -200,14 +194,12 @@ fn delete_transaction_func(
     move |key: Vec<u8>| -> Result<Option<Vec<u8>>, TransactionError<Error>> {
         (&t1, &t2).transaction(move |(tx1, tx2)| {
             if let Some(payload_ivec) = tx1.remove(key.as_slice())? {
-                let (inverse_key_bytes, _): (Vec<u8>, u128) =
-                    bincode::decode_from_slice(&payload_ivec, bincode_standard())
-                        .map(|(decoded, _)| decoded)
-                        .map_err(|e| {
-                            ConflictableTransactionError::Abort(Error::Codec {
-                                source: Box::new(e),
-                            })
-                        })?;
+                let (inverse_key_bytes, _): (Vec<u8>, u128) = wincode::deserialize(&payload_ivec)
+                    .map_err(|e| {
+                    ConflictableTransactionError::Abort(Error::Codec {
+                        source: Box::new(e),
+                    })
+                })?;
                 tx2.remove(inverse_key_bytes.as_slice())?;
                 Ok(Some(inverse_key_bytes))
             } else {

@@ -24,38 +24,59 @@ import (
 
 // Net represents the network configuration tcp, udp, unix domain socket.
 type Net struct {
-	Network      string        `json:"network,omitempty"       yaml:"network"`
-	DNS          *DNS          `json:"dns,omitempty"           yaml:"dns"`
-	Dialer       *Dialer       `json:"dialer,omitempty"        yaml:"dialer"`
+	// DNS represents the DNS configuration.
+	DNS *DNS `json:"dns,omitempty" yaml:"dns"`
+	// Dialer represents the dialer configuration.
+	Dialer *Dialer `json:"dialer,omitempty" yaml:"dialer"`
+	// SocketOption represents the socket option configuration.
 	SocketOption *SocketOption `json:"socket_option,omitempty" yaml:"socket_option"`
-	TLS          *TLS          `json:"tls,omitempty"           yaml:"tls"`
+	// TLS represents the TLS configuration.
+	TLS *TLS `json:"tls,omitempty" yaml:"tls"`
+	// Network represents the network type.
+	Network string `json:"network,omitempty" yaml:"network"`
 }
 
 // Dialer represents the configuration for dial.
 type Dialer struct {
-	Timeout          string `json:"timeout,omitempty"            yaml:"timeout"`
-	Keepalive        string `json:"keepalive,omitempty"          yaml:"keepalive"`
-	FallbackDelay    string `json:"fallback_delay,omitempty"     yaml:"fallback_delay"`
-	DualStackEnabled bool   `json:"dual_stack_enabled,omitempty" yaml:"dual_stack_enabled"`
+	// Timeout represents the dial timeout duration.
+	Timeout string `json:"timeout,omitempty" yaml:"timeout"`
+	// Keepalive represents the keepalive duration.
+	Keepalive string `json:"keepalive,omitempty" yaml:"keepalive"`
+	// FallbackDelay represents the fallback delay duration.
+	FallbackDelay string `json:"fallback_delay,omitempty" yaml:"fallback_delay"`
+	// DualStackEnabled enables dual stack.
+	DualStackEnabled bool `json:"dual_stack_enabled,omitempty" yaml:"dual_stack_enabled"`
 }
 
 // DNS represents the configuration for resolving DNS.
 type DNS struct {
-	CacheEnabled    bool   `json:"cache_enabled,omitempty"    yaml:"cache_enabled"`
+	// RefreshDuration represents the refresh duration.
 	RefreshDuration string `json:"refresh_duration,omitempty" yaml:"refresh_duration"`
+	// CacheExpiration represents the cache expiration duration.
 	CacheExpiration string `json:"cache_expiration,omitempty" yaml:"cache_expiration"`
+	// CacheEnabled enables DNS cache.
+	CacheEnabled bool `json:"cache_enabled,omitempty" yaml:"cache_enabled"`
 }
 
 // SocketOption represents the socket configurations.
 type SocketOption struct {
-	ReusePort                bool `json:"reuse_port,omitempty"                  yaml:"reuse_port"`
-	ReuseAddr                bool `json:"reuse_addr,omitempty"                  yaml:"reuse_addr"`
-	TCPFastOpen              bool `json:"tcp_fast_open,omitempty"               yaml:"tcp_fast_open"`
-	TCPNoDelay               bool `json:"tcp_no_delay,omitempty"                yaml:"tcp_no_delay"`
-	TCPCork                  bool `json:"tcp_cork,omitempty"                    yaml:"tcp_cork"`
-	TCPQuickAck              bool `json:"tcp_quick_ack,omitempty"               yaml:"tcp_quick_ack"`
-	TCPDeferAccept           bool `json:"tcp_defer_accept,omitempty"            yaml:"tcp_defer_accept"`
-	IPTransparent            bool `json:"ip_transparent,omitempty"              yaml:"ip_transparent"`
+	// ReusePort enables SO_REUSEPORT.
+	ReusePort bool `json:"reuse_port,omitempty" yaml:"reuse_port"`
+	// ReuseAddr enables SO_REUSEADDR.
+	ReuseAddr bool `json:"reuse_addr,omitempty" yaml:"reuse_addr"`
+	// TCPFastOpen enables TCP_FASTOPEN.
+	TCPFastOpen bool `json:"tcp_fast_open,omitempty" yaml:"tcp_fast_open"`
+	// TCPNoDelay enables TCP_NODELAY.
+	TCPNoDelay bool `json:"tcp_no_delay,omitempty" yaml:"tcp_no_delay"`
+	// TCPCork enables TCP_CORK.
+	TCPCork bool `json:"tcp_cork,omitempty" yaml:"tcp_cork"`
+	// TCPQuickAck enables TCP_QUICKACK.
+	TCPQuickAck bool `json:"tcp_quick_ack,omitempty" yaml:"tcp_quick_ack"`
+	// TCPDeferAccept enables TCP_DEFER_ACCEPT.
+	TCPDeferAccept bool `json:"tcp_defer_accept,omitempty" yaml:"tcp_defer_accept"`
+	// IPTransparent enables IP_TRANSPARENT.
+	IPTransparent bool `json:"ip_transparent,omitempty" yaml:"ip_transparent"`
+	// IPRecoverDestinationAddr enables IP_RECVORIGDSTADDR.
 	IPRecoverDestinationAddr bool `json:"ip_recover_destination_addr,omitempty" yaml:"ip_recover_destination_addr"`
 }
 

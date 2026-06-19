@@ -49,23 +49,23 @@ type Discoverer interface {
 }
 
 type discoverer struct {
-	maxPods         int
-	nodes           sync.Map[string, *node.Node]
-	nodeMetrics     sync.Map[string, mnode.Node]
-	pods            sync.Map[string, *[]pod.Pod]
-	podMetrics      sync.Map[string, mpod.Pod]
-	services        sync.Map[string, *service.Service]
+	eg              errgroup.Group
+	der             net.Dialer
+	ctrl            k8s.Controller
+	podsByName      atomic.Pointer[map[string][]*payload.Info_Pod]
+	svcsByName      atomic.Pointer[map[string]*payload.Info_Service]
+	nodeByName      atomic.Pointer[map[string]*payload.Info_Node]
 	podsByNode      atomic.Pointer[map[string]map[string]map[string][]*payload.Info_Pod]
 	podsByNamespace atomic.Pointer[map[string]map[string][]*payload.Info_Pod]
-	podsByName      atomic.Pointer[map[string][]*payload.Info_Pod]
-	nodeByName      atomic.Pointer[map[string]*payload.Info_Node]
-	svcsByName      atomic.Pointer[map[string]*payload.Info_Service]
-	ctrl            k8s.Controller
+	podMetrics      sync.Map[string, mpod.Pod]
+	services        sync.Map[string, *service.Service]
+	pods            sync.Map[string, *[]pod.Pod]
+	nodeMetrics     sync.Map[string, mnode.Node]
+	nodes           sync.Map[string, *node.Node]
 	namespace       string
 	name            string
+	maxPods         int
 	csd             time.Duration
-	der             net.Dialer
-	eg              errgroup.Group
 }
 
 // New returns Discoverer implementation.

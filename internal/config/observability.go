@@ -18,10 +18,14 @@ package config
 
 // Observability represents the configuration for the observability.
 type Observability struct {
-	Enabled bool     `json:"enabled" yaml:"enabled"`
-	OTLP    *OTLP    `json:"otlp"    yaml:"otlp"`
+	// OTLP represents the OTLP configuration.
+	OTLP *OTLP `json:"otlp" yaml:"otlp"`
+	// Metrics represents the metrics configuration.
 	Metrics *Metrics `json:"metrics" yaml:"metrics"`
-	Trace   *Trace   `json:"trace"   yaml:"trace"`
+	// Trace represents the trace configuration.
+	Trace *Trace `json:"trace" yaml:"trace"`
+	// Enabled enables observability.
+	Enabled bool `json:"enabled" yaml:"enabled"`
 }
 
 // Bind binds the actual data from the Observability receiver fields.
@@ -50,15 +54,24 @@ func (o *Observability) Bind() *Observability {
 	return o
 }
 
+// OTLP represents the configuration for the OTLP.
 type OTLP struct {
-	CollectorEndpoint       string         `json:"collector_endpoint"          yaml:"collector_endpoint"`
-	Attribute               *OTLPAttribute `json:"attribute"                   yaml:"attribute"`
-	TraceBatchTimeout       string         `json:"trace_batch_timeout"         yaml:"trace_batch_timeout"`
-	TraceExportTimeout      string         `json:"trace_export_timeout"        yaml:"trace_export_timeout"`
-	TraceMaxExportBatchSize int            `json:"trace_max_export_batch_size" yaml:"trace_max_export_batch_size"`
-	TraceMaxQueueSize       int            `json:"trace_max_queue_size"        yaml:"trace_max_queue_size"`
-	MetricsExportInterval   string         `json:"metrics_export_interval"     yaml:"metrics_export_interval"`
-	MetricsExportTimeout    string         `json:"metrics_export_timeout"      yaml:"metrics_export_timeout"`
+	// Attribute represents the OTLP attribute configuration.
+	Attribute *OTLPAttribute `json:"attribute" yaml:"attribute"`
+	// CollectorEndpoint represents the collector endpoint.
+	CollectorEndpoint string `json:"collector_endpoint" yaml:"collector_endpoint"`
+	// TraceBatchTimeout represents the trace batch timeout.
+	TraceBatchTimeout string `json:"trace_batch_timeout" yaml:"trace_batch_timeout"`
+	// TraceExportTimeout represents the trace export timeout.
+	TraceExportTimeout string `json:"trace_export_timeout" yaml:"trace_export_timeout"`
+	// MetricsExportInterval represents the metrics export interval.
+	MetricsExportInterval string `json:"metrics_export_interval" yaml:"metrics_export_interval"`
+	// MetricsExportTimeout represents the metrics export timeout.
+	MetricsExportTimeout string `json:"metrics_export_timeout" yaml:"metrics_export_timeout"`
+	// TraceMaxExportBatchSize represents the trace max export batch size.
+	TraceMaxExportBatchSize int `json:"trace_max_export_batch_size" yaml:"trace_max_export_batch_size"`
+	// TraceMaxQueueSize represents the trace max queue size.
+	TraceMaxQueueSize int `json:"trace_max_queue_size" yaml:"trace_max_queue_size"`
 }
 
 // Bind binds the actual data from the OTLP receiver fields.
@@ -77,10 +90,15 @@ func (o *OTLP) Bind() *OTLP {
 	return o
 }
 
+// OTLPAttribute represents the configuration for the OTLP attribute.
 type OTLPAttribute struct {
-	Namespace   string `json:"namespace"    yaml:"namespace"`
-	PodName     string `json:"pod_name"     yaml:"pod_name"`
-	NodeName    string `json:"node_name"    yaml:"node_name"`
+	// Namespace represents the namespace.
+	Namespace string `json:"namespace" yaml:"namespace"`
+	// PodName represents the pod name.
+	PodName string `json:"pod_name" yaml:"pod_name"`
+	// NodeName represents the node name.
+	NodeName string `json:"node_name" yaml:"node_name"`
+	// ServiceName represents the service name.
 	ServiceName string `json:"service_name" yaml:"service_name"`
 }
 
@@ -95,6 +113,7 @@ func (o *OTLPAttribute) Bind() *OTLPAttribute {
 
 // Trace represents the configuration for the trace.
 type Trace struct {
+	// Enabled enables trace.
 	Enabled bool `json:"enabled" yaml:"enabled"`
 }
 
@@ -106,11 +125,16 @@ func (t *Trace) Bind() *Trace {
 
 // Metrics represents the configuration for the metrics.
 type Metrics struct {
-	EnableVersionInfo bool     `json:"enable_version_info" yaml:"enable_version_info"`
+	// VersionInfoLabels represents the version info labels.
 	VersionInfoLabels []string `json:"version_info_labels" yaml:"version_info_labels"`
-	EnableMemory      bool     `json:"enable_memory"       yaml:"enable_memory"`
-	EnableGoroutine   bool     `json:"enable_goroutine"    yaml:"enable_goroutine"`
-	EnableCGO         bool     `json:"enable_cgo"          yaml:"enable_cgo"`
+	// EnableVersionInfo enables version info metrics.
+	EnableVersionInfo bool `json:"enable_version_info" yaml:"enable_version_info"`
+	// EnableMemory enables memory metrics.
+	EnableMemory bool `json:"enable_memory" yaml:"enable_memory"`
+	// EnableGoroutine enables goroutine metrics.
+	EnableGoroutine bool `json:"enable_goroutine" yaml:"enable_goroutine"`
+	// EnableCGO enables cgo metrics.
+	EnableCGO bool `json:"enable_cgo" yaml:"enable_cgo"`
 }
 
 // Bind binds the actual data from the Metrics receiver fields.

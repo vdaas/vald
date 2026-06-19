@@ -80,12 +80,12 @@ func TestNew(t *testing.T) {
 		want Session
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, Session) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got Session) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -190,15 +190,15 @@ func TestNew(t *testing.T) {
 
 func Test_sess_Session(t *testing.T) {
 	type fields struct {
+		client                     *http.Client
 		endpoint                   string
 		region                     string
 		accessKey                  string
 		secretAccessKey            string
 		token                      string
 		maxRetries                 int
-		forcePathStyle             bool
-		useAccelerate              bool
 		useARNRegion               bool
+		useAccelerate              bool
 		useDualStack               bool
 		enableSSL                  bool
 		enableParamValidation      bool
@@ -206,19 +206,19 @@ func Test_sess_Session(t *testing.T) {
 		enableContentMD5Validation bool
 		enableEndpointDiscovery    bool
 		enableEndpointHostPrefix   bool
-		client                     *http.Client
+		forcePathStyle             bool
 	}
 	type want struct {
 		want *session.Session
 		err  error
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *session.Session, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *session.Session, err error) error {
 		if !errors.Is(err, w.err) {

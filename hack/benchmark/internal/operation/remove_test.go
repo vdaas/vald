@@ -17,7 +17,6 @@ package operation
 //
 // func Test_operation_Remove(t *testing.T) {
 // 	type args struct {
-// 		ctx      context.Context
 // 		b        *testing.B
 // 		maxIdNum int
 // 	}
@@ -44,7 +43,6 @@ package operation
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           ctx:nil,
 // 		           b:testing.B{},
 // 		           maxIdNum:0,
 // 		       },
@@ -69,7 +67,6 @@ package operation
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           ctx:nil,
 // 		           b:testing.B{},
 // 		           maxIdNum:0,
 // 		           },
@@ -110,7 +107,7 @@ package operation
 // 				indexerC: test.fields.indexerC,
 // 			}
 //
-// 			o.Remove(test.args.ctx, test.args.b, test.args.maxIdNum)
+// 			o.Remove(test.args.b, test.args.maxIdNum)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -120,7 +117,6 @@ package operation
 //
 // func Test_operation_StreamRemove(t *testing.T) {
 // 	type args struct {
-// 		ctx      context.Context
 // 		b        *testing.B
 // 		maxIdNum int
 // 	}
@@ -147,7 +143,6 @@ package operation
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           ctx:nil,
 // 		           b:testing.B{},
 // 		           maxIdNum:0,
 // 		       },
@@ -172,7 +167,6 @@ package operation
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           ctx:nil,
 // 		           b:testing.B{},
 // 		           maxIdNum:0,
 // 		           },
@@ -213,7 +207,7 @@ package operation
 // 				indexerC: test.fields.indexerC,
 // 			}
 //
-// 			o.StreamRemove(test.args.ctx, test.args.b, test.args.maxIdNum)
+// 			o.StreamRemove(test.args.b, test.args.maxIdNum)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

@@ -39,12 +39,12 @@ func TestNewTLS(t *testing.T) {
 		want credentials.TransportCredentials
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
+		args       args
 		checkFunc  func(want, credentials.TransportCredentials) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got credentials.TransportCredentials) error {
 		if !reflect.DeepEqual(got, w.want) {

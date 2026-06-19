@@ -35,8 +35,8 @@ type Client interface {
 }
 
 type client struct {
-	addrs []string
 	c     grpc.Client
+	addrs []string
 }
 
 type singleClient struct {

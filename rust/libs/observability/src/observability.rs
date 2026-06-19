@@ -16,10 +16,10 @@
 use anyhow::{Ok, Result};
 use opentelemetry::global;
 use opentelemetry_otlp::{MetricExporter, SpanExporter, WithExportConfig};
+use opentelemetry_sdk::Resource;
 use opentelemetry_sdk::metrics::{PeriodicReader, SdkMeterProvider};
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use opentelemetry_sdk::trace::{self, SdkTracerProvider};
-use opentelemetry_sdk::Resource;
 use url::Url;
 
 use crate::config::Config;

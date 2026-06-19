@@ -102,8 +102,7 @@ package operation
 //
 // func Test_operation_CreateIndex(t *testing.T) {
 // 	type args struct {
-// 		ctx context.Context
-// 		b   *testing.B
+// 		b *testing.B
 // 	}
 // 	type fields struct {
 // 		client   client.Client
@@ -128,7 +127,6 @@ package operation
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           ctx:nil,
 // 		           b:testing.B{},
 // 		       },
 // 		       fields: fields {
@@ -152,7 +150,6 @@ package operation
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           ctx:nil,
 // 		           b:testing.B{},
 // 		           },
 // 		           fields: fields {
@@ -192,7 +189,7 @@ package operation
 // 				indexerC: test.fields.indexerC,
 // 			}
 //
-// 			o.CreateIndex(test.args.ctx, test.args.b)
+// 			o.CreateIndex(test.args.b)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

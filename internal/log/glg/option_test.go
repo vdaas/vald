@@ -27,9 +27,9 @@ import (
 
 func TestWithGlg(t *testing.T) {
 	type test struct {
-		name      string
 		g         *glg.Glg
 		checkFunc func(Option) error
+		name      string
 	}
 
 	tests := []test{
@@ -84,9 +84,9 @@ func TestWithGlg(t *testing.T) {
 
 func TestWithFormat(t *testing.T) {
 	type test struct {
+		checkFunc func(Option) error
 		name      string
 		str       string
-		checkFunc func(Option) error
 	}
 
 	tests := []test{
@@ -132,9 +132,9 @@ func TestWithFormat(t *testing.T) {
 
 func TestWithLevel(t *testing.T) {
 	type test struct {
+		checkFunc func(Option) error
 		name      string
 		str       string
-		checkFunc func(Option) error
 	}
 
 	tests := []test{
@@ -180,9 +180,9 @@ func TestWithLevel(t *testing.T) {
 
 func TestWithRetry(t *testing.T) {
 	type test struct {
-		name      string
 		rt        retry.Retry
 		checkFunc func(Option) error
+		name      string
 	}
 
 	tests := []test{

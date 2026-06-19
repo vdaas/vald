@@ -18,35 +18,26 @@ package config
 
 // Gateway represents the list of configurations for gateway.
 type Gateway struct {
-	// AgentPort represent agent port number
-	AgentPort int `json:"agent_port" yaml:"agent_port"`
-
-	// AgentName represent agents meta_name for service discovery
-	AgentName string `json:"agent_name" yaml:"agent_name"`
-
-	// AgentNamespace represent agent namespace location
-	AgentNamespace string `json:"agent_namespace" yaml:"agent_namespace"`
-
-	// AgentDNS represent agents dns A record for service discovery
-	AgentDNS string `json:"agent_dns" yaml:"agent_dns"`
-
-	// NodeName represents node name
-	NodeName string `json:"node_name" yaml:"node_name"`
-
-	// IndexReplica represents index replication count
-	IndexReplica int `json:"index_replica" yaml:"index_replica"`
-
-	// Discoverer represent agent discoverer service configuration
+	// Discoverer represents the discoverer client configuration.
 	Discoverer *DiscovererClient `json:"discoverer" yaml:"discoverer"`
-
-	// Meta represent meta data service configuration
+	// Meta represents the metadata configuration.
 	Meta *Meta `json:"meta" yaml:"meta"`
-
-	// BackupManager represent backup manager configuration
+	// BackupManager represents the backup manager configuration.
 	BackupManager *BackupManager `json:"backup" yaml:"backup"`
-
-	// EgressFilter represents egress filter configuration
+	// EgressFilter represents the egress filter configuration.
 	EgressFilter *EgressFilter `json:"egress_filter" yaml:"egress_filter"`
+	// AgentName represents the agent name.
+	AgentName string `json:"agent_name" yaml:"agent_name"`
+	// AgentNamespace represents the agent namespace.
+	AgentNamespace string `json:"agent_namespace" yaml:"agent_namespace"`
+	// AgentDNS represents the agent DNS.
+	AgentDNS string `json:"agent_dns" yaml:"agent_dns"`
+	// NodeName represents the node name.
+	NodeName string `json:"node_name" yaml:"node_name"`
+	// AgentPort represents the agent port.
+	AgentPort int `json:"agent_port" yaml:"agent_port"`
+	// IndexReplica represents the index replica count.
+	IndexReplica int `json:"index_replica" yaml:"index_replica"`
 }
 
 // Bind binds the actual data from the Gateway receiver field on the Gateway.

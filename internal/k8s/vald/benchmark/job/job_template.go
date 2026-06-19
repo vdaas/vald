@@ -47,11 +47,11 @@ type BenchmarkJobTpl interface {
 }
 
 type benchmarkJobTpl struct {
+	jobTpl             k8s.Job
 	containerName      string
 	containerImageName string
 	configMapName      string
 	imagePullPolicy    ImagePullPolicy
-	jobTpl             k8s.Job
 }
 
 func NewBenchmarkJob(opts ...BenchmarkJobTplOption) (BenchmarkJobTpl, error) {

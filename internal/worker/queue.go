@@ -36,13 +36,13 @@ type Queue interface {
 }
 
 type queue struct {
-	buffer  int
 	eg      errgroup.Group
-	qcdur   time.Duration // queue check duration
-	inCh    chan JobFunc
-	outCh   chan JobFunc
 	qLen    atomic.Value
 	running atomic.Value
+	inCh    chan JobFunc
+	outCh   chan JobFunc
+	buffer  int
+	qcdur   time.Duration
 }
 
 // NewQueue returns Queue if no error is occurred.
@@ -136,7 +136,7 @@ func (q *queue) Push(ctx context.Context, job JobFunc) error {
 func (q *queue) Pop(ctx context.Context) (JobFunc, error) {
 	tryCnt := int(q.Len()) + 1 // include the first try
 
-	for i := 0; i < tryCnt; i++ {
+	for range tryCnt {
 		if !q.isRunning() {
 			return nil, errors.ErrQueueIsNotRunning
 		}

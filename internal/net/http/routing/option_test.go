@@ -24,9 +24,9 @@ import (
 func TestWithMiddleware(t *testing.T) {
 	t.Parallel()
 	type test struct {
-		name      string
 		mw        middleware.Wrapper
 		checkFunc func(Option) error
+		name      string
 	}
 
 	tests := []test{
@@ -69,9 +69,9 @@ func TestWithMiddleware(t *testing.T) {
 func TestWithMiddlewares(t *testing.T) {
 	t.Parallel()
 	type test struct {
+		checkFunc func(Option) error
 		name      string
 		mws       []middleware.Wrapper
-		checkFunc func(Option) error
 	}
 
 	tests := []test{
@@ -154,9 +154,9 @@ func TestWithMiddlewares(t *testing.T) {
 func TestWithRoute(t *testing.T) {
 	t.Parallel()
 	type test struct {
+		checkFunc func(Option) error
 		name      string
 		route     Route
-		checkFunc func(Option) error
 	}
 
 	tests := []test{
@@ -199,9 +199,9 @@ func TestWithRoute(t *testing.T) {
 func TestWithRoutes(t *testing.T) {
 	t.Parallel()
 	type test struct {
+		checkFunc func(Option) error
 		name      string
 		routes    []Route
-		checkFunc func(Option) error
 	}
 
 	tests := []test{

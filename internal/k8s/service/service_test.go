@@ -33,12 +33,12 @@ func Test_extractAPIPorts(t *testing.T) {
 		ports []servicePort
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, []servicePort) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, got []servicePort) error {
 		if !reflect.DeepEqual(got, w.ports) {

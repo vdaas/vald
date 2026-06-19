@@ -84,44 +84,45 @@ func Mode(m string) ServerMode {
 }
 
 type server struct {
-	mode ServerMode
-	name string
-	mu   sync.RWMutex
-	wg   sync.WaitGroup
-	eg   errgroup.Group
-	http struct { // REST API
-		srv      *http.Server
+	http struct {
 		h        http.Handler
+		srv      *http.Server
 		h2srv    *http2.Server
 		enableH2 bool
 		starter  func(net.Listener) error
 	}
-	grpc struct { // gRPC API
+	ctrl         control.SocketController
+	eg           errgroup.Group
+	preStopFunc  func() error
+	preStartFunc func() error
+	lc           *net.ListenConfig
+	tcfg         *tls.Config
+	name         string
+	host         string
+	socketPath   string
+	listener     net.Listener
+	grpc         struct {
 		srv        *grpc.Server
 		keepAlive  *grpcKeepalive
 		maxMsgSize int
 		opts       []grpc.ServerOption
 		regs       []func(*grpc.Server)
 	}
-	lc            *net.ListenConfig
-	tcfg          *tls.Config
-	pwt           time.Duration // ProbeWaitTime
-	sddur         time.Duration // Shutdown Duration
-	rht           time.Duration // ReadHeaderTimeout
-	rt            time.Duration // ReadTimeout
-	wt            time.Duration // WriteTimeout
-	it            time.Duration // IdleTimeout
-	ctrl          control.SocketController
-	sockFlg       control.SocketFlag
+	wg            sync.WaitGroup
 	network       net.NetworkType
-	socketPath    string
+	rt            time.Duration
+	it            time.Duration
+	sddur         time.Duration
+	sockFlg       control.SocketFlag
+	rht           time.Duration
+	pwt           time.Duration
+	wt            time.Duration
+	mu            sync.RWMutex
 	port          uint16
-	host          string
-	enableRestart bool
 	shuttingDown  bool
 	running       bool
-	preStartFunc  func() error
-	preStopFunc   func() error // PreStopFunction
+	enableRestart bool
+	mode          ServerMode
 }
 
 type grpcKeepalive struct {
@@ -357,6 +358,10 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 			return errors.ErrInvalidAPIConfig
 		}
 
+		s.mu.Lock()
+		s.listener = l
+		s.mu.Unlock()
+
 		s.wg.Add(1)
 		s.eg.Go(safety.RecoverFunc(func() (err error) {
 			defer s.wg.Done()
@@ -371,12 +376,12 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 				switch s.mode {
 				case REST, GQL:
 					err = s.http.starter(l)
-					if err != nil && err != http.ErrServerClosed {
+					if err != nil && !errors.Is(err, http.ErrServerClosed) {
 						ech <- err
 					}
 				case GRPC:
 					err = s.grpc.srv.Serve(l)
-					if err != nil && err != grpc.ErrServerStopped {
+					if err != nil && !errors.Is(err, grpc.ErrServerStopped) {
 						ech <- err
 					}
 				}
@@ -472,6 +477,16 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 	case GRPC:
 		s.grpc.srv.GracefulStop()
 	}
+
+	s.mu.Lock()
+	if s.listener != nil {
+		err := s.listener.Close()
+		if err != nil && !errors.Is(err, os.ErrClosed) {
+			rerr = errors.Join(rerr, err)
+		}
+		s.listener = nil
+	}
+	s.mu.Unlock()
 
 	s.wg.Wait()
 

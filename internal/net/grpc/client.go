@@ -38,6 +38,7 @@ import (
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
+	"github.com/vdaas/vald/internal/sync/singleflight"
 	"google.golang.org/grpc"
 	gbackoff "google.golang.org/grpc/backoff"
 )
@@ -115,52 +116,56 @@ type Client interface {
 
 // gRPCClient is an implementation of the Client interface.
 type gRPCClient struct {
-	// name is the name of the gRPC client, used for logging.
-	name string
-	// addrs is a set of initial addresses to connect to.
-	addrs map[string]struct{}
-	// poolSize is the number of connections per address in the pool.
-	poolSize uint64
-	// clientCount is the total number of active client connections.
-	clientCount uint64
-	// conns stores the connection pools for each address.
-	conns sync.Map[string, pool.Conn]
-	// hcDur is the duration between health checks.
-	hcDur time.Duration
-	// prDur is the duration between pool rebalances.
-	prDur time.Duration
-	// dialer is the custom net.Dialer.
+	// dialer is the custom dialer interface for establishing network connections.
 	dialer net.Dialer
-	// enablePoolRebalance enables periodic rebalancing of connection pools.
-	enablePoolRebalance bool
-	// disableResolveDNSAddrs stores addresses for which DNS resolution should be disabled.
-	disableResolveDNSAddrs sync.Map[string, bool]
-	// resolveDNS enables DNS resolution for addresses.
-	resolveDNS bool
-	// dopts are the default dial options.
-	dopts []DialOption
-	// copts are the default call options.
-	copts []CallOption
-	// roccd is the reconnection old connection closing duration.
-	roccd string
-	// eg is the error group for managing background goroutines.
+	// eg is the error group for managing the synchronization of background goroutines.
 	eg errgroup.Group
-	// bo is the backoff strategy for retries.
-	bo backoff.Backoff
-	// cb is the circuit breaker.
+	// group is singlefight group to prevent duplicated connection control.
+	group singleflight.Group[pool.Conn]
+	// cb is the circuit breaker used to prevent cascading failures.
 	cb circuitbreaker.CircuitBreaker
-	// gbo is the gRPC backoff configuration.
-	gbo gbackoff.Config
-	// mcd is the minimum connection timeout duration.
-	mcd time.Duration
-	// crl is the connection request list for pending reconnections.
-	crl sync.Map[string, bool]
-	// ech is the error channel for the connection monitor.
-	ech <-chan error
-	// monitorRunning indicates if the connection monitor is running.
-	monitorRunning atomic.Bool
-	// stopMonitor is the function to stop the connection monitor.
+	// bo is the backoff strategy used for retrying failed operations.
+	bo backoff.Backoff
+	// addrs is a set of initial target addresses for the gRPC client.
+	addrs map[string]struct{}
+	// stopMonitor is the cancel function to stop the connection monitor goroutine.
 	stopMonitor context.CancelFunc
+	// ech is the channel for reporting errors from the connection monitor.
+	ech <-chan error
+	// crl is the connection request list used to manage pending reconnection requests.
+	crl sync.Map[string, bool]
+	// disableResolveDNSAddrs stores addresses for which DNS resolution should be explicitly disabled.
+	disableResolveDNSAddrs sync.Map[string, bool]
+	// conns stores the active connection pools for each target address.
+	conns sync.Map[string, pool.Conn]
+	// name is the logical name of the gRPC client, used for logging and tracing.
+	name string
+	// roccd represents the duration to wait before closing old connections during reconnection (Reconnection Old Connection Closing Duration).
+	roccd string
+	// dopts is the list of default dial options applied to new connections.
+	dopts []DialOption
+	// copts is the list of default call options applied to RPC calls.
+	copts []CallOption
+	// gbo is the configuration for gRPC specific backoff strategy.
+	gbo gbackoff.Config
+	// hcDur is the interval duration for periodic health checks of connections.
+	hcDur time.Duration
+	// mcd is the minimum duration for connection timeouts (Minimum Connection Duration).
+	mcd time.Duration
+	// prDur is the interval duration for periodic pool rebalancing.
+	prDur time.Duration
+	// clientCount tracks the total number of active connections managed by this client.
+	clientCount uint64
+	// poolSize specifies the number of connections per pool (per address).
+	poolSize uint64
+	// monitorRunning indicates whether the connection monitor goroutine is currently active.
+	monitorRunning atomic.Bool
+	// resolveDNS indicates whether to resolve DNS for target addresses by default.
+	resolveDNS bool
+	// enablePoolRebalance indicates whether periodic rebalancing of the connection pool is enabled.
+	enablePoolRebalance bool
+	// enablePoolMetrics enables healthy connection count metrics of connection pools.
+	enablePoolMetrics bool
 }
 
 const (
@@ -173,6 +178,7 @@ func New(name string, opts ...Option) (c Client) {
 	g := &gRPCClient{
 		name:  name,
 		addrs: make(map[string]struct{}),
+		group: singleflight.New[pool.Conn](),
 	}
 
 	for _, opt := range append(defaultOptions, opts...) {
@@ -541,17 +547,22 @@ func (g *gRPCClient) RangeConcurrent(
 	concurrency int,
 	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error,
 ) (err error) {
+	if g.conns.Len() == 0 {
+		return errors.ErrGRPCClientConnNotFound("*")
+	}
 	sctx, span := trace.StartSpan(ctx, apiName+"/Client.RangeConcurrent")
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	if concurrency <= 1 {
+	if concurrency == 1 {
 		return g.Range(sctx, f)
 	}
 	eg, egctx := errgroup.New(sctx)
-	eg.SetLimit(concurrency)
+	if concurrency > 1 {
+		eg.SetLimit(concurrency)
+	}
 	err = g.rangeConns("RangeConcurrent", func(addr string, p pool.Conn) bool {
 		eg.Go(safety.RecoverFunc(func() (err error) {
 			ssctx, sspan := trace.StartSpan(egctx, apiName+"/Client.RangeConcurrent/"+addr)
@@ -684,11 +695,13 @@ func (g *gRPCClient) OrderedRangeConcurrent(
 	if g.conns.Len() == 0 {
 		return errors.ErrGRPCClientConnNotFound("*")
 	}
-	if concurrency <= 1 {
-		return g.OrderedRange(ctx, orders, f)
+	if concurrency == 1 {
+		return g.OrderedRange(sctx, orders, f)
 	}
 	eg, egctx := errgroup.New(sctx)
-	eg.SetLimit(concurrency)
+	if concurrency > 1 {
+		eg.SetLimit(concurrency)
+	}
 	for _, order := range orders {
 		addr := order
 		eg.Go(safety.RecoverFunc(func() (err error) {
@@ -840,33 +853,14 @@ func (g *gRPCClient) Do(
 	f func(ctx context.Context,
 		conn *ClientConn, copts ...CallOption) (any, error),
 ) (data any, err error) {
-	sctx, span := trace.StartSpan(ctx, apiName+"/Client.Do/"+addr)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
 	p, ok := g.conns.Load(addr)
 	if !ok || p == nil {
 		g.crl.Store(addr, true)
 		err = errors.ErrGRPCClientConnNotFound(addr)
 		log.Warnf("gRPCClient.Do operation failed, gRPC connection pool for %s is invalid,\terror: %v", addr, err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
 		return nil, err
 	}
-	data, err = g.do(sctx, p, addr, f)
-	if err != nil && span != nil {
-		span.RecordError(err)
-		st, ok := status.FromError(err)
-		if ok && st != nil {
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), err.Error())...)
-		}
-		span.SetStatus(trace.StatusError, err.Error())
-	}
+	data, err = g.do(ctx, p, addr, f)
 	return data, err
 }
 
@@ -878,27 +872,26 @@ func (g *gRPCClient) executeRPC(
 	addr string,
 	f func(ctx context.Context, conn *ClientConn, copts ...CallOption) (any, error),
 ) (res any, retryable bool, err error) {
-	err = p.Do(ctx, func(conn *ClientConn) (err error) {
-		if conn == nil {
-			return errors.ErrGRPCClientConnNotFound(addr)
-		}
+	conn, ok := p.Get(ctx)
+	if !ok || conn == nil {
+		err = errors.ErrGRPCClientConnNotFound(addr)
+	} else {
 		res, err = f(ctx, conn, g.copts...)
-		return err
-	})
+	}
+
 	if err != nil {
 		// not-retryable errors
-		if errors.IsAny(err, context.Canceled,
-			context.DeadlineExceeded,
-			errors.ErrCircuitBreakerOpenState,
-			errors.ErrGRPCClientConnNotFound("*"),
-			errors.ErrGRPCClientNotFound) ||
-			(p.IsIPConn() &&
-				errors.Is(err, errors.ErrGRPCClientConnNotFound(addr))) {
+		if errors.Is(err, context.Canceled) ||
+			errors.Is(err, context.DeadlineExceeded) ||
+			errors.Is(err, errors.ErrCircuitBreakerOpenState) ||
+			errors.Is(err, errors.ErrGRPCClientNotFound) ||
+			errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) ||
+			(p.IsIPConn() && errors.Is(err, errors.ErrGRPCClientConnNotFound(addr))) {
 			return nil, false, err
 		}
 		st, ok := status.FromError(err)
 		if !ok || st == nil {
-			if errors.IsAny(err, context.Canceled, context.DeadlineExceeded) {
+			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 				return nil, false, err
 			}
 			return nil, p.IsHealthy(ctx), err
@@ -933,7 +926,9 @@ func (g *gRPCClient) do(
 		log.Warnf("gRPCClient.do operation failed, gRPC connection pool for %s is invalid,\terror: %v", addr, err)
 		return nil, err
 	}
-	sctx, span := trace.StartSpan(ctx, apiName+"/Client.do/"+addr)
+	sctx := ctx
+	var span trace.Span
+	sctx, span = trace.StartSpan(ctx, apiName+"/Client.do/"+addr)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -963,14 +958,6 @@ func (g *gRPCClient) do(
 		data, _, err = g.executeRPC(sctx, p, addr, f)
 	}
 	if err != nil {
-		if span != nil {
-			span.RecordError(err)
-			st, ok := status.FromError(err)
-			if ok && st != nil {
-				span.SetAttributes(trace.FromGRPCStatus(st.Code(), err.Error())...)
-			}
-			span.SetStatus(trace.StatusError, err.Error())
-		}
 		return nil, errors.ErrRPCCallFailed(addr, err)
 	}
 	return data, nil
@@ -1010,87 +997,112 @@ func (g *gRPCClient) Connect(
 		}
 	}()
 
-	handleError := func(err error) error {
-		if err != nil {
-			if span != nil {
-				span.RecordError(err)
-				st, ok := status.FromError(err)
-				if ok && st != nil {
-					span.SetAttributes(trace.FromGRPCStatus(st.Code(), err.Error())...)
+	conn, _, err = g.group.Do(ctx, "connect-"+addr, func(ctx context.Context) (pool.Conn, error) {
+		handleError := func(err error) error {
+			if err != nil {
+				if span != nil {
+					span.RecordError(err)
+					st, ok := status.FromError(err)
+					if ok && st != nil {
+						span.SetAttributes(trace.FromGRPCStatus(st.Code(), err.Error())...)
+					}
+					span.SetStatus(trace.StatusError, err.Error())
 				}
-				span.SetStatus(trace.StatusError, err.Error())
+				return err
 			}
-			return err
+			return nil
 		}
-		return nil
-	}
-	var ok bool
-	conn, ok = g.conns.Load(addr)
-	if ok && conn != nil {
-		if conn.IsHealthy(ctx) {
-			return conn, nil
+		var (
+			ok      bool
+			oldConn pool.Conn
+		)
+		loadedConn, ok := g.conns.Load(addr)
+		if ok && loadedConn != nil {
+			if loadedConn.IsHealthy(ctx) {
+				return loadedConn, nil
+			}
+			oldConn = loadedConn
+			log.Debugf("%s connecting unhealthy pool addr= %s, conn=[%s]", g.name, addr, oldConn.String())
+			conn, err = oldConn.Connect(ctx)
+			if err == nil && conn != nil && conn.IsHealthy(ctx) {
+				g.conns.Store(addr, conn)
+				return conn, nil
+			}
+			if err != nil {
+				log.Warnf("%s failed to reconnect unhealthy pool conn=[%s] for addr %s\terror= %v\t trying to disconnect", g.name, oldConn.String(), addr, err)
+			}
 		}
-		log.Debugf("%s connecting unhealthy pool addr= %s, conn=[%s]", g.name, addr, conn.String())
+		log.Warnf("%s creating new connection pool (size: %d) for addr = %s", g.name, g.poolSize, addr)
+		opts := []pool.Option{
+			pool.WithAddr(addr),
+			pool.WithSize(g.poolSize),
+			pool.WithDialOptions(append(g.dopts, dopts...)...),
+			pool.WithOldConnCloseDelay(g.roccd),
+			pool.WithResolveDNS(func() bool {
+				disabled, ok := g.disableResolveDNSAddrs.Load(addr)
+				if ok && disabled {
+					return false
+				}
+				return g.resolveDNS
+			}()),
+			pool.WithEnableMetrics(g.enablePoolMetrics),
+			pool.WithErrGroup(g.eg),
+		}
+		if g.bo != nil {
+			opts = append(opts, pool.WithBackoff(g.bo))
+		}
+		conn, err = pool.New(ctx, opts...)
+		if err != nil || conn == nil {
+			derr := g.Disconnect(ctx, addr)
+			if derr != nil && errors.IsNot(derr, errors.ErrGRPCClientConnNotFound(addr)) {
+				log.Warnf("%s failed to disconnect unhealthy pool addr= %s\terror= %s", g.name, addr, derr.Error())
+				if err != nil {
+					err = errors.Join(err, derr)
+				} else {
+					err = derr
+				}
+			}
+			return nil, handleError(err)
+		}
+		log.Warnf("%s connecting to new connection pool for addr= %s, conn=[%s]", g.name, addr, conn.String())
 		conn, err = conn.Connect(ctx)
-		if err == nil && conn != nil && conn.IsHealthy(ctx) {
-			g.conns.Store(addr, conn)
-			return conn, nil
-		}
 		if err != nil {
-			log.Warnf("%s failed to reconnect unhealthy pool conn=[%s] for addr %s\terror= %v\t trying to disconnect", g.name, conn.String(), addr, err)
-		}
-	}
-	log.Warnf("%s creating new connection pool (size: %d) for addr = %s", g.name, g.poolSize, addr)
-	opts := []pool.Option{
-		pool.WithAddr(addr),
-		pool.WithSize(g.poolSize),
-		pool.WithDialOptions(append(g.dopts, dopts...)...),
-		pool.WithOldConnCloseDelay(g.roccd),
-		pool.WithResolveDNS(func() bool {
-			disabled, ok := g.disableResolveDNSAddrs.Load(addr)
-			if ok && disabled {
-				return false
+			log.Error(err)
+			derr := g.Disconnect(ctx, addr)
+			if errors.IsNot(derr, errors.ErrGRPCClientConnNotFound(addr)) {
+				log.Warnf("%s failed to disconnect unhealthy pool addr= %s\terror= %s\tconn=%s", g.name, addr, err.Error(), conn.String())
+				err = errors.Join(err, derr)
 			}
-			return g.resolveDNS
-		}()),
-	}
-	if g.bo != nil {
-		opts = append(opts, pool.WithBackoff(g.bo))
-	}
-	conn, err = pool.New(ctx, opts...)
-	if err != nil || conn == nil {
-		derr := g.Disconnect(ctx, addr)
-		if errors.IsNot(derr, errors.ErrGRPCClientConnNotFound(addr)) {
-			log.Warnf("%s failed to disconnect unhealthy pool addr= %s\terror= %s", g.name, addr, err.Error())
-			err = errors.Join(err, derr)
+			return nil, handleError(err)
 		}
-		return nil, handleError(err)
-	}
-	log.Warnf("%s connecting to new connection pool for addr= %s, conn=[%s]", g.name, addr, conn.String())
-	conn, err = conn.Connect(ctx)
+		if conn == nil || !conn.IsHealthy(ctx) {
+			if conn != nil {
+				log.Debugf("%s connection to %s is unhealthy, conn=%s", g.name, addr, conn.String())
+			} else {
+				log.Debugf("%s connection to %s is nil", g.name, addr)
+			}
+			return nil, handleError(errors.ErrGRPCClientConnNotFound(addr))
+		}
+
+		if oldConn == nil {
+			atomic.AddUint64(&g.clientCount, 1)
+		}
+		g.conns.Store(addr, conn)
+		if oldConn != nil {
+			dErr := oldConn.Disconnect(ctx)
+			if dErr != nil {
+				log.Warnf("failed to disconnect old connection for addr %s: %v", addr, dErr)
+				err = errors.Join(err, dErr)
+			}
+		}
+		return conn, handleError(err)
+	})
 	if err != nil {
-		log.Error(err)
-		derr := g.Disconnect(ctx, addr)
-		if errors.IsNot(derr, errors.ErrGRPCClientConnNotFound(addr)) {
-			log.Warnf("%s failed to disconnect unhealthy pool addr= %s\terror= %s\tconn=%s", g.name, addr, err.Error(), conn.String())
-			err = errors.Join(err, derr)
-		}
-		return nil, handleError(err)
+		return nil, err
 	}
-	if conn == nil || !conn.IsHealthy(ctx) {
-		if conn != nil {
-			log.Debugf("%s connection to %s is unhealthy, conn=%s", g.name, addr, conn.String())
-		} else {
-			log.Debugf("%s connection to %s is nil", g.name, addr)
-		}
-		return nil, handleError(errors.ErrGRPCClientConnNotFound(addr))
-	}
-	atomic.AddUint64(&g.clientCount, 1)
-	g.conns.Store(addr, conn)
 	return conn, nil
 }
 
-// IsConnected checks if the connection to the given address is healthy.
 func (g *gRPCClient) IsConnected(ctx context.Context, addr string) bool {
 	p, ok := g.conns.Load(addr)
 	if !ok || p == nil {
@@ -1100,7 +1112,7 @@ func (g *gRPCClient) IsConnected(ctx context.Context, addr string) bool {
 }
 
 // Disconnect closes the connection to the given address and removes it from the pool.
-func (g *gRPCClient) Disconnect(ctx context.Context, addr string) error {
+func (g *gRPCClient) Disconnect(ctx context.Context, addr string) (err error) {
 	log.Warnf("Disconnecting %s client connection for %s", g.name, addr)
 	ctx, span := trace.StartSpan(ctx, apiName+"/Client.Disconnect/"+addr)
 	defer func() {
@@ -1109,37 +1121,37 @@ func (g *gRPCClient) Disconnect(ctx context.Context, addr string) error {
 		}
 	}()
 
-	p, ok := g.conns.LoadAndDelete(addr)
-	if !ok || p == nil {
-		log.Debugf("gRPC %s connection pool addr = %s is already unavailable or deleted", g.name, addr)
-		err := errors.ErrGRPCClientConnNotFound(addr)
-		if span != nil {
-			span.RecordError(err)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return err
-	}
-	if ok {
-		atomic.AddUint64(&g.clientCount, ^uint64(0))
-	}
-	log.Debugf("gRPC %s connection pool addr = %s will disconnect soon...", g.name, addr)
-	err := p.Disconnect(ctx)
-	if err != nil {
-		if span != nil {
-			span.RecordError(err)
-			st, ok := status.FromError(err)
-			if ok && st != nil {
-				span.SetAttributes(trace.FromGRPCStatus(st.Code(), err.Error())...)
+	_, _, err = g.group.Do(ctx, "disconnect-"+addr, func(ctx context.Context) (pool.Conn, error) {
+		p, ok := g.conns.LoadAndDelete(addr)
+		if !ok || p == nil {
+			log.Debugf("gRPC %s connection pool addr = %s is already unavailable or deleted", g.name, addr)
+			err := errors.ErrGRPCClientConnNotFound(addr)
+			if span != nil {
+				span.RecordError(err)
+				span.SetStatus(trace.StatusError, err.Error())
 			}
-			span.SetStatus(trace.StatusError, err.Error())
+			return nil, err
 		}
-		return err
-	}
+		atomic.AddUint64(&g.clientCount, ^uint64(0))
+		log.Debugf("gRPC %s connection pool addr = %s will disconnect soon...", g.name, addr)
+		err := p.Disconnect(ctx)
+		if err != nil {
+			if span != nil {
+				span.RecordError(err)
+				st, ok := status.FromError(err)
+				if ok && st != nil {
+					span.SetAttributes(trace.FromGRPCStatus(st.Code(), err.Error())...)
+				}
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			return nil, err
+		}
 
-	return nil
+		return nil, nil
+	})
+	return err
 }
 
-// ConnectedAddrs returns a slice of all currently connected addresses.
 func (g *gRPCClient) ConnectedAddrs(_ context.Context) (addrs []string) {
 	addrs = make([]string, 0, g.conns.Len())
 	if err := g.rangeConns("ConnectedAddrs", func(addr string, _ pool.Conn) bool {

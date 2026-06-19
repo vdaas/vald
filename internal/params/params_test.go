@@ -36,12 +36,12 @@ func TestNew(t *testing.T) {
 		want *parser
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, Parser) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	// Custom check function: compare only the essential fields.
 	defaultCheckFunc := func(w want, got Parser) error {
@@ -81,9 +81,9 @@ func TestNew(t *testing.T) {
 						defaultPath string
 						description string
 					}{
-						keys:        []string{"f", "file", "c", "config"},
 						defaultPath: "/etc/server/config.yaml",
 						description: "config file path",
+						keys:        []string{"f", "file", "c", "config"},
 					},
 					version: struct {
 						keys        []string
@@ -111,9 +111,9 @@ func TestNew(t *testing.T) {
 						defaultPath string
 						description string
 					}{
-						keys:        []string{"f", "file", "c", "config", "t", "test"},
 						defaultPath: "/etc/server/config.yaml",
 						description: "config file path",
+						keys:        []string{"f", "file", "c", "config", "t", "test"},
 					},
 					version: struct {
 						keys        []string
@@ -153,31 +153,33 @@ func TestNew(t *testing.T) {
 
 // Test_parser_Parse tests the Parse method of the parser.
 func Test_parser_Parse(t *testing.T) {
+	type filePath struct {
+		keys        []string
+		defaultPath string
+		description string
+	}
+	type version struct {
+		keys        []string
+		defaultFlag bool
+		description string
+	}
 	type fields struct {
-		filePath struct {
-			keys        []string
-			defaultPath string
-			description string
-		}
-		version struct {
-			keys        []string
-			defaultFlag bool
-			description string
-		}
+		filePath filePath
+		version  version
 	}
 	type want struct {
-		want Data  // expected Data (may be nil)
-		help bool  // indicates if help option was triggered
-		err  error // expected error
+		want Data
+		err  error
+		help bool
 	}
 	type test struct {
-		name       string
-		fields     fields
-		args       []string // custom os.Args (optional)
 		want       want
 		checkFunc  func(want, Data, bool, error) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		fields     fields
+		name       string
+		args       []string
 	}
 	// Custom check function: compare only the essential fields of Data.
 	defaultCheckFunc := func(w want, got Data, gotHelp bool, err error) error {
@@ -219,20 +221,12 @@ func Test_parser_Parse(t *testing.T) {
 		{
 			name: "should successfully parse valid config file and version flag false",
 			fields: fields{
-				filePath: struct {
-					keys        []string
-					defaultPath string
-					description string
-				}{
+				filePath: filePath{
 					keys:        []string{"path", "p"},
 					defaultPath: "",
 					description: "set file path",
 				},
-				version: struct {
-					keys        []string
-					defaultFlag bool
-					description string
-				}{
+				version: version{
 					keys:        []string{"version", "v"},
 					defaultFlag: false,
 					description: "show version flag",
@@ -270,20 +264,12 @@ func Test_parser_Parse(t *testing.T) {
 		{
 			name: "should parse and return valid data when version flag is true even if file does not exist",
 			fields: fields{
-				filePath: struct {
-					keys        []string
-					defaultPath string
-					description string
-				}{
+				filePath: filePath{
 					keys:        []string{"path", "p"},
 					defaultPath: "nonexistent.yaml",
 					description: "set file path",
 				},
-				version: struct {
-					keys        []string
-					defaultFlag bool
-					description string
-				}{
+				version: version{
 					keys:        []string{"version", "v"},
 					defaultFlag: false,
 					description: "show version flag",
@@ -307,20 +293,12 @@ func Test_parser_Parse(t *testing.T) {
 		{
 			name: "should return help when --help flag is provided",
 			fields: fields{
-				filePath: struct {
-					keys        []string
-					defaultPath string
-					description string
-				}{
+				filePath: filePath{
 					keys:        []string{"path", "p"},
 					defaultPath: "/etc/server/config.yaml",
 					description: "set file path",
 				},
-				version: struct {
-					keys        []string
-					defaultFlag bool
-					description string
-				}{
+				version: version{
 					keys:        []string{"version", "v"},
 					defaultFlag: false,
 					description: "show version flag",
@@ -340,20 +318,12 @@ func Test_parser_Parse(t *testing.T) {
 		{
 			name: "should return parsing error for unknown flag",
 			fields: fields{
-				filePath: struct {
-					keys        []string
-					defaultPath string
-					description string
-				}{
+				filePath: filePath{
 					keys:        []string{"path", "p"},
 					defaultPath: "",
 					description: "set file path",
 				},
-				version: struct {
-					keys        []string
-					defaultFlag bool
-					description string
-				}{
+				version: version{
 					keys:        []string{"version", "v"},
 					defaultFlag: false,
 					description: "show version flag",
@@ -374,20 +344,12 @@ func Test_parser_Parse(t *testing.T) {
 		{
 			name: "should return help when config file path is empty",
 			fields: fields{
-				filePath: struct {
-					keys        []string
-					defaultPath string
-					description string
-				}{
+				filePath: filePath{
 					keys:        []string{"path", "p"},
 					defaultPath: "",
 					description: "set file path",
 				},
-				version: struct {
-					keys        []string
-					defaultFlag bool
-					description string
-				}{
+				version: version{
 					keys:        []string{"version", "v"},
 					defaultFlag: false,
 					description: "show version flag",
@@ -442,12 +404,12 @@ func Test_data_ConfigFilePath(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
+		want       want
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if got != w.want {
@@ -500,12 +462,12 @@ func Test_data_ShowVersion(t *testing.T) {
 		want bool
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, bool) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
+		want       want
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if got != w.want {

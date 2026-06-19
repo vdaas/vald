@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// Package config stores all server application settings
+// Package config stores all server application settings for benchmark job
 package config
 
 import (
@@ -34,19 +34,20 @@ type GlobalConfig = config.GlobalConfig
 // Config represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Config struct {
-	config.GlobalConfig `json:",inline" yaml:",inline"`
+	// K8sClient represent k8s client configuration
+	K8sClient client.Client `json:"k8s_client" yaml:"k8s_client"`
 
-	// Server represent all server configuration
+	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
 
 	// Observability represent observability configurations
 	Observability *config.Observability `json:"observability" yaml:"observability"`
 
-	// Job represents benchmark job configurations
+	// Job represent benchmark job configuration
 	Job *config.BenchmarkJob `json:"job" yaml:"job"`
 
-	// K8sClient represents kubernetes clients
-	K8sClient client.Client `json:"k8s_client" yaml:"k8s_client"`
+	// GlobalConfig represent the global configuration
+	config.GlobalConfig `json:",inline" yaml:",inline"`
 }
 
 var (

@@ -37,12 +37,12 @@ func TestNew(t *testing.T) {
 		routes []routing.Route
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, http.Handler) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, got http.Handler) error {
 		gh, ok := got.(*mux.Router)

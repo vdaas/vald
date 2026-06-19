@@ -23,22 +23,21 @@ import (
 )
 
 type BenchmarkJobSpec struct {
-	//nolint:tagalign
+	ObjectConfig            *config.ObjectConfig `json:"object_config,omitempty"              yaml:"object_config"`
+	ClientConfig            *config.GRPCClient   `json:"client_config,omitempty"              yaml:"client_config"`
+	Target                  *BenchmarkTarget     `json:"target,omitempty"                     yaml:"target"`
+	Dataset                 *BenchmarkDataset    `json:"dataset,omitempty"                    yaml:"dataset"`
+	UpdateConfig            *config.UpdateConfig `json:"update_config,omitempty"              yaml:"update_config"`
 	*config.GlobalConfig    `json:",omitempty" yaml:""`
-	ServerConfig            *config.Servers            `json:"server_config,omitempty"              yaml:"server_config"`
-	Target                  *BenchmarkTarget           `json:"target,omitempty"                     yaml:"target"`
-	Dataset                 *BenchmarkDataset          `json:"dataset,omitempty"                    yaml:"dataset"`
-	Replica                 int                        `json:"replica,omitempty"                    yaml:"replica"`
-	Repetition              int                        `json:"repetition,omitempty"                 yaml:"repetition"`
-	JobType                 string                     `json:"job_type,omitempty"                   yaml:"job_type"`
-	InsertConfig            *config.InsertConfig       `json:"insert_config,omitempty"              yaml:"insert_config"`
-	UpdateConfig            *config.UpdateConfig       `json:"update_config,omitempty"              yaml:"update_config"`
-	UpsertConfig            *config.UpsertConfig       `json:"upsert_config,omitempty"              yaml:"upsert_config"`
-	SearchConfig            *config.SearchConfig       `json:"search_config,omitempty"              yaml:"search_config"`
 	RemoveConfig            *config.RemoveConfig       `json:"remove_config,omitempty"              yaml:"remove_config"`
-	ObjectConfig            *config.ObjectConfig       `json:"object_config,omitempty"              yaml:"object_config"`
-	ClientConfig            *config.GRPCClient         `json:"client_config,omitempty"              yaml:"client_config"`
+	InsertConfig            *config.InsertConfig       `json:"insert_config,omitempty"              yaml:"insert_config"`
+	ServerConfig            *config.Servers            `json:"server_config,omitempty"              yaml:"server_config"`
+	SearchConfig            *config.SearchConfig       `json:"search_config,omitempty"              yaml:"search_config"`
+	UpsertConfig            *config.UpsertConfig       `json:"upsert_config,omitempty"              yaml:"upsert_config"`
+	JobType                 string                     `json:"job_type,omitempty"                   yaml:"job_type"`
 	Rules                   []*config.BenchmarkJobRule `json:"rules,omitempty"                      yaml:"rules"`
+	Repetition              int                        `json:"repetition,omitempty"                 yaml:"repetition"`
+	Replica                 int                        `json:"replica,omitempty"                    yaml:"replica"`
 	RPS                     int                        `json:"rps,omitempty"                        yaml:"rps"`
 	ConcurrencyLimit        int                        `json:"concurrency_limit,omitempty"          yaml:"concurrency_limit"`
 	TTLSecondsAfterFinished int                        `json:"ttl_seconds_after_finished,omitempty" yaml:"ttl_seconds_after_finished"`
@@ -66,16 +65,15 @@ type BenchmarkDatasetRange config.BenchmarkDatasetRange
 type BenchmarkJobRule config.BenchmarkJobRule
 
 type ValdBenchmarkJob struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-
-	Spec   BenchmarkJobSpec   `json:"spec,omitempty"`
-	Status BenchmarkJobStatus `json:"status,omitempty"`
+	metav1.TypeMeta   `                   json:",inline"`
+	Status            BenchmarkJobStatus `json:"status,omitempty"`
+	metav1.ObjectMeta `                   json:"metadata"         protobuf:"bytes,1,opt,name=metadata"`
+	Spec              BenchmarkJobSpec `json:"spec"`
 }
 
 type ValdBenchmarkJobList struct {
 	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+	metav1.ListMeta `json:"metadata" protobuf:"bytes,1,opt,name=metadata"`
 
 	Items []ValdBenchmarkJob `json:"items,omitempty"`
 }

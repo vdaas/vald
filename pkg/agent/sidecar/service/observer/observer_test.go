@@ -113,16 +113,16 @@ package observer
 // 	}
 // 	type fields struct {
 // 		w               watch.Watcher
-// 		dir             string
 // 		eg              errgroup.Group
-// 		checkDuration   time.Duration
+// 		storage         storage.Storage
+// 		ch              chan struct{}
+// 		dir             string
 // 		metadataPath    string
+// 		hooks           []Hook
+// 		checkDuration   time.Duration
 // 		postStopTimeout time.Duration
 // 		watchEnabled    bool
 // 		tickerEnabled   bool
-// 		storage         storage.Storage
-// 		ch              chan struct{}
-// 		hooks           []Hook
 // 	}
 // 	type want struct {
 // 		want <-chan error
@@ -156,16 +156,16 @@ package observer
 // 		       },
 // 		       fields: fields {
 // 		           w:nil,
-// 		           dir:"",
 // 		           eg:nil,
-// 		           checkDuration:nil,
+// 		           storage:nil,
+// 		           ch:nil,
+// 		           dir:"",
 // 		           metadataPath:"",
+// 		           hooks:nil,
+// 		           checkDuration:nil,
 // 		           postStopTimeout:nil,
 // 		           watchEnabled:false,
 // 		           tickerEnabled:false,
-// 		           storage:nil,
-// 		           ch:nil,
-// 		           hooks:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -188,16 +188,16 @@ package observer
 // 		           },
 // 		           fields: fields {
 // 		           w:nil,
-// 		           dir:"",
 // 		           eg:nil,
-// 		           checkDuration:nil,
+// 		           storage:nil,
+// 		           ch:nil,
+// 		           dir:"",
 // 		           metadataPath:"",
+// 		           hooks:nil,
+// 		           checkDuration:nil,
 // 		           postStopTimeout:nil,
 // 		           watchEnabled:false,
 // 		           tickerEnabled:false,
-// 		           storage:nil,
-// 		           ch:nil,
-// 		           hooks:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -229,16 +229,16 @@ package observer
 // 			}
 // 			o := &observer{
 // 				w:               test.fields.w,
-// 				dir:             test.fields.dir,
 // 				eg:              test.fields.eg,
-// 				checkDuration:   test.fields.checkDuration,
+// 				storage:         test.fields.storage,
+// 				ch:              test.fields.ch,
+// 				dir:             test.fields.dir,
 // 				metadataPath:    test.fields.metadataPath,
+// 				hooks:           test.fields.hooks,
+// 				checkDuration:   test.fields.checkDuration,
 // 				postStopTimeout: test.fields.postStopTimeout,
 // 				watchEnabled:    test.fields.watchEnabled,
 // 				tickerEnabled:   test.fields.tickerEnabled,
-// 				storage:         test.fields.storage,
-// 				ch:              test.fields.ch,
-// 				hooks:           test.fields.hooks,
 // 			}
 //
 // 			got, err := o.Start(test.args.ctx)
@@ -255,16 +255,16 @@ package observer
 // 	}
 // 	type fields struct {
 // 		w               watch.Watcher
-// 		dir             string
 // 		eg              errgroup.Group
-// 		checkDuration   time.Duration
+// 		storage         storage.Storage
+// 		ch              chan struct{}
+// 		dir             string
 // 		metadataPath    string
+// 		hooks           []Hook
+// 		checkDuration   time.Duration
 // 		postStopTimeout time.Duration
 // 		watchEnabled    bool
 // 		tickerEnabled   bool
-// 		storage         storage.Storage
-// 		ch              chan struct{}
-// 		hooks           []Hook
 // 	}
 // 	type want struct {
 // 		err error
@@ -294,16 +294,16 @@ package observer
 // 		       },
 // 		       fields: fields {
 // 		           w:nil,
-// 		           dir:"",
 // 		           eg:nil,
-// 		           checkDuration:nil,
+// 		           storage:nil,
+// 		           ch:nil,
+// 		           dir:"",
 // 		           metadataPath:"",
+// 		           hooks:nil,
+// 		           checkDuration:nil,
 // 		           postStopTimeout:nil,
 // 		           watchEnabled:false,
 // 		           tickerEnabled:false,
-// 		           storage:nil,
-// 		           ch:nil,
-// 		           hooks:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -326,16 +326,16 @@ package observer
 // 		           },
 // 		           fields: fields {
 // 		           w:nil,
-// 		           dir:"",
 // 		           eg:nil,
-// 		           checkDuration:nil,
+// 		           storage:nil,
+// 		           ch:nil,
+// 		           dir:"",
 // 		           metadataPath:"",
+// 		           hooks:nil,
+// 		           checkDuration:nil,
 // 		           postStopTimeout:nil,
 // 		           watchEnabled:false,
 // 		           tickerEnabled:false,
-// 		           storage:nil,
-// 		           ch:nil,
-// 		           hooks:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -367,16 +367,16 @@ package observer
 // 			}
 // 			o := &observer{
 // 				w:               test.fields.w,
-// 				dir:             test.fields.dir,
 // 				eg:              test.fields.eg,
-// 				checkDuration:   test.fields.checkDuration,
+// 				storage:         test.fields.storage,
+// 				ch:              test.fields.ch,
+// 				dir:             test.fields.dir,
 // 				metadataPath:    test.fields.metadataPath,
+// 				hooks:           test.fields.hooks,
+// 				checkDuration:   test.fields.checkDuration,
 // 				postStopTimeout: test.fields.postStopTimeout,
 // 				watchEnabled:    test.fields.watchEnabled,
 // 				tickerEnabled:   test.fields.tickerEnabled,
-// 				storage:         test.fields.storage,
-// 				ch:              test.fields.ch,
-// 				hooks:           test.fields.hooks,
 // 			}
 //
 // 			err := o.PostStop(test.args.ctx)
@@ -393,16 +393,16 @@ package observer
 // 	}
 // 	type fields struct {
 // 		w               watch.Watcher
-// 		dir             string
 // 		eg              errgroup.Group
-// 		checkDuration   time.Duration
+// 		storage         storage.Storage
+// 		ch              chan struct{}
+// 		dir             string
 // 		metadataPath    string
+// 		hooks           []Hook
+// 		checkDuration   time.Duration
 // 		postStopTimeout time.Duration
 // 		watchEnabled    bool
 // 		tickerEnabled   bool
-// 		storage         storage.Storage
-// 		ch              chan struct{}
-// 		hooks           []Hook
 // 	}
 // 	type want struct {
 // 		want <-chan error
@@ -436,16 +436,16 @@ package observer
 // 		       },
 // 		       fields: fields {
 // 		           w:nil,
-// 		           dir:"",
 // 		           eg:nil,
-// 		           checkDuration:nil,
+// 		           storage:nil,
+// 		           ch:nil,
+// 		           dir:"",
 // 		           metadataPath:"",
+// 		           hooks:nil,
+// 		           checkDuration:nil,
 // 		           postStopTimeout:nil,
 // 		           watchEnabled:false,
 // 		           tickerEnabled:false,
-// 		           storage:nil,
-// 		           ch:nil,
-// 		           hooks:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -468,16 +468,16 @@ package observer
 // 		           },
 // 		           fields: fields {
 // 		           w:nil,
-// 		           dir:"",
 // 		           eg:nil,
-// 		           checkDuration:nil,
+// 		           storage:nil,
+// 		           ch:nil,
+// 		           dir:"",
 // 		           metadataPath:"",
+// 		           hooks:nil,
+// 		           checkDuration:nil,
 // 		           postStopTimeout:nil,
 // 		           watchEnabled:false,
 // 		           tickerEnabled:false,
-// 		           storage:nil,
-// 		           ch:nil,
-// 		           hooks:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -509,16 +509,16 @@ package observer
 // 			}
 // 			o := &observer{
 // 				w:               test.fields.w,
-// 				dir:             test.fields.dir,
 // 				eg:              test.fields.eg,
-// 				checkDuration:   test.fields.checkDuration,
+// 				storage:         test.fields.storage,
+// 				ch:              test.fields.ch,
+// 				dir:             test.fields.dir,
 // 				metadataPath:    test.fields.metadataPath,
+// 				hooks:           test.fields.hooks,
+// 				checkDuration:   test.fields.checkDuration,
 // 				postStopTimeout: test.fields.postStopTimeout,
 // 				watchEnabled:    test.fields.watchEnabled,
 // 				tickerEnabled:   test.fields.tickerEnabled,
-// 				storage:         test.fields.storage,
-// 				ch:              test.fields.ch,
-// 				hooks:           test.fields.hooks,
 // 			}
 //
 // 			got, err := o.startTicker(test.args.ctx)
@@ -535,16 +535,16 @@ package observer
 // 	}
 // 	type fields struct {
 // 		w               watch.Watcher
-// 		dir             string
 // 		eg              errgroup.Group
-// 		checkDuration   time.Duration
+// 		storage         storage.Storage
+// 		ch              chan struct{}
+// 		dir             string
 // 		metadataPath    string
+// 		hooks           []Hook
+// 		checkDuration   time.Duration
 // 		postStopTimeout time.Duration
 // 		watchEnabled    bool
 // 		tickerEnabled   bool
-// 		storage         storage.Storage
-// 		ch              chan struct{}
-// 		hooks           []Hook
 // 	}
 // 	type want struct {
 // 		want <-chan error
@@ -578,16 +578,16 @@ package observer
 // 		       },
 // 		       fields: fields {
 // 		           w:nil,
-// 		           dir:"",
 // 		           eg:nil,
-// 		           checkDuration:nil,
+// 		           storage:nil,
+// 		           ch:nil,
+// 		           dir:"",
 // 		           metadataPath:"",
+// 		           hooks:nil,
+// 		           checkDuration:nil,
 // 		           postStopTimeout:nil,
 // 		           watchEnabled:false,
 // 		           tickerEnabled:false,
-// 		           storage:nil,
-// 		           ch:nil,
-// 		           hooks:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -610,16 +610,16 @@ package observer
 // 		           },
 // 		           fields: fields {
 // 		           w:nil,
-// 		           dir:"",
 // 		           eg:nil,
-// 		           checkDuration:nil,
+// 		           storage:nil,
+// 		           ch:nil,
+// 		           dir:"",
 // 		           metadataPath:"",
+// 		           hooks:nil,
+// 		           checkDuration:nil,
 // 		           postStopTimeout:nil,
 // 		           watchEnabled:false,
 // 		           tickerEnabled:false,
-// 		           storage:nil,
-// 		           ch:nil,
-// 		           hooks:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -651,16 +651,16 @@ package observer
 // 			}
 // 			o := &observer{
 // 				w:               test.fields.w,
-// 				dir:             test.fields.dir,
 // 				eg:              test.fields.eg,
-// 				checkDuration:   test.fields.checkDuration,
+// 				storage:         test.fields.storage,
+// 				ch:              test.fields.ch,
+// 				dir:             test.fields.dir,
 // 				metadataPath:    test.fields.metadataPath,
+// 				hooks:           test.fields.hooks,
+// 				checkDuration:   test.fields.checkDuration,
 // 				postStopTimeout: test.fields.postStopTimeout,
 // 				watchEnabled:    test.fields.watchEnabled,
 // 				tickerEnabled:   test.fields.tickerEnabled,
-// 				storage:         test.fields.storage,
-// 				ch:              test.fields.ch,
-// 				hooks:           test.fields.hooks,
 // 			}
 //
 // 			got, err := o.startBackupLoop(test.args.ctx)
@@ -678,16 +678,16 @@ package observer
 // 	}
 // 	type fields struct {
 // 		w               watch.Watcher
-// 		dir             string
 // 		eg              errgroup.Group
-// 		checkDuration   time.Duration
+// 		storage         storage.Storage
+// 		ch              chan struct{}
+// 		dir             string
 // 		metadataPath    string
+// 		hooks           []Hook
+// 		checkDuration   time.Duration
 // 		postStopTimeout time.Duration
 // 		watchEnabled    bool
 // 		tickerEnabled   bool
-// 		storage         storage.Storage
-// 		ch              chan struct{}
-// 		hooks           []Hook
 // 	}
 // 	type want struct {
 // 		err error
@@ -718,16 +718,16 @@ package observer
 // 		       },
 // 		       fields: fields {
 // 		           w:nil,
-// 		           dir:"",
 // 		           eg:nil,
-// 		           checkDuration:nil,
+// 		           storage:nil,
+// 		           ch:nil,
+// 		           dir:"",
 // 		           metadataPath:"",
+// 		           hooks:nil,
+// 		           checkDuration:nil,
 // 		           postStopTimeout:nil,
 // 		           watchEnabled:false,
 // 		           tickerEnabled:false,
-// 		           storage:nil,
-// 		           ch:nil,
-// 		           hooks:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -751,16 +751,16 @@ package observer
 // 		           },
 // 		           fields: fields {
 // 		           w:nil,
-// 		           dir:"",
 // 		           eg:nil,
-// 		           checkDuration:nil,
+// 		           storage:nil,
+// 		           ch:nil,
+// 		           dir:"",
 // 		           metadataPath:"",
+// 		           hooks:nil,
+// 		           checkDuration:nil,
 // 		           postStopTimeout:nil,
 // 		           watchEnabled:false,
 // 		           tickerEnabled:false,
-// 		           storage:nil,
-// 		           ch:nil,
-// 		           hooks:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -792,16 +792,16 @@ package observer
 // 			}
 // 			o := &observer{
 // 				w:               test.fields.w,
-// 				dir:             test.fields.dir,
 // 				eg:              test.fields.eg,
-// 				checkDuration:   test.fields.checkDuration,
+// 				storage:         test.fields.storage,
+// 				ch:              test.fields.ch,
+// 				dir:             test.fields.dir,
 // 				metadataPath:    test.fields.metadataPath,
+// 				hooks:           test.fields.hooks,
+// 				checkDuration:   test.fields.checkDuration,
 // 				postStopTimeout: test.fields.postStopTimeout,
 // 				watchEnabled:    test.fields.watchEnabled,
 // 				tickerEnabled:   test.fields.tickerEnabled,
-// 				storage:         test.fields.storage,
-// 				ch:              test.fields.ch,
-// 				hooks:           test.fields.hooks,
 // 			}
 //
 // 			err := o.onWrite(test.args.ctx, test.args.name)
@@ -819,16 +819,16 @@ package observer
 // 	}
 // 	type fields struct {
 // 		w               watch.Watcher
-// 		dir             string
 // 		eg              errgroup.Group
-// 		checkDuration   time.Duration
+// 		storage         storage.Storage
+// 		ch              chan struct{}
+// 		dir             string
 // 		metadataPath    string
+// 		hooks           []Hook
+// 		checkDuration   time.Duration
 // 		postStopTimeout time.Duration
 // 		watchEnabled    bool
 // 		tickerEnabled   bool
-// 		storage         storage.Storage
-// 		ch              chan struct{}
-// 		hooks           []Hook
 // 	}
 // 	type want struct {
 // 		err error
@@ -859,16 +859,16 @@ package observer
 // 		       },
 // 		       fields: fields {
 // 		           w:nil,
-// 		           dir:"",
 // 		           eg:nil,
-// 		           checkDuration:nil,
+// 		           storage:nil,
+// 		           ch:nil,
+// 		           dir:"",
 // 		           metadataPath:"",
+// 		           hooks:nil,
+// 		           checkDuration:nil,
 // 		           postStopTimeout:nil,
 // 		           watchEnabled:false,
 // 		           tickerEnabled:false,
-// 		           storage:nil,
-// 		           ch:nil,
-// 		           hooks:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -892,16 +892,16 @@ package observer
 // 		           },
 // 		           fields: fields {
 // 		           w:nil,
-// 		           dir:"",
 // 		           eg:nil,
-// 		           checkDuration:nil,
+// 		           storage:nil,
+// 		           ch:nil,
+// 		           dir:"",
 // 		           metadataPath:"",
+// 		           hooks:nil,
+// 		           checkDuration:nil,
 // 		           postStopTimeout:nil,
 // 		           watchEnabled:false,
 // 		           tickerEnabled:false,
-// 		           storage:nil,
-// 		           ch:nil,
-// 		           hooks:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -933,16 +933,16 @@ package observer
 // 			}
 // 			o := &observer{
 // 				w:               test.fields.w,
-// 				dir:             test.fields.dir,
 // 				eg:              test.fields.eg,
-// 				checkDuration:   test.fields.checkDuration,
+// 				storage:         test.fields.storage,
+// 				ch:              test.fields.ch,
+// 				dir:             test.fields.dir,
 // 				metadataPath:    test.fields.metadataPath,
+// 				hooks:           test.fields.hooks,
+// 				checkDuration:   test.fields.checkDuration,
 // 				postStopTimeout: test.fields.postStopTimeout,
 // 				watchEnabled:    test.fields.watchEnabled,
 // 				tickerEnabled:   test.fields.tickerEnabled,
-// 				storage:         test.fields.storage,
-// 				ch:              test.fields.ch,
-// 				hooks:           test.fields.hooks,
 // 			}
 //
 // 			err := o.onCreate(test.args.ctx, test.args.name)
@@ -956,16 +956,16 @@ package observer
 // func Test_observer_isValidMetadata(t *testing.T) {
 // 	type fields struct {
 // 		w               watch.Watcher
-// 		dir             string
 // 		eg              errgroup.Group
-// 		checkDuration   time.Duration
+// 		storage         storage.Storage
+// 		ch              chan struct{}
+// 		dir             string
 // 		metadataPath    string
+// 		hooks           []Hook
+// 		checkDuration   time.Duration
 // 		postStopTimeout time.Duration
 // 		watchEnabled    bool
 // 		tickerEnabled   bool
-// 		storage         storage.Storage
-// 		ch              chan struct{}
-// 		hooks           []Hook
 // 	}
 // 	type want struct {
 // 		want bool
@@ -995,16 +995,16 @@ package observer
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           w:nil,
-// 		           dir:"",
 // 		           eg:nil,
-// 		           checkDuration:nil,
+// 		           storage:nil,
+// 		           ch:nil,
+// 		           dir:"",
 // 		           metadataPath:"",
+// 		           hooks:nil,
+// 		           checkDuration:nil,
 // 		           postStopTimeout:nil,
 // 		           watchEnabled:false,
 // 		           tickerEnabled:false,
-// 		           storage:nil,
-// 		           ch:nil,
-// 		           hooks:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1024,16 +1024,16 @@ package observer
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           w:nil,
-// 		           dir:"",
 // 		           eg:nil,
-// 		           checkDuration:nil,
+// 		           storage:nil,
+// 		           ch:nil,
+// 		           dir:"",
 // 		           metadataPath:"",
+// 		           hooks:nil,
+// 		           checkDuration:nil,
 // 		           postStopTimeout:nil,
 // 		           watchEnabled:false,
 // 		           tickerEnabled:false,
-// 		           storage:nil,
-// 		           ch:nil,
-// 		           hooks:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1065,16 +1065,16 @@ package observer
 // 			}
 // 			o := &observer{
 // 				w:               test.fields.w,
-// 				dir:             test.fields.dir,
 // 				eg:              test.fields.eg,
-// 				checkDuration:   test.fields.checkDuration,
+// 				storage:         test.fields.storage,
+// 				ch:              test.fields.ch,
+// 				dir:             test.fields.dir,
 // 				metadataPath:    test.fields.metadataPath,
+// 				hooks:           test.fields.hooks,
+// 				checkDuration:   test.fields.checkDuration,
 // 				postStopTimeout: test.fields.postStopTimeout,
 // 				watchEnabled:    test.fields.watchEnabled,
 // 				tickerEnabled:   test.fields.tickerEnabled,
-// 				storage:         test.fields.storage,
-// 				ch:              test.fields.ch,
-// 				hooks:           test.fields.hooks,
 // 			}
 //
 // 			got, err := o.isValidMetadata()
@@ -1088,16 +1088,16 @@ package observer
 // func Test_observer_terminate(t *testing.T) {
 // 	type fields struct {
 // 		w               watch.Watcher
-// 		dir             string
 // 		eg              errgroup.Group
-// 		checkDuration   time.Duration
+// 		storage         storage.Storage
+// 		ch              chan struct{}
+// 		dir             string
 // 		metadataPath    string
+// 		hooks           []Hook
+// 		checkDuration   time.Duration
 // 		postStopTimeout time.Duration
 // 		watchEnabled    bool
 // 		tickerEnabled   bool
-// 		storage         storage.Storage
-// 		ch              chan struct{}
-// 		hooks           []Hook
 // 	}
 // 	type want struct {
 // 		err error
@@ -1123,16 +1123,16 @@ package observer
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           w:nil,
-// 		           dir:"",
 // 		           eg:nil,
-// 		           checkDuration:nil,
+// 		           storage:nil,
+// 		           ch:nil,
+// 		           dir:"",
 // 		           metadataPath:"",
+// 		           hooks:nil,
+// 		           checkDuration:nil,
 // 		           postStopTimeout:nil,
 // 		           watchEnabled:false,
 // 		           tickerEnabled:false,
-// 		           storage:nil,
-// 		           ch:nil,
-// 		           hooks:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1152,16 +1152,16 @@ package observer
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           w:nil,
-// 		           dir:"",
 // 		           eg:nil,
-// 		           checkDuration:nil,
+// 		           storage:nil,
+// 		           ch:nil,
+// 		           dir:"",
 // 		           metadataPath:"",
+// 		           hooks:nil,
+// 		           checkDuration:nil,
 // 		           postStopTimeout:nil,
 // 		           watchEnabled:false,
 // 		           tickerEnabled:false,
-// 		           storage:nil,
-// 		           ch:nil,
-// 		           hooks:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1193,16 +1193,16 @@ package observer
 // 			}
 // 			o := &observer{
 // 				w:               test.fields.w,
-// 				dir:             test.fields.dir,
 // 				eg:              test.fields.eg,
-// 				checkDuration:   test.fields.checkDuration,
+// 				storage:         test.fields.storage,
+// 				ch:              test.fields.ch,
+// 				dir:             test.fields.dir,
 // 				metadataPath:    test.fields.metadataPath,
+// 				hooks:           test.fields.hooks,
+// 				checkDuration:   test.fields.checkDuration,
 // 				postStopTimeout: test.fields.postStopTimeout,
 // 				watchEnabled:    test.fields.watchEnabled,
 // 				tickerEnabled:   test.fields.tickerEnabled,
-// 				storage:         test.fields.storage,
-// 				ch:              test.fields.ch,
-// 				hooks:           test.fields.hooks,
 // 			}
 //
 // 			err := o.terminate()
@@ -1219,16 +1219,16 @@ package observer
 // 	}
 // 	type fields struct {
 // 		w               watch.Watcher
-// 		dir             string
 // 		eg              errgroup.Group
-// 		checkDuration   time.Duration
+// 		storage         storage.Storage
+// 		ch              chan struct{}
+// 		dir             string
 // 		metadataPath    string
+// 		hooks           []Hook
+// 		checkDuration   time.Duration
 // 		postStopTimeout time.Duration
 // 		watchEnabled    bool
 // 		tickerEnabled   bool
-// 		storage         storage.Storage
-// 		ch              chan struct{}
-// 		hooks           []Hook
 // 	}
 // 	type want struct {
 // 		err error
@@ -1258,16 +1258,16 @@ package observer
 // 		       },
 // 		       fields: fields {
 // 		           w:nil,
-// 		           dir:"",
 // 		           eg:nil,
-// 		           checkDuration:nil,
+// 		           storage:nil,
+// 		           ch:nil,
+// 		           dir:"",
 // 		           metadataPath:"",
+// 		           hooks:nil,
+// 		           checkDuration:nil,
 // 		           postStopTimeout:nil,
 // 		           watchEnabled:false,
 // 		           tickerEnabled:false,
-// 		           storage:nil,
-// 		           ch:nil,
-// 		           hooks:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1290,16 +1290,16 @@ package observer
 // 		           },
 // 		           fields: fields {
 // 		           w:nil,
-// 		           dir:"",
 // 		           eg:nil,
-// 		           checkDuration:nil,
+// 		           storage:nil,
+// 		           ch:nil,
+// 		           dir:"",
 // 		           metadataPath:"",
+// 		           hooks:nil,
+// 		           checkDuration:nil,
 // 		           postStopTimeout:nil,
 // 		           watchEnabled:false,
 // 		           tickerEnabled:false,
-// 		           storage:nil,
-// 		           ch:nil,
-// 		           hooks:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1331,16 +1331,16 @@ package observer
 // 			}
 // 			o := &observer{
 // 				w:               test.fields.w,
-// 				dir:             test.fields.dir,
 // 				eg:              test.fields.eg,
-// 				checkDuration:   test.fields.checkDuration,
+// 				storage:         test.fields.storage,
+// 				ch:              test.fields.ch,
+// 				dir:             test.fields.dir,
 // 				metadataPath:    test.fields.metadataPath,
+// 				hooks:           test.fields.hooks,
+// 				checkDuration:   test.fields.checkDuration,
 // 				postStopTimeout: test.fields.postStopTimeout,
 // 				watchEnabled:    test.fields.watchEnabled,
 // 				tickerEnabled:   test.fields.tickerEnabled,
-// 				storage:         test.fields.storage,
-// 				ch:              test.fields.ch,
-// 				hooks:           test.fields.hooks,
 // 			}
 //
 // 			err := o.requestBackup(test.args.in0)
@@ -1357,16 +1357,16 @@ package observer
 // 	}
 // 	type fields struct {
 // 		w               watch.Watcher
-// 		dir             string
 // 		eg              errgroup.Group
-// 		checkDuration   time.Duration
+// 		storage         storage.Storage
+// 		ch              chan struct{}
+// 		dir             string
 // 		metadataPath    string
+// 		hooks           []Hook
+// 		checkDuration   time.Duration
 // 		postStopTimeout time.Duration
 // 		watchEnabled    bool
 // 		tickerEnabled   bool
-// 		storage         storage.Storage
-// 		ch              chan struct{}
-// 		hooks           []Hook
 // 	}
 // 	type want struct {
 // 		err error
@@ -1396,16 +1396,16 @@ package observer
 // 		       },
 // 		       fields: fields {
 // 		           w:nil,
-// 		           dir:"",
 // 		           eg:nil,
-// 		           checkDuration:nil,
+// 		           storage:nil,
+// 		           ch:nil,
+// 		           dir:"",
 // 		           metadataPath:"",
+// 		           hooks:nil,
+// 		           checkDuration:nil,
 // 		           postStopTimeout:nil,
 // 		           watchEnabled:false,
 // 		           tickerEnabled:false,
-// 		           storage:nil,
-// 		           ch:nil,
-// 		           hooks:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1428,16 +1428,16 @@ package observer
 // 		           },
 // 		           fields: fields {
 // 		           w:nil,
-// 		           dir:"",
 // 		           eg:nil,
-// 		           checkDuration:nil,
+// 		           storage:nil,
+// 		           ch:nil,
+// 		           dir:"",
 // 		           metadataPath:"",
+// 		           hooks:nil,
+// 		           checkDuration:nil,
 // 		           postStopTimeout:nil,
 // 		           watchEnabled:false,
 // 		           tickerEnabled:false,
-// 		           storage:nil,
-// 		           ch:nil,
-// 		           hooks:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1469,16 +1469,16 @@ package observer
 // 			}
 // 			o := &observer{
 // 				w:               test.fields.w,
-// 				dir:             test.fields.dir,
 // 				eg:              test.fields.eg,
-// 				checkDuration:   test.fields.checkDuration,
+// 				storage:         test.fields.storage,
+// 				ch:              test.fields.ch,
+// 				dir:             test.fields.dir,
 // 				metadataPath:    test.fields.metadataPath,
+// 				hooks:           test.fields.hooks,
+// 				checkDuration:   test.fields.checkDuration,
 // 				postStopTimeout: test.fields.postStopTimeout,
 // 				watchEnabled:    test.fields.watchEnabled,
 // 				tickerEnabled:   test.fields.tickerEnabled,
-// 				storage:         test.fields.storage,
-// 				ch:              test.fields.ch,
-// 				hooks:           test.fields.hooks,
 // 			}
 //
 // 			err := o.backup(test.args.ctx)

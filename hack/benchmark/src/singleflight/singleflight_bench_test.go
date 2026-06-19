@@ -17,7 +17,6 @@ import (
 	"context"
 	"fmt"
 	"io/fs"
-	"math"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -80,7 +79,7 @@ func (h *helper) Do(parallel int, b *testing.B) {
 	errgroup.Go(func() error {
 		ch <- struct{}{}
 		atomic.AddInt64(&h.calledCnt, -1)
-		doFn(context.Background(), "key", fn)
+		doFn(b.Context(), "key", fn)
 		return nil
 	})
 	<-ch
@@ -99,7 +98,7 @@ func (h *helper) Do(parallel int, b *testing.B) {
 			atomic.AddInt64(&h.totalCnt, 1)
 			errgroup.Go(func() error {
 				defer wg.Done()
-				doFn(context.Background(), "key", fn)
+				doFn(b.Context(), "key", fn)
 				return nil
 			})
 		}
@@ -116,12 +115,12 @@ func Benchmark_group_Do_with_sync_singleflight(b *testing.B) {
 	for i := minGoroutine; i <= maxGoroutine; i *= goroutineStep {
 		for _, dur := range durs {
 			results := make([]Result, 0, tryCnt)
-			for j := 0; j < tryCnt; j++ {
+			for range tryCnt {
 				h := &helper{
 					initDoFn: func() func(ctx context.Context, key string, fn func(context.Context) (string, error)) {
 						g := new(stdsingleflight.Group)
-						return func(_ context.Context, key string, fn func(context.Context) (string, error)) {
-							g.Do(key, func() (any, error) { return fn(context.Background()) })
+						return func(ctx context.Context, key string, fn func(context.Context) (string, error)) {
+							g.Do(key, func() (any, error) { return fn(ctx) })
 						}
 					},
 					sleepDur: dur,
@@ -195,7 +194,7 @@ func calcVariance(in []Result) (out Result) {
 			out.Goroutine = r.Goroutine
 			out.Duration = r.Duration
 		}
-		sum += math.Pow(r.HitRate-aveResult.HitRate, 2)
+		sum += (r.HitRate - aveResult.HitRate) * (r.HitRate - aveResult.HitRate)
 	}
 	out.HitRate = sum / float64(len(in))
 
@@ -211,7 +210,7 @@ func Benchmark_group_Do_with_vald_internal_singleflight(b *testing.B) {
 	for i := minGoroutine; i <= maxGoroutine; i *= goroutineStep {
 		for _, dur := range durs {
 			results := make([]Result, 0, tryCnt)
-			for j := 0; j < tryCnt; j++ {
+			for range tryCnt {
 				h := &helper{
 					initDoFn: func() func(ctx context.Context, key string, fn func(context.Context) (string, error)) {
 						g := singleflight.New[string]()

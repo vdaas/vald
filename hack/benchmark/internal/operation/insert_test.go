@@ -17,9 +17,8 @@ package operation
 //
 // func Test_operation_Insert(t *testing.T) {
 // 	type args struct {
-// 		ctx context.Context
-// 		b   *testing.B
-// 		ds  assets.Dataset
+// 		b  *testing.B
+// 		ds assets.Dataset
 // 	}
 // 	type fields struct {
 // 		client   client.Client
@@ -49,7 +48,6 @@ package operation
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           ctx:nil,
 // 		           b:testing.B{},
 // 		           ds:nil,
 // 		       },
@@ -74,7 +72,6 @@ package operation
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           ctx:nil,
 // 		           b:testing.B{},
 // 		           ds:nil,
 // 		           },
@@ -115,7 +112,7 @@ package operation
 // 				indexerC: test.fields.indexerC,
 // 			}
 //
-// 			gotInsertedNum := o.Insert(test.args.ctx, test.args.b, test.args.ds)
+// 			gotInsertedNum := o.Insert(test.args.b, test.args.ds)
 // 			if err := checkFunc(test.want, gotInsertedNum); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -125,9 +122,8 @@ package operation
 //
 // func Test_operation_StreamInsert(t *testing.T) {
 // 	type args struct {
-// 		ctx context.Context
-// 		b   *testing.B
-// 		ds  assets.Dataset
+// 		b  *testing.B
+// 		ds assets.Dataset
 // 	}
 // 	type fields struct {
 // 		client   client.Client
@@ -157,7 +153,6 @@ package operation
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           ctx:nil,
 // 		           b:testing.B{},
 // 		           ds:nil,
 // 		       },
@@ -182,7 +177,6 @@ package operation
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           ctx:nil,
 // 		           b:testing.B{},
 // 		           ds:nil,
 // 		           },
@@ -223,7 +217,7 @@ package operation
 // 				indexerC: test.fields.indexerC,
 // 			}
 //
-// 			got := o.StreamInsert(test.args.ctx, test.args.b, test.args.ds)
+// 			got := o.StreamInsert(test.args.b, test.args.ds)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

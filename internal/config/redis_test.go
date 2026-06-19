@@ -29,48 +29,48 @@ import (
 
 func TestRedis_Bind(t *testing.T) {
 	type fields struct {
-		Addrs                []string
-		DB                   int
-		DialTimeout          string
-		IdleCheckFrequency   string
+		Net                  *Net
+		TLS                  *TLS
+		MinRetryBackoff      string
+		SentinelPassword     string
 		IdleTimeout          string
 		InitialPingDuration  string
 		InitialPingTimeLimit string
 		KVPrefix             string
 		KeyPref              string
 		MaxConnAge           string
-		MaxRedirects         int
-		MaxRetries           int
+		WriteTimeout         string
+		VKPrefix             string
 		MaxRetryBackoff      string
-		MinIdleConns         int
-		MinRetryBackoff      string
+		Username             string
+		DialTimeout          string
 		Network              string
-		Password             string
-		PoolSize             int
-		PoolTimeout          string
-		PrefixDelimiter      string
-		ReadOnly             bool
+		IdleCheckFrequency   string
 		ReadTimeout          string
+		Password             string
+		PrefixDelimiter      string
+		SentinelMasterName   string
+		PoolTimeout          string
+		Addrs                []string
+		PoolSize             int
+		DB                   int
+		MinIdleConns         int
+		MaxRetries           int
+		MaxRedirects         int
 		RouteByLatency       bool
 		RouteRandomly        bool
-		SentinelPassword     string
-		SentinelMasterName   string
-		Net                  *Net
-		TLS                  *TLS
-		Username             string
-		VKPrefix             string
-		WriteTimeout         string
+		ReadOnly             bool
 	}
 	type want struct {
 		want *Redis
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *Redis) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *Redis) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -418,49 +418,49 @@ func TestRedis_Bind(t *testing.T) {
 
 func TestRedis_Opts(t *testing.T) {
 	type fields struct {
-		Addrs                []string
-		DB                   int
-		DialTimeout          string
-		IdleCheckFrequency   string
+		Net                  *Net
+		TLS                  *TLS
+		MinRetryBackoff      string
+		SentinelPassword     string
 		IdleTimeout          string
 		InitialPingDuration  string
 		InitialPingTimeLimit string
 		KVPrefix             string
 		KeyPref              string
 		MaxConnAge           string
-		MaxRedirects         int
-		MaxRetries           int
+		WriteTimeout         string
+		VKPrefix             string
 		MaxRetryBackoff      string
-		MinIdleConns         int
-		MinRetryBackoff      string
+		Username             string
+		DialTimeout          string
 		Network              string
-		Password             string
-		PoolSize             int
-		PoolTimeout          string
-		PrefixDelimiter      string
-		ReadOnly             bool
+		IdleCheckFrequency   string
 		ReadTimeout          string
+		Password             string
+		PrefixDelimiter      string
+		SentinelMasterName   string
+		PoolTimeout          string
+		Addrs                []string
+		PoolSize             int
+		DB                   int
+		MinIdleConns         int
+		MaxRetries           int
+		MaxRedirects         int
 		RouteByLatency       bool
 		RouteRandomly        bool
-		SentinelPassword     string
-		SentinelMasterName   string
-		Net                  *Net
-		TLS                  *TLS
-		Username             string
-		VKPrefix             string
-		WriteTimeout         string
+		ReadOnly             bool
 	}
 	type want struct {
-		wantOpts []redis.Option
 		err      error
+		wantOpts []redis.Option
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, []redis.Option, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, gotOpts []redis.Option, err error) error {
 		if !errors.Is(err, w.err) {

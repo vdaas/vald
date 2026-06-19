@@ -26,15 +26,15 @@ import (
 func (s *server) Upsert(
 	ctx context.Context, req *payload.Upsert_Request,
 ) (loc *payload.Object_Location, err error) {
-	return s.UnimplementedValdServer.UnimplementedUpsertServer.Upsert(ctx, req)
+	return s.UnimplementedUpsertServer.Upsert(ctx, req)
 }
 
 func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error) {
-	return s.UnimplementedValdServer.UnimplementedUpsertServer.StreamUpsert(stream)
+	return s.UnimplementedUpsertServer.StreamUpsert(stream)
 }
 
 func (s *server) MultiUpsert(
 	ctx context.Context, reqs *payload.Upsert_MultiRequest,
 ) (res *payload.Object_Locations, err error) {
-	return s.UnimplementedValdServer.UnimplementedUpsertServer.MultiUpsert(ctx, reqs)
+	return s.UnimplementedUpsertServer.MultiUpsert(ctx, reqs)
 }

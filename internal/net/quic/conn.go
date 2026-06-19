@@ -89,8 +89,7 @@ func (q *qconn) dialQuicContext(
 			// Tokens are used to skip address validation on future connection attempts.
 			// The key used to store tokens is the ServerName from the tls.Config, if set
 			// otherwise the token is associated with the server's IP address.
-			TokenStore TokenStore
-			// InitialStreamReceiveWindow is the initial size of the stream-level flow control window for receiving data.
+			TokenStore // InitialStreamReceiveWindow is the initial size of the stream-level flow control window for receiving data.
 			// If the application is consuming data quickly enough, the flow control auto-tuning algorithm
 			// will increase the window up to MaxStreamReceiveWindow.
 			// If this value is zero, it will default to 512 KB.

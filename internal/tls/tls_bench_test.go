@@ -14,7 +14,7 @@
 package tls_test
 
 // Use the benchmark below by running the following command:
-// go test ./internal/tls -run=^$ -bench=. -benchmem
+// go test ./internal/tls -run=^$ -bench=. -benchmem.
 import (
 	"context"
 	"path/filepath"
@@ -100,7 +100,7 @@ func serverStarter(
 		}).Bind()),
 		starter.WithGRPC(func(_ *config.Server) []server.Option {
 			return []server.Option{
-				server.WithGRPCRegistFunc(func(gs *grpc.Server) {
+				server.WithGRPCRegisterar(func(gs *grpc.Server) {
 					vald.RegisterIndexServer(gs, mockIndexInfoServer{})
 				}),
 				server.WithGRPCOption(grpc.Creds(credentials.NewTLS(stls))),

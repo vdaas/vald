@@ -21,7 +21,6 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/vdaas/vald/internal/backoff"
 	ctxio "github.com/vdaas/vald/internal/db/storage/blob/s3/reader/io"
@@ -36,19 +35,16 @@ import (
 )
 
 type reader struct {
-	eg      errgroup.Group
-	service s3iface.S3API
-	bucket  string
-
-	pr io.ReadCloser
-	wg *sync.WaitGroup
-
-	ctxio ctxio.IO
-
-	backoffEnabled bool
-	backoffOpts    []backoff.Option
+	eg             errgroup.Group
+	service        s3iface.S3API
+	pr             io.ReadCloser
+	ctxio          ctxio.IO
 	bo             backoff.Backoff
+	wg             *sync.WaitGroup
+	bucket         string
+	backoffOpts    []backoff.Option
 	maxChunkSize   int64
+	backoffEnabled bool
 }
 
 var (
@@ -167,18 +163,19 @@ func (r *reader) getObjectWithBackoff(
 func (r *reader) getObject(
 	ctx context.Context, key string, offset, length int64,
 ) (io.Reader, error) {
-	rng := aws.String("bytes=" + strconv.FormatInt(offset, 10) + "-" + strconv.FormatInt(offset+length-1, 10))
+	rng := new("bytes=" + strconv.FormatInt(offset, 10) + "-" + strconv.FormatInt(offset+length-1, 10))
 	log.Debugf("reading %s", *rng)
 	resp, err := r.service.GetObjectWithContext(
 		ctx,
 		&s3.GetObjectInput{
-			Bucket: aws.String(r.bucket),
-			Key:    aws.String(key),
+			Bucket: new(r.bucket),
+			Key:    new(key),
 			Range:  rng,
 		},
 	)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
+		var aerr awserr.Error
+		if errors.As(err, &aerr) {
 			switch aerr.Code() {
 			case s3.ErrCodeNoSuchBucket:
 				return nil, errors.NewErrBlobNoSuchBucket(err, r.bucket)

@@ -38,22 +38,22 @@ func TestParseError(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		err         error
-		defaultCode codes.Code
 		defaultMsg  string
 		details     []any
+		defaultCode codes.Code
 	}
 	type want struct {
-		wantSt  codes.Code
-		wantMsg string
 		err     error
+		wantMsg string
+		wantSt  codes.Code
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *Status, string, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, gotSt *Status, gotMsg string, err error) error {
 		if !errors.Is(err, w.err) {
@@ -154,17 +154,17 @@ func TestParseError(t *testing.T) {
 
 func TestToCode(t *testing.T) {
 	type args struct {
-		code codes.Code
 		err  error
+		code codes.Code
 	}
 	type want struct {
 		want codes.Code
 	}
 	type test struct {
-		name      string
 		args      args
-		want      want
 		checkFunc func(want, codes.Code) error
+		name      string
+		want      want
 	}
 	defaultCheckFunc := func(w want, got codes.Code) error {
 		if got != w.want {

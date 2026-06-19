@@ -45,9 +45,9 @@ import (
 
 const maxSleep = 1 * time.Millisecond
 
-func HammerWeighted(sem *semaphore.Weighted, n int64, loops int) {
-	for i := 0; i < loops; i++ {
-		sem.Acquire(context.Background(), n)
+func HammerWeighted(ctx context.Context, sem *semaphore.Weighted, n int64, loops int) {
+	for range loops {
+		sem.Acquire(ctx, n)
 		time.Sleep(time.Duration(rand.Int63n(int64(maxSleep/time.Nanosecond))) * time.Nanosecond)
 		sem.Release(n)
 	}
@@ -61,11 +61,10 @@ func TestWeighted(t *testing.T) {
 	sem := semaphore.NewWeighted(int64(n))
 	var wg sync.WaitGroup
 	wg.Add(n)
-	for i := 0; i < n; i++ {
-		i := i
+	for i := range n {
 		go func() {
 			defer wg.Done()
-			HammerWeighted(sem, int64(i), loops)
+			HammerWeighted(t.Context(), sem, int64(i), loops)
 		}()
 	}
 	wg.Wait()
@@ -86,7 +85,7 @@ func TestWeightedPanic(t *testing.T) {
 func TestWeightedTryAcquire(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 	sem := semaphore.NewWeighted(2)
 	tries := []bool{}
 	sem.Acquire(ctx, 1)
@@ -109,7 +108,7 @@ func TestWeightedTryAcquire(t *testing.T) {
 func TestWeightedAcquire(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 	sem := semaphore.NewWeighted(2)
 	tryAcquire := func(n int64) bool {
 		ctx, cancel := context.WithTimeout(ctx, 10*time.Millisecond)
@@ -141,12 +140,11 @@ func TestWeightedDoesntBlockIfTooBig(t *testing.T) {
 	const n = 2
 	sem := semaphore.NewWeighted(n)
 	{
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
+		ctx := t.Context()
 		go sem.Acquire(ctx, n+1)
 	}
 
-	g, ctx := errgroup.WithContext(context.Background())
+	g, ctx := errgroup.WithContext(t.Context())
 	for i := n * 3; i > 0; i-- {
 		g.Go(func() error {
 			err := sem.Acquire(ctx, 1)
@@ -167,7 +165,7 @@ func TestWeightedDoesntBlockIfTooBig(t *testing.T) {
 func TestLargeAcquireDoesntStarve(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 	n := int64(runtime.GOMAXPROCS(0))
 	sem := semaphore.NewWeighted(n)
 	running := true
@@ -200,10 +198,10 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 	sem := semaphore.NewWeighted(10)
 
 	// Block off a portion of the semaphore so that Acquire(_, 10) can eventually succeed.
-	sem.Acquire(context.Background(), 1)
+	sem.Acquire(t.Context(), 1)
 
 	// In the background, Acquire(_, 10).
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 	go func() {
 		sem.Acquire(ctx, 10)
@@ -219,7 +217,7 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 	// Both Acquire calls should unblock and return, in either order.
 	go cancel()
 
-	err := sem.Acquire(context.Background(), 1)
+	err := sem.Acquire(t.Context(), 1)
 	if err != nil {
 		t.Fatalf("Acquire(_, 1) failed unexpectedly: %v", err)
 	}

@@ -38,12 +38,12 @@ func TestOpen(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *os.File, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args, *os.File)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, got *os.File, err error) error {
@@ -233,12 +233,12 @@ func TestExists(t *testing.T) {
 		want bool
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, bool) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -406,17 +406,17 @@ func TestExistsWithDetail(t *testing.T) {
 		path string
 	}
 	type want struct {
-		wantE  bool
 		wantFi fs.FileInfo
 		err    error
+		wantE  bool
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, bool, fs.FileInfo, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, gotE bool, gotFi fs.FileInfo, err error) error {
 		if !errors.Is(err, w.err) {

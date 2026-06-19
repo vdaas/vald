@@ -932,7 +932,7 @@ func rootCommands(t *testing.T) commands.Commands {
 				t.Fatalf("error: %s", err)
 			}
 
-			ctx := context.Background()
+			ctx := t.Context()
 
 			return &qSystem{
 				ctx: ctx,

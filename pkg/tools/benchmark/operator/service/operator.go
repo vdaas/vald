@@ -59,17 +59,17 @@ const (
 )
 
 type operator struct {
+	eg                 errgroup.Group
+	ctrl               k8s.Controller
+	scenarios          *atomic.Pointer[map[string]*scenario]
+	benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+	jobs               *atomic.Pointer[map[string]string]
 	jobNamespace       string
 	jobImageRepository string
 	jobImageTag        string
 	jobImagePullPolicy string
 	configMapName      string
-	scenarios          *atomic.Pointer[map[string]*scenario]
-	benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-	jobs               *atomic.Pointer[map[string]string]
-	rcd                time.Duration // reconcile check duration
-	eg                 errgroup.Group
-	ctrl               k8s.Controller
+	rcd                time.Duration
 }
 
 // New creates the new scenario struct to handle vald benchmark job scenario.
@@ -361,7 +361,12 @@ func (o *operator) benchScenarioReconcile(
 				// delete old job resource. If it is succeeded, job pod will be deleted automatically because of OwnerReference.
 				err := o.deleteBenchmarkJob(ctx, oldScenario.Crd.GetName(), oldScenario.Crd.Generation)
 				if err != nil {
-					log.Warnf("[reconcile benchmark scenario resource] failed to delete old version benchmark jobs: scenario name=%s, version=%d\t%s", oldScenario.Crd.GetName(), oldScenario.Crd.Generation, err.Error())
+					log.Warnf(
+						"[reconcile benchmark scenario resource] failed to delete old version benchmark jobs: scenario name=%s, version=%d\t%s",
+						oldScenario.Crd.GetName(),
+						oldScenario.Crd.Generation,
+						err.Error(),
+					)
 				}
 				// create new benchmark job resources of new version.
 				jobNames, err := o.createBenchmarkJob(ctx, sc)

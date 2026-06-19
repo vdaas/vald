@@ -26,33 +26,33 @@ import (
 func (s *server) LinearSearch(
 	ctx context.Context, req *payload.Search_Request,
 ) (res *payload.Search_Response, err error) {
-	return s.UnimplementedValdServer.UnimplementedSearchServer.LinearSearch(ctx, req)
+	return s.UnimplementedSearchServer.LinearSearch(ctx, req)
 }
 
 func (s *server) LinearSearchByID(
 	ctx context.Context, req *payload.Search_IDRequest,
 ) (res *payload.Search_Response, err error) {
-	return s.UnimplementedValdServer.UnimplementedSearchServer.LinearSearchByID(ctx, req)
+	return s.UnimplementedSearchServer.LinearSearchByID(ctx, req)
 }
 
 func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer) (err error) {
-	return s.UnimplementedValdServer.UnimplementedSearchServer.StreamLinearSearch(stream)
+	return s.UnimplementedSearchServer.StreamLinearSearch(stream)
 }
 
 func (s *server) StreamLinearSearchByID(
 	stream vald.Search_StreamLinearSearchByIDServer,
 ) (err error) {
-	return s.UnimplementedValdServer.UnimplementedSearchServer.StreamLinearSearchByID(stream)
+	return s.UnimplementedSearchServer.StreamLinearSearchByID(stream)
 }
 
 func (s *server) MultiLinearSearch(
 	ctx context.Context, reqs *payload.Search_MultiRequest,
 ) (res *payload.Search_Responses, errs error) {
-	return s.UnimplementedValdServer.UnimplementedSearchServer.MultiLinearSearch(ctx, reqs)
+	return s.UnimplementedSearchServer.MultiLinearSearch(ctx, reqs)
 }
 
 func (s *server) MultiLinearSearchByID(
 	ctx context.Context, reqs *payload.Search_MultiIDRequest,
 ) (res *payload.Search_Responses, errs error) {
-	return s.UnimplementedValdServer.UnimplementedSearchServer.MultiLinearSearchByID(ctx, reqs)
+	return s.UnimplementedSearchServer.MultiLinearSearchByID(ctx, reqs)
 }

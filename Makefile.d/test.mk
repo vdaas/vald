@@ -17,7 +17,10 @@
 .PHONY: test
 
 ## run tests for cmd, internal, pkg
-test: certs/gen
+test: \
+	ngt/install \
+	hdf5/install \
+	certs/gen
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
@@ -28,6 +31,8 @@ test: certs/gen
 .PHONY: test/tparse
 ## run tests for cmd, internal, pkg and show table
 test/tparse: \
+	ngt/install \
+	hdf5/install \
 	certs/gen \
 	tparse/install
 	set -euo pipefail
@@ -44,6 +49,8 @@ test/tparse: \
 .PHONY: test/cmd/tparse
 ## run tests for cmd and show table
 test/cmd/tparse: \
+	ngt/install \
+	hdf5/install \
 	certs/gen \
 	tparse/install
 	set -euo pipefail
@@ -60,6 +67,8 @@ test/cmd/tparse: \
 .PHONY: test/internal/tparse
 ## run tests for internal and show table
 test/internal/tparse: \
+	ngt/install \
+	hdf5/install \
 	certs/gen \
 	tparse/install
 	set -euo pipefail
@@ -76,6 +85,8 @@ test/internal/tparse: \
 .PHONY: test/pkg/tparse
 ## run tests for pkg and who table
 test/pkg/tparse: \
+	ngt/install \
+	hdf5/install \
 	certs/gen \
 	tparse/install
 	set -euo pipefail
@@ -115,6 +126,8 @@ test/hack/tparse: \
 .PHONY: test/all/tparse
 ## run tests for all Go codes and show table
 test/all/tparse: \
+	ngt/install \
+	hdf5/install \
 	certs/gen \
 	tparse/install
 	set -euo pipefail
@@ -131,6 +144,8 @@ test/all/tparse: \
 .PHONY: test/gotestfmt
 ## run tests for cmd, internal, pkg and show table
 test/gotestfmt: \
+	ngt/install \
+	hdf5/install \
 	certs/gen \
 	gotestfmt/install
 	set -euo pipefail
@@ -148,6 +163,8 @@ test/gotestfmt: \
 .PHONY: test/cmd/gotestfmt
 ## run tests for cmd and show table
 test/cmd/gotestfmt: \
+	ngt/install \
+	hdf5/install \
 	certs/gen \
 	gotestfmt/install
 	set -euo pipefail
@@ -159,12 +176,14 @@ test/cmd/gotestfmt: \
 	GODEBUG=$(GODEBUG) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) -ldflags="-linkmode=external" $(ROOTDIR)/cmd/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
-	| gotestfmt -showteststatus
+	| gotestfmt -showteststatus -hide="all"
 	$(MAKE) certs/clean
 
 .PHONY: test/internal/gotestfmt
 ## run tests for internal and show table
 test/internal/gotestfmt: \
+	ngt/install \
+	hdf5/install \
 	certs/gen \
 	gotestfmt/install
 	set -euo pipefail
@@ -182,6 +201,8 @@ test/internal/gotestfmt: \
 .PHONY: test/pkg/gotestfmt
 ## run tests for pkg and who table
 test/pkg/gotestfmt: \
+	ngt/install \
+	hdf5/install \
 	certs/gen \
 	gotestfmt/install
 	set -euo pipefail
@@ -193,7 +214,7 @@ test/pkg/gotestfmt: \
 	GODEBUG=$(GODEBUG) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) -ldflags="-linkmode=external" $(ROOTDIR)/pkg/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
-	| gotestfmt -showteststatus
+	| gotestfmt -showteststatus -hide="all"
 	$(MAKE) certs/clean
 
 .PHONY: test/hack/gotestfmt
@@ -223,6 +244,8 @@ test/hack/gotestfmt: \
 .PHONY: test/all/gotestfmt
 ## run tests for all Go codes and show table
 test/all/gotestfmt: \
+	ngt/install \
+	hdf5/install \
 	certs/gen \
 	gotestfmt/install
 	set -euo pipefail
@@ -266,7 +289,10 @@ test/remove-empty:
 
 .PHONY: test/pkg
 ## run tests for pkg
-test/pkg: certs/gen
+test/pkg: \
+	ngt/install \
+	hdf5/install \
+	certs/gen
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
@@ -276,7 +302,10 @@ test/pkg: certs/gen
 
 .PHONY: test/internal
 ## run tests for internal
-test/internal: certs/gen
+test/internal: \
+	ngt/install \
+	hdf5/install \
+	certs/gen
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
@@ -286,7 +315,10 @@ test/internal: certs/gen
 
 .PHONY: test/cmd
 ## run tests for cmd
-test/cmd: certs/gen
+test/cmd: \
+	ngt/install \
+	hdf5/install \
+	certs/gen
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
@@ -317,7 +349,10 @@ test/rust/agent:
 
 .PHONY: test/hack
 ## run tests for hack
-test/hack: certs/gen
+test/hack: \
+	ngt/install \
+	hdf5/install \
+	certs/gen
 	GOPRIVATE=$(GOPRIVATE) \
 	go mod vendor -o $(ROOTDIR)/vendor
 	GOPRIVATE=$(GOPRIVATE) \
@@ -334,7 +369,10 @@ test/hack: certs/gen
 
 .PHONY: test/all
 ## run tests for all Go codes
-test/all: certs/gen
+test/all: \
+	ngt/install \
+	hdf5/install \
+	certs/gen
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
@@ -344,7 +382,10 @@ test/all: certs/gen
 
 .PHONY: coverage
 ## calculate coverages
-coverage: certs/gen
+coverage: \
+	ngt/install \
+	hdf5/install \
+	certs/gen
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \

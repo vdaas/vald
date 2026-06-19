@@ -14,6 +14,7 @@
 package operation
 
 import (
+	"errors"
 	"strconv"
 	"sync"
 	"testing"
@@ -35,16 +36,19 @@ func (o *operation) Remove(b *testing.B, maxIdNum int) {
 		}
 		b.ResetTimer()
 
-		for i := 0; i < b.N; i++ {
+		i := 0
+		for b.Loop() {
 			req.Id.Id = strconv.Itoa(i % maxIdNum)
 			loc, err := o.client.Remove(ctx, req)
 			if err != nil {
 				grpcError(b, err)
+				i++
 				continue
 			}
 			if loc == nil {
 				b.Error("returned loc is nil")
 			}
+			i++
 		}
 	})
 }
@@ -74,7 +78,7 @@ func (o *operation) StreamRemove(b *testing.B, maxIdNum int) {
 
 			for {
 				res, err := sc.Recv()
-				if err == io.EOF {
+				if errors.Is(err, io.EOF) {
 					return nil
 				}
 
@@ -97,12 +101,14 @@ func (o *operation) StreamRemove(b *testing.B, maxIdNum int) {
 			}
 		})
 
-		for i := 0; i < b.N; i++ {
+		i := 0
+		for b.Loop() {
 			req.Id.Id = strconv.Itoa(i % maxIdNum)
 			err := sc.Send(req)
 			if err != nil {
 				b.Fatal(err)
 			}
+			i++
 		}
 
 		if err := sc.CloseSend(); err != nil {

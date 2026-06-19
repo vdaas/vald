@@ -21,13 +21,13 @@ package grpc
 // 		req *payload.Flush_Request
 // 	}
 // 	type fields struct {
-// 		name                     string
-// 		ip                       string
-// 		ngt                      service.NGT
-// 		eg                       errgroup.Group
-// 		streamConcurrency        int
 // 		UnimplementedAgentServer agent.UnimplementedAgentServer
 // 		UnimplementedValdServer  vald.UnimplementedValdServer
+// 		ngt                      service.NGT
+// 		eg                       errgroup.Group
+// 		name                     string
+// 		ip                       string
+// 		streamConcurrency        int
 // 	}
 // 	type want struct {
 // 		want *payload.Info_Index_Count
@@ -61,13 +61,13 @@ package grpc
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -90,13 +90,13 @@ package grpc
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -127,13 +127,13 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				name:                     test.fields.name,
-// 				ip:                       test.fields.ip,
-// 				ngt:                      test.fields.ngt,
-// 				eg:                       test.fields.eg,
-// 				streamConcurrency:        test.fields.streamConcurrency,
 // 				UnimplementedAgentServer: test.fields.UnimplementedAgentServer,
 // 				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
+// 				ngt:                      test.fields.ngt,
+// 				eg:                       test.fields.eg,
+// 				name:                     test.fields.name,
+// 				ip:                       test.fields.ip,
+// 				streamConcurrency:        test.fields.streamConcurrency,
 // 			}
 //
 // 			got, err := s.Flush(test.args.ctx, test.args.req)

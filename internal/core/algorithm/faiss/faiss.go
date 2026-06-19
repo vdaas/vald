@@ -234,7 +234,11 @@ func (f *faiss) Search(k, nprobe, nq int, xq []float32) ([]algorithm.SearchResul
 
 	result := make([]algorithm.SearchResult, k)
 	for i := range result {
-		result[i] = algorithm.SearchResult{uint32(I[i]), D[i], nil}
+		result[i] = algorithm.SearchResult{
+			ID:       uint32(I[i]),
+			Distance: D[i],
+			Error:    nil,
+		}
 	}
 
 	return result, nil

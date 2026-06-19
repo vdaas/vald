@@ -27,8 +27,8 @@ import (
 
 type zstdCompressor struct {
 	gobc     Compressor
-	eoptions []zstd.EOption
 	zstd     zstd.Zstd
+	eoptions []zstd.EOption
 }
 
 // NewZstd returns the zstd compressor object or any initialization error.

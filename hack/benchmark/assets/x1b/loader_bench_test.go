@@ -36,9 +36,9 @@ func BenchmarkBVecs(b *testing.B) {
 		bb.ReportAllocs()
 		bb.ResetTimer()
 
-		i := 0
 		size := bv.Size()
-		for n := 0; n < bb.N; n++ {
+		i := 0
+		for bb.Loop() {
 			_, err := bv.Load(i % size)
 			if err != nil {
 				bb.Fatal(err)
@@ -63,9 +63,9 @@ func BenchmarkFVecs(b *testing.B) {
 		bb.ReportAllocs()
 		bb.ResetTimer()
 
-		i := 0
 		size := fv.Size()
-		for n := 0; n < bb.N; n++ {
+		i := 0
+		for bb.Loop() {
 			_, err := fv.Load(i % size)
 			if err != nil {
 				bb.Fatal(err)
@@ -90,9 +90,9 @@ func BenchmarkIVecs(b *testing.B) {
 		bb.ReportAllocs()
 		bb.ResetTimer()
 
-		i := 0
 		size := iv.Size()
-		for n := 0; n < bb.N; n++ {
+		i := 0
+		for bb.Loop() {
 			_, err := iv.Load(i % size)
 			if err != nil {
 				bb.Fatal(err)

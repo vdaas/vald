@@ -36,12 +36,12 @@ func TestWithErrGroup(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
+		args       args
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -113,13 +113,13 @@ func TestWithDirs(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
-		field      field
 		want       want
+		field      field
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -218,12 +218,12 @@ func TestWithOnChange(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
+		args       args
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -297,12 +297,12 @@ func TestWithOnCreate(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
+		args       args
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -376,12 +376,12 @@ func TestWithOnChmod(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
+		args       args
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -455,12 +455,12 @@ func TestWithOnRename(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
+		args       args
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -534,12 +534,12 @@ func TestWithOnDelete(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
+		args       args
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -613,12 +613,12 @@ func TestWithOnWrite(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
+		args       args
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -692,12 +692,12 @@ func TestWithOnError(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
+		args       args
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, obj *T, err error) error {

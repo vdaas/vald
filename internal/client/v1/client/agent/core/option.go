@@ -53,7 +53,7 @@ func WithValdClient(vc vald.Client) Option {
 					return err
 				}
 			}
-			c.c = c.Client.GRPCClient()
+			c.c = c.GRPCClient()
 		}
 		return nil
 	}

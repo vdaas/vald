@@ -37,12 +37,12 @@ type SvcWatcher k8s.ResourceController
 
 // Service represents a kubernetes service information.
 type Service struct {
+	Labels      map[string]string
+	Annotations map[string]string
 	Name        string
 	ClusterIP   string
 	ClusterIPs  []string
 	Ports       []servicePort
-	Labels      map[string]string
-	Annotations map[string]string
 }
 
 type servicePort struct {

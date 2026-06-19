@@ -26,23 +26,23 @@ import (
 
 func TestDiscoverer_Bind(t *testing.T) {
 	type fields struct {
-		Name              string
-		Namespace         string
-		DiscoveryDuration string
 		Net               *Net
 		Selectors         *Selectors
 		ReadReplica       *ReadReplica
+		Name              string
+		Namespace         string
+		DiscoveryDuration string
 	}
 	type want struct {
 		want *Discoverer
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, *Discoverer) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got *Discoverer) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -148,20 +148,20 @@ func TestDiscoverer_Bind(t *testing.T) {
 
 func TestDiscovererClient_Bind(t *testing.T) {
 	type fields struct {
-		Duration           string
 		Client             *GRPCClient
 		AgentClientOptions *GRPCClient
+		Duration           string
 	}
 	type want struct {
 		want *DiscovererClient
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, *DiscovererClient) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got *DiscovererClient) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1483,8 +1483,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 //
 // func TestReadReplica_GetEnabled(t *testing.T) {
 // 	type fields struct {
-// 		Enabled bool
 // 		IDKey   string
+// 		Enabled bool
 // 	}
 // 	type want struct {
 // 		want bool
@@ -1509,8 +1509,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           Enabled:false,
 // 		           IDKey:"",
+// 		           Enabled:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1529,8 +1529,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           Enabled:false,
 // 		           IDKey:"",
+// 		           Enabled:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1561,8 +1561,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			r := &ReadReplica{
-// 				Enabled: test.fields.Enabled,
 // 				IDKey:   test.fields.IDKey,
+// 				Enabled: test.fields.Enabled,
 // 			}
 //
 // 			got := r.GetEnabled()
@@ -1575,8 +1575,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 //
 // func TestReadReplica_GetIDKey(t *testing.T) {
 // 	type fields struct {
-// 		Enabled bool
 // 		IDKey   string
+// 		Enabled bool
 // 	}
 // 	type want struct {
 // 		want string
@@ -1601,8 +1601,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           Enabled:false,
 // 		           IDKey:"",
+// 		           Enabled:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1621,8 +1621,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           Enabled:false,
 // 		           IDKey:"",
+// 		           Enabled:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1653,8 +1653,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			r := &ReadReplica{
-// 				Enabled: test.fields.Enabled,
 // 				IDKey:   test.fields.IDKey,
+// 				Enabled: test.fields.Enabled,
 // 			}
 //
 // 			got := r.GetIDKey()
@@ -1863,8 +1863,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 //
 // func TestReadReplica_Bind(t *testing.T) {
 // 	type fields struct {
-// 		Enabled bool
 // 		IDKey   string
+// 		Enabled bool
 // 	}
 // 	type want struct {
 // 		want *ReadReplica
@@ -1889,8 +1889,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           Enabled:false,
 // 		           IDKey:"",
+// 		           Enabled:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1909,8 +1909,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           Enabled:false,
 // 		           IDKey:"",
+// 		           Enabled:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1941,8 +1941,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			r := &ReadReplica{
-// 				Enabled: test.fields.Enabled,
 // 				IDKey:   test.fields.IDKey,
+// 				Enabled: test.fields.Enabled,
 // 			}
 //
 // 			got := r.Bind()

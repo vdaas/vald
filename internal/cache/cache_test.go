@@ -39,12 +39,12 @@ func TestNew(t *testing.T) {
 		err    error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, cacher.Cache[any], error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, gotCc cacher.Cache[any], err error) error {
 		if !errors.Is(err, w.err) {

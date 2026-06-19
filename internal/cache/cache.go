@@ -26,10 +26,10 @@ import (
 )
 
 type cache[V any] struct {
-	cacher         cacher.Type
+	expiredHook    func(context.Context, string, V)
 	expireDur      time.Duration
 	expireCheckDur time.Duration
-	expiredHook    func(context.Context, string, V)
+	cacher         cacher.Type
 }
 
 // New returns the Cache instance or error.

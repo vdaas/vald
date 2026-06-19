@@ -50,7 +50,7 @@ func labelKVs(labels ...string) map[string]string {
 	}
 
 	d := info.Get()
-	rt, rv := reflect.TypeOf(d), reflect.ValueOf(d)
+	rt, rv := reflect.TypeFor[info.Detail](), reflect.ValueOf(d)
 	info := make(map[string]string, rt.NumField())
 	for i := 0; i < rt.NumField(); i++ {
 		keyName := reps.Replace(rt.Field(i).Tag.Get("json"))

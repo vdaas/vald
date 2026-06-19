@@ -24,11 +24,11 @@ func TestErrInvalidAPIConfig(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -72,11 +72,11 @@ func TestErrInvalidRequest(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -123,12 +123,12 @@ func TestErrHandler(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -188,12 +188,12 @@ func TestErrHandlerTimeout(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		args       args
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -294,12 +294,12 @@ func TestErrRequestBodyCloseAndFlush(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -358,12 +358,12 @@ func TestErrRequestBodyClose(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -422,12 +422,12 @@ func TestErrRequestBodyFlush(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -483,11 +483,11 @@ func TestErrTransportRetryable(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -534,12 +534,12 @@ func TestErrInvalidStatusCode(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, got error) error {

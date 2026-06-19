@@ -491,21 +491,21 @@ package v1
 // 		out *BenchmarkJobSpec
 // 	}
 // 	type fields struct {
-// 		GlobalConfig            *config.GlobalConfig
-// 		ServerConfig            *config.Servers
-// 		Target                  *BenchmarkTarget
-// 		Dataset                 *BenchmarkDataset
-// 		Replica                 int
-// 		Repetition              int
-// 		JobType                 string
-// 		InsertConfig            *config.InsertConfig
-// 		UpdateConfig            *config.UpdateConfig
-// 		UpsertConfig            *config.UpsertConfig
-// 		SearchConfig            *config.SearchConfig
-// 		RemoveConfig            *config.RemoveConfig
 // 		ObjectConfig            *config.ObjectConfig
 // 		ClientConfig            *config.GRPCClient
+// 		Target                  *BenchmarkTarget
+// 		Dataset                 *BenchmarkDataset
+// 		UpdateConfig            *config.UpdateConfig
+// 		GlobalConfig            *config.GlobalConfig
+// 		RemoveConfig            *config.RemoveConfig
+// 		InsertConfig            *config.InsertConfig
+// 		ServerConfig            *config.Servers
+// 		SearchConfig            *config.SearchConfig
+// 		UpsertConfig            *config.UpsertConfig
+// 		JobType                 string
 // 		Rules                   []*config.BenchmarkJobRule
+// 		Repetition              int
+// 		Replica                 int
 // 		RPS                     int
 // 		ConcurrencyLimit        int
 // 		TTLSecondsAfterFinished int
@@ -532,21 +532,21 @@ package v1
 // 		           out:BenchmarkJobSpec{},
 // 		       },
 // 		       fields: fields {
-// 		           GlobalConfig:nil,
-// 		           ServerConfig:nil,
-// 		           Target:nil,
-// 		           Dataset:nil,
-// 		           Replica:0,
-// 		           Repetition:0,
-// 		           JobType:"",
-// 		           InsertConfig:nil,
-// 		           UpdateConfig:nil,
-// 		           UpsertConfig:nil,
-// 		           SearchConfig:nil,
-// 		           RemoveConfig:nil,
 // 		           ObjectConfig:nil,
 // 		           ClientConfig:nil,
+// 		           Target:nil,
+// 		           Dataset:nil,
+// 		           UpdateConfig:nil,
+// 		           GlobalConfig:nil,
+// 		           RemoveConfig:nil,
+// 		           InsertConfig:nil,
+// 		           ServerConfig:nil,
+// 		           SearchConfig:nil,
+// 		           UpsertConfig:nil,
+// 		           JobType:"",
 // 		           Rules:nil,
+// 		           Repetition:0,
+// 		           Replica:0,
 // 		           RPS:0,
 // 		           ConcurrencyLimit:0,
 // 		           TTLSecondsAfterFinished:0,
@@ -571,21 +571,21 @@ package v1
 // 		           out:BenchmarkJobSpec{},
 // 		           },
 // 		           fields: fields {
-// 		           GlobalConfig:nil,
-// 		           ServerConfig:nil,
-// 		           Target:nil,
-// 		           Dataset:nil,
-// 		           Replica:0,
-// 		           Repetition:0,
-// 		           JobType:"",
-// 		           InsertConfig:nil,
-// 		           UpdateConfig:nil,
-// 		           UpsertConfig:nil,
-// 		           SearchConfig:nil,
-// 		           RemoveConfig:nil,
 // 		           ObjectConfig:nil,
 // 		           ClientConfig:nil,
+// 		           Target:nil,
+// 		           Dataset:nil,
+// 		           UpdateConfig:nil,
+// 		           GlobalConfig:nil,
+// 		           RemoveConfig:nil,
+// 		           InsertConfig:nil,
+// 		           ServerConfig:nil,
+// 		           SearchConfig:nil,
+// 		           UpsertConfig:nil,
+// 		           JobType:"",
 // 		           Rules:nil,
+// 		           Repetition:0,
+// 		           Replica:0,
 // 		           RPS:0,
 // 		           ConcurrencyLimit:0,
 // 		           TTLSecondsAfterFinished:0,
@@ -619,21 +619,21 @@ package v1
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			in := &BenchmarkJobSpec{
-// 				GlobalConfig:            test.fields.GlobalConfig,
-// 				ServerConfig:            test.fields.ServerConfig,
-// 				Target:                  test.fields.Target,
-// 				Dataset:                 test.fields.Dataset,
-// 				Replica:                 test.fields.Replica,
-// 				Repetition:              test.fields.Repetition,
-// 				JobType:                 test.fields.JobType,
-// 				InsertConfig:            test.fields.InsertConfig,
-// 				UpdateConfig:            test.fields.UpdateConfig,
-// 				UpsertConfig:            test.fields.UpsertConfig,
-// 				SearchConfig:            test.fields.SearchConfig,
-// 				RemoveConfig:            test.fields.RemoveConfig,
 // 				ObjectConfig:            test.fields.ObjectConfig,
 // 				ClientConfig:            test.fields.ClientConfig,
+// 				Target:                  test.fields.Target,
+// 				Dataset:                 test.fields.Dataset,
+// 				UpdateConfig:            test.fields.UpdateConfig,
+// 				GlobalConfig:            test.fields.GlobalConfig,
+// 				RemoveConfig:            test.fields.RemoveConfig,
+// 				InsertConfig:            test.fields.InsertConfig,
+// 				ServerConfig:            test.fields.ServerConfig,
+// 				SearchConfig:            test.fields.SearchConfig,
+// 				UpsertConfig:            test.fields.UpsertConfig,
+// 				JobType:                 test.fields.JobType,
 // 				Rules:                   test.fields.Rules,
+// 				Repetition:              test.fields.Repetition,
+// 				Replica:                 test.fields.Replica,
 // 				RPS:                     test.fields.RPS,
 // 				ConcurrencyLimit:        test.fields.ConcurrencyLimit,
 // 				TTLSecondsAfterFinished: test.fields.TTLSecondsAfterFinished,
@@ -649,21 +649,21 @@ package v1
 //
 // func TestBenchmarkJobSpec_DeepCopy(t *testing.T) {
 // 	type fields struct {
-// 		GlobalConfig            *config.GlobalConfig
-// 		ServerConfig            *config.Servers
-// 		Target                  *BenchmarkTarget
-// 		Dataset                 *BenchmarkDataset
-// 		Replica                 int
-// 		Repetition              int
-// 		JobType                 string
-// 		InsertConfig            *config.InsertConfig
-// 		UpdateConfig            *config.UpdateConfig
-// 		UpsertConfig            *config.UpsertConfig
-// 		SearchConfig            *config.SearchConfig
-// 		RemoveConfig            *config.RemoveConfig
 // 		ObjectConfig            *config.ObjectConfig
 // 		ClientConfig            *config.GRPCClient
+// 		Target                  *BenchmarkTarget
+// 		Dataset                 *BenchmarkDataset
+// 		UpdateConfig            *config.UpdateConfig
+// 		GlobalConfig            *config.GlobalConfig
+// 		RemoveConfig            *config.RemoveConfig
+// 		InsertConfig            *config.InsertConfig
+// 		ServerConfig            *config.Servers
+// 		SearchConfig            *config.SearchConfig
+// 		UpsertConfig            *config.UpsertConfig
+// 		JobType                 string
 // 		Rules                   []*config.BenchmarkJobRule
+// 		Repetition              int
+// 		Replica                 int
 // 		RPS                     int
 // 		ConcurrencyLimit        int
 // 		TTLSecondsAfterFinished int
@@ -691,21 +691,21 @@ package v1
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           GlobalConfig:nil,
-// 		           ServerConfig:nil,
-// 		           Target:nil,
-// 		           Dataset:nil,
-// 		           Replica:0,
-// 		           Repetition:0,
-// 		           JobType:"",
-// 		           InsertConfig:nil,
-// 		           UpdateConfig:nil,
-// 		           UpsertConfig:nil,
-// 		           SearchConfig:nil,
-// 		           RemoveConfig:nil,
 // 		           ObjectConfig:nil,
 // 		           ClientConfig:nil,
+// 		           Target:nil,
+// 		           Dataset:nil,
+// 		           UpdateConfig:nil,
+// 		           GlobalConfig:nil,
+// 		           RemoveConfig:nil,
+// 		           InsertConfig:nil,
+// 		           ServerConfig:nil,
+// 		           SearchConfig:nil,
+// 		           UpsertConfig:nil,
+// 		           JobType:"",
 // 		           Rules:nil,
+// 		           Repetition:0,
+// 		           Replica:0,
 // 		           RPS:0,
 // 		           ConcurrencyLimit:0,
 // 		           TTLSecondsAfterFinished:0,
@@ -727,21 +727,21 @@ package v1
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           GlobalConfig:nil,
-// 		           ServerConfig:nil,
-// 		           Target:nil,
-// 		           Dataset:nil,
-// 		           Replica:0,
-// 		           Repetition:0,
-// 		           JobType:"",
-// 		           InsertConfig:nil,
-// 		           UpdateConfig:nil,
-// 		           UpsertConfig:nil,
-// 		           SearchConfig:nil,
-// 		           RemoveConfig:nil,
 // 		           ObjectConfig:nil,
 // 		           ClientConfig:nil,
+// 		           Target:nil,
+// 		           Dataset:nil,
+// 		           UpdateConfig:nil,
+// 		           GlobalConfig:nil,
+// 		           RemoveConfig:nil,
+// 		           InsertConfig:nil,
+// 		           ServerConfig:nil,
+// 		           SearchConfig:nil,
+// 		           UpsertConfig:nil,
+// 		           JobType:"",
 // 		           Rules:nil,
+// 		           Repetition:0,
+// 		           Replica:0,
 // 		           RPS:0,
 // 		           ConcurrencyLimit:0,
 // 		           TTLSecondsAfterFinished:0,
@@ -775,21 +775,21 @@ package v1
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			in := &BenchmarkJobSpec{
-// 				GlobalConfig:            test.fields.GlobalConfig,
-// 				ServerConfig:            test.fields.ServerConfig,
-// 				Target:                  test.fields.Target,
-// 				Dataset:                 test.fields.Dataset,
-// 				Replica:                 test.fields.Replica,
-// 				Repetition:              test.fields.Repetition,
-// 				JobType:                 test.fields.JobType,
-// 				InsertConfig:            test.fields.InsertConfig,
-// 				UpdateConfig:            test.fields.UpdateConfig,
-// 				UpsertConfig:            test.fields.UpsertConfig,
-// 				SearchConfig:            test.fields.SearchConfig,
-// 				RemoveConfig:            test.fields.RemoveConfig,
 // 				ObjectConfig:            test.fields.ObjectConfig,
 // 				ClientConfig:            test.fields.ClientConfig,
+// 				Target:                  test.fields.Target,
+// 				Dataset:                 test.fields.Dataset,
+// 				UpdateConfig:            test.fields.UpdateConfig,
+// 				GlobalConfig:            test.fields.GlobalConfig,
+// 				RemoveConfig:            test.fields.RemoveConfig,
+// 				InsertConfig:            test.fields.InsertConfig,
+// 				ServerConfig:            test.fields.ServerConfig,
+// 				SearchConfig:            test.fields.SearchConfig,
+// 				UpsertConfig:            test.fields.UpsertConfig,
+// 				JobType:                 test.fields.JobType,
 // 				Rules:                   test.fields.Rules,
+// 				Repetition:              test.fields.Repetition,
+// 				Replica:                 test.fields.Replica,
 // 				RPS:                     test.fields.RPS,
 // 				ConcurrencyLimit:        test.fields.ConcurrencyLimit,
 // 				TTLSecondsAfterFinished: test.fields.TTLSecondsAfterFinished,
@@ -966,9 +966,9 @@ package v1
 // 	}
 // 	type fields struct {
 // 		TypeMeta   metav1.TypeMeta
+// 		Status     BenchmarkJobStatus
 // 		ObjectMeta metav1.ObjectMeta
 // 		Spec       BenchmarkJobSpec
-// 		Status     BenchmarkJobStatus
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -993,9 +993,9 @@ package v1
 // 		       },
 // 		       fields: fields {
 // 		           TypeMeta:nil,
+// 		           Status:nil,
 // 		           ObjectMeta:nil,
 // 		           Spec:BenchmarkJobSpec{},
-// 		           Status:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1018,9 +1018,9 @@ package v1
 // 		           },
 // 		           fields: fields {
 // 		           TypeMeta:nil,
+// 		           Status:nil,
 // 		           ObjectMeta:nil,
 // 		           Spec:BenchmarkJobSpec{},
-// 		           Status:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1052,9 +1052,9 @@ package v1
 // 			}
 // 			in := &ValdBenchmarkJob{
 // 				TypeMeta:   test.fields.TypeMeta,
+// 				Status:     test.fields.Status,
 // 				ObjectMeta: test.fields.ObjectMeta,
 // 				Spec:       test.fields.Spec,
-// 				Status:     test.fields.Status,
 // 			}
 //
 // 			in.DeepCopyInto(test.args.out)
@@ -1068,9 +1068,9 @@ package v1
 // func TestValdBenchmarkJob_DeepCopy(t *testing.T) {
 // 	type fields struct {
 // 		TypeMeta   metav1.TypeMeta
+// 		Status     BenchmarkJobStatus
 // 		ObjectMeta metav1.ObjectMeta
 // 		Spec       BenchmarkJobSpec
-// 		Status     BenchmarkJobStatus
 // 	}
 // 	type want struct {
 // 		want *ValdBenchmarkJob
@@ -1096,9 +1096,9 @@ package v1
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           TypeMeta:nil,
+// 		           Status:nil,
 // 		           ObjectMeta:nil,
 // 		           Spec:BenchmarkJobSpec{},
-// 		           Status:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1118,9 +1118,9 @@ package v1
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           TypeMeta:nil,
+// 		           Status:nil,
 // 		           ObjectMeta:nil,
 // 		           Spec:BenchmarkJobSpec{},
-// 		           Status:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1152,9 +1152,9 @@ package v1
 // 			}
 // 			in := &ValdBenchmarkJob{
 // 				TypeMeta:   test.fields.TypeMeta,
+// 				Status:     test.fields.Status,
 // 				ObjectMeta: test.fields.ObjectMeta,
 // 				Spec:       test.fields.Spec,
-// 				Status:     test.fields.Status,
 // 			}
 //
 // 			got := in.DeepCopy()
@@ -1168,9 +1168,9 @@ package v1
 // func TestValdBenchmarkJob_DeepCopyObject(t *testing.T) {
 // 	type fields struct {
 // 		TypeMeta   metav1.TypeMeta
+// 		Status     BenchmarkJobStatus
 // 		ObjectMeta metav1.ObjectMeta
 // 		Spec       BenchmarkJobSpec
-// 		Status     BenchmarkJobStatus
 // 	}
 // 	type want struct {
 // 		want runtime.Object
@@ -1196,9 +1196,9 @@ package v1
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           TypeMeta:nil,
+// 		           Status:nil,
 // 		           ObjectMeta:nil,
 // 		           Spec:BenchmarkJobSpec{},
-// 		           Status:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1218,9 +1218,9 @@ package v1
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           TypeMeta:nil,
+// 		           Status:nil,
 // 		           ObjectMeta:nil,
 // 		           Spec:BenchmarkJobSpec{},
-// 		           Status:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1252,9 +1252,9 @@ package v1
 // 			}
 // 			in := &ValdBenchmarkJob{
 // 				TypeMeta:   test.fields.TypeMeta,
+// 				Status:     test.fields.Status,
 // 				ObjectMeta: test.fields.ObjectMeta,
 // 				Spec:       test.fields.Spec,
-// 				Status:     test.fields.Status,
 // 			}
 //
 // 			got := in.DeepCopyObject()

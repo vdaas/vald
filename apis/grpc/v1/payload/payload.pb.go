@@ -1018,7 +1018,9 @@ type Search_Config struct {
 	// Search ratio for agent return result number.
 	Ratio *wrapperspb.FloatValue `protobuf:"bytes,10,opt,name=ratio,proto3" json:"ratio,omitempty"`
 	// Search nprobe.
-	Nprobe        uint32 `protobuf:"varint,11,opt,name=nprobe,proto3" json:"nprobe,omitempty"`
+	Nprobe uint32 `protobuf:"varint,11,opt,name=nprobe,proto3" json:"nprobe,omitempty"`
+	// Search edge size
+	EdgeSize      int32 `protobuf:"varint,12,opt,name=edge_size,json=edgeSize,proto3" json:"edge_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1126,6 +1128,13 @@ func (x *Search_Config) GetRatio() *wrapperspb.FloatValue {
 func (x *Search_Config) GetNprobe() uint32 {
 	if x != nil {
 		return x.Nprobe
+	}
+	return 0
+}
+
+func (x *Search_Config) GetEdgeSize() int32 {
+	if x != nil {
+		return x.EdgeSize
 	}
 	return 0
 }
@@ -5984,7 +5993,7 @@ var File_v1_payload_payload_proto protoreflect.FileDescriptor
 const file_v1_payload_payload_proto_rawDesc = "" +
 	"\n" +
 	"\x18v1/payload/payload.proto\x12\n" +
-	"payload.v1\x1a\x1bbuf/validate/validate.proto\x1a\x19google/protobuf/any.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x17google/rpc/status.proto\"\xb8\v\n" +
+	"payload.v1\x1a\x1bbuf/validate/validate.proto\x1a\x19google/protobuf/any.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x17google/rpc/status.proto\"\xd5\v\n" +
 	"\x06Search\x1a^\n" +
 	"\aRequest\x12 \n" +
 	"\x06vector\x18\x01 \x03(\x02B\b\xbaH\x05\x92\x01\x02\b\x02R\x06vector\x121\n" +
@@ -6003,7 +6012,7 @@ const file_v1_payload_payload_proto_rawDesc = "" +
 	"vectorizer\x18\x03 \x01(\v2\x19.payload.v1.Filter.TargetR\n" +
 	"vectorizer\x1aR\n" +
 	"\x12MultiObjectRequest\x12<\n" +
-	"\brequests\x18\x01 \x03(\v2 .payload.v1.Search.ObjectRequestR\brequests\x1a\xdf\x03\n" +
+	"\brequests\x18\x01 \x03(\v2 .payload.v1.Search.ObjectRequestR\brequests\x1a\xfc\x03\n" +
 	"\x06Config\x12\x1d\n" +
 	"\n" +
 	"request_id\x18\x01 \x01(\tR\trequestId\x12\x19\n" +
@@ -6017,7 +6026,8 @@ const file_v1_payload_payload_proto_rawDesc = "" +
 	"\x15aggregation_algorithm\x18\t \x01(\x0e2'.payload.v1.Search.AggregationAlgorithmR\x14aggregationAlgorithm\x121\n" +
 	"\x05ratio\x18\n" +
 	" \x01(\v2\x1b.google.protobuf.FloatValueR\x05ratio\x12\x16\n" +
-	"\x06nprobe\x18\v \x01(\rR\x06nprobe\x1a`\n" +
+	"\x06nprobe\x18\v \x01(\rR\x06nprobe\x12\x1b\n" +
+	"\tedge_size\x18\f \x01(\x05R\bedgeSize\x1a`\n" +
 	"\bResponse\x12\x1d\n" +
 	"\n" +
 	"request_id\x18\x01 \x01(\tR\trequestId\x125\n" +

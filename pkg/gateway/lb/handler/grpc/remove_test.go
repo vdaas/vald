@@ -21,15 +21,15 @@ package grpc
 // 		req *payload.Remove_Request
 // 	}
 // 	type fields struct {
+// 		UnimplementedValdServer vald.UnimplementedValdServer
 // 		eg                      errgroup.Group
 // 		gateway                 service.Gateway
+// 		name                    string
+// 		ip                      string
 // 		timeout                 time.Duration
 // 		replica                 int
 // 		streamConcurrency       int
 // 		multiConcurrency        int
-// 		name                    string
-// 		ip                      string
-// 		UnimplementedValdServer vald.UnimplementedValdServer
 // 	}
 // 	type want struct {
 // 		wantLocs *payload.Object_Location
@@ -63,15 +63,15 @@ package grpc
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
+// 		           UnimplementedValdServer:nil,
 // 		           eg:nil,
 // 		           gateway:nil,
+// 		           name:"",
+// 		           ip:"",
 // 		           timeout:nil,
 // 		           replica:0,
 // 		           streamConcurrency:0,
 // 		           multiConcurrency:0,
-// 		           name:"",
-// 		           ip:"",
-// 		           UnimplementedValdServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -94,15 +94,15 @@ package grpc
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
+// 		           UnimplementedValdServer:nil,
 // 		           eg:nil,
 // 		           gateway:nil,
+// 		           name:"",
+// 		           ip:"",
 // 		           timeout:nil,
 // 		           replica:0,
 // 		           streamConcurrency:0,
 // 		           multiConcurrency:0,
-// 		           name:"",
-// 		           ip:"",
-// 		           UnimplementedValdServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -133,15 +133,15 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
+// 				UnimplementedValdServer: test.fields.UnimplementedValdServer,
 // 				eg:                      test.fields.eg,
 // 				gateway:                 test.fields.gateway,
+// 				name:                    test.fields.name,
+// 				ip:                      test.fields.ip,
 // 				timeout:                 test.fields.timeout,
 // 				replica:                 test.fields.replica,
 // 				streamConcurrency:       test.fields.streamConcurrency,
 // 				multiConcurrency:        test.fields.multiConcurrency,
-// 				name:                    test.fields.name,
-// 				ip:                      test.fields.ip,
-// 				UnimplementedValdServer: test.fields.UnimplementedValdServer,
 // 			}
 //
 // 			gotLocs, err := s.Remove(test.args.ctx, test.args.req)
@@ -157,15 +157,15 @@ package grpc
 // 		stream vald.Remove_StreamRemoveServer
 // 	}
 // 	type fields struct {
+// 		UnimplementedValdServer vald.UnimplementedValdServer
 // 		eg                      errgroup.Group
 // 		gateway                 service.Gateway
+// 		name                    string
+// 		ip                      string
 // 		timeout                 time.Duration
 // 		replica                 int
 // 		streamConcurrency       int
 // 		multiConcurrency        int
-// 		name                    string
-// 		ip                      string
-// 		UnimplementedValdServer vald.UnimplementedValdServer
 // 	}
 // 	type want struct {
 // 		err error
@@ -194,15 +194,15 @@ package grpc
 // 		           stream:nil,
 // 		       },
 // 		       fields: fields {
+// 		           UnimplementedValdServer:nil,
 // 		           eg:nil,
 // 		           gateway:nil,
+// 		           name:"",
+// 		           ip:"",
 // 		           timeout:nil,
 // 		           replica:0,
 // 		           streamConcurrency:0,
 // 		           multiConcurrency:0,
-// 		           name:"",
-// 		           ip:"",
-// 		           UnimplementedValdServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -224,15 +224,15 @@ package grpc
 // 		           stream:nil,
 // 		           },
 // 		           fields: fields {
+// 		           UnimplementedValdServer:nil,
 // 		           eg:nil,
 // 		           gateway:nil,
+// 		           name:"",
+// 		           ip:"",
 // 		           timeout:nil,
 // 		           replica:0,
 // 		           streamConcurrency:0,
 // 		           multiConcurrency:0,
-// 		           name:"",
-// 		           ip:"",
-// 		           UnimplementedValdServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -263,15 +263,15 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
+// 				UnimplementedValdServer: test.fields.UnimplementedValdServer,
 // 				eg:                      test.fields.eg,
 // 				gateway:                 test.fields.gateway,
+// 				name:                    test.fields.name,
+// 				ip:                      test.fields.ip,
 // 				timeout:                 test.fields.timeout,
 // 				replica:                 test.fields.replica,
 // 				streamConcurrency:       test.fields.streamConcurrency,
 // 				multiConcurrency:        test.fields.multiConcurrency,
-// 				name:                    test.fields.name,
-// 				ip:                      test.fields.ip,
-// 				UnimplementedValdServer: test.fields.UnimplementedValdServer,
 // 			}
 //
 // 			err := s.StreamRemove(test.args.stream)
@@ -288,15 +288,15 @@ package grpc
 // 		reqs *payload.Remove_MultiRequest
 // 	}
 // 	type fields struct {
+// 		UnimplementedValdServer vald.UnimplementedValdServer
 // 		eg                      errgroup.Group
 // 		gateway                 service.Gateway
+// 		name                    string
+// 		ip                      string
 // 		timeout                 time.Duration
 // 		replica                 int
 // 		streamConcurrency       int
 // 		multiConcurrency        int
-// 		name                    string
-// 		ip                      string
-// 		UnimplementedValdServer vald.UnimplementedValdServer
 // 	}
 // 	type want struct {
 // 		wantLocs *payload.Object_Locations
@@ -330,15 +330,15 @@ package grpc
 // 		           reqs:nil,
 // 		       },
 // 		       fields: fields {
+// 		           UnimplementedValdServer:nil,
 // 		           eg:nil,
 // 		           gateway:nil,
+// 		           name:"",
+// 		           ip:"",
 // 		           timeout:nil,
 // 		           replica:0,
 // 		           streamConcurrency:0,
 // 		           multiConcurrency:0,
-// 		           name:"",
-// 		           ip:"",
-// 		           UnimplementedValdServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -361,15 +361,15 @@ package grpc
 // 		           reqs:nil,
 // 		           },
 // 		           fields: fields {
+// 		           UnimplementedValdServer:nil,
 // 		           eg:nil,
 // 		           gateway:nil,
+// 		           name:"",
+// 		           ip:"",
 // 		           timeout:nil,
 // 		           replica:0,
 // 		           streamConcurrency:0,
 // 		           multiConcurrency:0,
-// 		           name:"",
-// 		           ip:"",
-// 		           UnimplementedValdServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -400,15 +400,15 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
+// 				UnimplementedValdServer: test.fields.UnimplementedValdServer,
 // 				eg:                      test.fields.eg,
 // 				gateway:                 test.fields.gateway,
+// 				name:                    test.fields.name,
+// 				ip:                      test.fields.ip,
 // 				timeout:                 test.fields.timeout,
 // 				replica:                 test.fields.replica,
 // 				streamConcurrency:       test.fields.streamConcurrency,
 // 				multiConcurrency:        test.fields.multiConcurrency,
-// 				name:                    test.fields.name,
-// 				ip:                      test.fields.ip,
-// 				UnimplementedValdServer: test.fields.UnimplementedValdServer,
 // 			}
 //
 // 			gotLocs, err := s.MultiRemove(test.args.ctx, test.args.reqs)
@@ -425,15 +425,15 @@ package grpc
 // 		req *payload.Remove_TimestampRequest
 // 	}
 // 	type fields struct {
+// 		UnimplementedValdServer vald.UnimplementedValdServer
 // 		eg                      errgroup.Group
 // 		gateway                 service.Gateway
+// 		name                    string
+// 		ip                      string
 // 		timeout                 time.Duration
 // 		replica                 int
 // 		streamConcurrency       int
 // 		multiConcurrency        int
-// 		name                    string
-// 		ip                      string
-// 		UnimplementedValdServer vald.UnimplementedValdServer
 // 	}
 // 	type want struct {
 // 		wantLocs *payload.Object_Locations
@@ -467,15 +467,15 @@ package grpc
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
+// 		           UnimplementedValdServer:nil,
 // 		           eg:nil,
 // 		           gateway:nil,
+// 		           name:"",
+// 		           ip:"",
 // 		           timeout:nil,
 // 		           replica:0,
 // 		           streamConcurrency:0,
 // 		           multiConcurrency:0,
-// 		           name:"",
-// 		           ip:"",
-// 		           UnimplementedValdServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -498,15 +498,15 @@ package grpc
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
+// 		           UnimplementedValdServer:nil,
 // 		           eg:nil,
 // 		           gateway:nil,
+// 		           name:"",
+// 		           ip:"",
 // 		           timeout:nil,
 // 		           replica:0,
 // 		           streamConcurrency:0,
 // 		           multiConcurrency:0,
-// 		           name:"",
-// 		           ip:"",
-// 		           UnimplementedValdServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -537,15 +537,15 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
+// 				UnimplementedValdServer: test.fields.UnimplementedValdServer,
 // 				eg:                      test.fields.eg,
 // 				gateway:                 test.fields.gateway,
+// 				name:                    test.fields.name,
+// 				ip:                      test.fields.ip,
 // 				timeout:                 test.fields.timeout,
 // 				replica:                 test.fields.replica,
 // 				streamConcurrency:       test.fields.streamConcurrency,
 // 				multiConcurrency:        test.fields.multiConcurrency,
-// 				name:                    test.fields.name,
-// 				ip:                      test.fields.ip,
-// 				UnimplementedValdServer: test.fields.UnimplementedValdServer,
 // 			}
 //
 // 			gotLocs, err := s.RemoveByTimestamp(test.args.ctx, test.args.req)

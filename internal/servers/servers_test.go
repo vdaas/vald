@@ -26,10 +26,10 @@ import (
 
 func TestNew(t *testing.T) {
 	type test struct {
-		name      string
-		opts      []Option
 		checkFunc func(got, want *listener) error
 		want      *listener
+		name      string
+		opts      []Option
 	}
 
 	tests := []test{
@@ -100,17 +100,17 @@ func Test_listener_ListenAndServe(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
 		args      args
-		field     field
 		checkFunc func(got, want <-chan error) error
 		afterFunc func(*testing.T)
 		want      <-chan error
+		name      string
+		field     field
 	}
 
 	tests := []test{
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			eg, ctx := errgroup.New(ctx)
 
 			srv1 := &mockServer{
@@ -233,12 +233,12 @@ func Test_listener_Shutdown(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
 		args      args
-		field     field
+		want      error
 		checkFunc func(got, want error) error
 		afterFunc func(*testing.T)
-		want      error
+		name      string
+		field     field
 	}
 
 	defaultCheckFunc := func(got, want error) error {
@@ -250,7 +250,7 @@ func Test_listener_Shutdown(t *testing.T) {
 
 	tests := []test{
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			eg, ctx := errgroup.New(ctx)
 
 			srv1 := &mockServer{
@@ -300,7 +300,7 @@ func Test_listener_Shutdown(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			eg, ctx := errgroup.New(ctx)
 
 			return test{
@@ -324,7 +324,7 @@ func Test_listener_Shutdown(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			eg, ctx := errgroup.New(ctx)
 
 			want := errors.Wrap(errors.Errorf("unexpected error"), "faild to shutdown")

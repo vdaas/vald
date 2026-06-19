@@ -27,17 +27,17 @@ func Request(values, body map[string]any, r *http.Request) (res any, err error) 
 		return nil, errors.ErrInvalidRequest
 	}
 	return struct {
+		Header           http.Header    `json:"header"`
+		Body             map[string]any `json:"body"`
+		Values           map[string]any `json:"values"`
 		Host             string         `json:"host"`
 		URI              string         `json:"uri"`
 		URL              string         `json:"url"`
 		Method           string         `json:"method"`
 		Proto            string         `json:"proto"`
-		Header           http.Header    `json:"header"`
-		TransferEncoding []string       `json:"transfer_encoding"`
 		RemoteAddr       string         `json:"remote_addr"`
+		TransferEncoding []string       `json:"transfer_encoding"`
 		ContentLength    int64          `json:"content_length"`
-		Body             map[string]any `json:"body"`
-		Values           map[string]any `json:"values"`
 	}{
 		Host:             r.Host,
 		URI:              r.RequestURI,

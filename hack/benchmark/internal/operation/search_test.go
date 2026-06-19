@@ -17,9 +17,8 @@ package operation
 //
 // func Test_operation_Search(t *testing.T) {
 // 	type args struct {
-// 		ctx context.Context
-// 		b   *testing.B
-// 		ds  assets.Dataset
+// 		b  *testing.B
+// 		ds assets.Dataset
 // 	}
 // 	type fields struct {
 // 		client   client.Client
@@ -44,7 +43,6 @@ package operation
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           ctx:nil,
 // 		           b:testing.B{},
 // 		           ds:nil,
 // 		       },
@@ -69,7 +67,6 @@ package operation
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           ctx:nil,
 // 		           b:testing.B{},
 // 		           ds:nil,
 // 		           },
@@ -110,7 +107,7 @@ package operation
 // 				indexerC: test.fields.indexerC,
 // 			}
 //
-// 			o.Search(test.args.ctx, test.args.b, test.args.ds)
+// 			o.Search(test.args.b, test.args.ds)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -120,9 +117,8 @@ package operation
 //
 // func Test_operation_StreamSearch(t *testing.T) {
 // 	type args struct {
-// 		ctx context.Context
-// 		b   *testing.B
-// 		ds  assets.Dataset
+// 		b  *testing.B
+// 		ds assets.Dataset
 // 	}
 // 	type fields struct {
 // 		client   client.Client
@@ -147,7 +143,6 @@ package operation
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           ctx:nil,
 // 		           b:testing.B{},
 // 		           ds:nil,
 // 		       },
@@ -172,7 +167,6 @@ package operation
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           ctx:nil,
 // 		           b:testing.B{},
 // 		           ds:nil,
 // 		           },
@@ -213,7 +207,7 @@ package operation
 // 				indexerC: test.fields.indexerC,
 // 			}
 //
-// 			o.StreamSearch(test.args.ctx, test.args.b, test.args.ds)
+// 			o.StreamSearch(test.args.b, test.args.ds)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -223,7 +217,6 @@ package operation
 //
 // func Test_operation_SearchByID(t *testing.T) {
 // 	type args struct {
-// 		ctx      context.Context
 // 		b        *testing.B
 // 		maxIdNum int
 // 	}
@@ -250,7 +243,6 @@ package operation
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           ctx:nil,
 // 		           b:testing.B{},
 // 		           maxIdNum:0,
 // 		       },
@@ -275,7 +267,6 @@ package operation
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           ctx:nil,
 // 		           b:testing.B{},
 // 		           maxIdNum:0,
 // 		           },
@@ -316,7 +307,7 @@ package operation
 // 				indexerC: test.fields.indexerC,
 // 			}
 //
-// 			o.SearchByID(test.args.ctx, test.args.b, test.args.maxIdNum)
+// 			o.SearchByID(test.args.b, test.args.maxIdNum)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -326,7 +317,6 @@ package operation
 //
 // func Test_operation_StreamSearchByID(t *testing.T) {
 // 	type args struct {
-// 		ctx      context.Context
 // 		b        *testing.B
 // 		maxIdNum int
 // 	}
@@ -353,7 +343,6 @@ package operation
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           ctx:nil,
 // 		           b:testing.B{},
 // 		           maxIdNum:0,
 // 		       },
@@ -378,7 +367,6 @@ package operation
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           ctx:nil,
 // 		           b:testing.B{},
 // 		           maxIdNum:0,
 // 		           },
@@ -419,7 +407,7 @@ package operation
 // 				indexerC: test.fields.indexerC,
 // 			}
 //
-// 			o.StreamSearchByID(test.args.ctx, test.args.b, test.args.maxIdNum)
+// 			o.StreamSearchByID(test.args.b, test.args.maxIdNum)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

@@ -39,12 +39,12 @@ func TestBackoff_Bind(t *testing.T) {
 		want *Backoff
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *Backoff) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *Backoff) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -145,12 +145,12 @@ func TestBackoff_Opts(t *testing.T) {
 		want []backoff.Option
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, []backoff.Option) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got []backoff.Option) error {
 		if !reflect.DeepEqual(len(w.want), len(got)) {

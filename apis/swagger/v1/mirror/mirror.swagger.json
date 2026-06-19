@@ -46,6 +46,21 @@
     }
   },
   "definitions": {
+    "MirrorTarget": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "The target hostname."
+        },
+        "port": {
+          "type": "integer",
+          "format": "int64",
+          "description": "The target port."
+        }
+      },
+      "description": "Represent server information."
+    },
     "MirrorTargets": {
       "type": "object",
       "properties": {
@@ -53,7 +68,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v1MirrorTarget"
+            "$ref": "#/definitions/MirrorTarget"
           },
           "description": "The multiple target information."
         }
@@ -93,21 +108,6 @@
         }
       },
       "description": "The `Status` type defines a logical error model that is suitable for\ndifferent programming environments, including REST APIs and RPC APIs. It is\nused by [gRPC](https://github.com/grpc). Each `Status` message contains\nthree pieces of data: error code, error message, and error details.\n\nYou can find out more about this error model and how to work with it in the\n[API Design Guide](https://cloud.google.com/apis/design/errors)."
-    },
-    "v1MirrorTarget": {
-      "type": "object",
-      "properties": {
-        "host": {
-          "type": "string",
-          "description": "The target hostname."
-        },
-        "port": {
-          "type": "integer",
-          "format": "int64",
-          "description": "The target port."
-        }
-      },
-      "description": "Represent server information."
     }
   }
 }

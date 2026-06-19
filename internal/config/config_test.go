@@ -43,20 +43,20 @@ func TestMain(m *testing.M) {
 
 func TestGlobalConfig_Bind(t *testing.T) {
 	type fields struct {
+		Logging *Logging
 		Version string
 		TZ      string
-		Logging *Logging
 	}
 	type want struct {
 		want *GlobalConfig
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, *GlobalConfig) error
 		beforeFunc func(*testing.T)
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got *GlobalConfig) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -272,20 +272,20 @@ func TestGlobalConfig_Bind(t *testing.T) {
 
 func TestRead(t *testing.T) {
 	type args struct {
-		path string
 		cfg  any
+		path string
 	}
 	type want struct {
 		want any
 		err  error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, any, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got any, err error) error {
 		if !errors.Is(err, w.err) {
@@ -902,12 +902,12 @@ func TestGetActualValue(t *testing.T) {
 		wantRes string
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, gotRes string) error {
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
@@ -1036,12 +1036,12 @@ func TestGetActualValues(t *testing.T) {
 		want []string
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, []string) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, got []string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1146,12 +1146,12 @@ func Test_checkPrefixAndSuffix(t *testing.T) {
 		want bool
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, bool) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		args       args
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1314,12 +1314,12 @@ func TestToRawYaml(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
 		args       args
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1444,12 +1444,12 @@ func TestMerge(t *testing.T) {
 		err     error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *config, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, gotDst *config, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1771,8 +1771,8 @@ func TestMerge(t *testing.T) {
 func Test_deepMerge(t *testing.T) {
 	t.Parallel()
 	type config struct {
-		Slice []int
 		GlobalConfig
+		Slice []int
 	}
 	type args struct {
 		dst       reflect.Value
@@ -1784,12 +1784,12 @@ func Test_deepMerge(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		args       args
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {

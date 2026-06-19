@@ -41,11 +41,11 @@ func TestNew(t *testing.T) {
 		want Group[any]
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, Group[any]) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got Group[any]) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -91,22 +91,22 @@ func TestNew(t *testing.T) {
 func Test_group_Do(t *testing.T) {
 	type args[V any] struct {
 		ctx context.Context
-		key string
 		fn  func(context.Context) (V, error)
+		key string
 	}
 	type want[V any] struct {
 		wantV      V
-		wantShared bool
 		err        error
+		wantShared bool
 	}
 	type test[V any] struct {
-		name       string
 		args       args[V]
 		want       want[V]
 		beforeFunc func(args[V])
 		execFunc   func(*testing.T, args[V]) (V, bool, error)
 		checkFunc  func(want[V], V, bool, error) error
 		afterFunc  func(args[V])
+		name       string
 	}
 	tests := []test[string]{
 		func() test[string] {
@@ -138,7 +138,7 @@ func Test_group_Do(t *testing.T) {
 				name: "returns (v, false, nil) when Do is called with another key",
 				args: args[string]{
 					key: key1,
-					ctx: context.Background(),
+					ctx: t.Context(),
 					fn:  fn1,
 				},
 				want: want[string]{
@@ -151,17 +151,13 @@ func Test_group_Do(t *testing.T) {
 					g := New[string]()
 
 					wg := new(sync.WaitGroup)
-					wg.Add(1)
-					go func() {
+					wg.Go(func() {
 						got, gotShared, err = g.Do(a.ctx, a.key, a.fn)
-						wg.Done()
-					}()
+					})
 
-					wg.Add(1)
-					go func() {
+					wg.Go(func() {
 						_, _, _ = g.Do(a.ctx, key2, fn2)
-						wg.Done()
-					}()
+					})
 
 					wg.Wait()
 					return got, gotShared, err
@@ -239,7 +235,7 @@ func Test_group_Do(t *testing.T) {
 				name: "returns (v, true, nil) when Do is called with the same key",
 				args: args[string]{
 					key: "req_1",
-					ctx: context.Background(),
+					ctx: t.Context(),
 					fn:  fn1,
 				},
 				want: w,
@@ -252,11 +248,9 @@ func Test_group_Do(t *testing.T) {
 					var gotShared, gotShared1 bool
 					var err, err1 error
 
-					wg.Add(1)
-					go func() {
+					wg.Go(func() {
 						got, gotShared, err = g.Do(a.ctx, a.key, fn1)
-						wg.Done()
-					}()
+					})
 
 					// call with the same key but with another function
 					wg.Add(1)
@@ -301,7 +295,7 @@ func Test_group_Do(t *testing.T) {
 
 func TestDo(t *testing.T) {
 	g := New[string]()
-	v, _, err := g.Do(context.Background(), "key", func(context.Context) (string, error) {
+	v, _, err := g.Do(t.Context(), "key", func(context.Context) (string, error) {
 		return "bar", nil
 	})
 	if got, want := fmt.Sprintf("%v (%T)", v, v), "bar (string)"; got != want {
@@ -315,10 +309,10 @@ func TestDo(t *testing.T) {
 func TestDoErr(t *testing.T) {
 	g := New[any]()
 	someErr := errors.New("Some error")
-	v, _, err := g.Do(context.Background(), "key", func(context.Context) (any, error) {
+	v, _, err := g.Do(t.Context(), "key", func(context.Context) (any, error) {
 		return nil, someErr
 	})
-	if err != someErr {
+	if !errors.Is(err, someErr) {
 		t.Errorf("Do error = %v; want someErr %v", err, someErr)
 	}
 	if v != nil {
@@ -346,13 +340,11 @@ func TestDoDupSuppress(t *testing.T) {
 
 	const n = 10
 	wg1.Add(1)
-	for i := 0; i < n; i++ {
+	for range n {
 		wg1.Add(1)
-		wg2.Add(1)
-		go func() {
-			defer wg2.Done()
+		wg2.Go(func() {
 			wg1.Done()
-			s, _, err := g.Do(context.Background(), "key", fn)
+			s, _, err := g.Do(t.Context(), "key", fn)
 			if err != nil {
 				t.Errorf("Do error: %v", err)
 				return
@@ -360,7 +352,7 @@ func TestDoDupSuppress(t *testing.T) {
 			if s != "bar" {
 				t.Errorf("Do = %T %v; want %q", s, s, "bar")
 			}
-		}()
+		})
 	}
 	wg1.Wait()
 	// At least one goroutine is in fn now and all of them have at
@@ -384,7 +376,7 @@ func TestForget(t *testing.T) {
 	)
 
 	go func() {
-		g.Do(context.Background(), "key", func(_ context.Context) (i int, e error) {
+		g.Do(t.Context(), "key", func(_ context.Context) (i int, e error) {
 			close(firstStarted)
 			<-unblockFirst
 			close(firstFinished)
@@ -395,7 +387,7 @@ func TestForget(t *testing.T) {
 	g.Forget("key")
 
 	unblockSecond := make(chan struct{})
-	secondResult := g.DoChan(context.Background(), "key", func(_ context.Context) (i int, e error) {
+	secondResult := g.DoChan(t.Context(), "key", func(_ context.Context) (i int, e error) {
 		t.Log(2, "key")
 		<-unblockSecond
 		return 2, nil
@@ -404,7 +396,7 @@ func TestForget(t *testing.T) {
 	close(unblockFirst)
 	<-firstFinished
 
-	thirdResult := g.DoChan(context.Background(), "key", func(_ context.Context) (i int, e error) {
+	thirdResult := g.DoChan(t.Context(), "key", func(_ context.Context) (i int, e error) {
 		t.Log(3, "key")
 		return 3, nil
 	})
@@ -419,7 +411,7 @@ func TestForget(t *testing.T) {
 
 func TestDoChan(t *testing.T) {
 	g := New[string]()
-	ch := g.DoChan(context.Background(), "key", func(_ context.Context) (string, error) {
+	ch := g.DoChan(t.Context(), "key", func(_ context.Context) (string, error) {
 		return "bar", nil
 	})
 
@@ -446,7 +438,7 @@ func TestPanicDo(t *testing.T) {
 	waited := int32(n)
 	panicCount := int32(0)
 	done := make(chan struct{})
-	for i := 0; i < n; i++ {
+	for range n {
 		go func() {
 			defer func() {
 				if err := recover(); err != nil {
@@ -459,7 +451,7 @@ func TestPanicDo(t *testing.T) {
 				}
 			}()
 
-			g.Do(context.Background(), "key", fn)
+			g.Do(t.Context(), "key", fn)
 		}()
 	}
 
@@ -483,7 +475,7 @@ func TestGoexitDo(t *testing.T) {
 	const n = 5
 	waited := int32(n)
 	done := make(chan struct{})
-	for i := 0; i < n; i++ {
+	for range n {
 		go func() {
 			var err error
 			defer func() {
@@ -494,7 +486,7 @@ func TestGoexitDo(t *testing.T) {
 					close(done)
 				}
 			}()
-			_, _, err = g.Do(context.Background(), "key", fn)
+			_, _, err = g.Do(t.Context(), "key", fn)
 		}()
 	}
 
@@ -530,7 +522,7 @@ func TestPanicDoChan(t *testing.T) {
 		}()
 
 		g := New[any]()
-		ch := g.DoChan(context.Background(), "", func(context.Context) (any, error) {
+		ch := g.DoChan(t.Context(), "", func(context.Context) (any, error) {
 			panic("Panicking in DoChan")
 		})
 		<-ch
@@ -571,7 +563,7 @@ func TestPanicDoSharedByDoChan(t *testing.T) {
 			defer func() {
 				recover()
 			}()
-			g.Do(context.Background(), "", func(context.Context) (any, error) {
+			g.Do(t.Context(), "", func(context.Context) (any, error) {
 				close(blocked)
 				<-unblock
 				panic("Panicking in Do")
@@ -579,7 +571,7 @@ func TestPanicDoSharedByDoChan(t *testing.T) {
 		}()
 
 		<-blocked
-		ch := g.DoChan(context.Background(), "", func(context.Context) (any, error) {
+		ch := g.DoChan(t.Context(), "", func(context.Context) (any, error) {
 			panic("DoChan unexpectedly executed callback")
 		})
 		close(unblock)
@@ -644,7 +636,7 @@ func ExampleGroup() {
 func TestDoTimeout(t *testing.T) {
 	g := New[string]()
 	start := time.Now()
-	v, _, err := g.Do(context.Background(), "key", func(context.Context) (string, error) {
+	v, _, err := g.Do(t.Context(), "key", func(context.Context) (string, error) {
 		time.Sleep(100 * time.Millisecond)
 		return "bar", nil
 	})
@@ -666,22 +658,20 @@ func TestDoMultipleErrors(t *testing.T) {
 
 	const n = 10
 	var wg sync.WaitGroup
-	for i := 0; i < n; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			v, _, err := g.Do(context.Background(), "key", func(context.Context) (string, error) {
+	for range n {
+		wg.Go(func() {
+			v, _, err := g.Do(t.Context(), "key", func(context.Context) (string, error) {
 				atomic.AddInt32(&calls, 1)
 				time.Sleep(10 * time.Millisecond)
 				return "", someErr
 			})
-			if err != someErr {
+			if !errors.Is(err, someErr) {
 				t.Errorf("Do error = %v; want %v", err, someErr)
 			}
 			if v != "" {
 				t.Errorf("Do = %v; want empty string", v)
 			}
-		}()
+		})
 	}
 	wg.Wait()
 	if got := atomic.LoadInt32(&calls); got != 1 {

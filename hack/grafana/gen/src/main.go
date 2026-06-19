@@ -224,8 +224,8 @@ func main() {
 	rootDir := os.Getenv(rootKey)
 	var header bytes.Buffer
 	err := license.Execute(&header, struct {
-		Year       int
 		Maintainer string
+		Year       int
 	}{
 		Year:       time.Now().Year(),
 		Maintainer: maintainer,

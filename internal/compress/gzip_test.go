@@ -34,12 +34,12 @@ func TestNewGzip(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, Compressor, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got Compressor, err error) error {
 		if !errors.Is(err, w.err) {
@@ -112,21 +112,21 @@ func Test_gzipCompressor_CompressVector(t *testing.T) {
 	}
 	type fields struct {
 		gobc             Compressor
-		compressionLevel int
 		gzip             gzip.Gzip
+		compressionLevel int
 	}
 	type want struct {
-		want []byte
 		err  error
+		want []byte
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
 		want       want
 		checkFunc  func(want, []byte, error, *gzipCompressor) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got []byte, err error, _ *gzipCompressor) error {
 		if !errors.Is(err, w.err) {
@@ -303,16 +303,16 @@ func Test_E2E_gzipCompressor_CompressVector(t *testing.T) {
 		vector []float32
 	}
 	type want struct {
-		want []float32
 		err  error
+		want []float32
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, []byte, error, Compressor) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got []byte, err error, g Compressor) error {
 		if !errors.Is(err, w.err) {
@@ -380,17 +380,17 @@ func Test_gzipCompressor_DecompressVector(t *testing.T) {
 		gzip gzip.Gzip
 	}
 	type want struct {
-		want []float32
 		err  error
+		want []float32
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		fields     fields
 		checkFunc  func(want, []float32, error, *gzipCompressor) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got []float32, err error, _ *gzipCompressor) error {
 		if !errors.Is(err, w.err) {
@@ -523,13 +523,13 @@ func Test_gzipCompressor_Reader(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
+		want       want
 		args       args
 		fields     fields
-		want       want
 		checkFunc  func(want, io.ReadCloser, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got io.ReadCloser, err error) error {
 		if !errors.Is(err, w.err) {
@@ -619,21 +619,21 @@ func Test_gzipCompressor_Writer(t *testing.T) {
 		dst io.WriteCloser
 	}
 	type fields struct {
-		compressionLevel int
 		gzip             gzip.Gzip
+		compressionLevel int
 	}
 	type want struct {
 		want io.WriteCloser
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		fields     fields
+		args       args
 		checkFunc  func(want, io.WriteCloser, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got io.WriteCloser, err error) error {
 		if !errors.Is(err, w.err) {
@@ -728,17 +728,17 @@ func Test_gzipReader_Read(t *testing.T) {
 		r   io.ReadCloser
 	}
 	type want struct {
-		wantN int
 		err   error
+		wantN int
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
 		want       want
 		checkFunc  func(want, int, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, gotN int, err error) error {
 		if !errors.Is(err, w.err) {
@@ -804,12 +804,12 @@ func Test_gzipReader_Close(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -930,17 +930,17 @@ func Test_gzipWriter_Write(t *testing.T) {
 		w   io.WriteCloser
 	}
 	type want struct {
-		wantN int
 		err   error
+		wantN int
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
 		want       want
 		checkFunc  func(want, int, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, gotN int, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1006,12 +1006,12 @@ func Test_gzipWriter_Close(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {

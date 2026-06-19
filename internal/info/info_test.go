@@ -336,11 +336,11 @@ package info
 //
 // func Test_info_String(t *testing.T) {
 // 	type fields struct {
-// 		baseURL      string
-// 		detail       Detail
 // 		valdReplacer *strings.Replacer
 // 		rtCaller     func(skip int) (pc uintptr, file string, line int, ok bool)
 // 		rtFuncForPC  func(pc uintptr) *runtime.Func
+// 		baseURL      string
+// 		detail       Detail
 // 	}
 // 	type want struct {
 // 		want string
@@ -365,11 +365,11 @@ package info
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           baseURL:"",
-// 		           detail:Detail{},
 // 		           valdReplacer:nil,
 // 		           rtCaller:nil,
 // 		           rtFuncForPC:nil,
+// 		           baseURL:"",
+// 		           detail:Detail{},
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -388,11 +388,11 @@ package info
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           baseURL:"",
-// 		           detail:Detail{},
 // 		           valdReplacer:nil,
 // 		           rtCaller:nil,
 // 		           rtFuncForPC:nil,
+// 		           baseURL:"",
+// 		           detail:Detail{},
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -423,11 +423,11 @@ package info
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			i := &info{
-// 				baseURL:      test.fields.baseURL,
-// 				detail:       test.fields.detail,
 // 				valdReplacer: test.fields.valdReplacer,
 // 				rtCaller:     test.fields.rtCaller,
 // 				rtFuncForPC:  test.fields.rtFuncForPC,
+// 				baseURL:      test.fields.baseURL,
+// 				detail:       test.fields.detail,
 // 			}
 //
 // 			got := i.String()
@@ -588,11 +588,11 @@ package info
 //
 // func Test_info_Get(t *testing.T) {
 // 	type fields struct {
-// 		baseURL      string
-// 		detail       Detail
 // 		valdReplacer *strings.Replacer
 // 		rtCaller     func(skip int) (pc uintptr, file string, line int, ok bool)
 // 		rtFuncForPC  func(pc uintptr) *runtime.Func
+// 		baseURL      string
+// 		detail       Detail
 // 	}
 // 	type want struct {
 // 		want Detail
@@ -617,11 +617,11 @@ package info
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           baseURL:"",
-// 		           detail:Detail{},
 // 		           valdReplacer:nil,
 // 		           rtCaller:nil,
 // 		           rtFuncForPC:nil,
+// 		           baseURL:"",
+// 		           detail:Detail{},
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -640,11 +640,11 @@ package info
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           baseURL:"",
-// 		           detail:Detail{},
 // 		           valdReplacer:nil,
 // 		           rtCaller:nil,
 // 		           rtFuncForPC:nil,
+// 		           baseURL:"",
+// 		           detail:Detail{},
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -675,11 +675,11 @@ package info
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			i := &info{
-// 				baseURL:      test.fields.baseURL,
-// 				detail:       test.fields.detail,
 // 				valdReplacer: test.fields.valdReplacer,
 // 				rtCaller:     test.fields.rtCaller,
 // 				rtFuncForPC:  test.fields.rtFuncForPC,
+// 				baseURL:      test.fields.baseURL,
+// 				detail:       test.fields.detail,
 // 			}
 //
 // 			got := i.Get()
@@ -692,11 +692,11 @@ package info
 //
 // func Test_info_getDetail(t *testing.T) {
 // 	type fields struct {
-// 		baseURL      string
-// 		detail       Detail
 // 		valdReplacer *strings.Replacer
 // 		rtCaller     func(skip int) (pc uintptr, file string, line int, ok bool)
 // 		rtFuncForPC  func(pc uintptr) *runtime.Func
+// 		baseURL      string
+// 		detail       Detail
 // 	}
 // 	type want struct {
 // 		want Detail
@@ -721,11 +721,11 @@ package info
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           baseURL:"",
-// 		           detail:Detail{},
 // 		           valdReplacer:nil,
 // 		           rtCaller:nil,
 // 		           rtFuncForPC:nil,
+// 		           baseURL:"",
+// 		           detail:Detail{},
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -744,11 +744,11 @@ package info
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           baseURL:"",
-// 		           detail:Detail{},
 // 		           valdReplacer:nil,
 // 		           rtCaller:nil,
 // 		           rtFuncForPC:nil,
+// 		           baseURL:"",
+// 		           detail:Detail{},
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -779,11 +779,11 @@ package info
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			i := info{
-// 				baseURL:      test.fields.baseURL,
-// 				detail:       test.fields.detail,
 // 				valdReplacer: test.fields.valdReplacer,
 // 				rtCaller:     test.fields.rtCaller,
 // 				rtFuncForPC:  test.fields.rtFuncForPC,
+// 				baseURL:      test.fields.baseURL,
+// 				detail:       test.fields.detail,
 // 			}
 //
 // 			got := i.getDetail()
@@ -796,11 +796,11 @@ package info
 //
 // func Test_info_prepare(t *testing.T) {
 // 	type fields struct {
-// 		baseURL      string
-// 		detail       Detail
 // 		valdReplacer *strings.Replacer
 // 		rtCaller     func(skip int) (pc uintptr, file string, line int, ok bool)
 // 		rtFuncForPC  func(pc uintptr) *runtime.Func
+// 		baseURL      string
+// 		detail       Detail
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -820,11 +820,11 @@ package info
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           baseURL:"",
-// 		           detail:Detail{},
 // 		           valdReplacer:nil,
 // 		           rtCaller:nil,
 // 		           rtFuncForPC:nil,
+// 		           baseURL:"",
+// 		           detail:Detail{},
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -843,11 +843,11 @@ package info
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           baseURL:"",
-// 		           detail:Detail{},
 // 		           valdReplacer:nil,
 // 		           rtCaller:nil,
 // 		           rtFuncForPC:nil,
+// 		           baseURL:"",
+// 		           detail:Detail{},
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -878,11 +878,11 @@ package info
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			i := &info{
-// 				baseURL:      test.fields.baseURL,
-// 				detail:       test.fields.detail,
 // 				valdReplacer: test.fields.valdReplacer,
 // 				rtCaller:     test.fields.rtCaller,
 // 				rtFuncForPC:  test.fields.rtFuncForPC,
+// 				baseURL:      test.fields.baseURL,
+// 				detail:       test.fields.detail,
 // 			}
 //
 // 			i.prepare()

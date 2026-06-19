@@ -45,25 +45,20 @@ const (
 )
 
 type exp struct {
-	serviceName       string
-	collectorEndpoint string
-
-	traceExporter *otlptrace.Exporter
-	traceProvider *trace.TracerProvider
-
+	metricsExporter     metric.Exporter
+	meterProvider       *metric.MeterProvider
+	traceExporter       *otlptrace.Exporter
+	traceProvider       *trace.TracerProvider
+	collectorEndpoint   string
+	serviceName         string
+	metricsViews        []metrics.View
+	attributes          []attribute.KeyValue
 	tBatchTimeout       time.Duration
 	tExportTimeout      time.Duration
 	tMaxExportBatchSize int
 	tMaxQueueSize       int
-
-	metricsExporter metric.Exporter
-	meterProvider   *metric.MeterProvider
-	metricsViews    []metrics.View
-
-	mExportInterval time.Duration
-	mExportTimeout  time.Duration
-
-	attributes []attribute.KeyValue
+	mExportInterval     time.Duration
+	mExportTimeout      time.Duration
 }
 
 func New(opts ...Option) (exporter.Exporter, error) {

@@ -20,19 +20,19 @@ import (
 
 func TestErrGRPCClientConnectionClose(t *testing.T) {
 	type args struct {
-		name string
 		err  error
+		name string
 	}
 	type want struct {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -115,12 +115,12 @@ func TestErrInvalidGRPCPort(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -238,12 +238,12 @@ func TestErrInvalidGRPCClientConn(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -302,12 +302,12 @@ func TestErrGRPCLookupIPAddrNotFound(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -363,11 +363,11 @@ func TestErrGRPCClientNotFound(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -414,12 +414,12 @@ func TestErrGRPCClientConnNotFound(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -472,19 +472,19 @@ func TestErrGRPCClientConnNotFound(t *testing.T) {
 
 func TestErrRPCCallFailed(t *testing.T) {
 	type args struct {
-		addr string
 		err  error
+		addr string
 	}
 	type want struct {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -562,11 +562,11 @@ func TestErrGRPCTargetAddrNotFound(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {

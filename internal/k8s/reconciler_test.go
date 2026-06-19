@@ -114,14 +114,14 @@ package k8s
 // 	}
 // 	type fields struct {
 // 		eg                      errgroup.Group
+// 		mgr                     manager.Manager
+// 		der                     net.Dialer
 // 		name                    string
 // 		merticsAddr             string
-// 		leaderElection          bool
 // 		leaderElectionID        string
 // 		leaderElectionNamespace string
-// 		mgr                     manager.Manager
 // 		rcs                     []ResourceController
-// 		der                     net.Dialer
+// 		leaderElection          bool
 // 	}
 // 	type want struct {
 // 		want <-chan error
@@ -155,14 +155,14 @@ package k8s
 // 		       },
 // 		       fields: fields {
 // 		           eg:nil,
+// 		           mgr:nil,
+// 		           der:nil,
 // 		           name:"",
 // 		           merticsAddr:"",
-// 		           leaderElection:false,
 // 		           leaderElectionID:"",
 // 		           leaderElectionNamespace:"",
-// 		           mgr:nil,
 // 		           rcs:nil,
-// 		           der:nil,
+// 		           leaderElection:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -185,14 +185,14 @@ package k8s
 // 		           },
 // 		           fields: fields {
 // 		           eg:nil,
+// 		           mgr:nil,
+// 		           der:nil,
 // 		           name:"",
 // 		           merticsAddr:"",
-// 		           leaderElection:false,
 // 		           leaderElectionID:"",
 // 		           leaderElectionNamespace:"",
-// 		           mgr:nil,
 // 		           rcs:nil,
-// 		           der:nil,
+// 		           leaderElection:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -224,14 +224,14 @@ package k8s
 // 			}
 // 			c := &controller{
 // 				eg:                      test.fields.eg,
+// 				mgr:                     test.fields.mgr,
+// 				der:                     test.fields.der,
 // 				name:                    test.fields.name,
 // 				merticsAddr:             test.fields.merticsAddr,
-// 				leaderElection:          test.fields.leaderElection,
 // 				leaderElectionID:        test.fields.leaderElectionID,
 // 				leaderElectionNamespace: test.fields.leaderElectionNamespace,
-// 				mgr:                     test.fields.mgr,
 // 				rcs:                     test.fields.rcs,
-// 				der:                     test.fields.der,
+// 				leaderElection:          test.fields.leaderElection,
 // 			}
 //
 // 			got, err := c.Start(test.args.ctx)
@@ -245,14 +245,14 @@ package k8s
 // func Test_controller_GetManager(t *testing.T) {
 // 	type fields struct {
 // 		eg                      errgroup.Group
+// 		mgr                     manager.Manager
+// 		der                     net.Dialer
 // 		name                    string
 // 		merticsAddr             string
-// 		leaderElection          bool
 // 		leaderElectionID        string
 // 		leaderElectionNamespace string
-// 		mgr                     manager.Manager
 // 		rcs                     []ResourceController
-// 		der                     net.Dialer
+// 		leaderElection          bool
 // 	}
 // 	type want struct {
 // 		want Manager
@@ -278,14 +278,14 @@ package k8s
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           eg:nil,
+// 		           mgr:nil,
+// 		           der:nil,
 // 		           name:"",
 // 		           merticsAddr:"",
-// 		           leaderElection:false,
 // 		           leaderElectionID:"",
 // 		           leaderElectionNamespace:"",
-// 		           mgr:nil,
 // 		           rcs:nil,
-// 		           der:nil,
+// 		           leaderElection:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -305,14 +305,14 @@ package k8s
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           eg:nil,
+// 		           mgr:nil,
+// 		           der:nil,
 // 		           name:"",
 // 		           merticsAddr:"",
-// 		           leaderElection:false,
 // 		           leaderElectionID:"",
 // 		           leaderElectionNamespace:"",
-// 		           mgr:nil,
 // 		           rcs:nil,
-// 		           der:nil,
+// 		           leaderElection:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -344,14 +344,14 @@ package k8s
 // 			}
 // 			c := &controller{
 // 				eg:                      test.fields.eg,
+// 				mgr:                     test.fields.mgr,
+// 				der:                     test.fields.der,
 // 				name:                    test.fields.name,
 // 				merticsAddr:             test.fields.merticsAddr,
-// 				leaderElection:          test.fields.leaderElection,
 // 				leaderElectionID:        test.fields.leaderElectionID,
 // 				leaderElectionNamespace: test.fields.leaderElectionNamespace,
-// 				mgr:                     test.fields.mgr,
 // 				rcs:                     test.fields.rcs,
-// 				der:                     test.fields.der,
+// 				leaderElection:          test.fields.leaderElection,
 // 			}
 //
 // 			got := c.GetManager()

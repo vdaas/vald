@@ -25,23 +25,40 @@ import (
 
 // MySQL represent the mysql configuration.
 type MySQL struct {
-	DB                   string `json:"db"                      yaml:"db"`
-	Network              string `json:"network"                 yaml:"network"`
-	SocketPath           string `json:"socket_path"             yaml:"socket_path"`
-	Host                 string `json:"host"                    yaml:"host"`
-	Port                 uint16 `json:"port"                    yaml:"port"`
-	User                 string `json:"user"                    yaml:"user"`
-	Pass                 string `json:"pass"                    yaml:"pass"`
-	Name                 string `json:"name"                    yaml:"name"`
-	Charset              string `json:"charset"                 yaml:"charset"`
-	Timezone             string `json:"timezone"                yaml:"timezone"`
+	// TLS represents the TLS configuration.
+	TLS *TLS `json:"tls" yaml:"tls"`
+	// Net represents the network configuration.
+	Net *Net `json:"net" yaml:"net"`
+	// ConnMaxLifeTime specifies the maximum amount of time a connection may be reused.
+	ConnMaxLifeTime string `json:"conn_max_life_time" yaml:"conn_max_life_time"`
+	// Timezone specifies the timezone for the database connection (e.g. "Asia/Tokyo").
+	Timezone string `json:"timezone" yaml:"timezone"`
+	// Network specifies the network type (e.g., "tcp", "unix").
+	Network string `json:"network" yaml:"network"`
+	// User specifies the username for authentication.
+	User string `json:"user" yaml:"user"`
+	// Pass specifies the password for authentication.
+	Pass string `json:"pass" yaml:"pass"`
+	// Name specifies the database name.
+	Name string `json:"name" yaml:"name"`
+	// Charset specifies the character set (e.g. "utf8mb4").
+	Charset string `json:"charset" yaml:"charset"`
+	// Host specifies the host address.
+	Host string `json:"host" yaml:"host"`
+	// InitialPingTimeLimit specifies the timeout for the initial ping during startup.
 	InitialPingTimeLimit string `json:"initial_ping_time_limit" yaml:"initial_ping_time_limit"`
-	InitialPingDuration  string `json:"initial_ping_duration"   yaml:"initial_ping_duration"`
-	ConnMaxLifeTime      string `json:"conn_max_life_time"      yaml:"conn_max_life_time"`
-	MaxOpenConns         int    `json:"max_open_conns"          yaml:"max_open_conns"`
-	MaxIdleConns         int    `json:"max_idle_conns"          yaml:"max_idle_conns"`
-	TLS                  *TLS   `json:"tls"                     yaml:"tls"`
-	Net                  *Net   `json:"net"                     yaml:"net"`
+	// InitialPingDuration specifies the interval for retrying the initial ping.
+	InitialPingDuration string `json:"initial_ping_duration" yaml:"initial_ping_duration"`
+	// DB specifies the database name (alias for Name).
+	DB string `json:"db" yaml:"db"`
+	// SocketPath specifies the unix domain socket path.
+	SocketPath string `json:"socket_path" yaml:"socket_path"`
+	// MaxIdleConns specifies the maximum number of idle connections in the pool.
+	MaxIdleConns int `json:"max_idle_conns" yaml:"max_idle_conns"`
+	// MaxOpenConns specifies the maximum number of open connections to the database.
+	MaxOpenConns int `json:"max_open_conns" yaml:"max_open_conns"`
+	// Port specifies the port number.
+	Port uint16 `json:"port" yaml:"port"`
 }
 
 // Bind returns MySQL object whose some string value is filed value or environment value.

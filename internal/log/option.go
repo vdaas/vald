@@ -38,10 +38,10 @@ var defaultOptions = []Option{
 }
 
 type option struct {
+	logger  logger.Logger
 	logType logger.Type
 	level   level.Level
 	format  format.Format
-	logger  logger.Logger
 }
 
 func WithLogger(l logger.Logger) Option {

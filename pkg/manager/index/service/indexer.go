@@ -49,17 +49,17 @@ type Indexer interface {
 }
 
 type index struct {
-	client                 discoverer.Client
 	eg                     errgroup.Group
-	creationPoolSize       uint32
-	indexDuration          time.Duration
-	indexDurationLimit     time.Duration
+	client                 discoverer.Client
+	shouldSaveList         sync.Map[string, bool]
+	indexInfos             sync.Map[string, *payload.Info_Index_Count]
+	createIndexConcurrency int
 	saveIndexDuration      time.Duration
 	saveIndexDurationLimit time.Duration
-	shouldSaveList         sync.Map[string, bool]
-	createIndexConcurrency int
+	indexDurationLimit     time.Duration
+	indexDuration          time.Duration
 	saveIndexConcurrency   int
-	indexInfos             sync.Map[string, *payload.Info_Index_Count]
+	creationPoolSize       uint32
 	indexing               atomic.Bool
 	saving                 atomic.Bool
 	minUncommitted         uint32

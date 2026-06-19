@@ -99,12 +99,12 @@ func TestNew(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, Cassandra, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got Cassandra, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1164,20 +1164,29 @@ func Test_client_Open(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		hosts          []string
-		cqlVersion     string
-		protoVersion   int
-		timeout        time.Duration
-		connectTimeout time.Duration
-		port           int
-		keyspace       string
-		numConns       int
-		consistency    gocql.Consistency
-		compressor     gocql.Compressor
-		username       string
-		password       string
-		authProvider   func(h *gocql.HostInfo) (gocql.Authenticator, error)
-		retryPolicy    struct {
+		cluster      ClusterConfig
+		compressor   gocql.Compressor
+		dialer       gocql.Dialer
+		authProvider func(h *gocql.HostInfo) (gocql.Authenticator, error)
+		session      *gocql.Session
+		tls          *tls.Config
+		username     string
+		tlsKeyPath   string
+		tlsCertPath  string
+		cqlVersion   string
+		keyspace     string
+		password     string
+		tlsCAPath    string
+		hosts        []string
+		poolConfig   struct {
+			dataCenterName                 string
+			enableDCAwareRouting           bool
+			enableShuffleReplicas          bool
+			enableNonLocalReplicasFallback bool
+			enableTokenAwareHostPolicy     bool
+		}
+		hostFilter  hostFilter
+		retryPolicy struct {
 			numRetries  int
 			minDuration time.Duration
 			maxDuration time.Duration
@@ -1186,31 +1195,20 @@ func Test_client_Open(t *testing.T) {
 			initialInterval time.Duration
 			maxRetries      int
 		}
-		poolConfig struct {
-			dataCenterName                 string
-			enableDCAwareRouting           bool
-			enableShuffleReplicas          bool
-			enableNonLocalReplicasFallback bool
-			enableTokenAwareHostPolicy     bool
-		}
-		hostFilter struct {
-			enable    bool
-			dcHost    string
-			whiteList []string
-		}
-		socketKeepalive          time.Duration
-		maxPreparedStmts         int
-		maxRoutingKeyInfo        int
 		pageSize                 int
-		serialConsistency        gocql.SerialConsistency
-		tls                      *tls.Config
-		tlsCertPath              string
-		tlsKeyPath               string
-		tlsCAPath                string
-		enableHostVerification   bool
-		defaultTimestamp         bool
-		reconnectInterval        time.Duration
 		maxWaitSchemaAgreement   time.Duration
+		maxPreparedStmts         int
+		protoVersion             int
+		socketKeepalive          time.Duration
+		timeout                  time.Duration
+		numConns                 int
+		port                     int
+		writeCoalesceWaitTime    time.Duration
+		connectTimeout           time.Duration
+		reconnectInterval        time.Duration
+		maxRoutingKeyInfo        int
+		consistency              gocql.Consistency
+		serialConsistency        gocql.SerialConsistency
 		ignorePeerAddr           bool
 		disableInitialHostLookup bool
 		disableNodeStatusEvents  bool
@@ -1218,23 +1216,21 @@ func Test_client_Open(t *testing.T) {
 		disableSchemaEvents      bool
 		disableSkipMetadata      bool
 		defaultIdempotence       bool
-		dialer                   gocql.Dialer
-		writeCoalesceWaitTime    time.Duration
-		cluster                  ClusterConfig
-		session                  *gocql.Session
+		defaultTimestamp         bool
+		enableHostVerification   bool
 	}
 	type want struct {
 		c   *client
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		args       args
 		checkFunc  func(*client, want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(c *client, w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1256,7 +1252,7 @@ func Test_client_Open(t *testing.T) {
 			return test{
 				name: "open create session success",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 				},
 				fields: fields{
 					cluster: cf,
@@ -1273,7 +1269,7 @@ func Test_client_Open(t *testing.T) {
 			return test{
 				name: "open create session and return any error if occurred",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 				},
 				fields: fields{
 					cluster: &gocql.ClusterConfig{},
@@ -1359,20 +1355,29 @@ func Test_client_Close(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		hosts          []string
-		cqlVersion     string
-		protoVersion   int
-		timeout        time.Duration
-		connectTimeout time.Duration
-		port           int
-		keyspace       string
-		numConns       int
-		consistency    gocql.Consistency
-		compressor     gocql.Compressor
-		username       string
-		password       string
-		authProvider   func(h *gocql.HostInfo) (gocql.Authenticator, error)
-		retryPolicy    struct {
+		dialer       gocql.Dialer
+		compressor   gocql.Compressor
+		authProvider func(h *gocql.HostInfo) (gocql.Authenticator, error)
+		cluster      *gocql.ClusterConfig
+		session      *gocql.Session
+		tls          *tls.Config
+		cqlVersion   string
+		tlsKeyPath   string
+		tlsCertPath  string
+		keyspace     string
+		username     string
+		password     string
+		tlsCAPath    string
+		hosts        []string
+		poolConfig   struct {
+			dataCenterName                 string
+			enableDCAwareRouting           bool
+			enableShuffleReplicas          bool
+			enableNonLocalReplicasFallback bool
+			enableTokenAwareHostPolicy     bool
+		}
+		hostFilter  hostFilter
+		retryPolicy struct {
 			numRetries  int
 			minDuration time.Duration
 			maxDuration time.Duration
@@ -1381,31 +1386,20 @@ func Test_client_Close(t *testing.T) {
 			initialInterval time.Duration
 			maxRetries      int
 		}
-		poolConfig struct {
-			dataCenterName                 string
-			enableDCAwareRouting           bool
-			enableShuffleReplicas          bool
-			enableNonLocalReplicasFallback bool
-			enableTokenAwareHostPolicy     bool
-		}
-		hostFilter struct {
-			enable    bool
-			dcHost    string
-			whiteList []string
-		}
-		socketKeepalive          time.Duration
-		maxPreparedStmts         int
-		maxRoutingKeyInfo        int
 		pageSize                 int
-		serialConsistency        gocql.SerialConsistency
-		tls                      *tls.Config
-		tlsCertPath              string
-		tlsKeyPath               string
-		tlsCAPath                string
-		enableHostVerification   bool
-		defaultTimestamp         bool
-		reconnectInterval        time.Duration
 		maxWaitSchemaAgreement   time.Duration
+		maxPreparedStmts         int
+		protoVersion             int
+		socketKeepalive          time.Duration
+		timeout                  time.Duration
+		numConns                 int
+		port                     int
+		writeCoalesceWaitTime    time.Duration
+		connectTimeout           time.Duration
+		reconnectInterval        time.Duration
+		maxRoutingKeyInfo        int
+		consistency              gocql.Consistency
+		serialConsistency        gocql.SerialConsistency
 		ignorePeerAddr           bool
 		disableInitialHostLookup bool
 		disableNodeStatusEvents  bool
@@ -1413,22 +1407,20 @@ func Test_client_Close(t *testing.T) {
 		disableSchemaEvents      bool
 		disableSkipMetadata      bool
 		defaultIdempotence       bool
-		dialer                   gocql.Dialer
-		writeCoalesceWaitTime    time.Duration
-		cluster                  *gocql.ClusterConfig
-		session                  *gocql.Session
+		defaultTimestamp         bool
+		enableHostVerification   bool
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
 		args       args
-		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1440,7 +1432,7 @@ func Test_client_Close(t *testing.T) {
 		{
 			name: "close return nil",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 			},
 			fields: fields{
 				session: &gocql.Session{},
@@ -1521,20 +1513,29 @@ func Test_client_Query(t *testing.T) {
 		names []string
 	}
 	type fields struct {
-		hosts          []string
-		cqlVersion     string
-		protoVersion   int
-		timeout        time.Duration
-		connectTimeout time.Duration
-		port           int
-		keyspace       string
-		numConns       int
-		consistency    gocql.Consistency
-		compressor     gocql.Compressor
-		username       string
-		password       string
-		authProvider   func(h *gocql.HostInfo) (gocql.Authenticator, error)
-		retryPolicy    struct {
+		dialer       gocql.Dialer
+		compressor   gocql.Compressor
+		authProvider func(h *gocql.HostInfo) (gocql.Authenticator, error)
+		cluster      *gocql.ClusterConfig
+		session      *gocql.Session
+		tls          *tls.Config
+		cqlVersion   string
+		tlsKeyPath   string
+		tlsCertPath  string
+		keyspace     string
+		username     string
+		password     string
+		tlsCAPath    string
+		hosts        []string
+		poolConfig   struct {
+			dataCenterName                 string
+			enableDCAwareRouting           bool
+			enableShuffleReplicas          bool
+			enableNonLocalReplicasFallback bool
+			enableTokenAwareHostPolicy     bool
+		}
+		hostFilter  hostFilter
+		retryPolicy struct {
 			numRetries  int
 			minDuration time.Duration
 			maxDuration time.Duration
@@ -1543,31 +1544,20 @@ func Test_client_Query(t *testing.T) {
 			initialInterval time.Duration
 			maxRetries      int
 		}
-		poolConfig struct {
-			dataCenterName                 string
-			enableDCAwareRouting           bool
-			enableShuffleReplicas          bool
-			enableNonLocalReplicasFallback bool
-			enableTokenAwareHostPolicy     bool
-		}
-		hostFilter struct {
-			enable    bool
-			dcHost    string
-			whiteList []string
-		}
-		socketKeepalive          time.Duration
-		maxPreparedStmts         int
-		maxRoutingKeyInfo        int
 		pageSize                 int
-		serialConsistency        gocql.SerialConsistency
-		tls                      *tls.Config
-		tlsCertPath              string
-		tlsKeyPath               string
-		tlsCAPath                string
-		enableHostVerification   bool
-		defaultTimestamp         bool
-		reconnectInterval        time.Duration
 		maxWaitSchemaAgreement   time.Duration
+		maxPreparedStmts         int
+		protoVersion             int
+		socketKeepalive          time.Duration
+		timeout                  time.Duration
+		numConns                 int
+		port                     int
+		writeCoalesceWaitTime    time.Duration
+		connectTimeout           time.Duration
+		reconnectInterval        time.Duration
+		maxRoutingKeyInfo        int
+		consistency              gocql.Consistency
+		serialConsistency        gocql.SerialConsistency
 		ignorePeerAddr           bool
 		disableInitialHostLookup bool
 		disableNodeStatusEvents  bool
@@ -1575,22 +1565,20 @@ func Test_client_Query(t *testing.T) {
 		disableSchemaEvents      bool
 		disableSkipMetadata      bool
 		defaultIdempotence       bool
-		dialer                   gocql.Dialer
-		writeCoalesceWaitTime    time.Duration
-		cluster                  *gocql.ClusterConfig
-		session                  *gocql.Session
+		defaultTimestamp         bool
+		enableHostVerification   bool
 	}
 	type want struct {
 		want *Queryx
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
 		checkFunc  func(want, *Queryx) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *Queryx) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1704,12 +1692,12 @@ func TestSelect(t *testing.T) {
 		wantNames []string
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, string, []string) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, gotStmt string, gotNames []string) error {
 		if !reflect.DeepEqual(gotStmt, w.wantStmt) {
@@ -1785,12 +1773,12 @@ func TestDelete(t *testing.T) {
 		want *DeleteBuilder
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *DeleteBuilder) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got *DeleteBuilder) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1858,12 +1846,12 @@ func TestInsert(t *testing.T) {
 		want *InsertBuilder
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *InsertBuilder) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got *InsertBuilder) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1915,12 +1903,12 @@ func TestUpdate(t *testing.T) {
 		want *UpdateBuilder
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *UpdateBuilder) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got *UpdateBuilder) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1968,11 +1956,11 @@ func TestBatch(t *testing.T) {
 		want *BatchBuilder
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, *BatchBuilder) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got *BatchBuilder) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -2020,12 +2008,12 @@ func TestEq(t *testing.T) {
 		want Cmp
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, Cmp) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got Cmp) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -2076,12 +2064,12 @@ func TestIn(t *testing.T) {
 		want Cmp
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, Cmp) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got Cmp) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -2132,12 +2120,12 @@ func TestContains(t *testing.T) {
 		want Cmp
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, Cmp) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got Cmp) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -2189,12 +2177,12 @@ func TestWrapErrorWithKeys(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {

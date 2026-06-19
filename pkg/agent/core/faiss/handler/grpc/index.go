@@ -42,7 +42,7 @@ func (s *server) CreateIndex(
 	err = s.faiss.CreateIndex(ctx)
 	if err != nil {
 		if errors.Is(err, errors.ErrUncommittedIndexNotFound) {
-			err = status.WrapWithFailedPrecondition(fmt.Sprintf("CreateIndex API failed"), err,
+			err = status.WrapWithFailedPrecondition("CreateIndex API failed", err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(c),
 				},
@@ -66,7 +66,7 @@ func (s *server) CreateIndex(
 			return nil, err
 		}
 		log.Error(err)
-		err = status.WrapWithInternal(fmt.Sprintf("CreateIndex API failed"), err,
+		err = status.WrapWithInternal("CreateIndex API failed", err,
 			&errdetails.RequestInfo{
 				ServingData: errdetails.Serialize(c),
 			},

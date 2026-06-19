@@ -109,8 +109,8 @@ package mirror
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		want <-chan error
@@ -143,8 +143,8 @@ package mirror
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -166,8 +166,8 @@ package mirror
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -198,8 +198,8 @@ package mirror
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			got, err := c.Start(test.args.ctx)
@@ -215,8 +215,8 @@ package mirror
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		err error
@@ -245,8 +245,8 @@ package mirror
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -268,8 +268,8 @@ package mirror
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -300,8 +300,8 @@ package mirror
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			err := c.Stop(test.args.ctx)
@@ -314,8 +314,8 @@ package mirror
 //
 // func Test_client_GRPCClient(t *testing.T) {
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		want grpc.Client
@@ -340,8 +340,8 @@ package mirror
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -360,8 +360,8 @@ package mirror
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -392,8 +392,8 @@ package mirror
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			got := c.GRPCClient()
@@ -411,8 +411,8 @@ package mirror
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Mirror_Targets
@@ -447,8 +447,8 @@ package mirror
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -472,8 +472,8 @@ package mirror
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -504,8 +504,8 @@ package mirror
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.Register(test.args.ctx, test.args.in, test.args.opts...)

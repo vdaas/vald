@@ -43,8 +43,8 @@ type Copier interface {
 }
 
 type copier struct {
-	bufSize int64
 	pool    sync.Pool
+	bufSize int64
 }
 
 var defaultBufferSize int = 16 * syscall.Getpagesize()
@@ -100,7 +100,7 @@ func (c *copier) copyBuffer(
 
 	var (
 		limit int64 = math.MaxInt64
-		size  int64 = atomic.LoadInt64(&c.bufSize)
+		size        = atomic.LoadInt64(&c.bufSize)
 		l     *io.LimitedReader
 	)
 	if buf == nil {
@@ -125,15 +125,11 @@ func (c *copier) copyBuffer(
 		size = int64(buf.Cap())
 	}
 	var nr, nw int
-	for err != io.EOF {
+	for !errors.Is(err, io.EOF) {
 		nr, err = src.Read(buf.Bytes()[:size])
 		if nr > 0 {
 			if int64(nr) > size {
-				if int64(nr) >= limit {
-					size = limit
-				} else {
-					size = int64(nr)
-				}
+				size = min(int64(nr), limit)
 			}
 			nw, err = dst.Write(buf.Bytes()[0:nr])
 			if nw < 0 || nr < int(nw) {
@@ -150,7 +146,7 @@ func (c *copier) copyBuffer(
 				return written, io.ErrShortWrite
 			}
 		}
-		if err != nil && err != io.EOF {
+		if err != nil && !errors.Is(err, io.EOF) {
 			return written, err
 		}
 	}

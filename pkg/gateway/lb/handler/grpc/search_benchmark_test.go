@@ -52,17 +52,15 @@ func TestMain(m *testing.M) {
 	var wg sync.WaitGroup
 	datas = make([]*payload.Search_Response, 0, dataVariation)
 	delays = make([]time.Duration, 0, dataVariation)
-	for i := 0; i < dataVariation; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+	for range dataVariation {
+		wg.Go(func() {
 			rr := newRandomResponse()
 			delay := time.Duration(rand.N(uint32(time.Millisecond * 2)))
 			mu.Lock()
 			datas = append(datas, rr)
 			delays = append(delays, delay)
 			mu.Unlock()
-		}()
+		})
 	}
 	wg.Wait()
 	m.Run()
@@ -74,7 +72,7 @@ func newRandomResponse() (res *payload.Search_Response) {
 	res = &payload.Search_Response{
 		Results: make([]*payload.Object_Distance, 0, dataLength),
 	}
-	for i := 0; i < dataLength; i++ {
+	for range dataLength {
 		res.Results = append(res.Results, &payload.Object_Distance{
 			Id:       strings.Random(20),
 			Distance: rand.Float32(),
@@ -89,7 +87,6 @@ func newRandomResponse() (res *payload.Search_Response) {
 func benchmark(
 	b *testing.B, results []*payload.Search_Response, anew func(n, f, r int) Aggregator,
 ) {
-	ctx := context.Background()
 	l := len(results)
 	for k := 10; k < dataLength; k *= 10 {
 		for replica := 5; replica <= dataVariation; replica *= 10 {
@@ -102,7 +99,7 @@ func benchmark(
 					bb.RunParallel(func(pb *testing.PB) {
 						for pb.Next() {
 							var cnt atomic.Uint64
-							_, _ = doSearchWithAggregator(ctx, k, replica, anew, func(ctx context.Context) (res *payload.Search_Response) {
+							_, _ = doSearchWithAggregator(bb.Context(), k, replica, anew, func(ctx context.Context) (res *payload.Search_Response) {
 								idx := cnt.Add(1) % uint64(l)
 								time.Sleep(delays[idx])
 								return results[idx]
@@ -125,7 +122,7 @@ func doSearchWithAggregator(
 	eg.SetLimit(concurrency)
 	aggr := anew(k, k, concurrency)
 	aggr.Start(ectx)
-	for i := 0; i < concurrency; i++ {
+	for range concurrency {
 		eg.Go(func() error {
 			r := f(ectx)
 			if r != nil && len(r.GetResults()) != 0 {

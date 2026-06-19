@@ -108,8 +108,11 @@ rust/deps: \
 	rust/install
 	rustup toolchain install $(RUST_VERSION)
 	rustup default $(RUST_VERSION)
-	cargo install cargo-edit
-	cd $(ROOTDIR)/rust && $(CARGO_HOME)/bin/cargo update && $(CARGO_HOME)/bin/cargo upgrade --incompatible && cd -
+	$(CARGO_HOME)/bin/cargo install cargo-edit --force
+	cd $(ROOTDIR)/rust \
+		&& $(CARGO_HOME)/bin/cargo update \
+		&& $(CARGO_HOME)/bin/cargo upgrade --incompatible \
+		&& cd -
 
 .PHONY: update/chaos-mesh
 ## update chaos-mesh version
@@ -252,9 +255,9 @@ update/kube-linter:
 #	grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/OTEL_OPERATOR_VERSION
 
 .PHONY: update/ngt
-## update yahoojapan/NGT version
+## update NGT-labs/NGT version
 update/ngt:
-	curl -fsSL https://api.github.com/repos/yahoojapan/NGT/releases/latest | \
+	curl -fsSL https://api.github.com/repos/NGT-labs/NGT/releases/latest | \
 	grep -Po '"tag_name": "\K.*?(?=")' | \
 	sed 's/v//g' > $(ROOTDIR)/versions/NGT_VERSION
 

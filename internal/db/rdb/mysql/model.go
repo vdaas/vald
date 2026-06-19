@@ -24,19 +24,19 @@ type Vector interface {
 }
 
 type vector struct {
-	data   data
 	podIPs []podIP
+	data   data
 }
 
 type data struct {
-	ID     int64  `db:"id"`
 	UUID   string `db:"uuid"`
 	Vector []byte `db:"vector"`
+	ID     int64  `db:"id"`
 }
 
 type podIP struct {
-	ID int64  `db:"id"`
 	IP string `db:"ip"`
+	ID int64  `db:"id"`
 }
 
 // GetUUID returns UUID of Vector.

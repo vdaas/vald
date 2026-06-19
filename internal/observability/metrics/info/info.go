@@ -26,9 +26,9 @@ import (
 )
 
 type info struct {
+	kvs         map[string]string
 	name        string
 	description string
-	kvs         map[string]string
 }
 
 // New creates new general info metric according to the provided struct.
@@ -59,7 +59,7 @@ func labelKVs(i any) map[string]string {
 			case []string:
 				value = fmt.Sprintf("%.255s", fmt.Sprintf("%v", v.Interface()))
 			case []rune:
-				value = v.Convert(reflect.TypeOf("")).String()
+				value = v.Convert(reflect.TypeFor[string]()).String()
 			default:
 				continue
 			}

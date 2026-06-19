@@ -56,7 +56,7 @@ func newSemChan(n int64) semChan {
 }
 
 func (s semChan) Acquire(_ context.Context, n int64) error {
-	for i := int64(0); i < n; i++ {
+	for range n {
 		s <- struct{}{}
 	}
 	return nil
@@ -67,14 +67,14 @@ func (s semChan) TryAcquire(n int64) bool {
 		return false
 	}
 
-	for i := int64(0); i < n; i++ {
+	for range n {
 		s <- struct{}{}
 	}
 	return true
 }
 
 func (s semChan) Release(n int64) {
-	for i := int64(0); i < n; i++ {
+	for range n {
 		<-s
 	}
 }
@@ -83,11 +83,13 @@ func (s semChan) Release(n int64) {
 func acquireN(b *testing.B, sem weighted, size int64, N int) {
 	b.Helper()
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		for j := 0; j < N; j++ {
-			sem.Acquire(context.Background(), size)
+	for b.Loop() {
+		for range N {
+			if err := sem.Acquire(b.Context(), size); err != nil {
+				b.Fatal(err)
+			}
 		}
-		for j := 0; j < N; j++ {
+		for range N {
 			sem.Release(size)
 		}
 	}
@@ -97,13 +99,13 @@ func acquireN(b *testing.B, sem weighted, size int64, N int) {
 func tryAcquireN(b *testing.B, sem weighted, size int64, N int) {
 	b.Helper()
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		for j := 0; j < N; j++ {
+	for b.Loop() {
+		for range N {
 			if !sem.TryAcquire(size) {
 				b.Fatalf("TryAcquire(%v) = false, want true", size)
 			}
 		}
-		for j := 0; j < N; j++ {
+		for range N {
 			sem.Release(size)
 		}
 	}
@@ -112,12 +114,12 @@ func tryAcquireN(b *testing.B, sem weighted, size int64, N int) {
 func BenchmarkNewSeq(b *testing.B) {
 	for _, cap := range []int64{1, 128} {
 		b.Run(fmt.Sprintf("Weighted-%d", cap), func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
+			for b.Loop() {
 				_ = semaphore.NewWeighted(cap)
 			}
 		})
 		b.Run(fmt.Sprintf("semChan-%d", cap), func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
+			for b.Loop() {
 				_ = newSemChan(cap)
 			}
 		})
@@ -141,11 +143,11 @@ func BenchmarkAcquireSeq(b *testing.B) {
 		{128, 64, 2},
 	} {
 		for _, w := range []struct {
-			name string
 			w    weighted
+			name string
 		}{
-			{"Weighted", semaphore.NewWeighted(c.cap)},
-			{"semChan", newSemChan(c.cap)},
+			{name: "Weighted", w: semaphore.NewWeighted(c.cap)},
+			{name: "semChan", w: newSemChan(c.cap)},
 		} {
 			b.Run(fmt.Sprintf("%s-acquire-%d-%d-%d", w.name, c.cap, c.size, c.N), func(b *testing.B) {
 				acquireN(b, w.w, c.size, c.N)

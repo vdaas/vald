@@ -20,9 +20,15 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/vdaas/vald/apis/grpc/v1/rpc/errdetails"
 	"github.com/vdaas/vald/internal/info"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/proto"
 	"github.com/vdaas/vald/internal/net/grpc/types"
+	spb "google.golang.org/genproto/googleapis/rpc/status"
+	"google.golang.org/grpc/status"
+	pproto "google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/anypb"
 )
 
 func Test_decodeDetails(t *testing.T) {
@@ -35,12 +41,285 @@ func Test_decodeDetails(t *testing.T) {
 		args        args
 		wantDetails []Detail
 	}{
-		// TODO: Add test cases.
+		{
+			name: "returns nil when objs is nil",
+			args: args{
+				objs: nil,
+			},
+			wantDetails: nil,
+		},
+		{
+			name: "returns empty details when objs contains only nil",
+			args: args{
+				objs: []any{nil, nil},
+			},
+			wantDetails: []Detail{},
+		},
+		{
+			name: "returns details for *spb.Status",
+			args: args{
+				objs: []any{
+					&spb.Status{
+						Code:    1,
+						Message: "test",
+					},
+				},
+			},
+			wantDetails: []Detail{
+				{
+					TypeURL: "google.rpc.Status",
+					Message: &spb.Status{
+						Code:    1,
+						Message: "test",
+					},
+				},
+			},
+		},
+		{
+			name: "returns details for spb.Status",
+			args: args{
+				objs: []any{
+					spb.Status{
+						Code:    1,
+						Message: "test",
+					},
+				},
+			},
+			wantDetails: []Detail{
+				{
+					TypeURL: "google.rpc.Status",
+					Message: &spb.Status{
+						Code:    1,
+						Message: "test",
+					},
+				},
+			},
+		},
+		{
+			name: "returns details for *status.Status",
+			args: args{
+				objs: []any{
+					status.New(codes.InvalidArgument, "invalid"),
+				},
+			},
+			wantDetails: []Detail{
+				{
+					TypeURL: "google.rpc.Status",
+					Message: &spb.Status{
+						Code:    int32(codes.InvalidArgument),
+						Message: "invalid",
+					},
+				},
+			},
+		},
+		{
+			name: "returns details for status.Status",
+			args: args{
+				objs: []any{
+					*status.New(codes.InvalidArgument, "invalid"),
+				},
+			},
+			wantDetails: []Detail{
+				{
+					TypeURL: "google.rpc.Status",
+					Message: &spb.Status{
+						Code:    int32(codes.InvalidArgument),
+						Message: "invalid",
+					},
+				},
+			},
+		},
+		{
+			name: "returns details for *status.Status with details",
+			args: args{
+				objs: func() []any {
+					st := status.New(codes.InvalidArgument, "invalid")
+					st, err := st.WithDetails(&errdetails.DebugInfo{Detail: "debug"})
+					if err != nil {
+						t.Fatal(err)
+					}
+					return []any{st}
+				}(),
+			},
+			wantDetails: []Detail{
+				{
+					TypeURL: "google.rpc.Status",
+					Message: &spb.Status{
+						Code:    int32(codes.InvalidArgument),
+						Message: "invalid",
+					},
+				},
+				{
+					TypeURL: "type.googleapis.com/rpc.v1.DebugInfo",
+					Message: &errdetails.DebugInfo{Detail: "debug"},
+				},
+			},
+		},
+		{
+			name: "returns details for *Detail",
+			args: args{
+				objs: []any{
+					&Detail{
+						TypeURL: "custom",
+						Message: &errdetails.DebugInfo{},
+					},
+				},
+			},
+			wantDetails: []Detail{
+				{
+					TypeURL: "custom",
+					Message: &errdetails.DebugInfo{},
+				},
+			},
+		},
+		{
+			name: "returns details for Detail",
+			args: args{
+				objs: []any{
+					Detail{
+						TypeURL: "custom",
+						Message: &errdetails.DebugInfo{},
+					},
+				},
+			},
+			wantDetails: []Detail{
+				{
+					TypeURL: "custom",
+					Message: &errdetails.DebugInfo{},
+				},
+			},
+		},
+		{
+			name: "returns details for *info.Detail",
+			args: args{
+				objs: []any{
+					&info.Detail{
+						Version: "v1",
+					},
+				},
+			},
+			wantDetails: []Detail{
+				{
+					TypeURL: "rpc.v1.DebugInfo",
+					Message: &errdetails.DebugInfo{
+						Detail: `{"vald_version":"v1"}`,
+					},
+				},
+			},
+		},
+		{
+			name: "returns details for info.Detail",
+			args: args{
+				objs: []any{
+					info.Detail{
+						Version: "v1",
+					},
+				},
+			},
+			wantDetails: []Detail{
+				{
+					TypeURL: "rpc.v1.DebugInfo",
+					Message: &errdetails.DebugInfo{
+						Detail: `{"vald_version":"v1"}`,
+					},
+				},
+			},
+		},
+		{
+			name: "returns details for nested slices",
+			args: args{
+				objs: []any{
+					[]any{
+						&spb.Status{Code: 2},
+					},
+					&spb.Status{Code: 3},
+				},
+			},
+			wantDetails: []Detail{
+				{
+					TypeURL: "google.rpc.Status",
+					Message: &spb.Status{Code: 2},
+				},
+				{
+					TypeURL: "google.rpc.Status",
+					Message: &spb.Status{Code: 3},
+				},
+			},
+		},
+		{
+			name: "returns details for *types.Any",
+			args: args{
+				objs: func() []any {
+					a, _ := anypb.New(&errdetails.DebugInfo{Detail: "test"})
+					return []any{a}
+				}(),
+			},
+			wantDetails: []Detail{
+				{
+					TypeURL: "type.googleapis.com/rpc.v1.DebugInfo",
+					Message: &errdetails.DebugInfo{Detail: "test"},
+				},
+			},
+		},
+		{
+			name: "returns details for types.Any",
+			args: args{
+				objs: func() []any {
+					a, _ := anypb.New(&errdetails.DebugInfo{Detail: "test"})
+					return []any{*a}
+				}(),
+			},
+			wantDetails: []Detail{
+				{
+					TypeURL: "type.googleapis.com/rpc.v1.DebugInfo",
+					Message: &errdetails.DebugInfo{Detail: "test"},
+				},
+			},
+		},
+		{
+			name: "returns details for *proto.Message",
+			args: args{
+				objs: func() []any {
+					var m proto.Message = &errdetails.DebugInfo{Detail: "test"}
+					return []any{&m}
+				}(),
+			},
+			wantDetails: []Detail{
+				{
+					TypeURL: "rpc.v1.DebugInfo",
+					Message: &errdetails.DebugInfo{Detail: "test"},
+				},
+			},
+		},
+		{
+			name: "returns details for proto.Message (implicit)",
+			args: args{
+				objs: []any{
+					&errdetails.DebugInfo{Detail: "test"},
+				},
+			},
+			wantDetails: []Detail{
+				{
+					TypeURL: "rpc.v1.DebugInfo",
+					Message: &errdetails.DebugInfo{Detail: "test"},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if gotDetails := decodeDetails(tt.args.objs...); !reflect.DeepEqual(gotDetails, tt.wantDetails) {
-				t.Errorf("decodeDetails() = %v, want %v", gotDetails, tt.wantDetails)
+			gotDetails := decodeDetails(tt.args.objs...)
+			if len(gotDetails) != len(tt.wantDetails) {
+				t.Errorf("decodeDetails() len = %v, want %v", len(gotDetails), len(tt.wantDetails))
+				return
+			}
+			for i := range gotDetails {
+				if gotDetails[i].TypeURL != tt.wantDetails[i].TypeURL {
+					t.Errorf("decodeDetails()[%d].TypeURL = %v, want %v", i, gotDetails[i].TypeURL, tt.wantDetails[i].TypeURL)
+				}
+				if !pproto.Equal(gotDetails[i].Message, tt.wantDetails[i].Message) {
+					t.Errorf("decodeDetails()[%d].Message = %v, want %v", i, gotDetails[i].Message, tt.wantDetails[i].Message)
+				}
 			}
 		})
 	}
@@ -53,10 +332,23 @@ func TestSerialize(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		args args
 		want string
+		args args
 	}{
-		// TODO: Add test cases.
+		{
+			name: "returns empty string for empty input",
+			args: args{
+				objs: nil,
+			},
+			want: "",
+		},
+		{
+			name: "returns <nil> for nil input",
+			args: args{
+				objs: []any{nil},
+			},
+			want: "<nil>",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -73,15 +365,42 @@ func TestAnyToErrorDetail(t *testing.T) {
 		a *types.Any
 	}
 	tests := []struct {
-		name string
-		args args
 		want proto.Message
+		args args
+		name string
 	}{
-		// TODO: Add test cases.
+		{
+			name: "returns nil for nil input",
+			args: args{
+				a: nil,
+			},
+			want: nil,
+		},
+		{
+			name: "converts known type (DebugInfo)",
+			args: args{
+				a: func() *types.Any {
+					a, _ := anypb.New(&errdetails.DebugInfo{Detail: "test"})
+					return a
+				}(),
+			},
+			want: &errdetails.DebugInfo{Detail: "test"},
+		},
+		{
+			name: "returns original message for unknown type",
+			args: args{
+				a: func() *types.Any {
+					a, _ := anypb.New(&spb.Status{Code: 1})
+					return a
+				}(),
+			},
+			want: &spb.Status{Code: 1},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := AnyToErrorDetail(tt.args.a); !reflect.DeepEqual(got, tt.want) {
+			got := AnyToErrorDetail(tt.args.a)
+			if !pproto.Equal(got, tt.want) {
 				t.Errorf("AnyToErrorDetail() = %v, want %v", got, tt.want)
 			}
 		})
@@ -94,11 +413,21 @@ func TestDebugInfoFromInfoDetail(t *testing.T) {
 		v *info.Detail
 	}
 	tests := []struct {
-		name string
 		args args
 		want *DebugInfo
+		name string
 	}{
-		// TODO: Add test cases.
+		{
+			name: "converts info.Detail to DebugInfo",
+			args: args{
+				v: &info.Detail{
+					Version: "v1",
+				},
+			},
+			want: &DebugInfo{
+				Detail: `{"vald_version":"v1"}`,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -113,8 +442,8 @@ func TestDebugInfoFromInfoDetail(t *testing.T) {
 //
 // func TestDetail_MarshalJSON(t *testing.T) {
 // 	type fields struct {
-// 		TypeURL string
 // 		Message proto.Message
+// 		TypeURL string
 // 	}
 // 	type want struct {
 // 		wantBody []byte
@@ -143,8 +472,8 @@ func TestDebugInfoFromInfoDetail(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           TypeURL:"",
 // 		           Message:nil,
+// 		           TypeURL:"",
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -163,8 +492,8 @@ func TestDebugInfoFromInfoDetail(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           TypeURL:"",
 // 		           Message:nil,
+// 		           TypeURL:"",
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -195,8 +524,8 @@ func TestDebugInfoFromInfoDetail(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			d := &Detail{
-// 				TypeURL: test.fields.TypeURL,
 // 				Message: test.fields.Message,
+// 				TypeURL: test.fields.TypeURL,
 // 			}
 //
 // 			gotBody, err := d.MarshalJSON()

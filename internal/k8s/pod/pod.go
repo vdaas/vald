@@ -44,6 +44,8 @@ type reconciler struct {
 }
 
 type Pod struct {
+	Labels      map[string]string
+	Annotations map[string]string
 	Name        string
 	NodeName    string
 	Namespace   string
@@ -52,8 +54,6 @@ type Pod struct {
 	CPURequest  float64
 	MemLimit    float64
 	MemRequest  float64
-	Labels      map[string]string
-	Annotations map[string]string
 }
 
 func New(opts ...Option) PodWatcher {

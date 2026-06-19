@@ -26,7 +26,7 @@ jobs:
       contents: read
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
       - uses: ./.github/actions/dump-context
@@ -38,7 +38,7 @@ jobs:
     name: runner / LanguageTool / apis & charts
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
       - name: Set Git config
@@ -49,7 +49,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
-          patterns: "apis/**/*.md apis/**/*.md.gotmpl charts/**/*.md !charts/vald/README.md"
+          patterns: "apis/**/*.md apis/**/*.md.gotmpl charts/**/*.md !charts/vald/README.md !charts/vald-with-tikv/README.md"
           level: warning
           language: en-US
           disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES"
@@ -62,7 +62,7 @@ jobs:
     name: runner / LanguageTool / Docs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
       - name: Set Git config
@@ -76,7 +76,7 @@ jobs:
           patterns: "**/*.md **/*.md.gotmpl !**/CHANGELOG.md !apis/** !charts/**"
           level: warning
           language: en-US
-          disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES"
+          disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES,UPPERCASE_SENTENCE_START"
           disabled_categories: "TYPOS,TYPOGRAPHY,STYLE"
   textlint:
     timeout-minutes: 30
@@ -86,7 +86,7 @@ jobs:
     name: runner / textlint
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
       - name: Set Git config

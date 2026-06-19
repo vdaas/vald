@@ -19,10 +19,10 @@ pub mod filter_client {
         dead_code,
         missing_docs,
         clippy::wildcard_imports,
-        clippy::let_unit_value,
+        clippy::let_unit_value
     )]
-    use tonic::codegen::*;
     use tonic::codegen::http::Uri;
+    use tonic::codegen::*;
     #[derive(Debug, Clone)]
     pub struct FilterClient<T> {
         inner: tonic::client::Grpc<T>,
@@ -61,14 +61,13 @@ pub mod filter_client {
             F: tonic::service::Interceptor,
             T::ResponseBody: Default,
             T: tonic::codegen::Service<
-                http::Request<tonic::body::Body>,
-                Response = http::Response<
-                    <T as tonic::client::GrpcService<tonic::body::Body>>::ResponseBody,
+                    http::Request<tonic::body::Body>,
+                    Response = http::Response<
+                        <T as tonic::client::GrpcService<tonic::body::Body>>::ResponseBody,
+                    >,
                 >,
-            >,
-            <T as tonic::codegen::Service<
-                http::Request<tonic::body::Body>,
-            >>::Error: Into<StdError> + std::marker::Send + std::marker::Sync,
+            <T as tonic::codegen::Service<http::Request<tonic::body::Body>>>::Error:
+                Into<StdError> + std::marker::Send + std::marker::Sync,
         {
             FilterClient::new(InterceptedService::new(inner, interceptor))
         }
@@ -104,56 +103,40 @@ pub mod filter_client {
             self
         }
         /** Represent the RPC to filter the distance.
-*/
+         */
         pub async fn filter_distance(
             &mut self,
-            request: impl tonic::IntoRequest<
-                super::super::super::super::payload::v1::object::Distance,
-            >,
+            request: impl tonic::IntoRequest<super::super::super::super::payload::v1::object::Distance>,
         ) -> std::result::Result<
             tonic::Response<super::super::super::super::payload::v1::object::Distance>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic_prost::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/filter.egress.v1.Filter/FilterDistance",
-            );
+            let path =
+                http::uri::PathAndQuery::from_static("/filter.egress.v1.Filter/FilterDistance");
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(GrpcMethod::new("filter.egress.v1.Filter", "FilterDistance"));
             self.inner.unary(req, path, codec).await
         }
         /** Represent the RPC to filter the vector.
-*/
+         */
         pub async fn filter_vector(
             &mut self,
-            request: impl tonic::IntoRequest<
-                super::super::super::super::payload::v1::object::Vector,
-            >,
+            request: impl tonic::IntoRequest<super::super::super::super::payload::v1::object::Vector>,
         ) -> std::result::Result<
             tonic::Response<super::super::super::super::payload::v1::object::Vector>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic_prost::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/filter.egress.v1.Filter/FilterVector",
-            );
+            let path =
+                http::uri::PathAndQuery::from_static("/filter.egress.v1.Filter/FilterVector");
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(GrpcMethod::new("filter.egress.v1.Filter", "FilterVector"));
@@ -168,30 +151,26 @@ pub mod filter_server {
         dead_code,
         missing_docs,
         clippy::wildcard_imports,
-        clippy::let_unit_value,
+        clippy::let_unit_value
     )]
     use tonic::codegen::*;
     /// Generated trait containing gRPC methods that should be implemented for use with FilterServer.
     #[async_trait]
     pub trait Filter: std::marker::Send + std::marker::Sync + 'static {
         /** Represent the RPC to filter the distance.
-*/
+         */
         async fn filter_distance(
             &self,
-            request: tonic::Request<
-                super::super::super::super::payload::v1::object::Distance,
-            >,
+            request: tonic::Request<super::super::super::super::payload::v1::object::Distance>,
         ) -> std::result::Result<
             tonic::Response<super::super::super::super::payload::v1::object::Distance>,
             tonic::Status,
         >;
         /** Represent the RPC to filter the vector.
-*/
+         */
         async fn filter_vector(
             &self,
-            request: tonic::Request<
-                super::super::super::super::payload::v1::object::Vector,
-            >,
+            request: tonic::Request<super::super::super::super::payload::v1::object::Vector>,
         ) -> std::result::Result<
             tonic::Response<super::super::super::super::payload::v1::object::Vector>,
             tonic::Status,
@@ -218,10 +197,7 @@ pub mod filter_server {
                 max_encoding_message_size: None,
             }
         }
-        pub fn with_interceptor<F>(
-            inner: T,
-            interceptor: F,
-        ) -> InterceptedService<Self, F>
+        pub fn with_interceptor<F>(inner: T, interceptor: F) -> InterceptedService<Self, F>
         where
             F: tonic::service::Interceptor,
         {
@@ -276,16 +252,13 @@ pub mod filter_server {
                 "/filter.egress.v1.Filter/FilterDistance" => {
                     #[allow(non_camel_case_types)]
                     struct FilterDistanceSvc<T: Filter>(pub Arc<T>);
-                    impl<
-                        T: Filter,
-                    > tonic::server::UnaryService<
-                        super::super::super::super::payload::v1::object::Distance,
-                    > for FilterDistanceSvc<T> {
+                    impl<T: Filter>
+                        tonic::server::UnaryService<
+                            super::super::super::super::payload::v1::object::Distance,
+                        > for FilterDistanceSvc<T>
+                    {
                         type Response = super::super::super::super::payload::v1::object::Distance;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<
@@ -324,16 +297,13 @@ pub mod filter_server {
                 "/filter.egress.v1.Filter/FilterVector" => {
                     #[allow(non_camel_case_types)]
                     struct FilterVectorSvc<T: Filter>(pub Arc<T>);
-                    impl<
-                        T: Filter,
-                    > tonic::server::UnaryService<
-                        super::super::super::super::payload::v1::object::Vector,
-                    > for FilterVectorSvc<T> {
+                    impl<T: Filter>
+                        tonic::server::UnaryService<
+                            super::super::super::super::payload::v1::object::Vector,
+                        > for FilterVectorSvc<T>
+                    {
                         type Response = super::super::super::super::payload::v1::object::Vector;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<
@@ -341,9 +311,8 @@ pub mod filter_server {
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Filter>::filter_vector(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Filter>::filter_vector(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -369,25 +338,19 @@ pub mod filter_server {
                     };
                     Box::pin(fut)
                 }
-                _ => {
-                    Box::pin(async move {
-                        let mut response = http::Response::new(
-                            tonic::body::Body::default(),
-                        );
-                        let headers = response.headers_mut();
-                        headers
-                            .insert(
-                                tonic::Status::GRPC_STATUS,
-                                (tonic::Code::Unimplemented as i32).into(),
-                            );
-                        headers
-                            .insert(
-                                http::header::CONTENT_TYPE,
-                                tonic::metadata::GRPC_CONTENT_TYPE,
-                            );
-                        Ok(response)
-                    })
-                }
+                _ => Box::pin(async move {
+                    let mut response = http::Response::new(tonic::body::Body::default());
+                    let headers = response.headers_mut();
+                    headers.insert(
+                        tonic::Status::GRPC_STATUS,
+                        (tonic::Code::Unimplemented as i32).into(),
+                    );
+                    headers.insert(
+                        http::header::CONTENT_TYPE,
+                        tonic::metadata::GRPC_CONTENT_TYPE,
+                    );
+                    Ok(response)
+                }),
             }
         }
     }

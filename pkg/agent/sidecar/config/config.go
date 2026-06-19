@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+// Package config stores all server application settings for agent sidecar
 package config
 
 import (
@@ -54,16 +55,17 @@ type GlobalConfig = config.GlobalConfig
 // Config represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Data struct {
-	config.GlobalConfig `json:",inline" yaml:",inline"`
-
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
 
 	// Observability represent observability configurations
 	Observability *config.Observability `json:"observability" yaml:"observability"`
 
-	// Sidecar represent agent storage sync sidecar service configuration
+	// AgentSidecar represent agent storage sync sidecar service configuration
 	AgentSidecar *config.AgentSidecar `json:"agent_sidecar" yaml:"agent_sidecar"`
+
+	// GlobalConfig represent the global configuration
+	config.GlobalConfig `json:",inline" yaml:",inline"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {

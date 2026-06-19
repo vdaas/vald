@@ -81,8 +81,8 @@ type Details struct {
 }
 
 type Detail struct {
-	TypeURL string        `json:"type_url,omitempty" yaml:"type_url"`
 	Message proto.Message `json:"message,omitempty"  yaml:"message"`
+	TypeURL string        `json:"type_url,omitempty" yaml:"type_url"`
 }
 
 func (d *Detail) MarshalJSON() (body []byte, err error) {
@@ -181,14 +181,14 @@ func decodeDetails(objs ...any) (details []Detail) {
 			continue
 		}
 		v := reflect.ValueOf(obj)
-		if v.Kind() == reflect.Ptr {
+		if v.Kind() == reflect.Pointer {
 			v = v.Elem()
 		}
 		if v.Kind() == reflect.Slice || v.Kind() == reflect.Array {
 			iobjs := make([]any, 0, v.Len())
 			for i := 0; i < v.Len(); i++ {
 				var val any
-				if v.Index(i).Kind() == reflect.Ptr {
+				if v.Index(i).Kind() == reflect.Pointer {
 					val = v.Index(i).Elem().Interface()
 				} else {
 					val = v.Index(i).Interface()

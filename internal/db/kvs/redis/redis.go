@@ -60,40 +60,40 @@ type (
 )
 
 type redisClient struct {
-	addrs                []string
-	clusterSlots         func(context.Context) ([]redis.ClusterSlot, error)
-	db                   int
-	dialTimeout          time.Duration
-	network              string
 	dialer               net.Dialer
+	client               Redis
+	limiter              Limiter
+	tlsConfig            *tls.Config
 	dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
-	idleCheckFrequency   time.Duration
-	idleTimeout          time.Duration
-	initialPingDuration  time.Duration
-	initialPingTimeLimit time.Duration
-	keyPref              string
-	maxConnAge           time.Duration
-	maxRedirects         int
-	maxRetries           int
-	maxRetryBackoff      time.Duration
-	minIdleConns         int
-	minRetryBackoff      time.Duration
+	clusterSlots         func(context.Context) ([]redis.ClusterSlot, error)
 	onConnect            func(context.Context, *redis.Conn) error
+	network              string
+	username             string
+	sentinelPassword     string
+	keyPref              string
+	sentinelMasterName   string
 	password             string
+	hooks                []Hook
+	addrs                []string
+	minIdleConns         int
+	initialPingDuration  time.Duration
+	minRetryBackoff      time.Duration
+	maxRetries           int
+	maxRedirects         int
 	poolSize             int
 	poolTimeout          time.Duration
-	readOnly             bool
+	db                   int
 	readTimeout          time.Duration
-	routeByLatency       bool
-	routeRandomly        bool
-	sentinelMasterName   string
-	sentinelPassword     string
-	tlsConfig            *tls.Config
-	username             string
+	dialTimeout          time.Duration
+	idleCheckFrequency   time.Duration
+	maxConnAge           time.Duration
+	initialPingTimeLimit time.Duration
+	maxRetryBackoff      time.Duration
+	idleTimeout          time.Duration
 	writeTimeout         time.Duration
-	client               Redis
-	hooks                []Hook
-	limiter              Limiter
+	routeRandomly        bool
+	routeByLatency       bool
+	readOnly             bool
 }
 
 // New returns Connector if no error occurs.

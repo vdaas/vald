@@ -193,9 +193,9 @@ package info
 //
 // func Test_info_View(t *testing.T) {
 // 	type fields struct {
+// 		kvs         map[string]string
 // 		name        string
 // 		description string
-// 		kvs         map[string]string
 // 	}
 // 	type want struct {
 // 		want []metrics.View
@@ -224,9 +224,9 @@ package info
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           kvs:nil,
 // 		           name:"",
 // 		           description:"",
-// 		           kvs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -245,9 +245,9 @@ package info
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           kvs:nil,
 // 		           name:"",
 // 		           description:"",
-// 		           kvs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -278,9 +278,9 @@ package info
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			i := &info{
+// 				kvs:         test.fields.kvs,
 // 				name:        test.fields.name,
 // 				description: test.fields.description,
-// 				kvs:         test.fields.kvs,
 // 			}
 //
 // 			got, err := i.View()
@@ -296,9 +296,9 @@ package info
 // 		m metrics.Meter
 // 	}
 // 	type fields struct {
+// 		kvs         map[string]string
 // 		name        string
 // 		description string
-// 		kvs         map[string]string
 // 	}
 // 	type want struct {
 // 		err error
@@ -327,9 +327,9 @@ package info
 // 		           m:nil,
 // 		       },
 // 		       fields: fields {
+// 		           kvs:nil,
 // 		           name:"",
 // 		           description:"",
-// 		           kvs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -351,9 +351,9 @@ package info
 // 		           m:nil,
 // 		           },
 // 		           fields: fields {
+// 		           kvs:nil,
 // 		           name:"",
 // 		           description:"",
-// 		           kvs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -384,9 +384,9 @@ package info
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			i := &info{
+// 				kvs:         test.fields.kvs,
 // 				name:        test.fields.name,
 // 				description: test.fields.description,
-// 				kvs:         test.fields.kvs,
 // 			}
 //
 // 			err := i.Register(test.args.m)

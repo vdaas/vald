@@ -28,11 +28,11 @@ func TestNew(t *testing.T) {
 		want logger.Logger
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, logger.Logger) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got logger.Logger) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -80,13 +80,13 @@ func Test_nopLogger_Debug(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		n          *nopLogger
 		want       want
+		n          *nopLogger
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -130,13 +130,13 @@ func Test_nopLogger_Debugf(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		n          *nopLogger
 		want       want
+		n          *nopLogger
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -180,13 +180,13 @@ func Test_nopLogger_Debugd(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		n          *nopLogger
 		want       want
+		n          *nopLogger
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -229,13 +229,13 @@ func Test_nopLogger_Info(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		n          *nopLogger
 		want       want
+		n          *nopLogger
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -279,13 +279,13 @@ func Test_nopLogger_Infof(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		n          *nopLogger
 		want       want
+		n          *nopLogger
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -329,13 +329,13 @@ func Test_nopLogger_Infod(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		n          *nopLogger
 		want       want
+		n          *nopLogger
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -378,13 +378,13 @@ func Test_nopLogger_Warn(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		n          *nopLogger
 		want       want
+		n          *nopLogger
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -428,13 +428,13 @@ func Test_nopLogger_Warnf(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		n          *nopLogger
 		want       want
+		n          *nopLogger
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -478,13 +478,13 @@ func Test_nopLogger_Warnd(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		n          *nopLogger
 		want       want
+		n          *nopLogger
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -527,13 +527,13 @@ func Test_nopLogger_Error(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		n          *nopLogger
 		want       want
+		n          *nopLogger
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -577,13 +577,13 @@ func Test_nopLogger_Errorf(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		n          *nopLogger
 		want       want
+		n          *nopLogger
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -627,13 +627,13 @@ func Test_nopLogger_Errord(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		n          *nopLogger
 		want       want
+		n          *nopLogger
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -676,13 +676,13 @@ func Test_nopLogger_Fatal(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		n          *nopLogger
 		want       want
+		n          *nopLogger
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -726,13 +726,13 @@ func Test_nopLogger_Fatalf(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		n          *nopLogger
 		want       want
+		n          *nopLogger
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -776,13 +776,13 @@ func Test_nopLogger_Fatald(t *testing.T) {
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		n          *nopLogger
 		want       want
+		n          *nopLogger
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -824,12 +824,12 @@ func Test_nopLogger_Close(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		n          *nopLogger
 		want       want
+		n          *nopLogger
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {

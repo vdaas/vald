@@ -108,10 +108,10 @@ package noise
 //
 // func Test_noiseGenerator_Mod(t *testing.T) {
 // 	type fields struct {
-// 		noiseLevelFactor         float32
+// 		noiseTable               []float32
 // 		noiseTableDivisionFactor uint64
 // 		minNoiseTableSize        uint64
-// 		noiseTable               []float32
+// 		noiseLevelFactor         float32
 // 	}
 // 	type want struct {
 // 		want Func
@@ -136,10 +136,10 @@ package noise
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           noiseLevelFactor:0,
+// 		           noiseTable:nil,
 // 		           noiseTableDivisionFactor:0,
 // 		           minNoiseTableSize:0,
-// 		           noiseTable:nil,
+// 		           noiseLevelFactor:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -158,10 +158,10 @@ package noise
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           noiseLevelFactor:0,
+// 		           noiseTable:nil,
 // 		           noiseTableDivisionFactor:0,
 // 		           minNoiseTableSize:0,
-// 		           noiseTable:nil,
+// 		           noiseLevelFactor:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -192,10 +192,10 @@ package noise
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			ng := &noiseGenerator{
-// 				noiseLevelFactor:         test.fields.noiseLevelFactor,
+// 				noiseTable:               test.fields.noiseTable,
 // 				noiseTableDivisionFactor: test.fields.noiseTableDivisionFactor,
 // 				minNoiseTableSize:        test.fields.minNoiseTableSize,
-// 				noiseTable:               test.fields.noiseTable,
+// 				noiseLevelFactor:         test.fields.noiseLevelFactor,
 // 			}
 //
 // 			got := ng.Mod()

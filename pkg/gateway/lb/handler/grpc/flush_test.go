@@ -21,15 +21,15 @@ package grpc
 // 		req *payload.Flush_Request
 // 	}
 // 	type fields struct {
+// 		UnimplementedValdServer vald.UnimplementedValdServer
 // 		eg                      errgroup.Group
 // 		gateway                 service.Gateway
+// 		name                    string
+// 		ip                      string
 // 		timeout                 time.Duration
 // 		replica                 int
 // 		streamConcurrency       int
 // 		multiConcurrency        int
-// 		name                    string
-// 		ip                      string
-// 		UnimplementedValdServer vald.UnimplementedValdServer
 // 	}
 // 	type want struct {
 // 		wantCnts *payload.Info_Index_Count
@@ -63,15 +63,15 @@ package grpc
 // 		           req:nil,
 // 		       },
 // 		       fields: fields {
+// 		           UnimplementedValdServer:nil,
 // 		           eg:nil,
 // 		           gateway:nil,
+// 		           name:"",
+// 		           ip:"",
 // 		           timeout:nil,
 // 		           replica:0,
 // 		           streamConcurrency:0,
 // 		           multiConcurrency:0,
-// 		           name:"",
-// 		           ip:"",
-// 		           UnimplementedValdServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -94,15 +94,15 @@ package grpc
 // 		           req:nil,
 // 		           },
 // 		           fields: fields {
+// 		           UnimplementedValdServer:nil,
 // 		           eg:nil,
 // 		           gateway:nil,
+// 		           name:"",
+// 		           ip:"",
 // 		           timeout:nil,
 // 		           replica:0,
 // 		           streamConcurrency:0,
 // 		           multiConcurrency:0,
-// 		           name:"",
-// 		           ip:"",
-// 		           UnimplementedValdServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -133,15 +133,15 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
+// 				UnimplementedValdServer: test.fields.UnimplementedValdServer,
 // 				eg:                      test.fields.eg,
 // 				gateway:                 test.fields.gateway,
+// 				name:                    test.fields.name,
+// 				ip:                      test.fields.ip,
 // 				timeout:                 test.fields.timeout,
 // 				replica:                 test.fields.replica,
 // 				streamConcurrency:       test.fields.streamConcurrency,
 // 				multiConcurrency:        test.fields.multiConcurrency,
-// 				name:                    test.fields.name,
-// 				ip:                      test.fields.ip,
-// 				UnimplementedValdServer: test.fields.UnimplementedValdServer,
 // 			}
 //
 // 			gotCnts, err := s.Flush(test.args.ctx, test.args.req)

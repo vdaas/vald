@@ -379,16 +379,16 @@ func (s *server) aggregationSearch(
 
 // vald standard algorithm.
 type valdStdAggr struct {
-	num     int // top-k number
-	fnum    int // forward top-k number
-	wg      sync.WaitGroup
-	dch     chan DistPayload
-	closed  atomic.Bool
 	maxDist atomic.Value
+	eg      errgroup.Group
+	dch     chan DistPayload
+	cancel  context.CancelFunc
 	visited sync.Map[string, any]
 	result  []*payload.Object_Distance
-	cancel  context.CancelFunc
-	eg      errgroup.Group
+	wg      sync.WaitGroup
+	num     int
+	fnum    int
+	closed  atomic.Bool
 }
 
 // newStd returns a valdStdAggr configured for the standard aggregation algorithm.
@@ -533,12 +533,12 @@ func (v *valdStdAggr) GetFnum() int {
 
 // pairing heap.
 type valdPairingHeapAggr struct {
-	num     int // top-k number
-	fnum    int // forward top-k number
 	ph      *PairingHeap
-	mu      sync.Mutex
 	visited sync.Map[string, any]
 	result  []*payload.Object_Distance
+	num     int
+	fnum    int
+	mu      sync.Mutex
 }
 
 func newPairingHeap(num, fnum, _ int) Aggregator {
@@ -608,10 +608,10 @@ func (v *valdPairingHeapAggr) GetFnum() int {
 
 // plane sort.
 type valdSliceAggr struct {
-	num    int // top-k number
-	fnum   int // forward top-k number
-	mu     sync.Mutex
 	result []*DistPayload
+	num    int
+	fnum   int
+	mu     sync.Mutex
 }
 
 func newSlice(num, fnum, replica int) Aggregator {
@@ -677,10 +677,10 @@ func (v *valdSliceAggr) GetFnum() int {
 
 // plane sort.
 type valdPoolSliceAggr struct {
-	num    int // top-k number
-	fnum   int // forward top-k number
-	mu     sync.Mutex
 	result []*DistPayload
+	num    int
+	fnum   int
+	mu     sync.Mutex
 }
 
 var (

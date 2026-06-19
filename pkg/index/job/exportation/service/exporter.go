@@ -52,14 +52,13 @@ type Exporter interface {
 }
 
 type export struct {
-	eg           errgroup.Group
-	gateway      vc.Client
-	storedVector pogreb.DB
-
+	eg                           errgroup.Group
+	gateway                      vc.Client
+	storedVector                 pogreb.DB
+	indexPath                    string
 	streamListConcurrency        int
 	backgroundSyncInterval       time.Duration
 	backgroundCompactionInterval time.Duration
-	indexPath                    string
 }
 
 // New returns Exporter object if no error occurs.
@@ -196,7 +195,7 @@ func (e *export) doExportIndex(ctx context.Context) (err error) {
 		default:
 			res, err := stream.Recv()
 			if err != nil {
-				if err != io.EOF && !errors.Is(err, io.EOF) {
+				if !errors.Is(err, io.EOF) {
 					err = errors.Wrap(err, "BidirectionalStream Recv returned error")
 					emu.Lock()
 					errs = append(errs, err)

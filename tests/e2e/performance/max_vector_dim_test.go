@@ -20,7 +20,6 @@
 package performance
 
 import (
-	"context"
 	"encoding/json"
 	"flag"
 	"strconv"
@@ -153,7 +152,7 @@ func TestE2EInsertOnlyWithOneVectorAndSearch(t *testing.T) {
 			SkipStrictExistCheck: false,
 		},
 	}
-	ctx := context.Background()
+	ctx := t.Context()
 	_, err = cli.Insert(ctx, req)
 	if err != nil {
 		st, _ := status.FromError(err)

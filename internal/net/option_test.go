@@ -37,12 +37,12 @@ func TestWithDNSCache(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {
@@ -118,12 +118,12 @@ func TestWithDNSRefreshDuration(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {
@@ -200,12 +200,12 @@ func TestWithDNSCacheExpiration(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {
@@ -285,12 +285,12 @@ func TestWithDialerTimeout(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, obj *T) error {
 		if !reflect.DeepEqual(obj, w.obj) {
@@ -365,12 +365,12 @@ func TestWithDialerKeepalive(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {
@@ -446,12 +446,12 @@ func TestWithTLS(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {
@@ -515,11 +515,11 @@ func TestWithEnableDNSCache(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {
@@ -571,11 +571,11 @@ func TestWithDisableDNSCache(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {
@@ -627,11 +627,11 @@ func TestWithEnableDialerDualStack(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {
@@ -683,11 +683,11 @@ func TestWithDisableDialerDualStack(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {

@@ -294,8 +294,8 @@
     "concurrency_limit": {
       "type": "integer",
       "description": "concurrency_limit represents the goroutine limit count. It affects the job performance.",
-      "maximum": 65535,
-      "minimum": 0
+      "minimum": 0,
+      "maximum": 65535
     },
     "dataset": {
       "type": "object",
@@ -419,8 +419,8 @@
     "rps": {
       "type": "integer",
       "description": "desired request per sec",
-      "maximum": 65535,
-      "minimum": 0
+      "minimum": 0,
+      "maximum": 65535
     },
     "rules": {
       "type": "array",
@@ -521,8 +521,8 @@
                 "port": {
                   "type": "integer",
                   "description": "liveness server port",
-                  "maximum": 65535,
-                  "minimum": 0
+                  "minimum": 0,
+                  "maximum": 65535
                 },
                 "server": {
                   "type": "object",
@@ -629,8 +629,8 @@
                 "servicePort": {
                   "type": "integer",
                   "description": "liveness server service port",
-                  "maximum": 65535,
-                  "minimum": 0
+                  "minimum": 0,
+                  "maximum": 65535
                 }
               }
             },
@@ -648,8 +648,8 @@
                 "port": {
                   "type": "integer",
                   "description": "readiness server port",
-                  "maximum": 65535,
-                  "minimum": 0
+                  "minimum": 0,
+                  "maximum": 65535
                 },
                 "readinessProbe": {
                   "type": "object",
@@ -798,8 +798,8 @@
                 "servicePort": {
                   "type": "integer",
                   "description": "readiness server service port",
-                  "maximum": 65535,
-                  "minimum": 0
+                  "minimum": 0,
+                  "maximum": 65535
                 }
               }
             },
@@ -813,8 +813,8 @@
                 "port": {
                   "type": "integer",
                   "description": "startup server port",
-                  "maximum": 65535,
-                  "minimum": 0
+                  "minimum": 0,
+                  "maximum": 65535
                 },
                 "startupProbe": {
                   "type": "object",
@@ -876,8 +876,8 @@
                 "port": {
                   "type": "integer",
                   "description": "gRPC server port",
-                  "maximum": 65535,
-                  "minimum": 0
+                  "minimum": 0,
+                  "maximum": 65535
                 },
                 "server": {
                   "type": "object",
@@ -1054,8 +1054,8 @@
                 "servicePort": {
                   "type": "integer",
                   "description": "gRPC server service port",
-                  "maximum": 65535,
-                  "minimum": 0
+                  "minimum": 0,
+                  "maximum": 65535
                 }
               }
             },
@@ -1070,8 +1070,8 @@
                 "port": {
                   "type": "integer",
                   "description": "REST server port",
-                  "maximum": 65535,
-                  "minimum": 0
+                  "minimum": 0,
+                  "maximum": 65535
                 },
                 "server": {
                   "type": "object",
@@ -1178,8 +1178,8 @@
                 "servicePort": {
                   "type": "integer",
                   "description": "REST server service port",
-                  "maximum": 65535,
-                  "minimum": 0
+                  "minimum": 0,
+                  "maximum": 65535
                 }
               }
             }
@@ -1200,8 +1200,8 @@
         "port": {
           "type": "integer",
           "description": "target cluster port",
-          "maximum": 65535,
-          "minimum": 0
+          "minimum": 0,
+          "maximum": 65535
         }
       },
       "required": ["host", "port"]
@@ -1209,8 +1209,8 @@
     "ttl_seconds_after_finished": {
       "type": "integer",
       "description": "limits the lifetime of a Job that has finished execution.",
-      "maximum": 65535,
-      "minimum": 0
+      "minimum": 0,
+      "maximum": 65535
     },
     "update_config": {
       "type": "object",

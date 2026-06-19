@@ -92,9 +92,9 @@ func (s *server) Exists(
 func (s *server) GetObject(
 	ctx context.Context, id *payload.Object_VectorRequest,
 ) (res *payload.Object_Vector, err error) {
-	return s.UnimplementedValdServer.UnimplementedObjectServer.GetObject(ctx, id)
+	return s.UnimplementedObjectServer.GetObject(ctx, id)
 }
 
 func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err error) {
-	return s.UnimplementedValdServer.UnimplementedObjectServer.StreamGetObject(stream)
+	return s.UnimplementedObjectServer.StreamGetObject(stream)
 }

@@ -113,15 +113,15 @@ package strategy
 // 	type fields struct {
 // 		core32    algorithm.Bit32
 // 		core64    algorithm.Bit64
+// 		closer    algorithm.Closer
 // 		initBit32 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit32, algorithm.Closer, error)
 // 		initBit64 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit64, algorithm.Closer, error)
-// 		closer    algorithm.Closer
-// 		propName  string
 // 		preProp32 func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset) ([]uint, error)
 // 		preProp64 func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset) ([]uint, error)
-// 		mode      algorithm.Mode
 // 		prop32    func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (any, error)
 // 		prop64    func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (any, error)
+// 		propName  string
+// 		mode      algorithm.Mode
 // 		parallel  bool
 // 	}
 // 	type want struct {
@@ -155,15 +155,15 @@ package strategy
 // 		       fields: fields {
 // 		           core32:nil,
 // 		           core64:nil,
+// 		           closer:nil,
 // 		           initBit32:nil,
 // 		           initBit64:nil,
-// 		           closer:nil,
-// 		           propName:"",
 // 		           preProp32:nil,
 // 		           preProp64:nil,
-// 		           mode:nil,
 // 		           prop32:nil,
 // 		           prop64:nil,
+// 		           propName:"",
+// 		           mode:nil,
 // 		           parallel:false,
 // 		       },
 // 		       want: want{},
@@ -190,15 +190,15 @@ package strategy
 // 		           fields: fields {
 // 		           core32:nil,
 // 		           core64:nil,
+// 		           closer:nil,
 // 		           initBit32:nil,
 // 		           initBit64:nil,
-// 		           closer:nil,
-// 		           propName:"",
 // 		           preProp32:nil,
 // 		           preProp64:nil,
-// 		           mode:nil,
 // 		           prop32:nil,
 // 		           prop64:nil,
+// 		           propName:"",
+// 		           mode:nil,
 // 		           parallel:false,
 // 		           },
 // 		           want: want{},
@@ -232,15 +232,15 @@ package strategy
 // 			s := &strategy{
 // 				core32:    test.fields.core32,
 // 				core64:    test.fields.core64,
+// 				closer:    test.fields.closer,
 // 				initBit32: test.fields.initBit32,
 // 				initBit64: test.fields.initBit64,
-// 				closer:    test.fields.closer,
-// 				propName:  test.fields.propName,
 // 				preProp32: test.fields.preProp32,
 // 				preProp64: test.fields.preProp64,
-// 				mode:      test.fields.mode,
 // 				prop32:    test.fields.prop32,
 // 				prop64:    test.fields.prop64,
+// 				propName:  test.fields.propName,
+// 				mode:      test.fields.mode,
 // 				parallel:  test.fields.parallel,
 // 			}
 //
@@ -261,15 +261,15 @@ package strategy
 // 	type fields struct {
 // 		core32    algorithm.Bit32
 // 		core64    algorithm.Bit64
+// 		closer    algorithm.Closer
 // 		initBit32 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit32, algorithm.Closer, error)
 // 		initBit64 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit64, algorithm.Closer, error)
-// 		closer    algorithm.Closer
-// 		propName  string
 // 		preProp32 func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset) ([]uint, error)
 // 		preProp64 func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset) ([]uint, error)
-// 		mode      algorithm.Mode
 // 		prop32    func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (any, error)
 // 		prop64    func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (any, error)
+// 		propName  string
+// 		mode      algorithm.Mode
 // 		parallel  bool
 // 	}
 // 	type want struct {
@@ -307,15 +307,15 @@ package strategy
 // 		       fields: fields {
 // 		           core32:nil,
 // 		           core64:nil,
+// 		           closer:nil,
 // 		           initBit32:nil,
 // 		           initBit64:nil,
-// 		           closer:nil,
-// 		           propName:"",
 // 		           preProp32:nil,
 // 		           preProp64:nil,
-// 		           mode:nil,
 // 		           prop32:nil,
 // 		           prop64:nil,
+// 		           propName:"",
+// 		           mode:nil,
 // 		           parallel:false,
 // 		       },
 // 		       want: want{},
@@ -342,15 +342,15 @@ package strategy
 // 		           fields: fields {
 // 		           core32:nil,
 // 		           core64:nil,
+// 		           closer:nil,
 // 		           initBit32:nil,
 // 		           initBit64:nil,
-// 		           closer:nil,
-// 		           propName:"",
 // 		           preProp32:nil,
 // 		           preProp64:nil,
-// 		           mode:nil,
 // 		           prop32:nil,
 // 		           prop64:nil,
+// 		           propName:"",
+// 		           mode:nil,
 // 		           parallel:false,
 // 		           },
 // 		           want: want{},
@@ -384,15 +384,15 @@ package strategy
 // 			s := &strategy{
 // 				core32:    test.fields.core32,
 // 				core64:    test.fields.core64,
+// 				closer:    test.fields.closer,
 // 				initBit32: test.fields.initBit32,
 // 				initBit64: test.fields.initBit64,
-// 				closer:    test.fields.closer,
-// 				propName:  test.fields.propName,
 // 				preProp32: test.fields.preProp32,
 // 				preProp64: test.fields.preProp64,
-// 				mode:      test.fields.mode,
 // 				prop32:    test.fields.prop32,
 // 				prop64:    test.fields.prop64,
+// 				propName:  test.fields.propName,
+// 				mode:      test.fields.mode,
 // 				parallel:  test.fields.parallel,
 // 			}
 //
@@ -414,15 +414,15 @@ package strategy
 // 	type fields struct {
 // 		core32    algorithm.Bit32
 // 		core64    algorithm.Bit64
+// 		closer    algorithm.Closer
 // 		initBit32 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit32, algorithm.Closer, error)
 // 		initBit64 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit64, algorithm.Closer, error)
-// 		closer    algorithm.Closer
-// 		propName  string
 // 		preProp32 func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset) ([]uint, error)
 // 		preProp64 func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset) ([]uint, error)
-// 		mode      algorithm.Mode
 // 		prop32    func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (any, error)
 // 		prop64    func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (any, error)
+// 		propName  string
+// 		mode      algorithm.Mode
 // 		parallel  bool
 // 	}
 // 	type want struct{}
@@ -452,15 +452,15 @@ package strategy
 // 		       fields: fields {
 // 		           core32:nil,
 // 		           core64:nil,
+// 		           closer:nil,
 // 		           initBit32:nil,
 // 		           initBit64:nil,
-// 		           closer:nil,
-// 		           propName:"",
 // 		           preProp32:nil,
 // 		           preProp64:nil,
-// 		           mode:nil,
 // 		           prop32:nil,
 // 		           prop64:nil,
+// 		           propName:"",
+// 		           mode:nil,
 // 		           parallel:false,
 // 		       },
 // 		       want: want{},
@@ -488,15 +488,15 @@ package strategy
 // 		           fields: fields {
 // 		           core32:nil,
 // 		           core64:nil,
+// 		           closer:nil,
 // 		           initBit32:nil,
 // 		           initBit64:nil,
-// 		           closer:nil,
-// 		           propName:"",
 // 		           preProp32:nil,
 // 		           preProp64:nil,
-// 		           mode:nil,
 // 		           prop32:nil,
 // 		           prop64:nil,
+// 		           propName:"",
+// 		           mode:nil,
 // 		           parallel:false,
 // 		           },
 // 		           want: want{},
@@ -530,15 +530,15 @@ package strategy
 // 			s := &strategy{
 // 				core32:    test.fields.core32,
 // 				core64:    test.fields.core64,
+// 				closer:    test.fields.closer,
 // 				initBit32: test.fields.initBit32,
 // 				initBit64: test.fields.initBit64,
-// 				closer:    test.fields.closer,
-// 				propName:  test.fields.propName,
 // 				preProp32: test.fields.preProp32,
 // 				preProp64: test.fields.preProp64,
-// 				mode:      test.fields.mode,
 // 				prop32:    test.fields.prop32,
 // 				prop64:    test.fields.prop64,
+// 				propName:  test.fields.propName,
+// 				mode:      test.fields.mode,
 // 				parallel:  test.fields.parallel,
 // 			}
 //
@@ -554,15 +554,15 @@ package strategy
 // 	type fields struct {
 // 		core32    algorithm.Bit32
 // 		core64    algorithm.Bit64
+// 		closer    algorithm.Closer
 // 		initBit32 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit32, algorithm.Closer, error)
 // 		initBit64 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit64, algorithm.Closer, error)
-// 		closer    algorithm.Closer
-// 		propName  string
 // 		preProp32 func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset) ([]uint, error)
 // 		preProp64 func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset) ([]uint, error)
-// 		mode      algorithm.Mode
 // 		prop32    func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (any, error)
 // 		prop64    func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (any, error)
+// 		propName  string
+// 		mode      algorithm.Mode
 // 		parallel  bool
 // 	}
 // 	type want struct{}
@@ -585,15 +585,15 @@ package strategy
 // 		       fields: fields {
 // 		           core32:nil,
 // 		           core64:nil,
+// 		           closer:nil,
 // 		           initBit32:nil,
 // 		           initBit64:nil,
-// 		           closer:nil,
-// 		           propName:"",
 // 		           preProp32:nil,
 // 		           preProp64:nil,
-// 		           mode:nil,
 // 		           prop32:nil,
 // 		           prop64:nil,
+// 		           propName:"",
+// 		           mode:nil,
 // 		           parallel:false,
 // 		       },
 // 		       want: want{},
@@ -615,15 +615,15 @@ package strategy
 // 		           fields: fields {
 // 		           core32:nil,
 // 		           core64:nil,
+// 		           closer:nil,
 // 		           initBit32:nil,
 // 		           initBit64:nil,
-// 		           closer:nil,
-// 		           propName:"",
 // 		           preProp32:nil,
 // 		           preProp64:nil,
-// 		           mode:nil,
 // 		           prop32:nil,
 // 		           prop64:nil,
+// 		           propName:"",
+// 		           mode:nil,
 // 		           parallel:false,
 // 		           },
 // 		           want: want{},
@@ -657,15 +657,15 @@ package strategy
 // 			s := &strategy{
 // 				core32:    test.fields.core32,
 // 				core64:    test.fields.core64,
+// 				closer:    test.fields.closer,
 // 				initBit32: test.fields.initBit32,
 // 				initBit64: test.fields.initBit64,
-// 				closer:    test.fields.closer,
-// 				propName:  test.fields.propName,
 // 				preProp32: test.fields.preProp32,
 // 				preProp64: test.fields.preProp64,
-// 				mode:      test.fields.mode,
 // 				prop32:    test.fields.prop32,
 // 				prop64:    test.fields.prop64,
+// 				propName:  test.fields.propName,
+// 				mode:      test.fields.mode,
 // 				parallel:  test.fields.parallel,
 // 			}
 //
@@ -688,15 +688,15 @@ package strategy
 // 	type fields struct {
 // 		core32    algorithm.Bit32
 // 		core64    algorithm.Bit64
+// 		closer    algorithm.Closer
 // 		initBit32 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit32, algorithm.Closer, error)
 // 		initBit64 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit64, algorithm.Closer, error)
-// 		closer    algorithm.Closer
-// 		propName  string
 // 		preProp32 func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset) ([]uint, error)
 // 		preProp64 func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset) ([]uint, error)
-// 		mode      algorithm.Mode
 // 		prop32    func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (any, error)
 // 		prop64    func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (any, error)
+// 		propName  string
+// 		mode      algorithm.Mode
 // 		parallel  bool
 // 	}
 // 	type want struct{}
@@ -727,15 +727,15 @@ package strategy
 // 		       fields: fields {
 // 		           core32:nil,
 // 		           core64:nil,
+// 		           closer:nil,
 // 		           initBit32:nil,
 // 		           initBit64:nil,
-// 		           closer:nil,
-// 		           propName:"",
 // 		           preProp32:nil,
 // 		           preProp64:nil,
-// 		           mode:nil,
 // 		           prop32:nil,
 // 		           prop64:nil,
+// 		           propName:"",
+// 		           mode:nil,
 // 		           parallel:false,
 // 		       },
 // 		       want: want{},
@@ -764,15 +764,15 @@ package strategy
 // 		           fields: fields {
 // 		           core32:nil,
 // 		           core64:nil,
+// 		           closer:nil,
 // 		           initBit32:nil,
 // 		           initBit64:nil,
-// 		           closer:nil,
-// 		           propName:"",
 // 		           preProp32:nil,
 // 		           preProp64:nil,
-// 		           mode:nil,
 // 		           prop32:nil,
 // 		           prop64:nil,
+// 		           propName:"",
+// 		           mode:nil,
 // 		           parallel:false,
 // 		           },
 // 		           want: want{},
@@ -806,15 +806,15 @@ package strategy
 // 			s := &strategy{
 // 				core32:    test.fields.core32,
 // 				core64:    test.fields.core64,
+// 				closer:    test.fields.closer,
 // 				initBit32: test.fields.initBit32,
 // 				initBit64: test.fields.initBit64,
-// 				closer:    test.fields.closer,
-// 				propName:  test.fields.propName,
 // 				preProp32: test.fields.preProp32,
 // 				preProp64: test.fields.preProp64,
-// 				mode:      test.fields.mode,
 // 				prop32:    test.fields.prop32,
 // 				prop64:    test.fields.prop64,
+// 				propName:  test.fields.propName,
+// 				mode:      test.fields.mode,
 // 				parallel:  test.fields.parallel,
 // 			}
 //
@@ -837,15 +837,15 @@ package strategy
 // 	type fields struct {
 // 		core32    algorithm.Bit32
 // 		core64    algorithm.Bit64
+// 		closer    algorithm.Closer
 // 		initBit32 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit32, algorithm.Closer, error)
 // 		initBit64 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit64, algorithm.Closer, error)
-// 		closer    algorithm.Closer
-// 		propName  string
 // 		preProp32 func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset) ([]uint, error)
 // 		preProp64 func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset) ([]uint, error)
-// 		mode      algorithm.Mode
 // 		prop32    func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (any, error)
 // 		prop64    func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (any, error)
+// 		propName  string
+// 		mode      algorithm.Mode
 // 		parallel  bool
 // 	}
 // 	type want struct{}
@@ -876,15 +876,15 @@ package strategy
 // 		       fields: fields {
 // 		           core32:nil,
 // 		           core64:nil,
+// 		           closer:nil,
 // 		           initBit32:nil,
 // 		           initBit64:nil,
-// 		           closer:nil,
-// 		           propName:"",
 // 		           preProp32:nil,
 // 		           preProp64:nil,
-// 		           mode:nil,
 // 		           prop32:nil,
 // 		           prop64:nil,
+// 		           propName:"",
+// 		           mode:nil,
 // 		           parallel:false,
 // 		       },
 // 		       want: want{},
@@ -913,15 +913,15 @@ package strategy
 // 		           fields: fields {
 // 		           core32:nil,
 // 		           core64:nil,
+// 		           closer:nil,
 // 		           initBit32:nil,
 // 		           initBit64:nil,
-// 		           closer:nil,
-// 		           propName:"",
 // 		           preProp32:nil,
 // 		           preProp64:nil,
-// 		           mode:nil,
 // 		           prop32:nil,
 // 		           prop64:nil,
+// 		           propName:"",
+// 		           mode:nil,
 // 		           parallel:false,
 // 		           },
 // 		           want: want{},
@@ -955,15 +955,15 @@ package strategy
 // 			s := &strategy{
 // 				core32:    test.fields.core32,
 // 				core64:    test.fields.core64,
+// 				closer:    test.fields.closer,
 // 				initBit32: test.fields.initBit32,
 // 				initBit64: test.fields.initBit64,
-// 				closer:    test.fields.closer,
-// 				propName:  test.fields.propName,
 // 				preProp32: test.fields.preProp32,
 // 				preProp64: test.fields.preProp64,
-// 				mode:      test.fields.mode,
 // 				prop32:    test.fields.prop32,
 // 				prop64:    test.fields.prop64,
+// 				propName:  test.fields.propName,
+// 				mode:      test.fields.mode,
 // 				parallel:  test.fields.parallel,
 // 			}
 //

@@ -31,12 +31,12 @@ func TestNew(t *testing.T) {
 		want metrics.Metric
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, metrics.Metric) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got metrics.Metric) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -113,16 +113,16 @@ func Test_operatorMetrics_View(t *testing.T) {
 		op service.Operator
 	}
 	type want struct {
-		want []metrics.View
 		err  error
+		want []metrics.View
 	}
 	type test struct {
-		name       string
 		fields     fields
-		want       want
 		checkFunc  func(want, []metrics.View, error) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got []metrics.View, err error) error {
 		if !errors.Is(err, w.err) {
@@ -211,13 +211,13 @@ func Test_operatorMetrics_Register(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
 		args       args
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {

@@ -16,8 +16,8 @@
 
 use futures::StreamExt;
 use std::{collections::HashMap, sync::Arc};
-use tokio::sync::mpsc;
 use tokio::sync::Mutex;
+use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
 use tonic::{Request, Response, Status, Streaming};
 use tonic_types::{ErrorDetails, FieldViolation};
@@ -117,7 +117,7 @@ mod tests {
     use prost::Message;
     use proto::{
         payload::v1::object::{
-            list, Id, StreamVector, Timestamp, TimestampRequest, Vector, VectorRequest,
+            Id, StreamVector, Timestamp, TimestampRequest, Vector, VectorRequest, list,
         },
         vald::v1::{object_client, object_server},
     };
@@ -130,9 +130,9 @@ mod tests {
     };
     use tokio::time::sleep;
     use tonic::{
+        Request, Response, Status,
         codec::{DecodeBuf, Decoder},
         transport::{Channel, Server},
-        Request, Response, Status,
     };
 
     // tonic-mock uses old version of http_body, so we need to implement below ourselves.

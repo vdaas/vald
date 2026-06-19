@@ -270,7 +270,7 @@ func JoinHostPort(host string, port uint16) string {
 // and any error occurred.
 // If it is the loopback address, it will return the loopback address and corresponding port number.
 // Falls back to default port and local IP if not provided.
-// Example: ":8080" → "127.0.0.1", 8080
+// Example: ":8080" → "127.0.0.1", 8080.
 func SplitHostPort(hostport string) (host string, port uint16, err error) {
 	if !strings.HasPrefix(hostport, "::") && strings.HasPrefix(hostport, ":") {
 		hostport = localIPv4 + hostport

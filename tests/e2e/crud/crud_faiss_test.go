@@ -20,7 +20,6 @@
 package crud
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"testing"
@@ -136,7 +135,7 @@ func sleep(t *testing.T, dur time.Duration) {
 
 func TestE2EInsertOnly(t *testing.T) {
 	t.Cleanup(teardown)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	op, err := operation.New(host, port)
 	if err != nil {
@@ -153,7 +152,7 @@ func TestE2EInsertOnly(t *testing.T) {
 
 func TestE2ESearchOnly(t *testing.T) {
 	t.Cleanup(teardown)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	op, err := operation.New(host, port)
 	if err != nil {
@@ -171,7 +170,7 @@ func TestE2ESearchOnly(t *testing.T) {
 
 func TestE2EUpdateOnly(t *testing.T) {
 	t.Cleanup(teardown)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	op, err := operation.New(host, port)
 	if err != nil {
@@ -215,7 +214,7 @@ func TestE2EUpdateOnly(t *testing.T) {
 
 func TestE2ERemoveOnly(t *testing.T) {
 	t.Cleanup(teardown)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	op, err := operation.New(host, port)
 	if err != nil {
@@ -232,7 +231,7 @@ func TestE2ERemoveOnly(t *testing.T) {
 
 func TestE2EInsertAndSearch(t *testing.T) {
 	t.Cleanup(teardown)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	op, err := operation.New(host, port)
 	if err != nil {
@@ -259,7 +258,7 @@ func TestE2EInsertAndSearch(t *testing.T) {
 
 func TestE2EStandardCRUD(t *testing.T) {
 	t.Cleanup(teardown)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	op, err := operation.New(host, port)
 	if err != nil {

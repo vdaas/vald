@@ -39,7 +39,7 @@ func NewBulkInsertCommit(poolSize uint32, opts ...StrategyOption) benchmark.Stra
 					}
 				}()
 				v := make([][]float32, 0, size)
-				for i := 0; i < size; i++ {
+				for i := range size {
 					arr, err := dataset.Train(i)
 					if err != nil {
 						b.Fatal(err)
@@ -65,7 +65,7 @@ func NewBulkInsertCommit(poolSize uint32, opts ...StrategyOption) benchmark.Stra
 					}
 				}()
 				v := make([][]float64, 0, size)
-				for i := 0; i < size; i++ {
+				for i := range size {
 					arr, err := dataset.Train(i)
 					if err != nil {
 						b.Fatal(err)

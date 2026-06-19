@@ -32,19 +32,16 @@ import (
 )
 
 type client struct {
-	eg      errgroup.Group
-	session *session.Session
-	service *s3.S3
-	bucket  string
-
-	maxPartSize  int64
-	maxChunkSize int64
-
-	reader reader.Reader
-	writer writer.Writer
-
-	readerBackoffEnabled bool
+	eg                   errgroup.Group
+	reader               reader.Reader
+	writer               writer.Writer
+	session              *session.Session
+	service              *s3.S3
+	bucket               string
 	readerBackoffOpts    []backoff.Option
+	maxPartSize          int64
+	maxChunkSize         int64
+	readerBackoffEnabled bool
 }
 
 // New returns blob.Bucket implementation if no error occurs.

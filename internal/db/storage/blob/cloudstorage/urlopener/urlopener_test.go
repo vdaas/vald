@@ -109,9 +109,9 @@ package urlopener
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
+// 		client              *http.Client
 // 		credentialsFilePath string
 // 		credentialsJSON     string
-// 		client              *http.Client
 // 	}
 // 	type want struct {
 // 		wantGuo *gcsblob.URLOpener
@@ -144,9 +144,9 @@ package urlopener
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
+// 		           client:nil,
 // 		           credentialsFilePath:"",
 // 		           credentialsJSON:"",
-// 		           client:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -168,9 +168,9 @@ package urlopener
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
+// 		           client:nil,
 // 		           credentialsFilePath:"",
 // 		           credentialsJSON:"",
-// 		           client:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -201,9 +201,9 @@ package urlopener
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			uo := &urlOpener{
+// 				client:              test.fields.client,
 // 				credentialsFilePath: test.fields.credentialsFilePath,
 // 				credentialsJSON:     test.fields.credentialsJSON,
-// 				client:              test.fields.client,
 // 			}
 //
 // 			gotGuo, err := uo.URLOpener(test.args.ctx)

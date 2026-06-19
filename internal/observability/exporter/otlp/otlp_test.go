@@ -109,20 +109,20 @@ package otlp
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		serviceName         string
-// 		collectorEndpoint   string
+// 		metricsExporter     metric.Exporter
+// 		meterProvider       *metric.MeterProvider
 // 		traceExporter       *otlptrace.Exporter
 // 		traceProvider       *trace.TracerProvider
+// 		collectorEndpoint   string
+// 		serviceName         string
+// 		metricsViews        []metrics.View
+// 		attributes          []attribute.KeyValue
 // 		tBatchTimeout       time.Duration
 // 		tExportTimeout      time.Duration
 // 		tMaxExportBatchSize int
 // 		tMaxQueueSize       int
-// 		metricsExporter     metric.Exporter
-// 		meterProvider       *metric.MeterProvider
-// 		metricsViews        []metrics.View
 // 		mExportInterval     time.Duration
 // 		mExportTimeout      time.Duration
-// 		attributes          []attribute.KeyValue
 // 	}
 // 	type want struct {
 // 		err error
@@ -151,20 +151,20 @@ package otlp
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           serviceName:"",
-// 		           collectorEndpoint:"",
+// 		           metricsExporter:nil,
+// 		           meterProvider:nil,
 // 		           traceExporter:nil,
 // 		           traceProvider:nil,
+// 		           collectorEndpoint:"",
+// 		           serviceName:"",
+// 		           metricsViews:nil,
+// 		           attributes:nil,
 // 		           tBatchTimeout:nil,
 // 		           tExportTimeout:nil,
 // 		           tMaxExportBatchSize:0,
 // 		           tMaxQueueSize:0,
-// 		           metricsExporter:nil,
-// 		           meterProvider:nil,
-// 		           metricsViews:nil,
 // 		           mExportInterval:nil,
 // 		           mExportTimeout:nil,
-// 		           attributes:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -186,20 +186,20 @@ package otlp
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           serviceName:"",
-// 		           collectorEndpoint:"",
+// 		           metricsExporter:nil,
+// 		           meterProvider:nil,
 // 		           traceExporter:nil,
 // 		           traceProvider:nil,
+// 		           collectorEndpoint:"",
+// 		           serviceName:"",
+// 		           metricsViews:nil,
+// 		           attributes:nil,
 // 		           tBatchTimeout:nil,
 // 		           tExportTimeout:nil,
 // 		           tMaxExportBatchSize:0,
 // 		           tMaxQueueSize:0,
-// 		           metricsExporter:nil,
-// 		           meterProvider:nil,
-// 		           metricsViews:nil,
 // 		           mExportInterval:nil,
 // 		           mExportTimeout:nil,
-// 		           attributes:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -230,20 +230,20 @@ package otlp
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			e := &exp{
-// 				serviceName:         test.fields.serviceName,
-// 				collectorEndpoint:   test.fields.collectorEndpoint,
+// 				metricsExporter:     test.fields.metricsExporter,
+// 				meterProvider:       test.fields.meterProvider,
 // 				traceExporter:       test.fields.traceExporter,
 // 				traceProvider:       test.fields.traceProvider,
+// 				collectorEndpoint:   test.fields.collectorEndpoint,
+// 				serviceName:         test.fields.serviceName,
+// 				metricsViews:        test.fields.metricsViews,
+// 				attributes:          test.fields.attributes,
 // 				tBatchTimeout:       test.fields.tBatchTimeout,
 // 				tExportTimeout:      test.fields.tExportTimeout,
 // 				tMaxExportBatchSize: test.fields.tMaxExportBatchSize,
 // 				tMaxQueueSize:       test.fields.tMaxQueueSize,
-// 				metricsExporter:     test.fields.metricsExporter,
-// 				meterProvider:       test.fields.meterProvider,
-// 				metricsViews:        test.fields.metricsViews,
 // 				mExportInterval:     test.fields.mExportInterval,
 // 				mExportTimeout:      test.fields.mExportTimeout,
-// 				attributes:          test.fields.attributes,
 // 			}
 //
 // 			err := e.initTracer(test.args.ctx)
@@ -259,20 +259,20 @@ package otlp
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		serviceName         string
-// 		collectorEndpoint   string
+// 		metricsExporter     metric.Exporter
+// 		meterProvider       *metric.MeterProvider
 // 		traceExporter       *otlptrace.Exporter
 // 		traceProvider       *trace.TracerProvider
+// 		collectorEndpoint   string
+// 		serviceName         string
+// 		metricsViews        []metrics.View
+// 		attributes          []attribute.KeyValue
 // 		tBatchTimeout       time.Duration
 // 		tExportTimeout      time.Duration
 // 		tMaxExportBatchSize int
 // 		tMaxQueueSize       int
-// 		metricsExporter     metric.Exporter
-// 		meterProvider       *metric.MeterProvider
-// 		metricsViews        []metrics.View
 // 		mExportInterval     time.Duration
 // 		mExportTimeout      time.Duration
-// 		attributes          []attribute.KeyValue
 // 	}
 // 	type want struct {
 // 		err error
@@ -301,20 +301,20 @@ package otlp
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           serviceName:"",
-// 		           collectorEndpoint:"",
+// 		           metricsExporter:nil,
+// 		           meterProvider:nil,
 // 		           traceExporter:nil,
 // 		           traceProvider:nil,
+// 		           collectorEndpoint:"",
+// 		           serviceName:"",
+// 		           metricsViews:nil,
+// 		           attributes:nil,
 // 		           tBatchTimeout:nil,
 // 		           tExportTimeout:nil,
 // 		           tMaxExportBatchSize:0,
 // 		           tMaxQueueSize:0,
-// 		           metricsExporter:nil,
-// 		           meterProvider:nil,
-// 		           metricsViews:nil,
 // 		           mExportInterval:nil,
 // 		           mExportTimeout:nil,
-// 		           attributes:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -336,20 +336,20 @@ package otlp
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           serviceName:"",
-// 		           collectorEndpoint:"",
+// 		           metricsExporter:nil,
+// 		           meterProvider:nil,
 // 		           traceExporter:nil,
 // 		           traceProvider:nil,
+// 		           collectorEndpoint:"",
+// 		           serviceName:"",
+// 		           metricsViews:nil,
+// 		           attributes:nil,
 // 		           tBatchTimeout:nil,
 // 		           tExportTimeout:nil,
 // 		           tMaxExportBatchSize:0,
 // 		           tMaxQueueSize:0,
-// 		           metricsExporter:nil,
-// 		           meterProvider:nil,
-// 		           metricsViews:nil,
 // 		           mExportInterval:nil,
 // 		           mExportTimeout:nil,
-// 		           attributes:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -380,20 +380,20 @@ package otlp
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			e := &exp{
-// 				serviceName:         test.fields.serviceName,
-// 				collectorEndpoint:   test.fields.collectorEndpoint,
+// 				metricsExporter:     test.fields.metricsExporter,
+// 				meterProvider:       test.fields.meterProvider,
 // 				traceExporter:       test.fields.traceExporter,
 // 				traceProvider:       test.fields.traceProvider,
+// 				collectorEndpoint:   test.fields.collectorEndpoint,
+// 				serviceName:         test.fields.serviceName,
+// 				metricsViews:        test.fields.metricsViews,
+// 				attributes:          test.fields.attributes,
 // 				tBatchTimeout:       test.fields.tBatchTimeout,
 // 				tExportTimeout:      test.fields.tExportTimeout,
 // 				tMaxExportBatchSize: test.fields.tMaxExportBatchSize,
 // 				tMaxQueueSize:       test.fields.tMaxQueueSize,
-// 				metricsExporter:     test.fields.metricsExporter,
-// 				meterProvider:       test.fields.meterProvider,
-// 				metricsViews:        test.fields.metricsViews,
 // 				mExportInterval:     test.fields.mExportInterval,
 // 				mExportTimeout:      test.fields.mExportTimeout,
-// 				attributes:          test.fields.attributes,
 // 			}
 //
 // 			err := e.initMeter(test.args.ctx)
@@ -409,20 +409,20 @@ package otlp
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		serviceName         string
-// 		collectorEndpoint   string
+// 		metricsExporter     metric.Exporter
+// 		meterProvider       *metric.MeterProvider
 // 		traceExporter       *otlptrace.Exporter
 // 		traceProvider       *trace.TracerProvider
+// 		collectorEndpoint   string
+// 		serviceName         string
+// 		metricsViews        []metrics.View
+// 		attributes          []attribute.KeyValue
 // 		tBatchTimeout       time.Duration
 // 		tExportTimeout      time.Duration
 // 		tMaxExportBatchSize int
 // 		tMaxQueueSize       int
-// 		metricsExporter     metric.Exporter
-// 		meterProvider       *metric.MeterProvider
-// 		metricsViews        []metrics.View
 // 		mExportInterval     time.Duration
 // 		mExportTimeout      time.Duration
-// 		attributes          []attribute.KeyValue
 // 	}
 // 	type want struct {
 // 		err error
@@ -451,20 +451,20 @@ package otlp
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           serviceName:"",
-// 		           collectorEndpoint:"",
+// 		           metricsExporter:nil,
+// 		           meterProvider:nil,
 // 		           traceExporter:nil,
 // 		           traceProvider:nil,
+// 		           collectorEndpoint:"",
+// 		           serviceName:"",
+// 		           metricsViews:nil,
+// 		           attributes:nil,
 // 		           tBatchTimeout:nil,
 // 		           tExportTimeout:nil,
 // 		           tMaxExportBatchSize:0,
 // 		           tMaxQueueSize:0,
-// 		           metricsExporter:nil,
-// 		           meterProvider:nil,
-// 		           metricsViews:nil,
 // 		           mExportInterval:nil,
 // 		           mExportTimeout:nil,
-// 		           attributes:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -486,20 +486,20 @@ package otlp
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           serviceName:"",
-// 		           collectorEndpoint:"",
+// 		           metricsExporter:nil,
+// 		           meterProvider:nil,
 // 		           traceExporter:nil,
 // 		           traceProvider:nil,
+// 		           collectorEndpoint:"",
+// 		           serviceName:"",
+// 		           metricsViews:nil,
+// 		           attributes:nil,
 // 		           tBatchTimeout:nil,
 // 		           tExportTimeout:nil,
 // 		           tMaxExportBatchSize:0,
 // 		           tMaxQueueSize:0,
-// 		           metricsExporter:nil,
-// 		           meterProvider:nil,
-// 		           metricsViews:nil,
 // 		           mExportInterval:nil,
 // 		           mExportTimeout:nil,
-// 		           attributes:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -530,20 +530,20 @@ package otlp
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			e := &exp{
-// 				serviceName:         test.fields.serviceName,
-// 				collectorEndpoint:   test.fields.collectorEndpoint,
+// 				metricsExporter:     test.fields.metricsExporter,
+// 				meterProvider:       test.fields.meterProvider,
 // 				traceExporter:       test.fields.traceExporter,
 // 				traceProvider:       test.fields.traceProvider,
+// 				collectorEndpoint:   test.fields.collectorEndpoint,
+// 				serviceName:         test.fields.serviceName,
+// 				metricsViews:        test.fields.metricsViews,
+// 				attributes:          test.fields.attributes,
 // 				tBatchTimeout:       test.fields.tBatchTimeout,
 // 				tExportTimeout:      test.fields.tExportTimeout,
 // 				tMaxExportBatchSize: test.fields.tMaxExportBatchSize,
 // 				tMaxQueueSize:       test.fields.tMaxQueueSize,
-// 				metricsExporter:     test.fields.metricsExporter,
-// 				meterProvider:       test.fields.meterProvider,
-// 				metricsViews:        test.fields.metricsViews,
 // 				mExportInterval:     test.fields.mExportInterval,
 // 				mExportTimeout:      test.fields.mExportTimeout,
-// 				attributes:          test.fields.attributes,
 // 			}
 //
 // 			err := e.Start(test.args.ctx)
@@ -559,20 +559,20 @@ package otlp
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		serviceName         string
-// 		collectorEndpoint   string
+// 		metricsExporter     metric.Exporter
+// 		meterProvider       *metric.MeterProvider
 // 		traceExporter       *otlptrace.Exporter
 // 		traceProvider       *trace.TracerProvider
+// 		collectorEndpoint   string
+// 		serviceName         string
+// 		metricsViews        []metrics.View
+// 		attributes          []attribute.KeyValue
 // 		tBatchTimeout       time.Duration
 // 		tExportTimeout      time.Duration
 // 		tMaxExportBatchSize int
 // 		tMaxQueueSize       int
-// 		metricsExporter     metric.Exporter
-// 		meterProvider       *metric.MeterProvider
-// 		metricsViews        []metrics.View
 // 		mExportInterval     time.Duration
 // 		mExportTimeout      time.Duration
-// 		attributes          []attribute.KeyValue
 // 	}
 // 	type want struct {
 // 		err error
@@ -601,20 +601,20 @@ package otlp
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           serviceName:"",
-// 		           collectorEndpoint:"",
+// 		           metricsExporter:nil,
+// 		           meterProvider:nil,
 // 		           traceExporter:nil,
 // 		           traceProvider:nil,
+// 		           collectorEndpoint:"",
+// 		           serviceName:"",
+// 		           metricsViews:nil,
+// 		           attributes:nil,
 // 		           tBatchTimeout:nil,
 // 		           tExportTimeout:nil,
 // 		           tMaxExportBatchSize:0,
 // 		           tMaxQueueSize:0,
-// 		           metricsExporter:nil,
-// 		           meterProvider:nil,
-// 		           metricsViews:nil,
 // 		           mExportInterval:nil,
 // 		           mExportTimeout:nil,
-// 		           attributes:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -636,20 +636,20 @@ package otlp
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           serviceName:"",
-// 		           collectorEndpoint:"",
+// 		           metricsExporter:nil,
+// 		           meterProvider:nil,
 // 		           traceExporter:nil,
 // 		           traceProvider:nil,
+// 		           collectorEndpoint:"",
+// 		           serviceName:"",
+// 		           metricsViews:nil,
+// 		           attributes:nil,
 // 		           tBatchTimeout:nil,
 // 		           tExportTimeout:nil,
 // 		           tMaxExportBatchSize:0,
 // 		           tMaxQueueSize:0,
-// 		           metricsExporter:nil,
-// 		           meterProvider:nil,
-// 		           metricsViews:nil,
 // 		           mExportInterval:nil,
 // 		           mExportTimeout:nil,
-// 		           attributes:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -680,20 +680,20 @@ package otlp
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			e := &exp{
-// 				serviceName:         test.fields.serviceName,
-// 				collectorEndpoint:   test.fields.collectorEndpoint,
+// 				metricsExporter:     test.fields.metricsExporter,
+// 				meterProvider:       test.fields.meterProvider,
 // 				traceExporter:       test.fields.traceExporter,
 // 				traceProvider:       test.fields.traceProvider,
+// 				collectorEndpoint:   test.fields.collectorEndpoint,
+// 				serviceName:         test.fields.serviceName,
+// 				metricsViews:        test.fields.metricsViews,
+// 				attributes:          test.fields.attributes,
 // 				tBatchTimeout:       test.fields.tBatchTimeout,
 // 				tExportTimeout:      test.fields.tExportTimeout,
 // 				tMaxExportBatchSize: test.fields.tMaxExportBatchSize,
 // 				tMaxQueueSize:       test.fields.tMaxQueueSize,
-// 				metricsExporter:     test.fields.metricsExporter,
-// 				meterProvider:       test.fields.meterProvider,
-// 				metricsViews:        test.fields.metricsViews,
 // 				mExportInterval:     test.fields.mExportInterval,
 // 				mExportTimeout:      test.fields.mExportTimeout,
-// 				attributes:          test.fields.attributes,
 // 			}
 //
 // 			err := e.Stop(test.args.ctx)

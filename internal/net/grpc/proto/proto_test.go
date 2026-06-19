@@ -36,16 +36,16 @@ func TestMarshal(t *testing.T) {
 		m Message
 	}
 	type want struct {
-		want []byte
 		err  error
+		want []byte
 	}
 	type test struct {
-		name       string
 		args       args
-		want       want
 		checkFunc  func(want, []byte, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got []byte, err error) error {
 		if !errors.Is(err, w.err) {
@@ -108,19 +108,19 @@ func TestMarshal(t *testing.T) {
 func TestUnmarshal(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		data []byte
 		v    Message
+		data []byte
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(test, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(test test, err error) error {
 		if !errors.Is(err, test.want.err) {
@@ -209,12 +209,12 @@ func TestClone(t *testing.T) {
 		want Message
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, Message) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got Message) error {
 		diff := comparator.Diff(got, w.want, comparator.IgnoreUnexported(
@@ -275,12 +275,12 @@ func TestToMessageV1(t *testing.T) {
 		want MessageV1
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, MessageV1) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got MessageV1) error {
 		if !reflect.DeepEqual(got, w.want) {

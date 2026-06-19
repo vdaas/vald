@@ -26,27 +26,27 @@ import (
 
 func TestAgentSidecar_Bind(t *testing.T) {
 	type fields struct {
+		BlobStorage        *Blob
+		Compress           *CompressCore
+		RestoreBackoff     *Backoff
+		Client             *Client
 		Mode               string
 		WatchDir           string
 		AutoBackupDuration string
 		PostStopTimeout    string
 		Filename           string
 		FilenameSuffix     string
-		BlobStorage        *Blob
-		Compress           *CompressCore
-		RestoreBackoff     *Backoff
-		Client             *Client
 	}
 	type want struct {
 		want *AgentSidecar
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, *AgentSidecar) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got *AgentSidecar) error {
 		if !reflect.DeepEqual(got, w.want) {

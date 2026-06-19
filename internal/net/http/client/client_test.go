@@ -107,12 +107,12 @@ func TestNew(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *http.Client, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got *http.Client, err error) error {
 		if !errors.Is(err, w.err) {

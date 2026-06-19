@@ -14,10 +14,14 @@
 package config
 
 type ReadReplicaRotate struct {
-	AgentNamespace      string `json:"agent_namespace"        yaml:"agent_namespace"`
+	// AgentNamespace represents the agent namespace.
+	AgentNamespace string `json:"agent_namespace" yaml:"agent_namespace"`
+	// ReadReplicaLabelKey represents the read replica label key.
 	ReadReplicaLabelKey string `json:"read_replica_label_key" yaml:"read_replica_label_key"`
+	// TargetReadReplicaID represents the target read replica ID.
 	TargetReadReplicaID string `json:"target_read_replica_id" yaml:"target_read_replica_id"`
-	VolumeName          string `json:"volume_name"            yaml:"volume_name"`
+	// VolumeName represents the volume name.
+	VolumeName string `json:"volume_name" yaml:"volume_name"`
 }
 
 func (r *ReadReplicaRotate) Bind() *ReadReplicaRotate {

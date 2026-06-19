@@ -14,6 +14,7 @@
 package operation
 
 import (
+	"errors"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -36,10 +37,12 @@ func (o *operation) Search(b *testing.B, ds assets.Dataset) {
 		}
 		b.ResetTimer()
 
-		for i := 0; i < b.N; i++ {
+		i := 0
+		for b.Loop() {
 			v, err := ds.Train(i % ds.TrainSize())
 			if err != nil {
 				b.Error(err)
+				i++
 				continue
 			}
 			_, err = o.client.Search(ctx, &payload.Search_Request{
@@ -49,6 +52,7 @@ func (o *operation) Search(b *testing.B, ds assets.Dataset) {
 			if err != nil {
 				grpcError(b, err)
 			}
+			i++
 		}
 	})
 }
@@ -77,7 +81,7 @@ func (o *operation) StreamSearch(b *testing.B, ds assets.Dataset) {
 
 			for {
 				res, err := sc.Recv()
-				if err == io.EOF {
+				if errors.Is(err, io.EOF) {
 					return nil
 				}
 				if err != nil {
@@ -90,11 +94,13 @@ func (o *operation) StreamSearch(b *testing.B, ds assets.Dataset) {
 			}
 		})
 
-		for i := 0; i < b.N; i++ {
+		i := 0
+		for b.Loop() {
 			idx := i % ds.TrainSize()
 			v, err := ds.Train(idx)
 			if err != nil {
 				b.Error(err)
+				i++
 				continue
 			}
 			err = sc.Send(&payload.Search_Request{
@@ -104,6 +110,7 @@ func (o *operation) StreamSearch(b *testing.B, ds assets.Dataset) {
 			if err != nil {
 				b.Error(err)
 			}
+			i++
 		}
 
 		if err := sc.CloseSend(); err != nil {
@@ -124,7 +131,8 @@ func (o *operation) SearchByID(b *testing.B, maxIdNum int) {
 		}
 		b.ResetTimer()
 
-		for i := 0; i < b.N; i++ {
+		i := 0
+		for b.Loop() {
 			_, err := o.client.SearchByID(ctx, &payload.Search_IDRequest{
 				Id:     strconv.Itoa(i % maxIdNum),
 				Config: cfg,
@@ -132,6 +140,7 @@ func (o *operation) SearchByID(b *testing.B, maxIdNum int) {
 			if err != nil {
 				grpcError(b, err)
 			}
+			i++
 		}
 	})
 }
@@ -167,7 +176,7 @@ func (o *operation) StreamSearchByID(b *testing.B, maxIdNum int) {
 
 			for sc != nil {
 				res, err := sc.Recv()
-				if err == io.EOF {
+				if errors.Is(err, io.EOF) {
 					finished.Store(true)
 					return nil
 				}
@@ -182,7 +191,8 @@ func (o *operation) StreamSearchByID(b *testing.B, maxIdNum int) {
 			return nil
 		})
 
-		for i := 0; i < b.N && !finished.Load() && sc != nil; i++ {
+		i := 0
+		for b.Loop() && !finished.Load() && sc != nil {
 			err = sc.Send(&payload.Search_IDRequest{
 				Id:     strconv.Itoa(i % maxIdNum),
 				Config: cfg,
@@ -190,6 +200,7 @@ func (o *operation) StreamSearchByID(b *testing.B, maxIdNum int) {
 			if err != nil {
 				b.Error(err)
 			}
+			i++
 		}
 
 		if sc != nil {

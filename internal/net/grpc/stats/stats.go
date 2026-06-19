@@ -33,7 +33,7 @@ import (
 	"github.com/vdaas/vald/internal/strings"
 )
 
-// CgroupMode represents the cgroup version
+// CgroupMode represents the cgroup version.
 type CgroupMode int
 
 const (
@@ -42,11 +42,12 @@ const (
 	CGV2
 )
 
-const (
+var (
 	cgroupBasePath = "/sys/fs/cgroup"
+	procCgroupPath = "/proc/self/cgroup"
 )
 
-// CgroupMetrics holds raw values directly read from cgroup files
+// CgroupMetrics holds raw values directly read from cgroup files.
 type CgroupMetrics struct {
 	Mode CgroupMode
 
@@ -58,7 +59,7 @@ type CgroupMetrics struct {
 	CPUPeriodUs   uint64 // 0 if unknown
 }
 
-// CgroupStats holds calculated resource usage statistics ready for use
+// CgroupStats holds calculated resource usage statistics ready for use.
 type CgroupStats struct {
 	CPULimitCores    float64
 	CPUUsageCores    float64
@@ -135,7 +136,7 @@ func measureCgroupStats(ctx context.Context) (*CgroupStats, error) {
 	return &cgroupStats, nil
 }
 
-// readCgroupMetrics reads raw memory & CPU metrics depending on cgroup mode
+// readCgroupMetrics reads raw memory & CPU metrics depending on cgroup mode.
 func readCgroupMetrics() (metrics *CgroupMetrics, err error) {
 	switch detectCgroupMode() {
 	case CGV2:
@@ -147,14 +148,14 @@ func readCgroupMetrics() (metrics *CgroupMetrics, err error) {
 	}
 }
 
-// detectCgroupMode inspects /sys/fs/cgroup to detect cgroups mode
+// detectCgroupMode inspects /sys/fs/cgroup to detect cgroups mode.
 func detectCgroupMode() CgroupMode {
 	// cgroups v2 unified mount has cgroup.controllers
 	if file.Exists(file.Join(cgroupBasePath, "cgroup.controllers")) {
 		return CGV2
 	}
 
-	data, err := file.ReadFile("/proc/self/cgroup")
+	data, err := file.ReadFile(procCgroupPath)
 	if err != nil {
 		return Unknown
 	}
@@ -170,13 +171,45 @@ func detectCgroupMode() CgroupMode {
 	return CGV1
 }
 
+// getCgroupV2Path determines the appropriate cgroup v2 path for the current process
+func getCgroupV2Path() string {
+	data, err := file.ReadFile(procCgroupPath)
+	if err == nil {
+		var subPath string
+		for _, line := range strings.Split(conv.Btoa(data), "\n") {
+			if strings.HasPrefix(line, "0::") {
+				parts := strings.SplitN(line, ":", 3)
+				if len(parts) == 3 {
+					subPath = parts[2]
+				}
+				break
+			}
+		}
+
+		if subPath != "" {
+			// Try to find the cgroup path by appending the subPath from /proc/self/cgroup
+			// to the cgroupBasePath. This is necessary when the cgroup namespace is not
+			// separated per pod (e.g. hostNetwork: true, or some container runtimes).
+			candidate := file.Join(cgroupBasePath, subPath)
+			// We check for cgroup.controllers to ensure it is a valid cgroup directory.
+			if file.Exists(file.Join(candidate, "cgroup.controllers")) {
+				return candidate
+			}
+		}
+	}
+
+	// Fallback to cgroupBasePath. This covers:
+	// 1. Cgroup namespace is active (subPath is "/" or relative to the mount).
+	// 2. We couldn't read /proc/self/cgroup.
+	// 3. The specific subPath doesn't exist (e.g. bind mounted).
+	return cgroupBasePath
+}
+
 // readCgroupV2Metrics reads cgroups v2 raw metrics
 func readCgroupV2Metrics() (metrics *CgroupMetrics, err error) {
-	// TODO: The current implementation directly uses /sys/fs/cgroup, but in some environments,
-	// the cgroup namespace may not be separated per pod, resulting in reading values for the
-	// entire node rather than per-pod values. Add functionality to specify appropriate paths
-	// to ensure better isolation.
-	data, err := file.ReadFile(file.Join(cgroupBasePath, "memory.current"))
+	cgroupPath := getCgroupV2Path()
+
+	data, err := file.ReadFile(file.Join(cgroupPath, "memory.current"))
 	if err != nil {
 		return nil, errors.ErrCgroupV2MemoryCurrentReadFailed(err)
 	}
@@ -185,7 +218,7 @@ func readCgroupV2Metrics() (metrics *CgroupMetrics, err error) {
 		return nil, errors.ErrCgroupV2MemoryCurrentParseFailed(err)
 	}
 
-	data, err = file.ReadFile(file.Join(cgroupBasePath, "memory.max"))
+	data, err = file.ReadFile(file.Join(cgroupPath, "memory.max"))
 	if err != nil {
 		return nil, errors.ErrCgroupV2MemoryMaxReadFailed(err)
 	}
@@ -200,7 +233,7 @@ func readCgroupV2Metrics() (metrics *CgroupMetrics, err error) {
 		}
 	}
 
-	data, err = file.ReadFile(file.Join(cgroupBasePath, "cpu.stat"))
+	data, err = file.ReadFile(file.Join(cgroupPath, "cpu.stat"))
 	if err != nil {
 		return nil, errors.ErrCgroupV2CPUStatReadFailed(err)
 	}
@@ -221,7 +254,7 @@ func readCgroupV2Metrics() (metrics *CgroupMetrics, err error) {
 	}
 	usageNS := usageUS * 1000
 
-	data, err = file.ReadFile(file.Join(cgroupBasePath, "cpu.max"))
+	data, err = file.ReadFile(file.Join(cgroupPath, "cpu.max"))
 	if err != nil {
 		return nil, errors.ErrCgroupV2CPUMaxReadFailed(err)
 	}
@@ -255,7 +288,7 @@ func readCgroupV2Metrics() (metrics *CgroupMetrics, err error) {
 	return metrics, nil
 }
 
-// readCgroupV1Metrics reads cgroups v1 raw metrics
+// readCgroupV1Metrics reads cgroups v1 raw metrics.
 func readCgroupV1Metrics() (metrics *CgroupMetrics, err error) {
 	var memUsage uint64
 	data, err := file.ReadFile(file.Join(cgroupBasePath, "memory", "memory.usage_in_bytes"))
@@ -349,10 +382,7 @@ func calculateCPUUsageCores(
 
 	dtNano := deltaTime.Nanoseconds()
 	if dtNano > 0 {
-		dtUsage := int64(m2.CPUUsageNano) - int64(m1.CPUUsageNano)
-		if dtUsage < 0 {
-			dtUsage = 0
-		}
+		dtUsage := max(int64(m2.CPUUsageNano)-int64(m1.CPUUsageNano), 0)
 
 		calculatedStats.CPUUsageCores = float64(dtUsage) / float64(dtNano)
 	}

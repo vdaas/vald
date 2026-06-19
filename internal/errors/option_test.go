@@ -30,12 +30,12 @@ func TestNewErrInvalidOption(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, got error) error {
@@ -184,12 +184,12 @@ func TestErrInvalidOption_Error(t *testing.T) {
 		want T
 	}
 	type test struct {
-		name       string
 		fields     fields
-		want       want
 		checkFunc  func(want, T) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
 	}
 
 	defaultCheckFunc := func(w want, obj T) error {
@@ -255,12 +255,12 @@ func TestErrInvalidOption_Unwrap(t *testing.T) {
 		want T
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, T) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, got T) error {
@@ -325,12 +325,12 @@ func TestNewErrCriticalOption(t *testing.T) {
 		want T
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, got T) error {
@@ -479,12 +479,12 @@ func TestErrCriticalOption_Error(t *testing.T) {
 		want T
 	}
 	type test struct {
-		name       string
 		fields     fields
-		want       want
 		checkFunc  func(want, T) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got T) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -549,12 +549,12 @@ func TestErrCriticalOption_Unwrap(t *testing.T) {
 		want T
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, T) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got T) error {
 		if !Is(got, w.want) {
@@ -616,12 +616,12 @@ func TestNewErrIgnoredOption(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, got error) error {
@@ -762,12 +762,12 @@ func TestErrIgnoredOption_Error(t *testing.T) {
 		want T
 	}
 	type test struct {
-		name       string
 		fields     fields
-		want       want
 		checkFunc  func(want, T) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
 	}
 
 	defaultCheckFunc := func(w want, obj T) error {
@@ -833,12 +833,12 @@ func TestErrIgnoredOption_Unwrap(t *testing.T) {
 		want T
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, T) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, got T) error {

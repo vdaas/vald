@@ -112,42 +112,42 @@ package service
 // 		opts []core.Option
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -176,42 +176,42 @@ package service
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -233,42 +233,42 @@ package service
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -299,42 +299,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			err := f.initFaiss(test.args.opts...)
@@ -352,42 +352,42 @@ package service
 // 		opts []core.Option
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -418,42 +418,42 @@ package service
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -477,42 +477,42 @@ package service
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -543,42 +543,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			err := f.load(test.args.ctx, test.args.path, test.args.opts...)
@@ -596,42 +596,42 @@ package service
 // 		timeout time.Duration
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -662,42 +662,42 @@ package service
 // 		           timeout:nil,
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -721,42 +721,42 @@ package service
 // 		           timeout:nil,
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -787,42 +787,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			err := f.loadKVS(test.args.ctx, test.args.path, test.args.timeout)
@@ -835,42 +835,42 @@ package service
 //
 // func Test_faiss_mktmp(t *testing.T) {
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -895,42 +895,42 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -949,42 +949,42 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1015,42 +1015,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			err := f.mktmp()
@@ -1066,42 +1066,42 @@ package service
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		want <-chan error
@@ -1130,42 +1130,42 @@ package service
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1187,42 +1187,42 @@ package service
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1253,42 +1253,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			got := f.Start(test.args.ctx)
@@ -1305,42 +1305,42 @@ package service
 // 		xb []float32
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -1370,42 +1370,42 @@ package service
 // 		           xb:nil,
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1428,42 +1428,42 @@ package service
 // 		           xb:nil,
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1494,42 +1494,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			err := f.Train(test.args.nb, test.args.xb)
@@ -1546,42 +1546,42 @@ package service
 // 		vec  []float32
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -1611,42 +1611,42 @@ package service
 // 		           vec:nil,
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1669,42 +1669,42 @@ package service
 // 		           vec:nil,
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1735,42 +1735,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			err := f.Insert(test.args.uuid, test.args.vec)
@@ -1788,42 +1788,42 @@ package service
 // 		t    int64
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -1854,42 +1854,42 @@ package service
 // 		           t:0,
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1913,42 +1913,42 @@ package service
 // 		           t:0,
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1979,42 +1979,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			err := f.InsertWithTime(test.args.uuid, test.args.vec, test.args.t)
@@ -2033,42 +2033,42 @@ package service
 // 		validation bool
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -2100,42 +2100,42 @@ package service
 // 		           validation:false,
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2160,42 +2160,42 @@ package service
 // 		           validation:false,
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2226,42 +2226,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			err := f.insert(test.args.uuid, test.args.xb, test.args.t, test.args.validation)
@@ -2278,42 +2278,42 @@ package service
 // 		vec  []float32
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -2343,42 +2343,42 @@ package service
 // 		           vec:nil,
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2401,42 +2401,42 @@ package service
 // 		           vec:nil,
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2467,42 +2467,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			err := f.Update(test.args.uuid, test.args.vec)
@@ -2520,42 +2520,42 @@ package service
 // 		t    int64
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -2586,42 +2586,42 @@ package service
 // 		           t:0,
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2645,42 +2645,42 @@ package service
 // 		           t:0,
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2711,42 +2711,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			err := f.UpdateWithTime(test.args.uuid, test.args.vec, test.args.t)
@@ -2764,42 +2764,42 @@ package service
 // 		t    int64
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -2830,42 +2830,42 @@ package service
 // 		           t:0,
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2889,42 +2889,42 @@ package service
 // 		           t:0,
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2955,42 +2955,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			err := f.update(test.args.uuid, test.args.vec, test.args.t)
@@ -3008,42 +3008,42 @@ package service
 // 		force bool
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -3074,42 +3074,42 @@ package service
 // 		           force:false,
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3133,42 +3133,42 @@ package service
 // 		           force:false,
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3199,42 +3199,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			err := f.UpdateTimestamp(test.args.uuid, test.args.ts, test.args.force)
@@ -3251,42 +3251,42 @@ package service
 // 		vec  []float32
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -3316,42 +3316,42 @@ package service
 // 		           vec:nil,
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3374,42 +3374,42 @@ package service
 // 		           vec:nil,
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3440,42 +3440,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			err := f.readyForUpdate(test.args.uuid, test.args.vec)
@@ -3491,42 +3491,42 @@ package service
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -3555,42 +3555,42 @@ package service
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3612,42 +3612,42 @@ package service
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3678,42 +3678,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			err := f.CreateIndex(test.args.ctx)
@@ -3729,42 +3729,42 @@ package service
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -3793,42 +3793,42 @@ package service
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3850,42 +3850,42 @@ package service
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3916,42 +3916,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			err := f.SaveIndex(test.args.ctx)
@@ -3967,42 +3967,42 @@ package service
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -4031,42 +4031,42 @@ package service
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4088,42 +4088,42 @@ package service
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4154,42 +4154,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			err := f.saveIndex(test.args.ctx)
@@ -4205,42 +4205,42 @@ package service
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -4269,42 +4269,42 @@ package service
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4326,42 +4326,42 @@ package service
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4392,42 +4392,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			err := f.moveAndSwitchSavedData(test.args.ctx)
@@ -4443,42 +4443,42 @@ package service
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -4507,42 +4507,42 @@ package service
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4564,42 +4564,42 @@ package service
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4630,42 +4630,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			err := f.CreateAndSaveIndex(test.args.ctx)
@@ -4684,42 +4684,42 @@ package service
 // 		xq     []float32
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Response
@@ -4755,42 +4755,42 @@ package service
 // 		           xq:nil,
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4815,42 +4815,42 @@ package service
 // 		           xq:nil,
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4881,42 +4881,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			gotRes, err := f.Search(test.args.k, test.args.nprobe, test.args.nq, test.args.xq)
@@ -4932,42 +4932,42 @@ package service
 // 		uuid string
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -4996,42 +4996,42 @@ package service
 // 		           uuid:"",
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -5053,42 +5053,42 @@ package service
 // 		           uuid:"",
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -5119,42 +5119,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			err := f.Delete(test.args.uuid)
@@ -5171,42 +5171,42 @@ package service
 // 		t    int64
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -5236,42 +5236,42 @@ package service
 // 		           t:0,
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -5294,42 +5294,42 @@ package service
 // 		           t:0,
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -5360,42 +5360,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			err := f.DeleteWithTime(test.args.uuid, test.args.t)
@@ -5413,42 +5413,42 @@ package service
 // 		validation bool
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -5479,42 +5479,42 @@ package service
 // 		           validation:false,
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -5538,42 +5538,42 @@ package service
 // 		           validation:false,
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -5604,42 +5604,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			err := f.delete(test.args.uuid, test.args.t, test.args.validation)
@@ -5655,42 +5655,42 @@ package service
 // 		uuid string
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		wantOid uint32
@@ -5723,42 +5723,42 @@ package service
 // 		           uuid:"",
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -5780,42 +5780,42 @@ package service
 // 		           uuid:"",
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -5846,42 +5846,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			gotOid, gotOk := f.Exists(test.args.uuid)
@@ -5897,42 +5897,42 @@ package service
 // 		uuid string
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		wantVec       []float32
@@ -5969,42 +5969,42 @@ package service
 // 		           uuid:"",
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -6026,42 +6026,42 @@ package service
 // 		           uuid:"",
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -6092,42 +6092,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			gotVec, gotTimestamp, err := f.GetObject(test.args.uuid)
@@ -6140,42 +6140,42 @@ package service
 //
 // func Test_faiss_IsIndexing(t *testing.T) {
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		want bool
@@ -6200,42 +6200,42 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -6254,42 +6254,42 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -6320,42 +6320,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			got := f.IsIndexing()
@@ -6368,42 +6368,42 @@ package service
 //
 // func Test_faiss_IsSaving(t *testing.T) {
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		want bool
@@ -6428,42 +6428,42 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -6482,42 +6482,42 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -6548,42 +6548,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			got := f.IsSaving()
@@ -6599,42 +6599,42 @@ package service
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		wantUuids []string
@@ -6663,42 +6663,42 @@ package service
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -6720,42 +6720,42 @@ package service
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -6786,42 +6786,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			gotUuids := f.UUIDs(test.args.ctx)
@@ -6834,42 +6834,42 @@ package service
 //
 // func Test_faiss_NumberOfCreateIndexExecution(t *testing.T) {
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		want uint64
@@ -6894,42 +6894,42 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -6948,42 +6948,42 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -7014,42 +7014,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			got := f.NumberOfCreateIndexExecution()
@@ -7062,42 +7062,42 @@ package service
 //
 // func Test_faiss_NumberOfProactiveGCExecution(t *testing.T) {
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		want uint64
@@ -7122,42 +7122,42 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -7176,42 +7176,42 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -7242,42 +7242,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			got := f.NumberOfProactiveGCExecution()
@@ -7290,42 +7290,42 @@ package service
 //
 // func Test_faiss_gc(t *testing.T) {
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -7345,42 +7345,42 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -7399,42 +7399,42 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -7465,42 +7465,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			f.gc()
@@ -7513,42 +7513,42 @@ package service
 //
 // func Test_faiss_Len(t *testing.T) {
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		want uint64
@@ -7573,42 +7573,42 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -7627,42 +7627,42 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -7693,42 +7693,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			got := f.Len()
@@ -7741,42 +7741,42 @@ package service
 //
 // func Test_faiss_InsertVQueueBufferLen(t *testing.T) {
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		want uint64
@@ -7801,42 +7801,42 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -7855,42 +7855,42 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -7921,42 +7921,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			got := f.InsertVQueueBufferLen()
@@ -7969,42 +7969,42 @@ package service
 //
 // func Test_faiss_DeleteVQueueBufferLen(t *testing.T) {
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		want uint64
@@ -8029,42 +8029,42 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -8083,42 +8083,42 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -8149,42 +8149,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			got := f.DeleteVQueueBufferLen()
@@ -8197,42 +8197,42 @@ package service
 //
 // func Test_faiss_GetDimensionSize(t *testing.T) {
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		want int
@@ -8257,42 +8257,42 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -8311,42 +8311,42 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -8377,42 +8377,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			got := f.GetDimensionSize()
@@ -8425,42 +8425,42 @@ package service
 //
 // func Test_faiss_GetTrainSize(t *testing.T) {
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		want int
@@ -8485,42 +8485,42 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -8539,42 +8539,42 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -8605,42 +8605,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			got := f.GetTrainSize()
@@ -8656,42 +8656,42 @@ package service
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -8720,42 +8720,42 @@ package service
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -8777,42 +8777,42 @@ package service
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -8843,42 +8843,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			err := f.Close(test.args.ctx)
@@ -8895,42 +8895,42 @@ package service
 // 		fn  func(uuid string, oid uint32, ts int64) bool
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -8955,42 +8955,42 @@ package service
 // 		           fn:nil,
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -9013,42 +9013,42 @@ package service
 // 		           fn:nil,
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -9079,42 +9079,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			f.ListObjectFunc(test.args.ctx, test.args.fn)
@@ -9130,42 +9130,42 @@ package service
 // 		sr []algorithm.SearchResult
 // 	}
 // 	type fields struct {
-// 		core              core.Faiss
+// 		tmpPath           atomic.Value
 // 		eg                errgroup.Group
 // 		kvs               kvs.BidiMap
-// 		fmap              map[string]int64
+// 		core              core.Faiss
 // 		vq                vqueue.Queue
-// 		addVecs           []float32
-// 		addIds            []int64
-// 		isTrained         bool
-// 		trainSize         int
-// 		icnt              uint64
-// 		indexing          atomic.Value
 // 		saving            atomic.Value
-// 		lastNocie         uint64
+// 		indexing          atomic.Value
+// 		fmap              map[string]int64
+// 		basePath          string
+// 		oldPath           string
+// 		path              string
+// 		addIds            []int64
+// 		addVecs           []float32
+// 		nlist             int
+// 		alen              int
 // 		nocie             uint64
 // 		nogce             uint64
 // 		wfci              uint64
-// 		inMem             bool
+// 		kvsdbConcurrency  int
 // 		dim               int
-// 		nlist             int
+// 		lastNocie         uint64
 // 		m                 int
-// 		alen              int
+// 		icnt              uint64
 // 		dur               time.Duration
 // 		sdur              time.Duration
 // 		lim               time.Duration
 // 		minLit            time.Duration
 // 		maxLit            time.Duration
 // 		litFactor         time.Duration
-// 		enableProactiveGC bool
-// 		enableCopyOnWrite bool
-// 		path              string
-// 		tmpPath           atomic.Value
-// 		oldPath           string
-// 		basePath          string
-// 		dcd               bool
 // 		idelay            time.Duration
-// 		kvsdbConcurrency  int
+// 		trainSize         int
+// 		enableCopyOnWrite bool
+// 		isTrained         bool
+// 		dcd               bool
+// 		enableProactiveGC bool
+// 		inMem             bool
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Response
@@ -9198,42 +9198,42 @@ package service
 // 		           sr:nil,
 // 		       },
 // 		       fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -9255,42 +9255,42 @@ package service
 // 		           sr:nil,
 // 		           },
 // 		           fields: fields {
-// 		           core:nil,
+// 		           tmpPath:nil,
 // 		           eg:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           core:nil,
 // 		           vq:nil,
-// 		           addVecs:nil,
-// 		           addIds:nil,
-// 		           isTrained:false,
-// 		           trainSize:0,
-// 		           icnt:0,
-// 		           indexing:nil,
 // 		           saving:nil,
-// 		           lastNocie:0,
+// 		           indexing:nil,
+// 		           fmap:nil,
+// 		           basePath:"",
+// 		           oldPath:"",
+// 		           path:"",
+// 		           addIds:nil,
+// 		           addVecs:nil,
+// 		           nlist:0,
+// 		           alen:0,
 // 		           nocie:0,
 // 		           nogce:0,
 // 		           wfci:0,
-// 		           inMem:false,
+// 		           kvsdbConcurrency:0,
 // 		           dim:0,
-// 		           nlist:0,
+// 		           lastNocie:0,
 // 		           m:0,
-// 		           alen:0,
+// 		           icnt:0,
 // 		           dur:nil,
 // 		           sdur:nil,
 // 		           lim:nil,
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           dcd:false,
 // 		           idelay:nil,
-// 		           kvsdbConcurrency:0,
+// 		           trainSize:0,
+// 		           enableCopyOnWrite:false,
+// 		           isTrained:false,
+// 		           dcd:false,
+// 		           enableProactiveGC:false,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -9321,42 +9321,42 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			f := &faiss{
-// 				core:              test.fields.core,
+// 				tmpPath:           test.fields.tmpPath,
 // 				eg:                test.fields.eg,
 // 				kvs:               test.fields.kvs,
-// 				fmap:              test.fields.fmap,
+// 				core:              test.fields.core,
 // 				vq:                test.fields.vq,
-// 				addVecs:           test.fields.addVecs,
-// 				addIds:            test.fields.addIds,
-// 				isTrained:         test.fields.isTrained,
-// 				trainSize:         test.fields.trainSize,
-// 				icnt:              test.fields.icnt,
-// 				indexing:          test.fields.indexing,
 // 				saving:            test.fields.saving,
-// 				lastNocie:         test.fields.lastNocie,
+// 				indexing:          test.fields.indexing,
+// 				fmap:              test.fields.fmap,
+// 				basePath:          test.fields.basePath,
+// 				oldPath:           test.fields.oldPath,
+// 				path:              test.fields.path,
+// 				addIds:            test.fields.addIds,
+// 				addVecs:           test.fields.addVecs,
+// 				nlist:             test.fields.nlist,
+// 				alen:              test.fields.alen,
 // 				nocie:             test.fields.nocie,
 // 				nogce:             test.fields.nogce,
 // 				wfci:              test.fields.wfci,
-// 				inMem:             test.fields.inMem,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 				dim:               test.fields.dim,
-// 				nlist:             test.fields.nlist,
+// 				lastNocie:         test.fields.lastNocie,
 // 				m:                 test.fields.m,
-// 				alen:              test.fields.alen,
+// 				icnt:              test.fields.icnt,
 // 				dur:               test.fields.dur,
 // 				sdur:              test.fields.sdur,
 // 				lim:               test.fields.lim,
 // 				minLit:            test.fields.minLit,
 // 				maxLit:            test.fields.maxLit,
 // 				litFactor:         test.fields.litFactor,
-// 				enableProactiveGC: test.fields.enableProactiveGC,
-// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
-// 				path:              test.fields.path,
-// 				tmpPath:           test.fields.tmpPath,
-// 				oldPath:           test.fields.oldPath,
-// 				basePath:          test.fields.basePath,
-// 				dcd:               test.fields.dcd,
 // 				idelay:            test.fields.idelay,
-// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 				trainSize:         test.fields.trainSize,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				isTrained:         test.fields.isTrained,
+// 				dcd:               test.fields.dcd,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				inMem:             test.fields.inMem,
 // 			}
 //
 // 			gotRes, err := f.toSearchResponse(test.args.sr)

@@ -26,21 +26,21 @@ import (
 
 func TestTLS_Bind(t *testing.T) {
 	type fields struct {
-		Enabled bool
 		Cert    string
 		Key     string
 		CA      string
+		Enabled bool
 	}
 	type want struct {
 		want *TLS
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *TLS) error
 		beforeFunc func(*testing.T)
 		afterFunc  func()
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *TLS) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -127,21 +127,21 @@ func TestTLS_Bind(t *testing.T) {
 
 func TestTLS_Opts(t *testing.T) {
 	type fields struct {
-		Enabled bool
 		Cert    string
 		Key     string
 		CA      string
+		Enabled bool
 	}
 	type want struct {
 		want []tls.Option
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, []tls.Option) error
 		beforeFunc func()
 		afterFunc  func()
+		fields     fields
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got []tls.Option) error {
 		if len(w.want) != len(got) {

@@ -54,12 +54,12 @@ func TestNew(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, Reader, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got Reader, err error) error {
 		if !errors.Is(err, w.err) {
@@ -134,27 +134,27 @@ func Test_reader_Open(t *testing.T) {
 	}
 	type fields struct {
 		eg             errgroup.Group
-		backoffEnabled bool
 		service        s3iface.S3API
-		bucket         string
 		pr             io.ReadCloser
-		wg             *sync.WaitGroup
 		ctxio          ctxio.IO
+		wg             *sync.WaitGroup
+		bucket         string
 		backoffOpts    []backoff.Option
 		maxChunkSize   int64
+		backoffEnabled bool
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
 		hookFunc   func(*reader)
+		args       args
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -164,7 +164,7 @@ func Test_reader_Open(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx := context.Background()
+			ctx := t.Context()
 			cctx, cancel := context.WithCancel(ctx)
 			eg, _ := errgroup.New(ctx)
 
@@ -194,7 +194,7 @@ func Test_reader_Open(t *testing.T) {
 		}(),
 
 		func() test {
-			ctx := context.Background()
+			ctx := t.Context()
 			cctx, cancel := context.WithCancel(ctx)
 			eg, _ := errgroup.New(ctx)
 
@@ -233,7 +233,7 @@ func Test_reader_Open(t *testing.T) {
 		}(),
 
 		func() test {
-			ctx := context.Background()
+			ctx := t.Context()
 			cctx, cancel := context.WithCancel(ctx)
 			eg, _ := errgroup.New(ctx)
 
@@ -267,7 +267,7 @@ func Test_reader_Open(t *testing.T) {
 		}(),
 
 		func() test {
-			ctx := context.Background()
+			ctx := t.Context()
 			cctx, cancel := context.WithCancel(ctx)
 			eg, _ := errgroup.New(ctx)
 
@@ -316,7 +316,7 @@ func Test_reader_Open(t *testing.T) {
 		}(),
 
 		func() test {
-			ctx := context.Background()
+			ctx := t.Context()
 			cctx, cancel := context.WithCancel(ctx)
 			eg, _ := errgroup.New(ctx)
 
@@ -369,7 +369,7 @@ func Test_reader_Open(t *testing.T) {
 		}(),
 
 		func() test {
-			ctx := context.Background()
+			ctx := t.Context()
 			cctx, cancel := context.WithCancel(ctx)
 			eg, _ := errgroup.New(ctx)
 
@@ -492,21 +492,21 @@ func Test_reader_Open(t *testing.T) {
 func Test_reader_Close(t *testing.T) {
 	type fields struct {
 		eg      errgroup.Group
-		service *s3.S3
-		bucket  string
 		pr      io.ReadCloser
+		service *s3.S3
 		wg      *sync.WaitGroup
+		bucket  string
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -590,23 +590,23 @@ func Test_reader_Read(t *testing.T) {
 	}
 	type fields struct {
 		eg      errgroup.Group
-		service *s3.S3
-		bucket  string
 		pr      io.ReadCloser
+		service *s3.S3
 		wg      *sync.WaitGroup
+		bucket  string
 	}
 	type want struct {
-		wantN int
 		err   error
+		wantN int
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
 		want       want
 		checkFunc  func(want, int, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, gotN int, err error) error {
 		if !errors.Is(err, w.err) {
@@ -706,26 +706,26 @@ func Test_reader_getObjectWithBackoff(t *testing.T) {
 	type fields struct {
 		eg             errgroup.Group
 		service        s3iface.S3API
-		bucket         string
 		pr             io.ReadCloser
+		ctxio          ctxio.IO
 		wg             *sync.WaitGroup
-		backoffEnabled bool
+		bucket         string
 		backoffOpts    []backoff.Option
 		maxChunkSize   int64
-		ctxio          ctxio.IO
+		backoffEnabled bool
 	}
 	type want struct {
 		want io.Reader
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
 		checkFunc  func(want, io.Reader, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got io.Reader, err error) error {
 		if !errors.Is(err, w.err) {
@@ -740,7 +740,7 @@ func Test_reader_getObjectWithBackoff(t *testing.T) {
 		{
 			name: "returns (Reader, nil) when no error occurs",
 			args: args{
-				ctx:    context.Background(),
+				ctx:    t.Context(),
 				key:    "vald",
 				offset: 1,
 				length: 10,
@@ -778,7 +778,7 @@ func Test_reader_getObjectWithBackoff(t *testing.T) {
 		{
 			name: "returns error when s3 service returns error and backoff fails",
 			args: args{
-				ctx:    context.Background(),
+				ctx:    t.Context(),
 				key:    "vald",
 				offset: 1,
 				length: 10,
@@ -844,26 +844,26 @@ func Test_reader_getObject(t *testing.T) {
 	type fields struct {
 		eg             errgroup.Group
 		service        s3iface.S3API
-		bucket         string
 		pr             io.ReadCloser
+		ctxio          ctxio.IO
 		wg             *sync.WaitGroup
-		backoffEnabled bool
+		bucket         string
 		backoffOpts    []backoff.Option
 		maxChunkSize   int64
-		ctxio          ctxio.IO
+		backoffEnabled bool
 	}
 	type want struct {
 		want io.Reader
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
 		checkFunc  func(want, io.Reader, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got io.Reader, err error) error {
 		if !errors.Is(err, w.err) {
@@ -878,7 +878,7 @@ func Test_reader_getObject(t *testing.T) {
 		{
 			name: "returns (Reader, nil) when no error occurs",
 			args: args{
-				ctx:    context.Background(),
+				ctx:    t.Context(),
 				key:    "vald",
 				offset: 2,
 				length: 10,
@@ -916,7 +916,7 @@ func Test_reader_getObject(t *testing.T) {
 		{
 			name: "returns (Reader, nil) when the reader close error occurs and output warning",
 			args: args{
-				ctx:    context.Background(),
+				ctx:    t.Context(),
 				key:    "vald",
 				offset: 2,
 				length: 10,
@@ -954,7 +954,7 @@ func Test_reader_getObject(t *testing.T) {
 		{
 			name: "returns ErrBlobNoSuchBucket when s3 service returns error and error code is ErrBlobNoSuchBucket",
 			args: args{
-				ctx:    context.Background(),
+				ctx:    t.Context(),
 				key:    "vald",
 				offset: 2,
 				length: 10,
@@ -976,7 +976,7 @@ func Test_reader_getObject(t *testing.T) {
 		{
 			name: "returns nil when s3 service returns error and error code is ErrCodeNoSuchKey",
 			args: args{
-				ctx:    context.Background(),
+				ctx:    t.Context(),
 				key:    "vald",
 				offset: 2,
 				length: 10,
@@ -997,7 +997,7 @@ func Test_reader_getObject(t *testing.T) {
 		{
 			name: "returns nil when s3 service returns error and error code is ErrCodeNoSuchKey",
 			args: args{
-				ctx:    context.Background(),
+				ctx:    t.Context(),
 				key:    "vald",
 				offset: 2,
 				length: 10,
@@ -1018,7 +1018,7 @@ func Test_reader_getObject(t *testing.T) {
 		{
 			name: "returns s3 error when s3 service returns error and error code is `Invalid`",
 			args: args{
-				ctx:    context.Background(),
+				ctx:    t.Context(),
 				key:    "vald",
 				offset: 2,
 				length: 10,
@@ -1039,7 +1039,7 @@ func Test_reader_getObject(t *testing.T) {
 		{
 			name: "returns error when reader creation fails",
 			args: args{
-				ctx:    context.Background(),
+				ctx:    t.Context(),
 				key:    "vald",
 				offset: 2,
 				length: 10,
@@ -1065,7 +1065,7 @@ func Test_reader_getObject(t *testing.T) {
 		{
 			name: "returns error when failed to copy to buffer",
 			args: args{
-				ctx:    context.Background(),
+				ctx:    t.Context(),
 				key:    "vald",
 				offset: 2,
 				length: 10,

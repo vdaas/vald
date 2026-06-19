@@ -33,23 +33,23 @@ var defaultMultiInsertReqComparators = []comparator.Option{
 func TestGenMultiInsertReq(t *testing.T) {
 	t.Parallel()
 	type args struct {
+		cfg  *payload.Insert_Config
 		t    ObjectType
 		dist vector.Distribution
 		num  int
 		dim  int
-		cfg  *payload.Insert_Config
 	}
 	type want struct {
 		want *payload.Insert_MultiRequest
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *payload.Insert_MultiRequest, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	dim := 10
 	// skipcq: CRT-D0001
@@ -246,20 +246,20 @@ func TestGenMultiInsertReq(t *testing.T) {
 func TestGenSameVecMultiInsertReq(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		num int
-		vec []float32
 		cfg *payload.Insert_Config
+		vec []float32
+		num int
 	}
 	type want struct {
 		want *payload.Insert_MultiRequest
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *payload.Insert_MultiRequest) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got *payload.Insert_MultiRequest) error {
 		if diff := comparator.Diff(got, w.want, defaultMultiInsertReqComparators...); diff != "" {

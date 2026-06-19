@@ -44,12 +44,12 @@ func TestRecoverFunc(t *testing.T) {
 		wantPanic func() error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
+		args       args
 		checkFunc  func(want, func() error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got func() error) error {
 		gotErr := got()

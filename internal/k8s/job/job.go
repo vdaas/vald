@@ -36,13 +36,13 @@ import (
 type JobWatcher k8s.ResourceController
 
 type reconciler struct {
+	jobsByAppNamePool sync.Pool
 	mgr               manager.Manager
-	name              string
-	namespaces        []string
 	onError           func(err error)
 	onReconcile       func(ctx context.Context, jobList map[string][]k8s.Job)
+	name              string
+	namespaces        []string
 	listOpts          []client.ListOption
-	jobsByAppNamePool sync.Pool // map[app][]Job
 }
 
 // New returns the JobWatcher that implements reconciliation loop, or any errors occurred.

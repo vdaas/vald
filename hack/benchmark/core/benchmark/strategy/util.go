@@ -48,9 +48,9 @@ func insertAndCreateIndex32(
 	ids = make([]uint, 0, dataset.TrainSize()*bulkInsertCnt)
 
 	n := 0
-	for i := 0; i < bulkInsertCnt; i++ {
+	for range bulkInsertCnt {
 		train := make([][]float32, 0, dataset.TrainSize()/bulkInsertCnt)
-		for j := 0; j < len(train); j++ {
+		for j := 0; j < cap(train); j++ {
 			v, err := dataset.Train(n)
 			if err != nil {
 				n = 0
@@ -80,7 +80,7 @@ func insertAndCreateIndex64(
 	ids = make([]uint, 0, dataset.TrainSize()*bulkInsertCnt)
 
 	n := 0
-	for i := 0; i < bulkInsertCnt; i++ {
+	for range bulkInsertCnt {
 		train := make([][]float64, 0, dataset.TrainSize()/bulkInsertCnt)
 		for j := 0; j < len(train); j++ {
 			v, err := dataset.Train(n)

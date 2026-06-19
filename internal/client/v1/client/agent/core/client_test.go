@@ -200,8 +200,8 @@ package core
 // 	}
 // 	type fields struct {
 // 		Client vald.Client
-// 		addrs  []string
 // 		c      grpc.Client
+// 		addrs  []string
 // 	}
 // 	type want struct {
 // 		want *client.Empty
@@ -237,8 +237,8 @@ package core
 // 		       },
 // 		       fields: fields {
 // 		           Client:nil,
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -263,8 +263,8 @@ package core
 // 		           },
 // 		           fields: fields {
 // 		           Client:nil,
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -296,8 +296,8 @@ package core
 // 			}
 // 			c := &agentClient{
 // 				Client: test.fields.Client,
-// 				addrs:  test.fields.addrs,
 // 				c:      test.fields.c,
+// 				addrs:  test.fields.addrs,
 // 			}
 //
 // 			got, err := c.CreateIndex(test.args.ctx, test.args.req, test.args.in2...)
@@ -316,8 +316,8 @@ package core
 // 	}
 // 	type fields struct {
 // 		Client vald.Client
-// 		addrs  []string
 // 		c      grpc.Client
+// 		addrs  []string
 // 	}
 // 	type want struct {
 // 		want *client.Empty
@@ -353,8 +353,8 @@ package core
 // 		       },
 // 		       fields: fields {
 // 		           Client:nil,
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -379,8 +379,8 @@ package core
 // 		           },
 // 		           fields: fields {
 // 		           Client:nil,
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -412,8 +412,8 @@ package core
 // 			}
 // 			c := &agentClient{
 // 				Client: test.fields.Client,
-// 				addrs:  test.fields.addrs,
 // 				c:      test.fields.c,
+// 				addrs:  test.fields.addrs,
 // 			}
 //
 // 			got, err := c.SaveIndex(test.args.ctx, test.args.in1, test.args.in2...)
@@ -432,8 +432,8 @@ package core
 // 	}
 // 	type fields struct {
 // 		Client vald.Client
-// 		addrs  []string
 // 		c      grpc.Client
+// 		addrs  []string
 // 	}
 // 	type want struct {
 // 		want *client.Empty
@@ -469,8 +469,8 @@ package core
 // 		       },
 // 		       fields: fields {
 // 		           Client:nil,
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -495,8 +495,8 @@ package core
 // 		           },
 // 		           fields: fields {
 // 		           Client:nil,
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -528,8 +528,8 @@ package core
 // 			}
 // 			c := &agentClient{
 // 				Client: test.fields.Client,
-// 				addrs:  test.fields.addrs,
 // 				c:      test.fields.c,
+// 				addrs:  test.fields.addrs,
 // 			}
 //
 // 			got, err := c.CreateAndSaveIndex(test.args.ctx, test.args.req, test.args.in2...)

@@ -25,7 +25,7 @@ func GenObjectLocations(num int, name string, ipAddr string) *payload.Object_Loc
 		Locations: make([]*payload.Object_Location, num),
 	}
 
-	for i := 0; i < num; i++ {
+	for i := range num {
 		result.Locations[i] = &payload.Object_Location{
 			Name: name,
 			Uuid: "uuid-" + strconv.Itoa(i+1),
@@ -39,7 +39,7 @@ func GenObjectLocations(num int, name string, ipAddr string) *payload.Object_Loc
 func GenObjectStreamLocation(num int, name string, ipAddr string) []*payload.Object_StreamLocation {
 	result := make([]*payload.Object_StreamLocation, num)
 
-	for i := 0; i < num; i++ {
+	for i := range num {
 		result[i] = &payload.Object_StreamLocation{
 			Payload: &payload.Object_StreamLocation_Location{
 				Location: &payload.Object_Location{
