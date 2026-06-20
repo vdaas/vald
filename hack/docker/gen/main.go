@@ -493,6 +493,7 @@ var (
 	clangLTOBuildDeps = []string{
 		"clang",
 		"lld",
+		"llvm",
 	}
 	devContainerDeps = []string{
 		"file",
@@ -671,6 +672,7 @@ func main() {
 	} else {
 		y, err := time.Parse("2006", yearString)
 		if err != nil {
+			cancel()
 			// skipcq: RVV-A0003
 			log.Fatal(err)
 		}

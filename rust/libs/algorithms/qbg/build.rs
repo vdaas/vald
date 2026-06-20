@@ -30,7 +30,7 @@ fn main() -> miette::Result<()> {
     println!("cargo:rustc-link-lib=static:+whole-archive=ngt");
     println!("cargo:rustc-link-lib=blas");
     println!("cargo:rustc-link-lib=lapack");
-    println!("cargo:rustc-link-lib=dylib=gomp");
+    vald_build_utils::link_openmp("/usr/local/lib/libngt.a");
     println!("cargo:rerun-if-changed=src/*");
 
     Ok(())

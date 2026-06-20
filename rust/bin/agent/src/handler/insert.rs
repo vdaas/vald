@@ -39,8 +39,8 @@ pub(super) async fn insert(
         Some(cfg) => cfg,
         None => return Err(Status::invalid_argument("Missing configuration in request")),
     };
-    let hostname = cargo::util::hostname()?;
-    let domain = hostname.to_str().unwrap();
+    let hostname = super::common::get_hostname();
+    let domain = hostname.as_str();
     {
         let mut s = s.write().await;
         let vec = match request.vector.clone() {
@@ -226,8 +226,8 @@ impl insert_server::Insert for super::Agent {
     ) -> std::result::Result<tonic::Response<object::Locations>, tonic::Status> {
         info!("Recieved a request from {:?}", request.remote_addr());
         let mreq = request.get_ref();
-        let hostname = cargo::util::hostname()?;
-        let domain = hostname.to_str().unwrap();
+        let hostname = super::common::get_hostname();
+        let domain = hostname.as_str();
         let mut uuids: Vec<String> = Vec::new();
         let mut vmap = HashMap::new();
         {
