@@ -49,7 +49,7 @@ jobs:
       contents: read
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
       - uses: ./.github/actions/dump-context
@@ -86,7 +86,7 @@ jobs:
           else
             echo ref=${{ github.sha }} >> $GITHUB_OUTPUT
           fi
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           ref: ${{ steps.ref.outputs.ref }}
@@ -144,7 +144,7 @@ jobs:
         include: ${{ fromJson(needs.prepare.outputs.matrix) }}
     runs-on: ${{ matrix.runs-on }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           ref: ${{ needs.prepare.outputs.ref }}
@@ -152,19 +152,35 @@ jobs:
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Login to DockerHub
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
-        with:
-          username: ${{ secrets.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_PASS }}
+        shell: bash
+        env:
+          DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+          DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
+        run: |
+          # docker/login-action has no retry, and the registry-1.docker.io
+          # handshake intermittently goes unreachable for sustained windows
+          # ("Client.Timeout exceeded"), failing the whole build job. Retry long
+          # enough (≈5 min) to ride out a typical Docker Hub blip.
+          n=1
+          max=15
+          until printf '%s' "${DOCKERHUB_PASS}" | docker login -u "${DOCKERHUB_USER}" --password-stdin; do
+            if [ "${n}" -ge "${max}" ]; then
+              echo "::error::docker login (DockerHub) failed after ${max} attempts"
+              exit 1
+            fi
+            echo "::warning::docker login (DockerHub) attempt ${n} failed (transient registry timeout); retrying in 20s"
+            n=$((n + 1))
+            sleep 20
+          done
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
         with:
           registry: ghcr.io
           username: ${{ secrets.PACKAGE_USER }}
           password: ${{ secrets.PACKAGE_TOKEN }}
       - name: Setup Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
         with:
           version: latest
           platforms: linux/${{ matrix.arch }}
@@ -194,24 +210,40 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, prepare]
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           ref: ${{ needs.prepare.outputs.ref }}
       - name: Login to DockerHub
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
-        with:
-          username: ${{ secrets.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_PASS }}
+        shell: bash
+        env:
+          DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+          DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
+        run: |
+          # docker/login-action has no retry, and the registry-1.docker.io
+          # handshake intermittently goes unreachable for sustained windows
+          # ("Client.Timeout exceeded"), failing the whole build job. Retry long
+          # enough (≈5 min) to ride out a typical Docker Hub blip.
+          n=1
+          max=15
+          until printf '%s' "${DOCKERHUB_PASS}" | docker login -u "${DOCKERHUB_USER}" --password-stdin; do
+            if [ "${n}" -ge "${max}" ]; then
+              echo "::error::docker login (DockerHub) failed after ${max} attempts"
+              exit 1
+            fi
+            echo "::warning::docker login (DockerHub) attempt ${n} failed (transient registry timeout); retrying in 20s"
+            n=$((n + 1))
+            sleep 20
+          done
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
         with:
           registry: ghcr.io
           username: ${{ secrets.PACKAGE_USER }}
           password: ${{ secrets.PACKAGE_TOKEN }}
       - name: Setup Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
         with:
           version: latest
           driver-opts: |
@@ -235,7 +267,7 @@ jobs:
     needs: [merge]
     if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
       - uses: ./.github/actions/notify-slack

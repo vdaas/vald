@@ -45,13 +45,31 @@ runs:
       shell: bash
       id: create_manifest
       run: |
-        for tag in ${PRIMARY_TAG} ${EXTRA_TAGS}; do
+        push_manifest() {
           make \
             TARGET="${TARGET}" \
-            TAG="${tag}" \
+            TAG="${1}" \
             ARCHS="${ARCHS}" \
             docker/create/manifest \
             docker/create/manifest/alter
+        }
+        # The manifest create/push hits docker.io, which intermittently goes
+        # unreachable ("Client.Timeout exceeded"). Retry to ride out the blip.
+        for tag in ${PRIMARY_TAG} ${EXTRA_TAGS}; do
+          attempt=1
+          max_attempts=5
+          while true; do
+            if push_manifest "${tag}"; then
+              break
+            fi
+            if [ "${attempt}" -ge "${max_attempts}" ]; then
+              echo "::error::docker manifest push for ${TARGET}:${tag} failed after ${max_attempts} attempts"
+              exit 1
+            fi
+            echo "::warning::docker manifest push for ${TARGET}:${tag} attempt ${attempt} failed (likely transient registry timeout); retrying in 30s"
+            attempt=$((attempt + 1))
+            sleep 30
+          done
         done
       env:
         TARGET: ${{ inputs.target }}
@@ -62,12 +80,30 @@ runs:
       shell: bash
       id: inspect_image
       run: |
-        for tag in ${PRIMARY_TAG} ${EXTRA_TAGS}; do
+        inspect_image() {
           make \
             TARGET="${TARGET}" \
-            TAG="${tag}" \
+            TAG="${1}" \
             docker/inspect/image \
             docker/inspect/image/alter
+        }
+        # Inspect reads the just-pushed manifest from docker.io; retry over the
+        # same transient registry-timeout window.
+        for tag in ${PRIMARY_TAG} ${EXTRA_TAGS}; do
+          attempt=1
+          max_attempts=5
+          while true; do
+            if inspect_image "${tag}"; then
+              break
+            fi
+            if [ "${attempt}" -ge "${max_attempts}" ]; then
+              echo "::error::docker inspect for ${TARGET}:${tag} failed after ${max_attempts} attempts"
+              exit 1
+            fi
+            echo "::warning::docker inspect for ${TARGET}:${tag} attempt ${attempt} failed (likely transient registry timeout); retrying in 30s"
+            attempt=$((attempt + 1))
+            sleep 30
+          done
         done
       env:
         TARGET: ${{ inputs.target }}

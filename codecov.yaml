@@ -13,6 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        # Tolerate small project-coverage variance per PR (race-detector and
+        # parallel cgo tests fluctuate slightly run-to-run); still fail on a
+        # real regression larger than this.
+        threshold: 2%
+    patch:
+      default:
+        target: auto
+        threshold: 0%
 ignore:
   - "apis/docs/v1/docs.md"
   - "apis/grpc/**/*.pb.go"

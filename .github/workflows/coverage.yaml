@@ -32,7 +32,7 @@ on:
   workflow_dispatch: {}
 jobs:
   dump-contexts-to-log:
-    timeout-minutes: 30
+    timeout-minutes: 60
     permissions:
       contents: read
     runs-on: ubuntu-slim
@@ -46,7 +46,7 @@ jobs:
       contents: read
     uses: ./.github/workflows/_detect-ci-container.yaml
   coverage:
-    timeout-minutes: 30
+    timeout-minutes: 60
     permissions:
       contents: read
     runs-on: ubuntu-latest

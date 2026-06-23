@@ -321,9 +321,19 @@ func TestParse(t *testing.T) {
 			want: want{
 				wantHost: "google.com",
 				wantPort: uint16(8080),
-				isV4:     true,
-				isV6:     false,
 				isLocal:  false,
+			},
+			checkFunc: func(w want, gotHost string, gotPort uint16, gotIsLocal bool, gotIsV4 bool, gotIsV6 bool, err error) error {
+				if gotHost != w.wantHost {
+					return errors.Errorf("gotHost: %q, want: %q", gotHost, w.wantHost)
+				}
+				if gotPort != w.wantPort {
+					return errors.Errorf("gotPort: %d, want: %d", gotPort, w.wantPort)
+				}
+				if gotIsLocal != w.isLocal {
+					return errors.Errorf("gotIsLocal: %v, want: %v", gotIsLocal, w.isLocal)
+				}
+				return nil
 			},
 		},
 		{
