@@ -497,7 +497,8 @@ $(USR_LOCAL)/include/usearch.h: | ninja/install
 		-DUSEARCH_USE_FP16LIB=ON \
 		-DUSEARCH_USE_OPENMP=ON \
 		-DUSEARCH_USE_SIMSIMD=ON \
-		-DUSEARCH_USE_JEMALLOC=ON, \
+		-DUSEARCH_USE_JEMALLOC=OFF \
+		-DCMAKE_POSITION_INDEPENDENT_CODE=ON, \
 		cp $(TEMP_DIR)/usearch/build/libusearch_static_c.a $(LIB_PATH)/libusearch_c.a && cp $(TEMP_DIR)/usearch/build/libusearch_static_c.a $(LIB_PATH)/libusearch_static_c.a && cp $(TEMP_DIR)/usearch/build/libusearch_c.so $(LIB_PATH)/libusearch_c.so && cp $(TEMP_DIR)/usearch/c/usearch.h $(USR_LOCAL)/include/usearch.h, \
 		v$(USEARCH_VERSION))
 
