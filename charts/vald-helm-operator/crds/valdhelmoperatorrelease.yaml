@@ -83,6 +83,8 @@ spec:
                         - Never
                         - IfNotPresent
                       type: string
+                    registry:
+                      type: string
                     repository:
                       type: string
                     tag:

@@ -698,13 +698,26 @@ trace:
 {{- end -}}
 
 {{/*
+Full image reference with optional registry prefix.
+Args: registry, globalRegistry, repository, tag
+*/}}
+{{- define "vald.image" -}}
+{{- $registry := default .globalRegistry .registry | trimSuffix "/" -}}
+{{- if $registry -}}
+{{- printf "%s/%s:%s" $registry .repository .tag -}}
+{{- else -}}
+{{- printf "%s:%s" .repository .tag -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 initContainers
 */}}
 {{- define "vald.initContainers" -}}
 {{- range .initContainers -}}
 {{- if .type }}
 - name: {{ .name }}
-  image: {{ .image }}
+  image: {{ if $.Values.defaults.image.registry }}{{ $.Values.defaults.image.registry | trimSuffix "/" }}/{{ end }}{{ .image }}
   imagePullPolicy: {{ .imagePullPolicy }}
   {{- if eq .type "wait-for" }}
   command:
@@ -912,7 +925,7 @@ spec:
       {{- end }}
       containers:
         - name: {{ .Job.name }}
-          image: "{{ .Job.image.repository }}:{{ default .default.Values.defaults.image.tag .Job.image.tag }}"
+          image: "{{ include "vald.image" (dict "registry" .Job.image.registry "globalRegistry" .default.Values.defaults.image.registry "repository" .Job.image.repository "tag" (default .default.Values.defaults.image.tag .Job.image.tag)) }}"
           imagePullPolicy: {{ .Job.image.pullPolicy }}
           volumeMounts:
             - name: {{ .Job.name }}-config

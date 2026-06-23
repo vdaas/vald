@@ -80,7 +80,7 @@ spec:
       {{- end }}
       containers:
         - name: {{ $gateway.name }}
-          image: "{{ $gateway.image.repository }}:{{ default .Values.defaults.image.tag $gateway.image.tag }}"
+          image: "{{ include "vald.image" (dict "registry" $gateway.image.registry "globalRegistry" .Values.defaults.image.registry "repository" $gateway.image.repository "tag" (default .Values.defaults.image.tag $gateway.image.tag)) }}"
           imagePullPolicy: {{ $gateway.image.pullPolicy }}
           {{- $servers := dict "Values" $gateway.server_config "default" .Values.defaults.server_config -}}
           {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
