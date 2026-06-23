@@ -486,6 +486,14 @@ var (
 		"protobuf-compiler",
 		"libprotobuf-dev",
 	}
+<<<<<<< HEAD
+=======
+	clangLTOBuildDeps = []string{
+		"clang",
+		"lld",
+		"llvm",
+	}
+>>>>>>> 207164ba9 ([Bugfix] fix SIGABRT problem for Agent NGT (#3531))
 	devContainerDeps = []string{
 		"file",
 		"gawk",
@@ -662,6 +670,7 @@ func main() {
 	} else {
 		y, err := time.Parse("2006", yearString)
 		if err != nil {
+			cancel()
 			// skipcq: RVV-A0003
 			log.Fatal(err)
 		}

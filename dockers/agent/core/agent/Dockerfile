@@ -75,6 +75,12 @@ RUN --mount=type=bind,target=.,rw \
     pkg-config \
     protobuf-compiler \
     libprotobuf-dev \
+<<<<<<< HEAD
+=======
+    clang \
+    lld \
+    llvm \
+>>>>>>> 207164ba9 ([Bugfix] fix SIGABRT problem for Agent NGT (#3531))
     && ldconfig \
     && echo "${LANG} UTF-8" > /etc/locale.gen \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
