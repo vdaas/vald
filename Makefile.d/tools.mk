@@ -426,9 +426,9 @@ $(USR_LOCAL)/include/NGT/Capi.h: | ninja/install $(LIB_PATH)/libomp.a
 		-DCMAKE_USE_PTHREADS_INIT=1 \
 		-DTHREADS_PREFER_PTHREAD_FLAG=OFF \
 		$(if $(OPENBLAS_PATH),-DBLAS_LIBRARIES="$(OPENBLAS_PATH)" -DLAPACK_LIBRARIES="$(OPENBLAS_PATH)",) \
-		-DCMAKE_EXE_LINKER_FLAGS="$(NGT_LDFLAGS)$(if $(LLD), -fuse-ld=$(LLD))" \
-		-DCMAKE_SHARED_LINKER_FLAGS="$(NGT_LDFLAGS)$(if $(LLD), -fuse-ld=$(LLD))" \
-		-DCMAKE_MODULE_LINKER_FLAGS="$(NGT_LDFLAGS)$(if $(LLD), -fuse-ld=$(LLD))" \
+		-DCMAKE_EXE_LINKER_FLAGS="$(NGT_LDFLAGS)$(if $(filter ld.lld lld,$(notdir $(LLD))), -fuse-ld=lld)" \
+		-DCMAKE_SHARED_LINKER_FLAGS="$(NGT_LDFLAGS)$(if $(filter ld.lld lld,$(notdir $(LLD))), -fuse-ld=lld)" \
+		-DCMAKE_MODULE_LINKER_FLAGS="$(NGT_LDFLAGS)$(if $(filter ld.lld lld,$(notdir $(LLD))), -fuse-ld=lld)" \
 		$(NGT_EXTRA_CMAKE_FLAGS), \
 		mkdir -p $(TEMP_DIR)/ngt/build/bin/ngt $(TEMP_DIR)/ngt/build/bin/qbg && touch $(TEMP_DIR)/ngt/build/bin/ngt/ngt $(TEMP_DIR)/ngt/build/bin/qbg/qbg, \
 		v$(NGT_VERSION), \
