@@ -25,7 +25,7 @@ cyan = printf "\x1b[36m\#\# %s\x1b[0m\n" $1
 
 # --- Environment Variables & Constants ---
 
-LLD ?= $(shell command -v ld.lld 2>/dev/null || command -v lld 2>/dev/null || command -v ld)
+LLD ?= $(shell command -v ld.lld 2>/dev/null || command -v lld 2>/dev/null)
 NM ?= $(shell command -v llvm-nm 2>/dev/null || ls /usr/bin/llvm-nm-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-nm 2>/dev/null || ls /usr/bin/gcc-nm-* 2>/dev/null | sort -V | tail -1 | grep . || command -v nm)
 RANLIB ?= $(shell command -v llvm-ranlib 2>/dev/null || ls /usr/bin/llvm-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ranlib 2>/dev/null || ls /usr/bin/gcc-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ranlib)
 
