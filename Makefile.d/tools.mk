@@ -425,6 +425,7 @@ $(USR_LOCAL)/include/NGT/Capi.h: | ninja/install $(LIB_PATH)/libomp.a
 		-DCMAKE_HAVE_THREADS_LIBRARY=1 \
 		-DCMAKE_USE_PTHREADS_INIT=1 \
 		-DTHREADS_PREFER_PTHREAD_FLAG=OFF \
+		$(if $(OPENBLAS_PATH),-DBLAS_LIBRARIES="$(OPENBLAS_PATH)" -DLAPACK_LIBRARIES="$(OPENBLAS_PATH)",) \
 		-DCMAKE_EXE_LINKER_FLAGS="$(NGT_LDFLAGS)$(if $(LLD), -fuse-ld=$(LLD))" \
 		-DCMAKE_SHARED_LINKER_FLAGS="$(NGT_LDFLAGS)$(if $(LLD), -fuse-ld=$(LLD))" \
 		-DCMAKE_MODULE_LINKER_FLAGS="$(NGT_LDFLAGS)$(if $(LLD), -fuse-ld=$(LLD))" \
@@ -445,7 +446,7 @@ faiss/install: $(LIB_PATH)/libfaiss.a
 # find_package(BLAS REQUIRED) that fails under cmake 4.3.3. Pre-seeding the
 # BLAS_PREFER_THREADED cache entry with the real path takes faiss's working
 # branch (it sets BLAS_LIBRARIES/LAPACK_LIBRARIES from it and skips find_package).
-OPENBLAS_PATH = $(shell ldconfig -p 2>/dev/null | awk '/libopenblas\.so/{print $$NF; exit}')
+OPENBLAS_PATH = $(shell ldconfig -p 2>/dev/null | awk '/libopenblas.*\.so.*=>/{print $$NF; exit}')
 
 $(LIB_PATH)/libfaiss.a: | ninja/install $(LIB_PATH)/libomp.a
 	# Faiss needs the BLAS/LAPACK (OpenBLAS) -dev packages (headers + .so symlinks)
