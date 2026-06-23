@@ -920,20 +920,16 @@ $(USR_LOCAL)/include/usearch.h:
 .PHONY: cmake/install
 ## install CMAKE
 cmake/install:
-	git clone --depth 1 --branch v$(CMAKE_VERSION) https://github.com/Kitware/CMake.git $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)
-	cd $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION) && \
-	cmake -DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_SHARED_LIBS=OFF \
-	-DBUILD_TESTING=OFF \
-	-DCMAKE_C_FLAGS="$(CFLAGS)" \
-	-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
-	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
-	-B $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)
-	make -C $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build -j$(CORES) cmake
-	make -C $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build install
-	cd $(ROOTDIR)
-	rm -rf $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)
-	ldconfig
+	CMAKE_ARCH=$$(if [ "$(ARCH)" = "aarch64" ] || [ "$(ARCH)" = "arm64" ]; then echo "aarch64"; else echo "x86_64"; fi); \
+	TAR_NAME="cmake-$(CMAKE_VERSION)-linux-$${CMAKE_ARCH}.tar.gz" \
+	&& curl -fsSL "https://github.com/Kitware/CMake/releases/download/v$(CMAKE_VERSION)/$${TAR_NAME}" -o "$(TEMP_DIR)/$${TAR_NAME}" \
+	&& mkdir -p $(TEMP_DIR)/cmake-$(CMAKE_VERSION) \
+	&& tar -xzf "$(TEMP_DIR)/$${TAR_NAME}" -C $(TEMP_DIR)/cmake-$(CMAKE_VERSION) --strip-components 1 \
+	&& $(SUDO) cp -r $(TEMP_DIR)/cmake-$(CMAKE_VERSION)/bin/. $(USR_LOCAL)/bin/ \
+	&& $(SUDO) cp -r $(TEMP_DIR)/cmake-$(CMAKE_VERSION)/share/. $(USR_LOCAL)/share/ \
+	&& rm -rf "$(TEMP_DIR)/$${TAR_NAME}" $(TEMP_DIR)/cmake-$(CMAKE_VERSION) \
+	&& cmake --version \
+	&& ldconfig
 
 .PHONY: ninja/install
 ## install ninja-build
