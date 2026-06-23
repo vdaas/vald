@@ -369,12 +369,12 @@ $(LIB_PATH)/libomp.a: | ninja/install
 			&& $(SUDO) apt-get update -qq \
 			&& $(SUDO) apt-get install -y --no-install-recommends python3; } || true; \
 		rm -rf $(TEMP_DIR)/libomp $(TEMP_DIR)/libomp-archive; \
-		curl -fsSL "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(LLVM_VERSION)/llvm-project-$(LLVM_VERSION).src.tar.xz" \
+		curl -fsSL "https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-$(LLVM_VERSION).tar.gz" \
 			-o $(TEMP_DIR)/libomp-archive; \
 		mkdir -p $(TEMP_DIR)/libomp; \
-		tar -xf $(TEMP_DIR)/libomp-archive -C $(TEMP_DIR)/libomp --strip-components 1 \
-			llvm-project-$(LLVM_VERSION).src/openmp \
-			llvm-project-$(LLVM_VERSION).src/cmake; \
+		tar -xzf $(TEMP_DIR)/libomp-archive -C $(TEMP_DIR)/libomp --strip-components 1 \
+			llvm-project-llvmorg-$(LLVM_VERSION)/openmp \
+			llvm-project-llvmorg-$(LLVM_VERSION)/cmake; \
 		cd $(TEMP_DIR)/libomp/openmp \
 		&& env LDFLAGS="" cmake -G Ninja \
 		-DCMAKE_BUILD_TYPE=Release \
