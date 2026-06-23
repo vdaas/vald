@@ -835,6 +835,8 @@ version/yq:
 version/telepresence:
 	@echo $(TELEPRESENCE_VERSION)
 
+OPENBLAS_PATH = $(shell ldconfig -p 2>/dev/null | awk '/libopenblas.*\.so.*=>/{print $$NF; exit}')
+
 .PHONY: ngt/install
 ## install NGT
 ngt/install: $(USR_LOCAL)/include/NGT/Capi.h
@@ -854,6 +856,7 @@ $(USR_LOCAL)/include/NGT/Capi.h:
 	-DCMAKE_C_FLAGS="$(CFLAGS) -flto=auto -ffat-lto-objects" \
 	-DCMAKE_CXX_FLAGS="$(CXXFLAGS) -flto=auto -ffat-lto-objects" \
 	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+	$(if $(OPENBLAS_PATH),-DBLAS_LIBRARIES="$(OPENBLAS_PATH)" -DLAPACK_LIBRARIES="$(OPENBLAS_PATH)",) \
 	$(NGT_EXTRA_CMAKE_FLAGS) \
 	-B $(TEMP_DIR)/NGT-$(NGT_VERSION)/build $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	make -C $(TEMP_DIR)/NGT-$(NGT_VERSION)/build -j$(CORES) ngt
