@@ -476,9 +476,9 @@ $(LIB_PATH)/libfaiss.a: | ninja/install $(LIB_PATH)/libomp.a
 		-DCMAKE_HAVE_THREADS_LIBRARY=1 \
 		-DCMAKE_USE_PTHREADS_INIT=1 \
 		-DTHREADS_PREFER_PTHREAD_FLAG=OFF \
-		-DCMAKE_EXE_LINKER_FLAGS="$(FAISS_LDFLAGS)$(if $(LLD), -fuse-ld=$(LLD))" \
-		-DCMAKE_SHARED_LINKER_FLAGS="$(FAISS_LDFLAGS)$(if $(LLD), -fuse-ld=$(LLD))" \
-		-DCMAKE_MODULE_LINKER_FLAGS="$(FAISS_LDFLAGS)$(if $(LLD), -fuse-ld=$(LLD))", \
+		-DCMAKE_EXE_LINKER_FLAGS="$(FAISS_LDFLAGS)$(if $(filter ld.lld lld,$(notdir $(LLD))), -fuse-ld=lld)" \
+		-DCMAKE_SHARED_LINKER_FLAGS="$(FAISS_LDFLAGS)$(if $(filter ld.lld lld,$(notdir $(LLD))), -fuse-ld=lld)" \
+		-DCMAKE_MODULE_LINKER_FLAGS="$(FAISS_LDFLAGS)$(if $(filter ld.lld lld,$(notdir $(LLD))), -fuse-ld=lld)", \
 		cd $(TEMP_DIR)/faiss && $(SUDO) find faiss -name '*.h' -exec install -D -m 0644 {} $(USR_LOCAL)/include/{} \;, \
 		, \
 		, \
@@ -495,7 +495,7 @@ $(USR_LOCAL)/include/usearch.h: | ninja/install
 		-DUSEARCH_BUILD_BENCH_CPP=OFF \
 		-DUSEARCH_BUILD_TEST_C=OFF \
 		-DUSEARCH_USE_FP16LIB=ON \
-		-DUSEARCH_USE_OPENMP=ON \
+		-DUSEARCH_USE_OPENMP=OFF \
 		-DUSEARCH_USE_SIMSIMD=ON \
 		-DUSEARCH_USE_JEMALLOC=OFF \
 		-DCMAKE_POSITION_INDEPENDENT_CODE=ON, \

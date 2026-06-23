@@ -191,7 +191,7 @@ define go-build
 		osusergo netgo static_build $4, \
 		$6, \
 		$(ROOTDIR)/cmd/$1/main.go)
-	OMP_TOOL=disabled $6 -version
+	-$6 -version
 endef
 
 define go-example-build
