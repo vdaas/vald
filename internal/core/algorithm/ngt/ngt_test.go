@@ -240,7 +240,7 @@ func TestNew(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			comparators := test.comparators
-			if test.comparators == nil || len(test.comparators) == 0 {
+			if len(test.comparators) == 0 {
 				comparators = defaultComparators
 			}
 
@@ -856,7 +856,7 @@ func Test_gen(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			comparators := test.comparators
-			if test.comparators == nil || len(test.comparators) == 0 {
+			if len(test.comparators) == 0 {
 				comparators = defaultComparators
 			}
 

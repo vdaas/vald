@@ -846,7 +846,10 @@ $(USR_LOCAL)/include/NGT/Capi.h:
 	-DBUILD_STATIC_EXECS=ON \
 	-DBUILD_TESTING=OFF \
 	-DNGT_LARGE_DATASET=ON \
-	-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
+	-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
+	-DCMAKE_AR=$$(command -v llvm-ar 2>/dev/null || ls /usr/bin/llvm-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ar 2>/dev/null || ls /usr/bin/gcc-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ar) \
+	-DCMAKE_CXX_COMPILER_AR=$$(command -v llvm-ar 2>/dev/null || ls /usr/bin/llvm-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ar 2>/dev/null || ls /usr/bin/gcc-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ar) \
+	-DCMAKE_RANLIB=$$(command -v llvm-ranlib 2>/dev/null || ls /usr/bin/llvm-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ranlib 2>/dev/null || ls /usr/bin/gcc-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ranlib) \
 	-DCMAKE_C_FLAGS="$(CFLAGS) -flto=auto -ffat-lto-objects" \
 	-DCMAKE_CXX_FLAGS="$(CXXFLAGS) -flto=auto -ffat-lto-objects" \
 	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \

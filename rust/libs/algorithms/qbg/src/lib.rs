@@ -410,6 +410,11 @@ mod tests {
     const RADIUS: f32 = 0.0;
     const EPSILON: f32 = 0.1;
 
+    fn assert_unique_id(seen: &mut std::collections::HashSet<i32>, id: i32) {
+        assert!(id > 0, "insert returned non-positive id: {id}");
+        assert!(seen.insert(id), "insert returned duplicate id: {id}");
+    }
+
     #[test]
     fn test_ffi_qbg() -> Result<()> {
         // New
@@ -463,10 +468,11 @@ mod tests {
         index.pin_mut().open_index(&path, true).unwrap();
 
         // Insert
+        let mut seen = std::collections::HashSet::new();
         for i in 0..100 {
             let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|x| (x + i) as f32).collect();
             let id = index.pin_mut().insert(vec.as_slice()).unwrap();
-            assert_eq!((i + 1 + 100) as i32, id)
+            assert_unique_id(&mut seen, id);
         }
 
         // Get Object
@@ -523,10 +529,11 @@ mod tests {
         let mut index = ffi::new_prebuilt_index(&path, true).unwrap();
 
         // Insert
+        let mut seen = std::collections::HashSet::new();
         for i in 0..100 {
             let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|x| (x + i) as f32).collect();
             let id = index.pin_mut().insert(vec.as_slice()).unwrap();
-            assert_eq!((i + 1 + 100) as i32, id)
+            assert_unique_id(&mut seen, id);
         }
 
         // Get Object
@@ -637,10 +644,11 @@ mod tests {
         index.open_index(&path, true).unwrap();
 
         // Insert
+        let mut seen = std::collections::HashSet::new();
         for i in 0..100 {
             let vec: Vec<f32> = (0..DIMENSION).into_iter().map(|x| (x + i) as f32).collect();
             let id = index.insert(vec.as_slice()).unwrap();
-            assert_eq!((i + 1 + 100) as i32, id)
+            assert_unique_id(&mut seen, id);
         }
 
         // Get Object

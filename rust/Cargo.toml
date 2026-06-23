@@ -19,6 +19,7 @@ members = [
 	"bin/meta",
 	"bin/agent",
 	"libs/algorithm",
+	"libs/build-utils",
 	"libs/algorithms/ngt",
 	"libs/algorithms/qbg",
 	"libs/algorithms/faiss",
