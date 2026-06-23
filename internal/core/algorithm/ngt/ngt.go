@@ -17,7 +17,7 @@
 package ngt
 
 /*
-#cgo LDFLAGS: -lngt
+#cgo LDFLAGS: -L/usr/local/lib -lngt
 #include <NGT/Capi.h>
 #include <stdlib.h>
 */
@@ -38,6 +38,17 @@ import (
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/singleflight"
 )
+
+// pinVec pins the first element of vec to prevent the GC from moving it during CGo calls.
+// The caller must call Unpin on the returned Pinner after the CGo call completes.
+// Returns a no-op Pinner when vec is empty.
+func pinVec(vec []float32) *runtime.Pinner {
+	p := new(runtime.Pinner)
+	if len(vec) > 0 {
+		p.Pin(&vec[0])
+	}
+	return p
+}
 
 type (
 
@@ -716,6 +727,9 @@ func (n *ngt) Search(
 		return nil, errors.ErrIncompatibleDimensionSize(len(vec), int(n.dimension))
 	}
 
+	defer pinVec(vec).Unpin()
+	// &vec[0] must be referenced after pinVec to ensure the backing array is pinned before passing to CGo.
+
 	ne := n.GetErrorBuffer()
 	results := C.ngt_create_empty_results(ne.err)
 	defer C.ngt_destroy_results(results)
@@ -742,7 +756,6 @@ func (n *ngt) Search(
 		results,
 		C.int(edgeSize),
 		ne.err)
-	vec = nil
 	if ret == ErrorCode {
 		n.rUnlock(true)
 		return nil, n.newGoError(ne)
@@ -799,6 +812,9 @@ func (n *ngt) LinearSearch(
 		return nil, errors.ErrIncompatibleDimensionSize(len(vec), int(n.dimension))
 	}
 
+	defer pinVec(vec).Unpin()
+	// &vec[0] must be referenced after pinVec to ensure the backing array is pinned before passing to CGo.
+
 	ne := n.GetErrorBuffer()
 	results := C.ngt_create_empty_results(ne.err)
 	defer C.ngt_destroy_results(results)
@@ -815,7 +831,6 @@ func (n *ngt) LinearSearch(
 		*(*C.size_t)(unsafe.Pointer(&size)),
 		results,
 		ne.err)
-	vec = nil
 
 	if ret == ErrorCode {
 		n.rUnlock(true)
@@ -874,6 +889,9 @@ func (n *ngt) Insert(vec []float32) (id uint, err error) {
 	if len(vec) != int(n.dimension) {
 		return 0, errors.ErrIncompatibleDimensionSize(len(vec), int(n.dimension))
 	}
+
+	defer pinVec(vec).Unpin()
+	// cvec must be obtained after pinVec to ensure the backing array is pinned before passing to CGo.
 	dim := C.uint32_t(n.dimension)
 	cvec := (*C.float)(&vec[0])
 	ne := n.GetErrorBuffer()
@@ -881,9 +899,6 @@ func (n *ngt) Insert(vec []float32) (id uint, err error) {
 	oid := C.ngt_insert_index_as_float(n.index, cvec, dim, ne.err)
 	n.unlock(true)
 	id = uint(oid)
-	cvec = nil
-	vec = vec[:0:0]
-	vec = nil
 	if id == 0 {
 		return 0, n.newGoError(ne)
 	}
@@ -1224,7 +1239,7 @@ func fromCGraphStatistics(cstats *C.NGTGraphStatistics) *GraphStatistics {
 	indegreeCountSize := int(cstats.indegreeCountSize)
 	goStats.IndegreeCount = make([]int64, indegreeCountSize)
 	cIndegreeCount := (*[1 << 30]C.size_t)(unsafe.Pointer(cstats.indegreeCount))[:indegreeCountSize:indegreeCountSize]
-	for i := 0; i < indegreeCountSize; i++ {
+	for i := range indegreeCountSize {
 		goStats.IndegreeCount[i] = int64(cIndegreeCount[i])
 	}
 
@@ -1232,7 +1247,7 @@ func fromCGraphStatistics(cstats *C.NGTGraphStatistics) *GraphStatistics {
 	outdegreeHistogramSize := int(cstats.outdegreeHistogramSize)
 	goStats.OutdegreeHistogram = make([]uint64, outdegreeHistogramSize)
 	cOutdegreeHistogram := (*[1 << 30]C.size_t)(unsafe.Pointer(cstats.outdegreeHistogram))[:outdegreeHistogramSize:outdegreeHistogramSize]
-	for i := 0; i < outdegreeHistogramSize; i++ {
+	for i := range outdegreeHistogramSize {
 		goStats.OutdegreeHistogram[i] = uint64(cOutdegreeHistogram[i])
 	}
 
@@ -1240,7 +1255,7 @@ func fromCGraphStatistics(cstats *C.NGTGraphStatistics) *GraphStatistics {
 	indegreeHistogramSize := int(cstats.indegreeHistogramSize)
 	goStats.IndegreeHistogram = make([]uint64, indegreeHistogramSize)
 	cIndegreeHistogram := (*[1 << 30]C.size_t)(unsafe.Pointer(cstats.indegreeHistogram))[:indegreeHistogramSize:indegreeHistogramSize]
-	for i := 0; i < indegreeHistogramSize; i++ {
+	for i := range indegreeHistogramSize {
 		goStats.IndegreeHistogram[i] = uint64(cIndegreeHistogram[i])
 	}
 

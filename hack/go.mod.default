@@ -1,6 +1,6 @@
 module github.com/vdaas/vald
 
-go 1.26.1
+go 1.26.4
 
 replace (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go => buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go upgrade
