@@ -19,13 +19,20 @@ package grpc
 import (
 	"time"
 
+	stats "github.com/vdaas/vald/apis/grpc/v1/rpc/stats"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/gateway/lb/service"
 )
 
+type Server interface {
+	vald.Server
+	stats.StatsDetailServer
+}
+
 type server struct {
 	vald.UnimplementedValdServer
+	stats.UnimplementedStatsDetailServer
 	eg                errgroup.Group
 	gateway           service.Gateway
 	name              string
@@ -38,7 +45,7 @@ type server struct {
 
 const apiName = "vald/gateway/lb"
 
-func New(opts ...Option) vald.Server {
+func New(opts ...Option) Server {
 	s := new(server)
 
 	for _, opt := range append(defaultOptions, opts...) {

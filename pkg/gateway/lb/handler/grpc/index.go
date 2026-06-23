@@ -362,9 +362,8 @@ func (s *server) IndexStatisticsDetail(
 					sspan.End()
 				}
 			}()
-			var stats *payload.Info_Index_Statistics
-			stats, err = vc.IndexStatistics(sctx, new(payload.Empty), copts...)
-			if err != nil {
+			stats, callErr := vc.IndexStatistics(sctx, new(payload.Empty), copts...)
+			if callErr != nil {
 				var (
 					attrs trace.Attributes
 					st    *status.Status
@@ -372,22 +371,22 @@ func (s *server) IndexStatisticsDetail(
 					code  codes.Code
 				)
 				switch {
-				case errors.Is(err, context.Canceled),
-					errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
+				case errors.Is(callErr, context.Canceled),
+					errors.Is(callErr, errors.ErrRPCCallFailed(target, context.Canceled)):
 					attrs = trace.StatusCodeCancelled(
 						errdetails.ValdGRPCResourceTypePrefix +
 							"/vald.v1." + vald.IndexStatisticsDetailRPCName + ".BroadCast/" +
-							target + " canceled: " + err.Error())
+							target + " canceled: " + callErr.Error())
 					code = codes.Canceled
-				case errors.Is(err, context.DeadlineExceeded),
-					errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
+				case errors.Is(callErr, context.DeadlineExceeded),
+					errors.Is(callErr, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
 					attrs = trace.StatusCodeDeadlineExceeded(
 						errdetails.ValdGRPCResourceTypePrefix +
 							"/vald.v1." + vald.IndexStatisticsDetailRPCName + ".BroadCast/" +
-							target + " deadline_exceeded: " + err.Error())
+							target + " deadline_exceeded: " + callErr.Error())
 					code = codes.DeadlineExceeded
 				default:
-					st, msg, err = status.ParseError(err, codes.NotFound, "error "+vald.IndexStatisticsDetailRPCName+" API",
+					st, msg, callErr = status.ParseError(callErr, codes.NotFound, "error "+vald.IndexStatisticsDetailRPCName+" API",
 						&errdetails.ResourceInfo{
 							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.IndexStatisticsDetailRPCName + ".BroadCase/" + target,
 							ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
@@ -400,18 +399,18 @@ func (s *server) IndexStatisticsDetail(
 					attrs = trace.FromGRPCStatus(code, msg)
 				}
 				if sspan != nil {
-					sspan.RecordError(err)
+					sspan.RecordError(callErr)
 					sspan.SetAttributes(attrs...)
-					sspan.SetStatus(trace.StatusError, err.Error())
+					sspan.SetStatus(trace.StatusError, callErr.Error())
 				}
-				if err != nil && st != nil &&
+				if callErr != nil && st != nil &&
 					code != codes.Canceled &&
 					code != codes.DeadlineExceeded &&
 					code != codes.InvalidArgument &&
 					code != codes.NotFound &&
 					code != codes.OK &&
 					code != codes.Unimplemented {
-					return err
+					return callErr
 				}
 				return nil
 			}
@@ -493,12 +492,13 @@ func mergeInfoIndexStatistics(
 	var indegrees, outdegrees []int32
 	var indegreeCounts [][]int64
 	var outdegreeHistograms, indegreeHistograms [][]uint64
-	merged.Valid = true
+	var validCounts int
 
 	for _, stat := range stats {
 		if !stat.Valid {
 			continue
 		}
+		validCounts++
 		indegrees = append(indegrees, stat.MedianIndegree)
 		outdegrees = append(outdegrees, stat.MedianOutdegree)
 
@@ -545,6 +545,11 @@ func mergeInfoIndexStatistics(
 		merged.C99Outdegree += stat.C99Outdegree
 	}
 
+	if validCounts == 0 {
+		return merged
+	}
+
+	merged.Valid = true
 	merged.MedianIndegree = calculateMedian(indegrees)
 	merged.MedianOutdegree = calculateMedian(outdegrees)
 	merged.IndegreeCount = make([]int64, len(indegreeCounts[0]))
@@ -570,18 +575,18 @@ func mergeInfoIndexStatistics(
 		merged.IndegreeHistogram = sumHistograms(merged.IndegreeHistogram, hist)
 	}
 
-	merged.ModeIndegree /= uint64(len(stats))
-	merged.ModeOutdegree /= uint64(len(stats))
-	merged.VarianceOfIndegree /= float64(len(stats))
-	merged.VarianceOfOutdegree /= float64(len(stats))
-	merged.MeanEdgeLength /= float64(len(stats))
-	merged.MeanEdgeLengthFor10Edges /= float64(len(stats))
-	merged.MeanIndegreeDistanceFor10Edges /= float64(len(stats))
-	merged.MeanNumberOfEdgesPerNode /= float64(len(stats))
-	merged.C1Indegree /= float64(len(stats))
-	merged.C5Indegree /= float64(len(stats))
-	merged.C95Outdegree /= float64(len(stats))
-	merged.C99Outdegree /= float64(len(stats))
+	merged.ModeIndegree /= uint64(validCounts)
+	merged.ModeOutdegree /= uint64(validCounts)
+	merged.VarianceOfIndegree /= float64(validCounts)
+	merged.VarianceOfOutdegree /= float64(validCounts)
+	merged.MeanEdgeLength /= float64(validCounts)
+	merged.MeanEdgeLengthFor10Edges /= float64(validCounts)
+	merged.MeanIndegreeDistanceFor10Edges /= float64(validCounts)
+	merged.MeanNumberOfEdgesPerNode /= float64(validCounts)
+	merged.C1Indegree /= float64(validCounts)
+	merged.C5Indegree /= float64(validCounts)
+	merged.C95Outdegree /= float64(validCounts)
+	merged.C99Outdegree /= float64(validCounts)
 
 	return merged
 }
@@ -610,9 +615,8 @@ func (s *server) IndexProperty(
 					sspan.End()
 				}
 			}()
-			var prop *payload.Info_Index_PropertyDetail
-			prop, err = vc.IndexProperty(sctx, new(payload.Empty), copts...)
-			if err != nil {
+			prop, callErr := vc.IndexProperty(sctx, new(payload.Empty), copts...)
+			if callErr != nil {
 				var (
 					attrs trace.Attributes
 					st    *status.Status
@@ -620,16 +624,16 @@ func (s *server) IndexProperty(
 					code  codes.Code
 				)
 				switch {
-				case errors.Is(err, context.Canceled), errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
+				case errors.Is(callErr, context.Canceled), errors.Is(callErr, errors.ErrRPCCallFailed(target, context.Canceled)):
 					attrs = trace.StatusCodeCancelled(
-						errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.IndexPropertyRPCName + ".BroadCast/" + target + " canceled: " + err.Error())
+						errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.IndexPropertyRPCName + ".BroadCast/" + target + " canceled: " + callErr.Error())
 					code = codes.Canceled
-				case errors.Is(err, context.DeadlineExceeded), errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
+				case errors.Is(callErr, context.DeadlineExceeded), errors.Is(callErr, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
 					attrs = trace.StatusCodeDeadlineExceeded(
-						errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.IndexPropertyRPCName + ".BroadCast/" + target + " deadline_exceeded: " + err.Error())
+						errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.IndexPropertyRPCName + ".BroadCast/" + target + " deadline_exceeded: " + callErr.Error())
 					code = codes.DeadlineExceeded
 				default:
-					st, msg, err = status.ParseError(err, codes.NotFound, "error "+vald.IndexPropertyRPCName+" API",
+					st, msg, callErr = status.ParseError(callErr, codes.NotFound, "error "+vald.IndexPropertyRPCName+" API",
 						&errdetails.ResourceInfo{
 							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.IndexPropertyRPCName + ".BroadCast/" + target,
 							ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
@@ -642,12 +646,12 @@ func (s *server) IndexProperty(
 					attrs = trace.FromGRPCStatus(code, msg)
 				}
 				if sspan != nil {
-					sspan.RecordError(err)
+					sspan.RecordError(callErr)
 					sspan.SetAttributes(attrs...)
-					sspan.SetStatus(trace.StatusError, err.Error())
+					sspan.SetStatus(trace.StatusError, callErr.Error())
 				}
-				if err != nil && st != nil && code != codes.Canceled && code != codes.DeadlineExceeded && code != codes.InvalidArgument && code != codes.NotFound && code != codes.OK && code != codes.Unimplemented {
-					return err
+				if callErr != nil && st != nil && code != codes.Canceled && code != codes.DeadlineExceeded && code != codes.InvalidArgument && code != codes.NotFound && code != codes.OK && code != codes.Unimplemented {
+					return callErr
 				}
 				return nil
 			}

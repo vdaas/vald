@@ -4911,130 +4911,6 @@ impl<'de> serde::Deserialize<'de> for info::Pods {
         deserializer.deserialize_struct("payload.v1.Info.Pods", FIELDS, GeneratedVisitor)
     }
 }
-impl serde::Serialize for info::ResourceStats {
-    #[allow(deprecated)]
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use serde::ser::SerializeStruct;
-        let mut len = 0;
-        if !self.name.is_empty() {
-            len += 1;
-        }
-        if !self.ip.is_empty() {
-            len += 1;
-        }
-        if self.cgroup_stats.is_some() {
-            len += 1;
-        }
-        let mut struct_ser = serializer.serialize_struct("payload.v1.Info.ResourceStats", len)?;
-        if !self.name.is_empty() {
-            struct_ser.serialize_field("name", &self.name)?;
-        }
-        if !self.ip.is_empty() {
-            struct_ser.serialize_field("ip", &self.ip)?;
-        }
-        if let Some(v) = self.cgroup_stats.as_ref() {
-            struct_ser.serialize_field("cgroupStats", v)?;
-        }
-        struct_ser.end()
-    }
-}
-impl<'de> serde::Deserialize<'de> for info::ResourceStats {
-    #[allow(deprecated)]
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &[&str] = &["name", "ip", "cgroup_stats", "cgroupStats"];
-
-        #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {
-            Name,
-            Ip,
-            CgroupStats,
-        }
-        impl<'de> serde::Deserialize<'de> for GeneratedField {
-            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
-            where
-                D: serde::Deserializer<'de>,
-            {
-                struct GeneratedVisitor;
-
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-                    type Value = GeneratedField;
-
-                    fn expecting(
-                        &self,
-                        formatter: &mut std::fmt::Formatter<'_>,
-                    ) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
-                    }
-
-                    #[allow(unused_variables)]
-                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
-                    where
-                        E: serde::de::Error,
-                    {
-                        match value {
-                            "name" => Ok(GeneratedField::Name),
-                            "ip" => Ok(GeneratedField::Ip),
-                            "cgroupStats" | "cgroup_stats" => Ok(GeneratedField::CgroupStats),
-                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
-                        }
-                    }
-                }
-                deserializer.deserialize_identifier(GeneratedVisitor)
-            }
-        }
-        struct GeneratedVisitor;
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = info::ResourceStats;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct payload.v1.Info.ResourceStats")
-            }
-
-            fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::ResourceStats, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
-            {
-                let mut name__ = None;
-                let mut ip__ = None;
-                let mut cgroup_stats__ = None;
-                while let Some(k) = map_.next_key()? {
-                    match k {
-                        GeneratedField::Name => {
-                            if name__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("name"));
-                            }
-                            name__ = Some(map_.next_value()?);
-                        }
-                        GeneratedField::Ip => {
-                            if ip__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("ip"));
-                            }
-                            ip__ = Some(map_.next_value()?);
-                        }
-                        GeneratedField::CgroupStats => {
-                            if cgroup_stats__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("cgroupStats"));
-                            }
-                            cgroup_stats__ = map_.next_value()?;
-                        }
-                    }
-                }
-                Ok(info::ResourceStats {
-                    name: name__.unwrap_or_default(),
-                    ip: ip__.unwrap_or_default(),
-                    cgroup_stats: cgroup_stats__,
-                })
-            }
-        }
-        deserializer.deserialize_struct("payload.v1.Info.ResourceStats", FIELDS, GeneratedVisitor)
-    }
-}
 impl serde::Serialize for info::Service {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -5417,6 +5293,496 @@ impl<'de> serde::Deserialize<'de> for info::Services {
             }
         }
         deserializer.deserialize_struct("payload.v1.Info.Services", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for info::Stats {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let len = 0;
+        let struct_ser = serializer.serialize_struct("payload.v1.Info.Stats", len)?;
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for info::Stats {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {}
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(
+                        &self,
+                        formatter: &mut std::fmt::Formatter<'_>,
+                    ) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        Err(serde::de::Error::unknown_field(value, FIELDS))
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = info::Stats;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct payload.v1.Info.Stats")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<info::Stats, V::Error>
+            where
+                V: serde::de::MapAccess<'de>,
+            {
+                while map_.next_key::<GeneratedField>()?.is_some() {
+                    let _ = map_.next_value::<serde::de::IgnoredAny>()?;
+                }
+                Ok(info::Stats {})
+            }
+        }
+        deserializer.deserialize_struct("payload.v1.Info.Stats", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for info::stats::CgroupStats {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.cpu_limit_cores != 0. {
+            len += 1;
+        }
+        if self.cpu_usage_cores != 0. {
+            len += 1;
+        }
+        if self.memory_limit_bytes != 0 {
+            len += 1;
+        }
+        if self.memory_usage_bytes != 0 {
+            len += 1;
+        }
+        let mut struct_ser =
+            serializer.serialize_struct("payload.v1.Info.Stats.CgroupStats", len)?;
+        if self.cpu_limit_cores != 0. {
+            struct_ser.serialize_field("cpuLimitCores", &self.cpu_limit_cores)?;
+        }
+        if self.cpu_usage_cores != 0. {
+            struct_ser.serialize_field("cpuUsageCores", &self.cpu_usage_cores)?;
+        }
+        if self.memory_limit_bytes != 0 {
+            #[allow(clippy::needless_borrow)]
+            #[allow(clippy::needless_borrows_for_generic_args)]
+            struct_ser.serialize_field(
+                "memoryLimitBytes",
+                ToString::to_string(&self.memory_limit_bytes).as_str(),
+            )?;
+        }
+        if self.memory_usage_bytes != 0 {
+            #[allow(clippy::needless_borrow)]
+            #[allow(clippy::needless_borrows_for_generic_args)]
+            struct_ser.serialize_field(
+                "memoryUsageBytes",
+                ToString::to_string(&self.memory_usage_bytes).as_str(),
+            )?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for info::stats::CgroupStats {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "cpu_limit_cores",
+            "cpuLimitCores",
+            "cpu_usage_cores",
+            "cpuUsageCores",
+            "memory_limit_bytes",
+            "memoryLimitBytes",
+            "memory_usage_bytes",
+            "memoryUsageBytes",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            CpuLimitCores,
+            CpuUsageCores,
+            MemoryLimitBytes,
+            MemoryUsageBytes,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(
+                        &self,
+                        formatter: &mut std::fmt::Formatter<'_>,
+                    ) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "cpuLimitCores" | "cpu_limit_cores" => {
+                                Ok(GeneratedField::CpuLimitCores)
+                            }
+                            "cpuUsageCores" | "cpu_usage_cores" => {
+                                Ok(GeneratedField::CpuUsageCores)
+                            }
+                            "memoryLimitBytes" | "memory_limit_bytes" => {
+                                Ok(GeneratedField::MemoryLimitBytes)
+                            }
+                            "memoryUsageBytes" | "memory_usage_bytes" => {
+                                Ok(GeneratedField::MemoryUsageBytes)
+                            }
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = info::stats::CgroupStats;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct payload.v1.Info.Stats.CgroupStats")
+            }
+
+            fn visit_map<V>(
+                self,
+                mut map_: V,
+            ) -> std::result::Result<info::stats::CgroupStats, V::Error>
+            where
+                V: serde::de::MapAccess<'de>,
+            {
+                let mut cpu_limit_cores__ = None;
+                let mut cpu_usage_cores__ = None;
+                let mut memory_limit_bytes__ = None;
+                let mut memory_usage_bytes__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::CpuLimitCores => {
+                            if cpu_limit_cores__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("cpuLimitCores"));
+                            }
+                            cpu_limit_cores__ = Some(
+                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
+                                    .0,
+                            );
+                        }
+                        GeneratedField::CpuUsageCores => {
+                            if cpu_usage_cores__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("cpuUsageCores"));
+                            }
+                            cpu_usage_cores__ = Some(
+                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
+                                    .0,
+                            );
+                        }
+                        GeneratedField::MemoryLimitBytes => {
+                            if memory_limit_bytes__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("memoryLimitBytes"));
+                            }
+                            memory_limit_bytes__ = Some(
+                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
+                                    .0,
+                            );
+                        }
+                        GeneratedField::MemoryUsageBytes => {
+                            if memory_usage_bytes__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("memoryUsageBytes"));
+                            }
+                            memory_usage_bytes__ = Some(
+                                map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?
+                                    .0,
+                            );
+                        }
+                    }
+                }
+                Ok(info::stats::CgroupStats {
+                    cpu_limit_cores: cpu_limit_cores__.unwrap_or_default(),
+                    cpu_usage_cores: cpu_usage_cores__.unwrap_or_default(),
+                    memory_limit_bytes: memory_limit_bytes__.unwrap_or_default(),
+                    memory_usage_bytes: memory_usage_bytes__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct(
+            "payload.v1.Info.Stats.CgroupStats",
+            FIELDS,
+            GeneratedVisitor,
+        )
+    }
+}
+impl serde::Serialize for info::stats::ResourceStats {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.name.is_empty() {
+            len += 1;
+        }
+        if !self.ip.is_empty() {
+            len += 1;
+        }
+        if self.cgroup_stats.is_some() {
+            len += 1;
+        }
+        let mut struct_ser =
+            serializer.serialize_struct("payload.v1.Info.Stats.ResourceStats", len)?;
+        if !self.name.is_empty() {
+            struct_ser.serialize_field("name", &self.name)?;
+        }
+        if !self.ip.is_empty() {
+            struct_ser.serialize_field("ip", &self.ip)?;
+        }
+        if let Some(v) = self.cgroup_stats.as_ref() {
+            struct_ser.serialize_field("cgroupStats", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for info::stats::ResourceStats {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &["name", "ip", "cgroup_stats", "cgroupStats"];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Name,
+            Ip,
+            CgroupStats,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(
+                        &self,
+                        formatter: &mut std::fmt::Formatter<'_>,
+                    ) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "name" => Ok(GeneratedField::Name),
+                            "ip" => Ok(GeneratedField::Ip),
+                            "cgroupStats" | "cgroup_stats" => Ok(GeneratedField::CgroupStats),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = info::stats::ResourceStats;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct payload.v1.Info.Stats.ResourceStats")
+            }
+
+            fn visit_map<V>(
+                self,
+                mut map_: V,
+            ) -> std::result::Result<info::stats::ResourceStats, V::Error>
+            where
+                V: serde::de::MapAccess<'de>,
+            {
+                let mut name__ = None;
+                let mut ip__ = None;
+                let mut cgroup_stats__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::Name => {
+                            if name__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("name"));
+                            }
+                            name__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::Ip => {
+                            if ip__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("ip"));
+                            }
+                            ip__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::CgroupStats => {
+                            if cgroup_stats__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("cgroupStats"));
+                            }
+                            cgroup_stats__ = map_.next_value()?;
+                        }
+                    }
+                }
+                Ok(info::stats::ResourceStats {
+                    name: name__.unwrap_or_default(),
+                    ip: ip__.unwrap_or_default(),
+                    cgroup_stats: cgroup_stats__,
+                })
+            }
+        }
+        deserializer.deserialize_struct(
+            "payload.v1.Info.Stats.ResourceStats",
+            FIELDS,
+            GeneratedVisitor,
+        )
+    }
+}
+impl serde::Serialize for info::stats::ResourceStatsDetail {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.details.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser =
+            serializer.serialize_struct("payload.v1.Info.Stats.ResourceStatsDetail", len)?;
+        if !self.details.is_empty() {
+            struct_ser.serialize_field("details", &self.details)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for info::stats::ResourceStatsDetail {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &["details"];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Details,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(
+                        &self,
+                        formatter: &mut std::fmt::Formatter<'_>,
+                    ) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "details" => Ok(GeneratedField::Details),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = info::stats::ResourceStatsDetail;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct payload.v1.Info.Stats.ResourceStatsDetail")
+            }
+
+            fn visit_map<V>(
+                self,
+                mut map_: V,
+            ) -> std::result::Result<info::stats::ResourceStatsDetail, V::Error>
+            where
+                V: serde::de::MapAccess<'de>,
+            {
+                let mut details__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::Details => {
+                            if details__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("details"));
+                            }
+                            details__ = Some(map_.next_value::<std::collections::HashMap<_, _>>()?);
+                        }
+                    }
+                }
+                Ok(info::stats::ResourceStatsDetail {
+                    details: details__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct(
+            "payload.v1.Info.Stats.ResourceStatsDetail",
+            FIELDS,
+            GeneratedVisitor,
+        )
     }
 }
 impl serde::Serialize for Insert {
