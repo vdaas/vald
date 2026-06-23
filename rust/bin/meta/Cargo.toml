@@ -19,13 +19,25 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+<<<<<<< HEAD
+=======
+clap = { version = "4.6.1", features = ["derive", "env"] }
+serde = { version = "1.0.228", features = ["derive"] }
+serde_yaml = "0.9.34"
+>>>>>>> 207164ba9 ([Bugfix] fix SIGABRT problem for Agent NGT (#3531))
 kv = "0.24.0"
-opentelemetry = "0.31.0"
+opentelemetry = "0.32.0"
 proto = { version = "0.1.0", path = "../../libs/proto" }
 sled = "0.34.7"
+<<<<<<< HEAD
 tokio = { version = "1.50.0", features = ["full"] }
 tonic = "0.14.5"
 observability = { path = "../../libs/observability" } 
+=======
+tokio = { version = "1.52.3", features = ["full"] }
+tonic = "0.14.6"
+observability = { path = "../../libs/observability" }
+>>>>>>> 207164ba9 ([Bugfix] fix SIGABRT problem for Agent NGT (#3531))
 defer = "0.2.1"
 
 [[bin]]

@@ -14,21 +14,8 @@
 # limitations under the License.
 #
 [package]
-name = "kvs"
+name = "vald-build-utils"
 version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-futures = "0.3"
-sled = "0.34"
-parking_lot = "0.12"
-serde = { version = "1.0", features = ["derive"] }
-thiserror = "2.0"
-tokio = { version = "1.52", features = ["full"] }
-tokio-stream = "0.1"
-tracing = "0.1"
-<<<<<<< HEAD
-wincode = { version = "0.4.7", features = ["derive"] }
-=======
-wincode = { version = "0.5.5", features = ["derive"] }
->>>>>>> 207164ba9 ([Bugfix] fix SIGABRT problem for Agent NGT (#3531))
+edition = "2021"
+license = "Apache-2.0"
+description = "Shared build script utilities for Vald Rust crates"
