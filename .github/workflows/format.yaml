@@ -136,6 +136,7 @@ jobs:
           make deps/install proto/replace
           make format
           git checkout go.mod go.sum ./example/client/go.mod ./example/client/go.sum ./rust/Cargo.lock ./rust/rust-toolchain.toml ./dockers
+          git diff --name-only | grep -E "^rust/.*Cargo\\.toml$" | xargs -r git checkout --
       - name: Check format and deps difference
         run: |
           if git diff --quiet --exit-code -w; then
