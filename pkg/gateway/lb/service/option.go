@@ -18,7 +18,10 @@
 package service
 
 import (
+	"time"
+
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
@@ -42,6 +45,34 @@ func WithErrGroup(eg errgroup.Group) Option {
 		if eg != nil {
 			g.eg = eg
 		}
+		return nil
+	}
+}
+
+func WithORCA(
+	enabled bool,
+	refreshInterval, reportTTL string,
+	read, write ORCAPolicy,
+) Option {
+	return func(g *gateway) error {
+		if !enabled {
+			return nil
+		}
+		refresh, err := time.ParseDuration(refreshInterval)
+		if err != nil {
+			return errors.NewErrInvalidOption("refreshInterval", refreshInterval, err)
+		}
+		if refresh <= 0 {
+			return errors.NewErrInvalidOption("refreshInterval", refreshInterval)
+		}
+		ttl, err := time.ParseDuration(reportTTL)
+		if err != nil {
+			return errors.NewErrInvalidOption("reportTTL", reportTTL, err)
+		}
+		if ttl <= 0 {
+			return errors.NewErrInvalidOption("reportTTL", reportTTL)
+		}
+		g.orca = newORCA(refresh, ttl, read, write)
 		return nil
 	}
 }

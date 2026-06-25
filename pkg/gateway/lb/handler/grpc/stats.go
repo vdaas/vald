@@ -59,7 +59,7 @@ func (s *server) ResourceStatsDetail(
 	}
 	s.eg.Go(safety.RecoverFunc(func() error {
 		defer close(ech)
-		ech <- s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+		ech <- s.gateway.BroadCastUncontrolled(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+resourceStatsDetailRPCName+"/"+target)
 			defer func() {
 				if sspan != nil {

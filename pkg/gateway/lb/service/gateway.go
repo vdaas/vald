@@ -28,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
@@ -39,6 +40,8 @@ type Gateway interface {
 	DoMulti(ctx context.Context, num int,
 		f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) error
 	BroadCast(ctx context.Context, kind BroadCastKind,
+		f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) error
+	BroadCastUncontrolled(ctx context.Context, kind BroadCastKind,
 		f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) error
 }
 
@@ -52,6 +55,7 @@ const (
 type gateway struct {
 	client discoverer.Client
 	eg     errgroup.Group
+	orca   *orca
 }
 
 func NewGateway(opts ...Option) (gw Gateway, err error) {
@@ -65,12 +69,39 @@ func NewGateway(opts ...Option) (gw Gateway, err error) {
 }
 
 func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
-	return g.client.Start(ctx)
+	ech, err := g.client.Start(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if g.orca != nil && g.orca.enabled {
+		g.eg.Go(safety.RecoverFunc(func() error {
+			g.orca.start(ctx, g.client)
+			return nil
+		}))
+	}
+	return ech, nil
 }
 
 func (g *gateway) BroadCast(
 	ctx context.Context,
 	kind BroadCastKind,
+	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
+) (err error) {
+	return g.broadcast(ctx, kind, true, f)
+}
+
+func (g *gateway) BroadCastUncontrolled(
+	ctx context.Context,
+	kind BroadCastKind,
+	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
+) (err error) {
+	return g.broadcast(ctx, kind, false, f)
+}
+
+func (g *gateway) broadcast(
+	ctx context.Context,
+	kind BroadCastKind,
+	controlled bool,
 	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
 ) (err error) {
 	fctx, span := trace.StartSpan(ctx, "vald/gateway-lb/service/Gateway.BroadCast")
@@ -88,7 +119,7 @@ func (g *gateway) BroadCast(
 		client = g.client.GetClient()
 	}
 
-	return client.RangeConcurrent(fctx, -1, func(ictx context.Context,
+	call := func(ictx context.Context,
 		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (err error) {
 		select {
@@ -101,7 +132,14 @@ func (g *gateway) BroadCast(
 			}
 		}
 		return nil
-	})
+	}
+	if controlled && g.orca != nil && g.orca.enabled {
+		addrs := g.orca.selectAddrs(kind, client.ConnectedAddrs(fctx))
+		if len(addrs) > 0 {
+			return client.OrderedRangeConcurrent(fctx, addrs, -1, call)
+		}
+	}
+	return client.RangeConcurrent(fctx, -1, call)
 }
 
 func (g *gateway) DoMulti(

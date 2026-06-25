@@ -110,6 +110,23 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	gateway, err = service.NewGateway(
 		service.WithErrGroup(eg),
 		service.WithDiscoverer(client),
+		service.WithORCA(
+			cfg.Gateway.ORCA.Enabled,
+			cfg.Gateway.ORCA.RefreshInterval,
+			cfg.Gateway.ORCA.ReportTTL,
+			service.ORCAPolicy{
+				MinFanout:       cfg.Gateway.ORCA.Read.MinFanout,
+				MaxFanout:       cfg.Gateway.ORCA.Read.MaxFanout,
+				CPUThreshold:    cfg.Gateway.ORCA.Read.CPUThreshold,
+				MemoryThreshold: cfg.Gateway.ORCA.Read.MemoryThreshold,
+			},
+			service.ORCAPolicy{
+				MinFanout:       cfg.Gateway.ORCA.Write.MinFanout,
+				MaxFanout:       cfg.Gateway.ORCA.Write.MaxFanout,
+				CPUThreshold:    cfg.Gateway.ORCA.Write.CPUThreshold,
+				MemoryThreshold: cfg.Gateway.ORCA.Write.MemoryThreshold,
+			},
+		),
 	)
 	if err != nil {
 		return nil, err

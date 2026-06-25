@@ -48,6 +48,9 @@ type Client interface {
 	// Internally, this API round robin between c.client and c.readClient with the ratio of
 	// agent replicas and read replica agent replicas.
 	GetReadClient() grpc.Client
+
+	// GetReadReplicaClient returns the read replica client without advancing the read round robin.
+	GetReadReplicaClient() grpc.Client
 }
 
 type client struct {
@@ -226,6 +229,10 @@ func (c *client) GetReadClient() grpc.Client {
 	if next == 0 {
 		return c.client
 	}
+	return c.readClient
+}
+
+func (c *client) GetReadReplicaClient() grpc.Client {
 	return c.readClient
 }
 

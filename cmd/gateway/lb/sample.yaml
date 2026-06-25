@@ -121,6 +121,20 @@ gateway:
   agent_namespace: "_MY_POD_NAMESPACE_"
   node_name: ""
   index_replica: 5
+  orca:
+    enabled: false
+    refresh_interval: 1s
+    report_ttl: 3s
+    read:
+      min_fanout: 1
+      max_fanout: 0
+      cpu_threshold: 0.9
+      memory_threshold: 0.9
+    write:
+      min_fanout: 1
+      max_fanout: 0
+      cpu_threshold: 0.9
+      memory_threshold: 0.9
   discoverer:
     duration: 200ms
     client:
