@@ -20,8 +20,13 @@ golangci-lint/install: \
 	$(BINDIR)/golangci-lint
 
 $(BINDIR)/golangci-lint:
-	curl -fsSL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-	| sh -s -- -b $(BINDIR) $(GOLANGCILINT_VERSION)
+	# Install via the Go module proxy (GOPROXY) instead of the upstream
+	# install.sh: in Docker builds the anonymous GitHub release download is
+	# rate-limited and returns a non-tarball body, so the script's sha256 check
+	# fails deterministically. `go install` goes through proxy.golang.org and is
+	# reliable. (golangci-lint v2 has no replace directives, so this builds.)
+	GOBIN=$(BINDIR) CGO_ENABLED=0 go install \
+		github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCILINT_VERSION)
 
 .PHONY: goimports/install
 ## install goimports
