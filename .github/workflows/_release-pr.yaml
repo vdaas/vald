@@ -124,7 +124,6 @@ jobs:
             BODY=`git log --pretty=format:'- %s' ${PREVIOUS_VERSION}..${RELEASE_BRANCH_NAME} | grep "#[[:digit:]]\+" | sed -e "s/\[\(patch\|minor\|major\)\] *//g" | sed -e "s%#\([[:digit:]]\+\)%[&](https://github.com/vdaas/vald/pull/\1)%"`
           fi
 
-          CHANGELOG=`make changelog/next/print BODY="$BODY"`
           make changelog/update BODY="$BODY"
 
           make format
@@ -133,6 +132,7 @@ jobs:
             CHANGELOG.md \
             charts \
             k8s \
+            CHANGELOG \
             versions/VALD_VERSION
           git commit -S --signoff -m ":bookmark: :robot: Release ${RELEASE_TAG}"
           git push -u origin ${PREPARE_RELEASE_BRANCH_NAME}
