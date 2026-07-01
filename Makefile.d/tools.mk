@@ -347,8 +347,9 @@ $(LIB_PATH)/libhdf5.a: | $(LIB_PATH) zlib/install
 	$(call cmake-install,https://github.com/HDFGroup/hdf5/archive/refs/tags/$(HDF5_VERSION).tar.gz,hdf5, \
 		-DHDF5_BUILD_CPP_LIB=OFF \
 		-DHDF5_BUILD_HL_LIB=ON \
-		-DHDF5_BUILD_STATIC_EXECS=ON \
+		-DHDF5_BUILD_STATIC_EXECS=OFF \
 		-DHDF5_BUILD_TOOLS=OFF \
+		-DHDF5_BUILD_EXAMPLES=OFF \
 		-DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
 		-DH5_ZLIB_INCLUDE_DIR=$(USR_LOCAL)/include \
 		-DH5_ZLIB_LIBRARY=$(LIB_PATH)/libz.a, \
@@ -376,14 +377,17 @@ $(LIB_PATH)/libomp.a: | ninja/install
 			llvm-project-llvmorg-$(LLVM_VERSION)/openmp \
 			llvm-project-llvmorg-$(LLVM_VERSION)/cmake; \
 		cd $(TEMP_DIR)/libomp/openmp \
+		&& _AR=$$(if [ -x '$(AR)' ]; then echo '$(AR)'; else command -v llvm-ar 2>/dev/null || command -v ar; fi) \
+		&& _NM=$$(if [ -x '$(NM)' ]; then echo '$(NM)'; else command -v llvm-nm 2>/dev/null || command -v nm; fi) \
+		&& _RANLIB=$$(if [ -x '$(RANLIB)' ]; then echo '$(RANLIB)'; else command -v llvm-ranlib 2>/dev/null || ls /usr/bin/llvm-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ranlib 2>/dev/null || ls /usr/bin/gcc-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ranlib; fi) \
 		&& env LDFLAGS="" cmake -G Ninja \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
 		-DCMAKE_C_COMPILER="$(CC)" \
 		-DCMAKE_CXX_COMPILER="$(CXX)" \
-		-DCMAKE_AR="$(AR)" \
-		-DCMAKE_NM="$(NM)" \
-		-DCMAKE_RANLIB="$(RANLIB)" \
+		-DCMAKE_AR="$${_AR}" \
+		-DCMAKE_NM="$${_NM}" \
+		-DCMAKE_RANLIB="$${_RANLIB}" \
 		-DCMAKE_MAKE_PROGRAM="$(USR_LOCAL)/bin/ninja" \
 		-DCMAKE_INSTALL_PREFIX="$(USR_LOCAL)" \
 		-DCMAKE_INSTALL_LIBDIR="lib" \
