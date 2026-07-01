@@ -62,7 +62,7 @@ func (s *server) exists(ctx context.Context, uuid string) (id *payload.Object_ID
 		defer close(ich)
 		defer close(ech)
 		var once sync.Once
-		ech <- s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+		ech <- s.gateway.BroadCast(ctx, service.ROUTED_READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/exists/BroadCast/"+target)
 			defer func() {
 				if sspan != nil {
@@ -260,7 +260,7 @@ func (s *server) getObject(
 		defer close(vch)
 		defer close(ech)
 		var once sync.Once
-		ech <- s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+		ech <- s.gateway.BroadCast(ctx, service.ROUTED_READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/getObject/BroadCast/"+target)
 			defer func() {
 				if sspan != nil {
@@ -499,7 +499,7 @@ func (s *server) StreamListObject(
 	defer cancel()
 
 	var rmu, smu sync.Mutex
-	err := s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+	err := s.gateway.BroadCast(ctx, service.ROUTED_READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 		ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.StreamListObjectRPCName+"/"+target)
 		defer func() {
 			if sspan != nil {
@@ -592,7 +592,7 @@ func (s *server) GetTimestamp(
 		defer close(tch)
 		defer close(ech)
 		var once sync.Once
-		ech <- s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+		ech <- s.gateway.BroadCast(ctx, service.ROUTED_READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/getTimestamp/BroadCast/"+target)
 			defer func() {
 				if sspan != nil {

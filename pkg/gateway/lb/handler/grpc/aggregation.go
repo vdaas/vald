@@ -86,7 +86,7 @@ func (s *server) aggregationSearch(
 
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	aggr.Start(ctx)
-	err = s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+	err = s.gateway.BroadCast(ctx, service.ROUTED_READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 		sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/aggregationSearch/"+target)
 		defer func() {
 			if sspan != nil {

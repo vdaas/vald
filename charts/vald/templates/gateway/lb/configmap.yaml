@@ -52,6 +52,10 @@ data:
       node_name: {{ $gateway.gateway_config.node_name | quote }}
       index_replica: {{ $gateway.gateway_config.index_replica }}
       read_replica_replicas: {{ $readreplica.minReplicas }}
+      orca:
+        enabled: {{ $gateway.gateway_config.orca.enabled }}
+        refresh_interval: {{ $gateway.gateway_config.orca.refresh_interval }}
+        report_ttl: {{ $gateway.gateway_config.orca.report_ttl }}
       discoverer:
         duration: {{ $gateway.gateway_config.discoverer.duration }}
         client:

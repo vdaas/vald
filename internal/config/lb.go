@@ -18,6 +18,8 @@ package config
 
 // LB represents the configuration for load balancer.
 type LB struct {
+	// ORCA represents the resource-aware search fanout and write placement configuration.
+	ORCA ORCA `json:"orca" yaml:"orca"`
 	// ReadReplicaClient represents the read replica client configuration.
 	ReadReplicaClient ReadReplicaClient `json:"read_replica_client" yaml:"read_replica_client"`
 	// Discoverer represents the discoverer client configuration.
@@ -46,11 +48,29 @@ func (g *LB) Bind() *LB {
 	g.AgentNamespace = GetActualValue(g.AgentNamespace)
 	g.AgentDNS = GetActualValue(g.AgentDNS)
 	g.NodeName = GetActualValue(g.NodeName)
+	g.ORCA.Bind()
 
 	if g.Discoverer != nil {
 		g.Discoverer = g.Discoverer.Bind()
 	}
 	return g
+}
+
+// ORCA represents the resource-aware search fanout and write placement configuration.
+type ORCA struct {
+	// Enabled enables resource-aware search fanout and write placement.
+	Enabled bool `json:"enabled" yaml:"enabled"`
+	// RefreshInterval represents the interval for collecting agent resource stats.
+	RefreshInterval string `json:"refresh_interval" yaml:"refresh_interval"`
+	// ReportTTL represents how long collected resource stats remain valid.
+	ReportTTL string `json:"report_ttl" yaml:"report_ttl"`
+}
+
+// Bind binds the actual data from the ORCA receiver fields.
+func (o *ORCA) Bind() *ORCA {
+	o.RefreshInterval = GetActualValue(o.RefreshInterval)
+	o.ReportTTL = GetActualValue(o.ReportTTL)
+	return o
 }
 
 // ReadReplicaClient represents a configuration of grpc client for read replica.

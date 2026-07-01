@@ -28,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
@@ -46,12 +47,14 @@ type BroadCastKind int
 
 const (
 	READ BroadCastKind = iota
+	ROUTED_READ
 	WRITE
 )
 
 type gateway struct {
 	client discoverer.Client
 	eg     errgroup.Group
+	orca   *orca
 }
 
 func NewGateway(opts ...Option) (gw Gateway, err error) {
@@ -65,7 +68,17 @@ func NewGateway(opts ...Option) (gw Gateway, err error) {
 }
 
 func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
-	return g.client.Start(ctx)
+	ech, err := g.client.Start(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if g.orca != nil {
+		g.eg.Go(safety.RecoverFunc(func() error {
+			g.orca.start(ctx, g.client.GetClient())
+			return nil
+		}))
+	}
+	return ech, nil
 }
 
 func (g *gateway) BroadCast(
@@ -82,13 +95,13 @@ func (g *gateway) BroadCast(
 
 	var client grpc.Client
 	switch kind {
-	case READ:
+	case READ, ROUTED_READ:
 		client = g.client.GetReadClient()
 	case WRITE:
 		client = g.client.GetClient()
 	}
 
-	return client.RangeConcurrent(fctx, -1, func(ictx context.Context,
+	call := func(ictx context.Context,
 		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (err error) {
 		select {
@@ -101,7 +114,14 @@ func (g *gateway) BroadCast(
 			}
 		}
 		return nil
-	})
+	}
+	if kind == ROUTED_READ && g.orca != nil {
+		addrs := g.orca.read(client.ConnectedAddrs(fctx))
+		if len(addrs) > 0 {
+			return client.OrderedRangeConcurrent(fctx, addrs, -1, call)
+		}
+	}
+	return client.RangeConcurrent(fctx, -1, call)
 }
 
 func (g *gateway) DoMulti(
@@ -117,11 +137,22 @@ func (g *gateway) DoMulti(
 	}()
 	var cur uint32 = 0
 	addrs := g.client.GetAddrs(sctx)
+	orcaOrdered := false
+	if g.orca != nil {
+		ordered := g.orca.order(g.client.GetClient().ConnectedAddrs(sctx))
+		if len(ordered) > 0 {
+			addrs = ordered
+			orcaOrdered = true
+		}
+	}
 	var limit uint32
 	if len(addrs) < num {
 		limit = uint32(len(addrs))
 	} else {
 		limit = uint32(num)
+	}
+	if orcaOrdered {
+		g.orca.logWrite(addrs[:int(limit)], len(addrs), num)
 	}
 	var visited sync.Map[string, any]
 	err = g.client.GetClient().OrderedRange(sctx, addrs, func(ictx context.Context,

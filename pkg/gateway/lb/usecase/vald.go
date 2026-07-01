@@ -110,6 +110,12 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	gateway, err = service.NewGateway(
 		service.WithErrGroup(eg),
 		service.WithDiscoverer(client),
+		service.WithORCA(
+			cfg.Gateway.ORCA.Enabled,
+			cfg.Gateway.ORCA.RefreshInterval,
+			cfg.Gateway.ORCA.ReportTTL,
+			cfg.Gateway.IndexReplica,
+		),
 	)
 	if err != nil {
 		return nil, err

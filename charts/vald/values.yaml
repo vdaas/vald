@@ -1306,6 +1306,18 @@ gateway:
       # @schema {"name": "gateway.lb.gateway_config.multi_operation_concurrency", "type": "integer", "minimum": 2}
       # gateway.lb.gateway_config.multi_operation_concurrency -- number of concurrency of multiXXX api's operation
       multi_operation_concurrency: 20
+      # @schema {"name": "gateway.lb.gateway_config.orca", "type": "object"}
+      # gateway.lb.gateway_config.orca -- resource-aware search fanout and write placement
+      orca:
+        # @schema {"name": "gateway.lb.gateway_config.orca.enabled", "type": "boolean"}
+        # gateway.lb.gateway_config.orca.enabled -- enables resource-aware search fanout and write placement
+        enabled: false
+        # @schema {"name": "gateway.lb.gateway_config.orca.refresh_interval", "type": "string"}
+        # gateway.lb.gateway_config.orca.refresh_interval -- interval for collecting agent resource stats
+        refresh_interval: 1s
+        # @schema {"name": "gateway.lb.gateway_config.orca.report_ttl", "type": "string"}
+        # gateway.lb.gateway_config.orca.report_ttl -- validity period of collected resource stats
+        report_ttl: 3s
       # @schema {"name": "gateway.lb.gateway_config.discoverer", "type": "object"}
       discoverer:
         # @schema {"name": "gateway.lb.gateway_config.discoverer.duration", "type": "string"}
