@@ -1155,13 +1155,13 @@ gateway:
       - type: wait-for
         name: wait-for-discoverer
         target: discoverer
-        image: busybox:1.37.0
+        image: busybox:1.38.0
         imagePullPolicy: Always
         sleepDuration: 2
       - type: wait-for
         name: wait-for-agent
         target: agent
-        image: busybox:1.37.0
+        image: busybox:1.38.0
         imagePullPolicy: Always
         sleepDuration: 2
     # @schema {"name": "gateway.lb.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
@@ -1451,7 +1451,7 @@ gateway:
       - type: wait-for
         name: wait-for-gateway-lb
         target: gateway-lb
-        image: busybox:1.37.0
+        image: busybox:1.38.0
         imagePullPolicy: Always
         sleepDuration: 2
     # @schema {"name": "gateway.filter.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
@@ -1751,7 +1751,7 @@ gateway:
       - type: wait-for
         name: wait-for-gateway-lb
         target: gateway-lb
-        image: busybox:1.37.0
+        image: busybox:1.38.0
         imagePullPolicy: Always
         sleepDuration: 2
     # @schema {"name": "gateway.mirror.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
@@ -3264,13 +3264,13 @@ manager:
       - type: wait-for
         name: wait-for-agent
         target: agent
-        image: busybox:1.37.0
+        image: busybox:1.38.0
         imagePullPolicy: Always
         sleepDuration: 2
       - type: wait-for
         name: wait-for-discoverer
         target: discoverer
-        image: busybox:1.37.0
+        image: busybox:1.38.0
         imagePullPolicy: Always
         sleepDuration: 2
     # @schema {"name": "manager.index.env", "alias": "env"}
@@ -3429,13 +3429,13 @@ manager:
         - type: wait-for
           name: wait-for-agent
           target: agent
-          image: busybox:1.37.0
+          image: busybox:1.38.0
           imagePullPolicy: Always
           sleepDuration: 2
         - type: wait-for
           name: wait-for-discoverer
           target: discoverer
-          image: busybox:1.37.0
+          image: busybox:1.38.0
           imagePullPolicy: Always
           sleepDuration: 2
       # @schema {"name": "manager.index.corrector.env", "alias": "env"}
@@ -3568,13 +3568,13 @@ manager:
         - type: wait-for
           name: wait-for-agent
           target: agent
-          image: busybox:1.37.0
+          image: busybox:1.38.0
           imagePullPolicy: Always
           sleepDuration: 2
         - type: wait-for
           name: wait-for-discoverer
           target: discoverer
-          image: busybox:1.37.0
+          image: busybox:1.38.0
           imagePullPolicy: Always
           sleepDuration: 2
       # @schema {"name": "manager.index.creator.env", "alias": "env"}
@@ -3704,13 +3704,13 @@ manager:
         - type: wait-for
           name: wait-for-agent
           target: agent
-          image: busybox:1.37.0
+          image: busybox:1.38.0
           imagePullPolicy: Always
           sleepDuration: 2
         - type: wait-for
           name: wait-for-discoverer
           target: discoverer
-          image: busybox:1.37.0
+          image: busybox:1.38.0
           imagePullPolicy: Always
           sleepDuration: 2
       # @schema {"name": "manager.index.deleter.env", "alias": "env"}
@@ -3840,13 +3840,13 @@ manager:
         - type: wait-for
           name: wait-for-agent
           target: agent
-          image: busybox:1.37.0
+          image: busybox:1.38.0
           imagePullPolicy: Always
           sleepDuration: 2
         - type: wait-for
           name: wait-for-discoverer
           target: discoverer
-          image: busybox:1.37.0
+          image: busybox:1.38.0
           imagePullPolicy: Always
           sleepDuration: 2
       # @schema {"name": "manager.index.saver.env", "alias": "env"}

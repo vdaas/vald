@@ -111,7 +111,6 @@ rust/deps: \
 	rust/install
 	rustup toolchain install $(RUST_VERSION)
 	rustup default $(RUST_VERSION)
-	$(CARGO_HOME)/bin/cargo install cargo-edit --force
 	cd $(ROOTDIR)/rust \
 		&& $(CARGO_HOME)/bin/cargo update \
 		&& cd -

@@ -1,4 +1,3 @@
-//
 // Copyright (c) 2009-2026 The Go Authors. All rights resered.
 // Modified by vdaas.org vald team <vald@vdaas.org>
 //
@@ -27,7 +26,6 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
 
 // mechanism.
 package singleflight
