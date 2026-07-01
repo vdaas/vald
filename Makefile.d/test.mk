@@ -21,11 +21,7 @@ test: \
 	ngt/install \
 	hdf5/install \
 	certs/gen
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test -short -shuffle=on -race -mod=readonly -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/...
+	$(call go-test,$(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/...)
 	$(MAKE) certs/clean
 
 .PHONY: test/tparse
@@ -35,15 +31,7 @@ test/tparse: \
 	hdf5/install \
 	certs/gen \
 	tparse/install
-	set -euo pipefail
-	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/... \
-	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
-	| tparse -pass -notests
+	$(call go-test-tparse,$(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/...,$@)
 	$(MAKE) certs/clean
 
 .PHONY: test/cmd/tparse
@@ -53,15 +41,7 @@ test/cmd/tparse: \
 	hdf5/install \
 	certs/gen \
 	tparse/install
-	set -euo pipefail
-	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... \
-	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
-	| tparse -pass -notests
+	$(call go-test-tparse,$(ROOTDIR)/cmd/...,$@)
 	$(MAKE) certs/clean
 
 .PHONY: test/internal/tparse
@@ -71,15 +51,7 @@ test/internal/tparse: \
 	hdf5/install \
 	certs/gen \
 	tparse/install
-	set -euo pipefail
-	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/internal/... \
-	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
-	| tparse -pass -notests
+	$(call go-test-tparse,$(ROOTDIR)/internal/...,$@)
 	$(MAKE) certs/clean
 
 .PHONY: test/pkg/tparse
@@ -89,15 +61,7 @@ test/pkg/tparse: \
 	hdf5/install \
 	certs/gen \
 	tparse/install
-	set -euo pipefail
-	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/pkg/... \
-	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
-	| tparse -pass -notests
+	$(call go-test-tparse,$(ROOTDIR)/pkg/...,$@)
 	$(MAKE) certs/clean
 
 .PHONY: test/hack/tparse
@@ -105,21 +69,9 @@ test/pkg/tparse: \
 test/hack/tparse: \
 	certs/gen \
 	tparse/install
-	set -euo pipefail
-	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
 	GOPRIVATE=$(GOPRIVATE) \
 	go mod vendor -o $(ROOTDIR)/vendor
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test -short -shuffle=on -race -mod=vendor -json -cover \
-	$(ROOTDIR)/hack/gorules/... \
-	$(ROOTDIR)/hack/helm/... \
-	$(ROOTDIR)/hack/license/... \
-	$(ROOTDIR)/hack/tools/... \
-	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
-	| tparse -pass -notests
+	$(call go-test-tparse,-mod=vendor $(ROOTDIR)/hack/gorules/... $(ROOTDIR)/hack/helm/... $(ROOTDIR)/hack/license/... $(ROOTDIR)/hack/tools/...,$@)
 	rm -rf $(ROOTDIR)/vendor
 	$(MAKE) certs/clean
 
@@ -130,15 +82,7 @@ test/all/tparse: \
 	hdf5/install \
 	certs/gen \
 	tparse/install
-	set -euo pipefail
-	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/... \
-	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
-	| tparse -pass -notests
+	$(call go-test-tparse,$(ROOTDIR)/...,$@)
 	$(MAKE) certs/clean
 
 .PHONY: test/gotestfmt
@@ -148,16 +92,7 @@ test/gotestfmt: \
 	hdf5/install \
 	certs/gen \
 	gotestfmt/install
-	set -euo pipefail
-	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	GODEBUG=$(GODEBUG) \
-	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/... \
-	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
-	| gotestfmt -showteststatus
+	$(call go-test-gotestfmt,$(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/...,$@,-showteststatus)
 	$(MAKE) certs/clean
 
 .PHONY: test/cmd/gotestfmt
@@ -167,16 +102,7 @@ test/cmd/gotestfmt: \
 	hdf5/install \
 	certs/gen \
 	gotestfmt/install
-	set -euo pipefail
-	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	GODEBUG=$(GODEBUG) \
-	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) -ldflags="-linkmode=external" $(ROOTDIR)/cmd/... \
-	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
-	| gotestfmt -showteststatus -hide="all"
+	$(call go-test-gotestfmt,$(ROOTDIR)/cmd/...,$@,-showteststatus -hide="all")
 	$(MAKE) certs/clean
 
 .PHONY: test/internal/gotestfmt
@@ -186,16 +112,7 @@ test/internal/gotestfmt: \
 	hdf5/install \
 	certs/gen \
 	gotestfmt/install
-	set -euo pipefail
-	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	GODEBUG=$(GODEBUG) \
-	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) -ldflags="-linkmode=external" $(ROOTDIR)/internal/... \
-	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
-	| gotestfmt -showteststatus -hide="all"
+	$(call go-test-gotestfmt,$(ROOTDIR)/internal/...,$@,-showteststatus -hide="all")
 	$(MAKE) certs/clean
 
 .PHONY: test/pkg/gotestfmt
@@ -205,16 +122,7 @@ test/pkg/gotestfmt: \
 	hdf5/install \
 	certs/gen \
 	gotestfmt/install
-	set -euo pipefail
-	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	GODEBUG=$(GODEBUG) \
-	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) -ldflags="-linkmode=external" $(ROOTDIR)/pkg/... \
-	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
-	| gotestfmt -showteststatus -hide="all"
+	$(call go-test-gotestfmt,$(ROOTDIR)/pkg/...,$@,-showteststatus -hide="all")
 	$(MAKE) certs/clean
 
 .PHONY: test/hack/gotestfmt
@@ -222,22 +130,9 @@ test/pkg/gotestfmt: \
 test/hack/gotestfmt: \
 	certs/gen \
 	gotestfmt/install
-	set -euo pipefail
-	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
 	GOPRIVATE=$(GOPRIVATE) \
 	go mod vendor -o $(ROOTDIR)/vendor
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	GODEBUG=$(GODEBUG) \
-	go test -short -shuffle=on -race -mod=vendor -json -cover -ldflags="-linkmode=external" \
-	$(ROOTDIR)/hack/gorules/... \
-	$(ROOTDIR)/hack/helm/... \
-	$(ROOTDIR)/hack/license/... \
-	$(ROOTDIR)/hack/tools/... \
-	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
-	| gotestfmt -showteststatus
+	$(call go-test-gotestfmt,-mod=vendor $(ROOTDIR)/hack/gorules/... $(ROOTDIR)/hack/helm/... $(ROOTDIR)/hack/license/... $(ROOTDIR)/hack/tools/...,$@,-showteststatus)
 	rm -rf $(ROOTDIR)/vendor
 	$(MAKE) certs/clean
 
@@ -248,44 +143,34 @@ test/all/gotestfmt: \
 	hdf5/install \
 	certs/gen \
 	gotestfmt/install
-	set -euo pipefail
-	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	GODEBUG=$(GODEBUG) \
-	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) -ldflags="-linkmode=external" $(ROOTDIR)/... \
-	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
-	| gotestfmt -showteststatus
+	$(call go-test-gotestfmt,$(ROOTDIR)/...,$@,-showteststatus)
 	$(MAKE) certs/clean
 
 .PHONY: test/create-empty
 ## create empty test file if not exists
 test/create-empty:
 	@$(call green, "create empty test file if not exists...")
-	@for f in $(GO_ALL_TEST_SOURCES) ; do \
-		if [ ! -f "$$f" ]; then \
-			echo "Creating empty test file $$f"; \
-			package="$$(dirname $$f)" ; \
-			package="$$(basename $$package)" ; \
-			if [ "$$(basename $$f)" = "main.go" ]; then \
+	@echo "$(GO_ALL_TEST_SOURCES)" | tr ' ' '\n' | xargs -P $(CORES) -I {} bash -c ' \
+		if [ ! -f "{}" ]; then \
+			echo "Creating empty test file {}"; \
+			package="$$(basename $$(dirname {}))"; \
+			if [ "$$(basename {})" = "main_test.go" ]; then \
 				package="main"; \
 			fi; \
-	echo "package $$package" >> "$$f"; \
-	fi; \
-	done
+			echo "package $$package" > "{}"; \
+		fi \
+	'
 
 .PHONY: test/remove-empty
 ## remove empty test files
 test/remove-empty:
 	@$(call green, "remove empty test files...")
-	@for f in $(GO_ALL_TEST_SOURCES) ; do \
-		if ! grep -q "func Test" "$$f"; then \
-			echo "Removing empty test file $$f"; \
-			rm "$$f"; \
-		fi; \
-	done
+	@echo "$(GO_ALL_TEST_SOURCES)" | tr ' ' '\n' | xargs -P $(CORES) -I {} bash -c ' \
+		if ! grep -q "func Test" "{}"; then \
+			echo "Removing empty test file {}"; \
+			rm "{}"; \
+		fi \
+	'
 
 .PHONY: test/pkg
 ## run tests for pkg
@@ -293,11 +178,7 @@ test/pkg: \
 	ngt/install \
 	hdf5/install \
 	certs/gen
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test -short -shuffle=on -race -mod=readonly -cover $(ROOTDIR)/pkg/...
+	$(call go-test,$(ROOTDIR)/pkg/...)
 	$(MAKE) certs/clean
 
 .PHONY: test/internal
@@ -306,11 +187,7 @@ test/internal: \
 	ngt/install \
 	hdf5/install \
 	certs/gen
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test -short -shuffle=on -race -mod=readonly -cover $(ROOTDIR)/internal/...
+	$(call go-test,$(ROOTDIR)/internal/...)
 	$(MAKE) certs/clean
 
 .PHONY: test/cmd
@@ -319,11 +196,7 @@ test/cmd: \
 	ngt/install \
 	hdf5/install \
 	certs/gen
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test -short -shuffle=on -race -mod=readonly -cover $(ROOTDIR)/cmd/...
+	$(call go-test,$(ROOTDIR)/cmd/...)
 	$(MAKE) certs/clean
 
 .PHONY: test/rust
@@ -335,16 +208,21 @@ test/rust: \
 .PHONY: test/rust/qbg
 ## run tests for qbg
 test/rust/qbg:
+	$(CC_ENV_VARS) \
 	cargo test --manifest-path rust/Cargo.toml --package qbg --lib -- tests::test_ffi_qbg --exact --show-output
+	$(CC_ENV_VARS) \
 	cargo test --manifest-path rust/Cargo.toml --package qbg --lib -- tests::test_ffi_qbg_prebuilt --exact --show-output
 	rm -rf rust/libs/algorithms/qbg/index/
+	$(CC_ENV_VARS) \
 	cargo test --manifest-path rust/Cargo.toml --package qbg --lib -- tests::test_property --exact --show-output
+	$(CC_ENV_VARS) \
 	cargo test --manifest-path rust/Cargo.toml --package qbg --lib -- tests::test_index --exact --show-output
 	rm -rf rust/libs/algorithms/qbg/index/
 
 .PHONY: test/rust/agent
 ## run tests for agent
 test/rust/agent:
+	$(CC_ENV_VARS) \
 	cargo test --manifest-path rust/Cargo.toml --package agent -- handler::common::tests --show-output
 
 .PHONY: test/hack
@@ -355,15 +233,7 @@ test/hack: \
 	certs/gen
 	GOPRIVATE=$(GOPRIVATE) \
 	go mod vendor -o $(ROOTDIR)/vendor
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test -short -shuffle=on -race -mod=vendor -cover \
-	$(ROOTDIR)/hack/gorules/... \
-	$(ROOTDIR)/hack/helm/... \
-	$(ROOTDIR)/hack/license/... \
-	$(ROOTDIR)/hack/tools/...
+	$(call go-test,-mod=vendor $(ROOTDIR)/hack/gorules/... $(ROOTDIR)/hack/helm/... $(ROOTDIR)/hack/license/... $(ROOTDIR)/hack/tools/...)
 	rm -rf $(ROOTDIR)/vendor
 	$(MAKE) certs/clean
 
@@ -373,11 +243,7 @@ test/all: \
 	ngt/install \
 	hdf5/install \
 	certs/gen
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test -short -shuffle=on -race -mod=readonly -cover $(ROOTDIR)/...
+	$(call go-test,$(ROOTDIR)/...)
 	$(MAKE) certs/clean
 
 .PHONY: coverage
@@ -386,14 +252,9 @@ coverage: \
 	ngt/install \
 	hdf5/install \
 	certs/gen
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test -short -shuffle=on -race -mod=readonly -v -race -covermode=atomic -timeout=$(GOTEST_TIMEOUT) -coverprofile=coverage.out $(ROOTDIR)/...
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
+	$(GO_TEST_ENV) \
+	go test $(GO_TEST_FLAGS) -v -covermode=atomic -coverprofile=coverage.out $(ROOTDIR)/...
+	$(GO_ENV_VARS) \
 	go tool cover -html=coverage.out -o coverage.html
 	$(MAKE) certs/clean
 
@@ -421,9 +282,9 @@ gotests/gen-test:
 gotests/patch: \
 	files
 	@$(call green, "apply patches to go test files...")
-	find $(ROOTDIR)/internal/k8s/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%k8s.io/apimachinery/pkg/api/errors%$(GOPKG)/internal/errors%g"
 	@cat $(ROOTDIR)/.gitfiles | grep -E '^(\./)?internal/k8s/.*\_test.go$$' | xargs -I {} -P$(CORES) bash -c ' \
 	echo "Replacing internal/k8s Test File {}" && \
+	sed -i -E "s%k8s.io/apimachinery/pkg/api/errors%$(GOPKG)/internal/errors%g" {} && \
 	sed -i -E "s%cockroachdb/errors%$(REPO)/internal/errors%g" {} && \
 	sed -i -E "s%golang.org/x/sync/errgroup%$(GOPKG)/internal/sync/errgroup%g" {} && \
 	sed -i -E "s%pkg/errors%$(REPO)/internal/errors%g" {} && \
@@ -444,8 +305,7 @@ gotests/patch: \
 ## delete from placeholder to EOF, then re-append placeholder
 test/patch-placeholder:
 	@$(call green, "apply placeholder patches (delete to EOF and append)...")
-	@for f in $(GO_ALL_TEST_SOURCES); do echo "$$f"; done | \
-		xargs -I {} -P$(CORES) bash -c ' \
+	@echo "$(GO_ALL_TEST_SOURCES)" | tr ' ' '\n' | xargs -I {} -P$(CORES) bash -c ' \
 		[ -f "{}" ] || exit 0 ; \
 		sed -i -E "/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/,\$$d" "{}"; \
 		echo "// $(TEST_NOT_IMPL_PLACEHOLDER)" >> {};'
@@ -454,8 +314,7 @@ test/patch-placeholder:
 ## comment out unimplemented tests (from placeholder to EOF)
 test/comment-unimplemented:
 	@$(call green, "comment out unimplemented test (from placeholder to EOF)...")
-	@for f in $(GO_ALL_TEST_SOURCES); do echo "$$f"; done | \
-		xargs -I {} -P$(CORES) bash -c ' \
+	@echo "$(GO_ALL_TEST_SOURCES)" | tr ' ' '\n' | xargs -I {} -P$(CORES) bash -c ' \
 		[ -f "{}" ] || exit 0 ; \
 		sed -i -E -e " \
 		/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/,\$$ { \
