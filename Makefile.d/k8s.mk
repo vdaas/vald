@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-JAEGER_OPERATOR_WAIT_DURATION := 0
 MIRROR01_NAMESPACE = vald-01
 MIRROR02_NAMESPACE = vald-02
 MIRROR03_NAMESPACE = vald-03
@@ -160,21 +159,8 @@ k8s/vald/deploy: k8s/vald/manifests
 .PHONY: k8s/vald/delete
 ## delete vald sample cluster from k8s
 k8s/vald/delete: k8s/vald/manifests
-	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/mirror || true
-	kubectl delete -f $(TEMP_DIR)/vald/templates/index/operator || true
-	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/readreplica/rotate || true
-	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/save || true
-	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/creation || true
-	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/correction || true
-	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/creation || true
-	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/save || true
-	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway || true
-	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb || true
-	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index || true
-	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer || true
-	kubectl delete -f $(TEMP_DIR)/vald/templates/agent/readreplica || true
-	kubectl delete -f $(TEMP_DIR)/vald/templates/agent/ngt || true
-	kubectl delete -f $(TEMP_DIR)/vald/templates/agent || true
+	@echo "gateway/mirror index/operator index/job/readreplica/rotate index/job/save index/job/creation index/job/correction gateway gateway/lb manager/index discoverer agent/readreplica agent/ngt agent" | tr ' ' '\n' | \
+	xargs -I {} -P $(CORES) bash -c 'kubectl delete -f $(TEMP_DIR)/vald/templates/{} || true'
 	kubectl delete -f $(TEMP_DIR)/vald/crds || true
 
 .PHONY: k8s/multi/vald/deploy
@@ -539,7 +525,7 @@ k8s/monitoring/delete: \
 .PHONY: k8s/e2e/deploy
 ## deploy e2e job
 k8s/e2e/deploy:
-	kubectl create configmap e2e-config --from-file=./tests/v2/e2e/assets
+	kubectl create configmap e2e-config --from-file=$(ROOTDIR)/tests/v2/e2e/assets
 	kubectl apply -f k8s/tests/v2/e2e/job.yaml
 
 .PHONY: k8s/e2e/delete

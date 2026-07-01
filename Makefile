@@ -111,7 +111,9 @@ K3S_VERSION := $(eval K3S_VERSION := $(shell cat versions/K3S_VERSION))$(K3S_VER
 KIND_VERSION := $(eval KIND_VERSION := $(shell cat versions/KIND_VERSION))$(KIND_VERSION)
 KUBECTL_VERSION := $(eval KUBECTL_VERSION := $(shell cat versions/KUBECTL_VERSION))$(KUBECTL_VERSION)
 KUBELINTER_VERSION := $(eval KUBELINTER_VERSION := $(shell cat versions/KUBELINTER_VERSION))$(KUBELINTER_VERSION)
+LLVM_VERSION := $(eval LLVM_VERSION := $(shell cat versions/LLVM_VERSION))$(LLVM_VERSION)
 NGT_VERSION := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VERSION)
+NINJA_VERSION := $(eval NINJA_VERSION := $(shell cat versions/NINJA_VERSION))$(NINJA_VERSION)
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 OTEL_OPERATOR_VERSION := $(eval OTEL_OPERATOR_VERSION := $(shell cat versions/OTEL_OPERATOR_VERSION))$(OTEL_OPERATOR_VERSION)
 PROMETHEUS_STACK_VERSION := $(eval PROMETHEUS_STACK_VERSION := $(shell cat versions/PROMETHEUS_STACK_VERSION))$(PROMETHEUS_STACK_VERSION)
@@ -172,6 +174,7 @@ LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto
 
 NGT_LDFLAGS = -fopenmp -lopenblas -llapack -lgfortran
 FAISS_LDFLAGS = $(NGT_LDFLAGS)
+LIBOMP ?= $(shell ldconfig -p 2>/dev/null | awk '/libomp\.so[^.].*=>/{print $$NF; exit}' | grep -v '^$$' || ls /usr/lib/llvm-*/lib/libomp.so 2>/dev/null | sort -V | tail -1)
 HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl -lm
 CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
 # TEST_LDFLAGS without -static to avoid conflicts with CGO and glibc dynamic linking requirements

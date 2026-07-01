@@ -23,8 +23,8 @@ proto/all: \
 .PHONY: proto/clean
 ## clean proto artifacts
 proto/clean:
-	find $(ROOTDIR)/apis/grpc -name "*.pb.go" | xargs -P$(CORES) rm -f
-	find $(ROOTDIR)/apis/grpc -name "*.pb.json.go" | xargs -P$(CORES) rm -f
+	cat $(ROOTDIR)/.gitfiles | grep -E '^apis/grpc/.*\.pb\.go$$' | sed -e 's%^%$(ROOTDIR)/%' | xargs -I {} -P $(CORES) rm -f "{}"
+	cat $(ROOTDIR)/.gitfiles | grep -E '^apis/grpc/.*\.pb\.json\.go$$' | sed -e 's%^%$(ROOTDIR)/%' | xargs -I {} -P $(CORES) rm -f "{}"
 	rm -rf $(ROOTDIR)/apis/swagger $(ROOTDIR)/apis/docs
 
 .PHONY: proto/paths/print
@@ -58,7 +58,7 @@ proto/gen/code: \
 	@$(call green, "generating pb.go and swagger.json files and documents for API v1...")
 	buf format -w
 	buf generate
-	make proto/replace
+	$(MAKE) proto/replace
 
 .PHONY: proto/gen/api/docs
 ## generate proto api docs
