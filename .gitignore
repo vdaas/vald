@@ -84,3 +84,8 @@ rust/target/
 
 !rust/libs
 /gen
+.codegraph/
+graphify-out/
+.claude/
+CLAUDE.md
+.mcp.json

@@ -63,18 +63,39 @@ runs:
           extra_args="${extra_args} -t ${IMAGE_NAME}:${tag}-${ARCH} -t ${ALTER_IMAGE_NAME}:${tag}-${ARCH}"
         done
 
-        make \
-          REMOTE="true" \
-          DOCKER="docker" \
-          BUILDKIT_INLINE_CACHE=0 \
-          DOCKER_OPTS="--platform ${PLATFORM} --builder ${BUILDER} ${LABEL_OPTS} \
-          --label org.opencontainers.image.version=${PRIMARY_TAG}-${ARCH} \
-          --label org.opencontainers.image.title=${TARGET} \
-          --label org.opencontainers.image.created=\"$(date --rfc-3339=ns)\" \
-          --label org.opencontainers.image.licenses=\"Apache 2.0\"" \
-          EXTRA_ARGS="${extra_args}" \
-          TAG="${PRIMARY_TAG}-${ARCH}" \
-          docker/build/${TARGET}
+        build() {
+          make \
+            REMOTE="true" \
+            DOCKER="docker" \
+            BUILDKIT_INLINE_CACHE=0 \
+            DOCKER_OPTS="--platform ${PLATFORM} --builder ${BUILDER} ${LABEL_OPTS} \
+            --label org.opencontainers.image.version=${PRIMARY_TAG}-${ARCH} \
+            --label org.opencontainers.image.title=${TARGET} \
+            --label org.opencontainers.image.created=\"$(date --rfc-3339=ns)\" \
+            --label org.opencontainers.image.licenses=\"Apache 2.0\"" \
+            EXTRA_ARGS="${extra_args}" \
+            TAG="${PRIMARY_TAG}-${ARCH}" \
+            docker/build/${TARGET}
+        }
+
+        # Retry to ride out transient docker.io registry handshake timeouts
+        # ("Get https://registry-1.docker.io/v2/: net/http: ... Client.Timeout")
+        # that intermittently fail the pull/login/push. buildkit layer caching
+        # makes each retry cheap (only the uncached/failed work re-runs).
+        attempt=1
+        max_attempts=3
+        while true; do
+          if build; then
+            break
+          fi
+          if [ "${attempt}" -ge "${max_attempts}" ]; then
+            echo "::error::docker/build/${TARGET} failed after ${max_attempts} attempts"
+            exit 1
+          fi
+          echo "::warning::docker/build/${TARGET} attempt ${attempt} failed (likely a transient registry timeout); retrying in 30s"
+          attempt=$((attempt + 1))
+          sleep 30
+        done
       env:
         TARGET: ${{ inputs.target }}
         DOCKER_BUILDKIT: "1"

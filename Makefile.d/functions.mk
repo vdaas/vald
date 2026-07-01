@@ -599,6 +599,9 @@ define cmake-install
 			tar -xf $(TEMP_DIR)/$2-archive -C $(TEMP_DIR)/$2 --strip-components 1; \
 		fi; \
 	fi
+	_RANLIB=$$(if [ -x '$(RANLIB)' ]; then echo '$(RANLIB)'; else command -v llvm-ranlib 2>/dev/null || ls /usr/bin/llvm-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ranlib 2>/dev/null || ls /usr/bin/gcc-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ranlib; fi) && \
+	_AR=$$(if [ -x '$(AR)' ]; then echo '$(AR)'; else command -v llvm-ar 2>/dev/null || command -v ar; fi) && \
+	_NM=$$(if [ -x '$(NM)' ]; then echo '$(NM)'; else command -v llvm-nm 2>/dev/null || command -v nm; fi) && \
 	cd $(TEMP_DIR)/$2 && \
 	cmake \
 	-G Ninja \
@@ -608,17 +611,17 @@ define cmake-install
 	-DBUILD_STATIC_EXECS=ON \
 	-DBUILD_TESTING=OFF \
 	-DCMAKE_C_COMPILER="$(CC)" \
-	-DCMAKE_C_COMPILER_AR="$(AR)" \
-	-DCMAKE_C_COMPILER_RANLIB="$(RANLIB)" \
-	-DCMAKE_CXX_COMPILER_AR="$(AR)" \
-	-DCMAKE_CXX_COMPILER_RANLIB="$(RANLIB)" \
+	-DCMAKE_C_COMPILER_AR="$${_AR}" \
+	-DCMAKE_C_COMPILER_RANLIB="$${_RANLIB}" \
+	-DCMAKE_CXX_COMPILER_AR="$${_AR}" \
+	-DCMAKE_CXX_COMPILER_RANLIB="$${_RANLIB}" \
 	-DCMAKE_CXX_COMPILER="$(CXX)" \
 	-DCMAKE_ASM_COMPILER="$(CC)" \
-	-DCMAKE_ASM_COMPILER_AR="$(AR)" \
-	-DCMAKE_ASM_COMPILER_RANLIB="$(RANLIB)" \
-	-DCMAKE_AR="$(AR)" \
-	-DCMAKE_NM="$(NM)" \
-	-DCMAKE_RANLIB="$(RANLIB)" \
+	-DCMAKE_ASM_COMPILER_AR="$${_AR}" \
+	-DCMAKE_ASM_COMPILER_RANLIB="$${_RANLIB}" \
+	-DCMAKE_AR="$${_AR}" \
+	-DCMAKE_NM="$${_NM}" \
+	-DCMAKE_RANLIB="$${_RANLIB}" \
 	-DCMAKE_MAKE_PROGRAM="$(USR_LOCAL)/bin/ninja" \
 	-DCMAKE_INSTALL_PREFIX="$(USR_LOCAL)" \
 	-DCMAKE_INSTALL_BINDIR="bin" \

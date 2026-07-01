@@ -336,7 +336,13 @@ $(LIB_PATH)/libz.a: | $(LIB_PATH) ninja/install
 		-DZLIB_BUILD_SHARED=OFF \
 		-DZLIB_BUILD_STATIC=ON \
 		-DZLIB_COMPAT=ON \
-		-DZLIB_USE_STATIC_LIBS=ON, \
+		-DZLIB_USE_STATIC_LIBS=ON \
+		-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
+		-DCMAKE_EXE_LINKER_FLAGS="" \
+		-DCMAKE_SHARED_LINKER_FLAGS="" \
+		-DCMAKE_MODULE_LINKER_FLAGS="" \
+		-DCMAKE_C_FLAGS="$(CFLAGS) -fno-lto" \
+		-DCMAKE_CXX_FLAGS="$(CXXFLAGS) -fno-lto", \
 		$(SUDO) rm -f $(USR_LOCAL)/include/zlib.h $(USR_LOCAL)/include/zconf.h $(LIB_PATH)/libz.a $(USR_LOCAL)/share/man/man3/zlib.3,,,zlibstatic)
 
 .PHONY: hdf5/install
@@ -347,11 +353,18 @@ $(LIB_PATH)/libhdf5.a: | $(LIB_PATH) zlib/install
 	$(call cmake-install,https://github.com/HDFGroup/hdf5/archive/refs/tags/$(HDF5_VERSION).tar.gz,hdf5, \
 		-DHDF5_BUILD_CPP_LIB=OFF \
 		-DHDF5_BUILD_HL_LIB=ON \
-		-DHDF5_BUILD_STATIC_EXECS=ON \
+		-DHDF5_BUILD_STATIC_EXECS=OFF \
 		-DHDF5_BUILD_TOOLS=OFF \
+		-DHDF5_BUILD_EXAMPLES=OFF \
 		-DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
 		-DH5_ZLIB_INCLUDE_DIR=$(USR_LOCAL)/include \
-		-DH5_ZLIB_LIBRARY=$(LIB_PATH)/libz.a, \
+		-DH5_ZLIB_LIBRARY=$(LIB_PATH)/libz.a \
+		-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
+		-DCMAKE_EXE_LINKER_FLAGS="" \
+		-DCMAKE_SHARED_LINKER_FLAGS="" \
+		-DCMAKE_MODULE_LINKER_FLAGS="" \
+		-DCMAKE_C_FLAGS="$(CFLAGS) -fno-lto" \
+		-DCMAKE_CXX_FLAGS="$(CXXFLAGS) -fno-lto", \
 		$(SUDO) rm -f $(USR_LOCAL)/include/H5*.h $(USR_LOCAL)/include/hdf5*.h $(LIB_PATH)/libhdf5*)
 
 .PHONY: libomp/install
@@ -376,14 +389,17 @@ $(LIB_PATH)/libomp.a: | ninja/install
 			llvm-project-llvmorg-$(LLVM_VERSION)/openmp \
 			llvm-project-llvmorg-$(LLVM_VERSION)/cmake; \
 		cd $(TEMP_DIR)/libomp/openmp \
+		&& _AR=$$(if [ -x '$(AR)' ]; then echo '$(AR)'; else command -v llvm-ar 2>/dev/null || command -v ar; fi) \
+		&& _NM=$$(if [ -x '$(NM)' ]; then echo '$(NM)'; else command -v llvm-nm 2>/dev/null || command -v nm; fi) \
+		&& _RANLIB=$$(if [ -x '$(RANLIB)' ]; then echo '$(RANLIB)'; else command -v llvm-ranlib 2>/dev/null || ls /usr/bin/llvm-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ranlib 2>/dev/null || ls /usr/bin/gcc-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ranlib; fi) \
 		&& env LDFLAGS="" cmake -G Ninja \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
 		-DCMAKE_C_COMPILER="$(CC)" \
 		-DCMAKE_CXX_COMPILER="$(CXX)" \
-		-DCMAKE_AR="$(AR)" \
-		-DCMAKE_NM="$(NM)" \
-		-DCMAKE_RANLIB="$(RANLIB)" \
+		-DCMAKE_AR="$${_AR}" \
+		-DCMAKE_NM="$${_NM}" \
+		-DCMAKE_RANLIB="$${_RANLIB}" \
 		-DCMAKE_MAKE_PROGRAM="$(USR_LOCAL)/bin/ninja" \
 		-DCMAKE_INSTALL_PREFIX="$(USR_LOCAL)" \
 		-DCMAKE_INSTALL_LIBDIR="lib" \
