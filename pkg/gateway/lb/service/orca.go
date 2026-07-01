@@ -24,19 +24,11 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	vc "github.com/vdaas/vald/internal/client/v1/client/vald"
-	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/atomic"
 )
-
-type ORCAPolicy struct {
-	MinFanout       int
-	MaxFanout       int
-	CPUThreshold    float64
-	MemoryThreshold float64
-}
 
 type resourceLoad struct {
 	cpu    float64
@@ -49,35 +41,26 @@ type resourceLoadSnapshot struct {
 }
 
 type orca struct {
-	enabled         bool
 	refreshInterval time.Duration
 	reportTTL       time.Duration
-	read            ORCAPolicy
-	write           ORCAPolicy
+	replica         int
 	snapshot        atomic.Pointer[resourceLoadSnapshot]
+	readLogOnce     sync.Once
+	writeLogOnce    sync.Once
 }
 
-func newORCA(refreshInterval, reportTTL time.Duration, read, write ORCAPolicy) *orca {
+func newORCA(refreshInterval, reportTTL time.Duration, replica int) *orca {
+	if replica < 1 {
+		replica = 1
+	}
 	return &orca{
-		enabled:         true,
 		refreshInterval: refreshInterval,
 		reportTTL:       reportTTL,
-		read:            normalizeORCAPolicy(read),
-		write:           normalizeORCAPolicy(write),
+		replica:         replica,
 	}
 }
 
-func normalizeORCAPolicy(policy ORCAPolicy) ORCAPolicy {
-	if policy.MinFanout < 1 {
-		policy.MinFanout = 1
-	}
-	if policy.MaxFanout > 0 && policy.MaxFanout < policy.MinFanout {
-		policy.MaxFanout = policy.MinFanout
-	}
-	return policy
-}
-
-func (o *orca) start(ctx context.Context, client discoverer.Client) {
+func (o *orca) start(ctx context.Context, client grpc.Client) {
 	o.collect(ctx, client)
 	ticker := time.NewTicker(o.refreshInterval)
 	defer ticker.Stop()
@@ -91,36 +74,35 @@ func (o *orca) start(ctx context.Context, client discoverer.Client) {
 	}
 }
 
-func (o *orca) collect(ctx context.Context, client discoverer.Client) {
+func (o *orca) collect(ctx context.Context, client grpc.Client) {
 	loads := make(map[string]resourceLoad)
 	var mu sync.Mutex
-	collect := func(gc grpc.Client) {
-		err := gc.RangeConcurrent(ctx, -1, func(
-			ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
-		) error {
-			stats, err := vc.NewValdClient(conn).ResourceStats(ctx, new(payload.Empty), copts...)
-			if err != nil || stats == nil || stats.GetCgroupStats() == nil {
-				return nil
-			}
-			cgroup := stats.GetCgroupStats()
-			load := resourceLoad{
-				cpu:    utilization(cgroup.GetCpuUsageCores(), cgroup.GetCpuLimitCores()),
-				memory: utilization(float64(cgroup.GetMemoryUsageBytes()), float64(cgroup.GetMemoryLimitBytes())),
-			}
-			mu.Lock()
-			loads[addr] = load
-			mu.Unlock()
-			return nil
-		})
+	err := client.RangeConcurrent(ctx, -1, func(
+		ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
+	) error {
+		stats, err := vc.NewValdClient(conn).ResourceStats(ctx, new(payload.Empty), copts...)
 		if err != nil {
-			log.Warnf("ORCA resource stats collection failed: %v", err)
+			log.Warnf("ORCA resource stats collection failed for %s: %v", addr, err)
+			return nil
 		}
+		if stats == nil || stats.GetCgroupStats() == nil {
+			return nil
+		}
+		cgroup := stats.GetCgroupStats()
+		load := resourceLoad{
+			cpu:    utilization(cgroup.GetCpuUsageCores(), cgroup.GetCpuLimitCores()),
+			memory: utilization(float64(cgroup.GetMemoryUsageBytes()), float64(cgroup.GetMemoryLimitBytes())),
+		}
+		mu.Lock()
+		loads[addr] = load
+		mu.Unlock()
+		return nil
+	})
+	if err != nil {
+		log.Warnf("ORCA resource stats collection failed: %v", err)
 	}
-	writeClient := client.GetClient()
-	collect(writeClient)
-	readClient := client.GetReadReplicaClient()
-	if readClient != nil && readClient != writeClient {
-		collect(readClient)
+	if len(loads) == 0 {
+		return
 	}
 	o.snapshot.Store(&resourceLoadSnapshot{
 		collectedAt: time.Now(),
@@ -135,41 +117,26 @@ func utilization(usage, limit float64) float64 {
 	return usage / limit
 }
 
-func (o *orca) selectAddrs(kind BroadCastKind, addrs []string) []string {
+func (o *orca) order(addrs []string) []string {
 	snapshot := o.snapshot.Load()
 	if snapshot == nil || time.Since(snapshot.collectedAt) > o.reportTTL {
 		return nil
 	}
-	policy := o.read
-	if kind == WRITE {
-		policy = o.write
-	}
 	type candidate struct {
-		addr     string
-		load     resourceLoad
-		known    bool
-		accepted bool
+		addr  string
+		load  resourceLoad
+		known bool
 	}
 	candidates := make([]candidate, 0, len(addrs))
 	for _, addr := range addrs {
 		load, known := snapshot.loads[addr]
-		accepted := !known ||
-			(policy.CPUThreshold <= 0 || load.cpu <= policy.CPUThreshold) &&
-			(policy.MemoryThreshold <= 0 || load.memory <= policy.MemoryThreshold)
 		candidates = append(candidates, candidate{
-			addr:     addr,
-			load:     load,
-			known:    known,
-			accepted: accepted,
+			addr:  addr,
+			load:  load,
+			known: known,
 		})
 	}
-	slices.SortFunc(candidates, func(left, right candidate) int {
-		if left.accepted != right.accepted {
-			if left.accepted {
-				return -1
-			}
-			return 1
-		}
+	slices.SortStableFunc(candidates, func(left, right candidate) int {
 		if left.known != right.known {
 			if left.known {
 				return -1
@@ -178,20 +145,45 @@ func (o *orca) selectAddrs(kind BroadCastKind, addrs []string) []string {
 		}
 		leftScore := max(left.load.cpu, left.load.memory)
 		rightScore := max(right.load.cpu, right.load.memory)
-		if scoreOrder := cmp.Compare(leftScore, rightScore); scoreOrder != 0 {
-			return scoreOrder
-		}
-		return cmp.Compare(left.addr, right.addr)
+		return cmp.Compare(leftScore, rightScore)
 	})
-	selected := make([]string, 0, len(candidates))
+	ordered := make([]string, 0, len(candidates))
 	for _, candidate := range candidates {
-		if !candidate.accepted && len(selected) >= policy.MinFanout {
-			continue
-		}
-		selected = append(selected, candidate.addr)
-		if policy.MaxFanout > 0 && len(selected) >= policy.MaxFanout {
-			break
-		}
+		ordered = append(ordered, candidate.addr)
 	}
+	return ordered
+}
+
+func (o *orca) read(addrs []string) []string {
+	ordered := o.order(addrs)
+	if len(ordered) == 0 {
+		return nil
+	}
+	limit := len(ordered) - o.replica + 1
+	if limit < 1 {
+		limit = 1
+	}
+	selected := ordered[:limit]
+	o.readLogOnce.Do(func() {
+		log.Infof(
+			"ORCA READ fanout selected %d of %d agents with replica %d: %v",
+			len(selected),
+			len(ordered),
+			o.replica,
+			selected,
+		)
+	})
 	return selected
+}
+
+func (o *orca) logWrite(selected []string, total, requested int) {
+	o.writeLogOnce.Do(func() {
+		log.Infof(
+			"ORCA WRITE placement selected %d of %d agents for replica %d: %v",
+			len(selected),
+			total,
+			requested,
+			selected,
+		)
+	})
 }

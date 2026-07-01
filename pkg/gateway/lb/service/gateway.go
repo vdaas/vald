@@ -41,14 +41,13 @@ type Gateway interface {
 		f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) error
 	BroadCast(ctx context.Context, kind BroadCastKind,
 		f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) error
-	BroadCastUncontrolled(ctx context.Context, kind BroadCastKind,
-		f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) error
 }
 
 type BroadCastKind int
 
 const (
 	READ BroadCastKind = iota
+	ROUTED_READ
 	WRITE
 )
 
@@ -73,9 +72,9 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 	if err != nil {
 		return nil, err
 	}
-	if g.orca != nil && g.orca.enabled {
+	if g.orca != nil {
 		g.eg.Go(safety.RecoverFunc(func() error {
-			g.orca.start(ctx, g.client)
+			g.orca.start(ctx, g.client.GetClient())
 			return nil
 		}))
 	}
@@ -87,23 +86,6 @@ func (g *gateway) BroadCast(
 	kind BroadCastKind,
 	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
 ) (err error) {
-	return g.broadcast(ctx, kind, true, f)
-}
-
-func (g *gateway) BroadCastUncontrolled(
-	ctx context.Context,
-	kind BroadCastKind,
-	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
-) (err error) {
-	return g.broadcast(ctx, kind, false, f)
-}
-
-func (g *gateway) broadcast(
-	ctx context.Context,
-	kind BroadCastKind,
-	controlled bool,
-	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
-) (err error) {
 	fctx, span := trace.StartSpan(ctx, "vald/gateway-lb/service/Gateway.BroadCast")
 	defer func() {
 		if span != nil {
@@ -113,7 +95,7 @@ func (g *gateway) broadcast(
 
 	var client grpc.Client
 	switch kind {
-	case READ:
+	case READ, ROUTED_READ:
 		client = g.client.GetReadClient()
 	case WRITE:
 		client = g.client.GetClient()
@@ -133,8 +115,8 @@ func (g *gateway) broadcast(
 		}
 		return nil
 	}
-	if controlled && g.orca != nil && g.orca.enabled {
-		addrs := g.orca.selectAddrs(kind, client.ConnectedAddrs(fctx))
+	if kind == ROUTED_READ && g.orca != nil {
+		addrs := g.orca.read(client.ConnectedAddrs(fctx))
 		if len(addrs) > 0 {
 			return client.OrderedRangeConcurrent(fctx, addrs, -1, call)
 		}
@@ -155,11 +137,22 @@ func (g *gateway) DoMulti(
 	}()
 	var cur uint32 = 0
 	addrs := g.client.GetAddrs(sctx)
+	orcaOrdered := false
+	if g.orca != nil {
+		ordered := g.orca.order(g.client.GetClient().ConnectedAddrs(sctx))
+		if len(ordered) > 0 {
+			addrs = ordered
+			orcaOrdered = true
+		}
+	}
 	var limit uint32
 	if len(addrs) < num {
 		limit = uint32(len(addrs))
 	} else {
 		limit = uint32(num)
+	}
+	if orcaOrdered {
+		g.orca.logWrite(addrs[:int(limit)], len(addrs), num)
 	}
 	var visited sync.Map[string, any]
 	err = g.client.GetClient().OrderedRange(sctx, addrs, func(ictx context.Context,

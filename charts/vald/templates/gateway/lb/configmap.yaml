@@ -56,16 +56,6 @@ data:
         enabled: {{ $gateway.gateway_config.orca.enabled }}
         refresh_interval: {{ $gateway.gateway_config.orca.refresh_interval }}
         report_ttl: {{ $gateway.gateway_config.orca.report_ttl }}
-        read:
-          min_fanout: {{ $gateway.gateway_config.orca.read.min_fanout }}
-          max_fanout: {{ $gateway.gateway_config.orca.read.max_fanout }}
-          cpu_threshold: {{ $gateway.gateway_config.orca.read.cpu_threshold }}
-          memory_threshold: {{ $gateway.gateway_config.orca.read.memory_threshold }}
-        write:
-          min_fanout: {{ $gateway.gateway_config.orca.write.min_fanout }}
-          max_fanout: {{ $gateway.gateway_config.orca.write.max_fanout }}
-          cpu_threshold: {{ $gateway.gateway_config.orca.write.cpu_threshold }}
-          memory_threshold: {{ $gateway.gateway_config.orca.write.memory_threshold }}
       discoverer:
         duration: {{ $gateway.gateway_config.discoverer.duration }}
         client:

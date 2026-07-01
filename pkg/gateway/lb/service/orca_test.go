@@ -24,7 +24,7 @@ import (
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
-func Test_orca_selectAddrs(t *testing.T) {
+func Test_orca_order(t *testing.T) {
 	t.Parallel()
 	loads := map[string]resourceLoad{
 		"agent-1": {cpu: 0.2, memory: 0.3},
@@ -33,48 +33,27 @@ func Test_orca_selectAddrs(t *testing.T) {
 	}
 	tests := []struct {
 		snapshot *resourceLoadSnapshot
-		read     ORCAPolicy
-		write    ORCAPolicy
 		want     []string
 		name     string
-		kind     BroadCastKind
 		addrs    []string
 	}{
 		{
-			name: "read policy limits fanout and rejects overloaded agents",
+			name: "orders all known agents by load",
 			snapshot: &resourceLoadSnapshot{
 				collectedAt: time.Now(),
 				loads:       loads,
 			},
-			read:  ORCAPolicy{MinFanout: 1, MaxFanout: 2, CPUThreshold: 0.9, MemoryThreshold: 0.9},
-			write: ORCAPolicy{MinFanout: 3, CPUThreshold: 0.5, MemoryThreshold: 0.9},
-			kind:  READ,
 			addrs: []string{"agent-3", "agent-2", "agent-1"},
-			want:  []string{"agent-1", "agent-2"},
+			want:  []string{"agent-1", "agent-2", "agent-3"},
 		},
 		{
-			name: "write policy backfills to minimum fanout",
+			name: "keeps unknown agents as fallback",
 			snapshot: &resourceLoadSnapshot{
 				collectedAt: time.Now(),
 				loads:       loads,
 			},
-			read:  ORCAPolicy{MinFanout: 1, MaxFanout: 1, CPUThreshold: 0.9, MemoryThreshold: 0.9},
-			write: ORCAPolicy{MinFanout: 2, CPUThreshold: 0.5, MemoryThreshold: 0.9},
-			kind:  WRITE,
-			addrs: []string{"agent-3", "agent-2", "agent-1"},
-			want:  []string{"agent-1", "agent-2"},
-		},
-		{
-			name: "unknown agent remains eligible",
-			snapshot: &resourceLoadSnapshot{
-				collectedAt: time.Now(),
-				loads:       loads,
-			},
-			read:  ORCAPolicy{MinFanout: 1, MaxFanout: 2, CPUThreshold: 0.5, MemoryThreshold: 0.9},
-			write: ORCAPolicy{MinFanout: 1},
-			kind:  READ,
-			addrs: []string{"agent-3", "agent-unknown", "agent-1"},
-			want:  []string{"agent-1", "agent-unknown"},
+			addrs: []string{"unknown-1", "agent-2", "unknown-2", "agent-1"},
+			want:  []string{"agent-1", "agent-2", "unknown-1", "unknown-2"},
 		},
 		{
 			name: "stale report disables control",
@@ -82,17 +61,11 @@ func Test_orca_selectAddrs(t *testing.T) {
 				collectedAt: time.Now().Add(-time.Minute),
 				loads:       loads,
 			},
-			read:  ORCAPolicy{MinFanout: 1, MaxFanout: 1},
-			write: ORCAPolicy{MinFanout: 1, MaxFanout: 1},
-			kind:  READ,
 			addrs: []string{"agent-1", "agent-2"},
 			want:  nil,
 		},
 		{
 			name:  "missing report disables control",
-			read:  ORCAPolicy{MinFanout: 1, MaxFanout: 1},
-			write: ORCAPolicy{MinFanout: 1, MaxFanout: 1},
-			kind:  READ,
 			addrs: []string{"agent-1", "agent-2"},
 			want:  nil,
 		},
@@ -102,12 +75,54 @@ func Test_orca_selectAddrs(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			defer goleak.VerifyNone(t, goleak.IgnoreCurrent())
-			o := newORCA(time.Second, 3*time.Second, test.read, test.write)
+			o := newORCA(time.Second, 3*time.Second, 3)
 			if test.snapshot != nil {
 				o.snapshot.Store(test.snapshot)
 			}
-			if got := o.selectAddrs(test.kind, test.addrs); !reflect.DeepEqual(got, test.want) {
-				t.Errorf("selectAddrs() = %v, want %v", got, test.want)
+			if got := o.order(test.addrs); !reflect.DeepEqual(got, test.want) {
+				t.Errorf("order() = %v, want %v", got, test.want)
+			}
+		})
+	}
+}
+
+func Test_orca_read(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name    string
+		addrs   []string
+		replica int
+		want    []string
+	}{
+		{
+			name:    "selects N minus replica plus one agents",
+			addrs:   []string{"agent-1", "agent-2", "agent-3", "agent-4", "agent-5"},
+			replica: 3,
+			want:    []string{"agent-1", "agent-2", "agent-3"},
+		},
+		{
+			name:    "selects at least one agent",
+			addrs:   []string{"agent-1", "agent-2"},
+			replica: 3,
+			want:    []string{"agent-1"},
+		},
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			defer goleak.VerifyNone(t, goleak.IgnoreCurrent())
+			loads := make(map[string]resourceLoad, len(test.addrs))
+			for idx, addr := range test.addrs {
+				loads[addr] = resourceLoad{cpu: float64(idx) / 10}
+			}
+			o := newORCA(time.Second, 3*time.Second, test.replica)
+			o.snapshot.Store(&resourceLoadSnapshot{
+				collectedAt: time.Now(),
+				loads:       loads,
+			})
+			if got := o.read(test.addrs); !reflect.DeepEqual(got, test.want) {
+				t.Errorf("read() = %v, want %v", got, test.want)
 			}
 		})
 	}

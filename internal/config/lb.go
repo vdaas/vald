@@ -18,7 +18,7 @@ package config
 
 // LB represents the configuration for load balancer.
 type LB struct {
-	// ORCA represents the resource-aware fanout configuration.
+	// ORCA represents the resource-aware search fanout and write placement configuration.
 	ORCA ORCA `json:"orca" yaml:"orca"`
 	// ReadReplicaClient represents the read replica client configuration.
 	ReadReplicaClient ReadReplicaClient `json:"read_replica_client" yaml:"read_replica_client"`
@@ -56,18 +56,14 @@ func (g *LB) Bind() *LB {
 	return g
 }
 
-// ORCA represents the resource-aware fanout configuration.
+// ORCA represents the resource-aware search fanout and write placement configuration.
 type ORCA struct {
-	// Enabled enables resource-aware fanout control.
+	// Enabled enables resource-aware search fanout and write placement.
 	Enabled bool `json:"enabled" yaml:"enabled"`
 	// RefreshInterval represents the interval for collecting agent resource stats.
 	RefreshInterval string `json:"refresh_interval" yaml:"refresh_interval"`
 	// ReportTTL represents how long collected resource stats remain valid.
 	ReportTTL string `json:"report_ttl" yaml:"report_ttl"`
-	// Read represents the fanout policy for read operations.
-	Read ORCAPolicy `json:"read" yaml:"read"`
-	// Write represents the fanout policy for write operations.
-	Write ORCAPolicy `json:"write" yaml:"write"`
 }
 
 // Bind binds the actual data from the ORCA receiver fields.
@@ -75,18 +71,6 @@ func (o *ORCA) Bind() *ORCA {
 	o.RefreshInterval = GetActualValue(o.RefreshInterval)
 	o.ReportTTL = GetActualValue(o.ReportTTL)
 	return o
-}
-
-// ORCAPolicy represents a resource-aware fanout policy.
-type ORCAPolicy struct {
-	// MinFanout represents the minimum number of agents selected per request.
-	MinFanout int `json:"min_fanout" yaml:"min_fanout"`
-	// MaxFanout represents the maximum number of agents selected per request. Zero means unlimited.
-	MaxFanout int `json:"max_fanout" yaml:"max_fanout"`
-	// CPUThreshold represents the maximum CPU utilization ratio accepted without fallback.
-	CPUThreshold float64 `json:"cpu_threshold" yaml:"cpu_threshold"`
-	// MemoryThreshold represents the maximum memory utilization ratio accepted without fallback.
-	MemoryThreshold float64 `json:"memory_threshold" yaml:"memory_threshold"`
 }
 
 // ReadReplicaClient represents a configuration of grpc client for read replica.

@@ -52,7 +52,7 @@ func WithErrGroup(eg errgroup.Group) Option {
 func WithORCA(
 	enabled bool,
 	refreshInterval, reportTTL string,
-	read, write ORCAPolicy,
+	replica int,
 ) Option {
 	return func(g *gateway) error {
 		if !enabled {
@@ -72,7 +72,7 @@ func WithORCA(
 		if ttl <= 0 {
 			return errors.NewErrInvalidOption("reportTTL", reportTTL)
 		}
-		g.orca = newORCA(refresh, ttl, read, write)
+		g.orca = newORCA(refresh, ttl, replica)
 		return nil
 	}
 }

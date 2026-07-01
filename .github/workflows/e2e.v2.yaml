@@ -67,6 +67,7 @@ jobs:
               { scenario: "unary_crud",  deployment: "helm-chart", cluster: "k3d", environment: "null" },
               { scenario: "multi_crud",  deployment: "helm-chart", cluster: "k3d", environment: "null" },
               { scenario: "rollout",     deployment: "helm-chart", cluster: "k3d", environment: "null" },
+              { scenario: "unary_crud",  deployment: "helm-chart", cluster: "k3d", environment: "orca" },
               { scenario: "stream_crud", deployment: "helm-operator", cluster: "k3d", environment: "null" },
               { scenario: "index_correction", deployment: "helm-chart", cluster: "k3d", environment: "management" },
               { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "management" },
@@ -151,7 +152,7 @@ jobs:
         uses: ./.github/actions/e2e-deploy-vald
         with:
           helm_extra_options: "${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}"
-          values: .github/helm/values/values-${{ 'profile' == matrix.environment && matrix.environment || 'lb' }}.yaml
+          values: .github/helm/values/values-${{ contains(fromJson('["profile","orca"]'), matrix.environment) && matrix.environment || 'lb' }}.yaml
           wait_for_selector: "app=vald-lb-gateway"
       - name: Deploy Vald Read Replica
         if: ${{ 'readreplica' == matrix.scenario }}
@@ -241,15 +242,26 @@ jobs:
           if [[ "${{ matrix.environment }}" == "mirror" ]]; then
             export E2E_TARGET_NAMESPACE=vald-01
           fi
+          E2E_QPS=30
+          E2E_SEARCH_COUNT=10
+          if [[ "${{ matrix.environment }}" == "orca" ]]; then
+            E2E_QPS=100
+            E2E_SEARCH_COUNT=100
+          fi
           kubectl get pods
           make e2e/v2 E2E_CONFIG=$(pwd)/tests/v2/e2e/assets/${{ matrix.scenario }}.yaml \
             E2E_PARALLELISM="4" \
             E2E_INSERT_COUNT="10000" \
             E2E_EXPECTED_INDEX="30000" \
-            E2E_QPS="30" \
-            E2E_SEARCH_COUNT="10" \
+            E2E_QPS="${E2E_QPS}" \
+            E2E_SEARCH_COUNT="${E2E_SEARCH_COUNT}" \
             E2E_UPDATE_COUNT="100" \
             E2E_BULK_SIZE="10"
+          if [[ "${{ matrix.environment }}" == "orca" ]]; then
+            kubectl logs -l app=vald-lb-gateway --all-containers=true > /tmp/orca-gateway.log
+            grep -m1 "ORCA READ fanout selected" /tmp/orca-gateway.log
+            grep -m1 "ORCA WRITE placement selected" /tmp/orca-gateway.log
+          fi
       - uses: ./.github/actions/e2e-profile
         if: ${{ matrix.environment == 'profile' }}
         with:
