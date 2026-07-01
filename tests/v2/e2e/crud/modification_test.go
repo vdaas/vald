@@ -112,7 +112,7 @@ var (
 			Timestamps: []*payload.Remove_Timestamp{
 				{
 					Timestamp: ts,
-					Operator:  payload.Remove_Timestamp_Le,
+					Operator:  payload.Remove_Timestamp_LE,
 				},
 			},
 		}

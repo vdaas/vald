@@ -466,13 +466,13 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "succeeds if all vector data is deleted when the operator is Eq",
+			name: "succeeds if all vector data is deleted when the operator is EQ",
 			args: args{
 				req: &payload.Remove_TimestampRequest{
 					Timestamps: []*payload.Remove_Timestamp{
 						{
 							Timestamp: defaultTimestamp,
-							Operator:  payload.Remove_Timestamp_Eq,
+							Operator:  payload.Remove_Timestamp_EQ,
 						},
 					},
 				},
@@ -483,13 +483,13 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 			},
 		},
 		{
-			name: "succeeds if all vector data is deleted when the operator is Ge",
+			name: "succeeds if all vector data is deleted when the operator is GE",
 			args: args{
 				req: &payload.Remove_TimestampRequest{
 					Timestamps: []*payload.Remove_Timestamp{
 						{
 							Timestamp: defaultTimestamp,
-							Operator:  payload.Remove_Timestamp_Ge,
+							Operator:  payload.Remove_Timestamp_GE,
 						},
 					},
 				},
@@ -500,17 +500,17 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 			},
 		},
 		{
-			name: "succeeds if one vector data is deleted when the operator are Gt and Lt",
+			name: "succeeds if one vector data is deleted when the operator are GT and LT",
 			args: args{
 				req: &payload.Remove_TimestampRequest{
 					Timestamps: []*payload.Remove_Timestamp{
 						{
 							Timestamp: defaultTimestamp,
-							Operator:  payload.Remove_Timestamp_Gt,
+							Operator:  payload.Remove_Timestamp_GT,
 						},
 						{
 							Timestamp: defaultTimestamp + 2,
-							Operator:  payload.Remove_Timestamp_Lt,
+							Operator:  payload.Remove_Timestamp_LT,
 						},
 					},
 				},
@@ -542,13 +542,13 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 			},
 		},
 		{
-			name: "succeeds if all vector data is deleted when the operator is Le",
+			name: "succeeds if all vector data is deleted when the operator is LE",
 			args: args{
 				req: &payload.Remove_TimestampRequest{
 					Timestamps: []*payload.Remove_Timestamp{
 						{
 							Timestamp: defaultTimestamp,
-							Operator:  payload.Remove_Timestamp_Le,
+							Operator:  payload.Remove_Timestamp_LE,
 						},
 					},
 				},
@@ -559,17 +559,17 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 			},
 		},
 		{
-			name: "succeeds if all vector data is deleted when the operator is Gt and Lt",
+			name: "succeeds if all vector data is deleted when the operator is GT and LT",
 			args: args{
 				req: &payload.Remove_TimestampRequest{
 					Timestamps: []*payload.Remove_Timestamp{
 						{
 							Timestamp: defaultTimestamp / 2,
-							Operator:  payload.Remove_Timestamp_Gt,
+							Operator:  payload.Remove_Timestamp_GT,
 						},
 						{
 							Timestamp: defaultTimestamp * 2,
-							Operator:  payload.Remove_Timestamp_Lt,
+							Operator:  payload.Remove_Timestamp_LT,
 						},
 					},
 				},
@@ -580,13 +580,13 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 			},
 		},
 		{
-			name: "fails if the target vector is not found when the operator is Eq",
+			name: "fails if the target vector is not found when the operator is EQ",
 			args: args{
 				req: &payload.Remove_TimestampRequest{
 					Timestamps: []*payload.Remove_Timestamp{
 						{
 							Timestamp: defaultTimestamp * 2,
-							Operator:  payload.Remove_Timestamp_Eq,
+							Operator:  payload.Remove_Timestamp_EQ,
 						},
 					},
 				},
@@ -596,13 +596,13 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 			},
 		},
 		{
-			name: "fails if target vector is not found when the operator is Gt",
+			name: "fails if target vector is not found when the operator is GT",
 			args: args{
 				req: &payload.Remove_TimestampRequest{
 					Timestamps: []*payload.Remove_Timestamp{
 						{
 							Timestamp: defaultTimestamp * 2,
-							Operator:  payload.Remove_Timestamp_Gt,
+							Operator:  payload.Remove_Timestamp_GT,
 						},
 					},
 				},
@@ -612,13 +612,13 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 			},
 		},
 		{
-			name: "fails if all vector data is deleted when the operator is Lt",
+			name: "fails if all vector data is deleted when the operator is LT",
 			args: args{
 				req: &payload.Remove_TimestampRequest{
 					Timestamps: []*payload.Remove_Timestamp{
 						{
 							Timestamp: defaultTimestamp / 2,
-							Operator:  payload.Remove_Timestamp_Lt,
+							Operator:  payload.Remove_Timestamp_LT,
 						},
 					},
 				},
@@ -699,7 +699,7 @@ func Test_timestampOpsFunc(t *testing.T) {
 				ts: []*payload.Remove_Timestamp{
 					{
 						Timestamp: 1000,
-						Operator:  payload.Remove_Timestamp_Eq,
+						Operator:  payload.Remove_Timestamp_EQ,
 					},
 				},
 			},
@@ -714,11 +714,11 @@ func Test_timestampOpsFunc(t *testing.T) {
 				ts: []*payload.Remove_Timestamp{
 					{
 						Timestamp: 1000,
-						Operator:  payload.Remove_Timestamp_Gt,
+						Operator:  payload.Remove_Timestamp_GT,
 					},
 					{
 						Timestamp: 2000,
-						Operator:  payload.Remove_Timestamp_Lt,
+						Operator:  payload.Remove_Timestamp_LT,
 					},
 				},
 			},
@@ -733,11 +733,11 @@ func Test_timestampOpsFunc(t *testing.T) {
 				ts: []*payload.Remove_Timestamp{
 					{
 						Timestamp: 1000,
-						Operator:  payload.Remove_Timestamp_Gt,
+						Operator:  payload.Remove_Timestamp_GT,
 					},
 					{
 						Timestamp: 2000,
-						Operator:  payload.Remove_Timestamp_Lt,
+						Operator:  payload.Remove_Timestamp_LT,
 					},
 				},
 			},
@@ -800,7 +800,7 @@ func Test_timestampOpFunc(t *testing.T) {
 				timestamp: 1000,
 				ts: &payload.Remove_Timestamp{
 					Timestamp: 1000,
-					Operator:  payload.Remove_Timestamp_Eq,
+					Operator:  payload.Remove_Timestamp_EQ,
 				},
 			},
 			want: want{
@@ -813,7 +813,7 @@ func Test_timestampOpFunc(t *testing.T) {
 				timestamp: 1100,
 				ts: &payload.Remove_Timestamp{
 					Timestamp: 1000,
-					Operator:  payload.Remove_Timestamp_Ne,
+					Operator:  payload.Remove_Timestamp_NE,
 				},
 			},
 			want: want{
@@ -826,7 +826,20 @@ func Test_timestampOpFunc(t *testing.T) {
 				timestamp: 1000,
 				ts: &payload.Remove_Timestamp{
 					Timestamp: 1000,
-					Operator:  payload.Remove_Timestamp_Ge,
+					Operator:  payload.Remove_Timestamp_GE,
+				},
+			},
+			want: want{
+				want: true,
+			},
+		},
+		{
+			name: "return true when the timestamp is strictly greater with GE",
+			args: args{
+				timestamp: 1100,
+				ts: &payload.Remove_Timestamp{
+					Timestamp: 1000,
+					Operator:  payload.Remove_Timestamp_GE,
 				},
 			},
 			want: want{
@@ -839,7 +852,7 @@ func Test_timestampOpFunc(t *testing.T) {
 				timestamp: 1100,
 				ts: &payload.Remove_Timestamp{
 					Timestamp: 1000,
-					Operator:  payload.Remove_Timestamp_Gt,
+					Operator:  payload.Remove_Timestamp_GT,
 				},
 			},
 			want: want{
@@ -852,7 +865,20 @@ func Test_timestampOpFunc(t *testing.T) {
 				timestamp: 1000,
 				ts: &payload.Remove_Timestamp{
 					Timestamp: 1000,
-					Operator:  payload.Remove_Timestamp_Le,
+					Operator:  payload.Remove_Timestamp_LE,
+				},
+			},
+			want: want{
+				want: true,
+			},
+		},
+		{
+			name: "return true when the timestamp is strictly less with LE",
+			args: args{
+				timestamp: 900,
+				ts: &payload.Remove_Timestamp{
+					Timestamp: 1000,
+					Operator:  payload.Remove_Timestamp_LE,
 				},
 			},
 			want: want{
@@ -865,7 +891,7 @@ func Test_timestampOpFunc(t *testing.T) {
 				timestamp: 900,
 				ts: &payload.Remove_Timestamp{
 					Timestamp: 1000,
-					Operator:  payload.Remove_Timestamp_Lt,
+					Operator:  payload.Remove_Timestamp_LT,
 				},
 			},
 			want: want{
@@ -887,12 +913,12 @@ func Test_timestampOpFunc(t *testing.T) {
 		},
 
 		{
-			name: "return false when the timestamp does not match the Eq operator",
+			name: "return false when the timestamp does not match the EQ operator",
 			args: args{
 				timestamp: 1100,
 				ts: &payload.Remove_Timestamp{
 					Timestamp: 1000,
-					Operator:  payload.Remove_Timestamp_Eq,
+					Operator:  payload.Remove_Timestamp_EQ,
 				},
 			},
 			want: want{
@@ -900,12 +926,12 @@ func Test_timestampOpFunc(t *testing.T) {
 			},
 		},
 		{
-			name: "return false when the timestamp does not match the Ne operator",
+			name: "return false when the timestamp does not match the NE operator",
 			args: args{
 				timestamp: 1000,
 				ts: &payload.Remove_Timestamp{
 					Timestamp: 1000,
-					Operator:  payload.Remove_Timestamp_Ne,
+					Operator:  payload.Remove_Timestamp_NE,
 				},
 			},
 			want: want{
@@ -913,12 +939,12 @@ func Test_timestampOpFunc(t *testing.T) {
 			},
 		},
 		{
-			name: "return false when the timestamp does not match the Ge operator",
+			name: "return false when the timestamp does not match the GE operator",
 			args: args{
 				timestamp: 900,
 				ts: &payload.Remove_Timestamp{
 					Timestamp: 1000,
-					Operator:  payload.Remove_Timestamp_Ge,
+					Operator:  payload.Remove_Timestamp_GE,
 				},
 			},
 			want: want{
@@ -926,12 +952,12 @@ func Test_timestampOpFunc(t *testing.T) {
 			},
 		},
 		{
-			name: "return false when the timestamp does not match the Gt operator",
+			name: "return false when the timestamp does not match the GT operator",
 			args: args{
 				timestamp: 900,
 				ts: &payload.Remove_Timestamp{
 					Timestamp: 1000,
-					Operator:  payload.Remove_Timestamp_Gt,
+					Operator:  payload.Remove_Timestamp_GT,
 				},
 			},
 			want: want{
@@ -939,12 +965,12 @@ func Test_timestampOpFunc(t *testing.T) {
 			},
 		},
 		{
-			name: "return false when the timestamp does not match the Le operator",
+			name: "return false when the timestamp does not match the LE operator",
 			args: args{
 				timestamp: 1100,
 				ts: &payload.Remove_Timestamp{
 					Timestamp: 1000,
-					Operator:  payload.Remove_Timestamp_Le,
+					Operator:  payload.Remove_Timestamp_LE,
 				},
 			},
 			want: want{
@@ -952,12 +978,12 @@ func Test_timestampOpFunc(t *testing.T) {
 			},
 		},
 		{
-			name: "return false when the timestamp does not match the Lt operator",
+			name: "return false when the timestamp does not match the LT operator",
 			args: args{
 				timestamp: 1100,
 				ts: &payload.Remove_Timestamp{
 					Timestamp: 1000,
-					Operator:  payload.Remove_Timestamp_Lt,
+					Operator:  payload.Remove_Timestamp_LT,
 				},
 			},
 			want: want{
