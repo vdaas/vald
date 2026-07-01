@@ -336,7 +336,13 @@ $(LIB_PATH)/libz.a: | $(LIB_PATH) ninja/install
 		-DZLIB_BUILD_SHARED=OFF \
 		-DZLIB_BUILD_STATIC=ON \
 		-DZLIB_COMPAT=ON \
-		-DZLIB_USE_STATIC_LIBS=ON, \
+		-DZLIB_USE_STATIC_LIBS=ON \
+		-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
+		-DCMAKE_EXE_LINKER_FLAGS="" \
+		-DCMAKE_SHARED_LINKER_FLAGS="" \
+		-DCMAKE_MODULE_LINKER_FLAGS="" \
+		-DCMAKE_C_FLAGS="$(CFLAGS) -fno-lto" \
+		-DCMAKE_CXX_FLAGS="$(CXXFLAGS) -fno-lto", \
 		$(SUDO) rm -f $(USR_LOCAL)/include/zlib.h $(USR_LOCAL)/include/zconf.h $(LIB_PATH)/libz.a $(USR_LOCAL)/share/man/man3/zlib.3,,,zlibstatic)
 
 .PHONY: hdf5/install
@@ -352,7 +358,13 @@ $(LIB_PATH)/libhdf5.a: | $(LIB_PATH) zlib/install
 		-DHDF5_BUILD_EXAMPLES=OFF \
 		-DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
 		-DH5_ZLIB_INCLUDE_DIR=$(USR_LOCAL)/include \
-		-DH5_ZLIB_LIBRARY=$(LIB_PATH)/libz.a, \
+		-DH5_ZLIB_LIBRARY=$(LIB_PATH)/libz.a \
+		-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
+		-DCMAKE_EXE_LINKER_FLAGS="" \
+		-DCMAKE_SHARED_LINKER_FLAGS="" \
+		-DCMAKE_MODULE_LINKER_FLAGS="" \
+		-DCMAKE_C_FLAGS="$(CFLAGS) -fno-lto" \
+		-DCMAKE_CXX_FLAGS="$(CXXFLAGS) -fno-lto", \
 		$(SUDO) rm -f $(USR_LOCAL)/include/H5*.h $(USR_LOCAL)/include/hdf5*.h $(LIB_PATH)/libhdf5*)
 
 .PHONY: libomp/install
