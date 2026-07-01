@@ -111,7 +111,9 @@ K3S_VERSION := $(eval K3S_VERSION := $(shell cat versions/K3S_VERSION))$(K3S_VER
 KIND_VERSION := $(eval KIND_VERSION := $(shell cat versions/KIND_VERSION))$(KIND_VERSION)
 KUBECTL_VERSION := $(eval KUBECTL_VERSION := $(shell cat versions/KUBECTL_VERSION))$(KUBECTL_VERSION)
 KUBELINTER_VERSION := $(eval KUBELINTER_VERSION := $(shell cat versions/KUBELINTER_VERSION))$(KUBELINTER_VERSION)
+LLVM_VERSION := $(eval LLVM_VERSION := $(shell cat versions/LLVM_VERSION))$(LLVM_VERSION)
 NGT_VERSION := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VERSION)
+NINJA_VERSION := $(eval NINJA_VERSION := $(shell cat versions/NINJA_VERSION))$(NINJA_VERSION)
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 OTEL_OPERATOR_VERSION := $(eval OTEL_OPERATOR_VERSION := $(shell cat versions/OTEL_OPERATOR_VERSION))$(OTEL_OPERATOR_VERSION)
 PROMETHEUS_STACK_VERSION := $(eval PROMETHEUS_STACK_VERSION := $(shell cat versions/PROMETHEUS_STACK_VERSION))$(PROMETHEUS_STACK_VERSION)
@@ -172,6 +174,7 @@ LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto
 
 NGT_LDFLAGS = -fopenmp -lopenblas -llapack -lgfortran
 FAISS_LDFLAGS = $(NGT_LDFLAGS)
+LIBOMP ?= $(shell ldconfig -p 2>/dev/null | awk '/libomp\.so[^.].*=>/{print $$NF; exit}' | grep -v '^$$' || ls /usr/lib/llvm-*/lib/libomp.so 2>/dev/null | sort -V | tail -1)
 HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl -lm
 CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
 # TEST_LDFLAGS without -static to avoid conflicts with CGO and glibc dynamic linking requirements
@@ -834,6 +837,8 @@ version/yq:
 version/telepresence:
 	@echo $(TELEPRESENCE_VERSION)
 
+OPENBLAS_PATH = $(shell ldconfig -p 2>/dev/null | awk '/libopenblas.*\.so.*=>/{print $$NF; exit}')
+
 .PHONY: ngt/install
 ## install NGT
 ngt/install: $(USR_LOCAL)/include/NGT/Capi.h
@@ -853,6 +858,10 @@ $(USR_LOCAL)/include/NGT/Capi.h:
 	-DCMAKE_C_FLAGS="$(CFLAGS) -flto=auto -ffat-lto-objects" \
 	-DCMAKE_CXX_FLAGS="$(CXXFLAGS) -flto=auto -ffat-lto-objects" \
 	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+	$(if $(OPENBLAS_PATH),-DBLAS_LIBRARIES="$(OPENBLAS_PATH)" -DLAPACK_LIBRARIES="$(OPENBLAS_PATH)",) \
+	-DCMAKE_EXE_LINKER_FLAGS="$(NGT_LDFLAGS)$(if $(filter ld.lld lld,$(notdir $(LLD))), -fuse-ld=lld)" \
+	-DCMAKE_SHARED_LINKER_FLAGS="$(NGT_LDFLAGS)$(if $(filter ld.lld lld,$(notdir $(LLD))), -fuse-ld=lld)" \
+	-DCMAKE_MODULE_LINKER_FLAGS="$(NGT_LDFLAGS)$(if $(filter ld.lld lld,$(notdir $(LLD))), -fuse-ld=lld)" \
 	$(NGT_EXTRA_CMAKE_FLAGS) \
 	-B $(TEMP_DIR)/NGT-$(NGT_VERSION)/build $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	make -C $(TEMP_DIR)/NGT-$(NGT_VERSION)/build -j$(CORES) ngt
@@ -876,8 +885,11 @@ $(LIB_PATH)/libfaiss.a:
 	-DFAISS_ENABLE_PYTHON=OFF \
 	-DFAISS_ENABLE_GPU=OFF \
 	-DBLA_VENDOR=OpenBLAS \
-	-DCMAKE_C_FLAGS="$(LDFLAGS)" \
+	-DCMAKE_C_FLAGS="$(CFLAGS)" \
+	-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
 	-DCMAKE_EXE_LINKER_FLAGS="$(FAISS_LDFLAGS)" \
+	-DCMAKE_SHARED_LINKER_FLAGS="$(FAISS_LDFLAGS)" \
+	-DCMAKE_MODULE_LINKER_FLAGS="$(FAISS_LDFLAGS)" \
 	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
 	-B $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build $(TEMP_DIR)/faiss-$(FAISS_VERSION)
 	make -C $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build -j$(CORES) faiss
@@ -897,12 +909,21 @@ $(USR_LOCAL)/include/usearch.h:
 	-DBUILD_SHARED_LIBS=OFF \
 	-DBUILD_TESTING=OFF \
 	-DUSEARCH_BUILD_LIB_C=ON \
+	-DUSEARCH_BUILD_TEST_CPP=OFF \
+	-DUSEARCH_BUILD_BENCH_CPP=OFF \
+	-DUSEARCH_BUILD_TEST_C=OFF \
 	-DUSEARCH_USE_FP16LIB=ON \
-	-DUSEARCH_USE_OPENMP=ON \
+	-DUSEARCH_USE_OPENMP=OFF \
 	-DUSEARCH_USE_SIMSIMD=ON \
-	-DUSEARCH_USE_JEMALLOC=ON \
+	-DUSEARCH_USE_JEMALLOC=OFF \
+	-DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+	-DCMAKE_C_COMPILER="$(CC)" \
+	-DCMAKE_CXX_COMPILER="$(CXX)" \
 	-DCMAKE_C_FLAGS="$(CFLAGS)" \
 	-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
+	-DCMAKE_EXE_LINKER_FLAGS="" \
+	-DCMAKE_SHARED_LINKER_FLAGS="" \
+	-DCMAKE_MODULE_LINKER_FLAGS="" \
 	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
 	-DCMAKE_INSTALL_LIBDIR=$(LIB_PATH) \
 	-B $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
@@ -919,20 +940,27 @@ $(USR_LOCAL)/include/usearch.h:
 .PHONY: cmake/install
 ## install CMAKE
 cmake/install:
-	git clone --depth 1 --branch v$(CMAKE_VERSION) https://github.com/Kitware/CMake.git $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)
-	cd $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION) && \
-	cmake -DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_SHARED_LIBS=OFF \
-	-DBUILD_TESTING=OFF \
-	-DCMAKE_C_FLAGS="$(CFLAGS)" \
-	-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
-	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
-	-B $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)
-	make -C $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build -j$(CORES) cmake
-	make -C $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build install
-	cd $(ROOTDIR)
-	rm -rf $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)
-	ldconfig
+	CMAKE_ARCH=$$(if [ "$(ARCH)" = "aarch64" ] || [ "$(ARCH)" = "arm64" ]; then echo "aarch64"; else echo "x86_64"; fi); \
+	TAR_NAME="cmake-$(CMAKE_VERSION)-linux-$${CMAKE_ARCH}.tar.gz" \
+	&& curl -fsSL "https://github.com/Kitware/CMake/releases/download/v$(CMAKE_VERSION)/$${TAR_NAME}" -o "$(TEMP_DIR)/$${TAR_NAME}" \
+	&& mkdir -p $(TEMP_DIR)/cmake-$(CMAKE_VERSION) \
+	&& tar -xzf "$(TEMP_DIR)/$${TAR_NAME}" -C $(TEMP_DIR)/cmake-$(CMAKE_VERSION) --strip-components 1 \
+	&& $(SUDO) cp -r $(TEMP_DIR)/cmake-$(CMAKE_VERSION)/bin/. $(USR_LOCAL)/bin/ \
+	&& $(SUDO) cp -r $(TEMP_DIR)/cmake-$(CMAKE_VERSION)/share/. $(USR_LOCAL)/share/ \
+	&& rm -rf "$(TEMP_DIR)/$${TAR_NAME}" $(TEMP_DIR)/cmake-$(CMAKE_VERSION) \
+	&& cmake --version \
+	&& ldconfig
+
+.PHONY: ninja/install
+## install ninja-build
+ninja/install:
+	NINJA_ARCH=$$(if [ "$(ARCH)" = "aarch64" ] || [ "$(ARCH)" = "arm64" ]; then echo "-aarch64"; else echo ""; fi); \
+	TAR_NAME="ninja-linux$${NINJA_ARCH}.zip" \
+	&& curl -fsSL "https://github.com/ninja-build/ninja/releases/download/v$(NINJA_VERSION)/$${TAR_NAME}" -o "$(TEMP_DIR)/$${TAR_NAME}" \
+	&& $(SUDO) unzip -q -o "$(TEMP_DIR)/$${TAR_NAME}" -d $(USR_LOCAL)/bin \
+	&& rm -rf "$(TEMP_DIR)/$${TAR_NAME}" \
+	&& $(SUDO) chmod +x $(USR_LOCAL)/bin/ninja \
+	&& ninja --version
 
 .PHONY: lint
 ## run lints

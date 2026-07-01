@@ -27,7 +27,7 @@ jobs:
 
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
       - uses: ./.github/actions/dump-context
@@ -50,7 +50,7 @@ jobs:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -76,6 +76,7 @@ jobs:
           make deps/install proto/replace
           make format
           git checkout go.mod go.sum ./example/client/go.mod ./example/client/go.sum ./rust/Cargo.lock ./rust/rust-toolchain.toml ./dockers
+          git diff --name-only | grep -E "^rust/.*Cargo\\.toml$" | xargs -r git checkout --
       - name: Check difference
         id: check_diff
         run: |
@@ -98,7 +99,7 @@ jobs:
           fi
       - name: Create PR
         if: ${{ steps.check_diff.outputs.HAS_GIT_DIFF == 'true' }}
-        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           author: "${{ secrets.DISPATCH_USER }} <vald@vdaas.org>"
           token: ${{ secrets.DISPATCH_TOKEN }}
@@ -123,7 +124,7 @@ jobs:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -136,6 +137,7 @@ jobs:
           make deps/install proto/replace
           make format
           git checkout go.mod go.sum ./example/client/go.mod ./example/client/go.sum ./rust/Cargo.lock ./rust/rust-toolchain.toml ./dockers
+          git diff --name-only | grep -E "^rust/.*Cargo\\.toml$" | xargs -r git checkout --
       - name: Check format and deps difference
         run: |
           if git diff --quiet --exit-code -w; then

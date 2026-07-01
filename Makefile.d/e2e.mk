@@ -108,114 +108,28 @@ e2e/sidecar:
 ## run GitHub Actions E2E test (Stream CRUD)
 e2e/actions/run/stream/crud: \
 	hack/benchmark/assets/dataset/$(E2E_DATASET_NAME) \
-	k3d/restart
-	kubectl wait -n kube-system --for=condition=Available deployment/metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	sleep 2
-	kubectl wait -n kube-system --for=condition=Ready pod -l k8s-app=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	kubectl wait -n kube-system --for=condition=ContainersReady pod -l k8s-app=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	$(MAKE) k8s/vald/deploy \
-	HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-lb.yaml
-	sleep 3
-	kubectl wait --for=condition=Ready pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	kubectl wait --for=condition=ContainersReady pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	kubectl get pods
-	pod_name=$$(kubectl get pods --selector="app=$(LB_GATEWAY_IMAGE)" | tail -1 | awk '{print $$1}'); \
-	echo $$pod_name; \
-	$(MAKE) E2E_TARGET_POD_NAME=$$pod_name e2e
-	$(MAKE) k8s/vald/delete
-	$(MAKE) k3d/delete
+	$(call run-github-actions-e2e,k3d/restart,k8s-app=metrics-server,k8s/vald/deploy,$(ROOTDIR)/.github/helm/values/values-lb.yaml,,app=$(LB_GATEWAY_IMAGE),$(MAKE) E2E_TARGET_POD_NAME=$$pod_name e2e,$(MAKE) k8s/vald/delete && $(MAKE) k3d/delete)
 
 .PHONY: e2e/actions/run/job
 ## run GitHub Actions E2E test (jobs)
 e2e/actions/run/job: \
 	hack/benchmark/assets/dataset/$(E2E_DATASET_NAME) \
-	k3d/restart
-	kubectl wait -n kube-system --for=condition=Available deployment/metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	sleep 2
-	kubectl wait -n kube-system --for=condition=Ready pod -l k8s-app=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	kubectl wait -n kube-system --for=condition=ContainersReady pod -l k8s-app=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	$(MAKE) k8s/vald/deploy \
-	HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-correction.yaml
-	sleep 3
-	kubectl wait --for=condition=Ready pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	kubectl wait --for=condition=ContainersReady pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	kubectl get pods
-	pod_name=$$(kubectl get pods --selector="app=$(LB_GATEWAY_IMAGE)" | tail -1 | awk '{print $$1}'); \
-	echo $$pod_name; \
-	$(MAKE) E2E_TARGET_POD_NAME=$$pod_name e2e/index/job/correction
-	$(MAKE) k8s/vald/delete
-	$(MAKE) k3d/delete
+	$(call run-github-actions-e2e,k3d/restart,k8s-app=metrics-server,k8s/vald/deploy,$(ROOTDIR)/.github/helm/values/values-correction.yaml,,app=$(LB_GATEWAY_IMAGE),$(MAKE) E2E_TARGET_POD_NAME=$$pod_name e2e/index/job/correction,$(MAKE) k8s/vald/delete && $(MAKE) k3d/delete)
 
 .PHONY: e2e/actions/run/readreplica
 ## run GitHub Actions E2E test (Stream CRUD with read replica )
 e2e/actions/run/readreplica: \
 	hack/benchmark/assets/dataset/$(E2E_DATASET_NAME) \
-	kind/vs/restart
-	kubectl wait -n kube-system --for=condition=Available deployment/metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	sleep 2
-	kubectl wait -n kube-system --for=condition=Ready pod -l app.kubernetes.io/name=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	kubectl wait -n kube-system --for=condition=ContainersReady pod -l app.kubernetes.io/name=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-
-	$(MAKE) k8s/vald-readreplica/deploy \
-	VERSION=$(VERSION) \
-	HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-readreplica.yaml
-	sleep 3
-	kubectl wait --for=condition=Ready pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	kubectl wait --for=condition=ContainersReady pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	kubectl get pods
-	pod_name=$$(kubectl get pods --selector="app=$(LB_GATEWAY_IMAGE)" | tail -1 | awk '{print $$1}'); \
-	echo $$pod_name; \
-	$(MAKE) E2E_TIMEOUT=30m E2E_CONFIG=$(ROOTDIR)/.github/e2e/readreplica.yaml e2e/v2
-	# $(MAKE) E2E_TARGET_POD_NAME=$$pod_name e2e/readreplica
-	# $(MAKE) k8s/vald/delete
-	# $(MAKE) kind/vs/stop
+	$(call run-github-actions-e2e,kind/vs/restart,app.kubernetes.io/name=metrics-server,k8s/vald-readreplica/deploy,$(ROOTDIR)/.github/helm/values/values-readreplica.yaml,VERSION=$(VERSION),app=$(LB_GATEWAY_IMAGE),$(MAKE) E2E_TIMEOUT=30m E2E_CONFIG=$(ROOTDIR)/.github/e2e/readreplica.yaml e2e/v2,)
 
 .PHONY: e2e/actions/run/stream/crud/skip
 ## run GitHub Actions E2E test (Stream CRUD with SkipExistsCheck = true)
 e2e/actions/run/stream/crud/skip: \
 	hack/benchmark/assets/dataset/$(E2E_DATASET_NAME) \
-	k3d/restart
-	kubectl wait -n kube-system --for=condition=Available deployment/metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	sleep 2
-	kubectl wait -n kube-system --for=condition=Ready pod -l k8s-app=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	kubectl wait -n kube-system --for=condition=ContainersReady pod -l k8s-app=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	$(MAKE) k8s/vald/deploy \
-	HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-lb.yaml
-	sleep 3
-	kubectl wait --for=condition=Ready pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	kubectl wait --for=condition=ContainersReady pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	kubectl get pods
-	pod_name=$$(kubectl get pods --selector="app=$(LB_GATEWAY_IMAGE)" | tail -1 | awk '{print $$1}'); \
-	echo $$pod_name; \
-	$(MAKE) E2E_TARGET_POD_NAME=$$pod_name e2e/skip
-	$(MAKE) k8s/vald/delete
-	$(MAKE) k3d/delete
+	$(call run-github-actions-e2e,k3d/restart,k8s-app=metrics-server,k8s/vald/deploy,$(ROOTDIR)/.github/helm/values/values-lb.yaml,,app=$(LB_GATEWAY_IMAGE),$(MAKE) E2E_TARGET_POD_NAME=$$pod_name e2e/skip,$(MAKE) k8s/vald/delete && $(MAKE) k3d/delete)
 
 .PHONY: e2e/v2/actions/run/unary/crud
 ## run GitHub Actions E2E/V2 test (Unary CRUD)
 e2e/v2/actions/run/unary/crud: \
 	hack/benchmark/assets/dataset/$(E2E_DATASET_NAME) \
-	k3d/restart
-	kubectl wait -n kube-system --for=condition=Available deployment/metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	sleep 2
-	kubectl wait -n kube-system --for=condition=Ready pod -l app.kubernetes.io/name=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	kubectl wait -n kube-system --for=condition=ContainersReady pod -l app.kubernetes.io/name=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	$(MAKE) k8s/vald/deploy \
-	VERSION=$(VERSION) \
-	HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-lb.yaml
-	sleep 3
-	kubectl wait --for=condition=Ready pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	kubectl wait --for=condition=ContainersReady pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	kubectl get pods
-	$(MAKE) E2E_CONFIG="$(E2E_CONFIG_DIR)/unary_crud.yaml" \
-		E2E_TIMEOUT=30m \
-		E2E_PARALLELISM="4" \
-		E2E_INSERT_COUNT="10000" \
-		E2E_EXPECTED_INDEX="30000" \
-		E2E_QPS="30" \
-		E2E_SEARCH_COUNT="10" \
-		E2E_UPDATE_COUNT="100" \
-		E2E_BULK_SIZE="10" \
-		e2e/v2
-	$(MAKE) k8s/vald/delete
-	$(MAKE) k3d/delete
+	$(call run-github-actions-e2e,k3d/restart,app.kubernetes.io/name=metrics-server,k8s/vald/deploy,$(ROOTDIR)/.github/helm/values/values-lb.yaml,VERSION=$(VERSION),app=$(LB_GATEWAY_IMAGE),$(MAKE) E2E_CONFIG="$(E2E_CONFIG_DIR)/unary_crud.yaml" E2E_TIMEOUT=30m E2E_PARALLELISM="4" E2E_INSERT_COUNT="10000" E2E_EXPECTED_INDEX="30000" E2E_QPS="30" E2E_SEARCH_COUNT="10" E2E_UPDATE_COUNT="100" E2E_BULK_SIZE="10" e2e/v2,$(MAKE) k8s/vald/delete && $(MAKE) k3d/delete)

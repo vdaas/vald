@@ -1056,7 +1056,7 @@ func (c *client) RemoveByTimestamp(t *testing.T, ctx context.Context, timestamp 
 		Timestamps: []*payload.Remove_Timestamp{
 			{
 				Timestamp: timestamp,
-				Operator:  payload.Remove_Timestamp_Gt,
+				Operator:  payload.Remove_Timestamp_GT,
 			},
 		},
 	}
