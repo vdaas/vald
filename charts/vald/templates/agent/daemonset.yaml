@@ -76,7 +76,7 @@ spec:
         {{- end }}
         {{- if $agent.sidecar.initContainerEnabled }}
         - name: {{ $agent.sidecar.name }}-init
-          image: "{{ $agent.sidecar.image.repository }}:{{ default .Values.defaults.image.tag $agent.sidecar.image.tag }}"
+          image: "{{ include "vald.image" (dict "registry" $agent.sidecar.image.registry "globalRegistry" .Values.defaults.image.registry "repository" $agent.sidecar.image.repository "tag" (default .Values.defaults.image.tag $agent.sidecar.image.tag)) }}"
           imagePullPolicy: {{ $agent.sidecar.image.pullPolicy }}
           {{- $servers := dict "Values" $agent.sidecar.server_config "default" .Values.defaults.server_config -}}
           {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
@@ -110,7 +110,7 @@ spec:
       {{- end }}
       containers:
         - name: {{ $agent.name }}
-          image: "{{ $agent.image.repository }}:{{ default .Values.defaults.image.tag $agent.image.tag }}"
+          image: "{{ include "vald.image" (dict "registry" $agent.image.registry "globalRegistry" .Values.defaults.image.registry "repository" $agent.image.repository "tag" (default .Values.defaults.image.tag $agent.image.tag)) }}"
           imagePullPolicy: {{ $agent.image.pullPolicy }}
           {{- $servers := dict "Values" $agent.server_config "default" .Values.defaults.server_config -}}
           {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
@@ -134,7 +134,7 @@ spec:
             {{- end }}
         {{- if $agent.sidecar.enabled }}
         - name: {{ $agent.sidecar.name }}
-          image: "{{ $agent.sidecar.image.repository }}:{{ default .Values.defaults.image.tag $agent.sidecar.image.tag }}"
+          image: "{{ include "vald.image" (dict "registry" $agent.sidecar.image.registry "globalRegistry" .Values.defaults.image.registry "repository" $agent.sidecar.image.repository "tag" (default .Values.defaults.image.tag $agent.sidecar.image.tag)) }}"
           imagePullPolicy: {{ $agent.sidecar.image.pullPolicy }}
           {{- $servers := dict "Values" $agent.sidecar.server_config "default" .Values.defaults.server_config -}}
           {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
