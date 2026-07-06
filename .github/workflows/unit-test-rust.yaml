@@ -21,11 +21,11 @@ on:
       - "release/v*.*"
       - "!release/v*.*.*"
     paths:
-      - ".github/workflows/test.yaml"
+      - ".github/workflows/unit-test-rust.yaml"
       - "rust/**"
   pull_request:
     paths:
-      - ".github/workflows/test.yaml"
+      - ".github/workflows/unit-test-rust.yaml"
       - "rust/**"
 jobs:
   dump-contexts-to-log:
@@ -67,6 +67,10 @@ jobs:
           apt-get install -y --no-install-recommends protobuf-compiler libprotobuf-dev
       - name: Install NGT
         run: |
+          # The dev-container image may bake toolchain env (CFLAGS/CXXFLAGS/LDFLAGS,
+          # e.g. -static or -march=native) which leaks into CMake try_compile and
+          # breaks FindBLAS. Build NGT with a clean toolchain environment.
+          unset CFLAGS CXXFLAGS LDFLAGS
           NGT_VERSION=$(cat versions/NGT_VERSION)
           NGT_TMPDIR=$(mktemp -d)
           git clone --depth 1 --branch "v${NGT_VERSION}" https://github.com/NGT-labs/NGT "${NGT_TMPDIR}/NGT"

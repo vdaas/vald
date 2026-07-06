@@ -379,15 +379,15 @@ $(LIB_PATH)/libomp.a: | ninja/install
 		$(SUDO) cp "$$SYSTEM_LIBOMP" "$(LIB_PATH)/libomp.a" && $(SUDO) ldconfig; \
 	else \
 		command -v python3 >/dev/null 2>&1 || { command -v apt-get >/dev/null 2>&1 \
-			&& $(SUDO) apt-get update -qq \
-			&& $(SUDO) apt-get install -y --no-install-recommends python3; } || true; \
+		&& $(SUDO) apt-get update -qq \
+		&& $(SUDO) apt-get install -y --no-install-recommends python3; } || true; \
 		rm -rf $(TEMP_DIR)/libomp $(TEMP_DIR)/libomp-archive; \
 		curl -fsSL "https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-$(LLVM_VERSION).tar.gz" \
-			-o $(TEMP_DIR)/libomp-archive; \
+		-o $(TEMP_DIR)/libomp-archive; \
 		mkdir -p $(TEMP_DIR)/libomp; \
 		tar -xzf $(TEMP_DIR)/libomp-archive -C $(TEMP_DIR)/libomp --strip-components 1 \
-			llvm-project-llvmorg-$(LLVM_VERSION)/openmp \
-			llvm-project-llvmorg-$(LLVM_VERSION)/cmake; \
+		llvm-project-llvmorg-$(LLVM_VERSION)/openmp \
+		llvm-project-llvmorg-$(LLVM_VERSION)/cmake; \
 		cd $(TEMP_DIR)/libomp/openmp \
 		&& _AR=$$(if [ -x '$(AR)' ]; then echo '$(AR)'; else command -v llvm-ar 2>/dev/null || command -v ar; fi) \
 		&& _NM=$$(if [ -x '$(NM)' ]; then echo '$(NM)'; else command -v llvm-nm 2>/dev/null || command -v nm; fi) \

@@ -74,7 +74,7 @@ $(LIB_PATH):
 	mkdir -p $(LIB_PATH)
 
 BUN_INSTALL ?= $(USR_LOCAL)
-BUN_GLOBAL_BIN ?= $(eval BUN_GLOBAL_BIN := $(shell bun pm bin -g))$(BUN_GLOBAL_BIN)
+BUN_GLOBAL_BIN ?= $(eval BUN_GLOBAL_BIN := $(or $(shell bun pm bin -g 2>/dev/null),$(BINDIR)))$(BUN_GLOBAL_BIN)
 
 GOPRIVATE := $(GOPKG),$(GOPKG)/apis,$(GOPKG)-client-go
 GOPROXY := "https://proxy.golang.org,direct"
@@ -836,131 +836,6 @@ version/yq:
 .PHONY: version/telepresence
 version/telepresence:
 	@echo $(TELEPRESENCE_VERSION)
-
-OPENBLAS_PATH = $(shell ldconfig -p 2>/dev/null | awk '/libopenblas.*\.so.*=>/{print $$NF; exit}')
-
-.PHONY: ngt/install
-## install NGT
-ngt/install: $(USR_LOCAL)/include/NGT/Capi.h
-$(USR_LOCAL)/include/NGT/Capi.h:
-	git clone --depth 1 --branch v$(NGT_VERSION) https://github.com/NGT-labs/NGT $(TEMP_DIR)/NGT-$(NGT_VERSION)
-	cd $(TEMP_DIR)/NGT-$(NGT_VERSION) && \
-	cmake -DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
-	-DBUILD_SHARED_LIBS=OFF \
-	-DBUILD_STATIC_EXECS=ON \
-	-DBUILD_TESTING=OFF \
-	-DNGT_LARGE_DATASET=ON \
-	-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
-	-DCMAKE_AR=$$(command -v llvm-ar 2>/dev/null || ls /usr/bin/llvm-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ar 2>/dev/null || ls /usr/bin/gcc-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ar) \
-	-DCMAKE_CXX_COMPILER_AR=$$(command -v llvm-ar 2>/dev/null || ls /usr/bin/llvm-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ar 2>/dev/null || ls /usr/bin/gcc-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ar) \
-	-DCMAKE_RANLIB=$$(command -v llvm-ranlib 2>/dev/null || ls /usr/bin/llvm-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ranlib 2>/dev/null || ls /usr/bin/gcc-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ranlib) \
-	-DCMAKE_C_FLAGS="$(CFLAGS) -flto=auto -ffat-lto-objects" \
-	-DCMAKE_CXX_FLAGS="$(CXXFLAGS) -flto=auto -ffat-lto-objects" \
-	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
-	$(if $(OPENBLAS_PATH),-DBLAS_LIBRARIES="$(OPENBLAS_PATH)" -DLAPACK_LIBRARIES="$(OPENBLAS_PATH)",) \
-	-DCMAKE_EXE_LINKER_FLAGS="$(NGT_LDFLAGS)$(if $(filter ld.lld lld,$(notdir $(LLD))), -fuse-ld=lld)" \
-	-DCMAKE_SHARED_LINKER_FLAGS="$(NGT_LDFLAGS)$(if $(filter ld.lld lld,$(notdir $(LLD))), -fuse-ld=lld)" \
-	-DCMAKE_MODULE_LINKER_FLAGS="$(NGT_LDFLAGS)$(if $(filter ld.lld lld,$(notdir $(LLD))), -fuse-ld=lld)" \
-	$(NGT_EXTRA_CMAKE_FLAGS) \
-	-B $(TEMP_DIR)/NGT-$(NGT_VERSION)/build $(TEMP_DIR)/NGT-$(NGT_VERSION)
-	make -C $(TEMP_DIR)/NGT-$(NGT_VERSION)/build -j$(CORES) ngt
-	make -C $(TEMP_DIR)/NGT-$(NGT_VERSION)/build install
-	cd $(ROOTDIR)
-	rm -rf $(TEMP_DIR)/NGT-$(NGT_VERSION)
-	ldconfig
-
-.PHONY: faiss/install
-## install Faiss
-faiss/install: $(LIB_PATH)/libfaiss.a
-$(LIB_PATH)/libfaiss.a:
-	curl -fsSL https://github.com/facebookresearch/faiss/archive/v$(FAISS_VERSION).tar.gz -o $(TEMP_DIR)/v$(FAISS_VERSION).tar.gz
-	tar zxf $(TEMP_DIR)/v$(FAISS_VERSION).tar.gz -C $(TEMP_DIR)/
-	cd $(TEMP_DIR)/faiss-$(FAISS_VERSION) && \
-	cmake -DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
-	-DBUILD_SHARED_LIBS=OFF \
-	-DBUILD_STATIC_EXECS=ON \
-	-DBUILD_TESTING=OFF \
-	-DFAISS_ENABLE_PYTHON=OFF \
-	-DFAISS_ENABLE_GPU=OFF \
-	-DBLA_VENDOR=OpenBLAS \
-	-DCMAKE_C_FLAGS="$(CFLAGS)" \
-	-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
-	-DCMAKE_EXE_LINKER_FLAGS="$(FAISS_LDFLAGS)" \
-	-DCMAKE_SHARED_LINKER_FLAGS="$(FAISS_LDFLAGS)" \
-	-DCMAKE_MODULE_LINKER_FLAGS="$(FAISS_LDFLAGS)" \
-	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
-	-B $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build $(TEMP_DIR)/faiss-$(FAISS_VERSION)
-	make -C $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build -j$(CORES) faiss
-	make -C $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build install
-	cd $(ROOTDIR)
-	rm -rf $(TEMP_DIR)/v$(FAISS_VERSION).tar.gz $(TEMP_DIR)/faiss-$(FAISS_VERSION)
-	ldconfig
-
-.PHONY: usearch/install
-## install usearch
-usearch/install: $(USR_LOCAL)/include/usearch.h
-$(USR_LOCAL)/include/usearch.h:
-	git clone --depth 1 --recursive --branch v$(USEARCH_VERSION) https://github.com/unum-cloud/usearch $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
-	cd $(TEMP_DIR)/usearch-$(USEARCH_VERSION) && \
-	cmake -DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
-	-DBUILD_SHARED_LIBS=OFF \
-	-DBUILD_TESTING=OFF \
-	-DUSEARCH_BUILD_LIB_C=ON \
-	-DUSEARCH_BUILD_TEST_CPP=OFF \
-	-DUSEARCH_BUILD_BENCH_CPP=OFF \
-	-DUSEARCH_BUILD_TEST_C=OFF \
-	-DUSEARCH_USE_FP16LIB=ON \
-	-DUSEARCH_USE_OPENMP=OFF \
-	-DUSEARCH_USE_SIMSIMD=ON \
-	-DUSEARCH_USE_JEMALLOC=OFF \
-	-DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-	-DCMAKE_C_COMPILER="$(CC)" \
-	-DCMAKE_CXX_COMPILER="$(CXX)" \
-	-DCMAKE_C_FLAGS="$(CFLAGS)" \
-	-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
-	-DCMAKE_EXE_LINKER_FLAGS="" \
-	-DCMAKE_SHARED_LINKER_FLAGS="" \
-	-DCMAKE_MODULE_LINKER_FLAGS="" \
-	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
-	-DCMAKE_INSTALL_LIBDIR=$(LIB_PATH) \
-	-B $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
-	cmake --build $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build -j$(CORES)
-	cmake --install $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build --prefix=$(USR_LOCAL)
-	cd $(ROOTDIR)
-	cp $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build/libusearch_static_c.a $(LIB_PATH)/libusearch_c.a
-	cp $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build/libusearch_static_c.a $(LIB_PATH)/libusearch_static_c.a
-	cp $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build/libusearch_c.so $(LIB_PATH)/libusearch_c.so
-	cp $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/c/usearch.h $(USR_LOCAL)/include/usearch.h
-	rm -rf $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
-	ldconfig
-
-.PHONY: cmake/install
-## install CMAKE
-cmake/install:
-	CMAKE_ARCH=$$(if [ "$(ARCH)" = "aarch64" ] || [ "$(ARCH)" = "arm64" ]; then echo "aarch64"; else echo "x86_64"; fi); \
-	TAR_NAME="cmake-$(CMAKE_VERSION)-linux-$${CMAKE_ARCH}.tar.gz" \
-	&& curl -fsSL "https://github.com/Kitware/CMake/releases/download/v$(CMAKE_VERSION)/$${TAR_NAME}" -o "$(TEMP_DIR)/$${TAR_NAME}" \
-	&& mkdir -p $(TEMP_DIR)/cmake-$(CMAKE_VERSION) \
-	&& tar -xzf "$(TEMP_DIR)/$${TAR_NAME}" -C $(TEMP_DIR)/cmake-$(CMAKE_VERSION) --strip-components 1 \
-	&& $(SUDO) cp -r $(TEMP_DIR)/cmake-$(CMAKE_VERSION)/bin/. $(USR_LOCAL)/bin/ \
-	&& $(SUDO) cp -r $(TEMP_DIR)/cmake-$(CMAKE_VERSION)/share/. $(USR_LOCAL)/share/ \
-	&& rm -rf "$(TEMP_DIR)/$${TAR_NAME}" $(TEMP_DIR)/cmake-$(CMAKE_VERSION) \
-	&& cmake --version \
-	&& ldconfig
-
-.PHONY: ninja/install
-## install ninja-build
-ninja/install:
-	NINJA_ARCH=$$(if [ "$(ARCH)" = "aarch64" ] || [ "$(ARCH)" = "arm64" ]; then echo "-aarch64"; else echo ""; fi); \
-	TAR_NAME="ninja-linux$${NINJA_ARCH}.zip" \
-	&& curl -fsSL "https://github.com/ninja-build/ninja/releases/download/v$(NINJA_VERSION)/$${TAR_NAME}" -o "$(TEMP_DIR)/$${TAR_NAME}" \
-	&& $(SUDO) unzip -q -o "$(TEMP_DIR)/$${TAR_NAME}" -d $(USR_LOCAL)/bin \
-	&& rm -rf "$(TEMP_DIR)/$${TAR_NAME}" \
-	&& $(SUDO) chmod +x $(USR_LOCAL)/bin/ninja \
-	&& ninja --version
 
 .PHONY: lint
 ## run lints

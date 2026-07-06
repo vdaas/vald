@@ -14,5 +14,5 @@
 # limitations under the License.
 #
 [toolchain]
-channel = "1.96.0"
+channel = "1.96.1"
 components = ["rust-src", "rust-analyzer", "rust-docs", "rustfmt", "clippy"]

@@ -118,16 +118,18 @@ rust/deps: \
 .PHONY: update/chaos-mesh
 ## update chaos-mesh version
 update/chaos-mesh:
-	curl -fsSL https://api.github.com/repos/chaos-mesh/chaos-mesh/releases/latest | \
-	grep -Po '"tag_name": "\K.*?(?=")' | \
-	sed 's/v//g' > $(ROOTDIR)/versions/CHAOS_MESH_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/CHAOS_MESH_VERSION,\
+		curl -fsSL https://api.github.com/repos/chaos-mesh/chaos-mesh/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")' \
+		| sed 's/v//g')
 
 .PHONY: update/k3d
 ## update k3d version
 update/k3d:
-	curl -fsSL https://api.github.com/repos/k3d-io/k3d/releases/latest | \
-	jq -r '.tag_name' | \
-	sed 's/v//g' > $(ROOTDIR)/versions/K3D_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/K3D_VERSION,\
+		curl -fsSL https://api.github.com/repos/k3d-io/k3d/releases/latest \
+		| jq -r '.tag_name' \
+		| sed 's/v//g')
 
 .PHONY: update/k3s
 ## update k3s version
@@ -144,135 +146,138 @@ update/k3s:
 .PHONY: update/go
 ## update go version
 update/go:
-	curl -fsSL https://go.dev/VERSION?m=text | \
-	head -n 1 | \
-	sed -e 's/go//g' > $(ROOTDIR)/versions/GO_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/GO_VERSION,\
+		curl -fsSL https://go.dev/VERSION?m=text \
+		| head -n 1 \
+		| sed 's/go//g')
 
 .PHONY: update/golangci-lint
 ## update golangci-lint version
 update/golangci-lint:
-	curl -fsSL https://api.github.com/repos/golangci/golangci-lint/releases/latest | \
-		grep -Po '"tag_name": "\K.*?(?=")' \
-		> $(ROOTDIR)/versions/GOLANGCILINT_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/GOLANGCILINT_VERSION,\
+		curl -fsSL https://api.github.com/repos/golangci/golangci-lint/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")')
 
 .PHONY: update/rust
 ## update rust version
 update/rust:
-	curl -fsSL https://releases.rs | \
-		grep -Po 'Stable: \K[\d.]+' | \
-		head -n 1 > $(ROOTDIR)/versions/RUST_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/RUST_VERSION,\
+		curl -fsSL https://releases.rs \
+		| grep -Po 'Stable: \K[\d.]+' \
+		| head -n 1)
 	$(eval RUST_VERSION	:= $(shell $(MAKE) -s version/rust))
-	sed -i "17s/channel = \"[0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?.*\"/channel = \"$(RUST_VERSION)\"/g" \
+	sed -i "/^channel = /s/channel = \"[0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?.*\"/channel = \"$(RUST_VERSION)\"/g" \
 		$(ROOTDIR)/rust/rust-toolchain.toml
 
 .PHONY: update/docker
 ## update docker version
 update/docker:
-	curl -fsSL https://api.github.com/repos/moby/moby/releases/latest | \
-		grep -Po '"tag_name": "\K.*?(?=")' | \
-		sed 's/docker-//g' \
-		> $(ROOTDIR)/versions/DOCKER_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/DOCKER_VERSION,\
+		curl -fsSL https://api.github.com/repos/moby/moby/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")' \
+		| sed 's/docker-//g')
 
 .PHONY: update/helm
 ## update helm version
 update/helm:
-	curl -fsSL https://api.github.com/repos/helm/helm/releases/latest | \
-		grep -Po '"tag_name": "\K.*?(?=")' \
-		> $(ROOTDIR)/versions/HELM_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/HELM_VERSION,\
+		curl -fsSL https://api.github.com/repos/helm/helm/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")')
 
 .PHONY: update/helm-operator
 ## update helm-operator version
 update/helm-operator:
-	curl -fsSL https://quay.io/api/v1/repository/operator-framework/helm-operator | \
-		jq -r '.tags' | \
-		grep name | \
-		grep -v master | \
-		grep -v latest | \
-		grep -v rc | \
-		head -1 | \
-		sed -e 's/.*\"name\":\ \"\(.*\)\",/\1/g' \
-		> $(ROOTDIR)/versions/OPERATOR_SDK_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/OPERATOR_SDK_VERSION,\
+		curl -fsSL https://quay.io/api/v1/repository/operator-framework/helm-operator \
+		| jq -r '.tags' \
+		| grep name \
+		| grep -v master \
+		| grep -v latest \
+		| grep -v rc \
+		| head -1 \
+		| sed 's/.*"name": "\(.*\)",/\1/g')
 
 .PHONY: update/helm-docs
 ## update helm-docs version
 update/helm-docs:
-	curl -fsSL https://api.github.com/repos/norwoodj/helm-docs/releases/latest | \
-		grep -Po '"tag_name": "\K.*?(?=")' | \
-		sed 's/v//g' \
-		> $(ROOTDIR)/versions/HELM_DOCS_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/HELM_DOCS_VERSION,\
+		curl -fsSL https://api.github.com/repos/norwoodj/helm-docs/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")' \
+		| sed 's/v//g')
 
 .PHONY: update/protobuf
 ## update protobuf version
 update/protobuf:
-	curl -fsSL https://api.github.com/repos/protocolbuffers/protobuf/releases/latest | \
-		grep -Po '"tag_name": "\K.*?(?=")' | \
-		sed 's/v//g' \
-		> $(ROOTDIR)/versions/PROTOBUF_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/PROTOBUF_VERSION,\
+		curl -fsSL https://api.github.com/repos/protocolbuffers/protobuf/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")' \
+		| sed 's/v//g')
 
 .PHONY: update/buf
 ## update buf version
 update/buf:
-	curl -fsSL https://api.github.com/repos/bufbuild/buf/releases/latest | \
-		grep -Po '"tag_name": "\K.*?(?=")' \
-		> $(ROOTDIR)/versions/BUF_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/BUF_VERSION,\
+		curl -fsSL https://api.github.com/repos/bufbuild/buf/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")')
 
 .PHONY: update/busybox
 ## update busybox version
 update/busybox:
-	curl -fsSL "https://hub.docker.com/v2/repositories/library/busybox/tags/?page_size=100" | \
-		jq -r '.results[].name' | \
-		grep -E '^[0-9]+\.[0-9]+\.[0-9]+$$' | \
-		sort -V | \
-		tail -n 1 \
-		> $(ROOTDIR)/versions/BUSYBOX_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/BUSYBOX_VERSION,\
+		curl -fsSL "https://hub.docker.com/v2/repositories/library/busybox/tags/?page_size=100" \
+		| jq -r '.results[].name' \
+		| grep -E '^[0-9]+\.[0-9]+\.[0-9]+$$' \
+		| sort -V \
+		| tail -n 1)
 
 .PHONY: update/kind
 ## update kind (kubernetes in docker) version
 update/kind:
-	curl -fsSL https://api.github.com/repos/kubernetes-sigs/kind/releases/latest | \
-		grep -Po '"tag_name": "\K.*?(?=")' | \
-		sed 's/v//g' \
-		> $(ROOTDIR)/versions/KIND_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/KIND_VERSION,\
+		curl -fsSL https://api.github.com/repos/kubernetes-sigs/kind/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")' \
+		| sed 's/v//g')
 
 .PHONY: update/kubectl
 ## update kubectl (kubernetes cli) version
 update/kubectl:
-	curl -fsSL https://dl.k8s.io/release/stable.txt \
-		> $(ROOTDIR)/versions/KUBECTL_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/KUBECTL_VERSION,\
+		curl -fsSL https://dl.k8s.io/release/stable.txt)
 
 .PHONY: update/prometheus-stack
 ## update prometheus version
 update/prometheus-stack:
-	curl -fsSL https://artifacthub.io/api/v1/packages/helm/prometheus-community/kube-prometheus-stack | \
-		jq .version | \
-		sed 's/"//g' \
-		> $(ROOTDIR)/versions/PROMETHEUS_STACK_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/PROMETHEUS_STACK_VERSION,\
+		curl -fsSL https://artifacthub.io/api/v1/packages/helm/prometheus-community/kube-prometheus-stack \
+		| jq -r '.version')
 
 .PHONY: update/jaeger-operator
 ## update jaeger-operator version
 update/jaeger-operator:
-	curl -fsSL https://artifacthub.io/api/v1/packages/helm/jaegertracing/jaeger-operator | \
-		jq .version | \
-		sed 's/"//g' \
-		> $(ROOTDIR)/versions/JAEGER_OPERATOR_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/JAEGER_OPERATOR_VERSION,\
+		curl -fsSL https://artifacthub.io/api/v1/packages/helm/jaegertracing/jaeger-operator \
+		| jq -r '.version')
 
 .PHONY: update/kube-linter
 ## update kube-linter version
 update/kube-linter:
-	curl -fsSL https://api.github.com/repos/stackrox/kube-linter/releases/latest | \
-	grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/KUBELINTER_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/KUBELINTER_VERSION,\
+		curl -fsSL https://api.github.com/repos/stackrox/kube-linter/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")')
 
 # .PHONY: update/otel-operator
 # ## update otel-operator version
 # update/otel-operator:
-#	curl -fsSL https://api.github.com/repos/open-telemetry/opentelemetry-operator/releases/latest | \
-#	grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/OTEL_OPERATOR_VERSION
+#	$(call fetch-version,$(ROOTDIR)/versions/OTEL_OPERATOR_VERSION,\
+#		curl -fsSL https://api.github.com/repos/open-telemetry/opentelemetry-operator/releases/latest \
+#		| grep -Po '"tag_name": "\K.*?(?=")')
 
 .PHONY: update/llvm
 ## update llvm version
 update/llvm:
-	curl -fsSL https://api.github.com/repos/llvm/llvm-project/releases/latest | \
-	grep -Po '"tag_name": "\Kllvmorg-\K.*?(?=")' > $(ROOTDIR)/versions/LLVM_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/LLVM_VERSION,\
+		curl -fsSL https://api.github.com/repos/llvm/llvm-project/releases/latest \
+		| grep -Po '"tag_name": "llvmorg-\K[^"]+')
 
 .PHONY: update/openmp
 ## update llvm openmp version
@@ -281,87 +286,101 @@ update/openmp: update/llvm
 .PHONY: update/ngt
 ## update NGT-labs/NGT version
 update/ngt:
-	curl -fsSL https://api.github.com/repos/NGT-labs/NGT/releases/latest | \
-	grep -Po '"tag_name": "\K.*?(?=")' | \
-	sed 's/v//g' > $(ROOTDIR)/versions/NGT_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/NGT_VERSION,\
+		curl -fsSL https://api.github.com/repos/NGT-labs/NGT/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")' \
+		| sed 's/v//g')
 
 .PHONY: update/faiss
 ## update facebookresearch/faiss version
 update/faiss:
-	curl -fsSL https://api.github.com/repos/facebookresearch/faiss/releases/latest | \
-	grep -Po '"tag_name": "\K.*?(?=")' | \
-	sed 's/v//g' > $(ROOTDIR)/versions/FAISS_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/FAISS_VERSION,\
+		curl -fsSL https://api.github.com/repos/facebookresearch/faiss/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")' \
+		| sed 's/v//g')
 
 .PHONY: update/usearch
 ## update usearch version
 update/usearch:
-	curl -fsSL https://api.github.com/repos/unum-cloud/usearch/releases/latest | \ grep -Po '"tag_name": "\K.*?(?=")' | \
-	sed 's/v//g' > $(ROOTDIR)/versions/USEARCH_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/USEARCH_VERSION,\
+		curl -fsSL https://api.github.com/repos/unum-cloud/usearch/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")' \
+		| sed 's/v//g')
 
 .PHONY: update/cmake
 ## update CMAKE version
 update/cmake:
-	curl -fsSL https://api.github.com/repos/Kitware/CMake/releases/latest | \
-	grep -Po '"tag_name": "\K.*?(?=")' | \
-	sed 's/v//g' > $(ROOTDIR)/versions/CMAKE_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/CMAKE_VERSION,\
+		curl -fsSL https://api.github.com/repos/Kitware/CMake/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")' \
+		| sed 's/v//g')
 
 .PHONY: update/ninja
 ## update NINJA version
 update/ninja:
-	curl -fsSL https://api.github.com/repos/ninja-build/ninja/releases/latest | \
-	grep -Po '"tag_name": "\K.*?(?=")' | \
-	sed 's/v//g' > $(ROOTDIR)/versions/NINJA_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/NINJA_VERSION,\
+		curl -fsSL https://api.github.com/repos/ninja-build/ninja/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")' \
+		| sed 's/v//g')
 
 .PHONY: update/reviewdog
 ## update reviewdog version
 update/reviewdog:
-	curl -fsSL https://api.github.com/repos/reviewdog/reviewdog/releases/latest | \
-	grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/REVIEWDOG_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/REVIEWDOG_VERSION,\
+		curl -fsSL https://api.github.com/repos/reviewdog/reviewdog/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")')
 
 .PHONY: update/telepresence
 ## update telepresence version
 update/telepresence:
-	curl -fsSL https://api.github.com/repos/telepresenceio/telepresence/releases/latest | \
-	grep -Po '"tag_name": "\K.*?(?=")' | \
-	sed 's/v//g' > $(ROOTDIR)/versions/TELEPRESENCE_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/TELEPRESENCE_VERSION,\
+		curl -fsSL https://api.github.com/repos/telepresenceio/telepresence/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")' \
+		| sed 's/v//g')
 
 .PHONY: update/yq
 ## update YQ version
 update/yq:
-	curl -fsSL https://api.github.com/repos/mikefarah/yq/releases/latest | \
-	grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/YQ_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/YQ_VERSION,\
+		curl -fsSL https://api.github.com/repos/mikefarah/yq/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")')
 
 .PHONY: update/zlib
 ## update zlib version
 update/zlib:
-	curl -fsSL https://api.github.com/repos/madler/zlib/releases/latest | \
-	grep -Po '"tag_name": "\K.*?(?=")' | \
-	sed 's/v//g' > $(ROOTDIR)/versions/ZLIB_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/ZLIB_VERSION,\
+		curl -fsSL https://api.github.com/repos/madler/zlib/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")' \
+		| sed 's/v//g')
 
 .PHONY: update/hdf5
 ## update hdf5 version
 update/hdf5:
-	curl -fsSL https://api.github.com/repos/HDFGroup/hdf5/releases/latest | \
-	grep -Po '"tag_name": "\K.*?(?=")' | \
-	sed 's/v//g' > $(ROOTDIR)/versions/HDF5_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/HDF5_VERSION,\
+		curl -fsSL https://api.github.com/repos/HDFGroup/hdf5/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")' \
+		| sed 's/v//g')
 
 .PHONY: update/vald
 ## update vald it's self version
 update/vald:
-	curl -fsSL https://api.github.com/repos/$(REPO)/releases/latest | \
-	grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/VALD_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/VALD_VERSION,\
+		curl -fsSL https://api.github.com/repos/$(REPO)/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")')
 
 .PHONY: update/snapshotter
 ## update snapshotter version
 update/snapshotter:
-	curl -fsSL https://api.github.com/repos/kubernetes-csi/external-snapshotter/releases/latest | \
-	grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/SNAPSHOTTER_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/SNAPSHOTTER_VERSION,\
+		curl -fsSL https://api.github.com/repos/kubernetes-csi/external-snapshotter/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")')
 
 .PHONY: update/csi-driver-host-path
 ## update csi-driver-host-path version
 update/csi-driver-host-path:
-	curl -fsSL https://api.github.com/repos/kubernetes-csi/csi-driver-host-path/releases/latest | \
-	grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/CSI_DRIVER_HOST_PATH_VERSION
+	$(call fetch-version,$(ROOTDIR)/versions/CSI_DRIVER_HOST_PATH_VERSION,\
+		curl -fsSL https://api.github.com/repos/kubernetes-csi/csi-driver-host-path/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")')
 
 .PHONY: update/template
 ## update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE

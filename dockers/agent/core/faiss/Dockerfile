@@ -27,16 +27,6 @@ ARG TARGETARCH
 ARG TARGETOS
 ARG GO_VERSION
 ARG RUST_VERSION
-ARG CC
-ARG CXX
-ARG LLD
-ARG AR
-ARG NM
-ARG RANLIB
-ARG CFLAGS
-ARG CXXFLAGS
-ARG LDFLAGS
-ARG SUDO
 ENV APP_NAME=faiss
 ENV DEBIAN_FRONTEND=noninteractive
 ENV GO111MODULE=on
@@ -52,18 +42,7 @@ ENV PKG=agent/core/faiss
 ENV REPO=vald
 ENV TZ=Etc/UTC
 ENV USER=root
-ENV YEAR=2026
 ENV PATH=${GOPATH}/bin:${GOROOT}/bin:/usr/local/bin:${PATH}
-ENV CC=${CC}
-ENV CXX=${CXX}
-ENV LLD=${LLD}
-ENV AR=${AR}
-ENV NM=${NM}
-ENV RANLIB=${RANLIB}
-ENV CFLAGS=${CFLAGS}
-ENV CXXFLAGS=${CXXFLAGS}
-ENV LDFLAGS=${LDFLAGS}
-ENV SUDO=${SUDO}
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 #skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
@@ -81,27 +60,21 @@ RUN --mount=type=bind,target=.,rw \
     && apt-get update -y \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends --fix-missing \
+    build-essential \
     ca-certificates \
     curl \
     tzdata \
     locales \
     git \
-    make \
-    build-essential \
-    clang \
     cmake \
-    gfortran \
+    g++ \
+    gcc \
+    libssl-dev \
+    unzip \
     liblapack-dev \
     libomp-dev \
     libopenblas-dev \
-    libprotobuf-dev \
-    libssl-dev \
-    libzstd-dev \
-    lld \
-    llvm \
-    pkg-config \
-    python3 \
-    unzip \
+    gfortran \
     && ldconfig \
     && echo "${LANG} UTF-8" > /etc/locale.gen \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \

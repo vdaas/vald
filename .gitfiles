@@ -13,6 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+apis/docs/v1/filter.md
+apis/docs/v1/flush.md
+apis/docs/v1/index.md
+apis/docs/v1/insert.md
+apis/docs/v1/mirror.md
+apis/docs/v1/object.md
+apis/docs/v1/remove.md
+apis/docs/v1/search.md
+apis/docs/v1/update.md
+apis/docs/v1/upsert.md
 .all-contributorsrc
 .coderabbit.yaml
 .commit_template

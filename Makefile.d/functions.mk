@@ -111,9 +111,17 @@ define go-vet
 endef
 
 define update-template
-	sed -i -e "s/^- $1 Version: .*$$/- $1 Version: $2/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
-	sed -i -e "s/^- $1 Version: .*$$/- $1 Version: $2/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
-	sed -i -e "s/^- $1 Version: .*$$/- $1 Version: $2/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+	sed -i -e "s/^- $1 Version:.*$$/- $1 Version: $2/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- $1 Version:.*$$/- $1 Version: $2/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- $1 Version:.*$$/- $1 Version: $2/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+endef
+
+# Fetch a version string via a pipeline and write it to a file only when the
+# result is non-empty. When the fetch fails (network error, rate-limit, …) the
+# existing file is left untouched and a warning is printed to stderr.
+# Usage: $(call fetch-version,$(ROOTDIR)/versions/FOO_VERSION,curl … | grep … | sed …)
+define fetch-version
+	@{ RESULT=$$($(2)); if [ -n "$$RESULT" ]; then printf '%s\n' "$$RESULT" > $(1); else echo "$(notdir $(1)): fetch returned empty — keeping existing value" >&2; fi; }
 endef
 
 export UPDATE_GITHUB_ACTION_SCRIPT = \
