@@ -1,0 +1,96 @@
+apiVersion: vald.vdaas.org/v1
+kind: Mvaldrelease
+metadata:
+  name: example-mvaldrelease
+  namespace: user123-someimagesearch
+  annotations:
+    description: |
+      This is a test description.
+      It can be multi-line.
+spec:
+  infrastructure:
+    - role: "green"
+      type: "local"
+      active: true
+      clusters:
+        - id: "12345678-1234-1234-1234-123456789012"
+          name: "lpokijhbgaev"
+        - id: "87654321-4321-4321-4321-210987654321"
+          name: "bhnjmktyuioi"
+      nodePools:
+        general:
+          name: "node-pool-1-general"
+          machineResource:
+            name: "c4.large"
+            cpu: "4"
+            memory: "8Gi"
+            storage: "100Gi"
+          replicas: 3
+        agent:
+          name: "agent-pool-1-agent"
+          machineResource:
+            name: "highcpu"
+            cpu: "16"
+            memory: "32Gi"
+            storage: "200Gi"
+          replicas: 2
+    - role: "blue"
+      type: "local"
+      active: true
+      clusters:
+        - id: "12345678-1234-1234-1234-123456789012"
+          name: "asdcwea"
+        - id: "87654321-4321-4321-4321-210987654321"
+          name: "duelvngpr8se2"
+      nodePools:
+        general:
+          name: "u-100184-ureco"
+          machineResource:
+            name: "c4.large"
+            cpu: "4"
+            memory: "16Gi"
+            storage: "100Gi"
+          replicas: 3
+        agent:
+          name: "agent-pool"
+          machineResource:
+            name: "Nx.4vCPU_4GiB_60GiB"
+            cpu: "8"
+            memory: "32Gi"
+            storage: "200Gi"
+          replicas: 2
+  vectorEngine:
+    name: "vald"
+    vald:
+      defaults:
+        logLevel: "info"
+      agent:
+        ngt:
+          creationEdgeSize: 10
+          searchEdgeSize: 40
+          dimension: 128
+          distanceType: "l2"
+          objectType: float
+        persistentVolume:
+          enabled: true
+      indexer:
+        manager: false
+        indexDuration: "24h"
+        indexSchedule: "0 2 * * *"
+        saveDuration: "1h"
+        saveSchedule: "0 * * * *"
+        concurrency: 2
+      gateway:
+        indexReplica: 3
+      discoverer:
+        kind: "DaemonSet"
+      overlay:
+        spec:
+          discoverer:
+            clusterRole:
+              enabled: false
+            clusterRoleBinding:
+              enabled: false
+          agent:
+            ngt:
+              dimension: 256
