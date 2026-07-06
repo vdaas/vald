@@ -1,0 +1,4 @@
+resources:
+  - ../default
+patches:
+  - path: ./manager.yaml

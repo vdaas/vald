@@ -1,0 +1,48 @@
+version: "2"
+
+run:
+  timeout: 5m
+  concurrency: 2
+
+linters:
+  default: none
+  enable:
+    - dupl
+    - errcheck
+    - copyloopvar
+    - ginkgolinter
+    - goconst
+    - gocyclo
+    - govet
+    - ineffassign
+    - lll
+    - misspell
+    - nakedret
+    - prealloc
+    - revive
+    - staticcheck
+    - unconvert
+    - unparam
+    - unused
+  settings:
+    revive:
+      rules:
+        - name: comment-spacings
+          disabled: true
+  exclusions:
+    # don't skip warning about doc comments
+    # don't exclude the default set of lint
+    presets: []
+    rules:
+      - path: "api/"
+        linters:
+          - lll
+      - path: "internal/"
+        linters:
+          - dupl
+          - lll
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
