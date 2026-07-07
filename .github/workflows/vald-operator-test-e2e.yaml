@@ -64,5 +64,4 @@ jobs:
 
       - name: Running Test e2e
         run: |
-          make k8s/external/cert-manager/deploy
           cd hack/vald-operator && make test-e2e
