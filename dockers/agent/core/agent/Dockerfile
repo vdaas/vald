@@ -37,6 +37,7 @@ ENV LC_ALL=en_US.UTF-8
 ENV ORG=vdaas
 ENV PKG=agent/core/agent
 ENV REPO=vald
+ENV RUSTFLAGS="-Clinker=clang -Clink-arg=-fuse-ld=lld"
 ENV RUST_HOME=/usr/local/lib/rust
 ENV TZ=Etc/UTC
 ENV USER=root
@@ -72,9 +73,11 @@ RUN --mount=type=bind,target=.,rw \
     libomp-dev \
     libopenblas-dev \
     gfortran \
-    pkg-config \
+    pkgconf \
     protobuf-compiler \
     libprotobuf-dev \
+    clang \
+    lld \
     && ldconfig \
     && echo "${LANG} UTF-8" > /etc/locale.gen \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
@@ -85,7 +88,7 @@ RUN --mount=type=bind,target=.,rw \
     && apt-get autoclean -y \
     && apt-get autoremove -y \
     && make RUST_VERSION="${RUST_VERSION}" rust/install \
-    && make ngt/install \
+    && CC=clang CXX=clang++ make CFLAGS="-flto=thin" CXXFLAGS="-flto=thin" NGT_EXTRA_CMAKE_FLAGS="-DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld" ngt/install \
     && make faiss/install \
     && make rust/target/release/${APP_NAME} \
     && mv "rust/target/release/${APP_NAME}" "/usr/bin/${APP_NAME}" \

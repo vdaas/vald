@@ -21,11 +21,13 @@ fn main() -> miette::Result<()> {
         .file("src/input.cpp")
         .flag_if_supported("-std=c++20")
         .flag_if_supported("-fopenmp")
+        .flag_if_supported("-flto=thin")
         .flag_if_supported("-DNGT_BFLOAT_DISABLED")
         .compile("qbg-rs");
 
     println!("cargo:rustc-link-search=native=/usr/local/lib");
-    println!("cargo:rustc-link-lib=static=ngt");
+    println!("cargo:rustc-link-search=native=/usr/lib");
+    println!("cargo:rustc-link-lib=static:+whole-archive=ngt");
     println!("cargo:rustc-link-lib=blas");
     println!("cargo:rustc-link-lib=lapack");
     println!("cargo:rustc-link-lib=dylib=gomp");

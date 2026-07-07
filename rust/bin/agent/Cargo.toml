@@ -26,7 +26,11 @@ qbg = { version = "0.1.0", path = "../../libs/algorithms/qbg" }
 anyhow = "1.0.102"
 cargo = "0.95.0"
 chrono = "0.4.44"
+<<<<<<< HEAD
 config = "0.15.21"
+=======
+config = "0.15.22"
+>>>>>>> 8872fb787 (resolve broadcast concurrency and tune connection pool (#3518))
 flexi_logger = "0.31"
 futures = "0.3.32"
 http = "1.4.0"

@@ -67,7 +67,7 @@ brew install hdf5
 ## Deploy Vald Agent Standalone on Kubernetes Cluster
 
 This chapter will show you how to deploy a standalone Vald Agent using Helm and run it on your Kubernetes cluster. <br>
-This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perform vector insertion operation, indexing, and searching operation.<br>
+This chapter uses [NGT](https://github.com/NGT-labs/NGT) as Vald Agent to perform vector insertion operation, indexing, and searching operation.<br>
 
 1. Clone the repository
 
