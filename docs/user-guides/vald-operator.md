@@ -1,12 +1,12 @@
 # Vald Operator
 
 The Vald Operator is a Kubernetes controller that manages the lifecycle of Vald clusters through a single custom resource.
-It watches `Mvaldrelease` (short name `mvrs`, API group `vald.vdaas.org/v1`) resources and generates
+It watches `ValdOperatorRelease` (short name `vor`, API group `vald.vdaas.org/v1`) resources and generates
 [`ValdRelease`](https://github.com/vdaas/vald-helm-operator) (VRS) manifests consumed by the Vald Helm Operator (VHO).
 
 ```
-Mvaldrelease (mvrs)  ──reconcile──▶  ValdRelease (VRS) × (active infra × clusters)
-   minimal input                       consumed by vald-helm-operator
+ValdOperatorRelease (vor)  ──reconcile──▶  ValdRelease (VRS) × (active infra × clusters)
+   minimal input                              consumed by vald-helm-operator
 ```
 
 The controller only *generates* VRS definitions.
@@ -35,7 +35,7 @@ make install
 make deploy IMG=<some-registry>/vald-operator:tag
 ```
 
-### Apply a sample Mvaldrelease
+### Apply a sample ValdOperatorRelease
 
 ```sh
 kubectl apply -k config/samples/
@@ -49,9 +49,9 @@ make uninstall
 make undeploy
 ```
 
-## CRD: Mvaldrelease (`mvrs`)
+## CRD: ValdOperatorRelease (`vor`)
 
-The goal of the `Mvaldrelease` resource is to collapse the large `ValdRelease` configuration surface into the minimum a user must supply.
+The goal of the `ValdOperatorRelease` resource is to collapse the large `ValdRelease` configuration surface into the minimum a user must supply.
 There are two input groups:
 
 1. **Infrastructure / node-pool information** — `spec.infrastructure[]`
@@ -61,9 +61,9 @@ There are two input groups:
 
 ```yaml
 apiVersion: vald.vdaas.org/v1
-kind: Mvaldrelease
+kind: ValdOperatorRelease
 metadata:
-  name: my-mvrs
+  name: my-vor
   namespace: vald
 spec:
   infrastructure:
@@ -226,17 +226,17 @@ Reconcile N+3: [WaitingClusterCreate=True, WaitingCreateVrs=False]
 4. **Resolve resources from node pools**: derive replicas and per-component CPU/memory from the agent node pool.
 5. **Apply optional settings**: persistent volume, node affinities.
 6. **Per cluster**: for each `infra.clusters[]`, set name, apply labels, then merge the overlay.
-   One VRS is produced per cluster, so a single MVRS can yield many VRS objects.
+   One VRS is produced per cluster, so a single VOR can yield many VRS objects.
 
 ### Overlay
 
 `spec.vectorEngine.vald.overlay` is a JSON patch merged onto the generated VRS, layered on top of the default VRS template loaded at startup (`DEFAULT_VRS_PATH`).
-This provides an escape hatch for any VRS field not directly exposed in the MVRS spec.
+This provides an escape hatch for any VRS field not directly exposed in the VOR spec.
 
 ### Resource management
 
-All generated resources have a controller owner reference pointing to the `Mvaldrelease` CR, enabling garbage collection when the CR is deleted.
-Every resource is labelled `managed-generation: <mvrs.Generation>`.
+All generated resources have a controller owner reference pointing to the `ValdOperatorRelease` CR, enabling garbage collection when the CR is deleted.
+Every resource is labelled `managed-generation: <vor.Generation>`.
 On each reconcile, resources owned by the CR but absent from the current build output are pruned (deleted).
 
 ## Resource Allocation and Topology
@@ -296,7 +296,7 @@ topologySpreadConstraints:
 
 ## Multi-Cluster Distribution
 
-The same MVRS can be distributed to multiple clusters, generating a VRS only where a matching node pool exists.
+The same VOR can be distributed to multiple clusters, generating a VRS only where a matching node pool exists.
 
 ### Node-pool matching
 
@@ -305,7 +305,7 @@ A VRS is generated only when a `general` pool is present.
 Nodes are matched by labels:
 
 ```
-<prefix>/namespace = <mvrs namespace>
+<prefix>/namespace = <vor namespace>
 <prefix>/type      = general | agent
 ```
 
@@ -315,9 +315,9 @@ When `REQUIRE_NODEPOOL_MATCH=false` (default), the controller skips node listing
 
 ### Use cases
 
-- **Single cluster**: Deploy MVRS once; VRS generates in that cluster.
-- **Multi-cluster same config**: Deploy MVRS to all clusters; only generate VRS where node-pool labels match.
-- **Blue/green deployments**: Multiple MVRS objects with different roles and endpoints.
+- **Single cluster**: Deploy VOR once; VRS generates in that cluster.
+- **Multi-cluster same config**: Deploy VOR to all clusters; only generate VRS where node-pool labels match.
+- **Blue/green deployments**: Multiple VOR objects with different roles and endpoints.
 - **VRS generation only**: Generate VRS manifests in a management cluster and distribute separately to workload clusters.
 
 ## Configuration
@@ -326,7 +326,7 @@ All configuration is done via environment variables, loaded once at startup.
 
 | Environment Variable | Default | Description |
 |---------------------|---------|-------------|
-| `DEFAULT_VRS_PATH` | `/opt/mvaldrelease/config/vrs.yaml` | Default VRS template merged with the overlay. |
+   | `DEFAULT_VRS_PATH` | `/opt/vald-operator/config/vrs.yaml` | Default VRS template merged with the overlay. |
 | `REQUIRE_NODEPOOL_MATCH` | `false` | Only generate VRS where matching node pools exist. |
 | `NODEPOOL_LABEL_PREFIX` | `""` | Prefix for the `namespace`/`type`/`role` node labels. |
 | `AGENT_PODS_PER_NODE` | `2` | Agent pods packed per node when computing replicas. |
