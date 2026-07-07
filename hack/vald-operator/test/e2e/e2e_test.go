@@ -32,6 +32,12 @@ import (
 
 // namespace where the project is deployed in
 const namespace = "mvaldrelease-system"
+const sampleMvrsName = "mvaldrelease-sample"
+const reconcileNamespace = "mvaldrelease-reconcile-e2e"
+const valdNamespace = "mvaldrelease-vald-e2e"
+const singleClusterMvrsName = "mvaldrelease-single-cluster"
+const valdReleaseCRDPath = "../../charts/vald-helm-operator/crds/valdrelease.yaml"
+const waitForValdTimeout = 10 * time.Minute
 
 // serviceAccountName created for the project
 const serviceAccountName = "mvaldrelease-controller-manager"
@@ -256,6 +262,138 @@ var _ = Describe("Manager", Ordered, func() {
 			))
 		})
 	})
+
+	Context("Mvaldrelease reconciliation", Ordered, func() {
+		BeforeAll(func() {
+			By("installing the ValdRelease CRD required for generated resources")
+			cmd := exec.Command("kubectl", "apply", "-f", valdReleaseCRDPath)
+			_, err := utils.Run(cmd)
+			Expect(err).NotTo(HaveOccurred(), "Failed to install ValdRelease CRD")
+
+			By("creating a dedicated namespace for reconcile verification")
+			Expect(createNamespace(reconcileNamespace)).To(Succeed())
+
+			By("applying the sample Mvaldrelease resource")
+			Expect(applyManifest(reconcileNamespace, "config/samples/controller_v1_mvaldrelease.yaml")).To(Succeed())
+		})
+
+		AfterAll(func() {
+			By("deleting the sample Mvaldrelease resource")
+			cmd := exec.Command("kubectl", "delete", "mvaldrelease", sampleMvrsName, "-n", reconcileNamespace, "--ignore-not-found=true")
+			_, _ = utils.Run(cmd)
+
+			By("removing the reconcile verification namespace")
+			Expect(deleteNamespace(reconcileNamespace)).To(Succeed())
+		})
+
+		It("should create ValdRelease resources for active clusters", func() {
+			verifyValdReleasesCreated := func(g Gomega) {
+				names, err := listValdReleaseNames(reconcileNamespace)
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(names).To(HaveLen(2), "expected one ValdRelease per active cluster")
+			}
+			Eventually(verifyValdReleasesCreated).Should(Succeed())
+		})
+
+		It("should advance the Mvaldrelease phase to Completed", func() {
+			verifyCompleted := func(g Gomega) {
+				status, err := getMvaldreleaseStatus(reconcileNamespace, sampleMvrsName)
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(status.Status.Phase).To(Equal("Completed"))
+				g.Expect(hasCondition(status.Status.Conditions, "Completed", "True")).To(BeTrue(),
+					"expected Completed=True condition")
+			}
+			Eventually(verifyCompleted).Should(Succeed())
+		})
+
+		It("should recreate a deleted ValdRelease", func() {
+			names, err := listValdReleaseNames(reconcileNamespace)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(names).NotTo(BeEmpty())
+
+			deleted := names[0]
+
+			By("deleting one generated ValdRelease")
+			cmd := exec.Command("kubectl", "delete", "valdrelease", deleted, "-n", reconcileNamespace)
+			_, err = utils.Run(cmd)
+			Expect(err).NotTo(HaveOccurred(), "Failed to delete generated ValdRelease")
+
+			By("waiting for the controller to recreate it")
+			verifyRecreated := func(g Gomega) {
+				recreated, err := listValdReleaseNames(reconcileNamespace)
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(recreated).To(HaveLen(2))
+				g.Expect(recreated).To(ContainElement(deleted))
+			}
+			Eventually(verifyRecreated).Should(Succeed())
+		})
+	})
+
+	Context("Vald deployment", Ordered, func() {
+		var manifestPath string
+
+		BeforeAll(func() {
+			By("creating a dedicated namespace for Vald deployment")
+			Expect(createNamespace(valdNamespace)).To(Succeed())
+
+			By("deploying the Vald Helm Operator")
+			cmd := exec.Command("make", "-C", "../..", "k8s/vald-helm-operator/deploy")
+			_, err := utils.Run(cmd)
+			Expect(err).NotTo(HaveOccurred(), "Failed to deploy vald-helm-operator")
+
+			By("writing a single-cluster Mvaldrelease manifest to avoid resource name collisions")
+			manifestPath, err = writeSingleClusterManifest(valdNamespace)
+			Expect(err).NotTo(HaveOccurred(), "Failed to create single-cluster Mvaldrelease manifest")
+
+			By("applying the single-cluster Mvaldrelease resource")
+			Expect(applyManifest(valdNamespace, manifestPath)).To(Succeed())
+		})
+
+		AfterAll(func() {
+			By("deleting the single-cluster Mvaldrelease resource")
+			cmd := exec.Command("kubectl", "delete", "mvaldrelease", singleClusterMvrsName, "-n", valdNamespace, "--ignore-not-found=true")
+			_, _ = utils.Run(cmd)
+
+			By("removing the Vald deployment namespace")
+			Expect(deleteNamespace(valdNamespace)).To(Succeed())
+
+			By("undeploying the Vald Helm Operator")
+			cmd = exec.Command("make", "-C", "../..", "k8s/vald-helm-operator/delete")
+			_, _ = utils.Run(cmd)
+
+			if manifestPath != "" {
+				Expect(os.Remove(manifestPath)).To(Succeed())
+			}
+		})
+
+		It("should reconcile a single-cluster Mvaldrelease to Completed", func() {
+			verifyCompleted := func(g Gomega) {
+				status, err := getMvaldreleaseStatus(valdNamespace, singleClusterMvrsName)
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(status.Status.Phase).To(Equal("Completed"))
+				g.Expect(hasCondition(status.Status.Conditions, "Completed", "True")).To(BeTrue())
+
+				names, err := listValdReleaseNames(valdNamespace)
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(names).To(HaveLen(1), "expected a single generated ValdRelease")
+			}
+			Eventually(verifyCompleted).Should(Succeed())
+		})
+
+		It("should deploy core Vald workloads", func() {
+			By("waiting for the gateway service to exist")
+			waitForResource("service", "vald-lb-gateway", valdNamespace, waitForValdTimeout)
+
+			By("waiting for discoverer deployment to become available")
+			waitForResourceCondition("deployment", "vald-discoverer", valdNamespace, "Available", waitForValdTimeout)
+
+			By("waiting for gateway deployment to become available")
+			waitForResourceCondition("deployment", "vald-lb-gateway", valdNamespace, "Available", waitForValdTimeout)
+
+			By("waiting for agent statefulset to become ready")
+			waitForResourceJSONPath("statefulset", "vald-agent", valdNamespace, "{.status.readyReplicas}", "1", waitForValdTimeout)
+		})
+	})
 })
 
 // serviceAccountToken returns a token for the specified service account in the given namespace.
@@ -315,4 +453,166 @@ type tokenRequest struct {
 	Status struct {
 		Token string `json:"token"`
 	} `json:"status"`
+}
+
+type mvaldreleaseStatusResponse struct {
+	Status struct {
+		Phase      string `json:"phase"`
+		Conditions []struct {
+			Type   string `json:"type"`
+			Status string `json:"status"`
+		} `json:"conditions"`
+	} `json:"status"`
+}
+
+func createNamespace(name string) error {
+	cmd := exec.Command("kubectl", "create", "ns", name)
+	_, err := utils.Run(cmd)
+	return err
+}
+
+func deleteNamespace(name string) error {
+	cmd := exec.Command("kubectl", "delete", "ns", name, "--ignore-not-found=true")
+	_, err := utils.Run(cmd)
+	return err
+}
+
+func applyManifest(namespace, manifestPath string) error {
+	cmd := exec.Command("kubectl", "apply", "-n", namespace, "-f", manifestPath)
+	_, err := utils.Run(cmd)
+	return err
+}
+
+func listValdReleaseNames(namespace string) ([]string, error) {
+	cmd := exec.Command("kubectl", "get", "valdrelease", "-n", namespace,
+		"-o", `jsonpath={range .items[*]}{.metadata.name}{"\n"}{end}`)
+	output, err := utils.Run(cmd)
+	if err != nil {
+		return nil, err
+	}
+	return utils.GetNonEmptyLines(output), nil
+}
+
+func getMvaldreleaseStatus(namespace, name string) (*mvaldreleaseStatusResponse, error) {
+	cmd := exec.Command("kubectl", "get", "mvaldrelease", name, "-n", namespace, "-o", "json")
+	output, err := utils.Run(cmd)
+	if err != nil {
+		return nil, err
+	}
+
+	var status mvaldreleaseStatusResponse
+	if err := json.Unmarshal([]byte(output), &status); err != nil {
+		return nil, err
+	}
+	return &status, nil
+}
+
+func hasCondition(conditions []struct {
+	Type   string `json:"type"`
+	Status string `json:"status"`
+}, condType, condStatus string) bool {
+	for _, cond := range conditions {
+		if cond.Type == condType && cond.Status == condStatus {
+			return true
+		}
+	}
+	return false
+}
+
+func waitForResource(kind, name, namespace string, timeout time.Duration) {
+	verifyExists := func(g Gomega) {
+		cmd := exec.Command("kubectl", "get", kind, name, "-n", namespace)
+		_, err := utils.Run(cmd)
+		g.Expect(err).NotTo(HaveOccurred())
+	}
+	Eventually(verifyExists, timeout).Should(Succeed())
+}
+
+func waitForResourceCondition(kind, name, namespace, condition string, timeout time.Duration) {
+	verifyAvailable := func(g Gomega) {
+		cmd := exec.Command("kubectl", "wait",
+			fmt.Sprintf("%s/%s", kind, name),
+			fmt.Sprintf("--for=condition=%s", condition),
+			fmt.Sprintf("--timeout=%s", 30*time.Second),
+			"-n", namespace,
+		)
+		_, err := utils.Run(cmd)
+		g.Expect(err).NotTo(HaveOccurred())
+	}
+	Eventually(verifyAvailable, timeout).Should(Succeed())
+}
+
+func waitForResourceJSONPath(kind, name, namespace, jsonPath, expected string, timeout time.Duration) {
+	verifyField := func(g Gomega) {
+		cmd := exec.Command("kubectl", "get", kind, name, "-n", namespace, "-o", "jsonpath="+jsonPath)
+		output, err := utils.Run(cmd)
+		g.Expect(err).NotTo(HaveOccurred())
+		g.Expect(output).To(Equal(expected))
+	}
+	Eventually(verifyField, timeout).Should(Succeed())
+}
+
+func writeSingleClusterManifest(namespace string) (string, error) {
+	manifest := fmt.Sprintf(`apiVersion: vald.vdaas.org/v1
+kind: Mvaldrelease
+metadata:
+  name: %s
+  namespace: %s
+spec:
+  infrastructure:
+    - role: "green"
+      type: "kubernetes"
+      active: true
+      clusters:
+        - id: "12345678-1234-1234-1234-123456789012"
+          name: "single-cluster"
+      nodePools:
+        general:
+          name: "node-pool-1-general"
+          machineResource:
+            name: "highmemory"
+            cpu: "1"
+            memory: "2Gi"
+            storage: "10Gi"
+          replicas: 1
+        agent:
+          name: "agent-pool-1-agent"
+          machineResource:
+            name: "highcpu"
+            cpu: "1"
+            memory: "2Gi"
+            storage: "10Gi"
+          replicas: 1
+  vectorEngine:
+    name: "vald"
+    vald:
+      defaults:
+        logLevel: "info"
+      agent:
+        ngt:
+          creationEdgeSize: 10
+          searchEdgeSize: 40
+          dimension: 2
+          distanceType: "l2"
+          objectType: float
+        persistentVolume:
+          enabled: false
+      indexer:
+        manager: false
+        indexDuration: "24h"
+        indexSchedule: "0 2 * * *"
+        saveDuration: "1h"
+        saveSchedule: "0 * * * *"
+        concurrency: 1
+      gateway:
+        indexReplica: 1
+      discoverer:
+        kind: "Deployment"
+`, singleClusterMvrsName, namespace)
+
+	path := filepath.Join(os.TempDir(), fmt.Sprintf("%s.yaml", singleClusterMvrsName))
+	if err := os.WriteFile(path, []byte(manifest), 0o600); err != nil {
+		return "", err
+	}
+	return path, nil
 }
