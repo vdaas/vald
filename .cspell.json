@@ -1735,6 +1735,7 @@
       "valdmirrortargets"
     ],
     "docs/user-guides/deployment.md": ["finalizers", "valdhelmopratorreleases"],
+    "docs/user-guides/vald-operator.md": ["kubebuilder", "mmap", "NODEPOOL", "schedulable"],
     "example/helm/values-standalone-agent-ngt.yaml": ["mnist's"],
     "example/helm/values-with-pyroscope.yaml": ["serversscheme"],
     "example/helm/values.yaml": ["Agnet", "mnist's", "serversscheme"],
