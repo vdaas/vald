@@ -32,7 +32,8 @@ spec:
     name: v1
     schema:
       openAPIV3Schema:
-        description: ValdOperatorRelease is the Schema for the valdoperatorreleases API.
+        description: ValdOperatorRelease is the Schema for the valdoperatorreleases
+          API.
         properties:
           apiVersion:
             description: |-
