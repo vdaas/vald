@@ -1,12 +1,12 @@
 # Design Overview
 
-This document explains what the `mvaldrelease` controller does and how it works.
+This document explains what the `valdoperatorrelease` controller does and how it works.
 It is grounded in the current code; see the referenced files for the source of truth.
 
 ## What it is
 
 A Kubernetes controller that manages the lifecycle of [Vald](https://vald.vdaas.org/)
-clusters through a single custom resource, `Mvaldrelease` (short name `mvrs`,
+clusters through a single custom resource, `ValdOperatorRelease` (short name `vor`,
 API group `vald.vdaas.org/v1`).
 
 From a small, high-level input the controller generates one or more
@@ -14,7 +14,7 @@ From a small, high-level input the controller generates one or more
 manifests that the Vald Helm Operator (VHO) reconciles into a running Vald cluster.
 
 ```
-Mvaldrelease (mvrs)  ──reconcile──▶  ValdRelease (VRS) × (active infra × clusters)
+ValdOperatorRelease (vor)  ──reconcile──▶  ValdRelease (VRS) × (active infra × clusters)
    minimal input                       consumed by vald-helm-operator
 ```
 
@@ -23,15 +23,15 @@ running in the target cluster turns each VRS into Vald pods. This separation let
 management cluster emit VRS definitions and distribute them to other clusters (for
 example via an external workflow engine).
 
-## The `Mvaldrelease` (MVRS) resource
+## The `ValdOperatorRelease` (VOR) resource
 
-The goal of MVRS is to collapse the large `ValdRelease` configuration surface into the
+The goal of VOR is to collapse the large `ValdRelease` configuration surface into the
 minimum a user must supply. There are two input groups.
 
 1. **Infrastructure / node-pool information** — `spec.infrastructure[]`
 2. **Minimal Vald settings** — `spec.vectorEngine.vald`
 
-Source of truth: `api/v1/mvaldrelease_types.go`.
+Source of truth: `api/v1/valdoperatorrelease_types.go`.
 
 ### `spec.infrastructure[]`
 
@@ -65,7 +65,7 @@ The minimal Vald configuration reflected into each VRS:
 Reconciliation is modeled as an ordered flow of phases. Each phase carries a `Condition`
 plus an optional `Builder` (creates/updates resources) and `Checker` (reports readiness).
 
-Phases (`internal/pkg/lifecycle/condition.go`, `internal/pkg/domain/mvaldrelease/lifecycle.go`):
+Phases (`internal/pkg/lifecycle/condition.go`, `internal/pkg/domain/valdoperatorrelease/lifecycle.go`):
 
 | Phase (`status.phase`) | Builder | Checker | Purpose |
 |------------------------|---------|---------|---------|
@@ -81,8 +81,8 @@ previously-`True` condition later breaks (e.g. a generated VRS is deleted, or th
 changes), the controller detects it and restarts work from that phase. `status.phase`
 tracks the condition currently being processed.
 
-See `internal/controller/mvaldrelease_controller.go` (`reconcileRoutine` /
-`reconcileCondition`) and `internal/pkg/domain/mvaldrelease/phase.go`
+See `internal/controller/valdoperatorrelease_controller.go` (`reconcileRoutine` /
+`reconcileCondition`) and `internal/pkg/domain/valdoperatorrelease/phase.go`
 (`AdvanceToNextPhase`).
 
 ### Readiness result states
@@ -100,7 +100,7 @@ A `Checker` returns one of four `desired.Result` states
 For the cluster-create check: a missing `cluster.id`/`cluster.name` yields **Pending**
 (external system not done yet), while empty `clusters` or empty `infrastructure` yields
 **Failed** (misconfiguration). See
-`internal/pkg/domain/mvaldrelease/condition_wait_for_cluster_create.go`.
+`internal/pkg/domain/valdoperatorrelease/condition_wait_for_cluster_create.go`.
 
 ## VRS generation flow
 
@@ -124,7 +124,7 @@ function of `(CR, Config, NodePoolCapability)` — it makes no Kubernetes API ca
    affinities (`common.go`).
 6. **Per cluster** — for each `infra.clusters[]`, set `name = <namespace>-<clusterName>`
    (truncated to 63 chars), apply labels (`namespace`, `type`, `role`), then merge the
-   overlay. One VRS is produced per cluster, so a single MVRS can yield many VRS objects.
+   overlay. One VRS is produced per cluster, so a single VOR can yield many VRS objects.
 
 ### Applying generated resources (`ResourceSyncer`)
 
@@ -144,13 +144,13 @@ on top of the default VRS template loaded at startup (`DEFAULT_VRS_PATH`). See
 
 ## Multi-cluster distribution and node-pool matching
 
-The same MVRS can be distributed to multiple clusters, generating a VRS only where a
+The same VOR can be distributed to multiple clusters, generating a VRS only where a
 matching node pool exists.
 
 - With `REQUIRE_NODEPOOL_MATCH=true`, the controller lists Nodes and resolves a
   `NodePoolCapability`; a VRS is generated only when a `general` pool is present
   (`internal/pkg/lifecycle/builder/vald/capability.go`).
-- Node match is by labels `namespace=<mvrs namespace>` and `type=general` (required);
+- Node match is by labels `namespace=<vor namespace>` and `type=general` (required);
   `type=agent` is optional — when present, agent pods are scheduled onto `type=agent`,
   otherwise they fall back to `type=general`.
 - Label keys default to `namespace` / `type`; set `NODEPOOL_LABEL_PREFIX`
@@ -164,7 +164,7 @@ Loaded once at startup into `config.Config` (`internal/infrastructure/config/`).
 
 | Env var | Default | Purpose |
 |---------|---------|---------|
-| `DEFAULT_VRS_PATH` | `/opt/mvaldrelease/config/vrs.yaml` | Default VRS template merged with the overlay. |
+| `DEFAULT_VRS_PATH` | `/opt/valdoperatorrelease/config/vrs.yaml` | Default VRS template merged with the overlay. |
 | `REQUIRE_NODEPOOL_MATCH` | `false` | Only generate VRS where matching node pools exist. |
 | `NODEPOOL_LABEL_PREFIX` | `""` | Prefix for the `namespace`/`type`/`role` node labels. |
 | `AGENT_PODS_PER_NODE` | `2` | Agent pods packed per node when computing replicas. |
@@ -184,10 +184,10 @@ Loaded once at startup into `config.Config` (`internal/infrastructure/config/`).
 
 | Concern | Location |
 |---------|----------|
-| CRD types | `api/v1/mvaldrelease_types.go` |
-| Reconciler | `internal/controller/mvaldrelease_controller.go` |
+| CRD types | `api/v1/valdoperatorrelease_types.go` |
+| Reconciler | `internal/controller/valdoperatorrelease_controller.go` |
 | Resource apply / prune | `internal/controller/resource_syncer.go` |
-| Lifecycle / conditions | `internal/pkg/lifecycle/`, `internal/pkg/domain/mvaldrelease/` |
+| Lifecycle / conditions | `internal/pkg/lifecycle/`, `internal/pkg/domain/valdoperatorrelease/` |
 | VRS builder | `internal/pkg/lifecycle/builder/vald/` |
 | VRS API model | `internal/pkg/api/valdrelease/` |
 | Config / env | `internal/infrastructure/config/`, `internal/infrastructure/env/` |

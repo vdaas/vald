@@ -23,8 +23,8 @@ func newAgentReleaseWithMemory(memory string) *valdrelease.ValdRelease {
 }
 
 func TestVrsBuilder_ReflectPersistentVolume_Disabled(t *testing.T) {
-	b := &VrsBuilder{CR: &v1.Mvaldrelease{
-		Spec: v1.MvaldreleaseSpec{
+	b := &VrsBuilder{CR: &v1.ValdOperatorRelease{
+		Spec: v1.ValdOperatorReleaseSpec{
 			VectorEngine: v1.VectorEngine{
 				Vald: v1.Vald{
 					Agent: v1.Agent{PersistentVolume: &v1.AgentPersistentVolume{Enabled: false}},
@@ -38,8 +38,8 @@ func TestVrsBuilder_ReflectPersistentVolume_Disabled(t *testing.T) {
 }
 
 func TestVrsBuilder_ReflectPersistentVolume_Nil(t *testing.T) {
-	b := &VrsBuilder{CR: &v1.Mvaldrelease{
-		Spec: v1.MvaldreleaseSpec{
+	b := &VrsBuilder{CR: &v1.ValdOperatorRelease{
+		Spec: v1.ValdOperatorReleaseSpec{
 			VectorEngine: v1.VectorEngine{
 				Vald: v1.Vald{
 					Agent: v1.Agent{PersistentVolume: nil},
@@ -60,8 +60,8 @@ func TestVrsBuilder_ReflectPersistentVolume_FromCR(t *testing.T) {
 		PvMinSizeBytes:      int64(1) << 30,
 	}
 
-	b := &VrsBuilder{Config: cfg, Rules: stubRules{}, CR: &v1.Mvaldrelease{
-		Spec: v1.MvaldreleaseSpec{
+	b := &VrsBuilder{Config: cfg, Rules: stubRules{}, CR: &v1.ValdOperatorRelease{
+		Spec: v1.ValdOperatorReleaseSpec{
 			VectorEngine: v1.VectorEngine{
 				Vald: v1.Vald{
 					Agent: v1.Agent{PersistentVolume: &v1.AgentPersistentVolume{
@@ -90,8 +90,8 @@ func TestVrsBuilder_ReflectPersistentVolume_EnvFallback(t *testing.T) {
 		PvMinSizeBytes:      int64(1) << 30,
 	}
 
-	b := &VrsBuilder{Config: cfg, Rules: stubRules{}, CR: &v1.Mvaldrelease{
-		Spec: v1.MvaldreleaseSpec{
+	b := &VrsBuilder{Config: cfg, Rules: stubRules{}, CR: &v1.ValdOperatorRelease{
+		Spec: v1.ValdOperatorReleaseSpec{
 			VectorEngine: v1.VectorEngine{
 				Vald: v1.Vald{
 					Agent: v1.Agent{PersistentVolume: &v1.AgentPersistentVolume{

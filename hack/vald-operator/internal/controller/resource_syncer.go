@@ -54,7 +54,7 @@ func NewResourceSyncer(c client.Client, scheme *runtime.Scheme) *ResourceSyncer 
 // Sync builds the desired objects via the Builder, applies them with
 // owner-reference + managed-generation labels, and prunes any orphaned owned
 // resources. The returned map carries one entry per Create/Update/Prune.
-func (s *ResourceSyncer) Sync(ctx context.Context, b desired.Builder, owner *controllerv1.Mvaldrelease) (desired.OperationResults, error) {
+func (s *ResourceSyncer) Sync(ctx context.Context, b desired.Builder, owner *controllerv1.ValdOperatorRelease) (desired.OperationResults, error) {
 	opes := desired.OperationResults{}
 	builtObj, err := b.Build(ctx)
 	if err != nil {
@@ -110,13 +110,13 @@ func (s *ResourceSyncer) Sync(ctx context.Context, b desired.Builder, owner *con
 // the Builder's output and deletes any not present in the current Sync.
 // Listed items can lose their TypeMeta on some client implementations, so the
 // item GVK is recovered from the parent List's GVK before keying.
-func (s *ResourceSyncer) pruneOldResources(ctx context.Context, created client.ObjectList, results desired.OperationResults, mvrs *controllerv1.Mvaldrelease) (desired.OperationResults, error) {
+func (s *ResourceSyncer) pruneOldResources(ctx context.Context, created client.ObjectList, results desired.OperationResults, vor *controllerv1.ValdOperatorRelease) (desired.OperationResults, error) {
 	opes := desired.OperationResults{}
 	// Capture the list GVK before calling List — some client implementations
 	// reset TypeMeta on the populated list.
 	itemGVK := itemGVKFromList(created.GetObjectKind().GroupVersionKind())
 	exists := created.DeepCopyObject().(client.ObjectList)
-	if err := s.Client.List(ctx, exists, client.InNamespace(mvrs.Namespace)); err != nil {
+	if err := s.Client.List(ctx, exists, client.InNamespace(vor.Namespace)); err != nil {
 		return results, fmt.Errorf("failed to list existing resources: %w", err)
 	}
 	items, err := util.ToObjectSlice(exists)
@@ -127,7 +127,7 @@ func (s *ResourceSyncer) pruneOldResources(ctx context.Context, created client.O
 		if obj.GetObjectKind().GroupVersionKind().Empty() {
 			obj.GetObjectKind().SetGroupVersionKind(itemGVK)
 		}
-		if !metav1.IsControlledBy(obj, mvrs) {
+		if !metav1.IsControlledBy(obj, vor) {
 			continue
 		}
 		key := s.makeKey(obj)

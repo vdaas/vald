@@ -1,4 +1,4 @@
-package mvaldrelease
+package valdoperatorrelease
 
 import (
 	"testing"
@@ -21,7 +21,7 @@ func makePhaseFlow() *lifecycle.Flow {
 
 func newDomain() *Domain {
 	return &Domain{
-		Mvaldrelease: &v1.Mvaldrelease{
+		ValdOperatorRelease: &v1.ValdOperatorRelease{
 			ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: "default"},
 		},
 	}

@@ -1,4 +1,4 @@
-package mvaldrelease
+package valdoperatorrelease
 
 import (
 	"github.com/vdaas/vald/hack/vald-operator/internal/infrastructure/config"
@@ -8,7 +8,7 @@ import (
 )
 
 func (d *Domain) NewLifeCycleFlow(k8sClient client.Client, cfg *config.Config, capability builder.NodePoolCapability) *lifecycle.Flow {
-	cr := d.Mvaldrelease
+	cr := d.ValdOperatorRelease
 	lcs := lifecycle.LifeCycles{
 		*d.ConditionWaitForClusterCreate(),
 		*d.ConditionWaitForCreateVrs(k8sClient, cfg, capability),

@@ -31,7 +31,7 @@ import (
 	"github.com/vdaas/vald/hack/vald-operator/internal/infrastructure/config"
 )
 
-var _ = Describe("Mvaldrelease Controller", func() {
+var _ = Describe("ValdOperatorRelease Controller", func() {
 	Context("When reconciling a resource", func() {
 		const resourceName = "test-resource"
 
@@ -41,19 +41,19 @@ var _ = Describe("Mvaldrelease Controller", func() {
 			Name:      resourceName,
 			Namespace: "default", // TODO(user):Modify as needed
 		}
-		mvaldrelease := &controllerv1.Mvaldrelease{}
+		valdoperatorrelease := &controllerv1.ValdOperatorRelease{}
 
 		BeforeEach(func() {
-			By("creating the custom resource for the Kind Mvaldrelease")
-			err := k8sClient.Get(ctx, typeNamespacedName, mvaldrelease)
+			By("creating the custom resource for the Kind ValdOperatorRelease")
+			err := k8sClient.Get(ctx, typeNamespacedName, valdoperatorrelease)
 			if err != nil && errors.IsNotFound(err) {
-				resource := &controllerv1.Mvaldrelease{
+				resource := &controllerv1.ValdOperatorRelease{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      resourceName,
 						Namespace: "default",
 					},
-					Spec: controllerv1.MvaldreleaseSpec{
-						Infrastructure: []controllerv1.MvaldreleaseInfra{
+					Spec: controllerv1.ValdOperatorReleaseSpec{
+						Infrastructure: []controllerv1.ValdOperatorReleaseInfra{
 							{
 								Role:   "green",
 								Type:   "local",
@@ -134,16 +134,16 @@ var _ = Describe("Mvaldrelease Controller", func() {
 
 		AfterEach(func() {
 			// TODO(user): Cleanup logic after each test, like removing the resource instance.
-			resource := &controllerv1.Mvaldrelease{}
+			resource := &controllerv1.ValdOperatorRelease{}
 			err := k8sClient.Get(ctx, typeNamespacedName, resource)
 			Expect(err).NotTo(HaveOccurred())
 
-			By("Cleanup the specific resource instance Mvaldrelease")
+			By("Cleanup the specific resource instance ValdOperatorRelease")
 			Expect(k8sClient.Delete(ctx, resource)).To(Succeed())
 		})
 		It("should successfully reconcile the resource", func() {
 			By("Reconciling the created resource")
-			controllerReconciler := &MvaldreleaseReconciler{
+			controllerReconciler := &ValdOperatorReleaseReconciler{
 				Client: k8sClient,
 				Scheme: k8sClient.Scheme(),
 				Config: &config.Config{},

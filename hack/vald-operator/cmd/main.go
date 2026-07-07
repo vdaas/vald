@@ -217,13 +217,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controller.MvaldreleaseReconciler{
+	if err = (&controller.ValdOperatorReleaseReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 		Config: cfg,
 		Syncer: controller.NewResourceSyncer(mgr.GetClient(), mgr.GetScheme()),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Mvaldrelease")
+		setupLog.Error(err, "unable to create controller", "controller", "ValdOperatorRelease")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder

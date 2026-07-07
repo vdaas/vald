@@ -20,8 +20,8 @@ resources:
 - metrics_reader_role.yaml
 # For each CRD, "Admin", "Editor" and "Viewer" roles are scaffolded by
 # default, aiding admins in cluster management. Those roles are
-# not used by the mvaldrelease itself. You can comment the following lines
+# not used by the valdoperatorrelease itself. You can comment the following lines
 # if you do not want those helpers be installed with your Project.
-- mvaldrelease_admin_role.yaml
-- mvaldrelease_editor_role.yaml
-- mvaldrelease_viewer_role.yaml
+- valdoperatorrelease_admin_role.yaml
+- valdoperatorrelease_editor_role.yaml
+- valdoperatorrelease_viewer_role.yaml

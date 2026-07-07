@@ -4,16 +4,16 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
-  name: mvaldreleases.vald.vdaas.org
+  name: valdoperatorreleases.vald.vdaas.org
 spec:
   group: vald.vdaas.org
   names:
-    kind: Mvaldrelease
-    listKind: MvaldreleaseList
-    plural: mvaldreleases
+    kind: ValdOperatorRelease
+    listKind: ValdOperatorReleaseList
+    plural: valdoperatorreleases
     shortNames:
-    - mvrs
-    singular: mvaldrelease
+    - vor
+    singular: valdoperatorrelease
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -32,7 +32,7 @@ spec:
     name: v1
     schema:
       openAPIV3Schema:
-        description: Mvaldrelease is the Schema for the mvaldreleases API.
+        description: ValdOperatorRelease is the Schema for the valdoperatorreleases API.
         properties:
           apiVersion:
             description: |-
@@ -52,7 +52,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: MvaldreleaseSpec defines the desired state of Mvaldrelease
+            description: ValdOperatorReleaseSpec defines the desired state of ValdOperatorRelease
             properties:
               infrastructure:
                 items:
@@ -242,7 +242,7 @@ spec:
             - vectorEngine
             type: object
           status:
-            description: MvaldreleaseStatus defines the observed state of Mvaldrelease.
+            description: ValdOperatorReleaseStatus defines the observed state of ValdOperatorRelease.
             properties:
               conditions:
                 description: Define observed state of cluster

@@ -2,7 +2,7 @@
 
 ## Background
 
-Each `Mvaldrelease` CR describes one or more node pools. A "general" pool hosts the
+Each `ValdOperatorRelease` CR describes one or more node pools. A "general" pool hosts the
 gateway, discoverer, and manager components. An optional "agent" (ValdAgent) pool
 hosts the NGT vector index pods.
 
@@ -14,7 +14,7 @@ in no-agent-pool configurations.
 ## Node Pool Fallback for Agent Resources
 
 The agent node-pool selection rule lives in the domain layer
-(`internal/pkg/domain/mvaldrelease/rules.go`, `Domain.ResolveAgentNodePool`) and is
+(`internal/pkg/domain/valdoperatorrelease/rules.go`, `Domain.ResolveAgentNodePool`) and is
 consumed by the builder via the `DomainRules` interface. This keeps
 `VrsBuilder.Build` a pure function of `(CR, Config, Capability, Rules)`:
 

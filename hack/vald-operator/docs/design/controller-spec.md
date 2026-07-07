@@ -1,18 +1,18 @@
-# Mvaldrelease Controller Specification
+# ValdOperatorRelease Controller Specification
 
 ## Overview
 
-The Mvaldrelease controller manages the lifecycle of [ValdRelease](https://vald.vdaas.org) resources
-on a Kubernetes cluster. Users describe their desired Vald configuration via a single `Mvaldrelease`
+The ValdOperatorRelease controller manages the lifecycle of [ValdRelease](https://vald.vdaas.org) resources
+on a Kubernetes cluster. Users describe their desired Vald configuration via a single `ValdOperatorRelease`
 CR; the controller generates and maintains the corresponding `ValdRelease` objects, adjusting them
 whenever the CR changes.
 
 ```
-User applies Mvaldrelease CR
+User applies ValdOperatorRelease CR
         │
         ▼
 ┌───────────────────────┐
-│  Mvaldrelease          │
+│  ValdOperatorRelease          │
 │  Controller            │
 │                        │
 │  1. Check infrastructure│
@@ -31,7 +31,7 @@ which deploys the actual Vald components.
 
 ---
 
-## CRD: Mvaldrelease (`mvrs`)
+## CRD: ValdOperatorRelease (`vor`)
 
 ### Spec
 
@@ -143,7 +143,7 @@ status:
 
 ```
 NAME          PHASE              PROGRESS   STATUS   AGE
-my-mvrs       WaitingCreateVrs   3          True     5m
+my-vor       WaitingCreateVrs   3          True     5m
 ```
 
 > **Note**: The `STATUS` column shows `conditions[0].status`, which is always the
@@ -292,7 +292,7 @@ only generates `ValdRelease` objects for infra entries that have matching Kubern
 `Node` objects. Nodes are matched by labels:
 
 ```
-<prefix>/namespace = <mvrs namespace>
+<prefix>/namespace = <vor namespace>
 <prefix>/type      = general | agent
 ```
 
@@ -301,13 +301,13 @@ only generates `ValdRelease` objects for infra entries that have matching Kubern
 
 ### Generation Tracking
 
-Every created/updated resource is labelled `managed-generation: <mvrs.Generation>`.
-On each reconcile, resources owned by the `Mvaldrelease` CR but absent from the current
+Every created/updated resource is labelled `managed-generation: <vor.Generation>`.
+On each reconcile, resources owned by the `ValdOperatorRelease` CR but absent from the current
 build output are **pruned** (deleted).
 
 ### Owner References
 
-All generated resources have a controller owner reference pointing to the `Mvaldrelease` CR,
+All generated resources have a controller owner reference pointing to the `ValdOperatorRelease` CR,
 enabling garbage collection when the CR is deleted.
 
 ---
