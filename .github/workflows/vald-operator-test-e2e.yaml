@@ -1,0 +1,66 @@
+#
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: "Vald Operator E2E Tests"
+on:
+  pull_request:
+    paths:
+      - "hack/vald-operator/**"
+jobs:
+  dump-contexts-to-log:
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    runs-on: ubuntu-slim
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/dump-context
+  vald-operator-e2e-tests:
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+
+      - name: Setup Go environment
+        uses: ./.github/actions/setup-go
+
+      - name: Install kind
+        run: |
+          make kind/install
+
+      - name: Verify kind installation
+        run: kind version
+
+      - name: Create kind cluster
+        run: |
+          sed -e 's/apiServerAddress: "127.0.0.1"/apiServerAddress: "'"$(grep host.docker.internal /etc/hosts | cut -f1)"'"/' \
+            k8s/debug/kind/e2e.yaml | kind create cluster --config -
+          kubectl cluster-info --context kind-kind
+
+      - name: Running Test e2e
+        run: |
+          cd hack/vald-operator && make test-e2e
