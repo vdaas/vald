@@ -266,7 +266,7 @@ var _ = Describe("Manager", Ordered, func() {
 	Context("Mvaldrelease reconciliation", Ordered, func() {
 		BeforeAll(func() {
 			By("installing the ValdRelease CRD required for generated resources")
-			cmd := exec.Command("kubectl", "apply", "-f", valdReleaseCRDPath)
+			cmd := exec.Command("kubectl", "apply", "--server-side", "-f", valdReleaseCRDPath)
 			_, err := utils.Run(cmd)
 			Expect(err).NotTo(HaveOccurred(), "Failed to install ValdRelease CRD")
 
