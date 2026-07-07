@@ -61,7 +61,9 @@ roles:
       - format
   contributor:
     policies:
+      - rebase
       - label
+      - format
 default-roles:
   - contributor
 users:
@@ -88,3 +90,9 @@ users:
     role:
       - contributor
       - author
+  takuyaymd:
+    role:
+      - contributor
+  tayaboo:
+    role:
+      - contributor
