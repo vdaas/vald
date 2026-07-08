@@ -39,6 +39,9 @@ defaults:
     # @schema {"name": "defaults.image.tag", "type": "string"}
     # defaults.image.tag -- docker image tag
     tag: v1.7.17
+    # @schema {"name": "defaults.image.registry", "type": "string"}
+    # defaults.image.registry -- default docker image registry (applied to all images; override per-component via image.registry)
+    registry: ""
   # @schema {"name": "defaults.server_config", "type": "object", "anchor": "server_config"}
   server_config:
     # @schema {"name": "defaults.server_config.servers", "type": "object"}
@@ -1132,6 +1135,9 @@ gateway:
       targetCPUUtilizationPercentage: 80
     # @schema {"name": "gateway.lb.image", "type": "object", "anchor": "image"}
     image:
+      # @schema {"name": "gateway.lb.image.registry", "type": "string"}
+      # gateway.lb.image.registry -- image registry (overrides defaults.image.registry)
+      registry: ""
       # @schema {"name": "gateway.lb.image.repository", "type": "string"}
       # gateway.lb.image.repository -- image repository
       repository: vdaas/vald-lb-gateway
