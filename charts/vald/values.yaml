@@ -20,7 +20,7 @@ defaults:
   # @schema {"name": "defaults.time_zone", "type": "string"}
   # defaults.time_zone -- Time zone
   time_zone: UTC
-  # @schema {"name": "defaults.logging", "type": "object", "anchor": "logging"}
+  # @schema {"name": "defaults.logging", "type": "object", "anchor": "logging", "x-go-type": "config.Logging", "x-go-type-import": {"path": "github.com/vdaas/vald/internal/config", "name": "config"}}
   logging:
     # @schema {"name": "defaults.logging.logger", "type": "string", "enum": ["glg", "zap"]}
     # defaults.logging.logger -- logger name.

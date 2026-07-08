@@ -338,6 +338,11 @@
                 "zap"
               ]
             }
+          },
+          "x-go-type": "config.Logging",
+          "x-go-type-import": {
+            "path": "github.com/vdaas/vald/internal/config",
+            "name": "config"
           }
         },
         "maxReplicas": {
@@ -2513,6 +2518,11 @@
                     "zap"
                   ]
                 }
+              },
+              "x-go-type": "config.Logging",
+              "x-go-type-import": {
+                "path": "github.com/vdaas/vald/internal/config",
+                "name": "config"
               }
             },
             "name": {
@@ -4353,6 +4363,11 @@
                 "zap"
               ]
             }
+          },
+          "x-go-type": "config.Logging",
+          "x-go-type-import": {
+            "path": "github.com/vdaas/vald/internal/config",
+            "name": "config"
           }
         },
         "networkPolicy": {
@@ -6067,6 +6082,11 @@
                 "zap"
               ]
             }
+          },
+          "x-go-type": "config.Logging",
+          "x-go-type-import": {
+            "path": "github.com/vdaas/vald/internal/config",
+            "name": "config"
           }
         },
         "maxReplicas": {
@@ -9058,6 +9078,11 @@
                     "zap"
                   ]
                 }
+              },
+              "x-go-type": "config.Logging",
+              "x-go-type-import": {
+                "path": "github.com/vdaas/vald/internal/config",
+                "name": "config"
               }
             },
             "maxReplicas": {
@@ -12018,6 +12043,11 @@
                     "zap"
                   ]
                 }
+              },
+              "x-go-type": "config.Logging",
+              "x-go-type-import": {
+                "path": "github.com/vdaas/vald/internal/config",
+                "name": "config"
               }
             },
             "maxReplicas": {
@@ -14301,6 +14331,11 @@
                     "zap"
                   ]
                 }
+              },
+              "x-go-type": "config.Logging",
+              "x-go-type-import": {
+                "path": "github.com/vdaas/vald/internal/config",
+                "name": "config"
               }
             },
             "maxReplicas": {
@@ -24057,6 +24092,11 @@
                     "zap"
                   ]
                 }
+              },
+              "x-go-type": "config.Logging",
+              "x-go-type-import": {
+                "path": "github.com/vdaas/vald/internal/config",
+                "name": "config"
               }
             },
             "maxUnavailable": {
@@ -24383,6 +24423,11 @@
                         "zap"
                       ]
                     }
+                  },
+                  "x-go-type": "config.Logging",
+                  "x-go-type-import": {
+                    "path": "github.com/vdaas/vald/internal/config",
+                    "name": "config"
                   }
                 },
                 "name": {

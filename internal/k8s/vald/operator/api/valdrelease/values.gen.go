@@ -4,6 +4,7 @@
 package valdrelease
 
 import (
+	config "github.com/vdaas/vald/internal/config"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -37,27 +38,6 @@ const (
 	ValuesAgentKindDaemonSet   ValuesAgentKind = "DaemonSet"
 	ValuesAgentKindDeployment  ValuesAgentKind = "Deployment"
 	ValuesAgentKindStatefulSet ValuesAgentKind = "StatefulSet"
-)
-
-// Defines values for ValuesAgentLoggingFormat.
-const (
-	ValuesAgentLoggingFormatJson ValuesAgentLoggingFormat = "json"
-	ValuesAgentLoggingFormatRaw  ValuesAgentLoggingFormat = "raw"
-)
-
-// Defines values for ValuesAgentLoggingLevel.
-const (
-	ValuesAgentLoggingLevelDebug ValuesAgentLoggingLevel = "debug"
-	ValuesAgentLoggingLevelError ValuesAgentLoggingLevel = "error"
-	ValuesAgentLoggingLevelFatal ValuesAgentLoggingLevel = "fatal"
-	ValuesAgentLoggingLevelInfo  ValuesAgentLoggingLevel = "info"
-	ValuesAgentLoggingLevelWarn  ValuesAgentLoggingLevel = "warn"
-)
-
-// Defines values for ValuesAgentLoggingLogger.
-const (
-	ValuesAgentLoggingLoggerGlg ValuesAgentLoggingLogger = "glg"
-	ValuesAgentLoggingLoggerZap ValuesAgentLoggingLogger = "zap"
 )
 
 // Defines values for ValuesAgentNgtDistanceType.
@@ -245,27 +225,6 @@ const (
 	ValuesAgentSidecarImagePullPolicyNever        ValuesAgentSidecarImagePullPolicy = "Never"
 )
 
-// Defines values for ValuesAgentSidecarLoggingFormat.
-const (
-	ValuesAgentSidecarLoggingFormatJson ValuesAgentSidecarLoggingFormat = "json"
-	ValuesAgentSidecarLoggingFormatRaw  ValuesAgentSidecarLoggingFormat = "raw"
-)
-
-// Defines values for ValuesAgentSidecarLoggingLevel.
-const (
-	ValuesAgentSidecarLoggingLevelDebug ValuesAgentSidecarLoggingLevel = "debug"
-	ValuesAgentSidecarLoggingLevelError ValuesAgentSidecarLoggingLevel = "error"
-	ValuesAgentSidecarLoggingLevelFatal ValuesAgentSidecarLoggingLevel = "fatal"
-	ValuesAgentSidecarLoggingLevelInfo  ValuesAgentSidecarLoggingLevel = "info"
-	ValuesAgentSidecarLoggingLevelWarn  ValuesAgentSidecarLoggingLevel = "warn"
-)
-
-// Defines values for ValuesAgentSidecarLoggingLogger.
-const (
-	ValuesAgentSidecarLoggingLoggerGlg ValuesAgentSidecarLoggingLogger = "glg"
-	ValuesAgentSidecarLoggingLoggerZap ValuesAgentSidecarLoggingLogger = "zap"
-)
-
 // Defines values for ValuesAgentSidecarObservabilityMetricsVersionInfoLabels.
 const (
 	ValuesAgentSidecarObservabilityMetricsVersionInfoLabelsAlgorithmInfo     ValuesAgentSidecarObservabilityMetricsVersionInfoLabels = "algorithm_info"
@@ -409,27 +368,6 @@ const (
 	ValuesDefaultsGrpcClientTlsClientAuthVerifyIfGiven    ValuesDefaultsGrpcClientTlsClientAuth = "VerifyIfGiven"
 )
 
-// Defines values for ValuesDefaultsLoggingFormat.
-const (
-	ValuesDefaultsLoggingFormatJson ValuesDefaultsLoggingFormat = "json"
-	ValuesDefaultsLoggingFormatRaw  ValuesDefaultsLoggingFormat = "raw"
-)
-
-// Defines values for ValuesDefaultsLoggingLevel.
-const (
-	ValuesDefaultsLoggingLevelDebug ValuesDefaultsLoggingLevel = "debug"
-	ValuesDefaultsLoggingLevelError ValuesDefaultsLoggingLevel = "error"
-	ValuesDefaultsLoggingLevelFatal ValuesDefaultsLoggingLevel = "fatal"
-	ValuesDefaultsLoggingLevelInfo  ValuesDefaultsLoggingLevel = "info"
-	ValuesDefaultsLoggingLevelWarn  ValuesDefaultsLoggingLevel = "warn"
-)
-
-// Defines values for ValuesDefaultsLoggingLogger.
-const (
-	ValuesDefaultsLoggingLoggerGlg ValuesDefaultsLoggingLogger = "glg"
-	ValuesDefaultsLoggingLoggerZap ValuesDefaultsLoggingLogger = "zap"
-)
-
 // Defines values for ValuesDefaultsObservabilityMetricsVersionInfoLabels.
 const (
 	ValuesDefaultsObservabilityMetricsVersionInfoLabelsAlgorithmInfo     ValuesDefaultsObservabilityMetricsVersionInfoLabels = "algorithm_info"
@@ -555,27 +493,6 @@ const (
 const (
 	ValuesDiscovererKindDaemonSet  ValuesDiscovererKind = "DaemonSet"
 	ValuesDiscovererKindDeployment ValuesDiscovererKind = "Deployment"
-)
-
-// Defines values for ValuesDiscovererLoggingFormat.
-const (
-	ValuesDiscovererLoggingFormatJson ValuesDiscovererLoggingFormat = "json"
-	ValuesDiscovererLoggingFormatRaw  ValuesDiscovererLoggingFormat = "raw"
-)
-
-// Defines values for ValuesDiscovererLoggingLevel.
-const (
-	ValuesDiscovererLoggingLevelDebug ValuesDiscovererLoggingLevel = "debug"
-	ValuesDiscovererLoggingLevelError ValuesDiscovererLoggingLevel = "error"
-	ValuesDiscovererLoggingLevelFatal ValuesDiscovererLoggingLevel = "fatal"
-	ValuesDiscovererLoggingLevelInfo  ValuesDiscovererLoggingLevel = "info"
-	ValuesDiscovererLoggingLevelWarn  ValuesDiscovererLoggingLevel = "warn"
-)
-
-// Defines values for ValuesDiscovererLoggingLogger.
-const (
-	ValuesDiscovererLoggingLoggerGlg ValuesDiscovererLoggingLogger = "glg"
-	ValuesDiscovererLoggingLoggerZap ValuesDiscovererLoggingLogger = "zap"
 )
 
 // Defines values for ValuesDiscovererObservabilityMetricsVersionInfoLabels.
@@ -800,27 +717,6 @@ const (
 	ValuesGatewayFilterKindDeployment ValuesGatewayFilterKind = "Deployment"
 )
 
-// Defines values for ValuesGatewayFilterLoggingFormat.
-const (
-	ValuesGatewayFilterLoggingFormatJson ValuesGatewayFilterLoggingFormat = "json"
-	ValuesGatewayFilterLoggingFormatRaw  ValuesGatewayFilterLoggingFormat = "raw"
-)
-
-// Defines values for ValuesGatewayFilterLoggingLevel.
-const (
-	ValuesGatewayFilterLoggingLevelDebug ValuesGatewayFilterLoggingLevel = "debug"
-	ValuesGatewayFilterLoggingLevelError ValuesGatewayFilterLoggingLevel = "error"
-	ValuesGatewayFilterLoggingLevelFatal ValuesGatewayFilterLoggingLevel = "fatal"
-	ValuesGatewayFilterLoggingLevelInfo  ValuesGatewayFilterLoggingLevel = "info"
-	ValuesGatewayFilterLoggingLevelWarn  ValuesGatewayFilterLoggingLevel = "warn"
-)
-
-// Defines values for ValuesGatewayFilterLoggingLogger.
-const (
-	ValuesGatewayFilterLoggingLoggerGlg ValuesGatewayFilterLoggingLogger = "glg"
-	ValuesGatewayFilterLoggingLoggerZap ValuesGatewayFilterLoggingLogger = "zap"
-)
-
 // Defines values for ValuesGatewayFilterObservabilityMetricsVersionInfoLabels.
 const (
 	ValuesGatewayFilterObservabilityMetricsVersionInfoLabelsAlgorithmInfo     ValuesGatewayFilterObservabilityMetricsVersionInfoLabels = "algorithm_info"
@@ -1043,27 +939,6 @@ const (
 	ValuesGatewayLbKindDeployment ValuesGatewayLbKind = "Deployment"
 )
 
-// Defines values for ValuesGatewayLbLoggingFormat.
-const (
-	ValuesGatewayLbLoggingFormatJson ValuesGatewayLbLoggingFormat = "json"
-	ValuesGatewayLbLoggingFormatRaw  ValuesGatewayLbLoggingFormat = "raw"
-)
-
-// Defines values for ValuesGatewayLbLoggingLevel.
-const (
-	ValuesGatewayLbLoggingLevelDebug ValuesGatewayLbLoggingLevel = "debug"
-	ValuesGatewayLbLoggingLevelError ValuesGatewayLbLoggingLevel = "error"
-	ValuesGatewayLbLoggingLevelFatal ValuesGatewayLbLoggingLevel = "fatal"
-	ValuesGatewayLbLoggingLevelInfo  ValuesGatewayLbLoggingLevel = "info"
-	ValuesGatewayLbLoggingLevelWarn  ValuesGatewayLbLoggingLevel = "warn"
-)
-
-// Defines values for ValuesGatewayLbLoggingLogger.
-const (
-	ValuesGatewayLbLoggingLoggerGlg ValuesGatewayLbLoggingLogger = "glg"
-	ValuesGatewayLbLoggingLoggerZap ValuesGatewayLbLoggingLogger = "zap"
-)
-
 // Defines values for ValuesGatewayLbObservabilityMetricsVersionInfoLabels.
 const (
 	ValuesGatewayLbObservabilityMetricsVersionInfoLabelsAlgorithmInfo     ValuesGatewayLbObservabilityMetricsVersionInfoLabels = "algorithm_info"
@@ -1235,27 +1110,6 @@ const (
 const (
 	ValuesGatewayMirrorKindDaemonSet  ValuesGatewayMirrorKind = "DaemonSet"
 	ValuesGatewayMirrorKindDeployment ValuesGatewayMirrorKind = "Deployment"
-)
-
-// Defines values for ValuesGatewayMirrorLoggingFormat.
-const (
-	ValuesGatewayMirrorLoggingFormatJson ValuesGatewayMirrorLoggingFormat = "json"
-	ValuesGatewayMirrorLoggingFormatRaw  ValuesGatewayMirrorLoggingFormat = "raw"
-)
-
-// Defines values for ValuesGatewayMirrorLoggingLevel.
-const (
-	ValuesGatewayMirrorLoggingLevelDebug ValuesGatewayMirrorLoggingLevel = "debug"
-	ValuesGatewayMirrorLoggingLevelError ValuesGatewayMirrorLoggingLevel = "error"
-	ValuesGatewayMirrorLoggingLevelFatal ValuesGatewayMirrorLoggingLevel = "fatal"
-	ValuesGatewayMirrorLoggingLevelInfo  ValuesGatewayMirrorLoggingLevel = "info"
-	ValuesGatewayMirrorLoggingLevelWarn  ValuesGatewayMirrorLoggingLevel = "warn"
-)
-
-// Defines values for ValuesGatewayMirrorLoggingLogger.
-const (
-	ValuesGatewayMirrorLoggingLoggerGlg ValuesGatewayMirrorLoggingLogger = "glg"
-	ValuesGatewayMirrorLoggingLoggerZap ValuesGatewayMirrorLoggingLogger = "zap"
 )
 
 // Defines values for ValuesGatewayMirrorObservabilityMetricsVersionInfoLabels.
@@ -1990,27 +1844,6 @@ const (
 	ValuesManagerIndexKindDeployment ValuesManagerIndexKind = "Deployment"
 )
 
-// Defines values for ValuesManagerIndexLoggingFormat.
-const (
-	ValuesManagerIndexLoggingFormatJson ValuesManagerIndexLoggingFormat = "json"
-	ValuesManagerIndexLoggingFormatRaw  ValuesManagerIndexLoggingFormat = "raw"
-)
-
-// Defines values for ValuesManagerIndexLoggingLevel.
-const (
-	ValuesManagerIndexLoggingLevelDebug ValuesManagerIndexLoggingLevel = "debug"
-	ValuesManagerIndexLoggingLevelError ValuesManagerIndexLoggingLevel = "error"
-	ValuesManagerIndexLoggingLevelFatal ValuesManagerIndexLoggingLevel = "fatal"
-	ValuesManagerIndexLoggingLevelInfo  ValuesManagerIndexLoggingLevel = "info"
-	ValuesManagerIndexLoggingLevelWarn  ValuesManagerIndexLoggingLevel = "warn"
-)
-
-// Defines values for ValuesManagerIndexLoggingLogger.
-const (
-	ValuesManagerIndexLoggingLoggerGlg ValuesManagerIndexLoggingLogger = "glg"
-	ValuesManagerIndexLoggingLoggerZap ValuesManagerIndexLoggingLogger = "zap"
-)
-
 // Defines values for ValuesManagerIndexObservabilityMetricsVersionInfoLabels.
 const (
 	ValuesManagerIndexObservabilityMetricsVersionInfoLabelsAlgorithmInfo     ValuesManagerIndexObservabilityMetricsVersionInfoLabels = "algorithm_info"
@@ -2036,27 +1869,6 @@ const (
 const (
 	DaemonSet  ValuesManagerIndexOperatorKind = "DaemonSet"
 	Deployment ValuesManagerIndexOperatorKind = "Deployment"
-)
-
-// Defines values for ValuesManagerIndexOperatorLoggingFormat.
-const (
-	Json ValuesManagerIndexOperatorLoggingFormat = "json"
-	Raw  ValuesManagerIndexOperatorLoggingFormat = "raw"
-)
-
-// Defines values for ValuesManagerIndexOperatorLoggingLevel.
-const (
-	Debug ValuesManagerIndexOperatorLoggingLevel = "debug"
-	Error ValuesManagerIndexOperatorLoggingLevel = "error"
-	Fatal ValuesManagerIndexOperatorLoggingLevel = "fatal"
-	Info  ValuesManagerIndexOperatorLoggingLevel = "info"
-	Warn  ValuesManagerIndexOperatorLoggingLevel = "warn"
-)
-
-// Defines values for ValuesManagerIndexOperatorLoggingLogger.
-const (
-	Glg ValuesManagerIndexOperatorLoggingLogger = "glg"
-	Zap ValuesManagerIndexOperatorLoggingLogger = "zap"
 )
 
 // Defines values for ValuesManagerIndexOperatorObservabilityMetricsVersionInfoLabels.
@@ -2654,16 +2466,7 @@ type Values struct {
 
 		// Kind deployment kind: Deployment, DaemonSet or StatefulSet
 		Kind    *ValuesAgentKind `json:"kind,omitempty"`
-		Logging *struct {
-			// Format logging format. logging format must be `raw` or `json`
-			Format *ValuesAgentLoggingFormat `json:"format,omitempty"`
-
-			// Level logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.
-			Level *ValuesAgentLoggingLevel `json:"level,omitempty"`
-
-			// Logger logger name. currently logger must be `glg` or `zap`.
-			Logger *ValuesAgentLoggingLogger `json:"logger,omitempty"`
-		} `json:"logging,omitempty"`
+		Logging *config.Logging  `json:"logging,omitempty"`
 
 		// MaxReplicas maximum number of replicas. if HPA is disabled, this value will be ignored.
 		MaxReplicas *int `json:"maxReplicas,omitempty"`
@@ -3923,17 +3726,8 @@ type Values struct {
 			} `json:"image,omitempty"`
 
 			// InitContainerEnabled sidecar on initContainer mode enabled.
-			InitContainerEnabled *bool `json:"initContainerEnabled,omitempty"`
-			Logging              *struct {
-				// Format logging format. logging format must be `raw` or `json`
-				Format *ValuesAgentSidecarLoggingFormat `json:"format,omitempty"`
-
-				// Level logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.
-				Level *ValuesAgentSidecarLoggingLevel `json:"level,omitempty"`
-
-				// Logger logger name. currently logger must be `glg` or `zap`.
-				Logger *ValuesAgentSidecarLoggingLogger `json:"logger,omitempty"`
-			} `json:"logging,omitempty"`
+			InitContainerEnabled *bool           `json:"initContainerEnabled,omitempty"`
+			Logging              *config.Logging `json:"logging,omitempty"`
 
 			// Name name of agent sidecar
 			Name          *string `json:"name,omitempty"`
@@ -4982,16 +4776,7 @@ type Values struct {
 			// Tag docker image tag
 			Tag *string `json:"tag,omitempty"`
 		} `json:"image,omitempty"`
-		Logging *struct {
-			// Format logging format. logging format must be `raw` or `json`
-			Format *ValuesDefaultsLoggingFormat `json:"format,omitempty"`
-
-			// Level logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.
-			Level *ValuesDefaultsLoggingLevel `json:"level,omitempty"`
-
-			// Logger logger name. currently logger must be `glg` or `zap`.
-			Logger *ValuesDefaultsLoggingLogger `json:"logger,omitempty"`
-		} `json:"logging,omitempty"`
+		Logging       *config.Logging `json:"logging,omitempty"`
 		NetworkPolicy *struct {
 			// Custom custom network policies that a user can add
 			Custom *struct {
@@ -5933,16 +5718,7 @@ type Values struct {
 
 		// Kind deployment kind: Deployment or DaemonSet
 		Kind    *ValuesDiscovererKind `json:"kind,omitempty"`
-		Logging *struct {
-			// Format logging format. logging format must be `raw` or `json`
-			Format *ValuesDiscovererLoggingFormat `json:"format,omitempty"`
-
-			// Level logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.
-			Level *ValuesDiscovererLoggingLevel `json:"level,omitempty"`
-
-			// Logger logger name. currently logger must be `glg` or `zap`.
-			Logger *ValuesDiscovererLoggingLogger `json:"logger,omitempty"`
-		} `json:"logging,omitempty"`
+		Logging *config.Logging       `json:"logging,omitempty"`
 
 		// MaxReplicas maximum number of replicas. if HPA is disabled, this value will be ignored.
 		MaxReplicas *int `json:"maxReplicas,omitempty"`
@@ -7615,16 +7391,7 @@ type Values struct {
 
 			// Kind deployment kind: Deployment or DaemonSet
 			Kind    *ValuesGatewayFilterKind `json:"kind,omitempty"`
-			Logging *struct {
-				// Format logging format. logging format must be `raw` or `json`
-				Format *ValuesGatewayFilterLoggingFormat `json:"format,omitempty"`
-
-				// Level logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.
-				Level *ValuesGatewayFilterLoggingLevel `json:"level,omitempty"`
-
-				// Logger logger name. currently logger must be `glg` or `zap`.
-				Logger *ValuesGatewayFilterLoggingLogger `json:"logger,omitempty"`
-			} `json:"logging,omitempty"`
+			Logging *config.Logging          `json:"logging,omitempty"`
 
 			// MaxReplicas maximum number of replicas. if HPA is disabled, this value will be ignored.
 			MaxReplicas *int `json:"maxReplicas,omitempty"`
@@ -9285,16 +9052,7 @@ type Values struct {
 
 			// Kind deployment kind: Deployment or DaemonSet
 			Kind    *ValuesGatewayLbKind `json:"kind,omitempty"`
-			Logging *struct {
-				// Format logging format. logging format must be `raw` or `json`
-				Format *ValuesGatewayLbLoggingFormat `json:"format,omitempty"`
-
-				// Level logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.
-				Level *ValuesGatewayLbLoggingLevel `json:"level,omitempty"`
-
-				// Logger logger name. currently logger must be `glg` or `zap`.
-				Logger *ValuesGatewayLbLoggingLogger `json:"logger,omitempty"`
-			} `json:"logging,omitempty"`
+			Logging *config.Logging      `json:"logging,omitempty"`
 
 			// MaxReplicas maximum number of replicas. if HPA is disabled, this value will be ignored.
 			MaxReplicas *int `json:"maxReplicas,omitempty"`
@@ -10549,16 +10307,7 @@ type Values struct {
 
 			// Kind deployment kind: Deployment or DaemonSet
 			Kind    *ValuesGatewayMirrorKind `json:"kind,omitempty"`
-			Logging *struct {
-				// Format logging format. logging format must be `raw` or `json`
-				Format *ValuesGatewayMirrorLoggingFormat `json:"format,omitempty"`
-
-				// Level logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.
-				Level *ValuesGatewayMirrorLoggingLevel `json:"level,omitempty"`
-
-				// Logger logger name. currently logger must be `glg` or `zap`.
-				Logger *ValuesGatewayMirrorLoggingLogger `json:"logger,omitempty"`
-			} `json:"logging,omitempty"`
+			Logging *config.Logging          `json:"logging,omitempty"`
 
 			// MaxReplicas maximum number of replicas. if HPA is disabled, this value will be ignored.
 			MaxReplicas *int `json:"maxReplicas,omitempty"`
@@ -16112,16 +15861,7 @@ type Values struct {
 
 			// Kind deployment kind: Deployment or DaemonSet
 			Kind    *ValuesManagerIndexKind `json:"kind,omitempty"`
-			Logging *struct {
-				// Format logging format. logging format must be `raw` or `json`
-				Format *ValuesManagerIndexLoggingFormat `json:"format,omitempty"`
-
-				// Level logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.
-				Level *ValuesManagerIndexLoggingLevel `json:"level,omitempty"`
-
-				// Logger logger name. currently logger must be `glg` or `zap`.
-				Logger *ValuesManagerIndexLoggingLogger `json:"logger,omitempty"`
-			} `json:"logging,omitempty"`
+			Logging *config.Logging         `json:"logging,omitempty"`
 
 			// MaxUnavailable maximum number of unavailable replicas
 			MaxUnavailable *string `json:"maxUnavailable,omitempty"`
@@ -16238,16 +15978,7 @@ type Values struct {
 
 				// Kind deployment kind: Deployment or DaemonSet
 				Kind    *ValuesManagerIndexOperatorKind `json:"kind,omitempty"`
-				Logging *struct {
-					// Format logging format. logging format must be `raw` or `json`
-					Format *ValuesManagerIndexOperatorLoggingFormat `json:"format,omitempty"`
-
-					// Level logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.
-					Level *ValuesManagerIndexOperatorLoggingLevel `json:"level,omitempty"`
-
-					// Logger logger name. currently logger must be `glg` or `zap`.
-					Logger *ValuesManagerIndexOperatorLoggingLogger `json:"logger,omitempty"`
-				} `json:"logging,omitempty"`
+				Logging *config.Logging                 `json:"logging,omitempty"`
 
 				// Name name of manager.index.operator deployment
 				Name *string `json:"name,omitempty"`
@@ -19899,15 +19630,6 @@ type ValuesAgentImagePullPolicy string
 // ValuesAgentKind deployment kind: Deployment, DaemonSet or StatefulSet
 type ValuesAgentKind string
 
-// ValuesAgentLoggingFormat logging format. logging format must be `raw` or `json`
-type ValuesAgentLoggingFormat string
-
-// ValuesAgentLoggingLevel logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.
-type ValuesAgentLoggingLevel string
-
-// ValuesAgentLoggingLogger logger name. currently logger must be `glg` or `zap`.
-type ValuesAgentLoggingLogger string
-
 // ValuesAgentNgtDistanceType distance type. it should be `l1`, `l2`, `angle`, `hamming`, `cosine`,`poincare`, `lorentz`, `jaccard`, `sparsejaccard`, `normalizedangle` or `normalizedcosine` or `innerproduct`. for further details about NGT libraries supported distance is https://github.com/NGT-labs/NGT/wiki/Command-Quick-Reference and vald agent's supported NGT distance type is https://pkg.go.dev/github.com/vdaas/vald/internal/core/algorithm/ngt#pkg-constants
 type ValuesAgentNgtDistanceType string
 
@@ -19959,15 +19681,6 @@ type ValuesAgentSidecarConfigCompressCompressAlgorithm string
 // ValuesAgentSidecarImagePullPolicy image pull policy
 type ValuesAgentSidecarImagePullPolicy string
 
-// ValuesAgentSidecarLoggingFormat logging format. logging format must be `raw` or `json`
-type ValuesAgentSidecarLoggingFormat string
-
-// ValuesAgentSidecarLoggingLevel logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.
-type ValuesAgentSidecarLoggingLevel string
-
-// ValuesAgentSidecarLoggingLogger logger name. currently logger must be `glg` or `zap`.
-type ValuesAgentSidecarLoggingLogger string
-
 // ValuesAgentSidecarObservabilityMetricsVersionInfoLabels defines model for Values.Agent.Sidecar.Observability.Metrics.VersionInfoLabels.
 type ValuesAgentSidecarObservabilityMetricsVersionInfoLabels string
 
@@ -20010,15 +19723,6 @@ type ValuesDefaultsGrpcClientDialOptionNetTlsClientAuth string
 // ValuesDefaultsGrpcClientTlsClientAuth client auth type
 type ValuesDefaultsGrpcClientTlsClientAuth string
 
-// ValuesDefaultsLoggingFormat logging format. logging format must be `raw` or `json`
-type ValuesDefaultsLoggingFormat string
-
-// ValuesDefaultsLoggingLevel logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.
-type ValuesDefaultsLoggingLevel string
-
-// ValuesDefaultsLoggingLogger logger name. currently logger must be `glg` or `zap`.
-type ValuesDefaultsLoggingLogger string
-
 // ValuesDefaultsObservabilityMetricsVersionInfoLabels defines model for Values.Defaults.Observability.Metrics.VersionInfoLabels.
 type ValuesDefaultsObservabilityMetricsVersionInfoLabels string
 
@@ -20054,15 +19758,6 @@ type ValuesDiscovererImagePullPolicy string
 
 // ValuesDiscovererKind deployment kind: Deployment or DaemonSet
 type ValuesDiscovererKind string
-
-// ValuesDiscovererLoggingFormat logging format. logging format must be `raw` or `json`
-type ValuesDiscovererLoggingFormat string
-
-// ValuesDiscovererLoggingLevel logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.
-type ValuesDiscovererLoggingLevel string
-
-// ValuesDiscovererLoggingLogger logger name. currently logger must be `glg` or `zap`.
-type ValuesDiscovererLoggingLogger string
 
 // ValuesDiscovererObservabilityMetricsVersionInfoLabels defines model for Values.Discoverer.Observability.Metrics.VersionInfoLabels.
 type ValuesDiscovererObservabilityMetricsVersionInfoLabels string
@@ -20136,15 +19831,6 @@ type ValuesGatewayFilterImagePullPolicy string
 // ValuesGatewayFilterKind deployment kind: Deployment or DaemonSet
 type ValuesGatewayFilterKind string
 
-// ValuesGatewayFilterLoggingFormat logging format. logging format must be `raw` or `json`
-type ValuesGatewayFilterLoggingFormat string
-
-// ValuesGatewayFilterLoggingLevel logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.
-type ValuesGatewayFilterLoggingLevel string
-
-// ValuesGatewayFilterLoggingLogger logger name. currently logger must be `glg` or `zap`.
-type ValuesGatewayFilterLoggingLogger string
-
 // ValuesGatewayFilterObservabilityMetricsVersionInfoLabels defines model for Values.Gateway.Filter.Observability.Metrics.VersionInfoLabels.
 type ValuesGatewayFilterObservabilityMetricsVersionInfoLabels string
 
@@ -20217,15 +19903,6 @@ type ValuesGatewayLbImagePullPolicy string
 // ValuesGatewayLbKind deployment kind: Deployment or DaemonSet
 type ValuesGatewayLbKind string
 
-// ValuesGatewayLbLoggingFormat logging format. logging format must be `raw` or `json`
-type ValuesGatewayLbLoggingFormat string
-
-// ValuesGatewayLbLoggingLevel logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.
-type ValuesGatewayLbLoggingLevel string
-
-// ValuesGatewayLbLoggingLogger logger name. currently logger must be `glg` or `zap`.
-type ValuesGatewayLbLoggingLogger string
-
 // ValuesGatewayLbObservabilityMetricsVersionInfoLabels defines model for Values.Gateway.Lb.Observability.Metrics.VersionInfoLabels.
 type ValuesGatewayLbObservabilityMetricsVersionInfoLabels string
 
@@ -20279,15 +19956,6 @@ type ValuesGatewayMirrorImagePullPolicy string
 
 // ValuesGatewayMirrorKind deployment kind: Deployment or DaemonSet
 type ValuesGatewayMirrorKind string
-
-// ValuesGatewayMirrorLoggingFormat logging format. logging format must be `raw` or `json`
-type ValuesGatewayMirrorLoggingFormat string
-
-// ValuesGatewayMirrorLoggingLevel logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.
-type ValuesGatewayMirrorLoggingLevel string
-
-// ValuesGatewayMirrorLoggingLogger logger name. currently logger must be `glg` or `zap`.
-type ValuesGatewayMirrorLoggingLogger string
 
 // ValuesGatewayMirrorObservabilityMetricsVersionInfoLabels defines model for Values.Gateway.Mirror.Observability.Metrics.VersionInfoLabels.
 type ValuesGatewayMirrorObservabilityMetricsVersionInfoLabels string
@@ -20514,15 +20182,6 @@ type ValuesManagerIndexIndexerDiscovererClientTlsClientAuth string
 // ValuesManagerIndexKind deployment kind: Deployment or DaemonSet
 type ValuesManagerIndexKind string
 
-// ValuesManagerIndexLoggingFormat logging format. logging format must be `raw` or `json`
-type ValuesManagerIndexLoggingFormat string
-
-// ValuesManagerIndexLoggingLevel logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.
-type ValuesManagerIndexLoggingLevel string
-
-// ValuesManagerIndexLoggingLogger logger name. currently logger must be `glg` or `zap`.
-type ValuesManagerIndexLoggingLogger string
-
 // ValuesManagerIndexObservabilityMetricsVersionInfoLabels defines model for Values.Manager.Index.Observability.Metrics.VersionInfoLabels.
 type ValuesManagerIndexObservabilityMetricsVersionInfoLabels string
 
@@ -20531,15 +20190,6 @@ type ValuesManagerIndexOperatorImagePullPolicy string
 
 // ValuesManagerIndexOperatorKind deployment kind: Deployment or DaemonSet
 type ValuesManagerIndexOperatorKind string
-
-// ValuesManagerIndexOperatorLoggingFormat logging format. logging format must be `raw` or `json`
-type ValuesManagerIndexOperatorLoggingFormat string
-
-// ValuesManagerIndexOperatorLoggingLevel logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.
-type ValuesManagerIndexOperatorLoggingLevel string
-
-// ValuesManagerIndexOperatorLoggingLogger logger name. currently logger must be `glg` or `zap`.
-type ValuesManagerIndexOperatorLoggingLogger string
 
 // ValuesManagerIndexOperatorObservabilityMetricsVersionInfoLabels defines model for Values.Manager.Index.Operator.Observability.Metrics.VersionInfoLabels.
 type ValuesManagerIndexOperatorObservabilityMetricsVersionInfoLabels string
