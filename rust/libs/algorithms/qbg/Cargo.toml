@@ -25,5 +25,6 @@ cxx = { version = "1.0.194", features = ["c++20"] }
 [build-dependencies]
 cxx-build = "1.0.194"
 miette = { version = "7.6.0", features = ["fancy"] }
+vald-build-utils = { path = "../../build-utils" }
 
 [dev-dependencies]

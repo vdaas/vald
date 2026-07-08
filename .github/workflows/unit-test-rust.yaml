@@ -43,7 +43,7 @@ jobs:
       contents: read
     uses: ./.github/workflows/_detect-ci-container.yaml
   test-rust-qbg:
-    timeout-minutes: 30
+    timeout-minutes: 60
     permissions:
       contents: read
     name: Run tests for Rust
@@ -61,6 +61,34 @@ jobs:
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
+      - name: Install protobuf compiler
+        run: |
+          apt-get update -y
+          apt-get install -y --no-install-recommends protobuf-compiler libprotobuf-dev
+      - name: Install NGT
+        run: |
+          NGT_VERSION=$(cat versions/NGT_VERSION)
+          NGT_TMPDIR=$(mktemp -d)
+          git clone --depth 1 --branch "v${NGT_VERSION}" https://github.com/NGT-labs/NGT "${NGT_TMPDIR}/NGT"
+          # NGT's CMakeLists.txt unconditionally enables GCC LTO (IPO) which produces
+          # LTO IR-only objects that rust-lld (LLVM) cannot link. Patch it to disable LTO
+          # so objects are compiled as regular ELF that rust-lld can link.
+          sed -i 's/set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)/set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)/' \
+            "${NGT_TMPDIR}/NGT/CMakeLists.txt"
+          cmake \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DBUILD_STATIC_EXECS=ON \
+            -DBUILD_TESTING=OFF \
+            -DNGT_LARGE_DATASET=ON \
+            -DCMAKE_INSTALL_PREFIX=/usr/local \
+            -B "${NGT_TMPDIR}/NGT/build" \
+            "${NGT_TMPDIR}/NGT"
+          make -C "${NGT_TMPDIR}/NGT/build" -j$(nproc)
+          make -C "${NGT_TMPDIR}/NGT/build" install
+          install -m 644 "${NGT_TMPDIR}/NGT/build/lib/NGT/libngt.a" /usr/local/lib/libngt.a
+          ldconfig
+          rm -rf "${NGT_TMPDIR}"
       - name: Run tests for qbg / gotestfmt
         run: |
           TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/rust/qbg

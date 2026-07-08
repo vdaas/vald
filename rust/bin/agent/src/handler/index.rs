@@ -33,8 +33,8 @@ impl agent_server::Agent for super::Agent {
         info!("Recieved a request from {:?}", request.remote_addr());
         let req = request.get_ref();
         let pool_size = req.pool_size;
-        let hostname = cargo::util::hostname()?;
-        let domain = hostname.to_str().unwrap();
+        let hostname = super::common::get_hostname();
+        let domain = hostname.as_str();
         let res = Empty {};
         {
             let mut s = self.s.write().await;
@@ -103,8 +103,8 @@ impl agent_server::Agent for super::Agent {
         request: tonic::Request<Empty>,
     ) -> std::result::Result<tonic::Response<Empty>, tonic::Status> {
         info!("Recieved a request from {:?}", request.remote_addr());
-        let hostname = cargo::util::hostname()?;
-        let domain = hostname.to_str().unwrap();
+        let hostname = super::common::get_hostname();
+        let domain = hostname.as_str();
         let res = Empty {};
         {
             let mut s = self.s.write().await;

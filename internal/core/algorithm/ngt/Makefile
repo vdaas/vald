@@ -14,12 +14,10 @@
 # limitations under the License.
 #
 
+GO_TEST_ENV = CC="$(CC)" CXX="$(CXX)" AR="$(AR)" NM="$(NM)" RANLIB="$(RANLIB)" GOARCH=$(GOARCH) GOOS=$(GOOS)
+
 bench:
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	go test -count=5 -run=NONE -bench . -benchmem
+	$(GO_TEST_ENV) go test -count=5 -run=NONE -bench . -benchmem
 
 bench-lite:
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	go test -count=1 -run=NONE -bench . -benchmem
+	$(GO_TEST_ENV) go test -count=1 -run=NONE -bench . -benchmem

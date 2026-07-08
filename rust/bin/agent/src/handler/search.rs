@@ -36,8 +36,8 @@ async fn search(
         Some(cfg) => cfg,
         None => return Err(Status::invalid_argument("Missing configuration in request")),
     };
-    let hostname = cargo::util::hostname()?;
-    let domain = hostname.to_str().unwrap();
+    let hostname = super::common::get_hostname();
+    let domain = hostname.as_str();
     {
         let s = s.read().await;
         if request.vector.len() != s.get_dimension_size() {
@@ -263,8 +263,8 @@ impl search_server::Search for super::Agent {
     ) -> std::result::Result<tonic::Response<search::Responses>, tonic::Status> {
         info!("Recieved a request from {:?}", request.remote_addr());
         let mreq = request.get_ref();
-        let hostname = cargo::util::hostname()?;
-        let _domain = hostname.to_str().unwrap();
+        let hostname = super::common::get_hostname();
+        let _domain = hostname.as_str();
         let mut res = search::Responses { responses: vec![] };
         for req in mreq.requests.clone() {
             let response = self.search(tonic::Request::new(req)).await?;

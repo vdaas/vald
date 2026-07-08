@@ -22,6 +22,18 @@ use tokio_stream::wrappers::ReceiverStream;
 use tonic::{Request, Response, Status, Streaming};
 use tonic_types::{ErrorDetails, FieldViolation};
 
+pub fn get_hostname() -> String {
+    std::env::var("HOSTNAME")
+        .ok()
+        .filter(|h| !h.is_empty())
+        .or_else(|| {
+            std::fs::read_to_string("/etc/hostname")
+                .ok()
+                .map(|s| s.trim().to_owned())
+        })
+        .unwrap_or_else(|| "unknown".to_string())
+}
+
 #[macro_export]
 macro_rules! stream_type {
     ($t:ty) => {
@@ -112,6 +124,31 @@ mod tests {
     use crate::middleware::{AccessLogMiddlewareLayer, MetricMiddlewareLayer};
 
     use super::*;
+
+    #[test]
+    fn test_get_hostname_from_env() {
+        // Safety: single-threaded test, no concurrent env access
+        unsafe { std::env::set_var("HOSTNAME", "test-host") };
+        assert_eq!(get_hostname(), "test-host");
+        unsafe { std::env::remove_var("HOSTNAME") };
+    }
+
+    #[test]
+    fn test_get_hostname_empty_env_fallback() {
+        // Safety: single-threaded test, no concurrent env access
+        unsafe { std::env::set_var("HOSTNAME", "") };
+        let h = get_hostname();
+        assert!(!h.is_empty());
+        unsafe { std::env::remove_var("HOSTNAME") };
+    }
+
+    #[test]
+    fn test_get_hostname_no_env_returns_nonempty() {
+        // Safety: single-threaded test, no concurrent env access
+        unsafe { std::env::remove_var("HOSTNAME") };
+        let h = get_hostname();
+        assert!(!h.is_empty());
+    }
 
     use bytes::{Buf, BufMut, Bytes, BytesMut};
     use prost::Message;

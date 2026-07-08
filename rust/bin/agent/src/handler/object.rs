@@ -37,8 +37,8 @@ async fn get_object(
         None => return Err(Status::invalid_argument("Missing ID in request")),
     };
     let uuid = id.id;
-    let hostname = cargo::util::hostname()?;
-    let domain = hostname.to_str().unwrap();
+    let hostname = super::common::get_hostname();
+    let domain = hostname.as_str();
     {
         let s = s.read().await;
         if uuid.len() == 0 {

@@ -13,6 +13,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+fn gcc_lib_dir() -> Option<String> {
+    let arch = std::env::var("CARGO_CFG_TARGET_ARCH").unwrap_or_default();
+    let triple = match arch.as_str() {
+        "x86_64" => "x86_64-linux-gnu",
+        "aarch64" => "aarch64-linux-gnu",
+        "arm" => "arm-linux-gnueabihf",
+        _ => return None,
+    };
+    for ver in &["15", "14", "13", "12", "11", "10"] {
+        let path = format!("/usr/lib/gcc/{}/{}", triple, ver);
+        if std::path::Path::new(&path).exists() {
+            return Some(path);
+        }
+    }
+    None
+}
+
 fn main() -> miette::Result<()> {
     let current_dir = std::env::current_dir().unwrap();
     println!("cargo:rustc-link-search=native={}", current_dir.display());
@@ -26,10 +43,29 @@ fn main() -> miette::Result<()> {
         .compile("ngt-rs");
 
     println!("cargo:rustc-link-search=native=/usr/local/lib");
-    println!("cargo:rustc-link-lib=static=ngt");
-    println!("cargo:rustc-link-lib=blas");
-    println!("cargo:rustc-link-lib=lapack");
-    println!("cargo:rustc-link-lib=dylib=gomp");
+    println!("cargo:rustc-link-search=native=/usr/lib");
+
+    let arch = std::env::var("CARGO_CFG_TARGET_ARCH").unwrap_or_default();
+    if arch == "x86_64" {
+        println!("cargo:rustc-link-search=native=/usr/lib/x86_64-linux-gnu");
+    } else if arch == "aarch64" {
+        println!("cargo:rustc-link-search=native=/usr/lib/aarch64-linux-gnu");
+    }
+
+    if let Some(gcc_dir) = gcc_lib_dir() {
+        println!("cargo:rustc-link-search=native={}", gcc_dir);
+    }
+
+    println!("cargo:rustc-link-lib=static:+whole-archive=ngt");
+    println!("cargo:rustc-link-lib=static=blas");
+    println!("cargo:rustc-link-lib=static=lapack");
+    println!("cargo:rustc-link-lib=static=gfortran");
+    // libquadmath is only available on x86/x86_64
+    if arch == "x86_64" {
+        println!("cargo:rustc-link-lib=static=quadmath");
+    }
+    println!("cargo:rustc-link-lib=static=z");
+    vald_build_utils::link_openmp("/usr/local/lib/libngt.a");
     println!("cargo:rerun-if-changed=src/*");
 
     Ok(())

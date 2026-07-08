@@ -1,6 +1,30 @@
 module github.com/vdaas/vald
 
-go 1.26.1
+go 1.26.4
+
+tool (
+	github.com/bufbuild/buf/cmd/buf
+	github.com/cockroachdb/crlfmt
+	github.com/cweill/gotests/gotests
+	github.com/derailed/k9s
+	github.com/fatih/gomodifytags
+	github.com/go-delve/delve/cmd/dlv
+	github.com/google/yamlfmt/cmd/yamlfmt
+	github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt
+	github.com/josharian/impl
+	github.com/mfridman/tparse
+	github.com/momotaro98/strictgoimports/cmd/strictgoimports
+	github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
+	github.com/rhysd/actionlint/cmd/actionlint
+	github.com/segmentio/golines
+	github.com/stern/stern
+	github.com/suzuki-shunsuke/ghalint/cmd/ghalint
+	github.com/suzuki-shunsuke/ghatm/cmd/ghatm
+	github.com/suzuki-shunsuke/pinact/cmd/pinact
+	golang.org/x/tools/cmd/goimports
+	honnef.co/go/tools/cmd/staticcheck
+	mvdan.cc/gofumpt
+)
 
 replace (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go => buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go upgrade

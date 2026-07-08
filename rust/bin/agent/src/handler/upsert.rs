@@ -41,8 +41,8 @@ async fn upsert(
         Some(cfg) => cfg,
         None => return Err(Status::invalid_argument("Missing configuration in request")),
     };
-    let hostname = cargo::util::hostname()?;
-    let domain = hostname.to_str().unwrap();
+    let hostname = super::common::get_hostname();
+    let domain = hostname.as_str();
     {
         let vec = match request.vector.clone() {
             Some(v) => v,
@@ -231,8 +231,8 @@ impl upsert_server::Upsert for super::Agent {
     ) -> std::result::Result<tonic::Response<object::Locations>, tonic::Status> {
         info!("Recieved a request from {:?}", request.remote_addr());
         let mreq = request.get_ref();
-        let hostname = cargo::util::hostname()?;
-        let domain = hostname.to_str().unwrap();
+        let hostname = super::common::get_hostname();
+        let domain = hostname.as_str();
         {
             let s = self.s.read().await;
             let mut ireqs = insert::MultiRequest { requests: vec![] };

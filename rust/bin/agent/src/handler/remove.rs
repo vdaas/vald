@@ -44,8 +44,8 @@ async fn remove(
         None => return Err(Status::invalid_argument("Missing ID in request")),
     };
     let uuid = id.id;
-    let hostname = cargo::util::hostname()?;
-    let domain = hostname.to_str().unwrap();
+    let hostname = super::common::get_hostname();
+    let domain = hostname.as_str();
     {
         let mut s = s.write().await;
         if uuid.len() == 0 {
@@ -232,8 +232,8 @@ impl remove_server::Remove for super::Agent {
     ) -> std::result::Result<tonic::Response<object::Locations>, tonic::Status> {
         info!("Recieved a request from {:?}", request.remote_addr());
         let mreq = request.get_ref();
-        let hostname = cargo::util::hostname()?;
-        let domain = hostname.to_str().unwrap();
+        let hostname = super::common::get_hostname();
+        let domain = hostname.as_str();
         let uuids: Vec<String> = mreq
             .requests
             .clone()

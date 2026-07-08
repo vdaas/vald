@@ -78,6 +78,7 @@ RUN --mount=type=bind,target=.,rw \
     libprotobuf-dev \
     clang \
     lld \
+    llvm \
     && ldconfig \
     && echo "${LANG} UTF-8" > /etc/locale.gen \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
