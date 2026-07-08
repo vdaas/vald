@@ -1,4 +1,4 @@
-package mvaldrelease
+package valdoperatorrelease
 
 import (
 	builder "github.com/vdaas/vald/hack/vald-operator/internal/pkg/lifecycle/builder/vald"
@@ -13,7 +13,7 @@ import (
 )
 
 func (d *Domain) ConditionWaitForCreateVrs(k8sClient client.Client, cfg *config.Config, capability builder.NodePoolCapability) *lifecycle.LifeCycle {
-	cr := d.Mvaldrelease
+	cr := d.ValdOperatorRelease
 	lc := &lifecycle.LifeCycle{}
 	lc.Condition = lifecycle.Condition{
 		Type:    lifecycle.ConditionWaitForCreateVrs,

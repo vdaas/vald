@@ -26,7 +26,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/equality"
 
-	"github.com/vdaas/vald/hack/vald-operator/internal/pkg/domain/mvaldrelease"
+	"github.com/vdaas/vald/hack/vald-operator/internal/pkg/domain/valdoperatorrelease"
 	"github.com/vdaas/vald/hack/vald-operator/internal/pkg/lifecycle"
 	builder "github.com/vdaas/vald/hack/vald-operator/internal/pkg/lifecycle/builder/vald"
 	"github.com/vdaas/vald/hack/vald-operator/internal/pkg/util"
@@ -41,20 +41,20 @@ import (
 	controllerv1 "github.com/vdaas/vald/hack/vald-operator/api/v1"
 )
 
-// MvaldreleaseReconciler reconciles a Mvaldrelease object. The reconciler is
+// ValdOperatorReleaseReconciler reconciles a ValdOperatorRelease object. The reconciler is
 // the orchestrator: it fetches the CR, builds the Domain and lifecycle flow,
 // and delegates the actual write side (CreateOrUpdate / prune / key) to
 // ResourceSyncer.
-type MvaldreleaseReconciler struct {
+type ValdOperatorReleaseReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 	Config *config.Config
 	Syncer *ResourceSyncer
 }
 
-// +kubebuilder:rbac:groups=vald.vdaas.org,resources=mvaldreleases,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=vald.vdaas.org,resources=mvaldreleases/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=vald.vdaas.org,resources=mvaldreleases/finalizers,verbs=update
+// +kubebuilder:rbac:groups=vald.vdaas.org,resources=valdoperatorreleases,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=vald.vdaas.org,resources=valdoperatorreleases/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=vald.vdaas.org,resources=valdoperatorreleases/finalizers,verbs=update
 
 // +kubebuilder:rbac:groups=vald.vdaas.org,resources=valdreleases,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=vald.vdaas.org,resources=valdreleases/status,verbs=get;update;patch
@@ -62,20 +62,20 @@ type MvaldreleaseReconciler struct {
 
 // +kubebuilder:rbac:groups="",resources=nodes,verbs=get;list;watch
 
-// Reconcile implements the main Kubernetes reconciliation loop for Mvaldrelease.
+// Reconcile implements the main Kubernetes reconciliation loop for ValdOperatorRelease.
 // It fetches the object and delegates to reconcileRoutine.
-func (r *MvaldreleaseReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *ValdOperatorReleaseReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := logf.FromContext(ctx)
 
-	mvrs := &controllerv1.Mvaldrelease{}
-	logger.Info("Reconcile", "type", "Mvaldrelease")
+	vor := &controllerv1.ValdOperatorRelease{}
+	logger.Info("Reconcile", "type", "ValdOperatorRelease")
 
-	if err := r.Get(ctx, req.NamespacedName, mvrs); err != nil {
-		logger.Info("Notice: unable to fetch", "type", "Mvaldrelease", "name", req.Name, "namespace", req.Namespace, "error", err.Error())
+	if err := r.Get(ctx, req.NamespacedName, vor); err != nil {
+		logger.Info("Notice: unable to fetch", "type", "ValdOperatorRelease", "name", req.Name, "namespace", req.Namespace, "error", err.Error())
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
-	logger.Info("Fetched", "type", "Mvaldrelease", "name", mvrs.Name, "namespace", mvrs.Namespace)
-	d := &mvaldrelease.Domain{Mvaldrelease: mvrs}
+	logger.Info("Fetched", "type", "ValdOperatorRelease", "name", vor.Name, "namespace", vor.Namespace)
+	d := &valdoperatorrelease.Domain{ValdOperatorRelease: vor}
 
 	if err := r.reconcileRoutine(ctx, d); err != nil {
 		logger.Error(err, err.Error())
@@ -85,15 +85,15 @@ func (r *MvaldreleaseReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	return ctrl.Result{}, nil
 }
 
-// reconcileRoutine reconciles Mvaldrelease by iterating all accumulated conditions on every
+// reconcileRoutine reconciles ValdOperatorRelease by iterating all accumulated conditions on every
 // reconcile. This ensures self-healing: if a previously-True condition breaks (e.g. a VRS
 // resource is deleted or the spec is modified), it is detected and processing restarts from
 // that point.
-func (r *MvaldreleaseReconciler) reconcileRoutine(ctx context.Context, d *mvaldrelease.Domain) (err error) {
+func (r *ValdOperatorReleaseReconciler) reconcileRoutine(ctx context.Context, d *valdoperatorrelease.Domain) (err error) {
 	originalStatus := d.Status.DeepCopy()
 	defer func() {
 		if !equality.Semantic.DeepEqual(originalStatus, d.Status) {
-			if uerr := r.Status().Update(ctx, d.Mvaldrelease); uerr != nil {
+			if uerr := r.Status().Update(ctx, d.ValdOperatorRelease); uerr != nil {
 				err = uerr
 			}
 		}
@@ -150,9 +150,9 @@ func (r *MvaldreleaseReconciler) reconcileRoutine(ctx context.Context, d *mvaldr
 	return nil
 }
 
-func (r *MvaldreleaseReconciler) reconcileCondition(ctx context.Context, cf *lifecycle.LifeCycle, d *mvaldrelease.Domain) error {
+func (r *ValdOperatorReleaseReconciler) reconcileCondition(ctx context.Context, cf *lifecycle.LifeCycle, d *valdoperatorrelease.Domain) error {
 	if cf.Builder != nil {
-		ope, err := r.Syncer.Sync(ctx, cf.Builder, d.Mvaldrelease)
+		ope, err := r.Syncer.Sync(ctx, cf.Builder, d.ValdOperatorRelease)
 		if err != nil {
 			err = fmt.Errorf("failed to sync resources for condition %s: %w", cf.Condition.Type, err)
 			util.UpdateStatus(&d.Status.Conditions, cf.Condition.MakeCondition(desired.Failed(err)))
@@ -175,13 +175,13 @@ func (r *MvaldreleaseReconciler) reconcileCondition(ctx context.Context, cf *lif
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *MvaldreleaseReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *ValdOperatorReleaseReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	if r.Syncer == nil {
 		r.Syncer = NewResourceSyncer(r.Client, r.Scheme)
 	}
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&controllerv1.Mvaldrelease{}).
+		For(&controllerv1.ValdOperatorRelease{}).
 		Owns(&valdrelease.ValdRelease{}).
-		Named("mvaldrelease").
+		Named("valdoperatorrelease").
 		Complete(r)
 }

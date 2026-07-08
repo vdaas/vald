@@ -16,14 +16,14 @@ external client.
 | Package | Under test |
 |---|---|
 | `internal/pkg/lifecycle` | `MakeCondition`, `GetIndex`, `GetNext` |
-| `internal/pkg/domain/mvaldrelease` | `ConditionWaitForClusterCreate` (Check branches), `ResolveAgentNodePool` |
+| `internal/pkg/domain/valdoperatorrelease` | `ConditionWaitForClusterCreate` (Check branches), `ResolveAgentNodePool` |
 | `api/v1` | `GetNodePool`, `GetResourceList` |
 | `internal/pkg/api/valdrelease` | `SetRelationalResources` and per-component resource methods |
 | `internal/pkg/lifecycle/builder/vald` | `validate()`, the component builders, and `Build()` (golden file) |
 
 ### Integration tests (Ginkgo/Gomega + envtest)
 
-`internal/controller/mvaldrelease_controller_test.go` and `resource_syncer_test.go` stand
+`internal/controller/valdoperatorrelease_controller_test.go` and `resource_syncer_test.go` stand
 up a real API server via `envtest` and drive the full reconcile loop. Behaviors that
 require a Kubernetes client — phase transitions, status updates, CreateOrUpdate/prune —
 are verified here.

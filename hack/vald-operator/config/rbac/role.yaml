@@ -15,7 +15,7 @@ rules:
 - apiGroups:
   - vald.vdaas.org
   resources:
-  - mvaldreleases
+  - valdoperatorreleases
   - valdreleases
   verbs:
   - create
@@ -28,14 +28,14 @@ rules:
 - apiGroups:
   - vald.vdaas.org
   resources:
-  - mvaldreleases/finalizers
+  - valdoperatorreleases/finalizers
   - valdreleases/finalizers
   verbs:
   - update
 - apiGroups:
   - vald.vdaas.org
   resources:
-  - mvaldreleases/status
+  - valdoperatorreleases/status
   - valdreleases/status
   verbs:
   - get

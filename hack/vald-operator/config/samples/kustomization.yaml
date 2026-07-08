@@ -1,4 +1,4 @@
 ## Append samples of your project ##
 resources:
-- controller_v1_mvaldrelease.yaml
+- controller_v1_valdoperatorrelease.yaml
 # +kubebuilder:scaffold:manifestskustomizesamples

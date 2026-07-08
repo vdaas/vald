@@ -3,7 +3,7 @@
 ## Description
 
 A Kubernetes controller that manages [Vald](https://vald.vdaas.org/) cluster lifecycle via custom resources.
-It watches `MvaldRelease` (MVRS) objects and reconciles the desired state — provisioning worker-node clusters,
+It watches `ValdOperatorRelease` (VOR) objects and reconciles the desired state — provisioning worker-node clusters,
 deploying [vald-helm-operator](https://github.com/vdaas/vald-helm-operator), and applying `ValdRelease` manifests.
 
 ## Getting Started
@@ -18,7 +18,7 @@ deploying [vald-helm-operator](https://github.com/vdaas/vald-helm-operator), and
 **Build and push your image to the location specified by `IMG`:**
 
 ```sh
-make docker-build docker-push IMG=<some-registry>/mvaldrelease:tag
+make docker-build docker-push IMG=<some-registry>/valdoperatorrelease:tag
 ```
 
 **NOTE:** This image ought to be published in the personal registry you specified.
@@ -34,7 +34,7 @@ make install
 **Deploy the Manager to the cluster with the image specified by `IMG`:**
 
 ```sh
-make deploy IMG=<some-registry>/mvaldrelease:tag
+make deploy IMG=<some-registry>/valdoperatorrelease:tag
 ```
 
 > **NOTE**: If you encounter RBAC errors, you may need to grant yourself cluster-admin
@@ -77,7 +77,7 @@ Following the options to release and provide this solution to the users.
 1. Build the installer for the image built and published in the registry:
 
 ```sh
-make build-installer IMG=<some-registry>/mvaldrelease:tag
+make build-installer IMG=<some-registry>/valdoperatorrelease:tag
 ```
 
 **NOTE:** The makefile target mentioned above generates an 'install.yaml'
@@ -91,7 +91,7 @@ Users can just run 'kubectl apply -f <URL for YAML BUNDLE>' to install
 the project, i.e.:
 
 ```sh
-kubectl apply -f https://raw.githubusercontent.com/<org>/mvaldrelease/<tag or branch>/dist/install.yaml
+kubectl apply -f https://raw.githubusercontent.com/<org>/valdoperatorrelease/<tag or branch>/dist/install.yaml
 ```
 
 ### By providing a Helm Chart

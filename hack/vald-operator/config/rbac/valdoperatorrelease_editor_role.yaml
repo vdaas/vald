@@ -1,4 +1,4 @@
-# This rule is not used by the project mvaldrelease itself.
+# This rule is not used by the project valdoperatorrelease itself.
 # It is provided to allow the cluster admin to help manage permissions for users.
 #
 # Grants permissions to create, update, and delete resources within the vald.vdaas.org.
@@ -9,14 +9,14 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
-    app.kubernetes.io/name: mvaldrelease
+    app.kubernetes.io/name: valdoperatorrelease
     app.kubernetes.io/managed-by: kustomize
-  name: mvaldrelease-editor-role
+  name: valdoperatorrelease-editor-role
 rules:
 - apiGroups:
   - vald.vdaas.org
   resources:
-  - mvaldreleases
+  - valdoperatorreleases
   verbs:
   - create
   - delete
@@ -28,6 +28,6 @@ rules:
 - apiGroups:
   - vald.vdaas.org
   resources:
-  - mvaldreleases/status
+  - valdoperatorreleases/status
   verbs:
   - get

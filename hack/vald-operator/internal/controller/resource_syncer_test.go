@@ -36,8 +36,8 @@ func newSchemeForSyncerTests(t *testing.T) *runtime.Scheme {
 	return scheme
 }
 
-func newOwner() *controllerv1.Mvaldrelease {
-	return &controllerv1.Mvaldrelease{
+func newOwner() *controllerv1.ValdOperatorRelease {
+	return &controllerv1.ValdOperatorRelease{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:       "owner",
 			Namespace:  "default",
@@ -110,7 +110,7 @@ func TestResourceSyncer_Sync_PrunesOrphans(t *testing.T) {
 			OwnerReferences: []metav1.OwnerReference{
 				{
 					APIVersion:         controllerv1.GroupVersion.String(),
-					Kind:               "Mvaldrelease",
+					Kind:               "ValdOperatorRelease",
 					Name:               owner.Name,
 					UID:                owner.UID,
 					Controller:         boolPtr(true),

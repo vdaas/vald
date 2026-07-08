@@ -4,7 +4,7 @@ import "github.com/vdaas/vald/hack/vald-operator/internal/infrastructure/env"
 
 var (
 	InternalHostDomain                = env.GetEnv("INTERNAL_HOST_DOMAIN", "")
-	DefaultVrsPath                    = env.GetEnv("DEFAULT_VRS_PATH", "/opt/mvaldrelease/config/vrs.yaml")
+	DefaultVrsPath                    = env.GetEnv("DEFAULT_VRS_PATH", "/opt/valdoperatorrelease/config/vrs.yaml")
 	AgentPodsPerNode                  = env.GetEnvInt("AGENT_PODS_PER_NODE", "2")
 	RequireNodePoolMatch              = env.GetEnvBool("REQUIRE_NODEPOOL_MATCH", "false")
 	NodePoolLabelPrefix               = env.GetEnv("NODEPOOL_LABEL_PREFIX", "")

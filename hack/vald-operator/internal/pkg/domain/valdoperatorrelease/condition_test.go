@@ -1,4 +1,4 @@
-package mvaldrelease
+package valdoperatorrelease
 
 import (
 	"context"
@@ -10,11 +10,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func newDomainWithInfra(infras []v1.MvaldreleaseInfra) *Domain {
+func newDomainWithInfra(infras []v1.ValdOperatorReleaseInfra) *Domain {
 	return &Domain{
-		Mvaldrelease: &v1.Mvaldrelease{
+		ValdOperatorRelease: &v1.ValdOperatorRelease{
 			ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: "default"},
-			Spec: v1.MvaldreleaseSpec{
+			Spec: v1.ValdOperatorReleaseSpec{
 				Infrastructure: infras,
 			},
 		},
@@ -36,7 +36,7 @@ func TestConditionWaitForClusterCreate(t *testing.T) {
 		},
 		{
 			name: "infra with no clusters",
-			domain: newDomainWithInfra([]v1.MvaldreleaseInfra{
+			domain: newDomainWithInfra([]v1.ValdOperatorReleaseInfra{
 				{Role: "green", Clusters: []v1.DestClusters{}},
 			}),
 			wantStatus: metav1.ConditionFalse,
@@ -44,7 +44,7 @@ func TestConditionWaitForClusterCreate(t *testing.T) {
 		},
 		{
 			name: "cluster with empty Id",
-			domain: newDomainWithInfra([]v1.MvaldreleaseInfra{
+			domain: newDomainWithInfra([]v1.ValdOperatorReleaseInfra{
 				{Role: "green", Clusters: []v1.DestClusters{{ID: "", Name: "cluster-a"}}},
 			}),
 			wantStatus: metav1.ConditionUnknown,
@@ -52,7 +52,7 @@ func TestConditionWaitForClusterCreate(t *testing.T) {
 		},
 		{
 			name: "cluster with empty Name",
-			domain: newDomainWithInfra([]v1.MvaldreleaseInfra{
+			domain: newDomainWithInfra([]v1.ValdOperatorReleaseInfra{
 				{Role: "green", Clusters: []v1.DestClusters{{ID: "abc-123", Name: ""}}},
 			}),
 			wantStatus: metav1.ConditionUnknown,
@@ -60,7 +60,7 @@ func TestConditionWaitForClusterCreate(t *testing.T) {
 		},
 		{
 			name: "valid clusters",
-			domain: newDomainWithInfra([]v1.MvaldreleaseInfra{
+			domain: newDomainWithInfra([]v1.ValdOperatorReleaseInfra{
 				{Role: "green", Clusters: []v1.DestClusters{{ID: "abc-123", Name: "cluster-a"}}},
 			}),
 			wantStatus: metav1.ConditionTrue,
@@ -83,7 +83,7 @@ func TestConditionWaitForClusterCreate(t *testing.T) {
 
 func TestConditionWaitForClusterCreate_PendingIsNotFailed(t *testing.T) {
 	// cluster.ID == "" means the external system is still creating the cluster. Should be Pending, not Failed.
-	domain := newDomainWithInfra([]v1.MvaldreleaseInfra{
+	domain := newDomainWithInfra([]v1.ValdOperatorReleaseInfra{
 		{Role: "green", Clusters: []v1.DestClusters{{ID: "", Name: "cluster-a"}}},
 	})
 	lc := domain.ConditionWaitForClusterCreate()

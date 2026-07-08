@@ -2,7 +2,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   labels:
-    app.kubernetes.io/name: mvaldrelease
+    app.kubernetes.io/name: valdoperatorrelease
     app.kubernetes.io/managed-by: kustomize
   name: manager-rolebinding
 roleRef:

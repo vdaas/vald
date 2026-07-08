@@ -1,4 +1,4 @@
-package mvaldrelease
+package valdoperatorrelease
 
 import (
 	v1 "github.com/vdaas/vald/hack/vald-operator/api/v1"
@@ -13,7 +13,7 @@ var _ builder.DomainRules = (*Domain)(nil)
 // of a single Infrastructure entry, applying the general-pool fallback:
 // when no dedicated agent pool exists (Replicas == 0), the spec falls
 // back to the general pool.
-func (d *Domain) ResolveAgentNodePool(infra v1.MvaldreleaseInfra) builder.AgentNodePoolSpec {
+func (d *Domain) ResolveAgentNodePool(infra v1.ValdOperatorReleaseInfra) builder.AgentNodePoolSpec {
 	gn := infra.NodePools.GetNodePool(v1.NodePoolTypeGeneral)
 	an := infra.NodePools.GetNodePool(v1.NodePoolTypeValdAgent)
 	if an == nil || an.Replicas == 0 {

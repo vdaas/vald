@@ -11,14 +11,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func minimalMvrs() *v1.Mvaldrelease {
-	return &v1.Mvaldrelease{
+func minimalVor() *v1.ValdOperatorRelease {
+	return &v1.ValdOperatorRelease{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: "test-ns",
 		},
-		Spec: v1.MvaldreleaseSpec{
-			Infrastructure: []v1.MvaldreleaseInfra{
+		Spec: v1.ValdOperatorReleaseSpec{
+			Infrastructure: []v1.ValdOperatorReleaseInfra{
 				{
 					Role:   "green",
 					Active: true,
@@ -54,16 +54,16 @@ func initConfig(t *testing.T) *config.Config {
 	return cfg
 }
 
-func newTestBuilder(cr *v1.Mvaldrelease, cfg *config.Config) *VrsBuilder {
+func newTestBuilder(cr *v1.ValdOperatorRelease, cfg *config.Config) *VrsBuilder {
 	return NewVrsBuilder(cr, cfg, AlwaysAvailable(), stubRules{})
 }
 
 // stubRules mirrors the production Domain rules so builder tests stay
-// independent of the domain/mvaldrelease package (which would otherwise
+// independent of the domain/valdoperatorrelease package (which would otherwise
 // introduce an import cycle). Keep this in sync with Domain.
 type stubRules struct{}
 
-func (stubRules) ResolveAgentNodePool(infra v1.MvaldreleaseInfra) AgentNodePoolSpec {
+func (stubRules) ResolveAgentNodePool(infra v1.ValdOperatorReleaseInfra) AgentNodePoolSpec {
 	gn := infra.NodePools.GetNodePool(v1.NodePoolTypeGeneral)
 	an := infra.NodePools.GetNodePool(v1.NodePoolTypeValdAgent)
 	if an == nil || an.Replicas == 0 {
@@ -87,7 +87,7 @@ func (stubRules) AgentPvSize(memoryBytes int64, pvBufferRatio float64, pvMinSize
 
 func TestBuildLb_IngressEnabled(t *testing.T) {
 	cfg := initConfig(t)
-	cr := minimalMvrs()
+	cr := minimalVor()
 	cr.Spec.VectorEngine.Vald.Gateway.Ingress = &v1.GatewayIngress{
 		Enabled: true,
 		Host:    "foo.example.com",
@@ -100,7 +100,7 @@ func TestBuildLb_IngressEnabled(t *testing.T) {
 
 func TestBuildLb_IngressDisabledWhenNil(t *testing.T) {
 	cfg := initConfig(t)
-	cr := minimalMvrs()
+	cr := minimalVor()
 	lb := newTestBuilder(cr, cfg).buildLb()
 
 	assert.False(t, lb.Ingress.Enabled)
@@ -109,7 +109,7 @@ func TestBuildLb_IngressDisabledWhenNil(t *testing.T) {
 
 func TestBuildLb_ServiceTypeDefault(t *testing.T) {
 	cfg := initConfig(t)
-	cr := minimalMvrs()
+	cr := minimalVor()
 	lb := newTestBuilder(cr, cfg).buildLb()
 
 	assert.Equal(t, corev1.ServiceTypeNodePort, lb.ServiceType)
@@ -117,7 +117,7 @@ func TestBuildLb_ServiceTypeDefault(t *testing.T) {
 
 func TestBuildLb_ServiceTypeLoadBalancer(t *testing.T) {
 	cfg := initConfig(t)
-	cr := minimalMvrs()
+	cr := minimalVor()
 	cr.Spec.VectorEngine.Vald.Gateway.ServiceType = "LoadBalancer"
 	lb := newTestBuilder(cr, cfg).buildLb()
 
@@ -126,7 +126,7 @@ func TestBuildLb_ServiceTypeLoadBalancer(t *testing.T) {
 
 func TestBuildLb_ServiceTypeClusterIP(t *testing.T) {
 	cfg := initConfig(t)
-	cr := minimalMvrs()
+	cr := minimalVor()
 	cr.Spec.VectorEngine.Vald.Gateway.ServiceType = "ClusterIP"
 	lb := newTestBuilder(cr, cfg).buildLb()
 

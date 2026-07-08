@@ -1,4 +1,4 @@
-package mvaldrelease
+package valdoperatorrelease
 
 import (
 	"testing"
@@ -19,9 +19,9 @@ func testConfig() *config.Config {
 
 func newDomainWithPhase(phase string) *Domain {
 	return &Domain{
-		Mvaldrelease: &v1.Mvaldrelease{
+		ValdOperatorRelease: &v1.ValdOperatorRelease{
 			ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: "default"},
-			Status: v1.MvaldreleaseStatus{
+			Status: v1.ValdOperatorReleaseStatus{
 				Phase: phase,
 			},
 		},

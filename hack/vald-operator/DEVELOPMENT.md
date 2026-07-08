@@ -1,6 +1,6 @@
 # Development Guide
 
-This directory contains the controller only: it reconciles `Mvaldrelease` resources and
+This directory contains the controller only: it reconciles `ValdOperatorRelease` resources and
 generates `ValdRelease` (VRS) objects. Provisioning a target cluster and installing the
 Vald Helm Operator (VHO) are out of scope.
 
@@ -14,7 +14,7 @@ Vald Helm Operator (VHO) are out of scope.
 
 ## What this controller does
 
-It reconciles `Mvaldrelease` (`mvrs`, `vald.vdaas.org/v1`) resources and generates
+It reconciles `ValdOperatorRelease` (`vor`, `vald.vdaas.org/v1`) resources and generates
 `ValdRelease` (VRS) objects. See [explain.md](./explain.md) for the design, the CRD spec,
 the reconcile lifecycle, and the full environment-variable reference.
 
@@ -32,11 +32,11 @@ make manifests generate
 make lint
 
 # Build and push the controller image
-make docker-build docker-push IMG=<registry>/mvaldrelease:tag
+make docker-build docker-push IMG=<registry>/valdoperatorrelease:tag
 
 # Install CRDs and deploy the controller to the current kube-context
 make install
-make deploy IMG=<registry>/mvaldrelease:tag
+make deploy IMG=<registry>/valdoperatorrelease:tag
 ```
 
 Run `make help` for the full list of targets.
@@ -49,7 +49,7 @@ Run `make help` for the full list of targets.
 
 Tracked in the repository's issue tracker. Highlights:
 
-- Rename the `mvrs` / `mvaldrelease` identifiers for OSS.
+- Rename the `vor` / `valdoperatorrelease` identifiers for OSS.
 - Reuse `vdaas/vald` packages (types, logging, errors, k8s) instead of the current
   self-contained implementations.
 - Relicense file headers to the vald header format.
