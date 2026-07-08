@@ -327,9 +327,9 @@ docker/build/dev-container:
 	IMAGE=$(DEV_CONTAINER_IMAGE) \
 	docker/build/image
 
-.PHONY: docker/name/operator/helm
+.PHONY: docker/name/operator/helm docker/name/helm-operator
 ## print helm-operator image name
-docker/name/operator/helm:
+docker/name/operator/helm docker/name/helm-operator:
 	@echo "$(ORG)/$(HELM_OPERATOR_IMAGE)"
 
 .PHONY: docker/build/operator/helm
@@ -453,9 +453,9 @@ docker/build/benchmark-job:
 	DOCKER_OPTS="$${DOCKER_OPTS:+$${DOCKER_OPTS}} --build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF5_VERSION=$(HDF5_VERSION)" \
 	docker/build/image
 
-.PHONY: docker/name/operator/benchmark
+.PHONY: docker/name/operator/benchmark docker/name/benchmark-operator
 ## print benchmark-operator image name
-docker/name/operator/benchmark:
+docker/name/operator/benchmark docker/name/benchmark-operator:
 	@echo "$(ORG)/$(BENCHMARK_OPERATOR_IMAGE)"
 
 .PHONY: docker/build/operator/benchmark
