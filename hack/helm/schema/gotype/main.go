@@ -39,14 +39,37 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
+// defaultOutFile is appended when -out points to a directory (no file name).
+const defaultOutFile = "values.gen.go"
+
 func main() {
-	schemaPath := flag.String("schema", "charts/vald/values.schema.json", "path to the input JSON Schema")
-	out := flag.String("out", "hack/valdvalues/values.gen.go", "output Go file path (ARGS-configurable)")
-	pkg := flag.String("package", "valdvalues", "generated package name")
+	// No defaults here on purpose: callers (the Makefile) must pass these
+	// explicitly. -out accepts a file path or a directory (values.gen.go is
+	// appended for a directory).
+	schemaPath := flag.String("schema", "", "path to the input JSON Schema (required)")
+	out := flag.String("out", "", "output Go file path or directory (required)")
+	pkg := flag.String("package", "", "generated package name (required)")
 	name := flag.String("name", "Values", "top-level type name")
 	flag.Parse()
+
+	var missing []string
+	if *schemaPath == "" {
+		missing = append(missing, "-schema")
+	}
+	if *out == "" {
+		missing = append(missing, "-out")
+	}
+	if *pkg == "" {
+		missing = append(missing, "-package")
+	}
+	if len(missing) > 0 {
+		fmt.Fprintf(os.Stderr, "gotype: missing required flag(s): %s\n\n", strings.Join(missing, ", "))
+		flag.Usage()
+		os.Exit(2)
+	}
 
 	if err := run(*schemaPath, *out, *pkg, *name); err != nil {
 		fmt.Fprintln(os.Stderr, "gotype:", err)
@@ -106,6 +129,13 @@ func run(schemaPath, out, pkg, name string) error {
 	if err != nil {
 		return fmt.Errorf("oapi-codegen not found in PATH; install it via `make tools/install` (see hack/go.tools): %w", err)
 	}
+
+	// If out has no Go file name (a directory, trailing separator, or a
+	// non-".go" path), append the default file name.
+	if strings.HasSuffix(out, string(os.PathSeparator)) || filepath.Ext(out) != ".go" {
+		out = filepath.Join(out, defaultOutFile)
+	}
+
 	if err := os.MkdirAll(filepath.Dir(out), 0o755); err != nil {
 		return err
 	}
