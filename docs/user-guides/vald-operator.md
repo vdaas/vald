@@ -326,7 +326,7 @@ All configuration is done via environment variables, loaded once at startup.
 
 | Environment Variable | Default | Description |
 |---------------------|---------|-------------|
-   | `DEFAULT_VRS_PATH` | `/opt/vald-operator/config/vrs.yaml` | Default VRS template merged with the overlay. |
+| `DEFAULT_VRS_PATH` | `/opt/vald-operator/config/vrs.yaml` | Default VRS template merged with the overlay. |
 | `REQUIRE_NODEPOOL_MATCH` | `false` | Only generate VRS where matching node pools exist. |
 | `NODEPOOL_LABEL_PREFIX` | `""` | Prefix for the `namespace`/`type`/`role` node labels. |
 | `AGENT_PODS_PER_NODE` | `2` | Agent pods packed per node when computing replicas. |
@@ -366,7 +366,3 @@ make deploy IMG=<registry>/vald-operator:tag
 ```
 
 Run `make help` for the full list of targets.
-
-<div class="notice">
-<code>config/</code> is kubebuilder-generated. Do not hand-edit generated manifests; change the kubebuilder markers in the Go sources and regenerate with <code>make manifests generate</code>.
-</div>
