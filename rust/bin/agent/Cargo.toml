@@ -24,14 +24,9 @@ edition = "2024"
 algorithm = { version = "0.1.0", path = "../../libs/algorithm" }
 qbg = { version = "0.1.0", path = "../../libs/algorithms/qbg" }
 anyhow = "1.0.102"
-<<<<<<< HEAD
 cargo = "0.95.0"
-chrono = "0.4.44"
-config = "0.15.21"
-=======
 chrono = "0.4.45"
 config = "0.15.24"
->>>>>>> 207164ba9 ([Bugfix] fix SIGABRT problem for Agent NGT (#3531))
 flexi_logger = "0.31"
 futures = "0.3.32"
 http = "1.4.2"

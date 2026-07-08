@@ -83,3 +83,4 @@ rust/target/
 *.pdb
 
 !rust/libs
+/gen

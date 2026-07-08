@@ -257,6 +257,7 @@ data:
           health_check_duration: "1s"
           connection_pool:
             enable_dns_resolver: true
+            enable_metrics: false
             enable_rebalance: true
             old_conn_close_duration: 2m
             rebalance_duration: 30m
@@ -352,6 +353,7 @@ data:
           health_check_duration: "1s"
           connection_pool:
             enable_dns_resolver: true
+            enable_metrics: false
             enable_rebalance: true
             old_conn_close_duration: 2m
             rebalance_duration: 30m

@@ -122,6 +122,8 @@ type ConnectionPool struct {
 	ResolveDNS bool `json:"enable_dns_resolver" yaml:"enable_dns_resolver"`
 	// EnableRebalance enables rebalance.
 	EnableRebalance bool `json:"enable_rebalance" yaml:"enable_rebalance"`
+	// EnableMetrics enables pool connection metrics.
+	EnableMetrics bool `json:"enable_metrics" yaml:"enable_metrics"`
 }
 
 // Bind binds the actual data from the ConnectionPool receiver fields.
@@ -243,6 +245,7 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 			grpc.WithConnectionPoolSize(g.ConnectionPool.Size),
 			grpc.WithOldConnCloseDelay(g.ConnectionPool.OldConnCloseDuration),
 			grpc.WithResolveDNS(g.ConnectionPool.ResolveDNS),
+			grpc.WithEnableConnectionPoolMetrics(g.ConnectionPool.EnableMetrics),
 		)
 		if g.ConnectionPool.EnableRebalance {
 			opts = append(opts,

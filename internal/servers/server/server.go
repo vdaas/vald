@@ -100,6 +100,7 @@ type server struct {
 	name         string
 	host         string
 	socketPath   string
+	listener     net.Listener
 	grpc         struct {
 		srv        *grpc.Server
 		keepAlive  *grpcKeepalive
@@ -357,6 +358,10 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 			return errors.ErrInvalidAPIConfig
 		}
 
+		s.mu.Lock()
+		s.listener = l
+		s.mu.Unlock()
+
 		s.wg.Add(1)
 		s.eg.Go(safety.RecoverFunc(func() (err error) {
 			defer s.wg.Done()
@@ -472,6 +477,16 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 	case GRPC:
 		s.grpc.srv.GracefulStop()
 	}
+
+	s.mu.Lock()
+	if s.listener != nil {
+		err := s.listener.Close()
+		if err != nil && !errors.Is(err, os.ErrClosed) {
+			rerr = errors.Join(rerr, err)
+		}
+		s.listener = nil
+	}
+	s.mu.Unlock()
 
 	s.wg.Wait()
 

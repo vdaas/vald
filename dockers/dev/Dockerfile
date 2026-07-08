@@ -82,7 +82,7 @@ RUN --mount=type=bind,target=.,rw \
     libomp-dev \
     libopenblas-dev \
     gfortran \
-    pkg-config \
+    pkgconf \
     protobuf-compiler \
     libprotobuf-dev \
     file \
@@ -92,6 +92,7 @@ RUN --mount=type=bind,target=.,rw \
     graphviz \
     jq \
     libaec-dev \
+    pigz \
     sed \
     zip \
     && ldconfig \
