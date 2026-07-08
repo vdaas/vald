@@ -1,4 +1,4 @@
-package mvaldrelease
+package valdoperatorrelease
 
 import (
 	"github.com/vdaas/vald/hack/vald-operator/internal/pkg/lifecycle"

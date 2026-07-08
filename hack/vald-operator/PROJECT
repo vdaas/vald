@@ -5,7 +5,7 @@
 domain: vdaas.org
 layout:
 - go.kubebuilder.io/v4
-projectName: mvaldrelease
+projectName: valdoperatorrelease
 repo: github.com/vdaas/vald/hack/vald-operator
 resources:
 - api:
@@ -14,7 +14,7 @@ resources:
   controller: true
   domain: vdaas.org
   group: vald
-  kind: Mvaldrelease
+  kind: ValdOperatorRelease
   path: github.com/vdaas/vald/hack/vald-operator/api/v1
   version: v1
   webhooks:

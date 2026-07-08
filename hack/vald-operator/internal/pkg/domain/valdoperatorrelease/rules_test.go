@@ -1,4 +1,4 @@
-package mvaldrelease
+package valdoperatorrelease
 
 import (
 	"testing"
@@ -10,7 +10,7 @@ import (
 )
 
 func TestDomain_ResolveAgentNodePool(t *testing.T) {
-	makeInfra := func(generalReplicas int, agentReplicas int, withAgent bool) v1.MvaldreleaseInfra {
+	makeInfra := func(generalReplicas int, agentReplicas int, withAgent bool) v1.ValdOperatorReleaseInfra {
 		pools := v1.NodePools{
 			v1.NodePoolTypeGeneral: v1.NodePool{
 				Name:            "general",
@@ -25,10 +25,10 @@ func TestDomain_ResolveAgentNodePool(t *testing.T) {
 				MachineResource: v1.MachineResource{Cpu: "16", Memory: "32Gi"},
 			}
 		}
-		return v1.MvaldreleaseInfra{NodePools: pools}
+		return v1.ValdOperatorReleaseInfra{NodePools: pools}
 	}
 
-	d := &Domain{Mvaldrelease: &v1.Mvaldrelease{}}
+	d := &Domain{ValdOperatorRelease: &v1.ValdOperatorRelease{}}
 
 	t.Run("agent pool present with replicas: use agent", func(t *testing.T) {
 		got := d.ResolveAgentNodePool(makeInfra(3, 2, true))
@@ -67,7 +67,7 @@ func TestDomain_AgentPvSize(t *testing.T) {
 		{"rounds up to whole Gi", 1500 * oneMi, 1.0, oneGi, 2 * oneGi},
 	}
 
-	d := &Domain{Mvaldrelease: &v1.Mvaldrelease{}}
+	d := &Domain{ValdOperatorRelease: &v1.ValdOperatorRelease{}}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

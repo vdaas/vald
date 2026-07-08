@@ -23,13 +23,13 @@ const (
 type VrsBuilder struct {
 	GVK        schema.GroupVersionKind
 	List       *unstructured.UnstructuredList
-	CR         *controllerv1.Mvaldrelease
+	CR         *controllerv1.ValdOperatorRelease
 	Config     *config.Config
 	Capability NodePoolCapability
 	Rules      DomainRules
 }
 
-func NewVrsBuilder(cr *controllerv1.Mvaldrelease, cfg *config.Config, capability NodePoolCapability, rules DomainRules) *VrsBuilder {
+func NewVrsBuilder(cr *controllerv1.ValdOperatorRelease, cfg *config.Config, capability NodePoolCapability, rules DomainRules) *VrsBuilder {
 	return &VrsBuilder{
 		GVK:        valdrelease.GVK,
 		List:       &unstructured.UnstructuredList{},

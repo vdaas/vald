@@ -26,14 +26,14 @@ const (
 	NodePoolTypeValdAgent NodePoolType = "agent"
 )
 
-// MvaldreleaseSpec defines the desired state of Mvaldrelease
-type MvaldreleaseSpec struct {
-	Infrastructure []MvaldreleaseInfra `json:"infrastructure" yaml:"infrastructure"`
+// ValdOperatorReleaseSpec defines the desired state of ValdOperatorRelease
+type ValdOperatorReleaseSpec struct {
+	Infrastructure []ValdOperatorReleaseInfra `json:"infrastructure" yaml:"infrastructure"`
 	VectorEngine   VectorEngine        `json:"vectorEngine" yaml:"vectorEngine"`
 }
 
 // +kubebuilder:validation:Required
-type MvaldreleaseInfra struct {
+type ValdOperatorReleaseInfra struct {
 	//+kubebuilder:validation:Required
 	Role RoleType `json:"role" yaml:"role"`
 	//+kubebuilder:validation:Required
@@ -149,8 +149,8 @@ type Discoverer struct {
 	Kind string `json:"kind" yaml:"kind"`
 }
 
-// MvaldreleaseStatus defines the observed state of Mvaldrelease.
-type MvaldreleaseStatus struct {
+// ValdOperatorReleaseStatus defines the observed state of ValdOperatorRelease.
+type ValdOperatorReleaseStatus struct {
 	// Define observed state of cluster
 	Conditions []metav1.Condition `json:"conditions,omitempty" yaml:"conditions,omitempty"`
 	Phase      string             `json:"phase,omitempty" yaml:"phase,omitempty"`
@@ -164,29 +164,29 @@ type AnalyzedLog struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
-// +kubebuilder:resource:shortName=mvrs,scope=Namespaced
+// +kubebuilder:resource:shortName=vor,scope=Namespaced
 // +kubebuilder:printcolumn:name="Phase",type=string,JSONPath=".status.phase"
 // +kubebuilder:printcolumn:name="Progress",type=integer,JSONPath=".status.progress.total"
 // +kubebuilder:printcolumn:name="Status",type=string,JSONPath=".status.conditions[0].status"
 // +kubebuilder:printcolumn:name="AGE",type=date,JSONPath=".metadata.creationTimestamp"
-// Mvaldrelease is the Schema for the mvaldreleases API.
-type Mvaldrelease struct {
+// ValdOperatorRelease is the Schema for the valdoperatorreleases API.
+type ValdOperatorRelease struct {
 	metav1.TypeMeta   `json:",inline" yaml:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty" yaml:"metadata,omitempty"`
 
-	Spec   MvaldreleaseSpec   `json:"spec,omitempty" yaml:"spec,omitempty"`
-	Status MvaldreleaseStatus `json:"status,omitempty" yaml:"status,omitempty"`
+	Spec   ValdOperatorReleaseSpec   `json:"spec,omitempty" yaml:"spec,omitempty"`
+	Status ValdOperatorReleaseStatus `json:"status,omitempty" yaml:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// MvaldreleaseList contains a list of Mvaldrelease.
-type MvaldreleaseList struct {
+// ValdOperatorReleaseList contains a list of ValdOperatorRelease.
+type ValdOperatorReleaseList struct {
 	metav1.TypeMeta `json:",inline" yaml:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty" yaml:"metadata,omitempty"`
-	Items           []Mvaldrelease `json:"items" yaml:"items"`
+	Items           []ValdOperatorRelease `json:"items" yaml:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Mvaldrelease{}, &MvaldreleaseList{})
+	SchemeBuilder.Register(&ValdOperatorRelease{}, &ValdOperatorReleaseList{})
 }

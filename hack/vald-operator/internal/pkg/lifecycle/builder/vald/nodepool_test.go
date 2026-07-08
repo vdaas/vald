@@ -11,7 +11,7 @@ import (
 )
 
 func newAffinityBuilder(capability NodePoolCapability) *VrsBuilder {
-	cr := &controllerv1.Mvaldrelease{}
+	cr := &controllerv1.ValdOperatorRelease{}
 	cr.SetNamespace("ns-affinity")
 	return &VrsBuilder{
 		CR:         cr,

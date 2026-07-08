@@ -31,16 +31,16 @@ import (
 )
 
 // namespace where the project is deployed in
-const namespace = "mvaldrelease-system"
+const namespace = "valdoperatorrelease-system"
 
 // serviceAccountName created for the project
-const serviceAccountName = "mvaldrelease-controller-manager"
+const serviceAccountName = "valdoperatorrelease-controller-manager"
 
 // metricsServiceName is the name of the metrics service of the project
-const metricsServiceName = "mvaldrelease-controller-manager-metrics-service"
+const metricsServiceName = "valdoperatorrelease-controller-manager-metrics-service"
 
 // metricsRoleBindingName is the name of the RBAC that will be created to allow get the metrics data
-const metricsRoleBindingName = "mvaldrelease-metrics-binding"
+const metricsRoleBindingName = "valdoperatorrelease-metrics-binding"
 
 var _ = Describe("Manager", Ordered, func() {
 	var controllerPodName string
@@ -173,7 +173,7 @@ var _ = Describe("Manager", Ordered, func() {
 		It("should ensure the metrics endpoint is serving metrics", func() {
 			By("creating a ClusterRoleBinding for the service account to allow access to metrics")
 			cmd := exec.Command("kubectl", "create", "clusterrolebinding", metricsRoleBindingName,
-				"--clusterrole=mvaldrelease-metrics-reader",
+				"--clusterrole=valdoperatorrelease-metrics-reader",
 				fmt.Sprintf("--serviceaccount=%s:%s", namespace, serviceAccountName),
 			)
 			_, err := utils.Run(cmd)

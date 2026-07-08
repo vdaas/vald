@@ -1,14 +1,16 @@
 apiVersion: vald.vdaas.org/v1
-kind: Mvaldrelease
+kind: ValdOperatorRelease
 metadata:
-  labels:
-    app.kubernetes.io/name: mvaldrelease
-    app.kubernetes.io/managed-by: kustomize
-  name: mvaldrelease-sample
+  name: example-valdoperatorrelease
+  namespace: user123-someimagesearch
+  annotations:
+    description: |
+      This is a test description.
+      It can be multi-line.
 spec:
   infrastructure:
     - role: "green"
-      type: "kubernetes"
+      type: "local"
       active: true
       clusters:
         - id: "12345678-1234-1234-1234-123456789012"
@@ -19,19 +21,44 @@ spec:
         general:
           name: "node-pool-1-general"
           machineResource:
-            name: "highmemory"
-            cpu: "1"
-            memory: "2Gi"
-            storage: "10Gi"
-          replicas: 1
+            name: "c4.large"
+            cpu: "4"
+            memory: "8Gi"
+            storage: "100Gi"
+          replicas: 3
         agent:
           name: "agent-pool-1-agent"
           machineResource:
             name: "highcpu"
-            cpu: "1"
-            memory: "2Gi"
-            storage: "10Gi"
-          replicas: 1
+            cpu: "16"
+            memory: "32Gi"
+            storage: "200Gi"
+          replicas: 2
+    - role: "blue"
+      type: "local"
+      active: true
+      clusters:
+        - id: "12345678-1234-1234-1234-123456789012"
+          name: "asdcwea"
+        - id: "87654321-4321-4321-4321-210987654321"
+          name: "duelvngpr8se2"
+      nodePools:
+        general:
+          name: "u-100184-ureco"
+          machineResource:
+            name: "c4.large"
+            cpu: "4"
+            memory: "16Gi"
+            storage: "100Gi"
+          replicas: 3
+        agent:
+          name: "agent-pool"
+          machineResource:
+            name: "Nx.4vCPU_4GiB_60GiB"
+            cpu: "8"
+            memory: "32Gi"
+            storage: "200Gi"
+          replicas: 2
   vectorEngine:
     name: "vald"
     vald:
@@ -54,9 +81,9 @@ spec:
         saveSchedule: "0 * * * *"
         concurrency: 2
       gateway:
-        indexReplica: 2
+        indexReplica: 3
       discoverer:
-        kind: "Deployment"
+        kind: "DaemonSet"
       overlay:
         spec:
           discoverer:

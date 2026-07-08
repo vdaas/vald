@@ -8,7 +8,6 @@ bin/*
 /main
 Dockerfile.cross
 dist/
-tmp/
 
 # Test binary, built with `go test -c`
 *.test
@@ -21,23 +20,3 @@ go.work
 
 # Kubernetes Generated files - skip generated files, except for vendored files
 !vendor/**/zz_generated.*
-*.tgz
-
-# Generated files from Claude
-.claude/*
-.ai/dev-session.json
-*/logs/*
-
-# editor and IDE paraphernalia
-.idea
-.vscode
-*.swp
-*.swo
-*~
-resolv.conf
-local/kind/corporate-ca.crt
-tilt_bin/*
-
-# generated valdrelease crd
-config/crd/bases/vald.vdaas.org_valdreleases.yaml
-/.mise.toml

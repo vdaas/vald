@@ -13,21 +13,21 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-func loadMvaldreleaseFromYAML(t *testing.T, path string) *v1.Mvaldrelease {
+func loadValdOperatorReleaseFromYAML(t *testing.T, path string) *v1.ValdOperatorRelease {
 	data, err := os.ReadFile(path)
 	assert.NoError(t, err)
 
-	var cr v1.Mvaldrelease
+	var cr v1.ValdOperatorRelease
 	err = yaml.Unmarshal(data, &cr)
 	assert.NoError(t, err)
 	return &cr
 }
 
 func TestVrsBuilder_Validate(t *testing.T) {
-	validCR := func() *v1.Mvaldrelease {
-		return &v1.Mvaldrelease{
-			Spec: v1.MvaldreleaseSpec{
-				Infrastructure: []v1.MvaldreleaseInfra{
+	validCR := func() *v1.ValdOperatorRelease {
+		return &v1.ValdOperatorRelease{
+			Spec: v1.ValdOperatorReleaseSpec{
+				Infrastructure: []v1.ValdOperatorReleaseInfra{
 					{
 						Role: "green",
 						Clusters: []v1.DestClusters{
@@ -41,7 +41,7 @@ func TestVrsBuilder_Validate(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		cr      *v1.Mvaldrelease
+		cr      *v1.ValdOperatorRelease
 		wantErr bool
 	}{
 		{
@@ -51,16 +51,16 @@ func TestVrsBuilder_Validate(t *testing.T) {
 		},
 		{
 			name: "empty infrastructure",
-			cr: &v1.Mvaldrelease{
-				Spec: v1.MvaldreleaseSpec{Infrastructure: nil},
+			cr: &v1.ValdOperatorRelease{
+				Spec: v1.ValdOperatorReleaseSpec{Infrastructure: nil},
 			},
 			wantErr: true,
 		},
 		{
 			name: "infra with empty clusters",
-			cr: &v1.Mvaldrelease{
-				Spec: v1.MvaldreleaseSpec{
-					Infrastructure: []v1.MvaldreleaseInfra{
+			cr: &v1.ValdOperatorRelease{
+				Spec: v1.ValdOperatorReleaseSpec{
+					Infrastructure: []v1.ValdOperatorReleaseInfra{
 						{Role: "green", Clusters: []v1.DestClusters{}},
 					},
 				},
@@ -69,7 +69,7 @@ func TestVrsBuilder_Validate(t *testing.T) {
 		},
 		{
 			name: "cluster with empty Name",
-			cr: func() *v1.Mvaldrelease {
+			cr: func() *v1.ValdOperatorRelease {
 				cr := validCR()
 				cr.Spec.Infrastructure[0].Clusters[0].Name = ""
 				return cr
@@ -102,7 +102,7 @@ func TestVrsBuilder_Build(t *testing.T) {
 	cfg, err := config.New()
 	assert.NoError(t, err)
 
-	cr := loadMvaldreleaseFromYAML(t, "testdata/mvrs.yaml")
+	cr := loadValdOperatorReleaseFromYAML(t, "testdata/vor.yaml")
 
 	b := NewVrsBuilder(cr, cfg, AlwaysAvailable(), stubRules{})
 	objList, err := b.Build(context.Background())

@@ -19,6 +19,6 @@ type AgentNodePoolSpec struct {
 // (which would create a cycle); instead the domain type satisfies this
 // interface and is injected at construction time.
 type DomainRules interface {
-	ResolveAgentNodePool(infra controllerv1.MvaldreleaseInfra) AgentNodePoolSpec
+	ResolveAgentNodePool(infra controllerv1.ValdOperatorReleaseInfra) AgentNodePoolSpec
 	AgentPvSize(memoryBytes int64, pvBufferRatio float64, pvMinSizeBytes int64) string
 }

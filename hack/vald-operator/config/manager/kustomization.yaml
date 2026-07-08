@@ -11,4 +11,4 @@ generatorOptions:
 configMapGenerator:
 - files:
   - cm/vrs.yaml
-  name: mvaldrelease-controller-manager-default-vrs
+  name: valdoperatorrelease-controller-manager-default-vrs

@@ -1,4 +1,4 @@
-package mvaldrelease
+package valdoperatorrelease
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 )
 
 func (d *Domain) ConditionWaitForClusterCreate() *lifecycle.LifeCycle {
-	cr := d.Mvaldrelease
+	cr := d.ValdOperatorRelease
 	lc := &lifecycle.LifeCycle{}
 	lc.Condition = lifecycle.Condition{
 		Type:    lifecycle.ConditionWaitForClusterCreate,
