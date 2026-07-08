@@ -50,8 +50,10 @@ spec:
         manager: false
         indexDuration: "24h"
         indexSchedule: "0 2 * * *"
+        indexSuspend: false
         saveDuration: "1h"
         saveSchedule: "0 * * * *"
+        saveSuspend: false
         concurrency: 2
       gateway:
         indexReplica: 2

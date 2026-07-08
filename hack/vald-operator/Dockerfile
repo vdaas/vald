@@ -2,8 +2,12 @@
 FROM docker.io/golang:1.23 AS builder
 ARG TARGETOS
 ARG TARGETARCH
+ARG GOPROXY=https://proxy.golang.org,direct
+ARG GOSUMDB=sum.golang.org
 
 WORKDIR /workspace
+ENV GOPROXY=${GOPROXY} \
+    GOSUMDB=${GOSUMDB}
 # Copy the Go Modules manifests
 COPY go.mod go.mod
 COPY go.sum go.sum

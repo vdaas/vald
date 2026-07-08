@@ -108,6 +108,7 @@ Vald uses Rust for high-performance indexing and strictly typed logic (`rust/`).
 
 - **Phony Targets:** Ensure `.PHONY` is used for non-file targets.
 - **Portability:** Use POSIX-compliant shell commands (avoid bash-isms).
+- **Docker Build Args:** If a Docker build downloads Go modules, thread proxy-related build args through the Make target so local CI can override them cleanly. Prefer `GOPROXY` and `GOSUMDB` as explicit make variables when module fetches fail on local Docker daemons.
 
 ### GitHub Actions
 

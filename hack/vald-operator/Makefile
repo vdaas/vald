@@ -1,5 +1,7 @@
 # Image URL to use all building/pushing image targets
 IMG ?= controller:latest
+GOPROXY ?= https://proxy.golang.org,direct
+GOSUMDB ?= sum.golang.org
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -106,7 +108,10 @@ run: manifests generate fmt vet ## Run a controller from your host.
 # More info: https://docs.docker.com/develop/develop-images/build_enhancements/
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
-	DOCKER_BUILDKIT=1 $(CONTAINER_TOOL) build -t ${IMG} --platform linux/x86_64 .
+	DOCKER_BUILDKIT=1 $(CONTAINER_TOOL) build \
+		--build-arg GOPROXY=$(GOPROXY) \
+		--build-arg GOSUMDB=$(GOSUMDB) \
+		-t ${IMG} --platform linux/x86_64 .
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
@@ -225,4 +230,3 @@ mv $(1) $(1)-$(3) ;\
 } ;\
 ln -sf $(1)-$(3) $(1)
 endef
-
