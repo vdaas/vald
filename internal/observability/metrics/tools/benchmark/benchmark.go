@@ -18,7 +18,7 @@ import (
 
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/observability/metrics"
-	"github.com/vdaas/vald/pkg/tools/benchmark/operator/service"
+	"github.com/vdaas/vald/pkg/operator/benchmark/service"
 	api "go.opentelemetry.io/otel/metric"
 	view "go.opentelemetry.io/otel/sdk/metric"
 )

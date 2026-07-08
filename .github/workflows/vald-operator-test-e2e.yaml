@@ -17,7 +17,16 @@ name: "Vald Operator E2E Tests"
 on:
   pull_request:
     paths:
-      - "hack/vald-operator/**"
+      - "cmd/operator/vald/**"
+      - "pkg/operator/vald/**"
+      - "charts/operator/vald/**"
+      - "k8s/operator/vald/**"
+      - "internal/k8s/**"
+      - "tests/v2/e2e/**"
+      - "dockers/operator/vald/Dockerfile"
+      - "Makefile"
+      - "Makefile.d/**"
+      - ".github/workflows/vald-operator-test-e2e.yaml"
 jobs:
   dump-contexts-to-log:
     timeout-minutes: 30
@@ -30,7 +39,7 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/dump-context
   vald-operator-e2e-tests:
-    timeout-minutes: 30
+    timeout-minutes: 45
     permissions:
       contents: read
       pull-requests: write
@@ -48,19 +57,10 @@ jobs:
       - name: Setup Go environment
         uses: ./.github/actions/setup-go
 
-      - name: Install kind
+      - name: Install k3d
         run: |
-          make kind/install
+          make k3d/install
 
-      - name: Verify kind installation
-        run: kind version
-
-      - name: Create kind cluster
+      - name: Run vald-operator E2E
         run: |
-          sed -e 's/apiServerAddress: "127.0.0.1"/apiServerAddress: "'"$(grep host.docker.internal /etc/hosts | cut -f1)"'"/' \
-            k8s/debug/kind/e2e.yaml | kind create cluster --config -
-          kubectl cluster-info --context kind-kind
-
-      - name: Running Test e2e
-        run: |
-          cd hack/vald-operator && make test-e2e
+          make e2e/v2/actions/run/operator

@@ -13,6 +13,76 @@
 // limitations under the License.
 package v1
 
+import (
+	"testing"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+func newValdMirrorTargetFixture() *ValdMirrorTarget {
+	return &ValdMirrorTarget{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "target-fixture",
+			Namespace: "default",
+			Labels:    map[string]string{"app": "vald-mirror"},
+		},
+		Spec: MirrorTargetSpec{
+			Colocation: "dc1",
+			Target:     MirrorTarget{Host: "vald-mirror-gateway", Port: 8081},
+		},
+		Status: MirrorTargetStatus{Phase: MirrorTargetConnected},
+	}
+}
+
+func TestValdMirrorTarget_DeepCopy(t *testing.T) {
+	t.Parallel()
+
+	orig := newValdMirrorTargetFixture()
+	cp := orig.DeepCopy()
+	if cp == nil {
+		t.Fatal("DeepCopy() = nil, want copy")
+	}
+
+	cp.Labels["app"] = "mutated"
+	cp.Spec.Target.Host = "mutated"
+	cp.Status.Phase = MirrorTargetDisconnected
+
+	if orig.Labels["app"] != "vald-mirror" {
+		t.Errorf("original labels mutated: %v", orig.Labels)
+	}
+	if orig.Spec.Target.Host != "vald-mirror-gateway" {
+		t.Errorf("original spec mutated: %v", orig.Spec)
+	}
+	if orig.Status.Phase != MirrorTargetConnected {
+		t.Errorf("original status mutated: %v", orig.Status)
+	}
+}
+
+func TestValdMirrorTarget_DeepCopyObject(t *testing.T) {
+	t.Parallel()
+
+	orig := newValdMirrorTargetFixture()
+	obj := orig.DeepCopyObject()
+	cp, ok := obj.(*ValdMirrorTarget)
+	if !ok {
+		t.Fatalf("DeepCopyObject() = %T, want *ValdMirrorTarget", obj)
+	}
+	if cp.GetName() != orig.GetName() {
+		t.Errorf("copied name = %q, want %q", cp.GetName(), orig.GetName())
+	}
+
+	list := &ValdMirrorTargetList{Items: []ValdMirrorTarget{*orig}}
+	lobj := list.DeepCopyObject()
+	lcp, ok := lobj.(*ValdMirrorTargetList)
+	if !ok {
+		t.Fatalf("DeepCopyObject() = %T, want *ValdMirrorTargetList", lobj)
+	}
+	lcp.Items[0].Labels["app"] = "mutated"
+	if orig.Labels["app"] != "vald-mirror" {
+		t.Errorf("original mutated through list copy: %v", orig.Labels)
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestValdMirrorTarget_DeepCopyInto(t *testing.T) {

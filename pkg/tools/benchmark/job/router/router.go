@@ -45,8 +45,10 @@ func New(opts ...Option) http.Handler {
 			middleware.NewTimeout(
 				middleware.WithTimeout(r.timeout),
 				middleware.WithErrorGroup(r.eg),
-			)),
+			),
+		),
 		routing.WithRoutes([]routing.Route{
 			// TODO add REST API interface here
-		}...))
+		}...),
+	)
 }

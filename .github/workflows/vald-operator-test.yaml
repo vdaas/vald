@@ -17,7 +17,13 @@ name: "Vald Operator Tests"
 on:
   pull_request:
     paths:
-      - "hack/vald-operator/**"
+      - "cmd/operator/vald/**"
+      - "pkg/operator/vald/**"
+      - "charts/operator/vald/**"
+      - "internal/k8s/**"
+      - "Makefile"
+      - "Makefile.d/**"
+      - ".github/workflows/vald-operator-test.yaml"
 jobs:
   dump-contexts-to-log:
     timeout-minutes: 30
@@ -54,4 +60,4 @@ jobs:
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Run Test
         run: |
-          cd hack/vald-operator && make test
+          make test/operator/vald

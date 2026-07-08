@@ -1,0 +1,787 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Values",
+  "type": "object",
+  "properties": {
+    "affinity": { "type": "object", "description": "affinity" },
+    "annotations": {
+      "type": "object",
+      "description": "deployment annotations"
+    },
+    "default_vrs": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "render and mount the default ValdRelease template ConfigMap"
+        },
+        "existingConfigMap": {
+          "type": "string",
+          "description": "use an existing ConfigMap (containing vrs.yaml) instead of rendering one"
+        },
+        "name": {
+          "type": "string",
+          "description": "metadata.name of the templated ValdRelease"
+        },
+        "spec": {
+          "type": "object",
+          "description": "full ValdRelease spec used as the default VRS template (rendered into vrs.yaml as-is)"
+        }
+      }
+    },
+    "dnsPolicy": { "type": "string", "description": "pod dns policy" },
+    "env": {
+      "type": "array",
+      "description": "environment variables",
+      "items": { "type": "object" }
+    },
+    "image": {
+      "type": "object",
+      "properties": {
+        "pullPolicy": {
+          "type": "string",
+          "description": "image pull policy",
+          "enum": ["Always", "Never", "IfNotPresent"]
+        },
+        "repository": { "type": "string", "description": "image repository" },
+        "tag": {
+          "type": "string",
+          "description": "image tag (falls back to the Chart appVersion when empty)"
+        }
+      }
+    },
+    "imagePullSecrets": {
+      "type": "array",
+      "description": "image pull secrets",
+      "items": { "type": "object" }
+    },
+    "initContainers": {
+      "type": "array",
+      "description": "init containers",
+      "items": { "type": "object" }
+    },
+    "labels": {
+      "type": "object",
+      "description": "additional labels applied to the deployment and the pod template"
+    },
+    "logging": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "type": "string",
+          "description": "logging format",
+          "enum": ["raw", "json"]
+        },
+        "level": {
+          "type": "string",
+          "description": "logging level",
+          "enum": ["debug", "info", "warn", "error", "fatal"]
+        },
+        "logger": {
+          "type": "string",
+          "description": "logger name",
+          "enum": ["glg", "zap"]
+        }
+      }
+    },
+    "name": {
+      "type": "string",
+      "description": "name of the deployment and the derived resource names (-config, -default-vrs, -leader-election)"
+    },
+    "nodeSelector": {
+      "type": "object",
+      "description": "node labels for pod assignment"
+    },
+    "observability": {
+      "type": "object",
+      "description": "observability settings (rendered into config.yaml as-is)"
+    },
+    "operator": {
+      "type": "object",
+      "description": "operator runtime configuration (rendered into config.yaml as-is; see pkg/operator/vald/README.md for the full reference)",
+      "properties": {
+        "controller": {
+          "type": "object",
+          "properties": {
+            "cache_namespaces": {
+              "type": "array",
+              "description": "restrict the manager cache to these namespaces ([] = whole cluster)",
+              "items": { "type": "string" }
+            },
+            "leader_election": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "leader election enabled"
+                },
+                "id": {
+                  "type": "string",
+                  "description": "name of the leader election lease resource"
+                },
+                "lease_duration": {
+                  "type": "string",
+                  "description": "how long non-leader candidates wait before acquiring an expired lease (\"\" = 15s)"
+                },
+                "namespace": {
+                  "type": "string",
+                  "description": "namespace of the lease resource"
+                },
+                "renew_deadline": {
+                  "type": "string",
+                  "description": "how long the leader retries refreshing its lease before giving up (\"\" = 10s)"
+                },
+                "retry_period": {
+                  "type": "string",
+                  "description": "wait between leader election actions (\"\" = 2s)"
+                }
+              }
+            },
+            "max_concurrent_reconciles": {
+              "type": "integer",
+              "description": "reconcile worker count of the ValdOperatorRelease controller (0 = 1)"
+            },
+            "metrics_address": {
+              "type": "string",
+              "description": "bind address of the manager metrics server (\"\" = :8080, \"0\" disables it)"
+            },
+            "requeue": {
+              "type": "object",
+              "properties": {
+                "not_found": {
+                  "type": "string",
+                  "description": "retry interval when the reconciled object is not found (\"\" disables it)"
+                },
+                "on_error": {
+                  "type": "string",
+                  "description": "fixed retry interval on reconcile failure (\"\" = exponential backoff)"
+                },
+                "success": {
+                  "type": "string",
+                  "description": "periodic requeue after a successful reconcile (\"\" disables it)"
+                }
+              }
+            },
+            "sync_period": {
+              "type": "string",
+              "description": "informer cache resync interval (\"\" = manager default, ~10h)"
+            }
+          }
+        },
+        "name": { "type": "string", "description": "controller name" },
+        "namespace": {
+          "type": "string",
+          "description": "namespace the operator is deployed in"
+        },
+        "networking": {
+          "type": "object",
+          "properties": {
+            "discoverer_daemonset_max_surge": {
+              "type": "string",
+              "description": "discoverer DaemonSet rolling-update max surge (intstr percent string)"
+            },
+            "discoverer_daemonset_max_unavailable": {
+              "type": "string",
+              "description": "discoverer DaemonSet rolling-update max unavailable (intstr percent string)"
+            },
+            "enable_ingress": {
+              "type": "boolean",
+              "description": "enable the ingress for the gateway"
+            },
+            "gateway_ingress_annotations": {
+              "type": "object",
+              "description": "annotations applied to the gateway ingress"
+            },
+            "gateway_service_type": {
+              "type": "string",
+              "description": "service type of the gateway",
+              "enum": ["NodePort", "ClusterIP", "LoadBalancer"]
+            }
+          }
+        },
+        "node_pool": {
+          "type": "object",
+          "properties": {
+            "agent_pods_per_node": {
+              "type": "integer",
+              "description": "number of agent pods per node"
+            },
+            "label_prefix": {
+              "type": "string",
+              "description": "optional prefix for nodepool-related label keys (e.g. vald.vdaas.org)"
+            },
+            "require_match": {
+              "type": "boolean",
+              "description": "generate VRS only when matching nodepools exist in the cluster"
+            }
+          }
+        },
+        "persistent_volume": {
+          "type": "object",
+          "properties": {
+            "buffer_ratio": {
+              "type": "number",
+              "description": "PV sizing buffer ratio, max(memoryRequest * buffer_ratio, min_size_bytes)"
+            },
+            "default_access_mode": {
+              "type": "string",
+              "description": "fallback AccessMode when the CR omits it"
+            },
+            "default_storage_class": {
+              "type": "string",
+              "description": "fallback StorageClass when the CR omits it"
+            },
+            "min_size_bytes": {
+              "type": "integer",
+              "description": "minimum PV size in bytes"
+            }
+          }
+        },
+        "vrs": {
+          "type": "object",
+          "properties": {
+            "agent": {
+              "type": "object",
+              "properties": {
+                "enable_in_memory_mode": {
+                  "type": "boolean",
+                  "description": "enable the NGT in-memory mode"
+                },
+                "max_surge": {
+                  "type": "string",
+                  "description": "agent StatefulSet rolling-update max surge (\"\" = \"1\")"
+                },
+                "max_unavailable": {
+                  "type": "string",
+                  "description": "agent StatefulSet rolling-update max unavailable (\"\" = \"1\")"
+                }
+              }
+            },
+            "default_vrs_path": {
+              "type": "string",
+              "description": "path of the default ValdRelease template yaml (the default-vrs ConfigMap is mounted on its directory)"
+            },
+            "gateway": {
+              "type": "object",
+              "properties": {
+                "hpa_target_cpu_utilization": {
+                  "type": "integer",
+                  "description": "gateway lb HPA target CPU utilization percentage (0 = 80)"
+                },
+                "ingress_path_type": {
+                  "type": "string",
+                  "description": "ingress path type (\"\" = Prefix)",
+                  "enum": ["Prefix", "Exact", "ImplementationSpecific"]
+                },
+                "ingress_service_port": {
+                  "type": "string",
+                  "description": "service port name referenced by the gateway ingress (\"\" = grpc)"
+                }
+              }
+            },
+            "indexer": {
+              "type": "object",
+              "properties": {
+                "auto_index_duration_limit": {
+                  "type": "string",
+                  "description": "index manager auto index duration limit (\"\" = 1h)"
+                },
+                "auto_save_index_duration_limit": {
+                  "type": "string",
+                  "description": "index manager auto save index duration limit (\"\" = -1h)"
+                }
+              }
+            },
+            "internal_host_domain": {
+              "type": "string",
+              "description": "internal host domain of the cluster"
+            },
+            "log_format": {
+              "type": "string",
+              "description": "log format passed through to the underlying vald deployment (\"\" = raw)"
+            },
+            "log_level": {
+              "type": "string",
+              "description": "log level passed through to the underlying vald deployment"
+            },
+            "logger": {
+              "type": "string",
+              "description": "logger passed through to the underlying vald deployment (\"\" = glg)"
+            },
+            "managed_generation_label": {
+              "type": "string",
+              "description": "label key recording the owner generation on managed resources (\"\" = managed-generation)"
+            }
+          }
+        }
+      }
+    },
+    "podAnnotations": {
+      "type": "object",
+      "description": "additional pod annotations (pyroscope annotations are added automatically while server_config.metrics.pprof.enabled is true)"
+    },
+    "podSecurityContext": {
+      "type": "object",
+      "description": "security context for the pod"
+    },
+    "priorityClassName": {
+      "type": "string",
+      "description": "pod priority class name"
+    },
+    "progressDeadlineSeconds": {
+      "type": "integer",
+      "description": "deployment progress deadline seconds"
+    },
+    "rbac": {
+      "type": "object",
+      "properties": {
+        "create": {
+          "type": "boolean",
+          "description": "required roles and rolebindings will be created"
+        },
+        "name": {
+          "type": "string",
+          "description": "name of roles and rolebindings (falls back to .name when empty)"
+        }
+      }
+    },
+    "replicas": {
+      "type": "integer",
+      "description": "the number of replicas for the deployment"
+    },
+    "resources": {
+      "type": "object",
+      "description": "kubernetes resources of the container",
+      "properties": {
+        "limits": { "type": "object" },
+        "requests": { "type": "object" }
+      }
+    },
+    "restartPolicy": { "type": "string", "description": "pod restart policy" },
+    "revisionHistoryLimit": {
+      "type": "integer",
+      "description": "number of old ReplicaSets to retain"
+    },
+    "schedulerName": { "type": "string", "description": "scheduler name" },
+    "securityContext": {
+      "type": "object",
+      "description": "security context for the container"
+    },
+    "server_config": {
+      "type": "object",
+      "properties": {
+        "full_shutdown_duration": {
+          "type": "string",
+          "description": "full shutdown duration"
+        },
+        "healths": {
+          "type": "object",
+          "properties": {
+            "liveness": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "liveness server enabled"
+                },
+                "host": {
+                  "type": "string",
+                  "description": "liveness server host"
+                },
+                "livenessProbe": {
+                  "type": "object",
+                  "properties": {
+                    "failureThreshold": {
+                      "type": "integer",
+                      "description": "liveness probe failure threshold"
+                    },
+                    "httpGet": {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "liveness probe path"
+                        },
+                        "port": {
+                          "type": "string",
+                          "description": "liveness probe port name"
+                        },
+                        "scheme": {
+                          "type": "string",
+                          "description": "liveness probe scheme"
+                        }
+                      }
+                    },
+                    "initialDelaySeconds": {
+                      "type": "integer",
+                      "description": "liveness probe initial delay seconds"
+                    },
+                    "periodSeconds": {
+                      "type": "integer",
+                      "description": "liveness probe period seconds"
+                    },
+                    "successThreshold": {
+                      "type": "integer",
+                      "description": "liveness probe success threshold"
+                    },
+                    "timeoutSeconds": {
+                      "type": "integer",
+                      "description": "liveness probe timeout seconds"
+                    }
+                  }
+                },
+                "port": {
+                  "type": "integer",
+                  "description": "liveness server port (also used as the liveness containerPort)"
+                },
+                "server": {
+                  "type": "object",
+                  "properties": {
+                    "http": {
+                      "type": "object",
+                      "properties": {
+                        "handler_timeout": { "type": "string" },
+                        "idle_timeout": { "type": "string" },
+                        "read_header_timeout": { "type": "string" },
+                        "read_timeout": { "type": "string" },
+                        "shutdown_duration": { "type": "string" },
+                        "write_timeout": { "type": "string" }
+                      }
+                    },
+                    "mode": { "type": "string" },
+                    "network": { "type": "string" },
+                    "probe_wait_time": { "type": "string" },
+                    "socket_option": {
+                      "type": "object",
+                      "description": "socket options of the liveness server listener"
+                    },
+                    "socket_path": { "type": "string" }
+                  }
+                }
+              }
+            },
+            "readiness": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "readiness server enabled"
+                },
+                "host": {
+                  "type": "string",
+                  "description": "readiness server host"
+                },
+                "port": {
+                  "type": "integer",
+                  "description": "readiness server port (also used as the readiness containerPort and service port)"
+                },
+                "readinessProbe": {
+                  "type": "object",
+                  "properties": {
+                    "failureThreshold": {
+                      "type": "integer",
+                      "description": "readiness probe failure threshold"
+                    },
+                    "httpGet": {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "readiness probe path"
+                        },
+                        "port": {
+                          "type": "string",
+                          "description": "readiness probe port name"
+                        },
+                        "scheme": {
+                          "type": "string",
+                          "description": "readiness probe scheme"
+                        }
+                      }
+                    },
+                    "initialDelaySeconds": {
+                      "type": "integer",
+                      "description": "readiness probe initial delay seconds"
+                    },
+                    "periodSeconds": {
+                      "type": "integer",
+                      "description": "readiness probe period seconds"
+                    },
+                    "successThreshold": {
+                      "type": "integer",
+                      "description": "readiness probe success threshold"
+                    },
+                    "timeoutSeconds": {
+                      "type": "integer",
+                      "description": "readiness probe timeout seconds"
+                    }
+                  }
+                },
+                "server": {
+                  "type": "object",
+                  "properties": {
+                    "http": {
+                      "type": "object",
+                      "properties": {
+                        "handler_timeout": { "type": "string" },
+                        "idle_timeout": { "type": "string" },
+                        "read_header_timeout": { "type": "string" },
+                        "read_timeout": { "type": "string" },
+                        "shutdown_duration": { "type": "string" },
+                        "write_timeout": { "type": "string" }
+                      }
+                    },
+                    "mode": { "type": "string" },
+                    "network": { "type": "string" },
+                    "probe_wait_time": { "type": "string" },
+                    "socket_option": {
+                      "type": "object",
+                      "description": "socket options of the readiness server listener"
+                    },
+                    "socket_path": { "type": "string" }
+                  }
+                }
+              }
+            },
+            "startup": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "startup probe enabled"
+                },
+                "startupProbe": {
+                  "type": "object",
+                  "properties": {
+                    "failureThreshold": {
+                      "type": "integer",
+                      "description": "startup probe failure threshold"
+                    },
+                    "httpGet": {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "startup probe path"
+                        },
+                        "port": {
+                          "type": "string",
+                          "description": "startup probe port name"
+                        },
+                        "scheme": {
+                          "type": "string",
+                          "description": "startup probe scheme"
+                        }
+                      }
+                    },
+                    "initialDelaySeconds": {
+                      "type": "integer",
+                      "description": "startup probe initial delay seconds"
+                    },
+                    "periodSeconds": {
+                      "type": "integer",
+                      "description": "startup probe period seconds"
+                    },
+                    "successThreshold": {
+                      "type": "integer",
+                      "description": "startup probe success threshold"
+                    },
+                    "timeoutSeconds": {
+                      "type": "integer",
+                      "description": "startup probe timeout seconds"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "pprof": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "pprof server enabled"
+                },
+                "host": {
+                  "type": "string",
+                  "description": "pprof server host"
+                },
+                "port": {
+                  "type": "integer",
+                  "description": "pprof server port (also used as the pprof containerPort and service port)"
+                },
+                "server": {
+                  "type": "object",
+                  "properties": {
+                    "http": {
+                      "type": "object",
+                      "description": "http options of the pprof server (rendered into config.yaml as-is)"
+                    },
+                    "mode": { "type": "string" },
+                    "network": { "type": "string" },
+                    "probe_wait_time": { "type": "string" },
+                    "restart": { "type": "boolean" },
+                    "socket_option": {
+                      "type": "object",
+                      "description": "socket options of the pprof server listener"
+                    },
+                    "socket_path": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "servers": {
+          "type": "object",
+          "properties": {
+            "grpc": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "gRPC server enabled"
+                },
+                "host": { "type": "string", "description": "gRPC server host" },
+                "port": {
+                  "type": "integer",
+                  "description": "gRPC server port (also used as the grpc containerPort)"
+                },
+                "server": {
+                  "type": "object",
+                  "properties": {
+                    "grpc": {
+                      "type": "object",
+                      "description": "gRPC server options (rendered into config.yaml as-is)"
+                    },
+                    "mode": { "type": "string" },
+                    "network": { "type": "string" },
+                    "probe_wait_time": { "type": "string" },
+                    "restart": { "type": "boolean" },
+                    "socket_option": {
+                      "type": "object",
+                      "description": "socket options of the gRPC server listener"
+                    },
+                    "socket_path": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tls": {
+          "type": "object",
+          "properties": {
+            "ca": { "type": "string", "description": "TLS ca path" },
+            "cert": { "type": "string", "description": "TLS cert path" },
+            "enabled": { "type": "boolean", "description": "TLS enabled" },
+            "insecure_skip_verify": {
+              "type": "boolean",
+              "description": "enable/disable skip SSL certificate verification"
+            },
+            "key": { "type": "string", "description": "TLS key path" }
+          }
+        }
+      }
+    },
+    "service": {
+      "type": "object",
+      "properties": {
+        "annotations": {
+          "type": "object",
+          "description": "service annotations"
+        },
+        "clusterIP": {
+          "type": "string",
+          "description": "cluster IP (\"None\" makes the service headless)"
+        },
+        "enabled": { "type": "boolean", "description": "service enabled" },
+        "externalTrafficPolicy": {
+          "type": "string",
+          "description": "external traffic policy (can be specified when service type is LoadBalancer or NodePort): Cluster or Local"
+        },
+        "extraPorts": {
+          "type": "array",
+          "description": "additional service ports (readiness/pprof ports are derived from server_config while enabled)",
+          "items": { "type": "object" }
+        },
+        "labels": {
+          "type": "object",
+          "description": "additional service labels"
+        },
+        "type": {
+          "type": "string",
+          "description": "service type: ClusterIP, LoadBalancer or NodePort",
+          "enum": ["ClusterIP", "LoadBalancer", "NodePort"]
+        }
+      }
+    },
+    "serviceAccount": {
+      "type": "object",
+      "properties": {
+        "annotations": {
+          "type": "object",
+          "description": "service account annotations"
+        },
+        "create": {
+          "type": "boolean",
+          "description": "service account will be created"
+        },
+        "name": {
+          "type": "string",
+          "description": "name of the service account (falls back to .name when empty)"
+        }
+      }
+    },
+    "strategy": {
+      "type": "object",
+      "description": "deployment strategy",
+      "properties": {
+        "rollingUpdate": {
+          "type": "object",
+          "properties": {
+            "maxSurge": { "type": "string" },
+            "maxUnavailable": { "type": "string" }
+          }
+        },
+        "type": { "type": "string", "enum": ["RollingUpdate", "Recreate"] }
+      }
+    },
+    "terminationGracePeriodSeconds": {
+      "type": "integer",
+      "description": "pod termination grace period seconds"
+    },
+    "time_zone": {
+      "type": "string",
+      "description": "time zone of the operator process"
+    },
+    "tolerations": {
+      "type": "array",
+      "description": "tolerations",
+      "items": { "type": "object" }
+    },
+    "topologySpreadConstraints": {
+      "type": "array",
+      "description": "topology spread constraints",
+      "items": { "type": "object" }
+    },
+    "version": {
+      "type": "string",
+      "description": "version of the operator config"
+    },
+    "volumeMounts": {
+      "type": "array",
+      "description": "additional volume mounts",
+      "items": { "type": "object" }
+    },
+    "volumes": {
+      "type": "array",
+      "description": "additional volumes",
+      "items": { "type": "object" }
+    }
+  }
+}

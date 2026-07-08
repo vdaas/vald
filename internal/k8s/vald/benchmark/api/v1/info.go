@@ -17,24 +17,31 @@
 package v1
 
 import (
+	"github.com/vdaas/vald/internal/k8s/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"sigs.k8s.io/controller-runtime/pkg/scheme"
 )
 
 var (
 	// GroupVersion is group version used to register these objects.
 	GroupVersion = schema.GroupVersion{Group: "vald.vdaas.org", Version: "v1"}
-	// SchemeBuilder is used to add go types to the GroupVersionKind scheme.
-	SchemeBuilder = &scheme.Builder{GroupVersion: GroupVersion}
+
+	// SchemeBuilder registers the item types via AddKnownTypes and the generic
+	// list aliases via AddListToScheme: generic instantiations carry mangled
+	// reflect type names, so the list kinds must be registered explicitly.
+	SchemeBuilder = runtime.NewSchemeBuilder(func(s *runtime.Scheme) error {
+		s.AddKnownTypes(
+			GroupVersion,
+			&ValdBenchmarkScenario{},
+			&ValdBenchmarkJob{},
+		)
+		resource.AddListToScheme[ValdBenchmarkScenario](s, GroupVersion, "ValdBenchmarkScenarioList")
+		resource.AddListToScheme[ValdBenchmarkJob](s, GroupVersion, "ValdBenchmarkJobList")
+		metav1.AddToGroupVersion(s, GroupVersion)
+		return nil
+	})
+
 	// AddToScheme adds the types in this group-version to the given scheme.
 	AddToScheme = SchemeBuilder.AddToScheme
 )
-
-func init() {
-	SchemeBuilder.Register(
-		&ValdBenchmarkScenario{},
-		&ValdBenchmarkScenarioList{},
-		&ValdBenchmarkJob{},
-		&ValdBenchmarkJobList{},
-	)
-}

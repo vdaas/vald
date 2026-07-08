@@ -23,7 +23,7 @@ import (
 	"github.com/grafana/grafana-foundation-sdk/go/timeseries"
 	"github.com/grafana/promql-builder/go/promql"
 	"github.com/vdaas/vald/internal/observability/metrics/tools/benchmark"
-	"github.com/vdaas/vald/pkg/tools/benchmark/operator/config"
+	"github.com/vdaas/vald/pkg/operator/benchmark/config"
 )
 
 func addSumStatPanel(builder *dashboard.DashboardBuilder, title string, metric string) {

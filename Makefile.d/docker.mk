@@ -22,7 +22,7 @@ docker/build: \
 	docker/build/agent-ngt \
 	docker/build/agent-sidecar \
 	docker/build/benchmark-job \
-	docker/build/benchmark-operator \
+	docker/build/operator/benchmark \
 	docker/build/binfmt \
 	docker/build/buildbase \
 	docker/build/buildkit \
@@ -34,6 +34,7 @@ docker/build: \
 	docker/build/gateway-lb \
 	docker/build/gateway-mirror \
 	docker/build/operator/helm \
+	docker/build/operator/vald \
 	docker/build/index-correction \
 	docker/build/index-creation \
 	docker/build/index-deletion \
@@ -53,7 +54,7 @@ docker/xpanes/build:
 	docker/build/agent-ngt \
 	docker/build/agent-sidecar \
 	docker/build/benchmark-job \
-	docker/build/benchmark-operator \
+	docker/build/operator/benchmark \
 	docker/build/binfmt \
 	docker/build/buildbase \
 	docker/build/buildkit \
@@ -72,6 +73,7 @@ docker/xpanes/build:
 	docker/build/index-save \
 	docker/build/manager-index \
 	docker/build/operator/helm \
+	docker/build/operator/vald \
 	docker/build/readreplica-rotate \
 	docker/build/e2e
 
@@ -325,13 +327,9 @@ docker/build/dev-container:
 	IMAGE=$(DEV_CONTAINER_IMAGE) \
 	docker/build/image
 
-.PHONY: docker/build/helm-operator
-## build helm-operator image
-docker/build/helm-operator: docker/build/operator/helm
-
-.PHONY: docker/name/helm-operator
+.PHONY: docker/name/operator/helm
 ## print helm-operator image name
-docker/name/helm-operator:
+docker/name/operator/helm:
 	@echo "$(ORG)/$(HELM_OPERATOR_IMAGE)"
 
 .PHONY: docker/build/operator/helm
@@ -340,6 +338,22 @@ docker/build/operator/helm:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/operator/helm/Dockerfile" \
 	IMAGE=$(HELM_OPERATOR_IMAGE) \
 	EXTRA_ARGS="--build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION) --build-arg UPX_OPTIONS=$(UPX_OPTIONS) $(EXTRA_ARGS)" \
+	docker/build/image
+
+.PHONY: docker/build/operator
+## build vald-operator image
+docker/build/operator: docker/build/operator/vald
+
+.PHONY: docker/name/operator
+## print vald-operator image name
+docker/name/operator:
+	@echo "$(ORG)/$(OPERATOR_IMAGE)"
+
+.PHONY: docker/build/operator/vald
+## build vald-operator image
+docker/build/operator/vald:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/operator/vald/Dockerfile" \
+	IMAGE=$(OPERATOR_IMAGE) \
 	docker/build/image
 
 .PHONY: docker/name/index-correction
@@ -439,15 +453,15 @@ docker/build/benchmark-job:
 	DOCKER_OPTS="$${DOCKER_OPTS:+$${DOCKER_OPTS}} --build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF5_VERSION=$(HDF5_VERSION)" \
 	docker/build/image
 
-.PHONY: docker/name/benchmark-operator
+.PHONY: docker/name/operator/benchmark
 ## print benchmark-operator image name
-docker/name/benchmark-operator:
+docker/name/operator/benchmark:
 	@echo "$(ORG)/$(BENCHMARK_OPERATOR_IMAGE)"
 
-.PHONY: docker/build/benchmark-operator
+.PHONY: docker/build/operator/benchmark
 ## build benchmark operator
-docker/build/benchmark-operator:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/tools/benchmark/operator/Dockerfile" \
+docker/build/operator/benchmark:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/operator/benchmark/Dockerfile" \
 	IMAGE=$(BENCHMARK_OPERATOR_IMAGE) \
 	docker/build/image
 

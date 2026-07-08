@@ -64,7 +64,7 @@ runs:
       run: |
         helm install vald-helm-operator \
           ${HELM_EXTRA_OPTIONS} \
-          charts/vald-helm-operator/.
+          charts/operator/helm/.
 
         sleep 6
       env:
