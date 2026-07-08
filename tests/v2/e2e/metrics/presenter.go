@@ -305,7 +305,8 @@ func (p *SnapshotPresenter) asSeparatedValue(separator rune) (string, error) {
 		qwMax = float64(s.QueueWaits.Max) / nanoToSec
 	}
 
-	row = append(row,
+	row = append(
+		row,
 		strconv.FormatFloat(qwMin, 'f', 4, 64),
 		strconv.FormatFloat(qwMean, 'f', 4, 64),
 		strconv.FormatFloat(qwMax, 'f', 4, 64),

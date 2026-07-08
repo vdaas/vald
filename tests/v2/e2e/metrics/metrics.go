@@ -570,7 +570,8 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 			slices.SortFunc(exDetails.Average, func(a, b *ExemplarItem) int {
 				return cmp.Compare(
 					math.Abs(float64(a.Latency)-mean),
-					math.Abs(float64(b.Latency)-mean))
+					math.Abs(float64(b.Latency)-mean),
+				)
 			})
 		}
 	}

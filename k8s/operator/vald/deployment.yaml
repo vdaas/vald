@@ -1,0 +1,153 @@
+#
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vald-operator
+  namespace: default
+  labels:
+    app: vald-operator
+    app.kubernetes.io/name: vald
+    app.kubernetes.io/component: vald-operator
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: vald-operator
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: vald-operator
+        app.kubernetes.io/name: vald
+        app.kubernetes.io/component: vald-operator
+      annotations:
+        pyroscope.io/scrape: "true"
+        pyroscope.io/application-name: vald-operator
+        pyroscope.io/profile-cpu-enabled: "true"
+        pyroscope.io/profile-mem-enabled: "true"
+        pyroscope.io/port: "6060"
+    spec:
+      containers:
+        - name: vald-operator
+          image: "vdaas/vald-operator:latest"
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 2
+            httpGet:
+              path: /liveness
+              port: liveness
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 2
+          readinessProbe:
+            failureThreshold: 2
+            httpGet:
+              path: /readiness
+              port: readiness
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 2
+          startupProbe:
+            failureThreshold: 30
+            httpGet:
+              path: /liveness
+              port: liveness
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 2
+          ports:
+            - name: liveness
+              protocol: TCP
+              containerPort: 3000
+            - name: readiness
+              protocol: TCP
+              containerPort: 3001
+            - name: grpc
+              protocol: TCP
+              containerPort: 8081
+            - name: pprof
+              protocol: TCP
+              containerPort: 6060
+          resources:
+            limits:
+              cpu: 600m
+              memory: 200Mi
+            requests:
+              cpu: 200m
+              memory: 65Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 65532
+            runAsNonRoot: true
+            runAsUser: 65532
+          env:
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          volumeMounts:
+            - name: vald-operator-config
+              mountPath: /etc/server/
+            - name: vald-operator-default-vrs
+              mountPath: /opt/valdoperatorrelease/config/
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      serviceAccountName: vald-operator
+      securityContext:
+        fsGroup: 65532
+        fsGroupChangePolicy: OnRootMismatch
+        runAsGroup: 65532
+        runAsNonRoot: true
+        runAsUser: 65532
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: vald-operator-config
+          configMap:
+            defaultMode: 420
+            name: vald-operator-config
+        - name: vald-operator-default-vrs
+          configMap:
+            defaultMode: 420
+            name: vald-operator-default-vrs

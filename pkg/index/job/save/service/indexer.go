@@ -93,7 +93,8 @@ func (idx *index) Start(ctx context.Context) error {
 		}
 	}()
 
-	err := idx.doSaveIndex(ctx,
+	err := idx.doSaveIndex(
+		ctx,
 		func(ctx context.Context, ac agent.AgentClient, copts ...grpc.CallOption) (*payload.Empty, error) {
 			return ac.SaveIndex(ctx, &payload.Empty{}, copts...)
 		},
@@ -116,7 +117,8 @@ func (idx *index) Start(ctx context.Context) error {
 				st  *status.Status
 				msg string
 			)
-			st, msg, err = status.ParseError(err, codes.Internal,
+			st, msg, err = status.ParseError(
+				err, codes.Internal,
 				"failed to parse "+agent.SaveIndexRPCName+" gRPC error response",
 			)
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
@@ -157,7 +159,8 @@ func (idx *index) doSaveIndex(
 	log.Infof("target agent addrs: %v", targetAddrs)
 
 	var emu sync.Mutex
-	err := idx.client.GetClient().OrderedRangeConcurrent(ctx, targetAddrs, idx.concurrency,
+	err := idx.client.GetClient().OrderedRangeConcurrent(
+		ctx, targetAddrs, idx.concurrency,
 		func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "OrderedRangeConcurrent/"+target), agent.SaveIndexRPCName+"/"+target)
 			defer func() {
@@ -194,7 +197,8 @@ func (idx *index) doSaveIndex(
 						st  *status.Status
 						msg string
 					)
-					st, msg, err = status.ParseError(err, codes.Internal,
+					st, msg, err = status.ParseError(
+						err, codes.Internal,
 						"failed to parse "+agent.SaveIndexRPCName+" gRPC error response",
 					)
 					attrs = trace.FromGRPCStatus(st.Code(), msg)

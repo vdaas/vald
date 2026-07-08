@@ -9,7 +9,7 @@ ValdOperatorRelease (vor)  ──reconcile──▶  ValdRelease (VRS) × (activ
    minimal input                              consumed by vald-helm-operator
 ```
 
-The controller only *generates* VRS definitions.
+The controller only _generates_ VRS definitions.
 It does not run Vald itself; a VHO running in the target cluster turns each VRS into Vald pods.
 This separation lets a management cluster emit VRS definitions and distribute them to other clusters.
 
@@ -25,28 +25,26 @@ This separation lets a management cluster emit VRS definitions and distribute th
 ### Build and push the controller image
 
 ```sh
-make docker-build docker-push IMG=<some-registry>/vald-operator:tag
+make docker/build/operator/vald
 ```
 
 ### Install CRDs and deploy the controller
 
 ```sh
-make install
-make deploy IMG=<some-registry>/vald-operator:tag
+make k8s/operator/vald/deploy
 ```
 
 ### Apply a sample ValdOperatorRelease
 
 ```sh
-kubectl apply -k config/samples/
+kubectl apply -f cmd/operator/vald/sample.yaml
 ```
 
 ### Uninstall
 
 ```sh
-kubectl delete -k config/samples/
-make uninstall
-make undeploy
+kubectl delete -f cmd/operator/vald/sample.yaml
+make k8s/operator/vald/delete
 ```
 
 ## CRD: ValdOperatorRelease (`vor`)
@@ -67,21 +65,21 @@ metadata:
   namespace: vald
 spec:
   infrastructure:
-    - role: green               # arbitrary role label (e.g. green/blue, hot/cold)
-      type: kind                # cluster type hint (informational)
+    - role: green # arbitrary role label (e.g. green/blue, hot/cold)
+      type: kind # cluster type hint (informational)
       active: true
       clusters:
-        - id: "abc-123"         # cluster identifier (populated by external system)
-          name: "cluster-a"     # human-readable cluster name
+        - id: "abc-123" # cluster identifier (populated by external system)
+          name: "cluster-a" # human-readable cluster name
       nodePools:
-        general:                # gateway / discoverer / manager
+        general: # gateway / discoverer / manager
           name: general-pool
           replicas: 3
           machineResource:
             cpu: "4"
             memory: "16Gi"
             storage: "100Gi"
-        agent:                  # optional dedicated agent pool
+        agent: # optional dedicated agent pool
           name: agent-pool
           replicas: 6
           machineResource:
@@ -116,40 +114,40 @@ spec:
           enabled: true
           host: vald.example.com
       discoverer:
-        kind: DaemonSet         # DaemonSet | Deployment
-      overlay: {}               # arbitrary JSON merged onto the generated VRS
+        kind: DaemonSet # DaemonSet | Deployment
+      overlay: {} # arbitrary JSON merged onto the generated VRS
 ```
 
 ### `spec.infrastructure[]`
 
-| Field | Notes |
-|-------|-------|
-| `role` | Free-form role label (e.g. `hot`, `standby`, `blue`, `green`). Copied to VRS labels. |
-| `type` | Cluster type label. |
-| `active` | When `false`, the entry is skipped during VRS generation. |
-| `clusters[]` | `{ id, name }`. `id` is typically filled by an external system; `name` must be set. |
-| `nodePools` | Map keyed by pool type: `general` (required) and `agent` (optional). Each pool carries `name`, `replicas`, and `machineResource{ cpu, memory, storage }`. |
+| Field        | Notes                                                                                                                                                     |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `role`       | Free-form role label (e.g. `hot`, `standby`, `blue`, `green`). Copied to VRS labels.                                                                      |
+| `type`       | Cluster type label.                                                                                                                                       |
+| `active`     | When `false`, the entry is skipped during VRS generation.                                                                                                 |
+| `clusters[]` | `{ id, name }`. `id` is typically filled by an external system; `name` must be set.                                                                       |
+| `nodePools`  | Map keyed by pool type: `general` (required) and `agent` (optional). Each pool carries `name`, `replicas`, and `machineResource{ cpu, memory, storage }`. |
 
 #### Node pool types
 
-| Key | Hosts |
-|-----|-------|
+| Key       | Hosts                                 |
+| --------- | ------------------------------------- |
 | `general` | gateway-lb, discoverer, manager-index |
-| `agent` | vald-agent (NGT) |
+| `agent`   | vald-agent (NGT)                      |
 
 When no `agent` pool is defined, the `general` pool is used for agent resource sizing and replica count as well.
 
 ### `spec.vectorEngine.vald`
 
-| Field | Description |
-|-------|-------------|
-| `defaults.logLevel` | Log level for all Vald components. |
-| `agent.ngt` | NGT settings: `dimension` (required, >= 2), `creationEdgeSize`, `searchEdgeSize`, `distanceType`, `objectType`. |
-| `agent.persistentVolume` | Optional. `{ enabled, storageClass, accessMode }`. Falls back to environment defaults when omitted. |
-| `indexer` | `indexSchedule`, `saveSchedule`, `concurrency`, `manager`, suspend flags, durations. |
-| `gateway` | `indexReplica`, `serviceType`, `ingress{ enabled, host }`. |
-| `discoverer.kind` | `DaemonSet` or `Deployment`. |
-| `overlay` | Arbitrary JSON patch merged onto the generated VRS (Helm-style patch). |
+| Field                    | Description                                                                                                     |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| `defaults.logLevel`      | Log level for all Vald components.                                                                              |
+| `agent.ngt`              | NGT settings: `dimension` (required, >= 2), `creationEdgeSize`, `searchEdgeSize`, `distanceType`, `objectType`. |
+| `agent.persistentVolume` | Optional. `{ enabled, storageClass, accessMode }`. Falls back to environment defaults when omitted.             |
+| `indexer`                | `indexSchedule`, `saveSchedule`, `concurrency`, `manager`, suspend flags, durations.                            |
+| `gateway`                | `indexReplica`, `serviceType`, `ingress{ enabled, host }`.                                                      |
+| `discoverer.kind`        | `DaemonSet` or `Deployment`.                                                                                    |
+| `overlay`                | Arbitrary JSON patch merged onto the generated VRS (Helm-style patch).                                          |
 
 ### Status
 
@@ -168,23 +166,23 @@ status:
       reason: Progressing
 ```
 
-| Field | Description |
-|-------|-------------|
-| `phase` | The condition type currently being evaluated. |
-| `progress.total` | Total lifecycle phase count. |
-| `progress.completed` | Phases that have reached `True`. |
-| `conditions` | Accumulated `metav1.Condition` array. Phases are never removed. |
+| Field                | Description                                                     |
+| -------------------- | --------------------------------------------------------------- |
+| `phase`              | The condition type currently being evaluated.                   |
+| `progress.total`     | Total lifecycle phase count.                                    |
+| `progress.completed` | Phases that have reached `True`.                                |
+| `conditions`         | Accumulated `metav1.Condition` array. Phases are never removed. |
 
 ## Lifecycle
 
 Reconciliation is modeled as an ordered flow of phases.
 Each phase carries a `Condition` plus an optional `Builder` (creates/updates resources) and `Checker` (reports readiness).
 
-| Phase | Builder | Checker | Purpose |
-|-------|---------|---------|---------|
-| `WaitingClusterCreate` | -- | yes | Validate infra config; wait until every cluster has `id` and `name`. |
-| `WaitingCreateVrs` | yes | yes | Build VRS objects and wait until they are ready. |
-| `Completed` | -- | -- | Terminal phase. |
+| Phase                  | Builder | Checker | Purpose                                                              |
+| ---------------------- | ------- | ------- | -------------------------------------------------------------------- |
+| `WaitingClusterCreate` | --      | yes     | Validate infra config; wait until every cluster has `id` and `name`. |
+| `WaitingCreateVrs`     | yes     | yes     | Build VRS objects and wait until they are ready.                     |
+| `Completed`            | --      | --      | Terminal phase.                                                      |
 
 ### Accumulating, self-healing conditions
 
@@ -209,12 +207,12 @@ Reconcile N+3: [WaitingClusterCreate=True, WaitingCreateVrs=False]
 
 ### Readiness states
 
-| Result | Condition Status | Meaning |
-|--------|------------------|---------|
-| `Progressing` | Unknown | The controller is actively working. |
-| `Pending` | Unknown | Waiting for an external event (e.g. cluster ID assignment). |
-| `Succeeded` | True | Phase is complete. |
-| `Failed` | False | Misconfiguration or unrecoverable error. |
+| Result        | Condition Status | Meaning                                                     |
+| ------------- | ---------------- | ----------------------------------------------------------- |
+| `Progressing` | Unknown          | The controller is actively working.                         |
+| `Pending`     | Unknown          | Waiting for an external event (e.g. cluster ID assignment). |
+| `Succeeded`   | True             | Phase is complete.                                          |
+| `Failed`      | False            | Misconfiguration or unrecoverable error.                    |
 
 ## VRS Generation
 
@@ -274,11 +272,11 @@ maxReplicas = max(agentPodCount * 2, 1)
 
 These components use fixed defaults:
 
-| Component | CPU req | RAM req | CPU lim | RAM lim |
-|-----------|---------|---------|---------|---------|
-| gateway-lb | 200m | 150Mi | 2000m | 700Mi |
-| discoverer | 200m | 65Mi | 600m | 200Mi |
-| manager-index | 200m | 80Mi | 1000m | 500Mi |
+| Component     | CPU req | RAM req | CPU lim | RAM lim |
+| ------------- | ------- | ------- | ------- | ------- |
+| gateway-lb    | 200m    | 150Mi   | 2000m   | 700Mi   |
+| discoverer    | 200m    | 65Mi    | 600m    | 200Mi   |
+| manager-index | 200m    | 80Mi    | 1000m   | 500Mi   |
 
 ### Topology spread constraints
 
@@ -322,47 +320,50 @@ When `REQUIRE_NODEPOOL_MATCH=false` (default), the controller skips node listing
 
 ## Configuration
 
-All configuration is done via environment variables, loaded once at startup.
+All configuration is loaded once at startup from a YAML config file, following the same convention as every other Vald component.
+See [`cmd/operator/vald/sample.yaml`](https://github.com/vdaas/vald/blob/main/cmd/operator/vald/sample.yaml) for a complete example; when deploying via the Helm chart, every key is exposed through `charts/operator/vald/values.yaml`.
 
-| Environment Variable | Default | Description |
-|---------------------|---------|-------------|
-| `DEFAULT_VRS_PATH` | `/opt/vald-operator/config/vrs.yaml` | Default VRS template merged with the overlay. |
-| `REQUIRE_NODEPOOL_MATCH` | `false` | Only generate VRS where matching node pools exist. |
-| `NODEPOOL_LABEL_PREFIX` | `""` | Prefix for the `namespace`/`type`/`role` node labels. |
-| `AGENT_PODS_PER_NODE` | `2` | Agent pods packed per node when computing replicas. |
-| `DEFAULT_STORAGE_CLASS` | `standard` | PV storage class fallback. |
-| `DEFAULT_ACCESS_MODE` | `ReadWriteOnce` | PV access mode fallback. |
-| `PV_BUFFER_RATIO` | `1.5` | PV size = `max(memoryRequest * ratio, min)`. |
-| `PV_MIN_SIZE_BYTES` | `1073741824` | Minimum PV size in bytes. |
-| `ENABLE_INGRESS` | `true` | Enable gateway ingress generation. |
-| `GATEWAY_INGRESS_ANNOTATIONS` | `""` | YAML map of annotations applied to the gateway ingress. |
-| `GATEWAY_SERVICE_TYPE` | `NodePort` | Gateway service type (`NodePort` / `ClusterIP` / `LoadBalancer`). |
-| `VRS_LOG_LEVEL` | `warn` | Log level passed through to the generated VRS. |
-| `DISCOVERER_DS_MAX_SURGE` | `30%` | Discoverer DaemonSet rolling-update `maxSurge`. |
-| `DISCOVERER_DS_MAX_UNAVAILABLE` | `0%` | Discoverer DaemonSet rolling-update `maxUnavailable`. |
-| `INTERNAL_HOST_DOMAIN` | `""` | Optional internal host domain. |
+The reconciler-facing settings live under the `operator` key:
+
+| Config Key                                                 | Default                                    | Description                                                       |
+| ---------------------------------------------------------- | ------------------------------------------ | ----------------------------------------------------------------- |
+| `operator.vrs.default_vrs_path`                             | `/opt/valdoperatorrelease/config/vrs.yaml` | Default VRS template merged with the overlay.                     |
+| `operator.vrs.log_level`                                    | `warn`                                     | Log level passed through to the generated VRS.                    |
+| `operator.vrs.internal_host_domain`                         | `""`                                       | Optional internal host domain.                                    |
+| `operator.node_pool.require_match`                          | `false`                                    | Only generate VRS where matching node pools exist.                |
+| `operator.node_pool.label_prefix`                           | `""`                                       | Prefix for the `namespace`/`type`/`role` node labels.             |
+| `operator.node_pool.agent_pods_per_node`                    | `2`                                        | Agent pods packed per node when computing replicas.               |
+| `operator.persistent_volume.default_storage_class`          | `standard`                                 | PV storage class fallback.                                        |
+| `operator.persistent_volume.default_access_mode`            | `ReadWriteOnce`                            | PV access mode fallback.                                          |
+| `operator.persistent_volume.buffer_ratio`                   | `1.5`                                      | PV size = `max(memoryRequest * ratio, min)`.                      |
+| `operator.persistent_volume.min_size_bytes`                 | `1073741824`                               | Minimum PV size in bytes.                                         |
+| `operator.networking.enable_ingress`                        | `true`                                     | Enable gateway ingress generation.                                |
+| `operator.networking.gateway_ingress_annotations`           | `{}`                                       | Annotations applied to the gateway ingress.                       |
+| `operator.networking.gateway_service_type`                  | `NodePort`                                 | Gateway service type (`NodePort` / `ClusterIP` / `LoadBalancer`). |
+| `operator.networking.discoverer_daemonset_max_surge`        | `30%`                                      | Discoverer DaemonSet rolling-update `maxSurge`.                   |
+| `operator.networking.discoverer_daemonset_max_unavailable`  | `0%`                                       | Discoverer DaemonSet rolling-update `maxUnavailable`.             |
+
+Controller-level settings (leader election, requeue intervals, reconcile concurrency, watched namespaces) live under `operator.controller`, and server/observability settings (`server_config`, `observability`) follow the standard Vald component layout.
 
 ## Development
 
 ### Common tasks
 
 ```sh
-# Build and run unit tests
-make build
-make test
+# Run unit tests
+make test/operator/vald
 
-# Regenerate CRDs / RBAC / deepcopy after changing api/v1 types
-make manifests generate
+# Regenerate k8s manifests after changing charts/operator/vald
+make k8s/manifest/operator/vald/update
 
 # Lint
 make lint
 
 # Build and push the controller image
-make docker-build docker-push IMG=<registry>/vald-operator:tag
+make docker/build/operator/vald
 
-# Install CRDs and deploy the controller
-make install
-make deploy IMG=<registry>/vald-operator:tag
+# Deploy the controller to the current cluster
+make k8s/operator/vald/deploy
 ```
 
 Run `make help` for the full list of targets.

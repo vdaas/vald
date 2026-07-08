@@ -1,0 +1,236 @@
+#
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: vald.vdaas.org/v1
+kind: ValdRelease
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: vald.vdaas.org
+    role: green
+    type: local
+    vald.vdaas.org/managed-resource: ValdRelease
+  name: user123-someimagesearch-lpokijhbgaev
+  namespace: user123-someimagesearch
+spec:
+  agent:
+    kind: StatefulSet
+    logging:
+      format: raw
+      level: info
+      logger: glg
+    maxReplicas: 4
+    minReplicas: 4
+    ngt:
+      creation_edge_size: 10
+      dimension: 256
+      distance_type: l2
+      enable_copy_on_write: true
+      enable_in_memory_mode: false
+      index_path: /var/ngt/index
+      object_type: float
+      search_edge_size: 40
+    nodeSelector:
+      namespace: user123-someimagesearch
+      type: agent
+    persistentVolume:
+      accessMode: ReadWriteOnce
+      enabled: true
+      size: 15Gi
+      storageClass: standard
+    resources:
+      limits:
+        cpu: 9600m
+      requests:
+        cpu: 4800m
+        memory: 10308M
+    rollingUpdate:
+      maxSurge: "1"
+      maxUnavailable: "1"
+    tolerations:
+      - effect: NoSchedule
+        key: namespace
+        operator: Equal
+        value: user123-someimagesearch
+      - key: type
+        operator: Equal
+        value: agent
+    topologySpreadConstraints:
+      - labelSelector:
+          matchLabels:
+            app.kubernetes.io/component: agent
+        maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+  defaults:
+    logging:
+      format: raw
+      level: info
+      logger: glg
+    observability:
+      enabled: true
+      otlp:
+        collector_endpoint: otel-collector.monitoring.svc.cluster.local:4317
+      trace: {}
+    server_config:
+      servers:
+        grpc:
+          server:
+            grpc:
+              interceptors:
+                - RecoverInterceptor
+                - MetricInterceptor
+    time_zone: Asia/Tokyo
+  discoverer:
+    clusterRole:
+      name: user123-someimagesearch
+    clusterRoleBinding:
+      name: user123-someimagesearch
+    externalTrafficPolicy: Local
+    kind: DaemonSet
+    logging:
+      format: raw
+      level: info
+      logger: glg
+    nodeSelector:
+      namespace: user123-someimagesearch
+      type: general
+    resources:
+      limits:
+        cpu: 600m
+        memory: 200Mi
+      requests:
+        cpu: 200m
+        memory: 65Mi
+    rollingUpdate:
+      maxSurge: 30%
+      maxUnavailable: 0%
+    serviceType: NodePort
+    tolerations:
+      - effect: NoSchedule
+        key: namespace
+        operator: Equal
+        value: user123-someimagesearch
+      - key: type
+        operator: Equal
+        value: general
+    topologySpreadConstraints:
+      - labelSelector:
+          matchLabels:
+            app.kubernetes.io/component: discoverer
+        maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+  gateway:
+    lb:
+      gateway_config:
+        index_replica: 3
+      hpa:
+        targetCPUUtilizationPercentage: 80
+      ingress:
+        defaultBackend:
+          enabled: false
+        enabled: false
+        host: ""
+        pathType: Prefix
+        servicePort: grpc
+      logging:
+        format: raw
+        level: info
+        logger: glg
+      maxReplicas: 8
+      minReplicas: 2
+      nodeSelector:
+        namespace: user123-someimagesearch
+        type: general
+      resources:
+        limits:
+          cpu: "2"
+          memory: 700Mi
+        requests:
+          cpu: 200m
+          memory: 150Mi
+      serviceType: NodePort
+      tolerations:
+        - effect: NoSchedule
+          key: namespace
+          operator: Equal
+          value: user123-someimagesearch
+        - key: type
+          operator: Equal
+          value: general
+      topologySpreadConstraints:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: gateway-lb
+          maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+  manager:
+    index:
+      creator:
+        concurrency: 2
+        enabled: true
+        nodeSelector:
+          namespace: user123-someimagesearch
+          type: general
+        schedule: 0 2 * * *
+        suspend: false
+        tolerations:
+          - effect: NoSchedule
+            key: namespace
+            operator: Equal
+            value: user123-someimagesearch
+          - key: type
+            operator: Equal
+            value: general
+      enabled: false
+      indexer: {}
+      logging:
+        format: raw
+        level: info
+        logger: glg
+      nodeSelector:
+        namespace: user123-someimagesearch
+        type: general
+      saver:
+        enabled: true
+        nodeSelector:
+          namespace: user123-someimagesearch
+          type: general
+        schedule: 0 * * * *
+        suspend: false
+        tolerations:
+          - effect: NoSchedule
+            key: namespace
+            operator: Equal
+            value: user123-someimagesearch
+          - key: type
+            operator: Equal
+            value: general
+      tolerations:
+        - effect: NoSchedule
+          key: namespace
+          operator: Equal
+          value: user123-someimagesearch
+        - key: type
+          operator: Equal
+          value: general
+status:
+  condition:
+    lastTransitionTime: null
+    message: ""
+    reason: ""
+    status: ""
+    type: ""

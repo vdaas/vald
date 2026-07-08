@@ -23,9 +23,9 @@ edition = "2024"
 [dependencies]
 algorithm = { version = "0.1.0", path = "../../libs/algorithm" }
 qbg = { version = "0.1.0", path = "../../libs/algorithms/qbg" }
-anyhow = "1.0.102"
+anyhow = "1.0.103"
 chrono = "0.4.45"
-config = "0.15.24"
+config = "0.15.25"
 flexi_logger = "0.31"
 futures = "0.3.32"
 http = "1.4.2"

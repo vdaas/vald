@@ -16,13 +16,14 @@
 
 package client
 
-import "sigs.k8s.io/controller-runtime/pkg/scheme"
+import "k8s.io/apimachinery/pkg/runtime"
 
 type Option func(*client) error
 
-func WithSchemeBuilder(sb scheme.Builder) Option {
+// WithSchemeBuilder registers the given scheme builder's types on the
+// client's scheme.
+func WithSchemeBuilder(sb runtime.SchemeBuilder) Option {
 	return func(c *client) error {
-		sb.AddToScheme(c.scheme)
-		return nil
+		return sb.AddToScheme(c.scheme)
 	}
 }

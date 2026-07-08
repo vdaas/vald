@@ -327,7 +327,8 @@ func (s *subProcess) updateDeployment(
 }
 
 func (s *subProcess) deleteSnapshot(ctx context.Context, snapshot *k8s.VolumeSnapshot) error {
-	watcher, err := s.client.Watch(ctx,
+	watcher, err := s.client.Watch(
+		ctx,
 		&k8s.VolumeSnapshotList{
 			Items: []k8s.VolumeSnapshot{*snapshot},
 		},
@@ -364,7 +365,8 @@ func (s *subProcess) deleteSnapshot(ctx context.Context, snapshot *k8s.VolumeSna
 }
 
 func (s *subProcess) deletePVC(ctx context.Context, pvc *k8s.PersistentVolumeClaim) error {
-	watcher, err := s.client.Watch(ctx,
+	watcher, err := s.client.Watch(
+		ctx,
 		&k8s.PersistentVolumeClaimList{
 			Items: []k8s.PersistentVolumeClaim{*pvc},
 		},

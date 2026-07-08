@@ -18,6 +18,8 @@
 package k8s
 
 import (
+	"time"
+
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/sync/errgroup"
@@ -78,6 +80,49 @@ func WithLeaderElection(enabled bool, id, namespace string) Option {
 		c.leaderElection = enabled
 		c.leaderElectionID = id
 		c.leaderElectionNamespace = namespace
+		return nil
+	}
+}
+
+// WithLeaderElectionDetail sets the leader election lease timings applied to
+// the manager. Non-positive values are ignored so that controller-runtime
+// defaults (15s/10s/2s) remain in effect for the unset fields.
+func WithLeaderElectionDetail(leaseDuration, renewDeadline, retryPeriod time.Duration) Option {
+	return func(c *controller) error {
+		if leaseDuration > 0 {
+			c.leaseDuration = &leaseDuration
+		}
+		if renewDeadline > 0 {
+			c.renewDeadline = &renewDeadline
+		}
+		if retryPeriod > 0 {
+			c.retryPeriod = &retryPeriod
+		}
+		return nil
+	}
+}
+
+// WithSyncPeriod sets the informer cache resync interval. A non-positive
+// value keeps the controller-runtime default (10h with jitter).
+func WithSyncPeriod(dur time.Duration) Option {
+	return func(c *controller) error {
+		if dur > 0 {
+			c.syncPeriod = &dur
+		}
+		return nil
+	}
+}
+
+// WithCacheNamespaces restricts the manager cache to the given namespaces.
+// Empty entries are skipped; when no namespace remains, the cache watches the
+// whole cluster as before.
+func WithCacheNamespaces(namespaces ...string) Option {
+	return func(c *controller) error {
+		for _, ns := range namespaces {
+			if ns != "" {
+				c.cacheNamespaces = append(c.cacheNamespaces, ns)
+			}
+		}
 		return nil
 	}
 }

@@ -53,6 +53,7 @@ const (
 	OpKubernetes OperationType = "kubernetes"
 	OpClient     OperationType = "client"
 	OpWait       OperationType = "wait"
+	OpHTTP       OperationType = "http"
 )
 
 type StatusCode string
@@ -103,15 +104,18 @@ const (
 type KubernetesKind string
 
 const (
-	ConfigMap   KubernetesKind = "configmap"
-	CronJob     KubernetesKind = "cronjob"
-	DaemonSet   KubernetesKind = "daemonset"
-	Deployment  KubernetesKind = "deployment"
-	Job         KubernetesKind = "job"
-	Pod         KubernetesKind = "pod"
-	Secret      KubernetesKind = "secret"
-	Service     KubernetesKind = "service"
-	StatefulSet KubernetesKind = "statefulset"
+	ConfigMap                      KubernetesKind = "configmap"
+	CronJob                        KubernetesKind = "cronjob"
+	CustomResource                 KubernetesKind = "customresource"
+	DaemonSet                      KubernetesKind = "daemonset"
+	Deployment                     KubernetesKind = "deployment"
+	Job                            KubernetesKind = "job"
+	MutatingWebhookConfiguration   KubernetesKind = "mutatingwebhookconfiguration"
+	Pod                            KubernetesKind = "pod"
+	Secret                         KubernetesKind = "secret"
+	Service                        KubernetesKind = "service"
+	StatefulSet                    KubernetesKind = "statefulset"
+	ValidatingWebhookConfiguration KubernetesKind = "validatingwebhookconfiguration"
 )
 
 type KubernetesStatus string
@@ -136,12 +140,14 @@ const (
 type Operator string
 
 const (
-	Eq Operator = "eq"
-	Ne Operator = "ne"
-	Ge Operator = "ge"
-	Gt Operator = "gt"
-	Le Operator = "le"
-	Lt Operator = "lt"
+	Eq          Operator = "eq"
+	Ne          Operator = "ne"
+	Ge          Operator = "ge"
+	Gt          Operator = "gt"
+	Le          Operator = "le"
+	Lt          Operator = "lt"
+	Contains    Operator = "contains"
+	NotContains Operator = "not_contains"
 )
 
 type ExitCondition string
