@@ -1,17 +1,21 @@
-// Command schemagen is a PoC: it generates Go structs from vald's
-// charts/vald/values.schema.json (JSON Schema draft-07).
-//
-// This demonstrates the "JSON Schema -> Go types" step that vald's existing
-// schema pipeline (values.yaml -> values.schema.json -> CRD) is missing.
-// It is intentionally small and stdlib-only.
+// Command schemagen generates Go structs from vald's
+// charts/vald/values.schema.json (JSON Schema draft-07) and writes them after
+// the "// +schemagen:begin" marker of the target file, leaving the package
+// clause, consts and everything above the marker intact.
 //
 // Usage:
 //
-//	go run ./poc/schemagen <values.schema.json> <root.path> [root.path...]
+//     schemagen <values.schema.json> <root.path> <RootTypeName> <targetFile>
 //
-// Example:
+// Example (regenerate the agent package's struct in place):
 //
-//	go run ./poc/schemagen /path/to/charts/vald/values.schema.json agent.ngt gateway.lb.gateway_config
+//     go run ./poc/schemagen ../../charts/vald/values.schema.json agent Agent internal/pkg/api/valdrelease/agent/agent.go
+//
+// Struct names are derived from the field path relative to <root.path>, so the
+// root object is <RootTypeName> and e.g. agent.ngt -> NGT, agent.ngt.kvsdb ->
+// NGTKVSDB. Types are taken straight from the schema (no k8s type mapping);
+// free-form objects become map[string]any and every field is
+// omitempty. Enum values are emitted as a trailing comment.
 package main
 
 import (
@@ -22,8 +26,6 @@ import (
 	"strings"
 )
 
-// Schema is the minimal subset of JSON Schema draft-07 that vald's
-// values.schema.json actually uses (no $ref/$defs/anyOf/allOf).
 type Schema struct {
 	Type       string             `json:"type"`
 	Properties map[string]*Schema `json:"properties"`
@@ -31,7 +33,6 @@ type Schema struct {
 	Enum       []any              `json:"enum"`
 }
 
-// initialisms get upper-cased when building Go identifiers.
 var initialisms = map[string]string{
 	"ngt": "NGT", "id": "ID", "cpu": "CPU", "grpc": "GRPC", "http": "HTTP",
 	"tls": "TLS", "url": "URL", "api": "API", "ip": "IP", "pv": "PV",
@@ -48,7 +49,6 @@ func goName(seg string) string {
 	return strings.ToUpper(seg[:1]) + seg[1:]
 }
 
-// typeName builds a struct name from a path like ["agent","ngt"] -> "AgentNGT".
 func typeName(path []string) string {
 	var b strings.Builder
 	for _, p := range path {
@@ -59,12 +59,24 @@ func typeName(path []string) string {
 	return b.String()
 }
 
-var out strings.Builder
-var emitted = map[string]bool{}
+var (
+	out     strings.Builder
+	emitted = map[string]bool{}
+	rootType string
+)
 
-// goType returns the Go type expression for a schema node and, for nested
-// objects, queues a named struct to be emitted.
-func goType(s *Schema, path []string) string {
+func structName(rel []string) string {
+	if len(rel) == 0 {
+		return rootType
+	}
+	return typeName(rel)
+}
+
+func sub(rel []string, seg string) []string {
+	return append(append([]string(nil), rel...), seg)
+}
+
+func goType(s *Schema, rel []string) string {
 	switch s.Type {
 	case "integer":
 		return "int"
@@ -76,23 +88,22 @@ func goType(s *Schema, path []string) string {
 		return "string"
 	case "array":
 		if s.Items == nil {
-			return "[]interface{}"
+			return "[]any"
 		}
-		return "[]" + goType(s.Items, append(path, "Item"))
+		return "[]" + goType(s.Items, sub(rel, "Item"))
 	case "object":
 		if len(s.Properties) == 0 {
-			// free-form object (e.g. annotations) -> map
-			return "map[string]interface{}"
+			return "map[string]any"
 		}
-		name := typeName(path)
-		emitStruct(name, s, path)
+		name := structName(rel)
+		emitStruct(name, s, rel)
 		return "*" + name
 	default:
-		return "interface{}"
+		return "any"
 	}
 }
 
-func emitStruct(name string, s *Schema, path []string) {
+func emitStruct(name string, s *Schema, rel []string) {
 	if emitted[name] {
 		return
 	}
@@ -104,12 +115,11 @@ func emitStruct(name string, s *Schema, path []string) {
 	}
 	sort.Strings(keys)
 
-	// Emit dependencies first-ish by rendering into a temp, then prepend.
 	body := &strings.Builder{}
 	fmt.Fprintf(body, "type %s struct {\n", name)
 	for _, k := range keys {
 		field := s.Properties[k]
-		ft := goType(field, append(path, k))
+		ft := goType(field, sub(rel, k))
 		fieldName := typeName([]string{k})
 		comment := ""
 		if len(field.Enum) > 0 {
@@ -125,30 +135,35 @@ func emitStruct(name string, s *Schema, path []string) {
 	out.WriteString(body.String())
 }
 
-func resolve(root *Schema, dotted string) (*Schema, []string) {
+func resolve(root *Schema, dotted string) *Schema {
 	node := root
-	path := strings.Split(dotted, ".")
-	for _, p := range path {
+	for _, p := range strings.Split(dotted, ".") {
 		if node.Properties == nil {
-			return nil, nil
+			return nil
 		}
 		next, ok := node.Properties[p]
 		if !ok {
-			return nil, nil
+			return nil
 		}
 		node = next
 	}
-	return node, path
+	return node
 }
 
+const beginMarker = "// +schemagen:begin"
+
 func main() {
-	if len(os.Args) < 3 {
-		fmt.Fprintln(os.Stderr, "usage: schemagen <values.schema.json> <root.path> [root.path...]")
+	if len(os.Args) < 5 {
+		fmt.Fprintln(os.Stderr, "usage: schemagen <values.schema.json> <root.path> <RootTypeName> <targetFile>")
 		os.Exit(2)
 	}
-	raw, err := os.ReadFile(os.Args[1])
+	schemaPath, rootPath := os.Args[1], os.Args[2]
+	rootType = os.Args[3]
+	targetFile := os.Args[4]
+
+	raw, err := os.ReadFile(schemaPath)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "read:", err)
+		fmt.Fprintln(os.Stderr, "read schema:", err)
 		os.Exit(1)
 	}
 	var root Schema
@@ -157,20 +172,34 @@ func main() {
 		os.Exit(1)
 	}
 
-	out.WriteString("// Code generated from charts/vald/values.schema.json. DO NOT EDIT (PoC).\n\n")
-	out.WriteString("package valdrelease\n\n")
-
-	for _, dotted := range os.Args[2:] {
-		node, path := resolve(&root, dotted)
-		if node == nil {
-			fmt.Fprintln(os.Stderr, "path not found:", dotted)
-			os.Exit(1)
-		}
-		if node.Type != "object" || len(node.Properties) == 0 {
-			fmt.Fprintf(os.Stderr, "%s is not an object with properties\n", dotted)
-			os.Exit(1)
-		}
-		emitStruct(typeName(path), node, path)
+	node := resolve(&root, rootPath)
+	if node == nil {
+		fmt.Fprintln(os.Stderr, "path not found:", rootPath)
+		os.Exit(1)
 	}
-	fmt.Print(out.String())
+	if node.Type != "object" || len(node.Properties) == 0 {
+		fmt.Fprintf(os.Stderr, "%s is not an object with properties\n", rootPath)
+		os.Exit(1)
+	}
+
+	emitStruct(rootType, node, nil)
+
+	if err := splice(targetFile, out.String()); err != nil {
+		fmt.Fprintln(os.Stderr, "splice:", err)
+		os.Exit(1)
+	}
+}
+
+func splice(path, generated string) error {
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	s := string(content)
+	bi := strings.Index(s, beginMarker)
+	if bi < 0 {
+		return fmt.Errorf("marker %q not found in %s", beginMarker, path)
+	}
+	head := s[:bi+len(beginMarker)]
+	return os.WriteFile(path, []byte(head+"\n\n"+generated), 0o644)
 }

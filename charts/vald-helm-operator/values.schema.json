@@ -29,11 +29,7 @@
         "pullPolicy": {
           "type": "string",
           "description": "image pull policy",
-          "enum": [
-            "Always",
-            "Never",
-            "IfNotPresent"
-          ]
+          "enum": ["Always", "Never", "IfNotPresent"]
         },
         "registry": {
           "type": "string",
@@ -105,28 +101,17 @@
         "format": {
           "type": "string",
           "description": "logging format of operator (console or json)",
-          "enum": [
-            "console",
-            "json"
-          ]
+          "enum": ["console", "json"]
         },
         "level": {
           "type": "string",
           "description": "logging level of operator (debug, info, or error)",
-          "enum": [
-            "debug",
-            "info",
-            "error"
-          ]
+          "enum": ["debug", "info", "error"]
         },
         "stacktraceLevel": {
           "type": "string",
           "description": "minimum log level triggers stacktrace generation",
-          "enum": [
-            "debug",
-            "info",
-            "error"
-          ]
+          "enum": ["debug", "info", "error"]
         }
       }
     },
@@ -255,11 +240,7 @@
         "type": {
           "type": "string",
           "description": "service type: ClusterIP, LoadBalancer or NodePort",
-          "enum": [
-            "ClusterIP",
-            "LoadBalancer",
-            "NodePort"
-          ]
+          "enum": ["ClusterIP", "LoadBalancer", "NodePort"]
         }
       }
     },

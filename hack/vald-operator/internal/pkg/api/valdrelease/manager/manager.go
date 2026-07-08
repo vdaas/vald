@@ -11,6 +11,8 @@ const (
 	componentLabelManagerIndex = "manager-index"
 )
 
+// +schemagen:begin
+
 type Manager struct {
 	Index Index `json:"index"`
 }

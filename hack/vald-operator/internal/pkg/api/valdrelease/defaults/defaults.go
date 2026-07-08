@@ -2,6 +2,8 @@
 // +groupName=vald.vdaas.org
 package defaults
 
+// +schemagen:begin
+
 type Defaults struct {
 	TimeZone      string         `yaml:"time_zone,omitempty" json:"time_zone,omitempty"`
 	Logging       *Logging       `yaml:"logging,omitempty" json:"logging,omitempty"`

@@ -50,6 +50,18 @@ manifests: controller-gen ## Generate ClusterRole and CustomResourceDefinition o
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	$(CONTROLLER_GEN) object paths="./..."
 
+VALUES_SCHEMA ?= ../../charts/vald/values.schema.json
+VRS_API := internal/pkg/api/valdrelease
+
+.PHONY: schema/gen
+schema/gen:
+	go run ./poc/schemagen $(VALUES_SCHEMA) agent Agent $(VRS_API)/agent/agent.go
+	go run ./poc/schemagen $(VALUES_SCHEMA) gateway Gateway $(VRS_API)/gateway/gateway.go
+	go run ./poc/schemagen $(VALUES_SCHEMA) discoverer Discoverer $(VRS_API)/discoverer/discoverer.go
+	go run ./poc/schemagen $(VALUES_SCHEMA) manager Manager $(VRS_API)/manager/manager.go
+	go run ./poc/schemagen $(VALUES_SCHEMA) defaults Defaults $(VRS_API)/defaults/defaults.go
+	gofmt -w $(VRS_API)
+
 .PHONY: fmt
 fmt: ## Run go fmt against code.
 	go fmt ./...

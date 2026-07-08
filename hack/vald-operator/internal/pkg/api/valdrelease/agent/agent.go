@@ -18,6 +18,8 @@ const (
 	ResourceRatio = 0.6 // fraction of node resources allocated to agent pods on this node
 )
 
+// +schemagen:begin
+
 type Agent struct {
 	Logging                   *defaults.Logging                    `json:"logging,omitempty"`
 	Affinity                  *v1.Affinity                         `json:"affinity,omitempty"`

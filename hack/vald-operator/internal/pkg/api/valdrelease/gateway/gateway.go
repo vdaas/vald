@@ -12,6 +12,8 @@ const (
 	componentLabelGatewayLb = "gateway-lb"
 )
 
+// +schemagen:begin
+
 type Gateway struct {
 	Lb Lb `json:"lb"`
 }

@@ -23,6 +23,7 @@ import (
 	"io/fs"
 	"regexp"
 
+	k8sschema "github.com/vdaas/vald/hack/helm/schema/k8s"
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -32,6 +33,7 @@ import (
 
 const (
 	objectType = "object"
+	arrayType  = "array"
 
 	prefix = "# @schema"
 
@@ -220,9 +222,21 @@ func genNode(prefix []string, ls []*VSchema) (*Schema, error) {
 		return &schema, nil
 	}
 
-	var schema Schema
-
 	description := descriptions[strings.Join(append(prefix, l.Name), ".")]
+
+	if node, ok := k8sschema.Infer(l.Name); ok {
+		ks := genSchemaFromNode(node)
+		if l.Type == arrayType {
+			ks = &Schema{Type: arrayType, SchemaBase: SchemaBase{Items: ks}}
+		}
+		ks.Description = description
+		if l.Anchor != "" {
+			aliases[l.Anchor] = *ks
+		}
+		return ks, nil
+	}
+
+	var schema Schema
 
 	switch l.Type {
 	case objectType:
@@ -264,6 +278,20 @@ func genNode(prefix []string, ls []*VSchema) (*Schema, error) {
 	}
 
 	return &schema, nil
+}
+
+func genSchemaFromNode(n *k8sschema.Node) *Schema {
+	s := &Schema{Type: n.Type}
+	if n.Items != nil {
+		s.Items = genSchemaFromNode(n.Items)
+	}
+	if len(n.Properties) > 0 {
+		s.Properties = make(map[string]*Schema, len(n.Properties))
+		for k, v := range n.Properties {
+			s.Properties[k] = genSchemaFromNode(v)
+		}
+	}
+	return s
 }
 
 func newRoot(schemas map[string]*Schema) *Root {

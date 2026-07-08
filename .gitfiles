@@ -831,6 +831,7 @@ hack/helm/schema/crd/main.go
 hack/helm/schema/crd/main_test.go
 hack/helm/schema/gen/main.go
 hack/helm/schema/gen/main_test.go
+hack/helm/schema/k8s/k8s.go
 hack/license/gen/main.go
 hack/license/gen/main_test.go
 hack/tools/deadlink/index.html

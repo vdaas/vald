@@ -13,6 +13,15 @@ const (
 	componentLabelDiscoverer = "discoverer"
 )
 
+// Note: This struct is same as `appsv1.RollingUpdateDaemonSet` in k8s.io/api/apps/v1.
+// Note: However, this is a special structure for vrs, so we define it here just in case.
+type RollingUpdateValdreelase struct {
+	MaxUnavailable *intstr.IntOrString `json:"maxUnavailable,omitempty" protobuf:"bytes,1,opt,name=maxUnavailable"`
+	MaxSurge       *intstr.IntOrString `json:"maxSurge,omitempty" protobuf:"bytes,2,opt,name=maxSurge"`
+}
+
+// +schemagen:begin
+
 type Discoverer struct {
 	Logging                   *defaults.Logging                   `json:"logging,omitempty"`
 	Affinity                  *v1.Affinity                        `json:"affinity,omitempty"`
@@ -36,11 +45,4 @@ type ClusterRole struct {
 type ClusterRoleBinding struct {
 	Enabled bool   `json:"enabled,omitempty"`
 	Name    string `json:"name,omitempty"`
-}
-
-// Note: This struct is same as `appsv1.RollingUpdateDaemonSet` in k8s.io/api/apps/v1.
-// Note: However, this is a special structure for vrs, so we define it here just in case.
-type RollingUpdateValdreelase struct {
-	MaxUnavailable *intstr.IntOrString `json:"maxUnavailable,omitempty" protobuf:"bytes,1,opt,name=maxUnavailable"`
-	MaxSurge       *intstr.IntOrString `json:"maxSurge,omitempty" protobuf:"bytes,2,opt,name=maxSurge"`
 }

@@ -23,6 +23,7 @@ import (
 	"io/fs"
 	"strconv"
 
+	k8sschema "github.com/vdaas/vald/hack/helm/schema/k8s"
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -192,6 +193,17 @@ func genNode(ls []*VSchema) (*Schema, error) {
 		return &schema, nil
 	}
 
+	if node, ok := k8sschema.Infer(l.Name); ok {
+		ks := crdSchemaFromNode(node)
+		if l.Type == arrayType {
+			ks = &Schema{Type: arrayType, Items: ks}
+		}
+		if l.Anchor != "" {
+			aliases[l.Anchor] = *ks
+		}
+		return ks, nil
+	}
+
 	var schema Schema
 
 	switch l.Type {
@@ -231,6 +243,23 @@ func genNode(ls []*VSchema) (*Schema, error) {
 	}
 
 	return &schema, nil
+}
+
+func crdSchemaFromNode(n *k8sschema.Node) *Schema {
+	s := &Schema{Type: n.Type}
+	if n.PreserveUnknown {
+		s.KubernetesPreserveUnknownFields = true
+	}
+	if n.Items != nil {
+		s.Items = crdSchemaFromNode(n.Items)
+	}
+	if len(n.Properties) > 0 {
+		s.Properties = make(map[string]*Schema, len(n.Properties))
+		for k, v := range n.Properties {
+			s.Properties[k] = crdSchemaFromNode(v)
+		}
+	}
+	return s
 }
 
 func newSpec(schemas map[string]*Schema) *Spec {
