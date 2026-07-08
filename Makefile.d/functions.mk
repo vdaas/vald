@@ -455,6 +455,26 @@ define gen-vald-helm-schema
 	rm -rf $$BIN_PATH
 endef
 
+# gen-vald-helm-gotype builds the gotype tool and generates Go types from a
+# values JSON Schema. $1=input schema path, $2=output Go file, $3=package name.
+# The tool shells out to oapi-codegen (installed via hack/go.tools).
+define gen-vald-helm-gotype
+	BIN_PATH="$(TEMP_DIR)/vald-helm-gotype"; \
+	rm -rf $$BIN_PATH; \
+	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
+	go build -modcacherw \
+	-mod=readonly \
+	-a \
+	-tags "osusergo netgo static_build" \
+	-trimpath \
+	-o $$BIN_PATH \
+	$(ROOTDIR)/hack/helm/schema/gotype/main.go; \
+	$$BIN_PATH -schema $1 -out $2 -package $3; \
+	rm -rf $$BIN_PATH
+endef
+
 define gen-vald-crd
 	if [[ -f $(ROOTDIR)/charts/$1/crds/$2.yaml ]]; then \
 		mv $(ROOTDIR)/charts/$1/crds/$2.yaml $(TEMP_DIR)/$2.yaml; \

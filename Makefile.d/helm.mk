@@ -141,6 +141,18 @@ $(ROOTDIR)/charts/vald/values.schema.json: \
 	$(ROOTDIR)/charts/vald/values.yaml
 	$(call gen-vald-helm-schema,vald/values)
 
+# Output path / package for the generated Go types. Override on the CLI, e.g.
+#   make helm/schema/gotype/vald VALD_VALUES_GOTYPE_OUT=path/to/out.go
+VALD_VALUES_GOTYPE_OUT ?= $(ROOTDIR)/hack/valdvalues/values.gen.go
+VALD_VALUES_GOTYPE_PKG ?= valdvalues
+
+.PHONY: helm/schema/gotype/vald
+## generate Go types from the Vald Chart values schema
+helm/schema/gotype/vald: \
+	$(GOBIN)/oapi-codegen \
+	$(ROOTDIR)/charts/vald/values.schema.json
+	$(call gen-vald-helm-gotype,$(ROOTDIR)/charts/vald/values.schema.json,$(VALD_VALUES_GOTYPE_OUT),$(VALD_VALUES_GOTYPE_PKG))
+
 .PHONY: helm/schema/operator/helm
 ## generate json schema for Vald Helm Operator Chart
 helm/schema/operator/helm: $(ROOTDIR)/charts/operator/helm/values.schema.json
