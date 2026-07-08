@@ -136,6 +136,8 @@
 .github/workflows/update-protobuf.yaml
 .github/workflows/update-pull-request-and-issue-template.yaml
 .github/workflows/update-web-docs.yaml
+.github/workflows/vald-operator-test-e2e.yaml
+.github/workflows/vald-operator-test.yaml
 .gitignore
 .golangci.json
 .prh.yaml
