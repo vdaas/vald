@@ -96,7 +96,8 @@ func (idx *index) Start(ctx context.Context) error {
 		}
 	}()
 
-	err := idx.doDeleteIndex(ctx,
+	err := idx.doDeleteIndex(
+		ctx,
 		func(ctx context.Context, rc vald.RemoveClient, copts ...grpc.CallOption) (*payload.Object_Location, error) {
 			return rc.Remove(ctx, &payload.Remove_Request{
 				Id: &payload.Object_ID{
@@ -123,7 +124,8 @@ func (idx *index) Start(ctx context.Context) error {
 				st  *status.Status
 				msg string
 			)
-			st, msg, err = status.ParseError(err, codes.Internal,
+			st, msg, err = status.ParseError(
+				err, codes.Internal,
 				"failed to parse "+vald.RemoveRPCName+" gRPC error response",
 			)
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
@@ -164,7 +166,8 @@ func (idx *index) doDeleteIndex(
 	log.Infof("target agent addrs: %v", targetAddrs)
 
 	var emu sync.Mutex
-	err := idx.client.GetClient().OrderedRangeConcurrent(ctx, targetAddrs, idx.concurrency,
+	err := idx.client.GetClient().OrderedRangeConcurrent(
+		ctx, targetAddrs, idx.concurrency,
 		func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "OrderedRangeConcurrent/"+target), vald.RemoveRPCName+"/"+target)
 			defer func() {
@@ -201,7 +204,8 @@ func (idx *index) doDeleteIndex(
 						st  *status.Status
 						msg string
 					)
-					st, msg, err = status.ParseError(err, codes.Internal,
+					st, msg, err = status.ParseError(
+						err, codes.Internal,
 						"failed to parse "+vald.RemoveRPCName+" gRPC error response",
 					)
 					if st != nil && err != nil && st.Code() == codes.FailedPrecondition {

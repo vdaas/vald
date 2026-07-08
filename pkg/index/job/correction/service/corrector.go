@@ -215,6 +215,9 @@ func (c *correct) Start(ctx context.Context) (err error) {
 		eg, egctx := errgroup.WithContext(ctx)
 		eg.SetLimit(c.streamListConcurrency)
 		ctx, cancel := context.WithCancelCause(egctx)
+		// cancel with nil cause is a no-op when the context has already been
+		// canceled with a specific cause (e.g. io.EOF on stream completion).
+		defer cancel(nil)
 		stream, err := vc.NewValdClient(conn).StreamListObject(ctx, emptyReq, copts...)
 		if err != nil || stream == nil {
 			return err
@@ -353,7 +356,8 @@ func (c *correct) loadReplicaInfo(
 	skipped = make([]string, 0, len(replicas))
 	found = make(map[string]*payload.Object_Timestamp, c.indexReplica-1)
 	tss := time.Unix(0, start.UnixNano()).Format(time.RFC3339Nano)
-	err = c.discoverer.GetClient().OrderedRangeConcurrent(ctx, replicas, len(replicas),
+	err = c.discoverer.GetClient().OrderedRangeConcurrent(
+		ctx, replicas, len(replicas),
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 			if originAddr == addr {
 				return nil
@@ -393,7 +397,8 @@ func (c *correct) loadReplicaInfo(
 
 			// skip if the vector is inserted after correction start
 			if ots.GetTimestamp() > start.UnixNano() {
-				log.Debugf("timestamp of vector(id: %s, timestamp: %s) is newer than correction start time(%s). skipping...",
+				log.Debugf(
+					"timestamp of vector(id: %s, timestamp: %s) is newer than correction start time(%s). skipping...",
 					ots.GetId(),
 					time.Unix(0, ots.GetTimestamp()).Format(time.RFC3339Nano),
 					tss,
@@ -465,7 +470,8 @@ func (c *correct) correctTimestamp(
 	tss := time.Unix(0, latestObject.GetTimestamp()).Format(time.RFC3339Nano) // timestamp string
 	for addr, ots := range found {                                            // correct timestamp inconsistency
 		if latestObject.GetTimestamp() > ots.GetTimestamp() {
-			log.Infof("timestamp inconsistency detected with vector(id: %s, timestamp: %s). updating with the latest vector(id: %s, timestamp: %s)",
+			log.Infof(
+				"timestamp inconsistency detected with vector(id: %s, timestamp: %s). updating with the latest vector(id: %s, timestamp: %s)",
 				ots.GetId(),
 				time.Unix(0, ots.GetTimestamp()).Format(time.RFC3339Nano),
 				latestObject.GetId(),

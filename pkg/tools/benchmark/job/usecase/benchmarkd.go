@@ -87,7 +87,8 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		return nil, err
 	}
 	if cfg.Job.ClientConfig.DialOption == nil {
-		copts = append(copts,
+		copts = append(
+			copts,
 			grpc.WithInsecure(true),
 			grpc.WithClientInterceptors(clientInterceptors...),
 		)
@@ -166,7 +167,8 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 							// TODO pass grpc handler to REST option
 							),
 						),
-					)),
+					),
+				),
 			}
 		}),
 		starter.WithGRPC(func(sc *iconf.Server) []server.Option {

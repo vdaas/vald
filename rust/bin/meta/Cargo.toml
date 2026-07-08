@@ -30,7 +30,7 @@ tokio = { version = "1.52.3", features = ["full"] }
 tonic = "0.14.6"
 observability = { path = "../../libs/observability" }
 defer = "0.2.1"
-anyhow = "1.0.102"
+anyhow = "1.0.103"
 thiserror = "2.0.18"
 
 [dev-dependencies]

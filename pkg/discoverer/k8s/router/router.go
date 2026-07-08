@@ -46,7 +46,8 @@ func New(opts ...Option) http.Handler {
 			middleware.NewTimeout(
 				middleware.WithTimeout(r.timeout),
 				middleware.WithErrorGroup(r.eg),
-			)),
+			),
+		),
 		routing.WithRoutes([]routing.Route{
 			{
 				Name: "Index",
@@ -72,5 +73,6 @@ func New(opts ...Option) http.Handler {
 				Pattern:     "/nodes",
 				HandlerFunc: h.Nodes,
 			},
-		}...))
+		}...),
+	)
 }

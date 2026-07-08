@@ -30,7 +30,9 @@ import (
 )
 
 type (
+	Client                    = client.Client
 	Object                    = client.Object
+	ObjectList                = client.ObjectList
 	ObjectKey                 = client.ObjectKey
 	DeleteAllOfOptions        = client.DeleteAllOfOptions
 	DeleteOptions             = client.DeleteOptions
@@ -42,6 +44,7 @@ type (
 	GetOptions                = client.GetOptions
 	UpdateOptions             = client.UpdateOptions
 	MatchingLabels            = client.MatchingLabels
+	MatchingFields            = client.MatchingFields
 	InNamespace               = client.InNamespace
 	VolumeSnapshot            = snapshotv1.VolumeSnapshot
 	VolumeSnapshotList        = snapshotv1.VolumeSnapshotList

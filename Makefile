@@ -14,7 +14,8 @@
 # limitations under the License.
 #
 
-SHELL = bash
+SHELL = /usr/bin/env bash
+.SHELLFLAGS := -eu -o pipefail -c
 ORG ?= vdaas
 NAME = vald
 REPO = $(ORG)/$(NAME)
@@ -47,6 +48,7 @@ INDEX_SAVE_IMAGE = $(NAME)-index-save
 LB_GATEWAY_IMAGE = $(NAME)-lb-gateway
 MANAGER_INDEX_IMAGE = $(NAME)-manager-index
 MIRROR_GATEWAY_IMAGE = $(NAME)-mirror-gateway
+OPERATOR_IMAGE = $(NAME)-operator
 READREPLICA_ROTATE_IMAGE = $(NAME)-readreplica-rotate
 E2E_IMAGE = $(NAME)-e2e
 MAINTAINER = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"

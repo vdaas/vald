@@ -111,7 +111,7 @@ const (
 	hackPath = "hack/**"
 
 	chartsValdPath            = "charts/" + vald
-	helmOperatorPath          = chartsValdPath + "-helm-operator"
+	helmOperatorPath          = "charts/operator/helm"
 	chartPath                 = chartsValdPath + "/Chart.yaml"
 	valuesPath                = chartsValdPath + "/values.yaml"
 	templatesPath             = chartsValdPath + "/templates/**"
@@ -759,6 +759,10 @@ func main() {
 			AppName:    indexOperator,
 			PackageDir: "index/operator",
 		},
+		vald + "-operator": {
+			AppName:    vald + "-operator",
+			PackageDir: "operator/vald",
+		},
 		vald + "-" + benchJob: {
 			AppName:       "job",
 			PackageDir:    "tools/benchmark/job",
@@ -769,7 +773,7 @@ func main() {
 		},
 		vald + "-" + benchOperator: {
 			AppName:    "operator",
-			PackageDir: "tools/benchmark/operator",
+			PackageDir: "operator/benchmark",
 		},
 		vald + "-" + helmOperator: {
 			AppName:       "helm-operator",
@@ -799,8 +803,9 @@ func main() {
         echo "  chart: ` + helmOperatorChartsDir + `/` + vald + `-helm-operator"; \
     } > ` + helmOperatorWatchFile,
 				"make GOARCH=${TARGETARCH} GOOS=${TARGETOS} helm/schema/" + vald,
-				"make GOARCH=${TARGETARCH} GOOS=${TARGETOS} helm/schema/" + vald + "-helm-operator",
-				"cp -r charts/* " + helmOperatorChartsDir + "/",
+				"make GOARCH=${TARGETARCH} GOOS=${TARGETOS} helm/schema/operator/helm",
+				"cp -r " + chartsValdPath + " " + helmOperatorChartsDir + "/" + vald,
+				"cp -r " + helmOperatorPath + " " + helmOperatorChartsDir + "/" + vald + "-helm-operator",
 				"upx \"{{$.BinDir}}/${APP_NAME}\"",
 			},
 			StageFiles: []string{
@@ -880,7 +885,8 @@ func main() {
 			data.Name = strings.TrimPrefix(name, vald+"-")
 			switch data.ContainerType {
 			case HelmOperator:
-				data.PullRequestPaths = append(data.PullRequestPaths,
+				data.PullRequestPaths = append(
+					data.PullRequestPaths,
 					chartPath,
 					valuesPath,
 					templatesPath,
@@ -890,7 +896,8 @@ func main() {
 					operatorSDKVersionPath,
 				)
 			case DevContainer:
-				data.PullRequestPaths = append(data.PullRequestPaths,
+				data.PullRequestPaths = append(
+					data.PullRequestPaths,
 					apisProtoPath,
 					hackPath,
 					goModPath,
@@ -898,7 +905,8 @@ func main() {
 					goVersionPath,
 				)
 			case Go:
-				data.PullRequestPaths = append(data.PullRequestPaths,
+				data.PullRequestPaths = append(
+					data.PullRequestPaths,
 					apisProtoPath,
 					goModPath,
 					goSumPath,
@@ -941,7 +949,8 @@ func main() {
 					data.PullRequestPaths = append(data.PullRequestPaths, pkgs...)
 				}
 			case Rust:
-				data.PullRequestPaths = append(data.PullRequestPaths,
+				data.PullRequestPaths = append(
+					data.PullRequestPaths,
 					apisProtoPath,
 					cargoLockPath,
 					cargoTomlPath,

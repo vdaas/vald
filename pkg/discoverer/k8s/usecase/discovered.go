@@ -117,7 +117,8 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 								rest.WithDiscoverer(h),
 							),
 						),
-					)),
+					),
+				),
 			}
 		}),
 		starter.WithGRPC(func(sc *iconf.Server) []server.Option {
