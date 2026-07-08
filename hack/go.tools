@@ -9,6 +9,7 @@ github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@upgrade
 github.com/josharian/impl@upgrade
 github.com/mfridman/tparse@upgrade
 github.com/momotaro98/strictgoimports/cmd/strictgoimports@upgrade
+github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@upgrade
 github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc@upgrade
 github.com/rhysd/actionlint/cmd/actionlint@upgrade
 github.com/segmentio/golines@upgrade

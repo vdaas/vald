@@ -46,7 +46,20 @@ var (
 	continuedLineRegexp = regexp.MustCompile(`^\s*#\s+(.*)$`)
 )
 
+// GoTypeImport describes the Go import backing an x-go-type mapping.
+type GoTypeImport struct {
+	Path string `json:"path,omitempty"`
+	Name string `json:"name,omitempty"`
+}
+
 type SchemaBase struct {
+	// XGoType / XGoTypeImport carry a Go type identity for a node so that
+	// downstream code generators (e.g. oapi-codegen) can map k8s-native
+	// subtrees (affinity, resources, ...) to their real Go types instead of
+	// emitting anonymous structs. They are passed through untouched into the
+	// generated JSON Schema.
+	XGoType           string            `json:"x-go-type,omitempty"`
+	XGoTypeImport     *GoTypeImport     `json:"x-go-type-import,omitempty"`
 	MaxContains       *uint64           `json:"maxContains,omitempty"`
 	MinContains       *uint64           `json:"minContains,omitempty"`
 	MinProperties     *uint64           `json:"minProperties,omitempty"`

@@ -1200,7 +1200,7 @@ gateway:
     # @schema {"name": "gateway.lb.tolerations", "type": "array", "items": {"type": "object"}, "anchor": "tolerations"}
     # gateway.lb.tolerations -- tolerations
     tolerations: []
-    # @schema {"name": "gateway.lb.affinity", "type": "object", "anchor": "affinity"}
+    # @schema {"name": "gateway.lb.affinity", "type": "object", "anchor": "affinity", "x-go-type": "corev1.Affinity", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     affinity:
       # @schema {"name": "gateway.lb.affinity.nodeAffinity", "type": "object"}
       nodeAffinity:
