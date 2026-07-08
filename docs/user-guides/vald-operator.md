@@ -25,28 +25,26 @@ This separation lets a management cluster emit VRS definitions and distribute th
 ### Build and push the controller image
 
 ```sh
-make docker-build docker-push IMG=<some-registry>/vald-operator:tag
+make docker/build/operator/vald
 ```
 
 ### Install CRDs and deploy the controller
 
 ```sh
-make install
-make deploy IMG=<some-registry>/vald-operator:tag
+make k8s/operator/vald/deploy
 ```
 
 ### Apply a sample ValdOperatorRelease
 
 ```sh
-kubectl apply -k config/samples/
+kubectl apply -f cmd/operator/vald/sample.yaml
 ```
 
 ### Uninstall
 
 ```sh
-kubectl delete -k config/samples/
-make uninstall
-make undeploy
+kubectl delete -f cmd/operator/vald/sample.yaml
+make k8s/operator/vald/delete
 ```
 
 ## CRD: ValdOperatorRelease (`vor`)
@@ -322,47 +320,50 @@ When `REQUIRE_NODEPOOL_MATCH=false` (default), the controller skips node listing
 
 ## Configuration
 
-All configuration is done via environment variables, loaded once at startup.
+All configuration is loaded once at startup from a YAML config file, following the same convention as every other Vald component.
+See [`cmd/operator/vald/sample.yaml`](https://github.com/vdaas/vald/blob/main/cmd/operator/vald/sample.yaml) for a complete example; when deploying via the Helm chart, every key is exposed through `charts/operator/vald/values.yaml`.
 
-| Environment Variable            | Default                              | Description                                                       |
-| ------------------------------- | ------------------------------------ | ----------------------------------------------------------------- |
-| `DEFAULT_VRS_PATH`              | `/opt/vald-operator/config/vrs.yaml` | Default VRS template merged with the overlay.                     |
-| `REQUIRE_NODEPOOL_MATCH`        | `false`                              | Only generate VRS where matching node pools exist.                |
-| `NODEPOOL_LABEL_PREFIX`         | `""`                                 | Prefix for the `namespace`/`type`/`role` node labels.             |
-| `AGENT_PODS_PER_NODE`           | `2`                                  | Agent pods packed per node when computing replicas.               |
-| `DEFAULT_STORAGE_CLASS`         | `standard`                           | PV storage class fallback.                                        |
-| `DEFAULT_ACCESS_MODE`           | `ReadWriteOnce`                      | PV access mode fallback.                                          |
-| `PV_BUFFER_RATIO`               | `1.5`                                | PV size = `max(memoryRequest * ratio, min)`.                      |
-| `PV_MIN_SIZE_BYTES`             | `1073741824`                         | Minimum PV size in bytes.                                         |
-| `ENABLE_INGRESS`                | `true`                               | Enable gateway ingress generation.                                |
-| `GATEWAY_INGRESS_ANNOTATIONS`   | `""`                                 | YAML map of annotations applied to the gateway ingress.           |
-| `GATEWAY_SERVICE_TYPE`          | `NodePort`                           | Gateway service type (`NodePort` / `ClusterIP` / `LoadBalancer`). |
-| `VRS_LOG_LEVEL`                 | `warn`                               | Log level passed through to the generated VRS.                    |
-| `DISCOVERER_DS_MAX_SURGE`       | `30%`                                | Discoverer DaemonSet rolling-update `maxSurge`.                   |
-| `DISCOVERER_DS_MAX_UNAVAILABLE` | `0%`                                 | Discoverer DaemonSet rolling-update `maxUnavailable`.             |
-| `INTERNAL_HOST_DOMAIN`          | `""`                                 | Optional internal host domain.                                    |
+The reconciler-facing settings live under the `operator` key:
+
+| Config Key                                                 | Default                                    | Description                                                       |
+| ---------------------------------------------------------- | ------------------------------------------ | ----------------------------------------------------------------- |
+| `operator.vrs.default_vrs_path`                             | `/opt/valdoperatorrelease/config/vrs.yaml` | Default VRS template merged with the overlay.                     |
+| `operator.vrs.log_level`                                    | `warn`                                     | Log level passed through to the generated VRS.                    |
+| `operator.vrs.internal_host_domain`                         | `""`                                       | Optional internal host domain.                                    |
+| `operator.node_pool.require_match`                          | `false`                                    | Only generate VRS where matching node pools exist.                |
+| `operator.node_pool.label_prefix`                           | `""`                                       | Prefix for the `namespace`/`type`/`role` node labels.             |
+| `operator.node_pool.agent_pods_per_node`                    | `2`                                        | Agent pods packed per node when computing replicas.               |
+| `operator.persistent_volume.default_storage_class`          | `standard`                                 | PV storage class fallback.                                        |
+| `operator.persistent_volume.default_access_mode`            | `ReadWriteOnce`                            | PV access mode fallback.                                          |
+| `operator.persistent_volume.buffer_ratio`                   | `1.5`                                      | PV size = `max(memoryRequest * ratio, min)`.                      |
+| `operator.persistent_volume.min_size_bytes`                 | `1073741824`                               | Minimum PV size in bytes.                                         |
+| `operator.networking.enable_ingress`                        | `true`                                     | Enable gateway ingress generation.                                |
+| `operator.networking.gateway_ingress_annotations`           | `{}`                                       | Annotations applied to the gateway ingress.                       |
+| `operator.networking.gateway_service_type`                  | `NodePort`                                 | Gateway service type (`NodePort` / `ClusterIP` / `LoadBalancer`). |
+| `operator.networking.discoverer_daemonset_max_surge`        | `30%`                                      | Discoverer DaemonSet rolling-update `maxSurge`.                   |
+| `operator.networking.discoverer_daemonset_max_unavailable`  | `0%`                                       | Discoverer DaemonSet rolling-update `maxUnavailable`.             |
+
+Controller-level settings (leader election, requeue intervals, reconcile concurrency, watched namespaces) live under `operator.controller`, and server/observability settings (`server_config`, `observability`) follow the standard Vald component layout.
 
 ## Development
 
 ### Common tasks
 
 ```sh
-# Build and run unit tests
-make build
-make test
+# Run unit tests
+make test/operator/vald
 
-# Regenerate CRDs / RBAC / deepcopy after changing api/v1 types
-make manifests generate
+# Regenerate k8s manifests after changing charts/operator/vald
+make k8s/manifest/operator/vald/update
 
 # Lint
 make lint
 
 # Build and push the controller image
-make docker-build docker-push IMG=<registry>/vald-operator:tag
+make docker/build/operator/vald
 
-# Install CRDs and deploy the controller
-make install
-make deploy IMG=<registry>/vald-operator:tag
+# Deploy the controller to the current cluster
+make k8s/operator/vald/deploy
 ```
 
 Run `make help` for the full list of targets.

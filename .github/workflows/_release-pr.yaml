@@ -107,8 +107,8 @@ jobs:
           make helm/schema/all
           make helm/schema/crd/all
           make k8s/manifest/update
-          make k8s/manifest/helm-operator/update
-          make k8s/manifest/benchmark-operator/update
+          make k8s/manifest/operator/helm/update
+          make k8s/manifest/operator/benchmark/update
           make k8s/manifest/readreplica/update
           make helm/docs/vald
           make helm/docs/operator/helm
