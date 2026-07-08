@@ -332,9 +332,9 @@ docker/build/dev-container:
 docker/name/operator/helm docker/name/helm-operator:
 	@echo "$(ORG)/$(HELM_OPERATOR_IMAGE)"
 
-.PHONY: docker/build/operator/helm
+.PHONY: docker/build/operator/helm docker/build/helm-operator
 ## build helm-operator image
-docker/build/operator/helm:
+docker/build/operator/helm docker/build/helm-operator:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/operator/helm/Dockerfile" \
 	IMAGE=$(HELM_OPERATOR_IMAGE) \
 	EXTRA_ARGS="--build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION) --build-arg UPX_OPTIONS=$(UPX_OPTIONS) $(EXTRA_ARGS)" \
@@ -458,9 +458,9 @@ docker/build/benchmark-job:
 docker/name/operator/benchmark docker/name/benchmark-operator:
 	@echo "$(ORG)/$(BENCHMARK_OPERATOR_IMAGE)"
 
-.PHONY: docker/build/operator/benchmark
+.PHONY: docker/build/operator/benchmark docker/build/benchmark-operator
 ## build benchmark operator
-docker/build/operator/benchmark:
+docker/build/operator/benchmark docker/build/benchmark-operator:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/operator/benchmark/Dockerfile" \
 	IMAGE=$(BENCHMARK_OPERATOR_IMAGE) \
 	docker/build/image
