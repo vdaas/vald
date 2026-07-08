@@ -490,7 +490,7 @@ var (
 		"protobuf-compiler",
 		"libprotobuf-dev",
 	}
-  clangLTOBuildDeps = []string{
+	clangLTOBuildDeps = []string{
 		"clang",
 		"lld",
 		"llvm",
