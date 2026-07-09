@@ -27,6 +27,19 @@ import (
 var (
 	GroupVersion = schema.GroupVersion{Group: "vald.vdaas.org", Version: "v1"}
 	GVK          = schema.GroupVersionKind{Group: GroupVersion.Group, Version: GroupVersion.Version, Kind: "ValdRelease"}
+
+	// SchemeBuilder registers the item type via AddKnownTypes and the generic
+	// list alias via AddListToScheme: generic instantiations carry mangled
+	// reflect type names, so the list kind must be registered explicitly.
+	SchemeBuilder = runtime.NewSchemeBuilder(func(s *runtime.Scheme) error {
+		s.AddKnownTypes(GroupVersion, &ValdRelease{})
+		resource.AddListToScheme[ValdRelease](s, GroupVersion, "ValdReleaseList")
+		metav1.AddToGroupVersion(s, GroupVersion)
+		return nil
+	})
+
+	// AddToScheme registers the ValdRelease types with a runtime.Scheme.
+	AddToScheme = SchemeBuilder.AddToScheme
 )
 
 // Status is the ValdRelease lifecycle status string.

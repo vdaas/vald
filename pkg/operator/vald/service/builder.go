@@ -28,12 +28,6 @@ import (
 	"github.com/vdaas/vald/internal/k8s/vald/operator/api/metadata"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/operator/api/v1"
 	"github.com/vdaas/vald/internal/k8s/vald/operator/api/valdrelease"
-	"github.com/vdaas/vald/internal/k8s/vald/operator/api/valdrelease/agent"
-	"github.com/vdaas/vald/internal/k8s/vald/operator/api/valdrelease/common"
-	"github.com/vdaas/vald/internal/k8s/vald/operator/api/valdrelease/defaults"
-	"github.com/vdaas/vald/internal/k8s/vald/operator/api/valdrelease/discoverer"
-	"github.com/vdaas/vald/internal/k8s/vald/operator/api/valdrelease/gateway"
-	"github.com/vdaas/vald/internal/k8s/vald/operator/api/valdrelease/manager"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/pkg/operator/vald/config"
 )
@@ -101,7 +95,7 @@ func (b *vrsBuilder) Build(_ context.Context) ([]k8s.Object, error) {
 		row.SetNamespace(b.cr.Namespace)
 		row.SetLabels(metadata.CreateSubResourceLabels(valdrelease.GVK.Kind))
 
-		row.Spec = valdrelease.Spec{
+		row.Spec = valdrelease.Values{
 			Defaults:   b.buildDefaults(),
 			Gateway:    b.buildGateway(),
 			Agent:      b.buildAgent(),
@@ -183,59 +177,54 @@ func (b *vrsBuilder) validate() error {
 	return nil
 }
 
-func (b *vrsBuilder) buildDefaults() defaults.Defaults {
+func (b *vrsBuilder) buildDefaults() *valdrelease.Defaults {
 	vald := b.cr.Spec.VectorEngine.Vald
-	return defaults.Defaults{
+	return &valdrelease.Defaults{
 		Logging: b.buildLogging(vald.Defaults.LogLevel),
 	}
 }
 
-func (b *vrsBuilder) buildAgent() agent.Agent {
+func (b *vrsBuilder) buildAgent() *valdrelease.Agent {
 	input := b.cr.Spec.VectorEngine.Vald.Agent
-
-	mu := k8s.IntOrStringFrom(b.cfg.AgentMaxUnavailable)
-	ms := k8s.IntOrStringFrom(b.cfg.AgentMaxSurge)
-
-	a := agent.Agent{
+	return &valdrelease.Agent{
 		Logging: b.buildLogging(input.LogLevel),
-		Kind:    common.KindTypeStatefulSet,
-		RollingUpdate: &discoverer.RollingUpdateValdRelease{
-			MaxUnavailable: &mu,
-			MaxSurge:       &ms,
+		Kind:    ptr(valdrelease.AgentKindStatefulSet),
+		RollingUpdate: &valdrelease.AgentRollingUpdate{
+			MaxUnavailable: ptr(b.cfg.AgentMaxUnavailable),
+			MaxSurge:       ptr(b.cfg.AgentMaxSurge),
 		},
-		NGT: *b.buildAgentNgt(),
+		Ngt: b.buildAgentNgt(),
 	}
-	return a
 }
 
-func (b *vrsBuilder) buildAgentNgt() *agent.NGT {
+func (b *vrsBuilder) buildAgentNgt() *valdrelease.AgentNgt {
 	input := b.cr.Spec.VectorEngine.Vald.Agent.Ngt
-	return &agent.NGT{
-		Dimension:          input.Dimension,
-		DistanceType:       input.DistanceType,
-		ObjectType:         input.ObjectType,
-		SearchEdgeSize:     input.SearchEdgeSize,
-		CreationEdgeSize:   input.CreationEdgeSize,
-		EnableInMemoryMode: b.cfg.AgentEnableInMemoryMode,
+	return &valdrelease.AgentNgt{
+		Dimension:          ptr(input.Dimension),
+		DistanceType:       ptr(valdrelease.AgentNgtDistanceType(input.DistanceType)),
+		ObjectType:         ptr(valdrelease.AgentNgtObjectType(input.ObjectType)),
+		SearchEdgeSize:     ptr(input.SearchEdgeSize),
+		CreationEdgeSize:   ptr(input.CreationEdgeSize),
+		EnableInMemoryMode: ptr(b.cfg.AgentEnableInMemoryMode),
 	}
 }
 
-func (b *vrsBuilder) buildGateway() gateway.Gateway {
-	return gateway.Gateway{
-		Lb: *b.buildLb(),
+func (b *vrsBuilder) buildGateway() *valdrelease.Gateway {
+	return &valdrelease.Gateway{
+		Lb: b.buildLb(),
 	}
 }
 
-func (b *vrsBuilder) buildLb() *gateway.Lb {
+func (b *vrsBuilder) buildLb() *valdrelease.GatewayLb {
 	inputGw := b.cr.Spec.VectorEngine.Vald.Gateway
 
-	return &gateway.Lb{
+	return &valdrelease.GatewayLb{
 		Logging: b.buildLogging(inputGw.LogLevel),
-		Hpa: &gateway.Hpa{
-			TargetCPUUtilizationPercentage: b.cfg.GatewayHpaTargetCPUUtilization,
+		Hpa: &valdrelease.Hpa{
+			TargetCPUUtilizationPercentage: ptr(b.cfg.GatewayHpaTargetCPUUtilization),
 		},
-		GatewayConfig: gateway.GatewayConfig{
-			IndexReplica: inputGw.IndexReplica,
+		GatewayConfig: &valdrelease.GatewayLbGatewayConfig{
+			IndexReplica: ptr(inputGw.IndexReplica),
 		},
 		ServiceType: b.getGatewayServiceType(inputGw.ServiceType),
 		Ingress:     b.buildIngress(inputGw.Ingress),
@@ -247,97 +236,97 @@ func (b *vrsBuilder) buildLb() *gateway.Lb {
 // the CR spec enables it. cfg.GatewayIngressAnnotations seed the ingress
 // annotations; the CR overlay is merged on top of the built row afterwards,
 // so CR-side annotations win per key.
-func (b *vrsBuilder) buildIngress(in *v1.GatewayIngress) gateway.Ingress {
-	base := gateway.Ingress{
-		DefaultBackend: gateway.DefaultBackend{Enabled: false},
-		PathType:       b.getGatewayIngressPathType(),
-		ServicePort:    b.cfg.GatewayIngressServicePort,
+func (b *vrsBuilder) buildIngress(in *v1.GatewayIngress) *valdrelease.GatewayLbIngress {
+	base := &valdrelease.GatewayLbIngress{
+		DefaultBackend: &valdrelease.GatewayLbIngressDefaultBackend{Enabled: ptr(false)},
+		PathType:       ptr(b.getGatewayIngressPathType()),
+		ServicePort:    ptr(b.cfg.GatewayIngressServicePort),
 	}
 	if len(b.cfg.GatewayIngressAnnotations) > 0 {
-		base.Annotations = mergeLabels(nil, b.cfg.GatewayIngressAnnotations)
+		ann := toAnyMap(mergeLabels(nil, b.cfg.GatewayIngressAnnotations))
+		base.Annotations = &ann
 	}
 	if !b.cfg.EnableIngress || in == nil || !in.Enabled {
 		return base
 	}
-	base.Enabled = true
-	base.Host = in.Host
+	base.Enabled = ptr(true)
+	base.Host = ptr(in.Host)
 	return base
 }
 
-func (b *vrsBuilder) getGatewayIngressPathType() k8s.PathType {
+func (b *vrsBuilder) getGatewayIngressPathType() string {
 	switch b.cfg.GatewayIngressPathType {
 	case string(k8s.PathTypeExact):
-		return k8s.PathTypeExact
+		return string(k8s.PathTypeExact)
 	case string(k8s.PathTypeImplementationSpecific):
-		return k8s.PathTypeImplementationSpecific
+		return string(k8s.PathTypeImplementationSpecific)
 	default:
-		return k8s.PathTypePrefix
+		return string(k8s.PathTypePrefix)
 	}
 }
 
 // getGatewayServiceType resolves the gateway service type with the priority
 // CR spec > operator config > NodePort default.
-func (b *vrsBuilder) getGatewayServiceType(st string) k8s.ServiceType {
+func (b *vrsBuilder) getGatewayServiceType(st string) *valdrelease.GatewayLbServiceType {
 	if st == "" {
 		st = b.cfg.GatewayServiceType
 	}
 	switch st {
 	case string(k8s.ServiceTypeClusterIP):
-		return k8s.ServiceTypeClusterIP
+		return ptr(valdrelease.GatewayLbServiceTypeClusterIP)
 	case string(k8s.ServiceTypeLoadBalancer):
-		return k8s.ServiceTypeLoadBalancer
+		return ptr(valdrelease.GatewayLbServiceTypeLoadBalancer)
 	default:
-		return k8s.ServiceTypeNodePort
+		return ptr(valdrelease.GatewayLbServiceTypeNodePort)
 	}
 }
 
-func (b *vrsBuilder) buildDiscoverer() discoverer.Discoverer {
+func (b *vrsBuilder) buildDiscoverer() *valdrelease.Discoverer {
 	input := b.cr.Spec.VectorEngine.Vald.Discoverer
 
-	d := discoverer.Discoverer{
+	return &valdrelease.Discoverer{
 		Logging: b.buildLogging(input.LogLevel),
-		ClusterRole: discoverer.ClusterRole{
-			Name: b.cr.Namespace,
+		ClusterRole: &valdrelease.DiscovererClusterRole{
+			Name: ptr(b.cr.Namespace),
 		},
-		ClusterRoleBinding: discoverer.ClusterRoleBinding{
-			Name: b.cr.Namespace,
+		ClusterRoleBinding: &valdrelease.DiscovererClusterRoleBinding{
+			Name: ptr(b.cr.Namespace),
 		},
-		Kind: common.KindType(input.Kind),
+		Kind: ptr(valdrelease.DiscovererKind(input.Kind)),
 	}
-	return d
 }
 
-func (b *vrsBuilder) buildManager() manager.Manager {
+func (b *vrsBuilder) buildManager() *valdrelease.Manager {
 	indexer := b.cr.Spec.VectorEngine.Vald.Indexer
 
-	m := manager.Manager{
-		Index: manager.Index{
+	m := &valdrelease.Manager{
+		Index: &valdrelease.ManagerIndex{
 			Logging: b.buildLogging(indexer.LogLevel),
-			Enabled: indexer.Manager,
+			Enabled: ptr(indexer.Manager),
 		},
 	}
 
-	if m.Index.Enabled {
-		m.Index.Indexer = manager.Indexer{
-			AutoIndexDurationLimit:     b.cfg.IndexerAutoIndexDurationLimit,
-			AutoSaveIndexDurationLimit: b.cfg.IndexerAutoSaveIndexDurationLimit,
-			AutoIndexCheckDuration:     indexer.IndexDuration,
-			AutoSaveIndexWaitDuration:  indexer.SaveDuration,
-			Concurrency:                &indexer.Concurrency,
+	if indexer.Manager {
+		m.Index.Indexer = &valdrelease.ManagerIndexIndexer{
+			AutoIndexDurationLimit:     ptr(b.cfg.IndexerAutoIndexDurationLimit),
+			AutoSaveIndexDurationLimit: ptr(b.cfg.IndexerAutoSaveIndexDurationLimit),
+			AutoIndexCheckDuration:     ptr(indexer.IndexDuration),
+			AutoSaveIndexWaitDuration:  ptr(indexer.SaveDuration),
+			Concurrency:                ptr(indexer.Concurrency),
 		}
 		return m
 	}
 
-	m.Index.Creator = &manager.Creator{
-		Enabled:     true,
-		Schedule:    indexer.IndexSchedule,
-		Suspend:     indexer.IndexSuspend,
-		Concurrency: &indexer.Concurrency,
+	m.Index.Creator = &valdrelease.ManagerIndexCreator{
+		Enabled:     ptr(true),
+		Schedule:    ptr(indexer.IndexSchedule),
+		Suspend:     ptr(indexer.IndexSuspend),
+		Concurrency: ptr(indexer.Concurrency),
 	}
-	m.Index.Saver = &manager.Saver{
-		Enabled:  true,
-		Schedule: indexer.SaveSchedule,
-		Suspend:  indexer.SaveSuspend,
+	m.Index.Saver = &valdrelease.ManagerIndexSaver{
+		Enabled:  ptr(true),
+		Schedule: ptr(indexer.SaveSchedule),
+		Suspend:  ptr(indexer.SaveSuspend),
 	}
 	return m
 }
@@ -366,7 +355,7 @@ func mergeLabels(base, overlay map[string]string) map[string]string {
 	return merged
 }
 
-func (b *vrsBuilder) buildLogging(ll string) *defaults.Logging {
+func (b *vrsBuilder) buildLogging(ll string) *valdrelease.Logging {
 	vald := b.cr.Spec.VectorEngine.Vald
 	l := ll
 	if l == "" {
@@ -376,11 +365,35 @@ func (b *vrsBuilder) buildLogging(ll string) *defaults.Logging {
 			l = b.cfg.VrsLogLevel
 		}
 	}
-	return &defaults.Logging{
+	return &valdrelease.Logging{
 		Level:  l,
 		Format: b.cfg.VrsLogFormat,
 		Logger: b.cfg.VrsLogger,
 	}
+}
+
+// ptr returns a pointer to v. The generated ValdRelease types use pointers for
+// nearly every field, so the builder wraps its scalar inputs with this.
+func ptr[T any](v T) *T { return &v }
+
+// toAnyMap converts a string map into the free-form map[string]interface{}
+// shape the generated schema uses for annotation-like fields.
+func toAnyMap(m map[string]string) map[string]any {
+	if m == nil {
+		return nil
+	}
+	out := make(map[string]any, len(m))
+	for k, v := range m {
+		out[k] = v
+	}
+	return out
+}
+
+// nsPtr clones m into an independent NodeSelector and returns its address, so
+// multiple components can share the same source map without aliasing.
+func nsPtr(m map[string]string) *valdrelease.NodeSelector {
+	ns := valdrelease.NodeSelector(maps.Clone(m))
+	return &ns
 }
 
 func (b *vrsBuilder) labelKey(suffix string) string {
@@ -503,24 +516,24 @@ func (b *vrsBuilder) applyNodeAffinities(v *valdrelease.ValdRelease) {
 	generalNS := b.buildNodeSelector(v1.NodePoolTypeGeneral)
 	generalTol := b.buildToleration(v1.NodePoolTypeGeneral)
 
-	v.Spec.Agent.NodeSelector = agentNS
+	v.Spec.Agent.NodeSelector = nsPtr(agentNS)
 	v.Spec.Agent.Tolerations = agentTol
 
-	v.Spec.Gateway.Lb.NodeSelector = generalNS
+	v.Spec.Gateway.Lb.NodeSelector = nsPtr(generalNS)
 	v.Spec.Gateway.Lb.Tolerations = generalTol
 
-	v.Spec.Discoverer.NodeSelector = generalNS
+	v.Spec.Discoverer.NodeSelector = nsPtr(generalNS)
 	v.Spec.Discoverer.Tolerations = generalTol
 
-	v.Spec.Manager.Index.NodeSelector = generalNS
+	v.Spec.Manager.Index.NodeSelector = nsPtr(generalNS)
 	v.Spec.Manager.Index.Tolerations = generalTol
 
 	if v.Spec.Manager.Index.Saver != nil {
-		v.Spec.Manager.Index.Saver.NodeSelector = generalNS
+		v.Spec.Manager.Index.Saver.NodeSelector = nsPtr(generalNS)
 		v.Spec.Manager.Index.Saver.Tolerations = generalTol
 	}
 	if v.Spec.Manager.Index.Creator != nil {
-		v.Spec.Manager.Index.Creator.NodeSelector = generalNS
+		v.Spec.Manager.Index.Creator.NodeSelector = nsPtr(generalNS)
 		v.Spec.Manager.Index.Creator.Tolerations = generalTol
 	}
 }
