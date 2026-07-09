@@ -89,6 +89,17 @@ func run(schemaPath, out, pkg, name string) error {
 	// OpenAPI schema objects don't carry the JSON Schema `$schema` keyword.
 	delete(schema, "$schema")
 
+	// Move JSON Schema $defs into OpenAPI components.schemas so each named
+	// definition becomes a named Go type. Refs are rewritten below.
+	schemas := map[string]any{}
+	if defs, ok := schema["$defs"].(map[string]any); ok {
+		for k, v := range defs {
+			schemas[k] = v
+		}
+		delete(schema, "$defs")
+	}
+	schemas[name] = schema
+
 	// Wrap the JSON Schema into a minimal OpenAPI 3 document. oapi-codegen only
 	// emits component schemas reachable from an operation, so a dummy path that
 	// references the schema is added to prevent it from being pruned.
@@ -106,12 +117,14 @@ func run(schemaPath, out, pkg, name string) error {
 				}},
 			}},
 		},
-		"components": map[string]any{"schemas": map[string]any{name: schema}},
+		"components": map[string]any{"schemas": schemas},
 	}
 	docBytes, err := json.Marshal(doc)
 	if err != nil {
 		return fmt.Errorf("marshal openapi doc: %w", err)
 	}
+	// JSON Schema uses #/$defs/... references; OpenAPI uses #/components/schemas/...
+	docBytes = bytes.ReplaceAll(docBytes, []byte("#/$defs/"), []byte("#/components/schemas/"))
 
 	tmp, err := os.CreateTemp("", "vald-openapi-*.json")
 	if err != nil {

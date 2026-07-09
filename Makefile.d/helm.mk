@@ -151,8 +151,8 @@ VALD_VALUES_GOTYPE_PKG ?= valdrelease
 ## generate Go types from the Vald Chart values schema
 helm/schema/gotype/vald: \
 	$(GOBIN)/oapi-codegen \
-	$(ROOTDIR)/charts/vald/values.schema.json
-	$(call gen-vald-helm-gotype,$(ROOTDIR)/charts/vald/values.schema.json,$(VALD_VALUES_GOTYPE_OUT),$(VALD_VALUES_GOTYPE_PKG))
+	$(ROOTDIR)/charts/vald/values.yaml
+	$(call gen-vald-helm-gotype,$(ROOTDIR)/charts/vald/values.yaml,$(VALD_VALUES_GOTYPE_OUT),$(VALD_VALUES_GOTYPE_PKG))
 
 .PHONY: helm/schema/operator/helm
 ## generate json schema for Vald Helm Operator Chart

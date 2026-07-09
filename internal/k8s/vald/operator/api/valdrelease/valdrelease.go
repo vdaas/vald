@@ -45,10 +45,9 @@ func (in *VrsStatus) DeepCopyInto(out *VrsStatus) {
 }
 
 // ValdRelease is the CRD object. Its Spec is the generated chart-values type
-// (Values), so the spec shape is derived from charts/vald/values.schema.json
-// instead of a hand-maintained mirror. The embedded resource.Base promotes
-// DeepCopy / DeepCopyObject generically (no controller-gen), requiring only a
-// DeepCopyInto — which the generator provides.
+// (Values), derived from charts/vald/values.schema.json instead of a
+// hand-maintained mirror. The embedded resource.Base promotes DeepCopy /
+// DeepCopyObject generically; DeepCopyInto is provided by the generator.
 type ValdRelease struct {
 	resource.Base[ValdRelease, *ValdRelease] `json:"-"`
 
@@ -68,6 +67,9 @@ func (in *ValdRelease) DeepCopyInto(out *ValdRelease) {
 	in.Status.DeepCopyInto(&out.Status)
 }
 
-// Compile-time proof that ValdRelease is a typed runtime.Object (no
-// unstructured needed).
+// ValdReleaseList is a list of ValdRelease, derived generically from the item
+// type.
+type ValdReleaseList = resource.List[ValdRelease, *ValdRelease]
+
+// Compile-time proof that ValdRelease is a typed runtime.Object.
 var _ runtime.Object = &ValdRelease{}
