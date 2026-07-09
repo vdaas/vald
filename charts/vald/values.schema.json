@@ -81,10 +81,7 @@
         "algorithm": {
           "type": "string",
           "description": "agent algorithm type. it should be `ngt` or `faiss`.",
-          "enum": [
-            "ngt",
-            "faiss"
-          ]
+          "enum": ["ngt", "faiss"]
         },
         "annotations": {
           "type": "object",
@@ -204,18 +201,12 @@
             "method_type": {
               "type": "string",
               "description": "method type it should be `ivfpq` or `binaryindex`",
-              "enum": [
-                "ivfpq",
-                "binaryindex"
-              ]
+              "enum": ["ivfpq", "binaryindex"]
             },
             "metric_type": {
               "type": "string",
               "description": "metric type it should be `innerproduct` or `l2`",
-              "enum": [
-                "innerproduct",
-                "l2"
-              ]
+              "enum": ["innerproduct", "l2"]
             },
             "min_load_index_timeout": {
               "type": "string",
@@ -271,11 +262,7 @@
             "pullPolicy": {
               "type": "string",
               "description": "image pull policy",
-              "enum": [
-                "Always",
-                "Never",
-                "IfNotPresent"
-              ]
+              "enum": ["Always", "Never", "IfNotPresent"]
             },
             "repository": {
               "type": "string",
@@ -302,11 +289,7 @@
         "kind": {
           "type": "string",
           "description": "deployment kind: Deployment, DaemonSet or StatefulSet",
-          "enum": [
-            "StatefulSet",
-            "Deployment",
-            "DaemonSet"
-          ]
+          "enum": ["StatefulSet", "Deployment", "DaemonSet"]
         },
         "logging": {
           "type": "object",
@@ -314,29 +297,17 @@
             "format": {
               "type": "string",
               "description": "logging format. logging format must be `raw` or `json`",
-              "enum": [
-                "raw",
-                "json"
-              ]
+              "enum": ["raw", "json"]
             },
             "level": {
               "type": "string",
               "description": "logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.",
-              "enum": [
-                "debug",
-                "info",
-                "warn",
-                "error",
-                "fatal"
-              ]
+              "enum": ["debug", "info", "warn", "error", "fatal"]
             },
             "logger": {
               "type": "string",
               "description": "logger name. currently logger must be `glg` or `zap`.",
-              "enum": [
-                "glg",
-                "zap"
-              ]
+              "enum": ["glg", "zap"]
             }
           },
           "x-go-type": "config.Logging",
@@ -517,11 +488,7 @@
             "object_type": {
               "type": "string",
               "description": "object type. it should be `float` or `uint8` or `float16`. for further details: https://github.com/NGT-labs/NGT/wiki/Command-Quick-Reference",
-              "enum": [
-                "float",
-                "float16",
-                "uint8"
-              ]
+              "enum": ["float", "float16", "uint8"]
             },
             "pod_name": {
               "type": "string",
@@ -705,10 +672,7 @@
         "podManagementPolicy": {
           "type": "string",
           "description": "pod management policy: OrderedReady or Parallel",
-          "enum": [
-            "OrderedReady",
-            "Parallel"
-          ]
+          "enum": ["OrderedReady", "Parallel"]
         },
         "podPriority": {
           "type": "object",
@@ -2085,11 +2049,7 @@
         "serviceType": {
           "type": "string",
           "description": "service type: ClusterIP, LoadBalancer or NodePort",
-          "enum": [
-            "ClusterIP",
-            "LoadBalancer",
-            "NodePort"
-          ]
+          "enum": ["ClusterIP", "LoadBalancer", "NodePort"]
         },
         "sidecar": {
           "type": "object",
@@ -2240,10 +2200,7 @@
                     "storage_type": {
                       "type": "string",
                       "description": "storage type",
-                      "enum": [
-                        "s3",
-                        "cloud_storage"
-                      ]
+                      "enum": ["s3", "cloud_storage"]
                     }
                   }
                 },
@@ -2290,11 +2247,7 @@
                         "network": {
                           "type": "string",
                           "description": "gRPC client dialer network type",
-                          "enum": [
-                            "tcp",
-                            "udp",
-                            "unix"
-                          ]
+                          "enum": ["tcp", "udp", "unix"]
                         },
                         "socket_option": {
                           "type": "object",
@@ -2503,12 +2456,7 @@
                     "compress_algorithm": {
                       "type": "string",
                       "description": "compression algorithm. must be `gob`, `gzip`, `lz4` or `zstd`",
-                      "enum": [
-                        "gob",
-                        "gzip",
-                        "lz4",
-                        "zstd"
-                      ]
+                      "enum": ["gob", "gzip", "lz4", "zstd"]
                     },
                     "compression_level": {
                       "type": "integer",
@@ -2598,11 +2546,7 @@
                 "pullPolicy": {
                   "type": "string",
                   "description": "image pull policy",
-                  "enum": [
-                    "Always",
-                    "Never",
-                    "IfNotPresent"
-                  ]
+                  "enum": ["Always", "Never", "IfNotPresent"]
                 },
                 "repository": {
                   "type": "string",
@@ -2624,29 +2568,17 @@
                 "format": {
                   "type": "string",
                   "description": "logging format. logging format must be `raw` or `json`",
-                  "enum": [
-                    "raw",
-                    "json"
-                  ]
+                  "enum": ["raw", "json"]
                 },
                 "level": {
                   "type": "string",
                   "description": "logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.",
-                  "enum": [
-                    "debug",
-                    "info",
-                    "warn",
-                    "error",
-                    "fatal"
-                  ]
+                  "enum": ["debug", "info", "warn", "error", "fatal"]
                 },
                 "logger": {
                   "type": "string",
                   "description": "logger name. currently logger must be `glg` or `zap`.",
-                  "enum": [
-                    "glg",
-                    "zap"
-                  ]
+                  "enum": ["glg", "zap"]
                 }
               },
               "x-go-type": "config.Logging",
@@ -4035,11 +3967,7 @@
                 "type": {
                   "type": "string",
                   "description": "service type: ClusterIP, LoadBalancer or NodePort",
-                  "enum": [
-                    "ClusterIP",
-                    "LoadBalancer",
-                    "NodePort"
-                  ]
+                  "enum": ["ClusterIP", "LoadBalancer", "NodePort"]
                 }
               }
             },
@@ -4090,10 +4018,7 @@
         "unhealthyPodEvictionPolicy": {
           "type": "string",
           "description": "controls whether unhealthy pods can be evicted based on the application's healthy pod count, supporting either cautious or permissive eviction.",
-          "enum": [
-            "AlwaysAllow",
-            "IfHealthyBudget"
-          ]
+          "enum": ["AlwaysAllow", "IfHealthyBudget"]
         },
         "version": {
           "type": "string",
@@ -4292,10 +4217,7 @@
                       "description": "gRPC client interceptors",
                       "items": {
                         "type": "string",
-                        "enum": [
-                          "TraceInterceptor",
-                          "MetricInterceptor"
-                        ]
+                        "enum": ["TraceInterceptor", "MetricInterceptor"]
                       }
                     },
                     "keepalive": {
@@ -4371,11 +4293,7 @@
                         "network": {
                           "type": "string",
                           "description": "gRPC client dialer network type",
-                          "enum": [
-                            "tcp",
-                            "udp",
-                            "unix"
-                          ]
+                          "enum": ["tcp", "udp", "unix"]
                         },
                         "socket_option": {
                           "type": "object",
@@ -4599,29 +4517,17 @@
             "format": {
               "type": "string",
               "description": "logging format. logging format must be `raw` or `json`",
-              "enum": [
-                "raw",
-                "json"
-              ]
+              "enum": ["raw", "json"]
             },
             "level": {
               "type": "string",
               "description": "logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.",
-              "enum": [
-                "debug",
-                "info",
-                "warn",
-                "error",
-                "fatal"
-              ]
+              "enum": ["debug", "info", "warn", "error", "fatal"]
             },
             "logger": {
               "type": "string",
               "description": "logger name. currently logger must be `glg` or `zap`.",
-              "enum": [
-                "glg",
-                "zap"
-              ]
+              "enum": ["glg", "zap"]
             }
           },
           "x-go-type": "config.Logging",
@@ -6162,11 +6068,7 @@
                 "network": {
                   "type": "string",
                   "description": "gRPC client dialer network type",
-                  "enum": [
-                    "tcp",
-                    "udp",
-                    "unix"
-                  ]
+                  "enum": ["tcp", "udp", "unix"]
                 },
                 "socket_option": {
                   "type": "object",
@@ -6392,11 +6294,7 @@
             "pullPolicy": {
               "type": "string",
               "description": "image pull policy",
-              "enum": [
-                "Always",
-                "Never",
-                "IfNotPresent"
-              ]
+              "enum": ["Always", "Never", "IfNotPresent"]
             },
             "repository": {
               "type": "string",
@@ -6427,10 +6325,7 @@
         "kind": {
           "type": "string",
           "description": "deployment kind: Deployment or DaemonSet",
-          "enum": [
-            "Deployment",
-            "DaemonSet"
-          ]
+          "enum": ["Deployment", "DaemonSet"]
         },
         "logging": {
           "type": "object",
@@ -6438,29 +6333,17 @@
             "format": {
               "type": "string",
               "description": "logging format. logging format must be `raw` or `json`",
-              "enum": [
-                "raw",
-                "json"
-              ]
+              "enum": ["raw", "json"]
             },
             "level": {
               "type": "string",
               "description": "logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.",
-              "enum": [
-                "debug",
-                "info",
-                "warn",
-                "error",
-                "fatal"
-              ]
+              "enum": ["debug", "info", "warn", "error", "fatal"]
             },
             "logger": {
               "type": "string",
               "description": "logger name. currently logger must be `glg` or `zap`.",
-              "enum": [
-                "glg",
-                "zap"
-              ]
+              "enum": ["glg", "zap"]
             }
           },
           "x-go-type": "config.Logging",
@@ -7926,11 +7809,7 @@
         "serviceType": {
           "type": "string",
           "description": "service type: ClusterIP, LoadBalancer or NodePort",
-          "enum": [
-            "ClusterIP",
-            "LoadBalancer",
-            "NodePort"
-          ]
+          "enum": ["ClusterIP", "LoadBalancer", "NodePort"]
         },
         "terminationGracePeriodSeconds": {
           "type": "integer",
@@ -7968,10 +7847,7 @@
         "unhealthyPodEvictionPolicy": {
           "type": "string",
           "description": "controls whether unhealthy pods can be evicted based on the application's healthy pod count, supporting either cautious or permissive eviction.",
-          "enum": [
-            "AlwaysAllow",
-            "IfHealthyBudget"
-          ]
+          "enum": ["AlwaysAllow", "IfHealthyBudget"]
         },
         "version": {
           "type": "string",
@@ -8352,11 +8228,7 @@
                                 "network": {
                                   "type": "string",
                                   "description": "gRPC client dialer network type",
-                                  "enum": [
-                                    "tcp",
-                                    "udp",
-                                    "unix"
-                                  ]
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -8735,10 +8607,7 @@
                           "description": "gRPC client interceptors",
                           "items": {
                             "type": "string",
-                            "enum": [
-                              "TraceInterceptor",
-                              "MetricInterceptor"
-                            ]
+                            "enum": ["TraceInterceptor", "MetricInterceptor"]
                           }
                         },
                         "keepalive": {
@@ -8814,11 +8683,7 @@
                             "network": {
                               "type": "string",
                               "description": "gRPC client dialer network type",
-                              "enum": [
-                                "tcp",
-                                "udp",
-                                "unix"
-                              ]
+                              "enum": ["tcp", "udp", "unix"]
                             },
                             "socket_option": {
                               "type": "object",
@@ -9264,11 +9129,7 @@
                                 "network": {
                                   "type": "string",
                                   "description": "gRPC client dialer network type",
-                                  "enum": [
-                                    "tcp",
-                                    "udp",
-                                    "unix"
-                                  ]
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -9526,11 +9387,7 @@
                 "pullPolicy": {
                   "type": "string",
                   "description": "image pull policy",
-                  "enum": [
-                    "Always",
-                    "Never",
-                    "IfNotPresent"
-                  ]
+                  "enum": ["Always", "Never", "IfNotPresent"]
                 },
                 "repository": {
                   "type": "string",
@@ -9603,10 +9460,7 @@
             "kind": {
               "type": "string",
               "description": "deployment kind: Deployment or DaemonSet",
-              "enum": [
-                "Deployment",
-                "DaemonSet"
-              ]
+              "enum": ["Deployment", "DaemonSet"]
             },
             "logging": {
               "type": "object",
@@ -9614,29 +9468,17 @@
                 "format": {
                   "type": "string",
                   "description": "logging format. logging format must be `raw` or `json`",
-                  "enum": [
-                    "raw",
-                    "json"
-                  ]
+                  "enum": ["raw", "json"]
                 },
                 "level": {
                   "type": "string",
                   "description": "logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.",
-                  "enum": [
-                    "debug",
-                    "info",
-                    "warn",
-                    "error",
-                    "fatal"
-                  ]
+                  "enum": ["debug", "info", "warn", "error", "fatal"]
                 },
                 "logger": {
                   "type": "string",
                   "description": "logger name. currently logger must be `glg` or `zap`.",
-                  "enum": [
-                    "glg",
-                    "zap"
-                  ]
+                  "enum": ["glg", "zap"]
                 }
               },
               "x-go-type": "config.Logging",
@@ -11102,11 +10944,7 @@
             "serviceType": {
               "type": "string",
               "description": "service type: ClusterIP, LoadBalancer or NodePort",
-              "enum": [
-                "ClusterIP",
-                "LoadBalancer",
-                "NodePort"
-              ]
+              "enum": ["ClusterIP", "LoadBalancer", "NodePort"]
             },
             "terminationGracePeriodSeconds": {
               "type": "integer",
@@ -11144,10 +10982,7 @@
             "unhealthyPodEvictionPolicy": {
               "type": "string",
               "description": "controls whether unhealthy pods can be evicted based on the application's healthy pod count, supporting either cautious or permissive eviction.",
-              "enum": [
-                "AlwaysAllow",
-                "IfHealthyBudget"
-              ]
+              "enum": ["AlwaysAllow", "IfHealthyBudget"]
             },
             "version": {
               "type": "string",
@@ -11528,11 +11363,7 @@
                                 "network": {
                                   "type": "string",
                                   "description": "gRPC client dialer network type",
-                                  "enum": [
-                                    "tcp",
-                                    "udp",
-                                    "unix"
-                                  ]
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -11974,11 +11805,7 @@
                                 "network": {
                                   "type": "string",
                                   "description": "gRPC client dialer network type",
-                                  "enum": [
-                                    "tcp",
-                                    "udp",
-                                    "unix"
-                                  ]
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -12423,11 +12250,7 @@
                                 "network": {
                                   "type": "string",
                                   "description": "gRPC client dialer network type",
-                                  "enum": [
-                                    "tcp",
-                                    "udp",
-                                    "unix"
-                                  ]
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -12667,11 +12490,7 @@
                 "pullPolicy": {
                   "type": "string",
                   "description": "image pull policy",
-                  "enum": [
-                    "Always",
-                    "Never",
-                    "IfNotPresent"
-                  ]
+                  "enum": ["Always", "Never", "IfNotPresent"]
                 },
                 "registry": {
                   "type": "string",
@@ -12748,10 +12567,7 @@
             "kind": {
               "type": "string",
               "description": "deployment kind: Deployment or DaemonSet",
-              "enum": [
-                "Deployment",
-                "DaemonSet"
-              ]
+              "enum": ["Deployment", "DaemonSet"]
             },
             "logging": {
               "type": "object",
@@ -12759,29 +12575,17 @@
                 "format": {
                   "type": "string",
                   "description": "logging format. logging format must be `raw` or `json`",
-                  "enum": [
-                    "raw",
-                    "json"
-                  ]
+                  "enum": ["raw", "json"]
                 },
                 "level": {
                   "type": "string",
                   "description": "logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.",
-                  "enum": [
-                    "debug",
-                    "info",
-                    "warn",
-                    "error",
-                    "fatal"
-                  ]
+                  "enum": ["debug", "info", "warn", "error", "fatal"]
                 },
                 "logger": {
                   "type": "string",
                   "description": "logger name. currently logger must be `glg` or `zap`.",
-                  "enum": [
-                    "glg",
-                    "zap"
-                  ]
+                  "enum": ["glg", "zap"]
                 }
               },
               "x-go-type": "config.Logging",
@@ -14247,11 +14051,7 @@
             "serviceType": {
               "type": "string",
               "description": "service type: ClusterIP, LoadBalancer or NodePort",
-              "enum": [
-                "ClusterIP",
-                "LoadBalancer",
-                "NodePort"
-              ]
+              "enum": ["ClusterIP", "LoadBalancer", "NodePort"]
             },
             "terminationGracePeriodSeconds": {
               "type": "integer",
@@ -14289,10 +14089,7 @@
             "unhealthyPodEvictionPolicy": {
               "type": "string",
               "description": "controls whether unhealthy pods can be evicted based on the application's healthy pod count, supporting either cautious or permissive eviction.",
-              "enum": [
-                "AlwaysAllow",
-                "IfHealthyBudget"
-              ]
+              "enum": ["AlwaysAllow", "IfHealthyBudget"]
             },
             "version": {
               "type": "string",
@@ -14613,10 +14410,7 @@
                           "description": "gRPC client interceptors",
                           "items": {
                             "type": "string",
-                            "enum": [
-                              "TraceInterceptor",
-                              "MetricInterceptor"
-                            ]
+                            "enum": ["TraceInterceptor", "MetricInterceptor"]
                           }
                         },
                         "keepalive": {
@@ -14692,11 +14486,7 @@
                             "network": {
                               "type": "string",
                               "description": "gRPC client dialer network type",
-                              "enum": [
-                                "tcp",
-                                "udp",
-                                "unix"
-                              ]
+                              "enum": ["tcp", "udp", "unix"]
                             },
                             "socket_option": {
                               "type": "object",
@@ -14959,11 +14749,7 @@
                     "network": {
                       "type": "string",
                       "description": "gRPC client dialer network type",
-                      "enum": [
-                        "tcp",
-                        "udp",
-                        "unix"
-                      ]
+                      "enum": ["tcp", "udp", "unix"]
                     },
                     "socket_option": {
                       "type": "object",
@@ -15105,11 +14891,7 @@
                 "pullPolicy": {
                   "type": "string",
                   "description": "image pull policy",
-                  "enum": [
-                    "Always",
-                    "Never",
-                    "IfNotPresent"
-                  ]
+                  "enum": ["Always", "Never", "IfNotPresent"]
                 },
                 "repository": {
                   "type": "string",
@@ -15181,10 +14963,7 @@
             "kind": {
               "type": "string",
               "description": "deployment kind: Deployment or DaemonSet",
-              "enum": [
-                "Deployment",
-                "DaemonSet"
-              ]
+              "enum": ["Deployment", "DaemonSet"]
             },
             "logging": {
               "type": "object",
@@ -15192,29 +14971,17 @@
                 "format": {
                   "type": "string",
                   "description": "logging format. logging format must be `raw` or `json`",
-                  "enum": [
-                    "raw",
-                    "json"
-                  ]
+                  "enum": ["raw", "json"]
                 },
                 "level": {
                   "type": "string",
                   "description": "logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.",
-                  "enum": [
-                    "debug",
-                    "info",
-                    "warn",
-                    "error",
-                    "fatal"
-                  ]
+                  "enum": ["debug", "info", "warn", "error", "fatal"]
                 },
                 "logger": {
                   "type": "string",
                   "description": "logger name. currently logger must be `glg` or `zap`.",
-                  "enum": [
-                    "glg",
-                    "zap"
-                  ]
+                  "enum": ["glg", "zap"]
                 }
               },
               "x-go-type": "config.Logging",
@@ -16680,11 +16447,7 @@
             "serviceType": {
               "type": "string",
               "description": "service type: ClusterIP, LoadBalancer or NodePort",
-              "enum": [
-                "ClusterIP",
-                "LoadBalancer",
-                "NodePort"
-              ]
+              "enum": ["ClusterIP", "LoadBalancer", "NodePort"]
             },
             "terminationGracePeriodSeconds": {
               "type": "integer",
@@ -16722,10 +16485,7 @@
             "unhealthyPodEvictionPolicy": {
               "type": "string",
               "description": "controls whether unhealthy pods can be evicted based on the application's healthy pod count, supporting either cautious or permissive eviction.",
-              "enum": [
-                "AlwaysAllow",
-                "IfHealthyBudget"
-              ]
+              "enum": ["AlwaysAllow", "IfHealthyBudget"]
             },
             "version": {
               "type": "string",
@@ -17163,11 +16923,7 @@
                                 "network": {
                                   "type": "string",
                                   "description": "gRPC client dialer network type",
-                                  "enum": [
-                                    "tcp",
-                                    "udp",
-                                    "unix"
-                                  ]
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -17609,11 +17365,7 @@
                                 "network": {
                                   "type": "string",
                                   "description": "gRPC client dialer network type",
-                                  "enum": [
-                                    "tcp",
-                                    "udp",
-                                    "unix"
-                                  ]
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -17998,10 +17750,7 @@
                           "description": "gRPC client interceptors",
                           "items": {
                             "type": "string",
-                            "enum": [
-                              "TraceInterceptor",
-                              "MetricInterceptor"
-                            ]
+                            "enum": ["TraceInterceptor", "MetricInterceptor"]
                           }
                         },
                         "keepalive": {
@@ -18077,11 +17826,7 @@
                             "network": {
                               "type": "string",
                               "description": "gRPC client dialer network type",
-                              "enum": [
-                                "tcp",
-                                "udp",
-                                "unix"
-                              ]
+                              "enum": ["tcp", "udp", "unix"]
                             },
                             "socket_option": {
                               "type": "object",
@@ -18290,11 +18035,7 @@
                     "pullPolicy": {
                       "type": "string",
                       "description": "image pull policy",
-                      "enum": [
-                        "Always",
-                        "Never",
-                        "IfNotPresent"
-                      ]
+                      "enum": ["Always", "Never", "IfNotPresent"]
                     },
                     "repository": {
                       "type": "string",
@@ -20049,11 +19790,7 @@
                                 "network": {
                                   "type": "string",
                                   "description": "gRPC client dialer network type",
-                                  "enum": [
-                                    "tcp",
-                                    "udp",
-                                    "unix"
-                                  ]
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -20495,11 +20232,7 @@
                                 "network": {
                                   "type": "string",
                                   "description": "gRPC client dialer network type",
-                                  "enum": [
-                                    "tcp",
-                                    "udp",
-                                    "unix"
-                                  ]
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -20730,11 +20463,7 @@
                     "pullPolicy": {
                       "type": "string",
                       "description": "image pull policy",
-                      "enum": [
-                        "Always",
-                        "Never",
-                        "IfNotPresent"
-                      ]
+                      "enum": ["Always", "Never", "IfNotPresent"]
                     },
                     "repository": {
                       "type": "string",
@@ -22479,11 +22208,7 @@
                                 "network": {
                                   "type": "string",
                                   "description": "gRPC client dialer network type",
-                                  "enum": [
-                                    "tcp",
-                                    "udp",
-                                    "unix"
-                                  ]
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -22925,11 +22650,7 @@
                                 "network": {
                                   "type": "string",
                                   "description": "gRPC client dialer network type",
-                                  "enum": [
-                                    "tcp",
-                                    "udp",
-                                    "unix"
-                                  ]
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -23160,11 +22881,7 @@
                     "pullPolicy": {
                       "type": "string",
                       "description": "image pull policy",
-                      "enum": [
-                        "Always",
-                        "Never",
-                        "IfNotPresent"
-                      ]
+                      "enum": ["Always", "Never", "IfNotPresent"]
                     },
                     "repository": {
                       "type": "string",
@@ -24613,11 +24330,7 @@
                 "pullPolicy": {
                   "type": "string",
                   "description": "image pull policy",
-                  "enum": [
-                    "Always",
-                    "Never",
-                    "IfNotPresent"
-                  ]
+                  "enum": ["Always", "Never", "IfNotPresent"]
                 },
                 "repository": {
                   "type": "string",
@@ -24907,11 +24620,7 @@
                                 "network": {
                                   "type": "string",
                                   "description": "gRPC client dialer network type",
-                                  "enum": [
-                                    "tcp",
-                                    "udp",
-                                    "unix"
-                                  ]
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -25353,11 +25062,7 @@
                                 "network": {
                                   "type": "string",
                                   "description": "gRPC client dialer network type",
-                                  "enum": [
-                                    "tcp",
-                                    "udp",
-                                    "unix"
-                                  ]
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -25587,10 +25292,7 @@
             "kind": {
               "type": "string",
               "description": "deployment kind: Deployment or DaemonSet",
-              "enum": [
-                "Deployment",
-                "DaemonSet"
-              ]
+              "enum": ["Deployment", "DaemonSet"]
             },
             "logging": {
               "type": "object",
@@ -25598,29 +25300,17 @@
                 "format": {
                   "type": "string",
                   "description": "logging format. logging format must be `raw` or `json`",
-                  "enum": [
-                    "raw",
-                    "json"
-                  ]
+                  "enum": ["raw", "json"]
                 },
                 "level": {
                   "type": "string",
                   "description": "logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.",
-                  "enum": [
-                    "debug",
-                    "info",
-                    "warn",
-                    "error",
-                    "fatal"
-                  ]
+                  "enum": ["debug", "info", "warn", "error", "fatal"]
                 },
                 "logger": {
                   "type": "string",
                   "description": "logger name. currently logger must be `glg` or `zap`.",
-                  "enum": [
-                    "glg",
-                    "zap"
-                  ]
+                  "enum": ["glg", "zap"]
                 }
               },
               "x-go-type": "config.Logging",
@@ -25892,11 +25582,7 @@
                     "pullPolicy": {
                       "type": "string",
                       "description": "image pull policy",
-                      "enum": [
-                        "Always",
-                        "Never",
-                        "IfNotPresent"
-                      ]
+                      "enum": ["Always", "Never", "IfNotPresent"]
                     },
                     "repository": {
                       "type": "string",
@@ -25923,10 +25609,7 @@
                 "kind": {
                   "type": "string",
                   "description": "deployment kind: Deployment or DaemonSet",
-                  "enum": [
-                    "Deployment",
-                    "DaemonSet"
-                  ]
+                  "enum": ["Deployment", "DaemonSet"]
                 },
                 "logging": {
                   "type": "object",
@@ -25934,29 +25617,17 @@
                     "format": {
                       "type": "string",
                       "description": "logging format. logging format must be `raw` or `json`",
-                      "enum": [
-                        "raw",
-                        "json"
-                      ]
+                      "enum": ["raw", "json"]
                     },
                     "level": {
                       "type": "string",
                       "description": "logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.",
-                      "enum": [
-                        "debug",
-                        "info",
-                        "warn",
-                        "error",
-                        "fatal"
-                      ]
+                      "enum": ["debug", "info", "warn", "error", "fatal"]
                     },
                     "logger": {
                       "type": "string",
                       "description": "logger name. currently logger must be `glg` or `zap`.",
-                      "enum": [
-                        "glg",
-                        "zap"
-                      ]
+                      "enum": ["glg", "zap"]
                     }
                   },
                   "x-go-type": "config.Logging",
@@ -27555,11 +27226,7 @@
                         "pullPolicy": {
                           "type": "string",
                           "description": "image pull policy",
-                          "enum": [
-                            "Always",
-                            "Never",
-                            "IfNotPresent"
-                          ]
+                          "enum": ["Always", "Never", "IfNotPresent"]
                         },
                         "repository": {
                           "type": "string",
@@ -29328,11 +28995,7 @@
                                 "network": {
                                   "type": "string",
                                   "description": "gRPC client dialer network type",
-                                  "enum": [
-                                    "tcp",
-                                    "udp",
-                                    "unix"
-                                  ]
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -29774,11 +29437,7 @@
                                 "network": {
                                   "type": "string",
                                   "description": "gRPC client dialer network type",
-                                  "enum": [
-                                    "tcp",
-                                    "udp",
-                                    "unix"
-                                  ]
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -30009,11 +29668,7 @@
                     "pullPolicy": {
                       "type": "string",
                       "description": "image pull policy",
-                      "enum": [
-                        "Always",
-                        "Never",
-                        "IfNotPresent"
-                      ]
+                      "enum": ["Always", "Never", "IfNotPresent"]
                     },
                     "repository": {
                       "type": "string",
@@ -32679,11 +32334,7 @@
             "serviceType": {
               "type": "string",
               "description": "service type: ClusterIP, LoadBalancer or NodePort",
-              "enum": [
-                "ClusterIP",
-                "LoadBalancer",
-                "NodePort"
-              ]
+              "enum": ["ClusterIP", "LoadBalancer", "NodePort"]
             },
             "terminationGracePeriodSeconds": {
               "type": "integer",
@@ -32721,10 +32372,7 @@
             "unhealthyPodEvictionPolicy": {
               "type": "string",
               "description": "controls whether unhealthy pods can be evicted based on the application's healthy pod count, supporting either cautious or permissive eviction.",
-              "enum": [
-                "AlwaysAllow",
-                "IfHealthyBudget"
-              ]
+              "enum": ["AlwaysAllow", "IfHealthyBudget"]
             },
             "version": {
               "type": "string",
