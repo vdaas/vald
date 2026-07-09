@@ -245,7 +245,7 @@ spec:
 
 </details>
 
-For more details of the configuration of vald-helm-operator-release, please refer to [here](https://github.com/vdaas/vald/tree/main/charts/vald-helm-operator#configuration).
+For more details of the configuration of `vald-helm-operator-release`, please refer to [here](https://github.com/vdaas/vald/tree/main/charts/operator/helm#configuration).
 
 After setting `vr.yaml` (and `vhor.yaml`), you can deploy by the following steps.
 

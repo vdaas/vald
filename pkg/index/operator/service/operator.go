@@ -23,7 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/k8s/client"
-	"github.com/vdaas/vald/internal/k8s/v2/pod"
+	"github.com/vdaas/vald/internal/k8s/reconciler"
 	"github.com/vdaas/vald/internal/k8s/vald"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -88,18 +88,15 @@ func New(
 		return pod.Labels["app"] == agentName
 	}
 
-	podController := pod.New(
-		pod.WithControllerName("pod reconciler for index operator"),
-		pod.WithOnErrorFunc(func(err error) {
+	podController := reconciler.NewObjectReconciler(
+		"pod reconciler for index operator",
+		func() *k8s.Pod { return new(k8s.Pod) },
+		reconciler.WithOnObjectReconcile(operator.podOnReconcile),
+		reconciler.WithObjectOnError[*k8s.Pod](func(err error) {
 			log.Error("failed to reconcile:", err)
 		}),
-		pod.WithNamespace(operator.namespace),
-		pod.WithOnReconcileFunc(operator.podOnReconcile),
-		pod.WithLabels(map[string]string{
-			"app": agentName,
-		}),
 		// To only reconcile for agent pods
-		pod.WithForOpts(
+		reconciler.WithObjectForOptions[*k8s.Pod](
 			client.PodPredicates(isAgent),
 		),
 	)

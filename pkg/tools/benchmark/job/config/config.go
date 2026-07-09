@@ -94,7 +94,7 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 	// Get config from applied ValdBenchmarkJob custom resource
 	var jobResource v1.ValdBenchmarkJob
 	if cfg.K8sClient == nil {
-		c, err := client.New(client.WithSchemeBuilder(*v1.SchemeBuilder))
+		c, err := client.New(client.WithSchemeBuilder(v1.SchemeBuilder))
 		if err != nil {
 			log.Error(err.Error())
 			return nil, err

@@ -78,7 +78,8 @@ on:
       - internal/io/*.go
       - internal/k8s/*.go
       - internal/k8s/client/*.go
-      - internal/k8s/v2/pod/*.go
+      - internal/k8s/reconciler/*.go
+      - internal/k8s/resource/*.go
       - internal/k8s/vald/*.go
       - internal/log/*.go
       - internal/log/format/*.go
@@ -190,7 +191,8 @@ on:
       - internal/io/*.go
       - internal/k8s/*.go
       - internal/k8s/client/*.go
-      - internal/k8s/v2/pod/*.go
+      - internal/k8s/reconciler/*.go
+      - internal/k8s/resource/*.go
       - internal/k8s/vald/*.go
       - internal/log/*.go
       - internal/log/format/*.go

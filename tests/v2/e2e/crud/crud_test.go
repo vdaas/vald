@@ -69,9 +69,14 @@ func TestMain(m *testing.M) {
 		log.Fatalf("failed to load config: %v", err)
 	}
 	log.Init(log.WithLevel(cfg.Logging.Level), log.WithFormat(cfg.Logging.Format))
-	ds, err = hdf5.HDF5ToDataset(cfg.Dataset.Name)
-	if err != nil {
-		log.Fatalf("failed to load dataset: %v", err)
+	if cfg.Dataset != nil && cfg.Dataset.Name != "" {
+		ds, err = hdf5.HDF5ToDataset(cfg.Dataset.Name)
+		if err != nil {
+			log.Fatalf("failed to load dataset: %v", err)
+		}
+	} else {
+		// dataset-less scenarios (e.g. operator verification) do not require hdf5 loading.
+		log.Info("dataset name is empty, skipping dataset loading")
 	}
 	cfg.FilePath = fp
 	os.Exit(m.Run())

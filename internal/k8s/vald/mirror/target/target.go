@@ -97,20 +97,13 @@ func (r *reconciler) Reconcile(
 			r.onError(err)
 		}
 		if apierr.IsNotFound(err) {
-			return reconcile.Result{
-				Requeue:      true,
-				RequeueAfter: reconcileRequeueDurationForNotFoundError,
-			}, nil
+			return reconcile.Result{RequeueAfter: reconcileRequeueDurationForNotFoundError}, nil
 		}
-		return reconcile.Result{
-			Requeue:      true,
-			RequeueAfter: reconcileRequeueDurationForInvalidError,
-		}, err
+		return reconcile.Result{RequeueAfter: reconcileRequeueDurationForInvalidError}, err
 	}
-	tm := make(map[string]Target)
+	tm := make(map[string]Target, len(ml.Items))
 	for _, m := range ml.Items {
-		name := m.GetObjectMeta().GetName()
-		tm[name] = Target{
+		tm[m.GetName()] = Target{
 			Colocation: m.Spec.Colocation,
 			Host:       m.Spec.Target.Host,
 			Port:       m.Spec.Target.Port,

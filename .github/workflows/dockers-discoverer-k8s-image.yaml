@@ -78,11 +78,9 @@ on:
       - internal/info/*.go
       - internal/io/*.go
       - internal/k8s/*.go
-      - internal/k8s/metrics/node/*.go
-      - internal/k8s/metrics/pod/*.go
-      - internal/k8s/node/*.go
-      - internal/k8s/pod/*.go
-      - internal/k8s/service/*.go
+      - internal/k8s/client/*.go
+      - internal/k8s/reconciler/*.go
+      - internal/k8s/resource/*.go
       - internal/log/*.go
       - internal/log/format/*.go
       - internal/log/glg/*.go
@@ -198,11 +196,9 @@ on:
       - internal/info/*.go
       - internal/io/*.go
       - internal/k8s/*.go
-      - internal/k8s/metrics/node/*.go
-      - internal/k8s/metrics/pod/*.go
-      - internal/k8s/node/*.go
-      - internal/k8s/pod/*.go
-      - internal/k8s/service/*.go
+      - internal/k8s/client/*.go
+      - internal/k8s/reconciler/*.go
+      - internal/k8s/resource/*.go
       - internal/log/*.go
       - internal/log/format/*.go
       - internal/log/glg/*.go

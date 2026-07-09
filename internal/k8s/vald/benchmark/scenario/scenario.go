@@ -75,23 +75,15 @@ func (r *reconciler) Reconcile(
 		if r.onError != nil {
 			r.onError(err)
 		}
-		res = reconcile.Result{
-			Requeue:      true,
-			RequeueAfter: time.Millisecond * 100,
-		}
 		if k8serrors.IsNotFound(err) {
 			log.Errorf("not found: %s", err)
-			return reconcile.Result{
-				Requeue:      true,
-				RequeueAfter: time.Second,
-			}, nil
+			return reconcile.Result{RequeueAfter: time.Second}, nil
 		}
-		return res, err
+		return reconcile.Result{RequeueAfter: time.Millisecond * 100}, err
 	}
-	scenarios := make(map[string]v1.ValdBenchmarkScenario, 0)
+	scenarios := make(map[string]v1.ValdBenchmarkScenario, len(bs.Items))
 	for _, item := range bs.Items {
-		name := item.Name
-		scenarios[name] = item
+		scenarios[item.GetName()] = item
 	}
 
 	if r.onReconcile != nil {
@@ -123,7 +115,5 @@ func (*reconciler) Owns() (client.Object, []builder.OwnsOption) {
 }
 
 func (*reconciler) Watches() (client.Object, handler.EventHandler, []builder.WatchesOption) {
-	// return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
-	// return &source.Kind{Type: new(v1.ValdBenchmarkScenario)}, &handler.EnqueueRequestForObject{}, nil
 	return nil, &handler.EnqueueRequestForObject{}, nil
 }

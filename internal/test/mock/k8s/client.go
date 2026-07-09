@@ -20,6 +20,7 @@ import (
 	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/k8s/client"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/watch"
 	crclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -70,6 +71,13 @@ func (m *ValdK8sClientMock) Patch(
 	ctx context.Context, obj k8s.Object, patch crclient.Patch, opts ...crclient.PatchOption,
 ) error {
 	args := m.Called(ctx, obj, patch, opts)
+	return args.Error(0)
+}
+
+func (m *ValdK8sClientMock) Apply(
+	ctx context.Context, obj runtime.ApplyConfiguration, opts ...crclient.ApplyOption,
+) error {
+	args := m.Called(ctx, obj, opts)
 	return args.Error(0)
 }
 

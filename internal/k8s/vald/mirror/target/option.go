@@ -18,7 +18,6 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 // Option represents the functional option for reconciler.
@@ -33,17 +32,6 @@ func WithControllerName(name string) Option {
 			return errors.NewErrInvalidOption("controllerName", name)
 		}
 		r.name = name
-		return nil
-	}
-}
-
-// WithManager returns the option to set the controller manager.
-func WithManager(mgr manager.Manager) Option {
-	return func(r *reconciler) error {
-		if mgr == nil {
-			return errors.NewErrInvalidOption("manager", mgr)
-		}
-		r.mgr = mgr
 		return nil
 	}
 }

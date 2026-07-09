@@ -19,10 +19,6 @@ package errors
 var (
 	ErrInvalidReconcilerConfig = New("invalid reconciler config")
 
-	ErrPodIsNotRunning = func(namespace, name string) error {
-		return Errorf("pod %s/%s is not running", namespace, name)
-	}
-
 	ErrPortForwardAddressNotFound = New("port forward address not found")
 
 	ErrPortForwardPortPairNotFound = New("port forward port pair not found")
@@ -42,4 +38,16 @@ var (
 	ErrUndefinedNamespace = New("Undefined namespace")
 
 	ErrUndefinedService = New("Undefined service")
+
+	ErrItemsFieldNotFoundOrNotASlice = New("field 'Items' not found or not a slice")
+
+	ErrItemIsNotOfType = func(i int) error {
+		return Errorf("item at index %d is not of type T", i)
+	}
+
+	ErrWaitTimeoutFor = func(namespace, name string) error {
+		return Errorf("timeout waiting for %s/%s", namespace, name)
+	}
+
+	ErrTimeoutWaitingForResourceStatus = New("timeout waiting for resource status")
 )

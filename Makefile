@@ -14,7 +14,8 @@
 # limitations under the License.
 #
 
-SHELL = bash
+SHELL = /usr/bin/env bash
+.SHELLFLAGS := -eu -o pipefail -c
 ORG ?= vdaas
 NAME = vald
 REPO = $(ORG)/$(NAME)
@@ -47,6 +48,7 @@ INDEX_SAVE_IMAGE = $(NAME)-index-save
 LB_GATEWAY_IMAGE = $(NAME)-lb-gateway
 MANAGER_INDEX_IMAGE = $(NAME)-manager-index
 MIRROR_GATEWAY_IMAGE = $(NAME)-mirror-gateway
+OPERATOR_IMAGE = $(NAME)-operator
 READREPLICA_ROTATE_IMAGE = $(NAME)-readreplica-rotate
 E2E_IMAGE = $(NAME)-e2e
 MAINTAINER = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
@@ -97,6 +99,7 @@ BUF_VERSION := $(eval BUF_VERSION := $(shell cat versions/BUF_VERSION))$(BUF_VER
 BUSYBOX_VERSION := $(eval BUSYBOX_VERSION := $(shell cat versions/BUSYBOX_VERSION))$(BUSYBOX_VERSION)
 CMAKE_VERSION := $(eval CMAKE_VERSION := $(shell cat versions/CMAKE_VERSION))$(CMAKE_VERSION)
 DOCKER_VERSION := $(eval DOCKER_VERSION := $(shell cat versions/DOCKER_VERSION))$(DOCKER_VERSION)
+DOCKER_BUILDX_VERSION := $(eval DOCKER_BUILDX_VERSION := $(shell cat versions/DOCKER_BUILDX_VERSION))$(DOCKER_BUILDX_VERSION)
 FAISS_VERSION := $(eval FAISS_VERSION := $(shell cat versions/FAISS_VERSION))$(FAISS_VERSION)
 USEARCH_VERSION := $(eval USEARCH_VERSION := $(shell cat versions/USEARCH_VERSION))$(USEARCH_VERSION)
 GOLANGCILINT_VERSION := $(eval GOLANGCILINT_VERSION := $(shell cat versions/GOLANGCILINT_VERSION))$(GOLANGCILINT_VERSION)
@@ -350,6 +353,7 @@ GO_ALL_TEST_SOURCES = $(GO_TEST_SOURCES) $(GO_OPTION_TEST_SOURCES)
 
 DOCKER ?= docker
 DOCKER_OPTS ?=
+DOCKER_BUILDKIT ?= 1
 BUILDKIT_INLINE_CACHE ?= 1
 
 DISTROLESS_IMAGE ?= gcr.io/distroless/static

@@ -62,41 +62,64 @@ k8s/manifest/update: \
 	mv $(TEMP_DIR)/vald/templates/index/job/readreplica/rotate $(ROOTDIR)/k8s/index/job/readreplica/rotate
 	rm -rf $(TEMP_DIR)
 
-.PHONY: k8s/manifest/helm-operator/clean
+.PHONY: k8s/manifest/operator/helm/clean
 ## clean k8s manifests for helm-operator
-k8s/manifest/helm-operator/clean:
+k8s/manifest/operator/helm/clean:
 	rm -rf \
 	k8s/operator/helm
 
-.PHONY: k8s/manifest/helm-operator/update
+.PHONY: k8s/manifest/operator/helm/update
 ## update k8s manifests for helm-operatorusing helm templates
-k8s/manifest/helm-operator/update: \
-	k8s/manifest/helm-operator/clean
+k8s/manifest/operator/helm/update: \
+	k8s/manifest/operator/helm/clean
 	helm template \
 	--output-dir $(TEMP_DIR) \
-	charts/vald-helm-operator
+	charts/operator/helm
 	mkdir -p $(ROOTDIR)/k8s/operator
-	mv $(TEMP_DIR)/vald-helm-operator/templates $(ROOTDIR)/k8s/operator/helm
+	mv $(TEMP_DIR)/operator/helm/templates $(ROOTDIR)/k8s/operator/helm
 	rm -rf $(TEMP_DIR)
-	cp -r $(ROOTDIR)/charts/vald-helm-operator/crds $(ROOTDIR)/k8s/operator/helm/crds
+	cp -r $(ROOTDIR)/charts/operator/helm/crds $(ROOTDIR)/k8s/operator/helm/crds
 
-.PHONY: k8s/manifest/benchmark-operator/clean
-## clean k8s manifests for benchmark-operator
-k8s/manifest/benchmark-operator/clean:
+.PHONY: k8s/manifest/operator/vald/clean
+## clean k8s manifests for vald-operator (keeps crds/ and samples/)
+k8s/manifest/operator/vald/clean:
 	rm -rf \
-	k8s/tools/benchmark/operator
+	$(ROOTDIR)/k8s/operator/vald/*.yaml
 
-.PHONY: k8s/manifest/benchmark-operator/update
-## update k8s manifests for benchmark-operator using helm templates
-k8s/manifest/benchmark-operator/update: \
-	k8s/manifest/benchmark-operator/clean
+.PHONY: k8s/manifest/operator/vald/update
+## update k8s manifests and builder testdata for vald-operator using helm templates
+k8s/manifest/operator/vald/update: \
+	k8s/manifest/operator/vald/clean
 	helm template \
 	--output-dir $(TEMP_DIR) \
-	charts/vald-benchmark-operator
-	mkdir -p $(ROOTDIR)/k8s/tools/benchmark
-	mv $(TEMP_DIR)/vald-benchmark-operator/templates $(ROOTDIR)/k8s/tools/benchmark/operator
+	charts/operator/vald
+	mkdir -p $(ROOTDIR)/k8s/operator/vald
+	mv $(TEMP_DIR)/vald-operator/templates/*.yaml $(ROOTDIR)/k8s/operator/vald/
+	sed -i -e '/^---$$/d' -e '/^# Source:/d' $(ROOTDIR)/k8s/operator/vald/*.yaml
 	rm -rf $(TEMP_DIR)
-	cp -r $(ROOTDIR)/charts/vald-benchmark-operator/crds $(ROOTDIR)/k8s/tools/benchmark/operator/crds
+	cp -r $(ROOTDIR)/charts/operator/vald/crds/. $(ROOTDIR)/k8s/operator/vald/crds/
+	cp -r $(ROOTDIR)/charts/operator/vald/samples/. $(ROOTDIR)/k8s/operator/vald/samples/
+	{ awk '/^#/{print;next}{exit}' $(ROOTDIR)/k8s/operator/vald/configmap-vrs.yaml; \
+	yq eval '.data."vrs.yaml"' $(ROOTDIR)/k8s/operator/vald/configmap-vrs.yaml; } \
+	> $(ROOTDIR)/pkg/operator/vald/service/testdata/vrs.yaml
+
+.PHONY: k8s/manifest/operator/benchmark/clean
+## clean k8s manifests for benchmark-operator
+k8s/manifest/operator/benchmark/clean:
+	rm -rf \
+	k8s/operator/benchmark
+
+.PHONY: k8s/manifest/operator/benchmark/update
+## update k8s manifests for benchmark-operator using helm templates
+k8s/manifest/operator/benchmark/update: \
+	k8s/manifest/operator/benchmark/clean
+	helm template \
+	--output-dir $(TEMP_DIR) \
+	charts/operator/benchmark
+	mkdir -p $(ROOTDIR)/k8s/tools/benchmark
+	mv $(TEMP_DIR)/operator/benchmark/templates $(ROOTDIR)/k8s/operator/benchmark
+	rm -rf $(TEMP_DIR)
+	cp -r $(ROOTDIR)/charts/operator/benchmark/crds $(ROOTDIR)/k8s/operator/benchmark/crds
 
 .PHONY: k8s/manifest/readreplica/clean
 ## clean k8s manifests for readreplica
@@ -208,33 +231,49 @@ k8s/multi/vald/delete:
 	helm uninstall vald-cluster-03 -n vald-03
 	-@kubectl delete ns vald-01 vald-02 vald-03
 
-.PHONY: k8s/vald-helm-operator/deploy
+.PHONY: k8s/operator/helm/deploy
 ## deploy vald-helm-operator to k8s
-k8s/vald-helm-operator/deploy:
+k8s/operator/helm/deploy:
 	helm template \
 	--output-dir $(TEMP_DIR) \
 	--set image.tag=$(VERSION) \
 	$(HELM_EXTRA_OPTIONS) \
 	--include-crds \
-	charts/vald-helm-operator
-	kubectl create -f $(TEMP_DIR)/vald-helm-operator/crds/valdrelease.yaml
-	kubectl create -f $(TEMP_DIR)/vald-helm-operator/crds/valdhelmoperatorrelease.yaml
-	kubectl apply -f $(TEMP_DIR)/vald-helm-operator/templates
+	charts/operator/helm
+	kubectl create -f $(TEMP_DIR)/operator/helm/crds/valdrelease.yaml
+	kubectl create -f $(TEMP_DIR)/operator/helm/crds/valdhelmoperatorrelease.yaml
+	kubectl apply -f $(TEMP_DIR)/operator/helm/templates
 	sleep 2
 	kubectl wait --for=condition=ready pod -l name=vald-helm-operator --timeout=600s
 
-.PHONY: k8s/vald-helm-operator/delete
+.PHONY: k8s/operator/helm/delete
 ## delete vald-helm-operator from k8s
-k8s/vald-helm-operator/delete:
+k8s/operator/helm/delete:
 	helm template \
 	--output-dir $(TEMP_DIR) \
 	--set image.tag=$(VERSION) \
 	--include-crds \
-	charts/vald-helm-operator
-	kubectl delete -f $(TEMP_DIR)/vald-helm-operator/templates
+	charts/operator/helm
+	kubectl delete -f $(TEMP_DIR)/operator/helm/templates
 	kubectl wait --for=delete pod -l name=vald-helm-operator --timeout=600s
-	kubectl delete -f $(TEMP_DIR)/vald-helm-operator/crds
+	kubectl delete -f $(TEMP_DIR)/operator/helm/crds
 	rm -rf $(TEMP_DIR)
+
+.PHONY: k8s/operator/vald/deploy
+## deploy vald-operator to k8s (RBAC bindings assume the default namespace)
+k8s/operator/vald/deploy:
+	kubectl apply -f $(ROOTDIR)/k8s/operator/vald/crds
+	kubectl apply --server-side -f $(ROOTDIR)/charts/operator/helm/crds/valdrelease.yaml
+	kubectl apply -f $(ROOTDIR)/k8s/operator/vald
+	sleep 2
+	kubectl wait --for=condition=Available deployment/vald-operator --timeout=600s
+
+.PHONY: k8s/operator/vald/delete
+## delete vald-operator from k8s
+k8s/operator/vald/delete:
+	kubectl delete --ignore-not-found=true -f $(ROOTDIR)/k8s/operator/vald
+	kubectl delete --ignore-not-found=true -f $(ROOTDIR)/k8s/operator/vald/crds
+	kubectl delete --ignore-not-found=true -f $(ROOTDIR)/charts/operator/helm/crds/valdrelease.yaml
 
 .PHONY: k8s/vald-readreplica/deploy
 ## deploy vald-readreplica to k8s
@@ -300,32 +339,32 @@ k8s/vr/delete: \
 	k8s/metrics/metrics-server/delete
 	kubectl delete vr vald-cluster
 
-.PHONY: k8s/vald-benchmark-operator/deploy
+.PHONY: k8s/operator/benchmark/deploy
 ## deploy vald-benchmark-operator to k8s
-k8s/vald-benchmark-operator/deploy:
+k8s/operator/benchmark/deploy:
 	helm template \
 	--output-dir $(TEMP_DIR) \
 	--set image.tag=${VERSION} \
 	--include-crds \
-	charts/vald-benchmark-operator
-	kubectl create -f $(TEMP_DIR)/vald-benchmark-operator/crds/valdbenchmarkjob.yaml
-	kubectl create -f $(TEMP_DIR)/vald-benchmark-operator/crds/valdbenchmarkscenario.yaml
-	kubectl create -f $(TEMP_DIR)/vald-benchmark-operator/crds/valdbenchmarkoperatorrelease.yaml
-	kubectl apply -f $(TEMP_DIR)/vald-benchmark-operator/templates
+	charts/operator/benchmark
+	kubectl create -f $(TEMP_DIR)/operator/benchmark/crds/valdbenchmarkjob.yaml
+	kubectl create -f $(TEMP_DIR)/operator/benchmark/crds/valdbenchmarkscenario.yaml
+	kubectl create -f $(TEMP_DIR)/operator/benchmark/crds/valdbenchmarkoperatorrelease.yaml
+	kubectl apply -f $(TEMP_DIR)/operator/benchmark/templates
 	sleep 2
 	kubectl wait --for=condition=ready pod -l name=vald-benchmark-operator --timeout=600s
 
-.PHONY: k8s/vald-benchmark-operator/delete
+.PHONY: k8s/operator/benchmark/delete
 ## delete vald-benchmark-operator from k8s
-k8s/vald-benchmark-operator/delete:
+k8s/operator/benchmark/delete:
 	helm template \
 	--output-dir $(TEMP_DIR) \
 	--set image.tag=${VERSION} \
 	--include-crds \
-	charts/vald-benchmark-operator
-	kubectl delete -f $(TEMP_DIR)/vald-benchmark-operator/templates
+	charts/operator/benchmark
+	kubectl delete -f $(TEMP_DIR)/operator/benchmark/templates
 	kubectl wait --for=delete pod -l name=vald-benchmark-operator --timeout=600s
-	kubectl delete -f $(TEMP_DIR)/vald-benchmark-operator/crds
+	kubectl delete -f $(TEMP_DIR)/operator/benchmark/crds
 	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/external/cert-manager/deploy

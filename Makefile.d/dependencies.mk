@@ -28,7 +28,7 @@ update/libs: \
 	update/hdf5 \
 	update/helm \
 	update/helm-docs \
-	update/helm-operator \
+	update/operator/helm \
 	update/jaeger-operator \
 	update/k3d \
 	update/k3s \
@@ -175,9 +175,9 @@ update/helm:
 	curl -fsSL https://api.github.com/repos/helm/helm/releases/latest | \
 	grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/HELM_VERSION
 
-.PHONY: update/helm-operator
+.PHONY: update/operator/helm
 ## update helm-operator version
-update/helm-operator:
+update/operator/helm:
 	curl -fsSL https://quay.io/api/v1/repository/operator-framework/helm-operator | \
 	jq -r '.tags'| \
 	grep name | \
