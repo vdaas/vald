@@ -98,7 +98,8 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 
 	// For health check and metrics
-	srv, err := starter.New(starter.WithConfig(cfg.Server),
+	srv, err := starter.New(
+		starter.WithConfig(cfg.Server),
 		starter.WithGRPC(func(_ *iconf.Server) []server.Option {
 			return grpcServerOptions
 		}),

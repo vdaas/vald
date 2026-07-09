@@ -109,14 +109,6 @@ func WithRestartPolicy(rp RestartPolicy) BenchmarkJobOption {
 	}
 }
 
-// WithBackoffLimit sets the job backoff limit for benchmark job.
-func WithBackoffLimit(bo int32) BenchmarkJobOption {
-	return func(b *k8s.Job) error {
-		b.Spec.BackoffLimit = &bo
-		return nil
-	}
-}
-
 // WithName sets the job name of benchmark job.
 func WithName(name string) BenchmarkJobOption {
 	return func(b *k8s.Job) error {

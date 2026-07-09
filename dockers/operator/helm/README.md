@@ -6,7 +6,7 @@
 
 This image is responsible for the following:
 
-- monitoring 2 custom resource definitions, [`ValdRelease`](https://github.com/vdaas/vald/blob/main/charts/vald-helm-operator/crds/valdrelease.yaml) and [`ValdHelmOperatorRelease`](https://github.com/vdaas/vald/blob/main/charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml)
+- monitoring 2 custom resource definitions, [`ValdRelease`](https://github.com/vdaas/vald/blob/main/charts/operator/helm/crds/valdrelease.yaml) and [`ValdHelmOperatorRelease`](https://github.com/vdaas/vald/blob/main/charts/operator/helm/crds/valdhelmoperatorrelease.yaml)
 - Operating Vald Helm Operator and Vald cluster according to applied CRD.
 
 Vald recommends using Vald Helm Operator for production usage.

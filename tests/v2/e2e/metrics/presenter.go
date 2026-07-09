@@ -27,9 +27,9 @@ import (
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/strings"
-	"sigs.k8s.io/yaml"
 )
 
 const (
@@ -216,7 +216,7 @@ func (p *SnapshotPresenter) AsYAML() (string, error) {
 	if p.snapshot == nil {
 		return "null", nil
 	}
-	b, err := yaml.Marshal(p.snapshot)
+	b, err := k8s.YAMLMarshal(p.snapshot)
 	if err != nil {
 		return "", err
 	}
@@ -305,7 +305,8 @@ func (p *SnapshotPresenter) asSeparatedValue(separator rune) (string, error) {
 		qwMax = float64(s.QueueWaits.Max) / nanoToSec
 	}
 
-	row = append(row,
+	row = append(
+		row,
 		strconv.FormatFloat(qwMin, 'f', 4, 64),
 		strconv.FormatFloat(qwMean, 'f', 4, 64),
 		strconv.FormatFloat(qwMax, 'f', 4, 64),

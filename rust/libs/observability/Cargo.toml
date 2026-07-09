@@ -26,8 +26,8 @@ opentelemetry_sdk = { version = "0.32.1", features = ["rt-tokio"] }
 opentelemetry-otlp = { version = "0.32.0", features = ["http-proto", "reqwest-client", "logs", "grpc-tonic"] }
 tokio = { version = "1.52.3", features = ["full"] }
 serde_json = { version="1.0.150" }
-opentelemetry-semantic-conventions = { version = "0.32.0"}
+opentelemetry-semantic-conventions = { version = "0.32.1"}
 scopeguard = { version = "1.2.0"}
 paste = {version = "1.0.15"}
-anyhow = { version = "1.0.102"}
+anyhow = { version = "1.0.103"}
 url = { version = "2.5.8"}

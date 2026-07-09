@@ -24,6 +24,13 @@ e2e:
 e2e/v2:
 	$(call run-v2-e2e-crud-test,-run TestE2EStrategy)
 
+.PHONY: e2e/v2/operator
+## run e2e/v2 for vald-operator
+e2e/v2/operator:
+	$(MAKE) E2E_CONFIG=$(E2E_CONFIG_DIR)/operator.yaml \
+		E2E_MANIFEST_PATH=$(ROOTDIR)/k8s/operator/vald/samples/controller_v1_valdoperatorrelease.yaml \
+		e2e/v2
+
 .PHONY: e2e/faiss
 ## run e2e/faiss
 e2e/faiss:
@@ -218,4 +225,19 @@ e2e/v2/actions/run/unary/crud: \
 		E2E_BULK_SIZE="10" \
 		e2e/v2
 	$(MAKE) k8s/vald/delete
+	$(MAKE) k3d/delete
+
+.PHONY: e2e/v2/actions/run/operator
+## run GitHub Actions E2E/V2 test (vald-operator)
+e2e/v2/actions/run/operator: \
+	k3d/restart
+	@docker buildx version > /dev/null 2>&1 || $(MAKE) docker-buildx/install
+	$(MAKE) docker/build/operator
+	$(K3D_COMMAND) image import $(CRORG)/$(OPERATOR_IMAGE):$(TAG) -c $(K3D_CLUSTER_NAME)
+	$(MAKE) k8s/operator/vald/deploy
+	$(MAKE) E2E_TIMEOUT=15m \
+		E2E_TARGET_NAMESPACE=default \
+		E2E_TARGET_NAME=vald-operator \
+		e2e/v2/operator
+	$(MAKE) k8s/operator/vald/delete
 	$(MAKE) k3d/delete

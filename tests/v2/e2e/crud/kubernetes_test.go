@@ -20,14 +20,29 @@
 package crud
 
 import (
+	"bytes"
 	"context"
-	"fmt"
 	"testing"
+	"time"
 
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/io"
+	"github.com/vdaas/vald/internal/k8s"
+	kclient "github.com/vdaas/vald/internal/k8s/client"
+	"github.com/vdaas/vald/internal/k8s/resource"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/os"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/tests/v2/e2e/config"
-	"github.com/vdaas/vald/tests/v2/e2e/kubernetes"
+)
+
+const (
+	// fieldManager identifies this test harness in server-side apply operations.
+	fieldManager = "vald-e2e"
+	// customResourcePollInterval is the polling interval for custom resource wait actions.
+	customResourcePollInterval = 5 * time.Second
+	// manifestDecodeBufferSize is the initial buffer size for the multi-document yaml decoder.
+	manifestDecodeBufferSize = 4096
 )
 
 func (r *runner) processKubernetes(t *testing.T, ctx context.Context, plan *config.Execution) {
@@ -36,126 +51,289 @@ func (r *runner) processKubernetes(t *testing.T, ctx context.Context, plan *conf
 		t.Fatal("kubernetes plan is nil")
 		return
 	}
-	var err error
-	switch plan.Kubernetes.Action {
-	case config.KubernetesActionRollout:
-		switch plan.Kubernetes.Kind {
-		case config.Deployment:
-			err = kubernetes.RolloutRestart(ctx, kubernetes.Deployment(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name)
-		case config.DaemonSet:
-			err = kubernetes.RolloutRestart(ctx, kubernetes.DaemonSet(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name)
-		case config.StatefulSet:
-			err = kubernetes.RolloutRestart(ctx, kubernetes.StatefulSet(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name)
-		case config.CronJob:
-			err = kubernetes.RolloutRestart(ctx, kubernetes.CronJob(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name)
-		case config.Job:
-			err = kubernetes.RolloutRestart(ctx, kubernetes.Job(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name)
-		default:
-		}
-		if err != nil {
-			t.Errorf("failed to rollout restart %s: %v", plan.Kubernetes.Kind, err)
-		}
-	case config.KubernetesActionDelete:
-		switch plan.Kubernetes.Kind {
-		case config.ConfigMap:
-			err = kubernetes.ConfigMap(r.k8s, plan.Kubernetes.Namespace).Delete(ctx, plan.Kubernetes.Name, kubernetes.EmptyDeleteOptions)
-		case config.CronJob:
-			err = kubernetes.CronJob(r.k8s, plan.Kubernetes.Namespace).Delete(ctx, plan.Kubernetes.Name, kubernetes.EmptyDeleteOptions)
-		case config.DaemonSet:
-			err = kubernetes.DaemonSet(r.k8s, plan.Kubernetes.Namespace).Delete(ctx, plan.Kubernetes.Name, kubernetes.EmptyDeleteOptions)
-		case config.Deployment:
-			err = kubernetes.Deployment(r.k8s, plan.Kubernetes.Namespace).Delete(ctx, plan.Kubernetes.Name, kubernetes.EmptyDeleteOptions)
-		case config.Job:
-			err = kubernetes.Job(r.k8s, plan.Kubernetes.Namespace).Delete(ctx, plan.Kubernetes.Name, kubernetes.EmptyDeleteOptions)
-		case config.Pod:
-			err = kubernetes.Pod(r.k8s, plan.Kubernetes.Namespace).Delete(ctx, plan.Kubernetes.Name, kubernetes.EmptyDeleteOptions)
-		case config.Secret:
-			err = kubernetes.Secret(r.k8s, plan.Kubernetes.Namespace).Delete(ctx, plan.Kubernetes.Name, kubernetes.EmptyDeleteOptions)
-		case config.Service:
-			err = kubernetes.Service(r.k8s, plan.Kubernetes.Namespace).Delete(ctx, plan.Kubernetes.Name, kubernetes.EmptyDeleteOptions)
-		case config.StatefulSet:
-			err = kubernetes.StatefulSet(r.k8s, plan.Kubernetes.Namespace).Delete(ctx, plan.Kubernetes.Name, kubernetes.EmptyDeleteOptions)
-		default:
-		}
-		if err != nil {
-			t.Errorf("failed to delete %s: %v", plan.Kubernetes.Kind, err)
-		}
-	case config.KubernetesActionGet:
-		var obj kubernetes.Object
-		switch plan.Kubernetes.Kind {
-		case config.ConfigMap:
-			obj, err = kubernetes.ConfigMap(r.k8s, plan.Kubernetes.Namespace).Get(ctx, plan.Kubernetes.Name, kubernetes.EmptyGetOptions)
-		case config.CronJob:
-			obj, err = kubernetes.CronJob(r.k8s, plan.Kubernetes.Namespace).Get(ctx, plan.Kubernetes.Name, kubernetes.EmptyGetOptions)
-		case config.DaemonSet:
-			obj, err = kubernetes.DaemonSet(r.k8s, plan.Kubernetes.Namespace).Get(ctx, plan.Kubernetes.Name, kubernetes.EmptyGetOptions)
-		case config.Deployment:
-			obj, err = kubernetes.Deployment(r.k8s, plan.Kubernetes.Namespace).Get(ctx, plan.Kubernetes.Name, kubernetes.EmptyGetOptions)
-		case config.Job:
-			obj, err = kubernetes.Job(r.k8s, plan.Kubernetes.Namespace).Get(ctx, plan.Kubernetes.Name, kubernetes.EmptyGetOptions)
-		case config.Pod:
-			obj, err = kubernetes.Pod(r.k8s, plan.Kubernetes.Namespace).Get(ctx, plan.Kubernetes.Name, kubernetes.EmptyGetOptions)
-		case config.Secret:
-			obj, err = kubernetes.Secret(r.k8s, plan.Kubernetes.Namespace).Get(ctx, plan.Kubernetes.Name, kubernetes.EmptyGetOptions)
-		case config.Service:
-			obj, err = kubernetes.Service(r.k8s, plan.Kubernetes.Namespace).Get(ctx, plan.Kubernetes.Name, kubernetes.EmptyGetOptions)
-		case config.StatefulSet:
-			obj, err = kubernetes.StatefulSet(r.k8s, plan.Kubernetes.Namespace).Get(ctx, plan.Kubernetes.Name, kubernetes.EmptyGetOptions)
-		default:
-		}
-		if err != nil {
-			t.Errorf("failed to get %s: %v", plan.Kubernetes.Kind, err)
-		}
-		if obj != nil {
-			log.Infof("kubernetes object: %v", obj)
-		}
-	case config.KubernetesActionWait:
-		var ok bool
-		switch plan.Kubernetes.Kind {
-		case config.ConfigMap:
-			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.ConfigMap(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
-		case config.CronJob:
-			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.CronJob(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
-		case config.DaemonSet:
-			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.DaemonSet(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
-		case config.Deployment:
-			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.Deployment(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
-		case config.Job:
-			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.Job(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
-		case config.Pod:
-			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.Pod(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
-		case config.Secret:
-			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.Secret(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
-		case config.Service:
-			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.Service(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
-		case config.StatefulSet:
-			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.StatefulSet(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
-		default:
-		}
-		if !ok {
-			t.Errorf("failed to wait for %s: %v", plan.Kubernetes.Kind, err)
-		}
-	case config.KubernetesActionCreate:
-		if plan.Kubernetes.Kind == config.Job {
-			cronJob := kubernetes.CronJob(r.k8s, plan.Kubernetes.Namespace)
-			_, err = cronJob.CreateJob(ctx, plan.Kubernetes.Name, kubernetes.EmptyGetOptions, kubernetes.EmptyCreateOptions)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "failed to create job from cronjob: %v", err)
-				t.Errorf("failed to create job from cronjob: %v\n", err)
-			}
+	k := plan.Kubernetes
+	// Manifest-based apply/delete operates on arbitrary resources through the
+	// dynamic client, so it is dispatched before the typed kind switch.
+	if k.Manifest != "" {
+		r.handleKubernetesManifest(t, ctx, k)
+		return
+	}
+	if k.Kind == config.CustomResource {
+		r.handleKubernetesCustomResource(t, ctx, k)
+		return
+	}
+	// The create action is special-cased because it always creates a job from
+	// the cronjob named k.Name regardless of the requested kind.
+	if k.Action == config.KubernetesActionCreate {
+		if k.Kind != config.Job {
+			t.Errorf("kubernetes action create is only supported for creating job from cronjob")
 			return
 		}
-		t.Errorf("kubernetes action create is only supported for creating job from cronjob")
-	case config.KubernetesActionExec:
-		t.Errorf("kubernetes action %s is not supported yet", plan.Kubernetes.Action)
-	case config.KubernetesActionApply:
-		t.Errorf("kubernetes action %s is not supported yet", plan.Kubernetes.Action)
-	case config.KubernetesActionPatch:
-		t.Errorf("kubernetes action %s is not supported yet", plan.Kubernetes.Action)
-	case config.KubernetesActionScale:
-		t.Errorf("kubernetes action %s is not supported yet", plan.Kubernetes.Action)
-	default:
-		t.Errorf("kubernetes action %s is not supported yet", plan.Kubernetes.Action)
+		if _, err := resource.CronJob(r.k8s, k.Namespace).CreateJob(ctx, k.Name, resource.EmptyGetOptions, resource.EmptyCreateOptions); err != nil {
+			t.Errorf("failed to create job from cronjob: %v", err)
+		}
+		return
 	}
-	return
+	switch k.Kind {
+	case config.ConfigMap:
+		handleKubernetesAction(t, ctx, k, resource.ConfigMap(r.k8s, k.Namespace))
+	case config.CronJob:
+		handleKubernetesWorkloadAction(t, ctx, k, resource.CronJob(r.k8s, k.Namespace))
+	case config.DaemonSet:
+		handleKubernetesWorkloadAction(t, ctx, k, resource.DaemonSet(r.k8s, k.Namespace))
+	case config.Deployment:
+		handleKubernetesWorkloadAction(t, ctx, k, resource.Deployment(r.k8s, k.Namespace))
+	case config.Job:
+		handleKubernetesWorkloadAction(t, ctx, k, resource.Job(r.k8s, k.Namespace))
+	case config.MutatingWebhookConfiguration:
+		handleKubernetesAction(t, ctx, k, resource.MutatingWebhookConfiguration(r.k8s))
+	case config.Pod:
+		handleKubernetesAction(t, ctx, k, resource.Pod(r.k8s, k.Namespace))
+	case config.Secret:
+		handleKubernetesAction(t, ctx, k, resource.Secret(r.k8s, k.Namespace))
+	case config.Service:
+		handleKubernetesAction(t, ctx, k, resource.Service(r.k8s, k.Namespace))
+	case config.StatefulSet:
+		handleKubernetesWorkloadAction(t, ctx, k, resource.StatefulSet(r.k8s, k.Namespace))
+	case config.ValidatingWebhookConfiguration:
+		handleKubernetesAction(t, ctx, k, resource.ValidatingWebhookConfiguration(r.k8s))
+	default:
+		t.Errorf("unsupported kubernetes kind: %s", k.Kind)
+	}
+}
+
+// handleKubernetesAction executes the actions applicable to every resource kind
+// (get, delete and wait) through the generic resource client.
+func handleKubernetesAction[T resource.Object, L resource.ObjectList, C resource.NamedObject, I resource.ResourceInterface[T, L, C]](
+	t *testing.T, ctx context.Context, k *config.KubernetesConfig, client I,
+) {
+	t.Helper()
+	switch k.Action {
+	case config.KubernetesActionGet:
+		obj, err := client.Get(ctx, k.Name, resource.EmptyGetOptions)
+		if err != nil {
+			t.Errorf("failed to get %s: %v", k.Kind, err)
+			return
+		}
+		log.Infof("kubernetes object: %v", obj)
+	case config.KubernetesActionDelete:
+		if err := client.Delete(ctx, k.Name, resource.EmptyDeleteOptions); err != nil {
+			t.Errorf("failed to delete %s: %v", k.Kind, err)
+		}
+	case config.KubernetesActionWait:
+		ok, err := resource.WaitForStatus(ctx, client, k.Name, k.LabelSelector, k.Status.Status())
+		if !ok {
+			t.Errorf("failed to wait for %s: %v", k.Kind, err)
+		}
+	default:
+		t.Errorf("kubernetes action %s is not supported for kind %s", k.Action, k.Kind)
+	}
+}
+
+// handleKubernetesWorkloadAction adds the workload-controller specific rollout
+// action on top of the common resource actions.
+func handleKubernetesWorkloadAction[T resource.Object, L resource.ObjectList, C resource.NamedObject, I resource.WorkloadControllerResourceClient[T, L, C]](
+	t *testing.T, ctx context.Context, k *config.KubernetesConfig, client I,
+) {
+	t.Helper()
+	switch k.Action {
+	case config.KubernetesActionRollout:
+		if err := resource.RolloutRestart(ctx, client, k.Name); err != nil {
+			t.Errorf("failed to rollout restart %s: %v", k.Kind, err)
+		}
+	default:
+		handleKubernetesAction(t, ctx, k, client)
+	}
+}
+
+// decodeManifest reads a multi-document yaml manifest file and decodes each
+// document into an unstructured object. Empty documents are skipped.
+func decodeManifest(path string) (objs []*k8s.Unstructured, err error) {
+	data, err := file.ReadFile(path)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to read manifest file %s", path)
+	}
+	dec := k8s.NewYAMLOrJSONDecoder(bytes.NewReader(data), manifestDecodeBufferSize)
+	for {
+		obj := new(k8s.Unstructured)
+		if err := dec.Decode(obj); err != nil {
+			if errors.Is(err, io.EOF) {
+				return objs, nil
+			}
+			return nil, errors.Wrapf(err, "failed to decode manifest %s", path)
+		}
+		if len(obj.Object) == 0 {
+			continue
+		}
+		objs = append(objs, obj)
+	}
+}
+
+// resourceFor resolves the dynamic resource interface for the given object via
+// the RESTMapper, honoring namespace scoping. For namespaced resources the
+// namespace is taken from the object, then the config, then "default".
+func resourceFor(
+	dyn kclient.Dynamic, mapper kclient.RESTMapper, obj *k8s.Unstructured, fallbackNamespace string,
+) (kclient.DynamicResource, error) {
+	gvk := obj.GroupVersionKind()
+	mapping, err := mapper.RESTMapping(gvk.GroupKind(), gvk.Version)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to resolve rest mapping for %s", gvk.String())
+	}
+	if mapping.Scope.Name() != kclient.RESTScopeNameNamespace {
+		return dyn.Resource(mapping.Resource), nil
+	}
+	ns := obj.GetNamespace()
+	if ns == "" {
+		ns = fallbackNamespace
+	}
+	if ns == "" {
+		ns = "default"
+	}
+	return dyn.Resource(mapping.Resource).Namespace(ns), nil
+}
+
+// handleKubernetesManifest applies or deletes every document in the configured
+// manifest through the dynamic client. Apply uses server-side apply so the
+// operation is idempotent across repeated e2e runs.
+func (r *runner) handleKubernetesManifest(
+	t *testing.T, ctx context.Context, k *config.KubernetesConfig,
+) {
+	t.Helper()
+	objs, err := decodeManifest(k.Manifest)
+	if err != nil {
+		t.Errorf("failed to decode manifest %s: %v", k.Manifest, err)
+		return
+	}
+	if len(objs) == 0 {
+		t.Errorf("manifest %s contains no objects", k.Manifest)
+		return
+	}
+	dyn, mapper, err := kclient.NewDynamicClient(r.k8s)
+	if err != nil {
+		t.Errorf("failed to create dynamic client: %v", err)
+		return
+	}
+	for _, obj := range objs {
+		client, err := resourceFor(dyn, mapper, obj, k.Namespace)
+		if err != nil {
+			t.Errorf("failed to resolve resource for %s %s: %v", obj.GetKind(), obj.GetName(), err)
+			return
+		}
+		switch k.Action {
+		case config.KubernetesActionApply:
+			data, err := obj.MarshalJSON()
+			if err != nil {
+				t.Errorf("failed to marshal %s %s: %v", obj.GetKind(), obj.GetName(), err)
+				return
+			}
+			force := true
+			if _, err := client.Patch(ctx, obj.GetName(), k8s.ApplyPatchType, data, k8s.PatchOptions{
+				FieldManager: fieldManager,
+				Force:        &force,
+			}); err != nil {
+				t.Errorf("failed to apply %s %s: %v", obj.GetKind(), obj.GetName(), err)
+				return
+			}
+			log.Infof("applied %s %s from manifest %s", obj.GetKind(), obj.GetName(), k.Manifest)
+		case config.KubernetesActionDelete:
+			if err := client.Delete(ctx, obj.GetName(), resource.EmptyDeleteOptions); err != nil {
+				if k8s.IsNotFound(err) {
+					log.Warnf("%s %s from manifest %s is already deleted", obj.GetKind(), obj.GetName(), k.Manifest)
+					continue
+				}
+				t.Errorf("failed to delete %s %s: %v", obj.GetKind(), obj.GetName(), err)
+				return
+			}
+			log.Infof("deleted %s %s from manifest %s", obj.GetKind(), obj.GetName(), k.Manifest)
+		default:
+			t.Errorf("kubernetes action %s is not supported with manifest", k.Action)
+			return
+		}
+	}
+}
+
+// handleKubernetesCustomResource executes get/delete/wait actions on an
+// arbitrary custom resource identified by group/version/resource.
+func (r *runner) handleKubernetesCustomResource(
+	t *testing.T, ctx context.Context, k *config.KubernetesConfig,
+) {
+	t.Helper()
+	dyn, _, err := kclient.NewDynamicClient(r.k8s)
+	if err != nil {
+		t.Errorf("failed to create dynamic client: %v", err)
+		return
+	}
+	ri := dyn.Resource(k8s.GroupVersionResource{
+		Group:    k.Group,
+		Version:  k.Version,
+		Resource: k.Resource,
+	})
+	var client kclient.DynamicResource = ri
+	if k.Namespace != "" {
+		client = ri.Namespace(k.Namespace)
+	}
+	switch k.Action {
+	case config.KubernetesActionGet:
+		obj, err := client.Get(ctx, k.Name, resource.EmptyGetOptions)
+		if err != nil {
+			t.Errorf("failed to get custom resource %s/%s: %v", k.Resource, k.Name, err)
+			return
+		}
+		log.Infof("custom resource object: %v", obj)
+	case config.KubernetesActionDelete:
+		if err := client.Delete(ctx, k.Name, resource.EmptyDeleteOptions); err != nil {
+			if k8s.IsNotFound(err) {
+				log.Warnf("custom resource %s/%s is already deleted", k.Resource, k.Name)
+				return
+			}
+			t.Errorf("failed to delete custom resource %s/%s: %v", k.Resource, k.Name, err)
+		}
+	case config.KubernetesActionWait:
+		if err := waitForCustomResourceStatus(ctx, client, k); err != nil {
+			t.Errorf("failed to wait for custom resource %s/%s: %v", k.Resource, k.Name, err)
+		}
+	default:
+		t.Errorf("kubernetes action %s is not supported for kind %s", k.Action, k.Kind)
+	}
+}
+
+// waitForCustomResourceStatus polls the custom resource until the jsonpath
+// status_path evaluates to status_value. NotFound and missing-path results
+// keep the poll running; ctx cancellation (execution timeout) stops it.
+func waitForCustomResourceStatus(
+	ctx context.Context, client kclient.DynamicResource, k *config.KubernetesConfig,
+) error {
+	jp := k8s.NewJSONPath(fieldManager).AllowMissingKeys(true)
+	if err := jp.Parse(k.StatusPath); err != nil {
+		return errors.Wrapf(err, "failed to parse status_path %s", k.StatusPath)
+	}
+	tick := time.NewTicker(customResourcePollInterval)
+	defer tick.Stop()
+	for {
+		obj, err := client.Get(ctx, k.Name, resource.EmptyGetOptions)
+		switch {
+		case err == nil:
+			var buf strings.Builder
+			if err := jp.Execute(&buf, obj.UnstructuredContent()); err != nil {
+				return errors.Wrapf(err, "failed to evaluate status_path %s", k.StatusPath)
+			}
+			got := buf.String()
+			if got == k.StatusValue {
+				log.Infof("custom resource %s/%s reached desired status %s=%s", k.Resource, k.Name, k.StatusPath, got)
+				return nil
+			}
+			log.Infof("custom resource %s/%s status %s is %q, waiting for %q", k.Resource, k.Name, k.StatusPath, got, k.StatusValue)
+		case k8s.IsNotFound(err):
+			log.Infof("custom resource %s/%s is not found yet, waiting", k.Resource, k.Name)
+		default:
+			return errors.Wrapf(err, "failed to get custom resource %s/%s", k.Resource, k.Name)
+		}
+		select {
+		case <-ctx.Done():
+			return errors.Wrapf(ctx.Err(), "timed out waiting for custom resource %s/%s to reach %s=%s",
+				k.Resource, k.Name, k.StatusPath, k.StatusValue)
+		case <-tick.C:
+		}
+	}
 }

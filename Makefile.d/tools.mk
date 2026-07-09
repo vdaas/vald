@@ -412,6 +412,19 @@ $(BINDIR)/docker: $(BINDIR)
 	&& mv $(TEMP_DIR)/docker/docker $(BINDIR) \
 	&& rm -rf $(TEMP_DIR)/docker{.tgz,}
 
+DOCKER_BUILDX_PLUGIN_DIR ?= /usr/local/lib/docker/cli-plugins
+
+.PHONY: docker-buildx/install
+## install docker buildx plugin
+docker-buildx/install: $(DOCKER_BUILDX_PLUGIN_DIR)/docker-buildx
+
+$(DOCKER_BUILDX_PLUGIN_DIR)/docker-buildx:
+	$(eval DARCH := $(subst aarch64,arm64,$(subst x86_64,amd64,$(ARCH))))
+	mkdir -p $(DOCKER_BUILDX_PLUGIN_DIR) \
+	&& curl -fsSL https://github.com/docker/buildx/releases/download/$(DOCKER_BUILDX_VERSION)/buildx-$(DOCKER_BUILDX_VERSION).linux-$(DARCH) \
+	-o $(DOCKER_BUILDX_PLUGIN_DIR)/docker-buildx \
+	&& chmod +x $(DOCKER_BUILDX_PLUGIN_DIR)/docker-buildx
+
 .PHONY: replace/busybox
 ## replace busybox version
 replace/busybox:

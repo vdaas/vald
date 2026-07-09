@@ -34,15 +34,15 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/io"
+	"github.com/vdaas/vald/internal/k8s"
+	"github.com/vdaas/vald/internal/k8s/resource"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/timeutil"
 	"github.com/vdaas/vald/internal/timeutil/rate"
-	"github.com/vdaas/vald/tests/v2/e2e/kubernetes"
 	"github.com/vdaas/vald/tests/v2/e2e/metrics"
-	"sigs.k8s.io/yaml"
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -148,6 +148,7 @@ type Execution struct {
 	Search       *SearchQuery        `yaml:"search,omitempty"       json:"search,omitempty"`
 	Agent        *AgentConfig        `yaml:"agent,omitempty"        json:"agent,omitempty"`
 	Kubernetes   *KubernetesConfig   `yaml:"kubernetes,omitempty"   json:"kubernetes,omitempty"`
+	HTTP         *HTTPConfig         `yaml:"http,omitempty"         json:"http,omitempty"`
 	Modification *ModificationConfig `yaml:"modification,omitempty" json:"modification,omitempty"`
 	Expect       []Expect            `yaml:"expect,omitempty"       json:"expect,omitempty"`
 	Collector    metrics.Collector   `yaml:"-"                      json:"-"`
@@ -196,6 +197,9 @@ type AgentConfig struct {
 }
 
 // KubernetesConfig holds Kubernetes-specific settings.
+// Manifest points to a yaml file applied/deleted through the dynamic client.
+// Group/Version/Resource identify an arbitrary custom resource (kind: customresource),
+// and StatusPath/StatusValue configure the jsonpath-based status wait for it.
 type KubernetesConfig struct {
 	Kind          KubernetesKind   `yaml:"kind"           json:"kind,omitempty"`
 	Namespace     string           `yaml:"namespace"      json:"namespace,omitempty"`
@@ -203,6 +207,39 @@ type KubernetesConfig struct {
 	LabelSelector string           `yaml:"label_selector" json:"label_selector,omitempty"`
 	Action        KubernetesAction `yaml:"action"         json:"action,omitempty"`
 	Status        KubernetesStatus `yaml:"status"         json:"status,omitempty"`
+	Manifest      string           `yaml:"manifest"       json:"manifest,omitempty"`
+	Group         string           `yaml:"group"          json:"group,omitempty"`
+	Version       string           `yaml:"version"        json:"version,omitempty"`
+	Resource      string           `yaml:"resource"       json:"resource,omitempty"`
+	StatusPath    string           `yaml:"status_path"    json:"status_path,omitempty"`
+	StatusValue   string           `yaml:"status_value"   json:"status_value,omitempty"`
+}
+
+// HTTPConfig holds settings for HTTP request executions.
+type HTTPConfig struct {
+	Method  string            `yaml:"method"            json:"method,omitempty"` // default GET
+	URL     string            `yaml:"url"               json:"url,omitempty"`    // required
+	Body    string            `yaml:"body,omitempty"    json:"body,omitempty"`
+	Headers map[string]string `yaml:"headers,omitempty" json:"headers,omitempty"`
+	TLS     *HTTPTLSConfig    `yaml:"tls,omitempty"     json:"tls,omitempty"`
+	Auth    *HTTPAuthConfig   `yaml:"auth,omitempty"    json:"auth,omitempty"`
+}
+
+// HTTPTLSConfig holds TLS settings for HTTP request executions.
+type HTTPTLSConfig struct {
+	InsecureSkipVerify bool `yaml:"insecure_skip_verify" json:"insecure_skip_verify,omitempty"`
+}
+
+// HTTPAuthConfig holds authentication settings for HTTP request executions.
+type HTTPAuthConfig struct {
+	ServiceAccount *ServiceAccountAuth `yaml:"service_account,omitempty" json:"service_account,omitempty"`
+}
+
+// ServiceAccountAuth holds ServiceAccount TokenRequest settings for HTTP authentication.
+type ServiceAccountAuth struct {
+	Namespace         string `yaml:"namespace"          json:"namespace,omitempty"`
+	Name              string `yaml:"name"               json:"name,omitempty"`
+	ExpirationSeconds int64  `yaml:"expiration_seconds" json:"expiration_seconds,omitempty"`
 }
 
 // Kubernetes holds configuration for Kubernetes environments.
@@ -251,10 +288,9 @@ type Repeats struct {
 // Bind binds and validates the Data configuration.
 // It processes nested configurations and metadata.
 func (d *Data) Bind() (bound *Data, err error) {
+	// Target and Dataset are optional; scenarios such as operator verification use neither gRPC nor datasets.
 	if d == nil ||
-		d.Strategies == nil || len(d.Strategies) == 0 ||
-		d.Dataset == nil ||
-		d.Target == nil {
+		d.Strategies == nil || len(d.Strategies) == 0 {
 		return nil, errors.Wrap(errors.ErrInvalidConfig, "missing required fields on Data")
 	}
 	d.GlobalConfig.Bind()
@@ -431,7 +467,7 @@ func (e *Execution) Bind(parentMetrics *Metrics) (bound *Execution, err error) {
 			if ex.StatusCode, err = ex.StatusCode.Bind(); err != nil {
 				return nil, errors.Wrapf(err, "failed to bind StatusCodes for Execution %s of type %s", e.Name, e.Type)
 			}
-			if e.Mode != OperationUnary && ex.Value != nil {
+			if e.Mode != OperationUnary && e.Type != OpHTTP && ex.Value != nil {
 				return nil, errors.Wrapf(errors.ErrInvalidConfig, "Expect.Value is only supported for unary operations in Execution %s of type %s", e.Name, e.Type)
 			}
 			if ex.Op, err = ex.Op.Bind(); err != nil {
@@ -510,6 +546,14 @@ func (e *Execution) Bind(parentMetrics *Metrics) (bound *Execution, err error) {
 				return nil, errors.Wrapf(err, "failed to bind Kubernetes configuration for Execution: %s, detail %v", e.Name, e.Kubernetes)
 			} else if ek != nil {
 				e.Kubernetes = ek
+			}
+		}
+	case OpHTTP:
+		if e.HTTP != nil {
+			if eh, err := e.HTTP.Bind(); err != nil {
+				return nil, errors.Wrapf(err, "failed to bind HTTP configuration for Execution: %s, detail %v", e.Name, e.HTTP)
+			} else if eh != nil {
+				e.HTTP = eh
 			}
 		}
 	case OpClient:
@@ -624,6 +668,8 @@ func (ot OperationType) Bind() (bound OperationType, err error) {
 		return OpClient, nil
 	case "wait":
 		return OpWait, nil
+	case "http":
+		return OpHTTP, nil
 	}
 	return bound, nil
 }
@@ -647,6 +693,10 @@ func (op Operator) Bind() (bound Operator, err error) {
 	switch strings.TrimForCompare(config.GetActualValue(op)) {
 	case Le, Lt, Ge, Gt, Eq, Ne:
 		return op, nil
+	case Contains:
+		return Contains, nil
+	case "notcontains": // TrimForCompare strips "_" from "not_contains"
+		return NotContains, nil
 	case "":
 		return Eq, nil
 	}
@@ -701,12 +751,16 @@ func (kk KubernetesKind) Bind() (bound KubernetesKind, err error) {
 		return ConfigMap, nil
 	case "cronjob", "cron", "cj":
 		return CronJob, nil
+	case "customresource", "custom", "cr":
+		return CustomResource, nil
 	case "daemonset", "daemon", "ds":
 		return DaemonSet, nil
 	case "deployment", "deploy", "dep":
 		return Deployment, nil
 	case "job", "jb":
 		return Job, nil
+	case "mutatingwebhookconfiguration", "mutatingwebhook", "mwc":
+		return MutatingWebhookConfiguration, nil
 	case "pod", "pd":
 		return Pod, nil
 	case "secret", "sec":
@@ -715,6 +769,8 @@ func (kk KubernetesKind) Bind() (bound KubernetesKind, err error) {
 		return Service, nil
 	case "statefulset", "stateful", "sts":
 		return StatefulSet, nil
+	case "validatingwebhookconfiguration", "validatingwebhook", "vwc":
+		return ValidatingWebhookConfiguration, nil
 	}
 	return bound, nil
 }
@@ -771,8 +827,6 @@ func (ks KubernetesStatus) Bind() (bound KubernetesStatus, err error) {
 		return KubernetesStatusTerminating, nil
 	case "notready", "r":
 		return KubernetesStatusNotReady, nil
-	case "bound", "b":
-		return KubernetesStatusBound, nil
 	case "loadbalancing", "locabalance", "l":
 		return KubernetesStatusLoadBalancing, nil
 	}
@@ -787,6 +841,12 @@ func (k *KubernetesConfig) Bind() (bound *KubernetesConfig, err error) {
 	k.Namespace = config.GetActualValue(k.Namespace)
 	k.Name = config.GetActualValue(k.Name)
 	k.LabelSelector = config.GetActualValue(k.LabelSelector)
+	k.Manifest = config.GetActualValue(k.Manifest)
+	k.Group = config.GetActualValue(k.Group)
+	k.Version = config.GetActualValue(k.Version)
+	k.Resource = config.GetActualValue(k.Resource)
+	k.StatusPath = config.GetActualValue(k.StatusPath)
+	k.StatusValue = config.GetActualValue(k.StatusValue)
 	if k.Action, err = k.Action.Bind(); err != nil {
 		return nil, err
 	}
@@ -796,7 +856,38 @@ func (k *KubernetesConfig) Bind() (bound *KubernetesConfig, err error) {
 	if k.Status, err = k.Status.Bind(); err != nil {
 		return nil, err
 	}
-	if k.Namespace == "" || (k.Name == "" && k.LabelSelector == "") || k.Action == "" || k.Kind == "" {
+	// Manifest-based apply/delete resolves kind/name/namespace from the manifest
+	// documents themselves, so the generic kind/name requirements are skipped.
+	if k.Manifest != "" {
+		if k.Action != KubernetesActionApply && k.Action != KubernetesActionDelete {
+			return nil, errors.Errorf("kubernetes config: manifest: %s is only supported for apply and delete actions, action: %s", k.Manifest, k.Action)
+		}
+		if !file.Exists(k.Manifest) {
+			return nil, errors.Errorf("kubernetes config: manifest file: %s does not exist", k.Manifest)
+		}
+		return k, nil
+	}
+	if k.Action == KubernetesActionApply {
+		return nil, errors.New("kubernetes config: apply action requires manifest")
+	}
+	// Namespace is optional for kind customresource to support cluster-scoped custom resources.
+	if k.Kind == CustomResource {
+		if k.Group == "" || k.Version == "" || k.Resource == "" {
+			return nil, errors.Errorf("kubernetes config: group: %s, version: %s, and resource: %s must be provided for kind %s",
+				k.Group, k.Version, k.Resource, k.Kind)
+		}
+		if k.Name == "" {
+			return nil, errors.Errorf("kubernetes config: name must be provided for kind %s", k.Kind)
+		}
+		if k.Action == KubernetesActionWait && (k.StatusPath == "" || k.StatusValue == "") {
+			return nil, errors.Errorf("kubernetes config: status_path: %s and status_value: %s must be provided for wait action on kind %s",
+				k.StatusPath, k.StatusValue, k.Kind)
+		}
+		return k, nil
+	}
+	// MutatingWebhookConfiguration and ValidatingWebhookConfiguration are cluster-scoped, so Namespace is not required for them.
+	clusterScoped := k.Kind == MutatingWebhookConfiguration || k.Kind == ValidatingWebhookConfiguration
+	if (k.Namespace == "" && !clusterScoped) || (k.Name == "" && k.LabelSelector == "") || k.Action == "" || k.Kind == "" {
 		return nil, errors.Errorf("kubernetes config: namespace: %s, name: %s or label_selector: %s, action: %s, and kind: %s must be provided",
 			k.Namespace, k.Name, k.LabelSelector, k.Action, k.Kind)
 	}
@@ -806,6 +897,68 @@ func (k *KubernetesConfig) Bind() (bound *KubernetesConfig, err error) {
 		}
 	}
 	return k, nil
+}
+
+// Bind binds and validates the HTTPConfig.
+func (h *HTTPConfig) Bind() (bound *HTTPConfig, err error) {
+	if h == nil {
+		return nil, errors.Wrap(errors.ErrInvalidConfig, "missing required fields on HTTPConfig")
+	}
+	h.Method = strings.ToUpper(config.GetActualValue(h.Method))
+	if h.Method == "" {
+		h.Method = defaultHTTPMethod
+	}
+	h.URL = config.GetActualValue(h.URL)
+	if h.URL == "" {
+		return nil, errors.New("http config: url cannot be empty")
+	}
+	h.Body = config.GetActualValue(h.Body)
+	if h.Headers != nil {
+		headers := make(map[string]string, len(h.Headers))
+		for key, val := range h.Headers {
+			headers[config.GetActualValue(key)] = config.GetActualValue(val)
+		}
+		h.Headers = headers
+	}
+	if h.Auth != nil {
+		if a, err := h.Auth.Bind(); err != nil {
+			return nil, err
+		} else if a != nil {
+			h.Auth = a
+		}
+	}
+	return h, nil
+}
+
+// Bind binds and validates the HTTPAuthConfig.
+func (a *HTTPAuthConfig) Bind() (bound *HTTPAuthConfig, err error) {
+	if a == nil {
+		return nil, nil
+	}
+	if a.ServiceAccount != nil {
+		if sa, err := a.ServiceAccount.Bind(); err != nil {
+			return nil, err
+		} else if sa != nil {
+			a.ServiceAccount = sa
+		}
+	}
+	return a, nil
+}
+
+// Bind binds and validates the ServiceAccountAuth configuration.
+func (sa *ServiceAccountAuth) Bind() (bound *ServiceAccountAuth, err error) {
+	if sa == nil {
+		return nil, nil
+	}
+	sa.Namespace = config.GetActualValue(sa.Namespace)
+	sa.Name = config.GetActualValue(sa.Name)
+	if sa.Namespace == "" || sa.Name == "" {
+		return nil, errors.Errorf("http auth service_account: namespace: %s and name: %s must be provided", sa.Namespace, sa.Name)
+	}
+	if sa.ExpirationSeconds <= 0 {
+		sa.ExpirationSeconds = defaultTokenExpirationSeconds
+	}
+	return sa, nil
 }
 
 // Bind binds and validates the Kubernetes configuration.
@@ -870,8 +1023,9 @@ func (d *Dataset) Bind() (bound *Dataset, err error) {
 		return nil, errors.Wrap(errors.ErrInvalidConfig, "missing required fields on Dataset")
 	}
 	d.Name = config.GetActualValue(d.Name)
-	if d.Name == "" || !file.Exists(d.Name) {
-		return nil, errors.Errorf("dataset name: %s cannot be empty", d.Name)
+	// Name can be empty for scenarios that do not require a dataset (e.g. operator verification).
+	if d.Name != "" && !file.Exists(d.Name) {
+		return nil, errors.Errorf("dataset file: %s does not exist", d.Name)
 	}
 	return d, nil
 }
@@ -1255,47 +1409,48 @@ func (p Port) Port() uint16 {
 	return uint16(port)
 }
 
-func (ks KubernetesStatus) Status() kubernetes.ResourceStatus {
+func (ks KubernetesStatus) Status() resource.ResourceStatus {
 	switch strings.TrimForCompare(ks) {
 	case KubernetesStatusUnknown:
-		return kubernetes.StatusUnknown
+		return resource.StatusUnknown
 	case KubernetesStatusPending:
-		return kubernetes.StatusPending
+		return resource.StatusPending
 	case KubernetesStatusUpdating:
-		return kubernetes.StatusUpdating
+		return resource.StatusUpdating
 	case KubernetesStatusAvailable:
-		return kubernetes.StatusAvailable
+		return resource.StatusAvailable
 	case KubernetesStatusDegraded:
-		return kubernetes.StatusDegraded
+		return resource.StatusDegraded
 	case KubernetesStatusFailed:
-		return kubernetes.StatusFailed
+		return resource.StatusFailed
 	case KubernetesStatusCompleted:
-		return kubernetes.StatusCompleted
+		return resource.StatusCompleted
 	case KubernetesStatusScheduled:
-		return kubernetes.StatusScheduled
+		return resource.StatusScheduled
 	case KubernetesStatusScaling:
-		return kubernetes.StatusScaling
+		return resource.StatusScaling
 	case KubernetesStatusPaused:
-		return kubernetes.StatusPaused
+		return resource.StatusPaused
 	case KubernetesStatusTerminating:
-		return kubernetes.StatusTerminating
+		return resource.StatusTerminating
 	case KubernetesStatusNotReady:
-		return kubernetes.StatusNotReady
-	case KubernetesStatusBound:
-		return kubernetes.StatusBound
+		return resource.StatusNotReady
 	case KubernetesStatusLoadBalancing:
-		return kubernetes.StatusLoadBalancing
+		return resource.StatusLoadBalancing
 	}
-	return kubernetes.StatusUnknown
+	return resource.StatusUnknown
 }
 
 // //////////////////////////////////////////////////////////////////////////////
 // Const Section
 // //////////////////////////////////////////////////////////////////////////////
 const (
-	localPort      Port = "8081"
-	defaultTopK         = uint32(10)
-	defaultTimeout      = timeutil.DurationString("3s")
+	localPort         Port = "8081"
+	defaultTopK            = uint32(10)
+	defaultTimeout         = timeutil.DurationString("3s")
+	defaultHTTPMethod      = "GET"
+	// defaultTokenExpirationSeconds is the minimum expiration the TokenRequest API accepts.
+	defaultTokenExpirationSeconds = int64(600)
 )
 
 func replaceEnvInValues(v any) any {
@@ -1361,7 +1516,7 @@ func read[T any](path string, cfg T) (err error) {
 	var raw map[string]any
 	switch ext := filepath.Ext(path); ext {
 	case ".yaml", ".yml":
-		if err := yaml.Unmarshal(data, &raw); err != nil {
+		if err := k8s.YAMLUnmarshal(data, &raw); err != nil {
 			return err
 		}
 	case ".json":
@@ -1372,11 +1527,11 @@ func read[T any](path string, cfg T) (err error) {
 		return errors.ErrUnsupportedConfigFileType(ext)
 	}
 	replaced := replaceEnvInValues(raw)
-	intermediate, err := yaml.Marshal(replaced)
+	intermediate, err := k8s.YAMLMarshal(replaced)
 	if err != nil {
 		return err
 	}
-	return yaml.Unmarshal(intermediate, cfg)
+	return k8s.YAMLUnmarshal(intermediate, cfg)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1391,7 +1546,7 @@ func Load(path string) (cfg *Data, err error) {
 	if err = read(path, cfg); err != nil {
 		return nil, errors.Wrapf(err, "failed to read configuration from %s", path)
 	}
-	if cfg == nil || len(cfg.Strategies) == 0 || cfg.Dataset == nil {
+	if cfg == nil || len(cfg.Strategies) == 0 {
 		return nil, errors.Errorf("failed to load configuration from %s", path)
 	}
 	if cfg, err = cfg.Bind(); err != nil {

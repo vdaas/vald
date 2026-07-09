@@ -64,7 +64,7 @@ runs:
       run: |
         helm install vald-helm-operator \
           ${HELM_EXTRA_OPTIONS} \
-          charts/vald-helm-operator/.
+          charts/operator/helm/.
 
         sleep 6
       env:
@@ -74,7 +74,7 @@ runs:
       id: deploy_vald_helm_operator_local
       if: ${{ inputs.use_local_charts == 'true' }}
       run: |
-        make k8s/vald-helm-operator/deploy HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS}"
+        make k8s/operator/helm/deploy HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS}"
         sleep 3
       env:
         HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}

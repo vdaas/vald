@@ -13,17 +13,17 @@ which layer owns which behavior avoids both duplication and gaps.
 Cover pure Go logic — anything that does not depend on the Kubernetes API server or an
 external client.
 
-| Package | Under test |
-|---|---|
-| `internal/pkg/lifecycle` | `MakeCondition`, `GetIndex`, `GetNext` |
-| `internal/pkg/domain/valdoperatorrelease` | `ConditionWaitForClusterCreate` (Check branches), `ResolveAgentNodePool` |
-| `api/v1` | `GetNodePool`, `GetResourceList` |
-| `internal/pkg/api/valdrelease` | `SetRelationalResources` and per-component resource methods |
-| `internal/pkg/lifecycle/builder/vald` | `validate()`, the component builders, and `Build()` (golden file) |
+| Package                                        | Under test                                                               |
+| ---------------------------------------------- | ------------------------------------------------------------------------ |
+| `pkg/operator/vald/lifecycle`                  | `MakeCondition`, `GetIndex`, `GetNext`                                   |
+| `pkg/operator/vald/domain/valdoperatorrelease` | `ConditionWaitForClusterCreate` (Check branches), `ResolveAgentNodePool` |
+| `api/v1`                                       | `GetNodePool`, `GetResourceList`                                         |
+| `pkg/operator/vald/api/valdrelease`            | `SetRelationalResources` and per-component resource methods              |
+| `pkg/operator/vald/lifecycle/builder/vald`     | `validate()`, the component builders, and `Build()` (golden file)        |
 
 ### Integration tests (Ginkgo/Gomega + envtest)
 
-`internal/controller/valdoperatorrelease_controller_test.go` and `resource_syncer_test.go` stand
+`pkg/operator/vald/controller/valdoperatorrelease_controller_test.go` and `resource_syncer_test.go` stand
 up a real API server via `envtest` and drive the full reconcile loop. Behaviors that
 require a Kubernetes client — phase transitions, status updates, CreateOrUpdate/prune —
 are verified here.
@@ -55,7 +55,7 @@ separately via `make test-e2e` (requires an `envtest` environment).
 
 ## Framework choice
 
-| Use | Framework | Reason |
-|---|---|---|
-| Unit tests | `testing` + testify | Standard, minimal deps, easy table-driven tests. |
-| Integration tests | Ginkgo/Gomega | kubebuilder scaffold default; strong `envtest` affinity. |
+| Use               | Framework           | Reason                                                   |
+| ----------------- | ------------------- | -------------------------------------------------------- |
+| Unit tests        | `testing` + testify | Standard, minimal deps, easy table-driven tests.         |
+| Integration tests | `Ginkgo`/`Gomega`   | kubebuilder scaffold default; strong `envtest` affinity. |

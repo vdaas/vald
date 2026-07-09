@@ -29,11 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
-	mnode "github.com/vdaas/vald/internal/k8s/metrics/node"
-	mpod "github.com/vdaas/vald/internal/k8s/metrics/pod"
-	"github.com/vdaas/vald/internal/k8s/node"
-	"github.com/vdaas/vald/internal/k8s/pod"
-	"github.com/vdaas/vald/internal/k8s/service"
+	"github.com/vdaas/vald/internal/k8s/reconciler"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/safety"
@@ -57,11 +53,10 @@ type discoverer struct {
 	nodeByName      atomic.Pointer[map[string]*payload.Info_Node]
 	podsByNode      atomic.Pointer[map[string]map[string]map[string][]*payload.Info_Pod]
 	podsByNamespace atomic.Pointer[map[string]map[string][]*payload.Info_Pod]
-	podMetrics      sync.Map[string, mpod.Pod]
-	services        sync.Map[string, *service.Service]
-	pods            sync.Map[string, *[]pod.Pod]
-	nodeMetrics     sync.Map[string, mnode.Node]
-	nodes           sync.Map[string, *node.Node]
+	podMetrics      sync.Map[string, PodMetrics]
+	pods            sync.Map[string, *[]Pod]
+	nodeMetrics     sync.Map[string, NodeMetrics]
+	nodes           sync.Map[string, *Node]
 	namespace       string
 	name            string
 	maxPods         int
@@ -91,21 +86,25 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 	d.svcsByName.Store(&svcsByName)
 
 	var k8sOpts []k8s.Option
-	k8sOpts = append(k8sOpts,
+	k8sOpts = append(
+		k8sOpts,
 		k8s.WithDialer(d.der),
 		k8s.WithControllerName("vald k8s agent discoverer"),
 		k8s.WithLeaderElection(false, "", ""),
-		k8s.WithResourceController(mnode.New(
-			mnode.WithControllerName("node metrics discoverer"),
-			mnode.WithOnErrorFunc(func(err error) {
+		k8s.WithResourceController(reconciler.NewListReconciler(
+			"node metrics discoverer",
+			new(k8s.APINodeMetrics),
+			func() *k8s.APINodeMetricsList { return new(k8s.APINodeMetricsList) },
+			reconciler.WithOnError[*k8s.APINodeMetricsList](func(err error) {
 				log.Error("failed to reconcile node metrics:", err)
 			}),
-			mnode.WithOnReconcileFunc(func(nodes map[string]mnode.Node) {
+			reconciler.WithOnReconcile(func(_ context.Context, list *k8s.APINodeMetricsList) {
+				nodes := toNodeMetricsMap(list)
 				log.Debugf("node metrics reconciled\t%#v", nodes)
 				for name, metrics := range nodes {
 					d.nodeMetrics.Store(name, metrics)
 				}
-				d.nodeMetrics.Range(func(name string, _ mnode.Node) bool {
+				d.nodeMetrics.Range(func(name string, _ NodeMetrics) bool {
 					_, ok := nodes[name]
 					if !ok {
 						d.nodeMetrics.Delete(name)
@@ -113,21 +112,25 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 					return true
 				})
 			}),
-			mnode.WithNamespace(d.namespace),
-			mnode.WithFields(selector.GetNodeMetricsFields()),
-			mnode.WithLabels(selector.GetNodeMetricsLabels()),
+			reconciler.WithAddToScheme[*k8s.APINodeMetricsList](k8s.MetricsAddToScheme),
+			reconciler.WithNamespace[*k8s.APINodeMetricsList](d.namespace),
+			reconciler.WithFields[*k8s.APINodeMetricsList](selector.GetNodeMetricsFields()),
+			reconciler.WithLabels[*k8s.APINodeMetricsList](selector.GetNodeMetricsLabels()),
 		)),
-		k8s.WithResourceController(mpod.New(
-			mpod.WithControllerName("pod metrics discoverer"),
-			mpod.WithOnErrorFunc(func(err error) {
+		k8s.WithResourceController(reconciler.NewListReconciler(
+			"pod metrics discoverer",
+			new(k8s.APIPodMetrics),
+			func() *k8s.APIPodMetricsList { return new(k8s.APIPodMetricsList) },
+			reconciler.WithOnError[*k8s.APIPodMetricsList](func(err error) {
 				log.Error("failed to reconcile pod metrics:", err)
 			}),
-			mpod.WithOnReconcileFunc(func(podList map[string]mpod.Pod) {
+			reconciler.WithOnReconcile(func(_ context.Context, list *k8s.APIPodMetricsList) {
+				podList := toPodMetricsMap(list)
 				log.Debugf("pod metrics reconciled\t%#v", podList)
 				for name, pods := range podList {
 					d.podMetrics.Store(name, pods)
 				}
-				d.podMetrics.Range(func(name string, _ mpod.Pod) bool {
+				d.podMetrics.Range(func(name string, _ PodMetrics) bool {
 					_, ok := podList[name]
 					if !ok {
 						d.podMetrics.Delete(name)
@@ -135,16 +138,21 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 					return true
 				})
 			}),
-			mpod.WithNamespace(d.namespace),
-			mpod.WithFields(selector.GetPodMetricsFields()),
-			mpod.WithLabels(selector.GetPodMetricsLabels()),
+			reconciler.WithAddToScheme[*k8s.APIPodMetricsList](k8s.MetricsAddToScheme),
+			reconciler.WithNamespace[*k8s.APIPodMetricsList](d.namespace),
+			reconciler.WithFields[*k8s.APIPodMetricsList](selector.GetPodMetricsFields()),
+			reconciler.WithLabels[*k8s.APIPodMetricsList](selector.GetPodMetricsLabels()),
+			reconciler.WithFieldIndex[*k8s.APIPodMetricsList]("containers.name", podMetricsContainersNameIndexer),
 		)),
-		k8s.WithResourceController(pod.New(
-			pod.WithControllerName("pod discoverer"),
-			pod.WithOnErrorFunc(func(err error) {
+		k8s.WithResourceController(reconciler.NewListReconciler(
+			"pod discoverer",
+			new(k8s.Pod),
+			func() *k8s.PodList { return new(k8s.PodList) },
+			reconciler.WithOnError[*k8s.PodList](func(err error) {
 				log.Error("failed to reconcile pod resource:", err)
 			}),
-			pod.WithOnReconcileFunc(func(_ context.Context, podList map[string][]pod.Pod) {
+			reconciler.WithOnReconcile(func(_ context.Context, list *k8s.PodList) {
+				podList := podsByAppName(list, d.namespace)
 				log.Debugf("pod resource reconciled\t%#v", podList)
 				for name, pods := range podList {
 					if len(pods) > d.maxPods {
@@ -152,7 +160,7 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 					}
 					d.pods.Store(name, &pods)
 				}
-				d.pods.Range(func(name string, _ *[]pod.Pod) bool {
+				d.pods.Range(func(name string, _ *[]Pod) bool {
 					_, ok := podList[name]
 					if !ok {
 						d.pods.Delete(name)
@@ -160,23 +168,27 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 					return true
 				})
 			}),
-			pod.WithNamespace(d.namespace),
-			pod.WithFields(selector.GetPodFields()),
-			pod.WithLabels(selector.GetPodLabels()),
+			reconciler.WithNamespace[*k8s.PodList](d.namespace),
+			reconciler.WithFields[*k8s.PodList](selector.GetPodFields()),
+			reconciler.WithLabels[*k8s.PodList](selector.GetPodLabels()),
+			reconciler.WithFieldIndex[*k8s.PodList]("status.phase", podStatusPhaseIndexer),
 		)),
-		k8s.WithResourceController(node.New(
-			node.WithControllerName("node discoverer"),
-			node.WithOnErrorFunc(func(err error) {
+		k8s.WithResourceController(reconciler.NewListReconciler(
+			"node discoverer",
+			new(k8s.Node),
+			func() *k8s.NodeList { return new(k8s.NodeList) },
+			reconciler.WithOnError[*k8s.NodeList](func(err error) {
 				log.Error("failed to reconcile node resource:", err)
 			}),
-			node.WithOnReconcileFunc(func(nodes []node.Node) {
+			reconciler.WithOnReconcile(func(_ context.Context, list *k8s.NodeList) {
+				nodes := toNodes(list)
 				log.Debugf("node resource reconciled\t%#v", nodes)
 				nm := make(map[string]struct{}, len(nodes))
 				for _, n := range nodes {
 					nm[n.Name] = struct{}{}
 					d.nodes.Store(n.Name, &n)
 				}
-				d.nodes.Range(func(name string, _ *node.Node) bool {
+				d.nodes.Range(func(name string, _ *Node) bool {
 					_, ok := nm[name]
 					if !ok {
 						d.nodes.Delete(name)
@@ -184,36 +196,11 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 					return true
 				})
 			}),
-			node.WithNamespace(d.namespace),
-			node.WithFields(selector.GetNodeFields()),
-			node.WithLabels(selector.GetNodeLabels()),
+			reconciler.WithNamespace[*k8s.NodeList](d.namespace),
+			reconciler.WithFields[*k8s.NodeList](selector.GetNodeFields()),
+			reconciler.WithLabels[*k8s.NodeList](selector.GetNodeLabels()),
+			reconciler.WithFieldIndex[*k8s.NodeList]("status.phase", nodeStatusPhaseIndexer),
 		)),
-		// Only required when service reconciation is required like read replica.
-		// k8s.WithResourceController(service.New(
-		// 	service.WithControllerName("service discoverer"),
-		// 	service.WithOnErrorFunc(func(err error) {
-		// 		log.Error("failed to reconcile:", err)
-		// 	}),
-		// 	service.WithOnReconcileFunc(func(svcs []service.Service) {
-		// 		log.Debugf("svc resource reconciled\t%#v", svcs)
-		// 		svcsmap := make(map[string]struct{}, len(svcs))
-		// 		for i := range svcs {
-		// 			svc := &svcs[i]
-		// 			svcsmap[svc.Name] = struct{}{}
-		// 			d.services.Store(svc.Name, svc)
-		// 		}
-		// 		d.services.Range(func(name string, _ *service.Service) bool {
-		// 			_, ok := svcsmap[name]
-		// 			if !ok {
-		// 				d.services.Delete(name)
-		// 			}
-		// 			return true
-		// 		})
-		// 	}),
-		// 	service.WithNamespace(d.namespace),
-		// 	service.WithFields(selector.GetServiceFields()),
-		// 	service.WithLabels(selector.GetServiceLabels()),
-		// )),
 	)
 
 	d.ctrl, err = k8s.New(k8sOpts...)
@@ -246,10 +233,9 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					podsByNamespace = make(map[string]map[string][]*payload.Info_Pod)            // map[namespace][name][]pod
 					podsByName      = make(map[string][]*payload.Info_Pod)                       // map[name][]pod
 					nodeByName      = make(map[string]*payload.Info_Node)                        // map[name]node
-					svcsByName      = make(map[string]*payload.Info_Service)                     // map[name]svc
 				)
 
-				d.nodes.Range(func(nodeName string, n *node.Node) bool {
+				d.nodes.Range(func(nodeName string, n *Node) bool {
 					select {
 					case <-ctx.Done():
 						return false
@@ -279,7 +265,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						return true
 					}
 				})
-				d.pods.Range(func(appName string, pods *[]pod.Pod) bool {
+				d.pods.Range(func(appName string, pods *[]Pod) bool {
 					select {
 					case <-ctx.Done():
 						return false
@@ -344,35 +330,6 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						return true
 					}
 				})
-				d.services.Range(func(key string, svc *service.Service) bool {
-					select {
-					case <-ctx.Done():
-						return false
-					default:
-						var ports []*payload.Info_ServicePort
-						for _, p := range svc.Ports {
-							ports = append(ports, &payload.Info_ServicePort{
-								Name: p.Name,
-								Port: p.Port,
-							})
-						}
-						ni := &payload.Info_Service{
-							Name:       svc.Name,
-							ClusterIp:  svc.ClusterIP,
-							ClusterIps: svc.ClusterIPs,
-							Ports:      ports,
-							Labels: &payload.Info_Labels{
-								Labels: svc.Labels,
-							},
-							Annotations: &payload.Info_Annotations{
-								Annotations: svc.Annotations,
-							},
-						}
-						svcsByName[svc.Name] = ni
-						return true
-					}
-				})
-				d.svcsByName.Store(&svcsByName)
 
 				var wg sync.WaitGroup
 				wg.Add(1)

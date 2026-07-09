@@ -18,7 +18,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"maps"
 
 	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
@@ -26,7 +25,6 @@ import (
 	"github.com/vdaas/vald/internal/k8s"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -41,11 +39,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-var (
-	ServerSideApply = cli.Apply
-	MergePatch      = cli.Merge
-	NewSelector     = labels.NewSelector
-)
+var NewSelector = labels.NewSelector
 
 type Client interface {
 	// Get retrieves an obj for the given object key from the Kubernetes Cluster.
@@ -71,6 +65,10 @@ type Client interface {
 	// Patch patches the given obj in the Kubernetes cluster. obj must be a
 	// struct pointer so that obj can be updated with the content returned by the Server.
 	Patch(ctx context.Context, obj k8s.Object, patch cli.Patch, opts ...cli.PatchOption) error
+
+	// Apply applies the given apply configuration to the Kubernetes cluster
+	// using server-side apply.
+	Apply(ctx context.Context, obj runtime.ApplyConfiguration, opts ...cli.ApplyOption) error
 
 	// Watch watches the given obj for changes and takes the appropriate callbacks.
 	Watch(ctx context.Context, obj cli.ObjectList, opts ...k8s.ListOption) (watch.Interface, error)
@@ -152,6 +150,12 @@ func (c *client) Patch(
 	return c.withWatch.Patch(ctx, obj, patch, opts...)
 }
 
+func (c *client) Apply(
+	ctx context.Context, obj runtime.ApplyConfiguration, opts ...cli.ApplyOption,
+) error {
+	return c.withWatch.Apply(ctx, obj, opts...)
+}
+
 func (c *client) Watch(
 	ctx context.Context, obj cli.ObjectList, opts ...k8s.ListOption,
 ) (watch.Interface, error) {
@@ -167,7 +171,7 @@ func (*client) LabelSelector(
 ) (labels.Selector, error) {
 	requirements, err := labels.NewRequirement(key, op, vals)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create requirement on creating label selector: %w", err)
+		return nil, errors.Wrap(err, "failed to create requirement on creating label selector")
 	}
 	return labels.NewSelector().Add(*requirements), nil
 }
@@ -270,14 +274,8 @@ func (s *patcher) ApplyPodAnnotations(
 	}
 
 	// now we found the diffs, apply the changes
-	obj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(expectPod)
-	if err != nil {
-		return err
-	}
-
-	patch := &unstructured.Unstructured{Object: obj}
-	return s.client.Patch(ctx, patch, cli.Apply, &cli.PatchOptions{
-		FieldManager: s.fieldManager,
-		Force:        new(true),
-	})
+	return s.client.Apply(ctx, expectPod,
+		cli.FieldOwner(s.fieldManager),
+		cli.ForceOwnership,
+	)
 }

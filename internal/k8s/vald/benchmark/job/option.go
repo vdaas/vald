@@ -20,7 +20,6 @@ import (
 	"context"
 
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 type Option func(*reconciler) error
@@ -31,14 +30,6 @@ var defaultOpts = []Option{}
 func WithControllerName(name string) Option {
 	return func(r *reconciler) error {
 		r.name = name
-		return nil
-	}
-}
-
-// WithManager returns Option that sets r.mgr.
-func WithManager(mgr manager.Manager) Option {
-	return func(r *reconciler) error {
-		r.mgr = mgr
 		return nil
 	}
 }

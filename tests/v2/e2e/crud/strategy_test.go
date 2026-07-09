@@ -28,12 +28,12 @@ import (
 	agent "github.com/vdaas/vald/internal/client/v1/client/agent/core"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errors"
+	k8s "github.com/vdaas/vald/internal/k8s/client"
+	"github.com/vdaas/vald/internal/k8s/portforward"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/tests/v2/e2e/config"
-	k8s "github.com/vdaas/vald/tests/v2/e2e/kubernetes"
-	"github.com/vdaas/vald/tests/v2/e2e/kubernetes/portforward"
 	"github.com/vdaas/vald/tests/v2/e2e/metrics"
 	"google.golang.org/grpc/metadata"
 )
@@ -42,7 +42,7 @@ type runner struct {
 	rootCtx context.Context
 	client  vald.Client
 	aclient agent.Client
-	k8s     k8s.Client
+	k8s     k8s.ClientSet
 }
 
 func TestE2EStrategy(t *testing.T) {
@@ -56,7 +56,7 @@ func TestE2EStrategy(t *testing.T) {
 	var err error
 	r := new(runner)
 	if cfg.Kubernetes != nil {
-		r.k8s, err = k8s.NewClient(cfg.Kubernetes.KubeConfig, "")
+		r.k8s, err = k8s.NewClientSet(cfg.Kubernetes.KubeConfig, "")
 		if err != nil {
 			t.Errorf("failed to create kubernetes client: %v", err)
 		}
@@ -90,39 +90,47 @@ func TestE2EStrategy(t *testing.T) {
 			defer pfd.Stop()
 		}
 	}
-	r.client, ctx, err = newClient(t, ctx, cfg.Metadata)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
-	if r.client == nil {
-		t.Fatal("gRPC E2E client is nil")
-	}
-	ech, err := r.client.Start(ctx)
-	if err != nil {
-		t.Fatalf("failed to start client: %v", err)
-	}
-	r.aclient, err = agent.New(agent.WithValdClient(r.client))
-	if err != nil {
-		t.Fatalf("failed to create agent client: %v", err)
-	}
-	errgroup.Go(func() error {
-		select {
-		case <-ctx.Done():
-			return nil
-		case err := <-ech:
-			if err != nil {
-				t.Errorf("client daemon returned error: %v", err)
-			}
-		}
-		return nil
-	})
-	defer func() {
-		err = r.client.Stop(ctx)
+	if cfg.Target != nil {
+		r.client, ctx, err = newClient(t, ctx, cfg.Metadata)
 		if err != nil {
-			t.Errorf("failed to stop client: %v", err)
+			t.Fatalf("failed to create client: %v", err)
 		}
-	}()
-	t.Logf("connected addrs: %v", r.client.GRPCClient().ConnectedAddrs(ctx))
+		if r.client == nil {
+			t.Fatal("gRPC E2E client is nil")
+		}
+		ech, err := r.client.Start(ctx)
+		if err != nil {
+			t.Fatalf("failed to start client: %v", err)
+		}
+		// Register the Stop defer right after Start succeeds so that a failure
+		// in the following setup (e.g. agent.New -> t.Fatalf) cannot leak the
+		// started client and its background goroutines.
+		defer func() {
+			err = r.client.Stop(ctx)
+			if err != nil {
+				t.Errorf("failed to stop client: %v", err)
+			}
+		}()
+		r.aclient, err = agent.New(agent.WithValdClient(r.client))
+		if err != nil {
+			t.Fatalf("failed to create agent client: %v", err)
+		}
+		errgroup.Go(func() error {
+			select {
+			case <-ctx.Done():
+				return nil
+			case err := <-ech:
+				if err != nil {
+					t.Errorf("client daemon returned error: %v", err)
+				}
+			}
+			return nil
+		})
+		t.Logf("connected addrs: %v", r.client.GRPCClient().ConnectedAddrs(ctx))
+	} else {
+		// scenarios such as operator verification only use kubernetes/http operations and do not require a gRPC target.
+		t.Log("gRPC target is not configured, skipping gRPC client setup")
+	}
 	t.Run("Run E2E V2 Scenarios", func(tt *testing.T) {
 		if err := executeWithTimings(tt, ctx, cfg, cfg.FilePath, "e2e", func(ttt *testing.T, ctx context.Context) error {
 			ttt.Helper()
@@ -248,6 +256,9 @@ func (r *runner) processExecution(
 				config.OpListObject,
 				config.OpTimestamp,
 				config.OpExists:
+				if r.client == nil {
+					ttt.Fatalf("gRPC client is not initialized, target configuration is required for %s operation", e.Type)
+				}
 				train, test, neighbors := getDatasetSlices(ttt, e)
 				if e.BaseConfig != nil {
 					start := time.Now()
@@ -282,6 +293,9 @@ func (r *runner) processExecution(
 				config.OpIndexStatisticsDetail,
 				config.OpIndexProperty,
 				config.OpFlush:
+				if r.client == nil {
+					ttt.Fatalf("gRPC client is not initialized, target configuration is required for %s operation", e.Type)
+				}
 				start := time.Now()
 				log.Infof("started %s execution at %s, type: %s, mode: %s, execution: %d",
 					e.Name, start.Format("2006-01-02 15:04:05"), e.Type, e.Mode, idx)
@@ -293,6 +307,9 @@ func (r *runner) processExecution(
 			case config.OpCreateIndex,
 				config.OpSaveIndex,
 				config.OpCreateAndSaveIndex:
+				if r.aclient == nil {
+					ttt.Fatalf("agent gRPC client is not initialized, target configuration is required for %s operation", e.Type)
+				}
 				start := time.Now()
 				log.Infof("started %s execution at %s, type: %s, mode: %s, execution: %d",
 					e.Name, start.Format("2006-01-02 15:04:05"), e.Type, e.Mode, idx)
@@ -311,6 +328,17 @@ func (r *runner) processExecution(
 							e.Name, time.Since(start).String(), e.Type, e.Mode, idx, e.Kubernetes.Action, e.Kubernetes.Kind, e.Kubernetes.Namespace, e.Kubernetes.Name, e.Kubernetes.Status)
 					}()
 					r.processKubernetes(ttt, ctx, e)
+				}
+			case config.OpHTTP:
+				if e.HTTP != nil {
+					start := time.Now()
+					log.Infof("started %s execution at %s, type: %s, mode: %s, execution: %d, http method: %s, url: %s",
+						e.Name, start.Format("2006-01-02 15:04:05"), e.Type, e.Mode, idx, e.HTTP.Method, e.HTTP.URL)
+					defer func() {
+						log.Infof("finished %s execution in %s, type: %s, mode: %s, execution: %d, http method: %s, url: %s",
+							e.Name, time.Since(start).String(), e.Type, e.Mode, idx, e.HTTP.Method, e.HTTP.URL)
+					}()
+					r.processHTTP(ttt, ctx, e)
 				}
 			case config.OpClient:
 				// TODO implement gRPC client operation here, eg. start, stop, etc.

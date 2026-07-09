@@ -1,0 +1,821 @@
+#
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# @schema {"name": "name", "type": "string"}
+# name -- name of the deployment and the derived resource names (-config, -default-vrs, -leader-election)
+name: vald-operator
+# @schema {"name": "replicas", "type": "integer"}
+# replicas -- the number of replicas for the deployment
+replicas: 1
+# @schema {"name": "version", "type": "string"}
+# version -- version of the operator config
+version: v0.0.0
+# @schema {"name": "time_zone", "type": "string"}
+# time_zone -- time zone of the operator process
+time_zone: UTC
+
+# @schema {"name": "image", "type": "object"}
+image:
+  # @schema {"name": "image.repository", "type": "string"}
+  # image.repository -- image repository
+  repository: vdaas/vald-operator
+  # @schema {"name": "image.tag", "type": "string"}
+  # image.tag -- image tag (falls back to the Chart appVersion when empty)
+  tag: ""
+  # @schema {"name": "image.pullPolicy", "type": "string", "enum": ["Always", "Never", "IfNotPresent"]}
+  # image.pullPolicy -- image pull policy
+  pullPolicy: IfNotPresent
+# @schema {"name": "imagePullSecrets", "type": "array", "items": {"type": "object"}}
+# imagePullSecrets -- image pull secrets
+imagePullSecrets: []
+
+# @schema {"name": "annotations", "type": "object"}
+# annotations -- deployment annotations
+annotations: {}
+# @schema {"name": "labels", "type": "object"}
+# labels -- additional labels applied to the deployment and the pod template
+labels: {}
+# @schema {"name": "podAnnotations", "type": "object"}
+# podAnnotations -- additional pod annotations (pyroscope annotations are added automatically while server_config.metrics.pprof.enabled is true)
+podAnnotations: {}
+# @schema {"name": "progressDeadlineSeconds", "type": "integer"}
+# progressDeadlineSeconds -- deployment progress deadline seconds
+progressDeadlineSeconds: 600
+# @schema {"name": "revisionHistoryLimit", "type": "integer"}
+# revisionHistoryLimit -- number of old ReplicaSets to retain
+revisionHistoryLimit: 2
+# @schema {"name": "strategy", "type": "object"}
+# strategy -- deployment strategy
+strategy:
+  # @schema {"name": "strategy.type", "type": "string", "enum": ["RollingUpdate", "Recreate"]}
+  type: RollingUpdate
+  # @schema {"name": "strategy.rollingUpdate", "type": "object"}
+  rollingUpdate:
+    # @schema {"name": "strategy.rollingUpdate.maxSurge", "type": "string"}
+    maxSurge: 25%
+    # @schema {"name": "strategy.rollingUpdate.maxUnavailable", "type": "string"}
+    maxUnavailable: 25%
+# @schema {"name": "terminationGracePeriodSeconds", "type": "integer"}
+# terminationGracePeriodSeconds -- pod termination grace period seconds
+terminationGracePeriodSeconds: 30
+# @schema {"name": "priorityClassName", "type": "string"}
+# priorityClassName -- pod priority class name
+priorityClassName: ""
+# @schema {"name": "schedulerName", "type": "string"}
+# schedulerName -- scheduler name
+schedulerName: default-scheduler
+# @schema {"name": "dnsPolicy", "type": "string"}
+# dnsPolicy -- pod dns policy
+dnsPolicy: ClusterFirst
+# @schema {"name": "restartPolicy", "type": "string"}
+# restartPolicy -- pod restart policy
+restartPolicy: Always
+# @schema {"name": "nodeSelector", "type": "object"}
+# nodeSelector -- node labels for pod assignment
+nodeSelector: {}
+# @schema {"name": "affinity", "type": "object"}
+# affinity -- affinity
+affinity: {}
+# @schema {"name": "tolerations", "type": "array", "items": {"type": "object"}}
+# tolerations -- tolerations
+tolerations: []
+# @schema {"name": "topologySpreadConstraints", "type": "array", "items": {"type": "object"}}
+# topologySpreadConstraints -- topology spread constraints
+topologySpreadConstraints: []
+# @schema {"name": "initContainers", "type": "array", "items": {"type": "object"}}
+# initContainers -- init containers
+initContainers: []
+
+# @schema {"name": "podSecurityContext", "type": "object"}
+# podSecurityContext -- security context for the pod
+podSecurityContext:
+  fsGroup: 65532
+  fsGroupChangePolicy: OnRootMismatch
+  runAsGroup: 65532
+  runAsNonRoot: true
+  runAsUser: 65532
+# @schema {"name": "securityContext", "type": "object"}
+# securityContext -- security context for the container
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  privileged: false
+  readOnlyRootFilesystem: true
+  runAsGroup: 65532
+  runAsNonRoot: true
+  runAsUser: 65532
+
+# @schema {"name": "resources", "type": "object"}
+# resources -- kubernetes resources of the container
+resources:
+  # @schema {"name": "resources.limits", "type": "object"}
+  limits:
+    cpu: 600m
+    memory: 200Mi
+  # @schema {"name": "resources.requests", "type": "object"}
+  requests:
+    cpu: 200m
+    memory: 65Mi
+
+# @schema {"name": "env", "type": "array", "items": {"type": "object"}}
+# env -- environment variables
+env:
+  - name: MY_NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
+  - name: MY_POD_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: metadata.name
+  - name: MY_POD_NAMESPACE
+    valueFrom:
+      fieldRef:
+        fieldPath: metadata.namespace
+# @schema {"name": "volumes", "type": "array", "items": {"type": "object"}}
+# volumes -- additional volumes
+volumes: []
+# @schema {"name": "volumeMounts", "type": "array", "items": {"type": "object"}}
+# volumeMounts -- additional volume mounts
+volumeMounts: []
+
+# @schema {"name": "service", "type": "object"}
+service:
+  # @schema {"name": "service.enabled", "type": "boolean"}
+  # service.enabled -- service enabled
+  enabled: true
+  # @schema {"name": "service.type", "type": "string", "enum": ["ClusterIP", "LoadBalancer", "NodePort"]}
+  # service.type -- service type: ClusterIP, LoadBalancer or NodePort
+  type: ClusterIP
+  # @schema {"name": "service.clusterIP", "type": "string"}
+  # service.clusterIP -- cluster IP ("None" makes the service headless)
+  clusterIP: None
+  # @schema {"name": "service.externalTrafficPolicy", "type": "string"}
+  # service.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort): Cluster or Local
+  externalTrafficPolicy: ""
+  # @schema {"name": "service.annotations", "type": "object"}
+  # service.annotations -- service annotations
+  annotations: {}
+  # @schema {"name": "service.labels", "type": "object"}
+  # service.labels -- additional service labels
+  labels: {}
+  # @schema {"name": "service.extraPorts", "type": "array", "items": {"type": "object"}}
+  # service.extraPorts -- additional service ports (readiness/pprof ports are derived from server_config while enabled)
+  extraPorts: []
+
+# @schema {"name": "rbac", "type": "object"}
+rbac:
+  # @schema {"name": "rbac.create", "type": "boolean"}
+  # rbac.create -- required roles and rolebindings will be created
+  create: true
+  # @schema {"name": "rbac.name", "type": "string"}
+  # rbac.name -- name of roles and rolebindings (falls back to .name when empty)
+  name: ""
+# @schema {"name": "serviceAccount", "type": "object"}
+serviceAccount:
+  # @schema {"name": "serviceAccount.create", "type": "boolean"}
+  # serviceAccount.create -- service account will be created
+  create: true
+  # @schema {"name": "serviceAccount.name", "type": "string"}
+  # serviceAccount.name -- name of the service account (falls back to .name when empty)
+  name: ""
+  # @schema {"name": "serviceAccount.annotations", "type": "object"}
+  # serviceAccount.annotations -- service account annotations
+  annotations: {}
+
+# @schema {"name": "logging", "type": "object"}
+logging:
+  # @schema {"name": "logging.logger", "type": "string", "enum": ["glg", "zap"]}
+  # logging.logger -- logger name
+  logger: glg
+  # @schema {"name": "logging.level", "type": "string", "enum": ["debug", "info", "warn", "error", "fatal"]}
+  # logging.level -- logging level
+  level: debug
+  # @schema {"name": "logging.format", "type": "string", "enum": ["raw", "json"]}
+  # logging.format -- logging format
+  format: raw
+
+# @schema {"name": "server_config", "type": "object"}
+server_config:
+  # @schema {"name": "server_config.servers", "type": "object"}
+  servers:
+    # @schema {"name": "server_config.servers.grpc", "type": "object"}
+    grpc:
+      # @schema {"name": "server_config.servers.grpc.enabled", "type": "boolean"}
+      # server_config.servers.grpc.enabled -- gRPC server enabled
+      enabled: true
+      # @schema {"name": "server_config.servers.grpc.host", "type": "string"}
+      # server_config.servers.grpc.host -- gRPC server host
+      host: 0.0.0.0
+      # @schema {"name": "server_config.servers.grpc.port", "type": "integer"}
+      # server_config.servers.grpc.port -- gRPC server port (also used as the grpc containerPort)
+      port: 8081
+      # @schema {"name": "server_config.servers.grpc.server", "type": "object"}
+      server:
+        # @schema {"name": "server_config.servers.grpc.server.mode", "type": "string"}
+        mode: GRPC
+        # @schema {"name": "server_config.servers.grpc.server.probe_wait_time", "type": "string"}
+        probe_wait_time: 3s
+        # @schema {"name": "server_config.servers.grpc.server.network", "type": "string"}
+        network: tcp
+        # @schema {"name": "server_config.servers.grpc.server.socket_path", "type": "string"}
+        socket_path: ""
+        # @schema {"name": "server_config.servers.grpc.server.restart", "type": "boolean"}
+        restart: true
+        # @schema {"name": "server_config.servers.grpc.server.socket_option", "type": "object"}
+        # server_config.servers.grpc.server.socket_option -- socket options of the gRPC server listener
+        socket_option:
+          ip_recover_destination_addr: false
+          ip_transparent: false
+          reuse_addr: true
+          reuse_port: true
+          tcp_cork: false
+          tcp_defer_accept: false
+          tcp_fast_open: false
+          tcp_no_delay: false
+          tcp_quick_ack: false
+        # @schema {"name": "server_config.servers.grpc.server.grpc", "type": "object"}
+        # server_config.servers.grpc.server.grpc -- gRPC server options (rendered into config.yaml as-is)
+        grpc:
+          bidirectional_stream_concurrency: 20
+          connection_timeout: ""
+          enable_admin: false
+          enable_reflection: true
+          header_table_size: 0
+          initial_conn_window_size: 2097152
+          initial_window_size: 1048576
+          interceptors:
+            - RecoverInterceptor
+            - TraceInterceptor
+            - MetricInterceptor
+          keepalive:
+            max_conn_age: ""
+            max_conn_age_grace: ""
+            max_conn_idle: ""
+            min_time: 10m
+            permit_without_stream: false
+            time: 3h
+            timeout: 60s
+          max_header_list_size: 0
+          max_receive_message_size: 0
+          max_send_message_size: 0
+          read_buffer_size: 0
+          write_buffer_size: 0
+  # @schema {"name": "server_config.healths", "type": "object"}
+  healths:
+    # @schema {"name": "server_config.healths.liveness", "type": "object"}
+    liveness:
+      # @schema {"name": "server_config.healths.liveness.enabled", "type": "boolean"}
+      # server_config.healths.liveness.enabled -- liveness server enabled
+      enabled: true
+      # @schema {"name": "server_config.healths.liveness.host", "type": "string"}
+      # server_config.healths.liveness.host -- liveness server host
+      host: 0.0.0.0
+      # @schema {"name": "server_config.healths.liveness.port", "type": "integer"}
+      # server_config.healths.liveness.port -- liveness server port (also used as the liveness containerPort)
+      port: 3000
+      # @schema {"name": "server_config.healths.liveness.livenessProbe", "type": "object"}
+      livenessProbe:
+        # @schema {"name": "server_config.healths.liveness.livenessProbe.httpGet", "type": "object"}
+        httpGet:
+          # @schema {"name": "server_config.healths.liveness.livenessProbe.httpGet.path", "type": "string"}
+          # server_config.healths.liveness.livenessProbe.httpGet.path -- liveness probe path
+          path: /liveness
+          # @schema {"name": "server_config.healths.liveness.livenessProbe.httpGet.port", "type": "string"}
+          # server_config.healths.liveness.livenessProbe.httpGet.port -- liveness probe port name
+          port: liveness
+          # @schema {"name": "server_config.healths.liveness.livenessProbe.httpGet.scheme", "type": "string"}
+          # server_config.healths.liveness.livenessProbe.httpGet.scheme -- liveness probe scheme
+          scheme: HTTP
+        # @schema {"name": "server_config.healths.liveness.livenessProbe.initialDelaySeconds", "type": "integer"}
+        # server_config.healths.liveness.livenessProbe.initialDelaySeconds -- liveness probe initial delay seconds
+        initialDelaySeconds: 5
+        # @schema {"name": "server_config.healths.liveness.livenessProbe.periodSeconds", "type": "integer"}
+        # server_config.healths.liveness.livenessProbe.periodSeconds -- liveness probe period seconds
+        periodSeconds: 3
+        # @schema {"name": "server_config.healths.liveness.livenessProbe.successThreshold", "type": "integer"}
+        # server_config.healths.liveness.livenessProbe.successThreshold -- liveness probe success threshold
+        successThreshold: 1
+        # @schema {"name": "server_config.healths.liveness.livenessProbe.failureThreshold", "type": "integer"}
+        # server_config.healths.liveness.livenessProbe.failureThreshold -- liveness probe failure threshold
+        failureThreshold: 2
+        # @schema {"name": "server_config.healths.liveness.livenessProbe.timeoutSeconds", "type": "integer"}
+        # server_config.healths.liveness.livenessProbe.timeoutSeconds -- liveness probe timeout seconds
+        timeoutSeconds: 2
+      # @schema {"name": "server_config.healths.liveness.server", "type": "object"}
+      server:
+        # @schema {"name": "server_config.healths.liveness.server.mode", "type": "string"}
+        mode: ""
+        # @schema {"name": "server_config.healths.liveness.server.probe_wait_time", "type": "string"}
+        probe_wait_time: 3s
+        # @schema {"name": "server_config.healths.liveness.server.network", "type": "string"}
+        network: tcp
+        # @schema {"name": "server_config.healths.liveness.server.socket_path", "type": "string"}
+        socket_path: ""
+        # @schema {"name": "server_config.healths.liveness.server.socket_option", "type": "object"}
+        # server_config.healths.liveness.server.socket_option -- socket options of the liveness server listener
+        socket_option:
+          ip_recover_destination_addr: false
+          ip_transparent: false
+          reuse_addr: true
+          reuse_port: true
+          tcp_cork: false
+          tcp_defer_accept: false
+          tcp_fast_open: true
+          tcp_no_delay: true
+          tcp_quick_ack: true
+        # @schema {"name": "server_config.healths.liveness.server.http", "type": "object"}
+        http:
+          # @schema {"name": "server_config.healths.liveness.server.http.handler_timeout", "type": "string"}
+          handler_timeout: ""
+          # @schema {"name": "server_config.healths.liveness.server.http.idle_timeout", "type": "string"}
+          idle_timeout: ""
+          # @schema {"name": "server_config.healths.liveness.server.http.read_header_timeout", "type": "string"}
+          read_header_timeout: ""
+          # @schema {"name": "server_config.healths.liveness.server.http.read_timeout", "type": "string"}
+          read_timeout: ""
+          # @schema {"name": "server_config.healths.liveness.server.http.shutdown_duration", "type": "string"}
+          shutdown_duration: 5s
+          # @schema {"name": "server_config.healths.liveness.server.http.write_timeout", "type": "string"}
+          write_timeout: ""
+    # @schema {"name": "server_config.healths.readiness", "type": "object"}
+    readiness:
+      # @schema {"name": "server_config.healths.readiness.enabled", "type": "boolean"}
+      # server_config.healths.readiness.enabled -- readiness server enabled
+      enabled: true
+      # @schema {"name": "server_config.healths.readiness.host", "type": "string"}
+      # server_config.healths.readiness.host -- readiness server host
+      host: 0.0.0.0
+      # @schema {"name": "server_config.healths.readiness.port", "type": "integer"}
+      # server_config.healths.readiness.port -- readiness server port (also used as the readiness containerPort and service port)
+      port: 3001
+      # @schema {"name": "server_config.healths.readiness.readinessProbe", "type": "object"}
+      readinessProbe:
+        # @schema {"name": "server_config.healths.readiness.readinessProbe.httpGet", "type": "object"}
+        httpGet:
+          # @schema {"name": "server_config.healths.readiness.readinessProbe.httpGet.path", "type": "string"}
+          # server_config.healths.readiness.readinessProbe.httpGet.path -- readiness probe path
+          path: /readiness
+          # @schema {"name": "server_config.healths.readiness.readinessProbe.httpGet.port", "type": "string"}
+          # server_config.healths.readiness.readinessProbe.httpGet.port -- readiness probe port name
+          port: readiness
+          # @schema {"name": "server_config.healths.readiness.readinessProbe.httpGet.scheme", "type": "string"}
+          # server_config.healths.readiness.readinessProbe.httpGet.scheme -- readiness probe scheme
+          scheme: HTTP
+        # @schema {"name": "server_config.healths.readiness.readinessProbe.initialDelaySeconds", "type": "integer"}
+        # server_config.healths.readiness.readinessProbe.initialDelaySeconds -- readiness probe initial delay seconds
+        initialDelaySeconds: 10
+        # @schema {"name": "server_config.healths.readiness.readinessProbe.periodSeconds", "type": "integer"}
+        # server_config.healths.readiness.readinessProbe.periodSeconds -- readiness probe period seconds
+        periodSeconds: 3
+        # @schema {"name": "server_config.healths.readiness.readinessProbe.successThreshold", "type": "integer"}
+        # server_config.healths.readiness.readinessProbe.successThreshold -- readiness probe success threshold
+        successThreshold: 1
+        # @schema {"name": "server_config.healths.readiness.readinessProbe.failureThreshold", "type": "integer"}
+        # server_config.healths.readiness.readinessProbe.failureThreshold -- readiness probe failure threshold
+        failureThreshold: 2
+        # @schema {"name": "server_config.healths.readiness.readinessProbe.timeoutSeconds", "type": "integer"}
+        # server_config.healths.readiness.readinessProbe.timeoutSeconds -- readiness probe timeout seconds
+        timeoutSeconds: 2
+      # @schema {"name": "server_config.healths.readiness.server", "type": "object"}
+      server:
+        # @schema {"name": "server_config.healths.readiness.server.mode", "type": "string"}
+        mode: ""
+        # @schema {"name": "server_config.healths.readiness.server.probe_wait_time", "type": "string"}
+        probe_wait_time: 3s
+        # @schema {"name": "server_config.healths.readiness.server.network", "type": "string"}
+        network: tcp
+        # @schema {"name": "server_config.healths.readiness.server.socket_path", "type": "string"}
+        socket_path: ""
+        # @schema {"name": "server_config.healths.readiness.server.socket_option", "type": "object"}
+        # server_config.healths.readiness.server.socket_option -- socket options of the readiness server listener
+        socket_option:
+          ip_recover_destination_addr: false
+          ip_transparent: false
+          reuse_addr: true
+          reuse_port: true
+          tcp_cork: false
+          tcp_defer_accept: false
+          tcp_fast_open: true
+          tcp_no_delay: true
+          tcp_quick_ack: true
+        # @schema {"name": "server_config.healths.readiness.server.http", "type": "object"}
+        http:
+          # @schema {"name": "server_config.healths.readiness.server.http.handler_timeout", "type": "string"}
+          handler_timeout: ""
+          # @schema {"name": "server_config.healths.readiness.server.http.idle_timeout", "type": "string"}
+          idle_timeout: ""
+          # @schema {"name": "server_config.healths.readiness.server.http.read_header_timeout", "type": "string"}
+          read_header_timeout: ""
+          # @schema {"name": "server_config.healths.readiness.server.http.read_timeout", "type": "string"}
+          read_timeout: ""
+          # @schema {"name": "server_config.healths.readiness.server.http.shutdown_duration", "type": "string"}
+          shutdown_duration: 0s
+          # @schema {"name": "server_config.healths.readiness.server.http.write_timeout", "type": "string"}
+          write_timeout: ""
+    # @schema {"name": "server_config.healths.startup", "type": "object"}
+    startup:
+      # @schema {"name": "server_config.healths.startup.enabled", "type": "boolean"}
+      # server_config.healths.startup.enabled -- startup probe enabled
+      enabled: true
+      # @schema {"name": "server_config.healths.startup.startupProbe", "type": "object"}
+      startupProbe:
+        # @schema {"name": "server_config.healths.startup.startupProbe.httpGet", "type": "object"}
+        httpGet:
+          # @schema {"name": "server_config.healths.startup.startupProbe.httpGet.path", "type": "string"}
+          # server_config.healths.startup.startupProbe.httpGet.path -- startup probe path
+          path: /liveness
+          # @schema {"name": "server_config.healths.startup.startupProbe.httpGet.port", "type": "string"}
+          # server_config.healths.startup.startupProbe.httpGet.port -- startup probe port name
+          port: liveness
+          # @schema {"name": "server_config.healths.startup.startupProbe.httpGet.scheme", "type": "string"}
+          # server_config.healths.startup.startupProbe.httpGet.scheme -- startup probe scheme
+          scheme: HTTP
+        # @schema {"name": "server_config.healths.startup.startupProbe.initialDelaySeconds", "type": "integer"}
+        # server_config.healths.startup.startupProbe.initialDelaySeconds -- startup probe initial delay seconds
+        initialDelaySeconds: 5
+        # @schema {"name": "server_config.healths.startup.startupProbe.periodSeconds", "type": "integer"}
+        # server_config.healths.startup.startupProbe.periodSeconds -- startup probe period seconds
+        periodSeconds: 5
+        # @schema {"name": "server_config.healths.startup.startupProbe.successThreshold", "type": "integer"}
+        # server_config.healths.startup.startupProbe.successThreshold -- startup probe success threshold
+        successThreshold: 1
+        # @schema {"name": "server_config.healths.startup.startupProbe.failureThreshold", "type": "integer"}
+        # server_config.healths.startup.startupProbe.failureThreshold -- startup probe failure threshold
+        failureThreshold: 30
+        # @schema {"name": "server_config.healths.startup.startupProbe.timeoutSeconds", "type": "integer"}
+        # server_config.healths.startup.startupProbe.timeoutSeconds -- startup probe timeout seconds
+        timeoutSeconds: 2
+  # @schema {"name": "server_config.metrics", "type": "object"}
+  metrics:
+    # @schema {"name": "server_config.metrics.pprof", "type": "object"}
+    pprof:
+      # @schema {"name": "server_config.metrics.pprof.enabled", "type": "boolean"}
+      # server_config.metrics.pprof.enabled -- pprof server enabled
+      enabled: true
+      # @schema {"name": "server_config.metrics.pprof.host", "type": "string"}
+      # server_config.metrics.pprof.host -- pprof server host
+      host: 0.0.0.0
+      # @schema {"name": "server_config.metrics.pprof.port", "type": "integer"}
+      # server_config.metrics.pprof.port -- pprof server port (also used as the pprof containerPort and service port)
+      port: 6060
+      # @schema {"name": "server_config.metrics.pprof.server", "type": "object"}
+      server:
+        # @schema {"name": "server_config.metrics.pprof.server.mode", "type": "string"}
+        mode: REST
+        # @schema {"name": "server_config.metrics.pprof.server.probe_wait_time", "type": "string"}
+        probe_wait_time: 3s
+        # @schema {"name": "server_config.metrics.pprof.server.network", "type": "string"}
+        network: tcp
+        # @schema {"name": "server_config.metrics.pprof.server.socket_path", "type": "string"}
+        socket_path: ""
+        # @schema {"name": "server_config.metrics.pprof.server.restart", "type": "boolean"}
+        restart: true
+        # @schema {"name": "server_config.metrics.pprof.server.socket_option", "type": "object"}
+        # server_config.metrics.pprof.server.socket_option -- socket options of the pprof server listener
+        socket_option:
+          ip_recover_destination_addr: false
+          ip_transparent: false
+          reuse_addr: true
+          reuse_port: true
+          tcp_cork: true
+          tcp_defer_accept: false
+          tcp_fast_open: false
+          tcp_no_delay: false
+          tcp_quick_ack: false
+        # @schema {"name": "server_config.metrics.pprof.server.http", "type": "object"}
+        # server_config.metrics.pprof.server.http -- http options of the pprof server (rendered into config.yaml as-is)
+        http:
+          handler_timeout: 5s
+          http2:
+            enabled: false
+            handler_limit: 0
+            max_concurrent_streams: 0
+            max_decoder_header_table_size: 4096
+            max_encoder_header_table_size: 4096
+            max_read_frame_size: 0
+            max_upload_buffer_per_connection: 0
+            max_upload_buffer_per_stream: 0
+            permit_prohibited_cipher_suites: true
+          idle_timeout: 2s
+          read_header_timeout: 1s
+          read_timeout: 1s
+          shutdown_duration: 5s
+          write_timeout: 1m
+  # @schema {"name": "server_config.full_shutdown_duration", "type": "string"}
+  # server_config.full_shutdown_duration -- full shutdown duration
+  full_shutdown_duration: 600s
+  # @schema {"name": "server_config.tls", "type": "object"}
+  tls:
+    # @schema {"name": "server_config.tls.enabled", "type": "boolean"}
+    # server_config.tls.enabled -- TLS enabled
+    enabled: false
+    # @schema {"name": "server_config.tls.ca", "type": "string"}
+    # server_config.tls.ca -- TLS ca path
+    ca: /path/to/ca
+    # @schema {"name": "server_config.tls.cert", "type": "string"}
+    # server_config.tls.cert -- TLS cert path
+    cert: /path/to/cert
+    # @schema {"name": "server_config.tls.key", "type": "string"}
+    # server_config.tls.key -- TLS key path
+    key: /path/to/key
+    # @schema {"name": "server_config.tls.insecure_skip_verify", "type": "boolean"}
+    # server_config.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+    insecure_skip_verify: false
+
+# @schema {"name": "observability", "type": "object"}
+# observability -- observability settings (rendered into config.yaml as-is)
+observability:
+  enabled: false
+  otlp:
+    collector_endpoint: opentelemetry-collector-collector.default.svc.cluster.local:4317
+    trace_batch_timeout: 1s
+    trace_export_timeout: 1m
+    trace_max_export_batch_size: 1024
+    trace_max_queue_size: 256
+    metrics_export_interval: 1s
+    metrics_export_timeout: 1m
+    attribute:
+      namespace: _MY_POD_NAMESPACE_
+      pod_name: _MY_POD_NAME_
+      node_name: _MY_NODE_NAME_
+      service_name: vald-operator
+  metrics:
+    enable_cgo: true
+    enable_goroutine: true
+    enable_memory: true
+    enable_version_info: true
+    version_info_labels:
+      - vald_version
+      - server_name
+      - git_commit
+      - build_time
+      - go_version
+      - go_os
+      - go_arch
+      - algorithm_info
+  trace:
+    enabled: false
+
+# @schema {"name": "operator", "type": "object"}
+# operator -- operator runtime configuration (rendered into config.yaml as-is; see pkg/operator/vald/README.md for the full reference)
+operator:
+  # @schema {"name": "operator.name", "type": "string"}
+  # operator.name -- controller name
+  name: vald-operator
+  # @schema {"name": "operator.namespace", "type": "string"}
+  # operator.namespace -- namespace the operator is deployed in
+  namespace: default
+  # @schema {"name": "operator.controller", "type": "object"}
+  controller:
+    # @schema {"name": "operator.controller.leader_election", "type": "object"}
+    leader_election:
+      # @schema {"name": "operator.controller.leader_election.enabled", "type": "boolean"}
+      # operator.controller.leader_election.enabled -- leader election enabled
+      enabled: true
+      # @schema {"name": "operator.controller.leader_election.id", "type": "string"}
+      # operator.controller.leader_election.id -- name of the leader election lease resource
+      id: vald-operator
+      # @schema {"name": "operator.controller.leader_election.namespace", "type": "string"}
+      # operator.controller.leader_election.namespace -- namespace of the lease resource
+      namespace: default
+      # @schema {"name": "operator.controller.leader_election.lease_duration", "type": "string"}
+      # operator.controller.leader_election.lease_duration -- how long non-leader candidates wait before acquiring an expired lease ("" = 15s)
+      lease_duration: 30s
+      # @schema {"name": "operator.controller.leader_election.renew_deadline", "type": "string"}
+      # operator.controller.leader_election.renew_deadline -- how long the leader retries refreshing its lease before giving up ("" = 10s)
+      renew_deadline: 20s
+      # @schema {"name": "operator.controller.leader_election.retry_period", "type": "string"}
+      # operator.controller.leader_election.retry_period -- wait between leader election actions ("" = 2s)
+      retry_period: 5s
+    # @schema {"name": "operator.controller.metrics_address", "type": "string"}
+    # operator.controller.metrics_address -- bind address of the manager metrics server ("" = :8080, "0" disables it)
+    metrics_address: ""
+    # @schema {"name": "operator.controller.max_concurrent_reconciles", "type": "integer"}
+    # operator.controller.max_concurrent_reconciles -- reconcile worker count of the ValdOperatorRelease controller (0 = 1)
+    max_concurrent_reconciles: 2
+    # @schema {"name": "operator.controller.sync_period", "type": "string"}
+    # operator.controller.sync_period -- informer cache resync interval ("" = manager default, ~10h)
+    sync_period: ""
+    # @schema {"name": "operator.controller.cache_namespaces", "type": "array", "items": {"type": "string"}}
+    # operator.controller.cache_namespaces -- restrict the manager cache to these namespaces ([] = whole cluster)
+    cache_namespaces: []
+    # @schema {"name": "operator.controller.requeue", "type": "object"}
+    requeue:
+      # @schema {"name": "operator.controller.requeue.success", "type": "string"}
+      # operator.controller.requeue.success -- periodic requeue after a successful reconcile ("" disables it)
+      success: ""
+      # @schema {"name": "operator.controller.requeue.on_error", "type": "string"}
+      # operator.controller.requeue.on_error -- fixed retry interval on reconcile failure ("" = exponential backoff)
+      on_error: 100ms
+      # @schema {"name": "operator.controller.requeue.not_found", "type": "string"}
+      # operator.controller.requeue.not_found -- retry interval when the reconciled object is not found ("" disables it)
+      not_found: 1s
+  # @schema {"name": "operator.vrs", "type": "object"}
+  vrs:
+    # @schema {"name": "operator.vrs.default_vrs_path", "type": "string"}
+    # operator.vrs.default_vrs_path -- path of the default ValdRelease template yaml (the default-vrs ConfigMap is mounted on its directory)
+    default_vrs_path: /opt/valdoperatorrelease/config/vrs.yaml
+    # @schema {"name": "operator.vrs.internal_host_domain", "type": "string"}
+    # operator.vrs.internal_host_domain -- internal host domain of the cluster
+    internal_host_domain: ""
+    # @schema {"name": "operator.vrs.log_level", "type": "string"}
+    # operator.vrs.log_level -- log level passed through to the underlying vald deployment
+    log_level: warn
+    # @schema {"name": "operator.vrs.log_format", "type": "string"}
+    # operator.vrs.log_format -- log format passed through to the underlying vald deployment ("" = raw)
+    log_format: raw
+    # @schema {"name": "operator.vrs.logger", "type": "string"}
+    # operator.vrs.logger -- logger passed through to the underlying vald deployment ("" = glg)
+    logger: glg
+    # @schema {"name": "operator.vrs.managed_generation_label", "type": "string"}
+    # operator.vrs.managed_generation_label -- label key recording the owner generation on managed resources ("" = managed-generation)
+    managed_generation_label: managed-generation
+    # @schema {"name": "operator.vrs.agent", "type": "object"}
+    agent:
+      # @schema {"name": "operator.vrs.agent.max_surge", "type": "string"}
+      # operator.vrs.agent.max_surge -- agent StatefulSet rolling-update max surge ("" = "1")
+      max_surge: "1"
+      # @schema {"name": "operator.vrs.agent.max_unavailable", "type": "string"}
+      # operator.vrs.agent.max_unavailable -- agent StatefulSet rolling-update max unavailable ("" = "1")
+      max_unavailable: "1"
+      # @schema {"name": "operator.vrs.agent.enable_in_memory_mode", "type": "boolean"}
+      # operator.vrs.agent.enable_in_memory_mode -- enable the NGT in-memory mode
+      enable_in_memory_mode: true
+    # @schema {"name": "operator.vrs.gateway", "type": "object"}
+    gateway:
+      # @schema {"name": "operator.vrs.gateway.hpa_target_cpu_utilization", "type": "integer"}
+      # operator.vrs.gateway.hpa_target_cpu_utilization -- gateway lb HPA target CPU utilization percentage (0 = 80)
+      hpa_target_cpu_utilization: 80
+      # @schema {"name": "operator.vrs.gateway.ingress_service_port", "type": "string"}
+      # operator.vrs.gateway.ingress_service_port -- service port name referenced by the gateway ingress ("" = grpc)
+      ingress_service_port: grpc
+      # @schema {"name": "operator.vrs.gateway.ingress_path_type", "type": "string", "enum": ["Prefix", "Exact", "ImplementationSpecific"]}
+      # operator.vrs.gateway.ingress_path_type -- ingress path type ("" = Prefix)
+      ingress_path_type: Prefix
+    # @schema {"name": "operator.vrs.indexer", "type": "object"}
+    indexer:
+      # @schema {"name": "operator.vrs.indexer.auto_index_duration_limit", "type": "string"}
+      # operator.vrs.indexer.auto_index_duration_limit -- index manager auto index duration limit ("" = 1h)
+      auto_index_duration_limit: 1h
+      # @schema {"name": "operator.vrs.indexer.auto_save_index_duration_limit", "type": "string"}
+      # operator.vrs.indexer.auto_save_index_duration_limit -- index manager auto save index duration limit ("" = -1h)
+      auto_save_index_duration_limit: -1h
+  # @schema {"name": "operator.node_pool", "type": "object"}
+  node_pool:
+    # @schema {"name": "operator.node_pool.require_match", "type": "boolean"}
+    # operator.node_pool.require_match -- generate VRS only when matching nodepools exist in the cluster
+    require_match: false
+    # @schema {"name": "operator.node_pool.label_prefix", "type": "string"}
+    # operator.node_pool.label_prefix -- optional prefix for nodepool-related label keys (e.g. vald.vdaas.org)
+    label_prefix: ""
+    # @schema {"name": "operator.node_pool.agent_pods_per_node", "type": "integer"}
+    # operator.node_pool.agent_pods_per_node -- number of agent pods per node
+    agent_pods_per_node: 2
+  # @schema {"name": "operator.persistent_volume", "type": "object"}
+  persistent_volume:
+    # @schema {"name": "operator.persistent_volume.default_storage_class", "type": "string"}
+    # operator.persistent_volume.default_storage_class -- fallback StorageClass when the CR omits it
+    default_storage_class: standard
+    # @schema {"name": "operator.persistent_volume.default_access_mode", "type": "string"}
+    # operator.persistent_volume.default_access_mode -- fallback AccessMode when the CR omits it
+    default_access_mode: ReadWriteOnce
+    # @schema {"name": "operator.persistent_volume.buffer_ratio", "type": "number"}
+    # operator.persistent_volume.buffer_ratio -- PV sizing buffer ratio, max(memoryRequest * buffer_ratio, min_size_bytes)
+    buffer_ratio: 1.5
+    # @schema {"name": "operator.persistent_volume.min_size_bytes", "type": "integer"}
+    # operator.persistent_volume.min_size_bytes -- minimum PV size in bytes
+    min_size_bytes: 1073741824
+  # @schema {"name": "operator.networking", "type": "object"}
+  networking:
+    # @schema {"name": "operator.networking.enable_ingress", "type": "boolean"}
+    # operator.networking.enable_ingress -- enable the ingress for the gateway
+    enable_ingress: true
+    # @schema {"name": "operator.networking.gateway_ingress_annotations", "type": "object"}
+    # operator.networking.gateway_ingress_annotations -- annotations applied to the gateway ingress
+    gateway_ingress_annotations: {}
+    # @schema {"name": "operator.networking.gateway_service_type", "type": "string", "enum": ["NodePort", "ClusterIP", "LoadBalancer"]}
+    # operator.networking.gateway_service_type -- service type of the gateway
+    gateway_service_type: NodePort
+    # @schema {"name": "operator.networking.discoverer_daemonset_max_surge", "type": "string"}
+    # operator.networking.discoverer_daemonset_max_surge -- discoverer DaemonSet rolling-update max surge (intstr percent string)
+    discoverer_daemonset_max_surge: 30%
+    # @schema {"name": "operator.networking.discoverer_daemonset_max_unavailable", "type": "string"}
+    # operator.networking.discoverer_daemonset_max_unavailable -- discoverer DaemonSet rolling-update max unavailable (intstr percent string)
+    discoverer_daemonset_max_unavailable: 0%
+
+# @schema {"name": "default_vrs", "type": "object"}
+default_vrs:
+  # @schema {"name": "default_vrs.enabled", "type": "boolean"}
+  # default_vrs.enabled -- render and mount the default ValdRelease template ConfigMap
+  enabled: true
+  # @schema {"name": "default_vrs.existingConfigMap", "type": "string"}
+  # default_vrs.existingConfigMap -- use an existing ConfigMap (containing vrs.yaml) instead of rendering one
+  existingConfigMap: ""
+  # @schema {"name": "default_vrs.name", "type": "string"}
+  # default_vrs.name -- metadata.name of the templated ValdRelease
+  name: vald-cluster
+  # @schema {"name": "default_vrs.spec", "type": "object"}
+  # default_vrs.spec -- full ValdRelease spec used as the default VRS template (rendered into vrs.yaml as-is)
+  spec:
+    defaults:
+      image:
+        tag: nightly
+        pullPolicy: IfNotPresent
+      time_zone: Asia/Tokyo
+      logging:
+        format: raw
+        level: info
+        logger: glg
+      server_config:
+        servers:
+          grpc:
+            server:
+              grpc:
+                interceptors:
+                  - RecoverInterceptor
+                  - MetricInterceptor
+      observability:
+        enabled: true
+        trace:
+          enabled: false
+        otlp:
+          collector_endpoint: otel-collector.monitoring.svc.cluster.local:4317
+    discoverer:
+      image:
+        pullPolicy: IfNotPresent
+      logging:
+        level: warn
+      discoverer:
+        discovery_duration: 200ms
+      resources:
+        limits:
+          memory: 300Mi
+        requests:
+          memory: 160Mi
+    manager:
+      image:
+        pullPolicy: IfNotPresent
+      index:
+        image:
+          pullPolicy: IfNotPresent
+        saver:
+          image:
+            pullPolicy: IfNotPresent
+        creator:
+          image:
+            pullPolicy: IfNotPresent
+        logging:
+          level: warn
+    gateway:
+      lb:
+        image:
+          pullPolicy: IfNotPresent
+        enabled: true
+        rollingUpdate:
+          maxSurge: "25%"
+          maxUnavailable: "10%"
+        hpa:
+          targetCPUUtilizationPercentage: 50
+        ingress:
+          enabled: false
+          defaultBackend:
+            enabled: false
+        gateway_config:
+          index_replica: 1
+    agent:
+      image:
+        pullPolicy: IfNotPresent
+      hpa:
+        enabled: false
+      rollingUpdate:
+        maxSurge: "1"
+        maxUnavailable: "1"
+      minReplicas: 3
+      maxReplicas: 3
+      terminationGracePeriodSeconds: 2400
+      ngt:
+        auto_index_check_duration: "-1h"
+        auto_index_duration_limit: "-1h"
+        auto_save_index_duration: "-1h"
+        bulk_insert_chunk_size: 10
+        dimension: 2
+        distance_type: l2
+        object_type: float
+        enable_in_memory_mode: true
+      podManagementPolicy: Parallel

@@ -462,3 +462,11 @@ test/comment-unimplemented:
 		s/^/\/\/ /; \
 		s/^\/\/ \/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/; \
 		}" "{}"'
+
+.PHONY: test/operator/vald
+## run vald-operator tests
+test/operator/vald:
+	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
+	go test -shuffle=on -race -mod=readonly -timeout 20m $(ROOTDIR)/pkg/operator/...
