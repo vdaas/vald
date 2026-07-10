@@ -160,11 +160,24 @@ func Merge[T any](objs ...T) (dst T, err error) {
 	return dst, err
 }
 
+func deepMerge(dst, src reflect.Value, visited map[uintptr]bool, fieldPath string) error {
+	return deepMergeExplicit(dst, src, visited, fieldPath, false)
+}
+
 // skipcq: GO-R1005
-func deepMerge(dst, src reflect.Value, visited map[uintptr]bool, fieldPath string) (err error) {
-	if !src.IsValid() || src.IsZero() {
+func deepMergeExplicit(
+	dst, src reflect.Value, visited map[uintptr]bool, fieldPath string, explicit bool,
+) (err error) {
+	if !src.IsValid() {
 		return nil
-	} else if !dst.IsValid() {
+	}
+	// A zero src is absent unless we arrived through a non-nil pointer (explicit=true).
+	// This preserves *bool(false) and *int(0) semantics: a non-nil pointer is an
+	// intentional "set this value" signal even when the pointed-to value is zero.
+	if !explicit && src.IsZero() {
+		return nil
+	}
+	if !dst.IsValid() {
 		dst = src
 		log.Info(dst.Type(), dst, src)
 	}
@@ -174,8 +187,13 @@ func deepMerge(dst, src reflect.Value, visited map[uintptr]bool, fieldPath strin
 		return errors.ErrNotMatchFieldType(fieldPath, dType, sType)
 	}
 	sKind := src.Kind()
+	nextExplicit := false
 	if sKind == reflect.Pointer {
+		if src.IsNil() {
+			return nil // nil pointer is always absent
+		}
 		src = src.Elem()
+		nextExplicit = true // value unwrapped from a non-nil pointer is explicit
 	}
 	if sKind == reflect.Struct && src.CanAddr() {
 		addr := src.Addr().Pointer()
@@ -191,7 +209,7 @@ func deepMerge(dst, src reflect.Value, visited map[uintptr]bool, fieldPath strin
 		if dst.IsNil() {
 			dst.Set(reflect.New(dst.Type().Elem()))
 		}
-		return deepMerge(dst.Elem(), src, visited, fieldPath)
+		return deepMergeExplicit(dst.Elem(), src, visited, fieldPath, nextExplicit)
 	case reflect.Struct:
 		dnum := dst.NumField()
 		snum := src.NumField()
@@ -202,7 +220,7 @@ func deepMerge(dst, src reflect.Value, visited map[uintptr]bool, fieldPath strin
 			dstField := dst.Field(i)
 			if dstField.CanSet() {
 				nf := fmt.Sprintf("%s.%s(%d)", fieldPath, dType.Field(i).Name, i)
-				if err = deepMerge(dstField, src.Field(i), visited, nf); err != nil {
+				if err = deepMergeExplicit(dstField, src.Field(i), visited, nf, false); err != nil {
 					return errors.ErrDeepMergeKind(dst.Kind().String(), nf, err)
 				}
 			}
@@ -220,7 +238,7 @@ func deepMerge(dst, src reflect.Value, visited map[uintptr]bool, fieldPath strin
 			}
 			for i := range srcLen {
 				nf := fmt.Sprintf("%s[%d]", fieldPath, i)
-				if err = deepMerge(dst.Index(i), src.Index(i), visited, nf); err != nil {
+				if err = deepMergeExplicit(dst.Index(i), src.Index(i), visited, nf, false); err != nil {
 					return errors.ErrDeepMergeKind(dst.Kind().String(), nf, err)
 				}
 			}
@@ -232,7 +250,7 @@ func deepMerge(dst, src reflect.Value, visited map[uintptr]bool, fieldPath strin
 		}
 		for i := range srcLen {
 			nf := fmt.Sprintf("%s[%d]", fieldPath, i)
-			if err = deepMerge(dst.Index(i), src.Index(i), visited, nf); err != nil {
+			if err = deepMergeExplicit(dst.Index(i), src.Index(i), visited, nf, false); err != nil {
 				return errors.ErrDeepMergeKind(dst.Kind().String(), nf, err)
 			}
 		}
@@ -243,13 +261,12 @@ func deepMerge(dst, src reflect.Value, visited map[uintptr]bool, fieldPath strin
 		dElem := dType.Elem()
 		for _, key := range src.MapKeys() {
 			vdst := dst.MapIndex(key)
-			// fmt.Println(vdst.IsValid(), key, vdst)
 			if !vdst.IsValid() {
 				vdst = reflect.New(dElem).Elem()
 			}
 			nf := fmt.Sprintf("%s[%s]", fieldPath, key)
 			if vdst.CanSet() {
-				if err = deepMerge(vdst, src.MapIndex(key), visited, nf); err != nil {
+				if err = deepMergeExplicit(vdst, src.MapIndex(key), visited, nf, false); err != nil {
 					return errors.Errorf("error in array at %s: %w", nf, err)
 				}
 				dst.SetMapIndex(key, vdst)

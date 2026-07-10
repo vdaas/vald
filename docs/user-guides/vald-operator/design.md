@@ -31,7 +31,7 @@ minimum a user must supply. There are two input groups.
 1. **Infrastructure / node-pool information** — `spec.infrastructure[]`
 2. **Minimal Vald settings** — `spec.vectorEngine.vald`
 
-Source of truth: `pkg/operator/vald/api/v1/valdoperatorrelease_types.go`.
+Source of truth: `internal/k8s/vald/operator/api/v1/valdoperatorrelease_types.go`.
 
 ### `spec.infrastructure[]`
 
@@ -65,7 +65,7 @@ The minimal Vald configuration reflected into each VRS:
 Reconciliation is modeled as an ordered flow of phases. Each phase carries a `Condition`
 plus an optional `Builder` (creates/updates resources) and `Checker` (reports readiness).
 
-Phases (`pkg/operator/vald/lifecycle/condition.go`, `pkg/operator/vald/domain/valdoperatorrelease/lifecycle.go`):
+Phases (`pkg/operator/vald/service/phase.go`):
 
 | Phase (`status.phase`) | Builder | Checker | Purpose                                                              |
 | ---------------------- | ------- | ------- | -------------------------------------------------------------------- |
@@ -81,14 +81,13 @@ previously-`True` condition later breaks (e.g. a generated VRS is deleted, or th
 changes), the controller detects it and restarts work from that phase. `status.phase`
 tracks the condition currently being processed.
 
-See `pkg/operator/vald/controller/valdoperatorrelease_controller.go` (`reconcileRoutine` /
-`reconcileCondition`) and `pkg/operator/vald/domain/valdoperatorrelease/phase.go`
-(`AdvanceToNextPhase`).
+See `pkg/operator/vald/service/reconciler.go` (`reconcileValdOperatorRelease` /
+`reconcilePhase`) and `pkg/operator/vald/service/phase.go`.
 
 ### Readiness result states
 
-A `Checker` returns one of four `desired.Result` states
-(`pkg/operator/vald/lifecycle/desired/result.go`):
+A phase check returns one of four `result` states
+(`pkg/operator/vald/service/phase.go`):
 
 | Result            | Condition status      | Meaning                                                                      |
 | ----------------- | --------------------- | ---------------------------------------------------------------------------- |
@@ -99,37 +98,34 @@ A `Checker` returns one of four `desired.Result` states
 
 For the cluster-create check: a missing `cluster.id`/`cluster.name` yields **Pending**
 (external system not done yet), while empty `clusters` or empty `infrastructure` yields
-**Failed** (misconfiguration). See
-`pkg/operator/vald/domain/valdoperatorrelease/condition_wait_for_cluster_create.go`.
+**Failed** (misconfiguration). See `pkg/operator/vald/service/reconciler.go`.
 
 ## VRS generation flow
 
-Implemented in `pkg/operator/vald/lifecycle/builder/vald/`. `VrsBuilder.Build` is a pure
-function of `(CR, Config, NodePoolCapability)` — it makes no Kubernetes API calls.
+Implemented in `pkg/operator/vald/service/builder.go`. `vrsBuilder.Build` is a pure
+function of `(CR, Config, Capability)` — it makes no Kubernetes API calls.
 
 1. **Validate** the CR (`infrastructure` non-empty, each cluster has a `name`).
 2. **Iterate `infrastructure[]`**, skipping entries where `active == false` (and, when
    node-pool matching is enabled, entries with no matching general pool).
-3. **Assemble the VRS spec** from the CR:
-   - `buildDefaults` — log level etc. (`defaults.go`)
-   - `buildGateway` — `indexReplica`, service type, ingress (`gateway.go`)
-   - `buildAgent` — NGT settings (`agent.go`)
-   - `buildManager` — Manager mode when `indexer.manager == true`, otherwise
-     Creator/Saver mode (`manager.go`)
-   - `buildDiscoverer` — kind + namespaced RBAC names (`discoverer.go`)
+3. **Assemble the VRS spec** from the CR (all in `pkg/operator/vald/service/builder.go`):
+   - `buildDefaults` — log level
+   - `buildGateway` — `indexReplica`, service type, ingress
+   - `buildAgent` — NGT settings
+   - `buildManager` — Manager mode when `indexer.manager == true`, otherwise Creator/Saver mode
+   - `buildDiscoverer` — kind + namespaced RBAC names
 4. **Resolve resources from node pools** — `SetRelationalResources` derives replicas and
    per-component CPU/memory from the resolved agent node pool. The general-pool fallback
-   rule lives in the domain layer (`Rules.ResolveAgentNodePool`).
-5. **Optional settings** — persistent volume (`persistent_volume.go`) and node
-   affinities (`common.go`).
+   rule lives in `resolveAgentNodePool` (`pkg/operator/vald/service/rules.go`).
+5. **Optional settings** — persistent volume and node affinities (both in `builder.go`).
 6. **Per cluster** — for each `infra.clusters[]`, set `name = <namespace>-<clusterName>`
    (truncated to 63 chars), apply labels (`namespace`, `type`, `role`), then merge the
    overlay. One VRS is produced per cluster, so a single MVRS can yield many VRS objects.
 
 ### Applying generated resources (`ResourceSyncer`)
 
-The controller delegates the write side to `ResourceSyncer`
-(`pkg/operator/vald/controller/resource_syncer.go`):
+The controller delegates the write side to `resource.Syncer`
+(`internal/k8s/resource/syncer.go`):
 
 - `Build` the desired objects, then `CreateOrUpdate` each with an owner reference and a
   `managed-generation` label set to the owner's `.metadata.generation`.
@@ -138,9 +134,10 @@ The controller delegates the write side to `ResourceSyncer`
 
 ### Overlay
 
-`spec.vectorEngine.vald.overlay` is a JSON patch merged onto the generated VRS, layered
-on top of the default VRS template loaded at startup (`DEFAULT_VRS_PATH`). See
-`pkg/operator/vald/lifecycle/builder/vald/kustomize.go`.
+`spec.vectorEngine.vald.overlay` is merged onto the generated VRS on top of the default
+VRS template loaded at startup (`DEFAULT_VRS_PATH`). The merge uses `internal/config.Merge`
+(reflection-based deep merge, later elements override earlier). See `mergeOverlay` in
+`pkg/operator/vald/service/builder.go`.
 
 ## Multi-cluster distribution and node-pool matching
 
@@ -149,7 +146,7 @@ matching node pool exists.
 
 - With `REQUIRE_NODEPOOL_MATCH=true`, the controller lists Nodes and resolves a
   `NodePoolCapability`; a VRS is generated only when a `general` pool is present
-  (`pkg/operator/vald/lifecycle/builder/vald/capability.go`).
+  (`pkg/operator/vald/service/capability.go`).
 - Node match is by labels `namespace=<vor namespace>` and `type=general` (required);
   `type=agent` is optional — when present, agent pods are scheduled onto `type=agent`,
   otherwise they fall back to `type=general`.
@@ -160,7 +157,7 @@ matching node pool exists.
 
 ## Configuration (environment variables)
 
-Loaded once at startup into `config.Config` (`pkg/operator/vald/infrastructure/config/`).
+Loaded once at startup into `config.Config` (`pkg/operator/vald/config/config.go`).
 
 | Env var                         | Default                                    | Purpose                                                           |
 | ------------------------------- | ------------------------------------------ | ----------------------------------------------------------------- |
@@ -182,18 +179,16 @@ Loaded once at startup into `config.Config` (`pkg/operator/vald/infrastructure/c
 
 ## Source map
 
-| Concern                | Location                                                                            |
-| ---------------------- | ----------------------------------------------------------------------------------- |
-| CRD types              | `pkg/operator/vald/api/v1/valdoperatorrelease_types.go`                             |
-| Reconciler             | `pkg/operator/vald/controller/valdoperatorrelease_controller.go`                    |
-| Resource apply / prune | `pkg/operator/vald/controller/resource_syncer.go`                                   |
-| Lifecycle / conditions | `pkg/operator/vald/lifecycle/`, `pkg/operator/vald/domain/valdoperatorrelease/`     |
-| VRS builder            | `pkg/operator/vald/lifecycle/builder/vald/`                                         |
-| VRS API model          | `pkg/operator/vald/api/valdrelease/`                                                |
-| Config / env           | `pkg/operator/vald/infrastructure/config/`, `pkg/operator/vald/infrastructure/env/` |
-| Entry point            | `cmd/operator/vald/main.go`                                                         |
-| Manifests / CRDs       | `k8s/operator/vald/`                                                                |
-
-> Note: there is currently no admission webhook implementation in this repository. The
-> webhook server scaffolding in `cmd/operator/vald/main.go` is a kubebuilder leftover;
-> webhooks are tracked as future work.
+| Concern                | Location                                      |
+| ---------------------- | --------------------------------------------- |
+| CRD types              | `internal/k8s/vald/operator/api/v1/`          |
+| Reconciler             | `pkg/operator/vald/service/reconciler.go`     |
+| Resource apply / prune | `internal/k8s/resource/syncer.go`             |
+| Phase / conditions     | `pkg/operator/vald/service/phase.go`          |
+| Node-pool rules        | `pkg/operator/vald/service/rules.go`          |
+| VRS builder            | `pkg/operator/vald/service/builder.go`        |
+| Node-pool capability   | `pkg/operator/vald/service/capability.go`     |
+| VRS API model          | `internal/k8s/vald/operator/api/valdrelease/` |
+| Config / env           | `pkg/operator/vald/config/config.go`          |
+| Entry point            | `cmd/operator/vald/main.go`                   |
+| Manifests / CRDs       | `k8s/operator/vald/`                          |

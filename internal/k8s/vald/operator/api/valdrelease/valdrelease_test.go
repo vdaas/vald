@@ -63,7 +63,7 @@ func TestValdRelease_RuntimeObject(t *testing.T) {
 			Namespace: "ns",
 			Labels:    map[string]string{"k": "v"},
 		},
-		Spec: Values{Agent: &Agent{MinReplicas: ptr(3)}},
+		Spec: Values{Agent: &Agent{MinReplicas: new(3)}},
 	}
 
 	cp, ok := vr.DeepCopyObject().(*ValdRelease)
@@ -89,13 +89,13 @@ func TestValdRelease_JSONRoundTrip(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{Name: "rt", Namespace: "ns"},
 		Spec: Values{
 			Agent: &Agent{
-				MinReplicas: ptr(2),
+				MinReplicas: new(2),
 				Ngt: &AgentNgt{
-					Dimension:    ptr(128),
-					DistanceType: ptr(AgentNgtDistanceType("l2")),
+					Dimension:    new(128),
+					DistanceType: new(AgentNgtDistanceType("l2")),
 				},
 			},
-			Gateway: &Gateway{Lb: &GatewayLb{MaxReplicas: ptr(4)}},
+			Gateway: &Gateway{Lb: &GatewayLb{MaxReplicas: new(4)}},
 		},
 	}
 

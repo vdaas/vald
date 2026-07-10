@@ -21,7 +21,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// SetStatusCondition は UpsertCondition と異なり LastTransitionTime を Status 変化時のみ更新する。
+// SetStatusCondition updates LastTransitionTime only when Status changes, unlike UpsertCondition.
 var SetStatusCondition = apimeta.SetStatusCondition
 
 // UpsertCondition inserts newCond into conditions or replaces the entry with

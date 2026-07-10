@@ -268,7 +268,7 @@ type Agent struct {
 	Algorithm *AgentAlgorithm `json:"algorithm,omitempty"`
 
 	// Annotations deployment annotations
-	Annotations        *map[string]interface{}  `json:"annotations,omitempty"`
+	Annotations        *map[string]any          `json:"annotations,omitempty"`
 	ClusterRole        *AgentClusterRole        `json:"clusterRole,omitempty"`
 	ClusterRoleBinding *AgentClusterRoleBinding `json:"clusterRoleBinding,omitempty"`
 
@@ -313,7 +313,7 @@ type Agent struct {
 	PersistentVolume *AgentPersistentVolume `json:"persistentVolume,omitempty"`
 
 	// PodAnnotations pod annotations
-	PodAnnotations *map[string]interface{} `json:"podAnnotations,omitempty"`
+	PodAnnotations *map[string]any `json:"podAnnotations,omitempty"`
 
 	// PodManagementPolicy pod management policy: OrderedReady or Parallel
 	PodManagementPolicy *AgentPodManagementPolicy `json:"podManagementPolicy,omitempty"`
@@ -662,7 +662,7 @@ type AgentReadreplica struct {
 // AgentReadreplicaService service settings for read replica service resources
 type AgentReadreplicaService struct {
 	// Annotations readreplica deployment annotations
-	Annotations *map[string]interface{} `json:"annotations,omitempty"`
+	Annotations *map[string]any `json:"annotations,omitempty"`
 }
 
 // AgentRollingUpdate defines model for agent_rollingUpdate.
@@ -905,7 +905,7 @@ type AgentSidecarConfigCompressCompressAlgorithm string
 // AgentSidecarService defines model for agent_sidecar_service.
 type AgentSidecarService struct {
 	// Annotations agent sidecar service annotations
-	Annotations *map[string]interface{} `json:"annotations,omitempty"`
+	Annotations *map[string]any `json:"annotations,omitempty"`
 
 	// Enabled agent sidecar service enabled
 	Enabled *bool `json:"enabled,omitempty"`
@@ -914,7 +914,7 @@ type AgentSidecarService struct {
 	ExternalTrafficPolicy *string `json:"externalTrafficPolicy,omitempty"`
 
 	// Labels agent sidecar service labels
-	Labels *map[string]interface{} `json:"labels,omitempty"`
+	Labels *map[string]any `json:"labels,omitempty"`
 
 	// Type service type: ClusterIP, LoadBalancer or NodePort
 	Type *AgentSidecarServiceType `json:"type,omitempty"`
@@ -1102,10 +1102,10 @@ type DefaultsImage struct {
 // DefaultsNetworkPolicyCustom custom network policies that a user can add
 type DefaultsNetworkPolicyCustom struct {
 	// Egress custom egress network policies that a user can add
-	Egress *[]map[string]interface{} `json:"egress,omitempty"`
+	Egress *[]map[string]any `json:"egress,omitempty"`
 
 	// Ingress custom ingress network policies that a user can add
-	Ingress *[]map[string]interface{} `json:"ingress,omitempty"`
+	Ingress *[]map[string]any `json:"ingress,omitempty"`
 }
 
 // DefaultsObservabilityMetrics defines model for defaults_observability_metrics.
@@ -1409,7 +1409,7 @@ type Discoverer struct {
 	Affinity *Affinity `json:"affinity,omitempty"`
 
 	// Annotations deployment annotations
-	Annotations        *map[string]interface{}       `json:"annotations,omitempty"`
+	Annotations        *map[string]any               `json:"annotations,omitempty"`
 	ClusterRole        *DiscovererClusterRole        `json:"clusterRole,omitempty"`
 	ClusterRoleBinding *DiscovererClusterRoleBinding `json:"clusterRoleBinding,omitempty"`
 	Discoverer         *DiscovererDiscoverer         `json:"discoverer,omitempty"`
@@ -1455,8 +1455,8 @@ type Discoverer struct {
 	Observability *Observability `json:"observability,omitempty"`
 
 	// PodAnnotations pod annotations
-	PodAnnotations *map[string]interface{} `json:"podAnnotations,omitempty"`
-	PodPriority    *PodPriority            `json:"podPriority,omitempty"`
+	PodAnnotations *map[string]any `json:"podAnnotations,omitempty"`
+	PodPriority    *PodPriority    `json:"podPriority,omitempty"`
 
 	// PodSecurityContext security context for pod
 	PodSecurityContext *corev1.PodSecurityContext `json:"podSecurityContext,omitempty"`
@@ -1570,46 +1570,46 @@ type DiscovererDiscovererSelectors struct {
 // DiscovererDiscovererSelectorsNode k8s resource selectors for node discovery
 type DiscovererDiscovererSelectorsNode struct {
 	// Fields k8s field selectors for node discovery
-	Fields *map[string]interface{} `json:"fields,omitempty"`
+	Fields *map[string]any `json:"fields,omitempty"`
 
 	// Labels k8s label selectors for node discovery
-	Labels *map[string]interface{} `json:"labels,omitempty"`
+	Labels *map[string]any `json:"labels,omitempty"`
 }
 
 // DiscovererDiscovererSelectorsNodeMetrics k8s resource selectors for node_metrics discovery
 type DiscovererDiscovererSelectorsNodeMetrics struct {
 	// Fields k8s field selectors for node_metrics discovery
-	Fields *map[string]interface{} `json:"fields,omitempty"`
+	Fields *map[string]any `json:"fields,omitempty"`
 
 	// Labels k8s label selectors for node_metrics discovery
-	Labels *map[string]interface{} `json:"labels,omitempty"`
+	Labels *map[string]any `json:"labels,omitempty"`
 }
 
 // DiscovererDiscovererSelectorsPod k8s resource selectors for pod discovery
 type DiscovererDiscovererSelectorsPod struct {
 	// Fields k8s field selectors for pod discovery
-	Fields *map[string]interface{} `json:"fields,omitempty"`
+	Fields *map[string]any `json:"fields,omitempty"`
 
 	// Labels k8s label selectors for pod discovery
-	Labels *map[string]interface{} `json:"labels,omitempty"`
+	Labels *map[string]any `json:"labels,omitempty"`
 }
 
 // DiscovererDiscovererSelectorsPodMetrics k8s resource selectors for pod_metrics discovery
 type DiscovererDiscovererSelectorsPodMetrics struct {
 	// Fields k8s field selectors for pod_metrics discovery
-	Fields *map[string]interface{} `json:"fields,omitempty"`
+	Fields *map[string]any `json:"fields,omitempty"`
 
 	// Labels k8s label selectors for pod_metrics discovery
-	Labels *map[string]interface{} `json:"labels,omitempty"`
+	Labels *map[string]any `json:"labels,omitempty"`
 }
 
 // DiscovererDiscovererSelectorsService k8s resource selectors for service discovery
 type DiscovererDiscovererSelectorsService struct {
 	// Fields k8s field selectors for service discovery
-	Fields *map[string]interface{} `json:"fields,omitempty"`
+	Fields *map[string]any `json:"fields,omitempty"`
 
 	// Labels k8s label selectors for service discovery
-	Labels *map[string]interface{} `json:"labels,omitempty"`
+	Labels *map[string]any `json:"labels,omitempty"`
 }
 
 // Env environment variables
@@ -1627,7 +1627,7 @@ type GatewayFilter struct {
 	Affinity *Affinity `json:"affinity,omitempty"`
 
 	// Annotations deployment annotations
-	Annotations *map[string]interface{} `json:"annotations,omitempty"`
+	Annotations *map[string]any `json:"annotations,omitempty"`
 
 	// Enabled gateway enabled
 	Enabled *bool `json:"enabled,omitempty"`
@@ -1672,8 +1672,8 @@ type GatewayFilter struct {
 	Observability *Observability `json:"observability,omitempty"`
 
 	// PodAnnotations pod annotations
-	PodAnnotations *map[string]interface{} `json:"podAnnotations,omitempty"`
-	PodPriority    *PodPriority            `json:"podPriority,omitempty"`
+	PodAnnotations *map[string]any `json:"podAnnotations,omitempty"`
+	PodPriority    *PodPriority    `json:"podPriority,omitempty"`
 
 	// PodSecurityContext security context for pod
 	PodSecurityContext *corev1.PodSecurityContext `json:"podSecurityContext,omitempty"`
@@ -1776,7 +1776,7 @@ type GatewayFilterGatewayConfigIngressFilter struct {
 // GatewayFilterIngress defines model for gateway_filter_ingress.
 type GatewayFilterIngress struct {
 	// Annotations annotations for ingress
-	Annotations *map[string]interface{} `json:"annotations,omitempty"`
+	Annotations *map[string]any `json:"annotations,omitempty"`
 
 	// DefaultBackend defaultBackend config
 	DefaultBackend *GatewayFilterIngressDefaultBackend `json:"defaultBackend,omitempty"`
@@ -1794,7 +1794,7 @@ type GatewayFilterIngress struct {
 	ServicePort *string `json:"servicePort,omitempty"`
 
 	// Tls ingress tls config
-	Tls *[]map[string]interface{} `json:"tls,omitempty"`
+	Tls *[]map[string]any `json:"tls,omitempty"`
 }
 
 // GatewayFilterIngressDefaultBackend defaultBackend config
@@ -1808,7 +1808,7 @@ type GatewayLb struct {
 	Affinity *Affinity `json:"affinity,omitempty"`
 
 	// Annotations deployment annotations
-	Annotations *map[string]interface{} `json:"annotations,omitempty"`
+	Annotations *map[string]any `json:"annotations,omitempty"`
 
 	// Enabled gateway enabled
 	Enabled *bool `json:"enabled,omitempty"`
@@ -1853,8 +1853,8 @@ type GatewayLb struct {
 	Observability *Observability `json:"observability,omitempty"`
 
 	// PodAnnotations pod annotations
-	PodAnnotations *map[string]interface{} `json:"podAnnotations,omitempty"`
-	PodPriority    *PodPriority            `json:"podPriority,omitempty"`
+	PodAnnotations *map[string]any `json:"podAnnotations,omitempty"`
+	PodPriority    *PodPriority    `json:"podPriority,omitempty"`
 
 	// PodSecurityContext security context for pod
 	PodSecurityContext *corev1.PodSecurityContext `json:"podSecurityContext,omitempty"`
@@ -1940,7 +1940,7 @@ type GatewayLbGatewayConfigDiscoverer struct {
 // GatewayLbIngress defines model for gateway_lb_ingress.
 type GatewayLbIngress struct {
 	// Annotations annotations for ingress
-	Annotations *map[string]interface{} `json:"annotations,omitempty"`
+	Annotations *map[string]any `json:"annotations,omitempty"`
 
 	// DefaultBackend defaultBackend config
 	DefaultBackend *GatewayLbIngressDefaultBackend `json:"defaultBackend,omitempty"`
@@ -1958,7 +1958,7 @@ type GatewayLbIngress struct {
 	ServicePort *string `json:"servicePort,omitempty"`
 
 	// Tls ingress tls config
-	Tls *[]map[string]interface{} `json:"tls,omitempty"`
+	Tls *[]map[string]any `json:"tls,omitempty"`
 }
 
 // GatewayLbIngressDefaultBackend defaultBackend config
@@ -1972,7 +1972,7 @@ type GatewayMirror struct {
 	Affinity *Affinity `json:"affinity,omitempty"`
 
 	// Annotations deployment annotations
-	Annotations        *map[string]interface{}          `json:"annotations,omitempty"`
+	Annotations        *map[string]any                  `json:"annotations,omitempty"`
 	ClusterRole        *GatewayMirrorClusterRole        `json:"clusterRole,omitempty"`
 	ClusterRoleBinding *GatewayMirrorClusterRoleBinding `json:"clusterRoleBinding,omitempty"`
 
@@ -2019,8 +2019,8 @@ type GatewayMirror struct {
 	Observability *Observability `json:"observability,omitempty"`
 
 	// PodAnnotations pod annotations
-	PodAnnotations *map[string]interface{} `json:"podAnnotations,omitempty"`
-	PodPriority    *PodPriority            `json:"podPriority,omitempty"`
+	PodAnnotations *map[string]any `json:"podAnnotations,omitempty"`
+	PodPriority    *PodPriority    `json:"podPriority,omitempty"`
 
 	// PodSecurityContext security context for pod
 	PodSecurityContext *corev1.PodSecurityContext `json:"podSecurityContext,omitempty"`
@@ -2082,7 +2082,7 @@ type GatewayMirrorUnhealthyPodEvictionPolicy string
 // GatewayMirrorAffinityNodeAffinity defines model for gateway_mirror_affinity_nodeAffinity.
 type GatewayMirrorAffinityNodeAffinity struct {
 	// PreferredDuringSchedulingIgnoredDuringExecution node affinity preferred scheduling terms
-	PreferredDuringSchedulingIgnoredDuringExecution *[]map[string]interface{}                                                        `json:"preferredDuringSchedulingIgnoredDuringExecution,omitempty"`
+	PreferredDuringSchedulingIgnoredDuringExecution *[]map[string]any                                                                `json:"preferredDuringSchedulingIgnoredDuringExecution,omitempty"`
 	RequiredDuringSchedulingIgnoredDuringExecution  *GatewayMirrorAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution `json:"requiredDuringSchedulingIgnoredDuringExecution,omitempty"`
 }
 
@@ -2090,25 +2090,25 @@ type GatewayMirrorAffinityNodeAffinity struct {
 // gateway_mirror_affinity_nodeAffinity_requiredDuringSchedulingIgnoredDuringExecution.
 type GatewayMirrorAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution struct {
 	// NodeSelectorTerms node affinity required node selectors
-	NodeSelectorTerms *[]map[string]interface{} `json:"nodeSelectorTerms,omitempty"`
+	NodeSelectorTerms *[]map[string]any `json:"nodeSelectorTerms,omitempty"`
 }
 
 // GatewayMirrorAffinityPodAffinity defines model for gateway_mirror_affinity_podAffinity.
 type GatewayMirrorAffinityPodAffinity struct {
 	// PreferredDuringSchedulingIgnoredDuringExecution pod affinity preferred scheduling terms
-	PreferredDuringSchedulingIgnoredDuringExecution *[]map[string]interface{} `json:"preferredDuringSchedulingIgnoredDuringExecution,omitempty"`
+	PreferredDuringSchedulingIgnoredDuringExecution *[]map[string]any `json:"preferredDuringSchedulingIgnoredDuringExecution,omitempty"`
 
 	// RequiredDuringSchedulingIgnoredDuringExecution pod affinity required scheduling terms
-	RequiredDuringSchedulingIgnoredDuringExecution *[]map[string]interface{} `json:"requiredDuringSchedulingIgnoredDuringExecution,omitempty"`
+	RequiredDuringSchedulingIgnoredDuringExecution *[]map[string]any `json:"requiredDuringSchedulingIgnoredDuringExecution,omitempty"`
 }
 
 // GatewayMirrorAffinityPodAntiAffinity defines model for gateway_mirror_affinity_podAntiAffinity.
 type GatewayMirrorAffinityPodAntiAffinity struct {
 	// PreferredDuringSchedulingIgnoredDuringExecution pod anti-affinity preferred scheduling terms
-	PreferredDuringSchedulingIgnoredDuringExecution *[]map[string]interface{} `json:"preferredDuringSchedulingIgnoredDuringExecution,omitempty"`
+	PreferredDuringSchedulingIgnoredDuringExecution *[]map[string]any `json:"preferredDuringSchedulingIgnoredDuringExecution,omitempty"`
 
 	// RequiredDuringSchedulingIgnoredDuringExecution pod anti-affinity required scheduling terms
-	RequiredDuringSchedulingIgnoredDuringExecution *[]map[string]interface{} `json:"requiredDuringSchedulingIgnoredDuringExecution,omitempty"`
+	RequiredDuringSchedulingIgnoredDuringExecution *[]map[string]any `json:"requiredDuringSchedulingIgnoredDuringExecution,omitempty"`
 }
 
 // GatewayMirrorClusterRole defines model for gateway_mirror_clusterRole.
@@ -2162,7 +2162,7 @@ type GatewayMirrorGatewayConfig struct {
 // GatewayMirrorIngress defines model for gateway_mirror_ingress.
 type GatewayMirrorIngress struct {
 	// Annotations annotations for ingress
-	Annotations *map[string]interface{} `json:"annotations,omitempty"`
+	Annotations *map[string]any `json:"annotations,omitempty"`
 
 	// DefaultBackend defaultBackend config
 	DefaultBackend *GatewayMirrorIngressDefaultBackend `json:"defaultBackend,omitempty"`
@@ -2177,8 +2177,8 @@ type GatewayMirrorIngress struct {
 	PathType *string `json:"pathType,omitempty"`
 
 	// ServicePort service port to be exposed by ingress
-	ServicePort *string                   `json:"servicePort,omitempty"`
-	Tls         *[]map[string]interface{} `json:"tls,omitempty"`
+	ServicePort *string           `json:"servicePort,omitempty"`
+	Tls         *[]map[string]any `json:"tls,omitempty"`
 }
 
 // GatewayMirrorIngressDefaultBackend defaultBackend config
@@ -2192,7 +2192,7 @@ type GrpcClient struct {
 	// Addrs gRPC client addresses
 	Addrs          *[]string                         `json:"addrs,omitempty"`
 	Backoff        *Backoff                          `json:"backoff,omitempty"`
-	CallOption     *map[string]interface{}           `json:"call_option,omitempty"`
+	CallOption     *map[string]any                   `json:"call_option,omitempty"`
 	CircuitBreaker *DefaultsGrpcClientCircuitBreaker `json:"circuit_breaker,omitempty"`
 	ConnectionPool *DefaultsGrpcClientConnectionPool `json:"connection_pool,omitempty"`
 	ContentSubtype *string                           `json:"content_subtype,omitempty"`
@@ -2259,10 +2259,10 @@ type ManagerIndex struct {
 	Affinity *Affinity `json:"affinity,omitempty"`
 
 	// Annotations deployment annotations
-	Annotations *map[string]interface{} `json:"annotations,omitempty"`
-	Corrector   *ManagerIndexCorrector  `json:"corrector,omitempty"`
-	Creator     *ManagerIndexCreator    `json:"creator,omitempty"`
-	Deleter     *ManagerIndexDeleter    `json:"deleter,omitempty"`
+	Annotations *map[string]any        `json:"annotations,omitempty"`
+	Corrector   *ManagerIndexCorrector `json:"corrector,omitempty"`
+	Creator     *ManagerIndexCreator   `json:"creator,omitempty"`
+	Deleter     *ManagerIndexDeleter   `json:"deleter,omitempty"`
 
 	// Enabled index manager enabled
 	Enabled *bool `json:"enabled,omitempty"`
@@ -2299,8 +2299,8 @@ type ManagerIndex struct {
 	Operator *ManagerIndexOperator `json:"operator,omitempty"`
 
 	// PodAnnotations pod annotations
-	PodAnnotations *map[string]interface{} `json:"podAnnotations,omitempty"`
-	PodPriority    *PodPriority            `json:"podPriority,omitempty"`
+	PodAnnotations *map[string]any `json:"podAnnotations,omitempty"`
+	PodPriority    *PodPriority    `json:"podPriority,omitempty"`
 
 	// PodSecurityContext security context for pod
 	PodSecurityContext *corev1.PodSecurityContext `json:"podSecurityContext,omitempty"`
@@ -2611,7 +2611,7 @@ type ManagerIndexOperator struct {
 	Affinity *Affinity `json:"affinity,omitempty"`
 
 	// Annotations deployment annotations
-	Annotations        *map[string]interface{}                 `json:"annotations,omitempty"`
+	Annotations        *map[string]any                         `json:"annotations,omitempty"`
 	ClusterRole        *ManagerIndexOperatorClusterRole        `json:"clusterRole,omitempty"`
 	ClusterRoleBinding *ManagerIndexOperatorClusterRoleBinding `json:"clusterRoleBinding,omitempty"`
 
@@ -2643,8 +2643,8 @@ type ManagerIndexOperator struct {
 	Observability *Observability `json:"observability,omitempty"`
 
 	// PodAnnotations pod annotations
-	PodAnnotations *map[string]interface{} `json:"podAnnotations,omitempty"`
-	PodPriority    *PodPriority            `json:"podPriority,omitempty"`
+	PodAnnotations *map[string]any `json:"podAnnotations,omitempty"`
+	PodPriority    *PodPriority    `json:"podPriority,omitempty"`
 
 	// PodSecurityContext security context for pod
 	PodSecurityContext *corev1.PodSecurityContext `json:"podSecurityContext,omitempty"`
@@ -2892,10 +2892,10 @@ type ServerConfig struct {
 // Service defines model for service.
 type Service struct {
 	// Annotations service annotations
-	Annotations *map[string]interface{} `json:"annotations,omitempty"`
+	Annotations *map[string]any `json:"annotations,omitempty"`
 
 	// Labels service labels
-	Labels *map[string]interface{} `json:"labels,omitempty"`
+	Labels *map[string]any `json:"labels,omitempty"`
 }
 
 // SocketOption defines model for socket_option.

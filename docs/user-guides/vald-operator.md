@@ -367,3 +367,12 @@ make k8s/operator/vald/deploy
 ```
 
 Run `make help` for the full list of targets.
+
+## Further Reading
+
+| Document                                                                 | Description                                                                                 |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| [Design Overview](vald-operator/design.md)                               | Controller architecture, CRD spec, reconcile lifecycle, and environment-variable reference. |
+| [Controller Specification](vald-operator/controller-spec.md)             | Detailed reconcile model, desired-state model, and resource-management rules.               |
+| [Resource and Topology Strategy](vald-operator/resource-and-topology.md) | Agent resource calculation, replica scaling formulas, and topology spread constraints.      |
+| [Test Strategy](vald-operator/test-strategy.md)                          | Test layers, golden file tests, and coverage philosophy.                                    |
