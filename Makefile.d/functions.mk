@@ -455,6 +455,29 @@ define gen-vald-helm-schema
 	rm -rf $$BIN_PATH
 endef
 
+# gen-vald-helm-gotype builds the gotype tool and generates Go types from a
+# values JSON Schema. $1=input schema path, $2=output Go file, $3=package name.
+# The tool shells out to oapi-codegen (installed via hack/go.tools).
+# gen-vald-helm-gotype generates Go types from a values.yaml. $1=values.yaml,
+# $2=output Go file (or dir), $3=package name. It runs the schema generator in
+# $refs mode (anchors -> $defs, so oapi-codegen emits named types) and pipes the
+# result through the gotype command.
+define gen-vald-helm-gotype
+	GEN_BIN="$(TEMP_DIR)/vald-helm-schema-gen-refs"; \
+	GOTYPE_BIN="$(TEMP_DIR)/vald-helm-gotype"; \
+	REFS_SCHEMA="$(TEMP_DIR)/values.schema.defs.json"; \
+	rm -rf $$GEN_BIN $$GOTYPE_BIN $$REFS_SCHEMA; \
+	GOPRIVATE=$(GOPRIVATE) GOARCH=$(GOARCH) GOOS=$(GOOS) \
+	go build -modcacherw -mod=readonly -a -tags "osusergo netgo static_build" -trimpath \
+	-o $$GEN_BIN $(ROOTDIR)/hack/helm/schema/gen/main.go; \
+	GOPRIVATE=$(GOPRIVATE) GOARCH=$(GOARCH) GOOS=$(GOOS) \
+	go build -modcacherw -mod=readonly -a -tags "osusergo netgo static_build" -trimpath \
+	-o $$GOTYPE_BIN $(ROOTDIR)/hack/helm/schema/gotype/main.go; \
+	$$GEN_BIN -refs $1 > $$REFS_SCHEMA; \
+	$$GOTYPE_BIN -schema $$REFS_SCHEMA -out $2 -package $3; \
+	rm -rf $$GEN_BIN $$GOTYPE_BIN $$REFS_SCHEMA
+endef
+
 define gen-vald-crd
 	if [[ -f $(ROOTDIR)/charts/$1/crds/$2.yaml ]]; then \
 		mv $(ROOTDIR)/charts/$1/crds/$2.yaml $(TEMP_DIR)/$2.yaml; \

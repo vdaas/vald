@@ -20,7 +20,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/k8s"
-	"github.com/vdaas/vald/internal/k8s/vald/operator/api/valdrelease/agent"
+	"github.com/vdaas/vald/internal/k8s/vald/operator/api/valdrelease"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
@@ -262,10 +262,10 @@ func (o *Operator) bindVrs() {
 	va.MaxSurge = config.GetActualValue(va.MaxSurge)
 	va.MaxUnavailable = config.GetActualValue(va.MaxUnavailable)
 	if va.MaxSurge == "" {
-		va.MaxSurge = agent.DefaultAgentMaxSurge
+		va.MaxSurge = valdrelease.DefaultAgentMaxSurge
 	}
 	if va.MaxUnavailable == "" {
-		va.MaxUnavailable = agent.DefaultAgentMaxUnavailable
+		va.MaxUnavailable = valdrelease.DefaultAgentMaxUnavailable
 	}
 	if va.EnableInMemoryMode == nil {
 		enabled := defaultAgentEnableInMemoryMode

@@ -20,7 +20,7 @@ defaults:
   # @schema {"name": "defaults.time_zone", "type": "string"}
   # defaults.time_zone -- Time zone
   time_zone: UTC
-  # @schema {"name": "defaults.logging", "type": "object", "anchor": "logging"}
+  # @schema {"name": "defaults.logging", "type": "object", "anchor": "logging", "x-go-type": "config.Logging", "x-go-type-import": {"path": "github.com/vdaas/vald/internal/config", "name": "config"}}
   logging:
     # @schema {"name": "defaults.logging.logger", "type": "string", "enum": ["glg", "zap"]}
     # defaults.logging.logger -- logger name.
@@ -60,7 +60,7 @@ defaults:
         # @schema {"name": "defaults.server_config.servers.rest.servicePort", "type": "integer", "minimum": 0, "maximum": 65535}
         # defaults.server_config.servers.rest.servicePort -- REST server service port
         servicePort: 8080
-        # @schema {"name": "defaults.server_config.servers.rest.server", "type": "object", "anchor": "rest_server"}
+        # @schema {"name": "defaults.server_config.servers.rest.server", "type": "object", "anchor": "rest_server", "x-go-type": "config.Server", "x-go-type-import": {"path": "github.com/vdaas/vald/internal/config", "name": "config"}}
         server:
           # @schema {"name": "defaults.server_config.servers.rest.server.mode", "type": "string"}
           # defaults.server_config.servers.rest.server.mode -- REST server server mode
@@ -77,7 +77,7 @@ defaults:
           # @schema {"name": "defaults.server_config.servers.rest.server.restart", "type": "boolean"}
           # defaults.server_config.servers.rest.server.restart
           restart: true
-          # @schema {"name": "defaults.server_config.servers.rest.server.http", "type": "object", "anchor": "http_server_config"}
+          # @schema {"name": "defaults.server_config.servers.rest.server.http", "type": "object", "anchor": "http_server_config", "x-go-type": "config.HTTP", "x-go-type-import": {"path": "github.com/vdaas/vald/internal/config", "name": "config"}}
           http:
             # @schema {"name": "defaults.server_config.servers.rest.server.http.shutdown_duration", "type": "string"}
             # defaults.server_config.servers.rest.server.http.shutdown_duration -- REST server shutdown duration
@@ -97,7 +97,7 @@ defaults:
             # @schema {"name": "defaults.server_config.servers.rest.server.http.write_timeout", "type": "string"}
             # defaults.server_config.servers.rest.server.http.write_timeout -- REST server write timeout
             write_timeout: 1s
-            # @schema {"name": "defaults.server_config.servers.rest.server.http.http2", "type": "object", "anchor": "http2_server_config"}
+            # @schema {"name": "defaults.server_config.servers.rest.server.http.http2", "type": "object", "anchor": "http2_server_config", "x-go-type": "config.HTTP2", "x-go-type-import": {"path": "github.com/vdaas/vald/internal/config", "name": "config"}}
             http2:
               # @schema {"name": "defaults.server_config.servers.rest.server.http.http2.enabled", "type": "boolean"}
               # defaults.server_config.servers.rest.server.http.http2.enabled -- HTTP2 server enabled
@@ -126,7 +126,7 @@ defaults:
               # @schema {"name": "defaults.server_config.servers.rest.server.http.http2.max_read_frame_size", "type": "integer"}
               # defaults.server_config.servers.rest.server.http.http2.max_read_frame_size -- The largest frame this server is willing to read.
               max_read_frame_size: 0
-          # @schema {"name": "defaults.server_config.servers.rest.server.socket_option", "type": "object", "anchor": "socket_option"}
+          # @schema {"name": "defaults.server_config.servers.rest.server.socket_option", "type": "object", "anchor": "socket_option", "x-go-type": "config.SocketOption", "x-go-type-import": {"path": "github.com/vdaas/vald/internal/config", "name": "config"}}
           socket_option:
             # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.reuse_port", "type": "boolean"}
             # defaults.server_config.servers.rest.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
@@ -169,7 +169,7 @@ defaults:
         # @schema {"name": "defaults.server_config.servers.grpc.servicePort", "type": "integer", "minimum": 0, "maximum": 65535}
         # defaults.server_config.servers.grpc.servicePort -- gRPC server service port
         servicePort: 8081
-        # @schema {"name": "defaults.server_config.servers.grpc.server", "type": "object", "anchor": "grpc_server"}
+        # @schema {"name": "defaults.server_config.servers.grpc.server", "type": "object", "anchor": "grpc_server", "x-go-type": "config.Server", "x-go-type-import": {"path": "github.com/vdaas/vald/internal/config", "name": "config"}}
         server:
           # @schema {"name": "defaults.server_config.servers.grpc.server.mode", "type": "string"}
           # defaults.server_config.servers.grpc.server.mode -- gRPC server server mode
@@ -186,7 +186,7 @@ defaults:
           # @schema {"name": "defaults.server_config.servers.grpc.server.restart", "type": "boolean"}
           # defaults.server_config.servers.grpc.server.restart -- This configuration enables automatic restart of the same configured server when it becomes unhealthy.
           restart: true
-          # @schema {"name": "defaults.server_config.servers.grpc.server.grpc", "type": "object", "anchor": "grpc_server_config"}
+          # @schema {"name": "defaults.server_config.servers.grpc.server.grpc", "type": "object", "anchor": "grpc_server_config", "x-go-type": "config.GRPC", "x-go-type-import": {"path": "github.com/vdaas/vald/internal/config", "name": "config"}}
           grpc:
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.bidirectional_stream_concurrency", "type": "integer"}
             # defaults.server_config.servers.grpc.server.grpc.bidirectional_stream_concurrency -- gRPC server bidirectional stream concurrency
@@ -658,7 +658,7 @@ defaults:
     # @schema {"name": "defaults.server_config.full_shutdown_duration", "type": "string"}
     # defaults.server_config.full_shutdown_duration -- server full shutdown duration
     full_shutdown_duration: 600s
-    # @schema {"name": "defaults.server_config.tls", "type": "object", "anchor": "tls"}
+    # @schema {"name": "defaults.server_config.tls", "type": "object", "anchor": "tls", "x-go-type": "config.TLS", "x-go-type-import": {"path": "github.com/vdaas/vald/internal/config", "name": "config"}}
     tls:
       # @schema {"name": "defaults.server_config.tls.enabled", "type": "boolean"}
       # defaults.server_config.tls.enabled -- TLS enabled
@@ -717,7 +717,7 @@ defaults:
         # @schema {"name": "defaults.grpc.client.connection_pool.enable_metrics", "type": "boolean"}
         # defaults.grpc.client.connection_pool.enable_metrics -- enables gRPC client connection pool metrics
         enable_metrics: false
-      # @schema {"name": "defaults.grpc.client.backoff", "type": "object", "anchor": "backoff"}
+      # @schema {"name": "defaults.grpc.client.backoff", "type": "object", "anchor": "backoff", "x-go-type": "config.Backoff", "x-go-type-import": {"path": "github.com/vdaas/vald/internal/config", "name": "config"}}
       #
       backoff:
         # @schema {"name": "defaults.grpc.client.backoff.initial_duration", "type": "string"}
@@ -840,7 +840,7 @@ defaults:
         # @schema {"name": "defaults.grpc.client.dial_option.interceptors", "type": "array", "items": {"type": "string", "enum": ["TraceInterceptor", "MetricInterceptor"]}}
         # defaults.grpc.client.dial_option.interceptors -- gRPC client interceptors
         interceptors: []
-        # @schema {"name": "defaults.grpc.client.dial_option.net", "type": "object", "anchor": "net"}
+        # @schema {"name": "defaults.grpc.client.dial_option.net", "type": "object", "anchor": "net", "x-go-type": "config.Net", "x-go-type-import": {"path": "github.com/vdaas/vald/internal/config", "name": "config"}}
         net:
           # @schema {"name": "defaults.grpc.client.dial_option.net.network", "type": "string", "enum": ["tcp", "udp", "unix"]}
           # defaults.grpc.client.dial_option.net.network -- gRPC client dialer network type
@@ -942,7 +942,7 @@ defaults:
         server_name: ""
         # defaults.grpc.client.tls.client_auth -- client auth type
         client_auth: None
-  # @schema {"name": "defaults.observability", "type": "object", "anchor": "observability"}
+  # @schema {"name": "defaults.observability", "type": "object", "anchor": "observability", "x-go-type": "config.Observability", "x-go-type-import": {"path": "github.com/vdaas/vald/internal/config", "name": "config"}}
   observability:
     # @schema {"name": "defaults.observability.enabled", "type": "boolean"}
     # defaults.observability.enabled -- observability features enabled
@@ -1083,7 +1083,7 @@ gateway:
     # @schema {"name": "gateway.lb.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
     # gateway.lb.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
     terminationGracePeriodSeconds: 30
-    # @schema {"name": "gateway.lb.podSecurityContext", "type": "object"}
+    # @schema {"name": "gateway.lb.podSecurityContext", "type": "object", "x-go-type": "corev1.PodSecurityContext", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.lb.podSecurityContext -- security context for pod
     podSecurityContext:
       runAsUser: 65532
@@ -1091,7 +1091,7 @@ gateway:
       runAsGroup: 65532
       fsGroup: 65532
       fsGroupChangePolicy: "OnRootMismatch"
-    # @schema {"name": "gateway.lb.securityContext", "type": "object"}
+    # @schema {"name": "gateway.lb.securityContext", "type": "object", "x-go-type": "corev1.SecurityContext", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.lb.securityContext -- security context for container
     securityContext:
       runAsUser: 65532
@@ -1155,7 +1155,7 @@ gateway:
       # @schema {"name": "gateway.lb.rollingUpdate.maxUnavailable", "type": "string"}
       # gateway.lb.rollingUpdate.maxUnavailable -- max unavailable of rolling update
       maxUnavailable: 25%
-    # @schema {"name": "gateway.lb.initContainers", "type": "array", "items": {"type": "object"}, "anchor": "initContainers"}
+    # @schema {"name": "gateway.lb.initContainers", "type": "array", "items": {"type": "object"}, "anchor": "initContainers", "x-go-type": "[]corev1.Container", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.lb.initContainers -- init containers
     initContainers:
       - type: wait-for
@@ -1170,7 +1170,7 @@ gateway:
         image: busybox:1.37.0
         imagePullPolicy: Always
         sleepDuration: 2
-    # @schema {"name": "gateway.lb.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
+    # @schema {"name": "gateway.lb.env", "type": "array", "items": {"type": "object"}, "anchor": "env", "x-go-type": "[]corev1.EnvVar", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.lb.env -- environment variables
     env:
       - name: MY_NODE_NAME
@@ -1185,22 +1185,22 @@ gateway:
         valueFrom:
           fieldRef:
             fieldPath: metadata.namespace
-    # @schema {"name": "gateway.lb.volumeMounts", "type": "array", "items": {"type": "object"}, "anchor": "volumeMounts"}
+    # @schema {"name": "gateway.lb.volumeMounts", "type": "array", "items": {"type": "object"}, "anchor": "volumeMounts", "x-go-type": "[]corev1.VolumeMount", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.lb.volumeMounts -- volume mounts
     volumeMounts: []
-    # @schema {"name": "gateway.lb.volumes", "type": "array", "items": {"type": "object"}, "anchor": "volumes"}
+    # @schema {"name": "gateway.lb.volumes", "type": "array", "items": {"type": "object"}, "anchor": "volumes", "x-go-type": "[]corev1.Volume", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.lb.volumes -- volumes
     volumes: []
     # @schema {"name": "gateway.lb.nodeName", "type": "string"}
     # gateway.lb.nodeName -- node name
     nodeName: ""
-    # @schema {"name": "gateway.lb.nodeSelector", "type": "object", "anchor": "nodeSelector"}
+    # @schema {"name": "gateway.lb.nodeSelector", "type": "object", "anchor": "nodeSelector", "x-go-type": "map[string]string"}
     # gateway.lb.nodeSelector -- node selector
     nodeSelector: {}
-    # @schema {"name": "gateway.lb.tolerations", "type": "array", "items": {"type": "object"}, "anchor": "tolerations"}
+    # @schema {"name": "gateway.lb.tolerations", "type": "array", "items": {"type": "object"}, "anchor": "tolerations", "x-go-type": "[]corev1.Toleration", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.lb.tolerations -- tolerations
     tolerations: []
-    # @schema {"name": "gateway.lb.affinity", "type": "object", "anchor": "affinity"}
+    # @schema {"name": "gateway.lb.affinity", "type": "object", "anchor": "affinity", "x-go-type": "corev1.Affinity", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     affinity:
       # @schema {"name": "gateway.lb.affinity.nodeAffinity", "type": "object"}
       nodeAffinity:
@@ -1237,7 +1237,7 @@ gateway:
         # @schema {"name": "gateway.lb.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
         # gateway.lb.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
         requiredDuringSchedulingIgnoredDuringExecution: []
-    # @schema {"name": "gateway.lb.topologySpreadConstraints", "type": "array", "items": {"type": "object"}, "anchor": "topologySpreadConstraints"}
+    # @schema {"name": "gateway.lb.topologySpreadConstraints", "type": "array", "items": {"type": "object"}, "anchor": "topologySpreadConstraints", "x-go-type": "[]corev1.TopologySpreadConstraint", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.lb.topologySpreadConstraints -- topology spread constraints of gateway pods
     topologySpreadConstraints: []
     # @schema {"name": "gateway.lb.server_config", "alias": "server_config"}
@@ -1287,7 +1287,7 @@ gateway:
         # @schema {"name": "gateway.lb.ingress.defaultBackend.enabled", "type": "boolean"}
         # gateway.lb.ingress.defaultBackend.enabled -- gateway ingress defaultBackend enabled
         enabled: true
-    # @schema {"name": "gateway.lb.resources", "type": "object", "anchor": "resources"}
+    # @schema {"name": "gateway.lb.resources", "type": "object", "anchor": "resources", "x-go-type": "corev1.ResourceRequirements", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.lb.resources -- compute resources
     resources:
       # @schema {"name": "gateway.lb.resources.requests", "type": "object"}
@@ -1382,7 +1382,7 @@ gateway:
     # @schema {"name": "gateway.filter.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
     # gateway.filter.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
     terminationGracePeriodSeconds: 30
-    # @schema {"name": "gateway.filter.podSecurityContext", "type": "object"}
+    # @schema {"name": "gateway.filter.podSecurityContext", "type": "object", "x-go-type": "corev1.PodSecurityContext", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.filter.podSecurityContext -- security context for pod
     podSecurityContext:
       runAsUser: 65532
@@ -1390,7 +1390,7 @@ gateway:
       runAsGroup: 65532
       fsGroup: 65532
       fsGroupChangePolicy: "OnRootMismatch"
-    # @schema {"name": "gateway.filter.securityContext", "type": "object"}
+    # @schema {"name": "gateway.filter.securityContext", "type": "object", "x-go-type": "corev1.SecurityContext", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.filter.securityContext -- security context for container
     securityContext:
       runAsUser: 65532
@@ -1451,7 +1451,7 @@ gateway:
       # @schema {"name": "gateway.filter.rollingUpdate.maxUnavailable", "type": "string"}
       # gateway.filter.rollingUpdate.maxUnavailable -- max unavailable of rolling update
       maxUnavailable: 25%
-    # @schema {"name": "gateway.filter.initContainers", "type": "array", "items": {"type": "object"}, "anchor": "initContainers"}
+    # @schema {"name": "gateway.filter.initContainers", "type": "array", "items": {"type": "object"}, "anchor": "initContainers", "x-go-type": "[]corev1.Container", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.filter.initContainers -- init containers
     initContainers:
       - type: wait-for
@@ -1460,7 +1460,7 @@ gateway:
         image: busybox:1.37.0
         imagePullPolicy: Always
         sleepDuration: 2
-    # @schema {"name": "gateway.filter.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
+    # @schema {"name": "gateway.filter.env", "type": "array", "items": {"type": "object"}, "anchor": "env", "x-go-type": "[]corev1.EnvVar", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.filter.env -- environment variables
     env:
       - name: MY_NODE_NAME
@@ -1475,22 +1475,22 @@ gateway:
         valueFrom:
           fieldRef:
             fieldPath: metadata.namespace
-    # @schema {"name": "gateway.filter.volumeMounts", "type": "array", "items": {"type": "object"}, "anchor": "volumeMounts"}
+    # @schema {"name": "gateway.filter.volumeMounts", "type": "array", "items": {"type": "object"}, "anchor": "volumeMounts", "x-go-type": "[]corev1.VolumeMount", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.filter.volumeMounts -- volume mounts
     volumeMounts: []
-    # @schema {"name": "gateway.filter.volumes", "type": "array", "items": {"type": "object"}, "anchor": "volumes"}
+    # @schema {"name": "gateway.filter.volumes", "type": "array", "items": {"type": "object"}, "anchor": "volumes", "x-go-type": "[]corev1.Volume", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.filter.volumes -- volumes
     volumes: []
     # @schema {"name": "gateway.filter.nodeName", "type": "string"}
     # gateway.filter.nodeName -- node name
     nodeName: ""
-    # @schema {"name": "gateway.filter.nodeSelector", "type": "object", "anchor": "nodeSelector"}
+    # @schema {"name": "gateway.filter.nodeSelector", "type": "object", "anchor": "nodeSelector", "x-go-type": "map[string]string"}
     # gateway.filter.nodeSelector -- node selector
     nodeSelector: {}
-    # @schema {"name": "gateway.filter.tolerations", "type": "array", "items": {"type": "object"}, "anchor": "tolerations"}
+    # @schema {"name": "gateway.filter.tolerations", "type": "array", "items": {"type": "object"}, "anchor": "tolerations", "x-go-type": "[]corev1.Toleration", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.filter.tolerations -- tolerations
     tolerations: []
-    # @schema {"name": "gateway.filter.affinity", "type": "object", "anchor": "affinity"}
+    # @schema {"name": "gateway.filter.affinity", "type": "object", "anchor": "affinity", "x-go-type": "corev1.Affinity", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     affinity:
       # @schema {"name": "gateway.filter.affinity.nodeAffinity", "type": "object"}
       nodeAffinity:
@@ -1527,7 +1527,7 @@ gateway:
         # @schema {"name": "gateway.filter.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
         # gateway.filter.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
         requiredDuringSchedulingIgnoredDuringExecution: []
-    # @schema {"name": "gateway.filter.topologySpreadConstraints", "type": "array", "items": {"type": "object"}, "anchor": "topologySpreadConstraints"}
+    # @schema {"name": "gateway.filter.topologySpreadConstraints", "type": "array", "items": {"type": "object"}, "anchor": "topologySpreadConstraints", "x-go-type": "[]corev1.TopologySpreadConstraint", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.filter.topologySpreadConstraints -- topology spread constraints of gateway pods
     topologySpreadConstraints: []
     # @schema {"name": "gateway.filter.server_config", "alias": "server_config"}
@@ -1577,7 +1577,7 @@ gateway:
         # @schema {"name": "gateway.filter.ingress.defaultBackend.enabled", "type": "boolean"}
         # gateway.filter.ingress.defaultBackend.enabled -- gateway ingress defaultBackend enabled
         enabled: true
-    # @schema {"name": "gateway.filter.resources", "type": "object", "anchor": "resources"}
+    # @schema {"name": "gateway.filter.resources", "type": "object", "anchor": "resources", "x-go-type": "corev1.ResourceRequirements", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.filter.resources -- compute resources
     resources:
       # @schema {"name": "gateway.filter.resources.requests", "type": "object"}
@@ -1682,7 +1682,7 @@ gateway:
     # @schema {"name": "gateway.mirror.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
     # gateway.mirror.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
     terminationGracePeriodSeconds: 30
-    # @schema {"name": "gateway.mirror.podSecurityContext", "type": "object"}
+    # @schema {"name": "gateway.mirror.podSecurityContext", "type": "object", "x-go-type": "corev1.PodSecurityContext", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.mirror.podSecurityContext -- security context for pod
     podSecurityContext:
       runAsUser: 65532
@@ -1690,7 +1690,7 @@ gateway:
       runAsGroup: 65532
       fsGroup: 65532
       fsGroupChangePolicy: "OnRootMismatch"
-    # @schema {"name": "gateway.mirror.securityContext", "type": "object"}
+    # @schema {"name": "gateway.mirror.securityContext", "type": "object", "x-go-type": "corev1.SecurityContext", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.mirror.securityContext -- security context for container
     securityContext:
       runAsUser: 65532
@@ -1751,7 +1751,7 @@ gateway:
       # @schema {"name": "gateway.mirror.rollingUpdate.maxUnavailable", "type": "string"}
       # gateway.mirror.rollingUpdate.maxUnavailable -- max unavailable of rolling update
       maxUnavailable: 25%
-    # @schema {"name": "gateway.mirror.initContainers", "type": "array", "items": {"type": "object"}, "anchor": "initContainers"}
+    # @schema {"name": "gateway.mirror.initContainers", "type": "array", "items": {"type": "object"}, "anchor": "initContainers", "x-go-type": "[]corev1.Container", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.mirror.initContainers -- init containers
     initContainers:
       - type: wait-for
@@ -1760,7 +1760,7 @@ gateway:
         image: busybox:1.37.0
         imagePullPolicy: Always
         sleepDuration: 2
-    # @schema {"name": "gateway.mirror.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
+    # @schema {"name": "gateway.mirror.env", "type": "array", "items": {"type": "object"}, "anchor": "env", "x-go-type": "[]corev1.EnvVar", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.mirror.env -- environment variables
     env:
       - name: MY_NODE_NAME
@@ -1775,22 +1775,22 @@ gateway:
         valueFrom:
           fieldRef:
             fieldPath: metadata.namespace
-    # @schema {"name": "gateway.mirror.volumeMounts", "type": "array", "items": {"type": "object"}, "anchor": "volumeMounts"}
+    # @schema {"name": "gateway.mirror.volumeMounts", "type": "array", "items": {"type": "object"}, "anchor": "volumeMounts", "x-go-type": "[]corev1.VolumeMount", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.mirror.volumeMounts -- volume mounts
     volumeMounts: []
-    # @schema {"name": "gateway.mirror.volumes", "type": "array", "items": {"type": "object"}, "anchor": "volumes"}
+    # @schema {"name": "gateway.mirror.volumes", "type": "array", "items": {"type": "object"}, "anchor": "volumes", "x-go-type": "[]corev1.Volume", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.mirror.volumes -- volumes
     volumes: []
     # @schema {"name": "gateway.mirror.nodeName", "type": "string"}
     # gateway.mirror.nodeName -- node name
     nodeName: ""
-    # @schema {"name": "gateway.mirror.nodeSelector", "type": "object", "anchor": "nodeSelector"}
+    # @schema {"name": "gateway.mirror.nodeSelector", "type": "object", "anchor": "nodeSelector", "x-go-type": "map[string]string"}
     # gateway.mirror.nodeSelector -- node selector
     nodeSelector: {}
-    # @schema {"name": "gateway.mirror.tolerations", "type": "array", "items": {"type": "object"}, "anchor": "tolerations"}
+    # @schema {"name": "gateway.mirror.tolerations", "type": "array", "items": {"type": "object"}, "anchor": "tolerations", "x-go-type": "[]corev1.Toleration", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.mirror.tolerations -- tolerations
     tolerations: []
-    # @schema {"name": "gateway.mirror.affinity", "type": "object", "anchor": "affinity"}
+    # @schema {"name": "gateway.mirror.affinity", "type": "object", "anchor": "affinity", "x-go-type": "corev1.Affinity", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     affinity:
       # @schema {"name": "gateway.mirror.affinity.nodeAffinity", "type": "object"}
       nodeAffinity:
@@ -1827,7 +1827,7 @@ gateway:
         # @schema {"name": "gateway.mirror.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
         # gateway.mirror.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
         requiredDuringSchedulingIgnoredDuringExecution: []
-    # @schema {"name": "gateway.mirror.topologySpreadConstraints", "type": "array", "items": {"type": "object"}, "anchor": "topologySpreadConstraints"}
+    # @schema {"name": "gateway.mirror.topologySpreadConstraints", "type": "array", "items": {"type": "object"}, "anchor": "topologySpreadConstraints", "x-go-type": "[]corev1.TopologySpreadConstraint", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.mirror.topologySpreadConstraints -- topology spread constraints of gateway pods
     topologySpreadConstraints: []
     # @schema {"name": "gateway.mirror.server_config", "alias": "server_config"}
@@ -1877,7 +1877,7 @@ gateway:
         # @schema {"name": "gateway.mirror.ingress.defaultBackend.enabled", "type": "boolean"}
         # gateway.mirror.ingress.defaultBackend.enabled -- gateway ingress defaultBackend enabled
         enabled: true
-    # @schema {"name": "gateway.mirror.resources", "type": "object", "anchor": "resources"}
+    # @schema {"name": "gateway.mirror.resources", "type": "object", "anchor": "resources", "x-go-type": "corev1.ResourceRequirements", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # gateway.mirror.resources -- compute resources
     resources:
       # @schema {"name": "gateway.mirror.resources.requests", "type": "object"}
@@ -2043,7 +2043,7 @@ agent:
   # @schema {"name": "agent.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
   # agent.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 120
-  # @schema {"name": "agent.podSecurityContext", "type": "object"}
+  # @schema {"name": "agent.podSecurityContext", "type": "object", "x-go-type": "corev1.PodSecurityContext", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
   # agent.podSecurityContext -- security context for pod
   podSecurityContext:
     runAsUser: 65532
@@ -2051,7 +2051,7 @@ agent:
     runAsGroup: 65532
     fsGroup: 65532
     fsGroupChangePolicy: "OnRootMismatch"
-  # @schema {"name": "agent.securityContext", "type": "object"}
+  # @schema {"name": "agent.securityContext", "type": "object", "x-go-type": "corev1.SecurityContext", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
   # agent.securityContext -- security context for container
   securityContext:
     runAsUser: 65532
@@ -2886,7 +2886,7 @@ discoverer:
   # @schema {"name": "discoverer.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
   # discoverer.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
   terminationGracePeriodSeconds: 30
-  # @schema {"name": "discoverer.podSecurityContext", "type": "object"}
+  # @schema {"name": "discoverer.podSecurityContext", "type": "object", "x-go-type": "corev1.PodSecurityContext", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
   # discoverer.podSecurityContext -- security context for pod
   podSecurityContext:
     runAsUser: 65532
@@ -2894,7 +2894,7 @@ discoverer:
     runAsGroup: 65532
     fsGroup: 65532
     fsGroupChangePolicy: "OnRootMismatch"
-  # @schema {"name": "discoverer.securityContext", "type": "object"}
+  # @schema {"name": "discoverer.securityContext", "type": "object", "x-go-type": "corev1.SecurityContext", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
   # discoverer.securityContext -- security context for container
   securityContext:
     runAsUser: 65532
@@ -3212,7 +3212,7 @@ manager:
     # @schema {"name": "manager.index.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
     # manager.index.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
     terminationGracePeriodSeconds: 30
-    # @schema {"name": "manager.index.podSecurityContext", "type": "object"}
+    # @schema {"name": "manager.index.podSecurityContext", "type": "object", "x-go-type": "corev1.PodSecurityContext", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # manager.index.podSecurityContext -- security context for pod
     podSecurityContext:
       runAsUser: 65532
@@ -3220,7 +3220,7 @@ manager:
       runAsGroup: 65532
       fsGroup: 65532
       fsGroupChangePolicy: "OnRootMismatch"
-    # @schema {"name": "manager.index.securityContext", "type": "object"}
+    # @schema {"name": "manager.index.securityContext", "type": "object", "x-go-type": "corev1.SecurityContext", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
     # manager.index.securityContext -- security context for container
     securityContext:
       runAsUser: 65532
@@ -3982,7 +3982,7 @@ manager:
         # @schema {"name": "manager.index.readreplica.rotator.initContainers", "alias": "initContainers"}
         # manager.index.readreplica.rotator.initContainers -- init containers
         initContainers: []
-        # @schema {"name": "manager.index.readreplica.rotator.podSecurityContext", "type": "object"}
+        # @schema {"name": "manager.index.readreplica.rotator.podSecurityContext", "type": "object", "x-go-type": "corev1.PodSecurityContext", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
         # manager.index.readreplica.rotator.podSecurityContext -- security context for pod
         podSecurityContext:
           runAsUser: 65532
@@ -3990,7 +3990,7 @@ manager:
           runAsGroup: 65532
           fsGroup: 65532
           fsGroupChangePolicy: "OnRootMismatch"
-        # @schema {"name": "manager.index.readreplica.rotator.securityContext", "type": "object"}
+        # @schema {"name": "manager.index.readreplica.rotator.securityContext", "type": "object", "x-go-type": "corev1.SecurityContext", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
         # manager.index.readreplica.rotator.securityContext -- security context for container
         securityContext:
           runAsUser: 65532
@@ -4087,7 +4087,7 @@ manager:
       # @schema {"name": "manager.index.operator.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
       # manager.index.operator.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
       terminationGracePeriodSeconds: 30
-      # @schema {"name": "manager.index.operator.podSecurityContext", "type": "object"}
+      # @schema {"name": "manager.index.operator.podSecurityContext", "type": "object", "x-go-type": "corev1.PodSecurityContext", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
       # manager.index.operator.podSecurityContext -- security context for pod
       podSecurityContext:
         runAsUser: 65532
@@ -4095,7 +4095,7 @@ manager:
         runAsGroup: 65532
         fsGroup: 65532
         fsGroupChangePolicy: "OnRootMismatch"
-      # @schema {"name": "manager.index.operator.securityContext", "type": "object"}
+      # @schema {"name": "manager.index.operator.securityContext", "type": "object", "x-go-type": "corev1.SecurityContext", "x-go-type-import": {"path": "k8s.io/api/core/v1", "name": "corev1"}}
       # manager.index.operator.securityContext -- security context for container
       securityContext:
         runAsUser: 65532

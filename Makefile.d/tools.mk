@@ -204,6 +204,14 @@ gopls/install: \
 $(GOBIN)/gopls:
 	GO111MODULE=on go install -mod=readonly golang.org/x/tools/gopls@latest
 
+.PHONY: oapi-codegen/install
+## install oapi-codegen
+oapi-codegen/install: \
+	$(GOBIN)/oapi-codegen
+
+$(GOBIN)/oapi-codegen:
+	GO111MODULE=on go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
+
 .PHONY: prettier/install
 ## Install prettier via Bun (global)
 prettier/install: $(BUN_GLOBAL_BIN)/prettier

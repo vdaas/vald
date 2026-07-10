@@ -25,6 +25,10 @@ metadata:
   namespace: user123-someimagesearch
 spec:
   agent:
+    hpa:
+      enabled: false
+    image:
+      pullPolicy: IfNotPresent
     kind: StatefulSet
     logging:
       format: raw
@@ -33,6 +37,10 @@ spec:
     maxReplicas: 4
     minReplicas: 4
     ngt:
+      auto_index_check_duration: -1h
+      auto_index_duration_limit: -1h
+      auto_save_index_duration: -1h
+      bulk_insert_chunk_size: 10
       creation_edge_size: 10
       dimension: 256
       distance_type: l2
@@ -49,6 +57,7 @@ spec:
       enabled: true
       size: 15Gi
       storageClass: standard
+    podManagementPolicy: Parallel
     resources:
       limits:
         cpu: 9600m
@@ -58,6 +67,7 @@ spec:
     rollingUpdate:
       maxSurge: "1"
       maxUnavailable: "1"
+    terminationGracePeriodSeconds: 2400
     tolerations:
       - effect: NoSchedule
         key: namespace
@@ -74,15 +84,26 @@ spec:
         topologyKey: kubernetes.io/hostname
         whenUnsatisfiable: DoNotSchedule
   defaults:
+    image:
+      tag: nightly
     logging:
       format: raw
       level: info
       logger: glg
     observability:
       enabled: true
+      metrics: null
       otlp:
+        attribute: null
         collector_endpoint: otel-collector.monitoring.svc.cluster.local:4317
-      trace: {}
+        metrics_export_interval: ""
+        metrics_export_timeout: ""
+        trace_batch_timeout: ""
+        trace_export_timeout: ""
+        trace_max_export_batch_size: 0
+        trace_max_queue_size: 0
+      trace:
+        enabled: false
     server_config:
       servers:
         grpc:
@@ -94,10 +115,16 @@ spec:
     time_zone: Asia/Tokyo
   discoverer:
     clusterRole:
+      enabled: false
       name: user123-someimagesearch
     clusterRoleBinding:
+      enabled: false
       name: user123-someimagesearch
+    discoverer:
+      discovery_duration: 200ms
     externalTrafficPolicy: Local
+    image:
+      pullPolicy: IfNotPresent
     kind: DaemonSet
     logging:
       format: raw
@@ -134,15 +161,17 @@ spec:
         whenUnsatisfiable: DoNotSchedule
   gateway:
     lb:
+      enabled: true
       gateway_config:
         index_replica: 3
       hpa:
         targetCPUUtilizationPercentage: 80
+      image:
+        pullPolicy: IfNotPresent
       ingress:
         defaultBackend:
           enabled: false
         enabled: false
-        host: ""
         pathType: Prefix
         servicePort: grpc
       logging:
@@ -161,6 +190,9 @@ spec:
         requests:
           cpu: 200m
           memory: 150Mi
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 10%
       serviceType: NodePort
       tolerations:
         - effect: NoSchedule
@@ -198,7 +230,8 @@ spec:
             operator: Equal
             value: general
       enabled: false
-      indexer: {}
+      image:
+        pullPolicy: IfNotPresent
       logging:
         format: raw
         level: info

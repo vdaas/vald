@@ -27,7 +27,6 @@ import (
 	"github.com/vdaas/vald/internal/k8s/vald/operator/api/metadata"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/operator/api/v1"
 	"github.com/vdaas/vald/internal/k8s/vald/operator/api/valdrelease"
-	"github.com/vdaas/vald/internal/k8s/vald/operator/api/valdrelease/manager"
 	"github.com/vdaas/vald/pkg/operator/vald/config"
 )
 
@@ -191,7 +190,7 @@ func TestVrsBuilder_Build_OverlayAppliedPerCluster(t *testing.T) {
 		names[vr.GetName()] = true
 		// vor.yaml overlays agent.ngt.dimension=256 over the spec value 128;
 		// the shared parsed overlay must reach every cluster.
-		assert.Equal(t, 256, vr.Spec.Agent.NGT.Dimension, "%s: overlay must apply", vr.GetName())
+		assert.Equal(t, 256, *vr.Spec.Agent.Ngt.Dimension, "%s: overlay must apply", vr.GetName())
 	}
 	assert.Len(t, names, 4, "every cluster must keep its own name")
 }
@@ -290,8 +289,8 @@ func TestBuildLb_IngressEnabled(t *testing.T) {
 	}
 	lb := newTestBuilder(cr, cfg).buildLb()
 
-	assert.True(t, lb.Ingress.Enabled)
-	assert.Equal(t, "foo.example.com", lb.Ingress.Host)
+	assert.True(t, *lb.Ingress.Enabled)
+	assert.Equal(t, "foo.example.com", *lb.Ingress.Host)
 }
 
 func TestBuildLb_IngressDisabledWhenNil(t *testing.T) {
@@ -299,7 +298,7 @@ func TestBuildLb_IngressDisabledWhenNil(t *testing.T) {
 	cr := minimalVor()
 	lb := newTestBuilder(cr, cfg).buildLb()
 
-	assert.False(t, lb.Ingress.Enabled)
+	assert.Nil(t, lb.Ingress.Enabled)
 	assert.Empty(t, lb.Ingress.Host)
 }
 
@@ -308,7 +307,7 @@ func TestBuildLb_ServiceTypeDefault(t *testing.T) {
 	cr := minimalVor()
 	lb := newTestBuilder(cr, cfg).buildLb()
 
-	assert.Equal(t, k8s.ServiceTypeNodePort, lb.ServiceType)
+	assert.Equal(t, valdrelease.GatewayLbServiceTypeNodePort, *lb.ServiceType)
 }
 
 func TestBuildLb_ServiceTypeLoadBalancer(t *testing.T) {
@@ -317,7 +316,7 @@ func TestBuildLb_ServiceTypeLoadBalancer(t *testing.T) {
 	cr.Spec.VectorEngine.Vald.Gateway.ServiceType = "LoadBalancer"
 	lb := newTestBuilder(cr, cfg).buildLb()
 
-	assert.Equal(t, k8s.ServiceTypeLoadBalancer, lb.ServiceType)
+	assert.Equal(t, valdrelease.GatewayLbServiceTypeLoadBalancer, *lb.ServiceType)
 }
 
 func TestBuildLb_ServiceTypeClusterIP(t *testing.T) {
@@ -326,7 +325,7 @@ func TestBuildLb_ServiceTypeClusterIP(t *testing.T) {
 	cr.Spec.VectorEngine.Vald.Gateway.ServiceType = "ClusterIP"
 	lb := newTestBuilder(cr, cfg).buildLb()
 
-	assert.Equal(t, k8s.ServiceTypeClusterIP, lb.ServiceType)
+	assert.Equal(t, valdrelease.GatewayLbServiceTypeClusterIP, *lb.ServiceType)
 }
 
 func TestBuildLb_ServiceTypeFromConfig(t *testing.T) {
@@ -337,7 +336,7 @@ func TestBuildLb_ServiceTypeFromConfig(t *testing.T) {
 
 	lb := newTestBuilder(cr, cfg).buildLb()
 
-	assert.Equal(t, k8s.ServiceTypeLoadBalancer, lb.ServiceType,
+	assert.Equal(t, valdrelease.GatewayLbServiceTypeLoadBalancer, *lb.ServiceType,
 		"operator config must apply when the CR omits the service type")
 }
 
@@ -350,7 +349,7 @@ func TestBuildLb_ServiceTypeCRWinsOverConfig(t *testing.T) {
 
 	lb := newTestBuilder(cr, cfg).buildLb()
 
-	assert.Equal(t, k8s.ServiceTypeClusterIP, lb.ServiceType,
+	assert.Equal(t, valdrelease.GatewayLbServiceTypeClusterIP, *lb.ServiceType,
 		"CR spec must win over the operator config")
 }
 
@@ -366,7 +365,7 @@ func TestBuildIngress_ConfigGateDisablesCREnabled(t *testing.T) {
 
 	lb := newTestBuilder(cr, cfg).buildLb()
 
-	assert.False(t, lb.Ingress.Enabled,
+	assert.Nil(t, lb.Ingress.Enabled,
 		"networking.enable_ingress=false must keep the ingress disabled even when the CR enables it")
 	assert.Empty(t, lb.Ingress.Host)
 }
@@ -387,7 +386,7 @@ func TestBuildIngress_AnnotationsFromConfig(t *testing.T) {
 
 	lb := newTestBuilder(cr, cfg).buildLb()
 
-	assert.Equal(t, annotations, lb.Ingress.Annotations,
+	assert.Equal(t, toAnyMap(annotations), *lb.Ingress.Annotations,
 		"configured annotations must be reflected on the built ingress")
 
 	// Without configured annotations the field stays nil (omitempty).
@@ -411,10 +410,24 @@ func TestVrsBuilder_ApplyNodeAffinities(t *testing.T) {
 		typeKey = "vald.vdaas.org/type"
 	)
 
-	assertGeneral := func(t *testing.T, name string, ns map[string]string) {
+	assertGeneral := func(t *testing.T, name string, ns *valdrelease.NodeSelector) {
 		t.Helper()
-		assert.Equal(t, "ns-affinity", ns[nsKey], name+" NodeSelector namespace")
-		assert.Equal(t, "general", ns[typeKey], name+" NodeSelector type")
+		assert.NotNil(t, ns, name+" NodeSelector set")
+		assert.Equal(t, "ns-affinity", (*ns)[nsKey], name+" NodeSelector namespace")
+		assert.Equal(t, "general", (*ns)[typeKey], name+" NodeSelector type")
+	}
+
+	// skeleton returns a ValdRelease whose component sub-specs are non-nil, as
+	// they always are after Build() populates the generated Values. The
+	// generated types use pointers throughout, so applyNodeAffinities needs
+	// these initialized to avoid nil dereferences.
+	skeleton := func() *valdrelease.ValdRelease {
+		return &valdrelease.ValdRelease{Spec: valdrelease.Values{
+			Agent:      &valdrelease.Agent{},
+			Gateway:    &valdrelease.Gateway{Lb: &valdrelease.GatewayLb{}},
+			Discoverer: &valdrelease.Discoverer{},
+			Manager:    &valdrelease.Manager{Index: &valdrelease.ManagerIndex{}},
+		}}
 	}
 
 	tests := []struct {
@@ -427,15 +440,15 @@ func TestVrsBuilder_ApplyNodeAffinities(t *testing.T) {
 			name:       "all components: agent uses agent pool, others use general pool",
 			capability: alwaysAvailable(),
 			row: func() *valdrelease.ValdRelease {
-				row := &valdrelease.ValdRelease{}
-				row.Spec.Manager.Index.Saver = &manager.Saver{}
-				row.Spec.Manager.Index.Creator = &manager.Creator{}
+				row := skeleton()
+				row.Spec.Manager.Index.Saver = &valdrelease.ManagerIndexSaver{}
+				row.Spec.Manager.Index.Creator = &valdrelease.ManagerIndexCreator{}
 				return row
 			},
 			check: func(t *testing.T, row *valdrelease.ValdRelease) {
 				t.Helper()
 				// Agent: agent pool (because capability says HasAgentPool=true)
-				assert.Equal(t, "agent", row.Spec.Agent.NodeSelector[typeKey], "agent uses agent pool")
+				assert.Equal(t, "agent", (*row.Spec.Agent.NodeSelector)[typeKey], "agent uses agent pool")
 				assert.NotNil(t, row.Spec.Agent.Tolerations, "agent tolerations set")
 
 				// All others: general pool
@@ -456,10 +469,10 @@ func TestVrsBuilder_ApplyNodeAffinities(t *testing.T) {
 			// capability declares the cluster has no dedicated agent pool.
 			name:       "no agent pool: agent falls back to general pool",
 			capability: nodePoolCapability{HasGeneralPool: true, HasAgentPool: false},
-			row:        func() *valdrelease.ValdRelease { return &valdrelease.ValdRelease{} },
+			row:        skeleton,
 			check: func(t *testing.T, row *valdrelease.ValdRelease) {
 				t.Helper()
-				assert.Equal(t, "general", row.Spec.Agent.NodeSelector[typeKey],
+				assert.Equal(t, "general", (*row.Spec.Agent.NodeSelector)[typeKey],
 					"agent must fall back to general pool when no agent pool exists")
 			},
 		},
@@ -468,7 +481,7 @@ func TestVrsBuilder_ApplyNodeAffinities(t *testing.T) {
 			// instead). Must not panic; non-nil components still get values.
 			name:       "nil saver/creator: no panic, non-nil components still set",
 			capability: alwaysAvailable(),
-			row:        func() *valdrelease.ValdRelease { return &valdrelease.ValdRelease{} },
+			row:        skeleton,
 			check: func(t *testing.T, row *valdrelease.ValdRelease) {
 				t.Helper()
 				assert.Nil(t, row.Spec.Manager.Index.Saver)
@@ -492,7 +505,7 @@ func TestVrsBuilder_ApplyNodeAffinities(t *testing.T) {
 
 //nolint:unparam
 func newAgentReleaseWithMemory(memory string) *valdrelease.ValdRelease {
-	r := &valdrelease.ValdRelease{}
+	r := &valdrelease.ValdRelease{Spec: valdrelease.Values{Agent: &valdrelease.Agent{}}}
 	r.Spec.Agent.Resources = &k8s.ResourceRequirements{
 		Requests: k8s.ResourceList{
 			k8s.ResourceMemory: resource.MustParse(memory),
@@ -556,9 +569,9 @@ func TestVrsBuilder_ReflectPersistentVolume_FromCR(t *testing.T) {
 	b.reflectPersistentVolume(r)
 
 	assert.NotNil(t, r.Spec.Agent.PersistentVolume)
-	assert.True(t, r.Spec.Agent.PersistentVolume.Enabled)
-	assert.Equal(t, "from-cr-sc", r.Spec.Agent.PersistentVolume.StorageClass, "CR value must win")
-	assert.Equal(t, "from-cr-am", r.Spec.Agent.PersistentVolume.AccessMode, "CR value must win")
+	assert.True(t, *r.Spec.Agent.PersistentVolume.Enabled)
+	assert.Equal(t, "from-cr-sc", *r.Spec.Agent.PersistentVolume.StorageClass, "CR value must win")
+	assert.Equal(t, "from-cr-am", *r.Spec.Agent.PersistentVolume.AccessMode, "CR value must win")
 }
 
 func TestVrsBuilder_ReflectPersistentVolume_ConfigFallback(t *testing.T) {
@@ -584,8 +597,8 @@ func TestVrsBuilder_ReflectPersistentVolume_ConfigFallback(t *testing.T) {
 	b.reflectPersistentVolume(r)
 
 	assert.NotNil(t, r.Spec.Agent.PersistentVolume)
-	assert.Equal(t, "fallback-sc", r.Spec.Agent.PersistentVolume.StorageClass, "config fallback when CR omits SC")
-	assert.Equal(t, "fallback-am", r.Spec.Agent.PersistentVolume.AccessMode, "config fallback when CR omits AM")
+	assert.Equal(t, "fallback-sc", *r.Spec.Agent.PersistentVolume.StorageClass, "config fallback when CR omits SC")
+	assert.Equal(t, "fallback-am", *r.Spec.Agent.PersistentVolume.AccessMode, "config fallback when CR omits AM")
 }
 
 // --- overlay parse / clone ---
