@@ -36,6 +36,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -93,9 +94,7 @@ func run(schemaPath, out, pkg, name string) error {
 	// definition becomes a named Go type. Refs are rewritten below.
 	schemas := map[string]any{}
 	if defs, ok := schema["$defs"].(map[string]any); ok {
-		for k, v := range defs {
-			schemas[k] = v
-		}
+		maps.Copy(schemas, defs)
 		delete(schema, "$defs")
 	}
 	schemas[name] = schema

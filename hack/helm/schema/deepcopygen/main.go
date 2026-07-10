@@ -141,7 +141,9 @@ func main() {
 // elemDeepCopyable reports whether a slice element type owns references and
 // provides DeepCopyInto (local struct or a non-config external type), so
 // CopyPtrSliceInto is safe. Scalars, enums and config-backed elements are not.
-func elemDeepCopyable(e ast.Expr, structs map[string]*ast.StructType, aliases map[string]aliasInfo) bool {
+func elemDeepCopyable(
+	e ast.Expr, structs map[string]*ast.StructType, aliases map[string]aliasInfo,
+) bool {
 	switch t := e.(type) {
 	case *ast.StarExpr:
 		return elemDeepCopyable(t.X, structs, aliases)
@@ -169,7 +171,14 @@ func exprPkg(se *ast.SelectorExpr) string {
 	return ""
 }
 
-func fieldCopy(fn string, typ ast.Expr, structs map[string]*ast.StructType, aliases map[string]aliasInfo, enums map[string]bool, usesMaps *bool) string {
+func fieldCopy(
+	fn string,
+	typ ast.Expr,
+	structs map[string]*ast.StructType,
+	aliases map[string]aliasInfo,
+	enums map[string]bool,
+	usesMaps *bool,
+) string {
 	switch t := typ.(type) {
 	case *ast.StarExpr:
 		switch e := t.X.(type) {
