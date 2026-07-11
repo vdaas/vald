@@ -40,6 +40,15 @@ $(BINDIR)/helm-docs:
 	&& tar -xzvf "$(TEMP_DIR)/$${TAR_NAME}" \
 	&& mv helm-docs $(BINDIR)/helm-docs
 
+.PHONY: helm/package/all
+## packaging all Helm charts
+helm/package/all: \
+	helm/package/vald \
+	helm/package/operator/helm \
+	helm/package/operator/vald \
+	helm/package/operator/benchmark \
+	helm/package/vald-readreplica
+
 .PHONY: helm/package/vald
 ## packaging Helm chart for Vald
 helm/package/vald:
@@ -74,6 +83,15 @@ helm/package/vald-readreplica:
 ## add Helm chart repository
 helm/repo/add:
 	helm repo add vald https://vald.vdaas.org/charts
+
+.PHONY: helm/docs/all
+## generate README for all Helm charts
+helm/docs/all: \
+	helm/docs/vald \
+	helm/docs/operator/helm \
+	helm/docs/operator/vald \
+	helm/docs/operator/benchmark \
+	helm/docs/vald-readreplica
 
 .PHONY: helm/docs/vald
 helm/docs/vald: $(ROOTDIR)/charts/vald/README.md

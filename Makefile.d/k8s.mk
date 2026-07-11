@@ -20,6 +20,15 @@ MIRROR02_NAMESPACE = vald-02
 MIRROR03_NAMESPACE = vald-03
 MIRROR_APP_NAME = vald-mirror-gateway
 
+.PHONY: k8s/manifest/all
+## update k8s manifests for all charts using helm templates
+k8s/manifest/all: \
+	k8s/manifest/update \
+	k8s/manifest/operator/helm/update \
+	k8s/manifest/operator/vald/update \
+	k8s/manifest/operator/benchmark/update \
+	k8s/manifest/readreplica/update
+
 .PHONY: k8s/manifest/clean
 ## clean k8s manifests
 k8s/manifest/clean:
@@ -76,7 +85,7 @@ k8s/manifest/operator/helm/update: \
 	--output-dir $(TEMP_DIR) \
 	charts/operator/helm
 	mkdir -p $(ROOTDIR)/k8s/operator
-	mv $(TEMP_DIR)/operator/helm/templates $(ROOTDIR)/k8s/operator/helm
+	mv $(TEMP_DIR)/vald-helm-operator/templates $(ROOTDIR)/k8s/operator/helm
 	rm -rf $(TEMP_DIR)
 	cp -r $(ROOTDIR)/charts/operator/helm/crds $(ROOTDIR)/k8s/operator/helm/crds
 
@@ -117,7 +126,7 @@ k8s/manifest/operator/benchmark/update: \
 	--output-dir $(TEMP_DIR) \
 	charts/operator/benchmark
 	mkdir -p $(ROOTDIR)/k8s/tools/benchmark
-	mv $(TEMP_DIR)/operator/benchmark/templates $(ROOTDIR)/k8s/operator/benchmark
+	mv $(TEMP_DIR)/vald-benchmark-operator/templates $(ROOTDIR)/k8s/operator/benchmark
 	rm -rf $(TEMP_DIR)
 	cp -r $(ROOTDIR)/charts/operator/benchmark/crds $(ROOTDIR)/k8s/operator/benchmark/crds
 
@@ -240,9 +249,9 @@ k8s/operator/helm/deploy:
 	$(HELM_EXTRA_OPTIONS) \
 	--include-crds \
 	charts/operator/helm
-	kubectl create -f $(TEMP_DIR)/operator/helm/crds/valdrelease.yaml
-	kubectl create -f $(TEMP_DIR)/operator/helm/crds/valdhelmoperatorrelease.yaml
-	kubectl apply -f $(TEMP_DIR)/operator/helm/templates
+	kubectl create -f $(TEMP_DIR)/vald-helm-operator/crds/valdrelease.yaml
+	kubectl create -f $(TEMP_DIR)/vald-helm-operator/crds/valdhelmoperatorrelease.yaml
+	kubectl apply -f $(TEMP_DIR)/vald-helm-operator/templates
 	sleep 2
 	kubectl wait --for=condition=ready pod -l name=vald-helm-operator --timeout=600s
 
@@ -254,9 +263,9 @@ k8s/operator/helm/delete:
 	--set image.tag=$(VERSION) \
 	--include-crds \
 	charts/operator/helm
-	kubectl delete -f $(TEMP_DIR)/operator/helm/templates
+	kubectl delete -f $(TEMP_DIR)/vald-helm-operator/templates
 	kubectl wait --for=delete pod -l name=vald-helm-operator --timeout=600s
-	kubectl delete -f $(TEMP_DIR)/operator/helm/crds
+	kubectl delete -f $(TEMP_DIR)/vald-helm-operator/crds
 	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/operator/vald/deploy
@@ -347,10 +356,10 @@ k8s/operator/benchmark/deploy:
 	--set image.tag=${VERSION} \
 	--include-crds \
 	charts/operator/benchmark
-	kubectl create -f $(TEMP_DIR)/operator/benchmark/crds/valdbenchmarkjob.yaml
-	kubectl create -f $(TEMP_DIR)/operator/benchmark/crds/valdbenchmarkscenario.yaml
-	kubectl create -f $(TEMP_DIR)/operator/benchmark/crds/valdbenchmarkoperatorrelease.yaml
-	kubectl apply -f $(TEMP_DIR)/operator/benchmark/templates
+	kubectl create -f $(TEMP_DIR)/vald-benchmark-operator/crds/valdbenchmarkjob.yaml
+	kubectl create -f $(TEMP_DIR)/vald-benchmark-operator/crds/valdbenchmarkscenario.yaml
+	kubectl create -f $(TEMP_DIR)/vald-benchmark-operator/crds/valdbenchmarkoperatorrelease.yaml
+	kubectl apply -f $(TEMP_DIR)/vald-benchmark-operator/templates
 	sleep 2
 	kubectl wait --for=condition=ready pod -l name=vald-benchmark-operator --timeout=600s
 
@@ -362,9 +371,9 @@ k8s/operator/benchmark/delete:
 	--set image.tag=${VERSION} \
 	--include-crds \
 	charts/operator/benchmark
-	kubectl delete -f $(TEMP_DIR)/operator/benchmark/templates
+	kubectl delete -f $(TEMP_DIR)/vald-benchmark-operator/templates
 	kubectl wait --for=delete pod -l name=vald-benchmark-operator --timeout=600s
-	kubectl delete -f $(TEMP_DIR)/operator/benchmark/crds
+	kubectl delete -f $(TEMP_DIR)/vald-benchmark-operator/crds
 	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/external/cert-manager/deploy

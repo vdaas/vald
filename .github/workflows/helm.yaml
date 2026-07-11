@@ -65,10 +65,7 @@ jobs:
           git_commit_gpgsign: true
       - name: Packaging
         run: |
-          make helm/package/vald
-          make helm/package/operator/helm
-          make helm/package/operator/benchmark
-          make helm/package/vald-readreplica
+          make helm/package/all
       - name: Push to gh-pages
         run: |
           git checkout .
