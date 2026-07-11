@@ -49,15 +49,18 @@ type ResourceParams struct {
 }
 
 // ptr returns a pointer to v (the generated types use pointers throughout).
-func ptr[T any](v T) *T { return &v }
+//
+//go:fix inline
+
+func ptr[T any](v T) *T { return new(v) }
 
 // --- Agent -----------------------------------------------------------------
 
 // SetReplica sets min/max replicas from node count * pods-per-node.
 func (a *Agent) SetReplica(nr, podsPerNode int) {
 	rep := nr * podsPerNode
-	a.MinReplicas = ptr(rep)
-	a.MaxReplicas = ptr(rep)
+	a.MinReplicas = new(rep)
+	a.MaxReplicas = new(rep)
 }
 
 // SetResources derives per-pod CPU/memory from the node machine resources.
@@ -88,14 +91,14 @@ func (a *Agent) SetPvEnable(sc, am, size string) {
 	if a.Ngt == nil {
 		a.Ngt = &AgentNgt{}
 	}
-	a.Ngt.EnableCopyOnWrite = ptr(true)
-	a.Ngt.EnableInMemoryMode = ptr(false)
-	a.Ngt.IndexPath = ptr(DefaultIndexPath)
+	a.Ngt.EnableCopyOnWrite = new(true)
+	a.Ngt.EnableInMemoryMode = new(false)
+	a.Ngt.IndexPath = new(DefaultIndexPath)
 	a.PersistentVolume = &AgentPersistentVolume{
-		Enabled:      ptr(true),
-		StorageClass: ptr(sc),
-		Size:         ptr(size),
-		AccessMode:   ptr(am),
+		Enabled:      new(true),
+		StorageClass: new(sc),
+		Size:         new(size),
+		AccessMode:   new(am),
 	}
 }
 
@@ -121,8 +124,8 @@ func (l *GatewayLb) SetReplica(a *Agent) {
 	if a != nil && a.MaxReplicas != nil {
 		ar = *a.MaxReplicas
 	}
-	l.MinReplicas = ptr(l.getMinReplica(ar))
-	l.MaxReplicas = ptr(l.getMaxReplica(ar))
+	l.MinReplicas = new(l.getMinReplica(ar))
+	l.MaxReplicas = new(l.getMaxReplica(ar))
 }
 
 // SetResources sets fixed compute resources for the LB gateway.
@@ -158,17 +161,17 @@ func (d *Discoverer) ApplyDefaultsByKind(daemonSetMaxSurge, daemonSetMaxUnavaila
 	switch kind {
 	case common.KindTypeDaemonSet:
 		if d.ServiceType == nil {
-			d.ServiceType = ptr(DiscovererServiceTypeNodePort)
+			d.ServiceType = new(DiscovererServiceTypeNodePort)
 		}
 		if d.ExternalTrafficPolicy == nil {
 			d.ExternalTrafficPolicy = ptr(string(corev1.ServiceExternalTrafficPolicyTypeLocal))
 		}
 		d.RollingUpdate = &RollingUpdate{
-			MaxSurge:       ptr(daemonSetMaxSurge),
-			MaxUnavailable: ptr(daemonSetMaxUnavailable),
+			MaxSurge:       new(daemonSetMaxSurge),
+			MaxUnavailable: new(daemonSetMaxUnavailable),
 		}
 	case common.KindTypeDeployment:
-		d.ServiceType = ptr(DiscovererServiceTypeClusterIP)
+		d.ServiceType = new(DiscovererServiceTypeClusterIP)
 	}
 }
 

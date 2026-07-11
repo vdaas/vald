@@ -204,7 +204,7 @@ func fieldCopy(
 			}
 			return fmt.Sprintf("out.%s = resource.CopyPtr(in.%s)", fn, fn)
 		case *ast.MapType:
-			// free-form map (課題1): shallow copy of the map header for now.
+			// free-form map (Issue 1): shallow copy of the map header for now.
 			return fmt.Sprintf("out.%s = resource.CopyPtr(in.%s) // TODO(free-form map): deep copy", fn, fn)
 		case *ast.ArrayType:
 			// *[]Elem: deep-copy per element only when the element owns

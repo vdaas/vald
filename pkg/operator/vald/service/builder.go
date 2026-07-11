@@ -18,12 +18,11 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"maps"
 
+	json "github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
-	"github.com/vdaas/vald/internal/k8s/kustomize"
 	"github.com/vdaas/vald/internal/k8s/resource"
 	"github.com/vdaas/vald/internal/k8s/vald/operator/api/metadata"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/operator/api/v1"
@@ -190,8 +189,8 @@ func (b *vrsBuilder) buildAgent() *valdrelease.Agent {
 		Logging: b.buildLogging(input.LogLevel),
 		Kind:    ptr(valdrelease.AgentKindStatefulSet),
 		RollingUpdate: &valdrelease.AgentRollingUpdate{
-			MaxUnavailable: ptr(b.cfg.AgentMaxUnavailable),
-			MaxSurge:       ptr(b.cfg.AgentMaxSurge),
+			MaxUnavailable: new(b.cfg.AgentMaxUnavailable),
+			MaxSurge:       new(b.cfg.AgentMaxSurge),
 		},
 		Ngt: b.buildAgentNgt(),
 	}
@@ -200,12 +199,12 @@ func (b *vrsBuilder) buildAgent() *valdrelease.Agent {
 func (b *vrsBuilder) buildAgentNgt() *valdrelease.AgentNgt {
 	input := b.cr.Spec.VectorEngine.Vald.Agent.Ngt
 	return &valdrelease.AgentNgt{
-		Dimension:          ptr(input.Dimension),
-		DistanceType:       ptr(valdrelease.AgentNgtDistanceType(input.DistanceType)),
-		ObjectType:         ptr(valdrelease.AgentNgtObjectType(input.ObjectType)),
-		SearchEdgeSize:     ptr(input.SearchEdgeSize),
-		CreationEdgeSize:   ptr(input.CreationEdgeSize),
-		EnableInMemoryMode: ptr(b.cfg.AgentEnableInMemoryMode),
+		Dimension:          new(input.Dimension),
+		DistanceType:       new(valdrelease.AgentNgtDistanceType(input.DistanceType)),
+		ObjectType:         new(valdrelease.AgentNgtObjectType(input.ObjectType)),
+		SearchEdgeSize:     new(input.SearchEdgeSize),
+		CreationEdgeSize:   new(input.CreationEdgeSize),
+		EnableInMemoryMode: new(b.cfg.AgentEnableInMemoryMode),
 	}
 }
 
@@ -221,10 +220,10 @@ func (b *vrsBuilder) buildLb() *valdrelease.GatewayLb {
 	return &valdrelease.GatewayLb{
 		Logging: b.buildLogging(inputGw.LogLevel),
 		Hpa: &valdrelease.Hpa{
-			TargetCPUUtilizationPercentage: ptr(b.cfg.GatewayHpaTargetCPUUtilization),
+			TargetCPUUtilizationPercentage: new(b.cfg.GatewayHpaTargetCPUUtilization),
 		},
 		GatewayConfig: &valdrelease.GatewayLbGatewayConfig{
-			IndexReplica: ptr(inputGw.IndexReplica),
+			IndexReplica: new(inputGw.IndexReplica),
 		},
 		ServiceType: b.getGatewayServiceType(inputGw.ServiceType),
 		Ingress:     b.buildIngress(inputGw.Ingress),
@@ -238,9 +237,9 @@ func (b *vrsBuilder) buildLb() *valdrelease.GatewayLb {
 // so CR-side annotations win per key.
 func (b *vrsBuilder) buildIngress(in *v1.GatewayIngress) *valdrelease.GatewayLbIngress {
 	base := &valdrelease.GatewayLbIngress{
-		DefaultBackend: &valdrelease.GatewayLbIngressDefaultBackend{Enabled: ptr(false)},
-		PathType:       ptr(b.getGatewayIngressPathType()),
-		ServicePort:    ptr(b.cfg.GatewayIngressServicePort),
+		DefaultBackend: &valdrelease.GatewayLbIngressDefaultBackend{Enabled: new(false)},
+		PathType:       new(b.getGatewayIngressPathType()),
+		ServicePort:    new(b.cfg.GatewayIngressServicePort),
 	}
 	if len(b.cfg.GatewayIngressAnnotations) > 0 {
 		ann := toAnyMap(mergeLabels(nil, b.cfg.GatewayIngressAnnotations))
@@ -249,8 +248,8 @@ func (b *vrsBuilder) buildIngress(in *v1.GatewayIngress) *valdrelease.GatewayLbI
 	if !b.cfg.EnableIngress || in == nil || !in.Enabled {
 		return base
 	}
-	base.Enabled = ptr(true)
-	base.Host = ptr(in.Host)
+	base.Enabled = new(true)
+	base.Host = new(in.Host)
 	return base
 }
 
@@ -287,12 +286,12 @@ func (b *vrsBuilder) buildDiscoverer() *valdrelease.Discoverer {
 	return &valdrelease.Discoverer{
 		Logging: b.buildLogging(input.LogLevel),
 		ClusterRole: &valdrelease.DiscovererClusterRole{
-			Name: ptr(b.cr.Namespace),
+			Name: new(b.cr.Namespace),
 		},
 		ClusterRoleBinding: &valdrelease.DiscovererClusterRoleBinding{
-			Name: ptr(b.cr.Namespace),
+			Name: new(b.cr.Namespace),
 		},
-		Kind: ptr(valdrelease.DiscovererKind(input.Kind)),
+		Kind: new(valdrelease.DiscovererKind(input.Kind)),
 	}
 }
 
@@ -302,31 +301,31 @@ func (b *vrsBuilder) buildManager() *valdrelease.Manager {
 	m := &valdrelease.Manager{
 		Index: &valdrelease.ManagerIndex{
 			Logging: b.buildLogging(indexer.LogLevel),
-			Enabled: ptr(indexer.Manager),
+			Enabled: new(indexer.Manager),
 		},
 	}
 
 	if indexer.Manager {
 		m.Index.Indexer = &valdrelease.ManagerIndexIndexer{
-			AutoIndexDurationLimit:     ptr(b.cfg.IndexerAutoIndexDurationLimit),
-			AutoSaveIndexDurationLimit: ptr(b.cfg.IndexerAutoSaveIndexDurationLimit),
-			AutoIndexCheckDuration:     ptr(indexer.IndexDuration),
-			AutoSaveIndexWaitDuration:  ptr(indexer.SaveDuration),
-			Concurrency:                ptr(indexer.Concurrency),
+			AutoIndexDurationLimit:     new(b.cfg.IndexerAutoIndexDurationLimit),
+			AutoSaveIndexDurationLimit: new(b.cfg.IndexerAutoSaveIndexDurationLimit),
+			AutoIndexCheckDuration:     new(indexer.IndexDuration),
+			AutoSaveIndexWaitDuration:  new(indexer.SaveDuration),
+			Concurrency:                new(indexer.Concurrency),
 		}
 		return m
 	}
 
 	m.Index.Creator = &valdrelease.ManagerIndexCreator{
-		Enabled:     ptr(true),
-		Schedule:    ptr(indexer.IndexSchedule),
-		Suspend:     ptr(indexer.IndexSuspend),
-		Concurrency: ptr(indexer.Concurrency),
+		Enabled:     new(true),
+		Schedule:    new(indexer.IndexSchedule),
+		Suspend:     new(indexer.IndexSuspend),
+		Concurrency: new(indexer.Concurrency),
 	}
 	m.Index.Saver = &valdrelease.ManagerIndexSaver{
-		Enabled:  ptr(true),
-		Schedule: ptr(indexer.SaveSchedule),
-		Suspend:  ptr(indexer.SaveSuspend),
+		Enabled:  new(true),
+		Schedule: new(indexer.SaveSchedule),
+		Suspend:  new(indexer.SaveSuspend),
 	}
 	return m
 }
@@ -374,7 +373,10 @@ func (b *vrsBuilder) buildLogging(ll string) *valdrelease.Logging {
 
 // ptr returns a pointer to v. The generated ValdRelease types use pointers for
 // nearly every field, so the builder wraps its scalar inputs with this.
-func ptr[T any](v T) *T { return &v }
+//
+//go:fix inline
+
+func ptr[T any](v T) *T { return new(v) }
 
 // toAnyMap converts a string map into the free-form map[string]interface{}
 // shape the generated schema uses for annotation-like fields.
@@ -403,6 +405,12 @@ func (b *vrsBuilder) labelKey(suffix string) string {
 // mergeOverlay layers the default VRS template, the built row and the
 // CR-supplied overlay patch on top of each other and decodes the merged
 // result back into a ValdRelease.
+//
+// Merge semantics: each successive layer wins over the previous one for every
+// key that is present, including bool false, numeric zero, and empty strings.
+// Merging happens at the unstructured (map[string]any) level to avoid the
+// limitations of reflection-based mergers with types that have unexported
+// fields (resource.Quantity) or zero-value booleans (*bool → false).
 func (b *vrsBuilder) mergeOverlay(row k8s.Object) (*valdrelease.ValdRelease, error) {
 	current, err := resource.ToUnstructured(row)
 	if err != nil {
@@ -414,27 +422,40 @@ func (b *vrsBuilder) mergeOverlay(row k8s.Object) (*valdrelease.ValdRelease, err
 	baseVrs.SetName(current.GetName())
 	baseVrs.SetNamespace(current.GetNamespace())
 
-	patches := []k8s.Unstructured{*current}
-
+	// Merge at the unstructured map level: base → current → overlay.
+	// Each subsequent layer wins for every key it provides.
+	merged := deepMergeMap(baseVrs.Object, current.Object)
 	if patch := b.makeOverlayPatch(row); patch != nil {
-		patches = append(patches, *patch)
+		merged = deepMergeMap(merged, patch.Object)
 	}
 
-	allPatches := append([]k8s.Unstructured{*baseVrs}, patches...)
-	merged, err := kustomize.Merge(allPatches...)
+	raw, err := json.Marshal(merged)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to patch unstructured")
+		return nil, errors.Wrap(err, "failed to marshal merged ValdRelease")
 	}
+	var vr valdrelease.ValdRelease
+	if err := json.Unmarshal(raw, &vr); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal merged ValdRelease")
+	}
+	return &vr, nil
+}
 
-	mergedRaw, err := json.Marshal(merged)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to marshal merged unstructured")
+// deepMergeMap returns a new map that is the result of deeply merging src into
+// dst. src wins for every key it provides; nested maps are merged recursively.
+// All other value types (including bool false and numeric zero) are taken from
+// src verbatim when present.
+func deepMergeMap(dst, src map[string]any) map[string]any {
+	out := maps.Clone(dst)
+	for k, sv := range src {
+		if sm, ok := sv.(map[string]any); ok {
+			if dm, ok := out[k].(map[string]any); ok {
+				out[k] = deepMergeMap(dm, sm)
+				continue
+			}
+		}
+		out[k] = sv
 	}
-	mergedVRS := &valdrelease.ValdRelease{}
-	if err := json.Unmarshal(mergedRaw, mergedVRS); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal into valdrelease")
-	}
-	return mergedVRS, nil
+	return out
 }
 
 // parseOverlay decodes the CR-supplied overlay patch once per Build. An empty

@@ -13,14 +13,13 @@ in no-agent-pool configurations.
 
 ## Node Pool Fallback for Agent Resources
 
-The agent node-pool selection rule lives in the domain layer
-(`pkg/operator/vald/domain/valdoperatorrelease/rules.go`, `Domain.ResolveAgentNodePool`) and is
-consumed by the builder via the `DomainRules` interface. This keeps
-`VrsBuilder.Build` a pure function of `(CR, Config, Capability, Rules)`:
+The agent node-pool selection rule lives in
+`pkg/operator/vald/service/rules.go` (`resolveAgentNodePool`) and is called directly by
+the builder. This keeps `vrsBuilder.Build` a pure function of `(CR, Config, Capability)`:
 
 ```go
-// pkg/operator/vald/lifecycle/builder/vald/valdrelease.go
-agentPool := b.Rules.ResolveAgentNodePool(infra)
+// pkg/operator/vald/service/builder.go
+agentPool := resolveAgentNodePool(infra)
 row.SetRelationalResources(agentPool.NodeCount, agentPool.MachineResource, resourceParams)
 ```
 
@@ -28,10 +27,10 @@ row.SetRelationalResources(agentPool.NodeCount, agentPool.MachineResource, resou
 falls back to the `general` pool for both replica count and machine resources — so a
 config with no agent pool no longer produces zero-replica agent deployments.
 
-`effectiveNodePoolType` (`pkg/operator/vald/lifecycle/builder/vald/nodepool.go`) applies the
-same fallback to NodeSelector/Tolerations, so placement and resource sizing stay
-consistent. `resourceParams` carries `AgentPodsPerNode` and the discoverer DaemonSet
-rolling-update values from `Config`.
+`effectiveNodePoolType` (`pkg/operator/vald/service/builder.go`) applies the same fallback
+to NodeSelector/Tolerations, so placement and resource sizing stay consistent.
+`resourceParams` carries `AgentPodsPerNode` and the discoverer DaemonSet rolling-update
+values from `Config`.
 
 ## Agent Resource Calculation
 

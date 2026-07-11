@@ -48,7 +48,7 @@ type Status string
 // VrsStatus is the observed status of a ValdRelease.
 type VrsStatus struct {
 	Status    Status           `json:"status,omitempty"`
-	Condition metav1.Condition `json:"condition,omitempty"`
+	Condition metav1.Condition `json:"condition"`
 }
 
 // DeepCopyInto copies the receiver into out.
@@ -65,10 +65,10 @@ type ValdRelease struct {
 	resource.Base[ValdRelease, *ValdRelease] `json:"-"`
 
 	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+	metav1.ObjectMeta `json:"metadata"`
 
-	Spec   Values    `json:"spec,omitempty"`
-	Status VrsStatus `json:"status,omitempty"`
+	Spec   Values    `json:"spec"`
+	Status VrsStatus `json:"status"`
 }
 
 // DeepCopyInto copies the receiver into out.

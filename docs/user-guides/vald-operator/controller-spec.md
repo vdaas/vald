@@ -108,7 +108,7 @@ Two pool types are recognized:
 | `agent`   | `NodePoolTypeValdAgent` | vald-agent (NGT)                      |
 
 When no `agent` pool is defined, the `general` pool is used for agent resource
-sizing and replica count as well. See [Resource Allocation and Topology Strategy](resource-and-topology-strategy.md)
+sizing and replica count as well. See [Resource Allocation and Topology](resource-and-topology.md)
 for the sizing formulas.
 
 ### Status
@@ -319,7 +319,7 @@ enabling garbage collection when the CR is deleted.
 | `REQUIRE_NODEPOOL_MATCH` | `false` | Only generate VRS when matching Node labels exist. |
 | `NODEPOOL_LABEL_PREFIX`  | `""`    | Prefix for node pool label keys.                   |
 
-See [explain.md](../../explain.md#configuration-environment-variables) for the full
+See [design.md](design.md#configuration-environment-variables) for the full
 environment-variable reference (PV sizing, ingress, gateway service type, discoverer
 DaemonSet strategy, etc.).
 
@@ -330,9 +330,6 @@ DaemonSet strategy, etc.).
 - **Requeue behavior**: Pending/Progressing conditions currently return an `error`, causing
   exponential back-off and noisy logs. These should return `ctrl.Result{RequeueAfter: duration}`
   instead. The duration should be configurable.
-
-- **`util.UpdateStatus`**: The custom condition upsert helper should be replaced with
-  the standard `meta.SetStatusCondition` from `k8s.io/apimachinery/pkg/api/meta`.
 
 - **`STATUS` printcolumn**: Shows `conditions[0].status` (always the first phase).
   Should be changed to reflect the current overall state more meaningfully.
