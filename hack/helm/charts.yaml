@@ -1,0 +1,45 @@
+#
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Single source of truth for the Helm charts managed by this repository.
+# Add a new chart here and it is automatically picked up by:
+#   - .github/workflows/helm-lint.yaml   (per-chart lint matrix)
+#   - .github/workflows/_release-pr.yaml (Chart.yaml/values.yaml version bump on release)
+#
+# schema_target:    make target that generates this chart's values.schema.json.
+#                    Leave empty to exclude the chart from the lint matrix.
+# bump_values_tag:   whether values.yaml has a top-level `tag: vX.Y.Z` image tag
+#                    that should be bumped to the release tag.
+charts:
+  - name: vald
+    path: charts/vald
+    schema_target: helm/schema/vald
+    bump_values_tag: true
+  - name: vald-helm-operator
+    path: charts/operator/helm
+    schema_target: helm/schema/operator/helm
+    bump_values_tag: true
+  - name: vald-operator
+    path: charts/operator/vald
+    schema_target: helm/schema/operator/vald
+    bump_values_tag: false
+  - name: vald-benchmark-operator
+    path: charts/operator/benchmark
+    schema_target: helm/schema/operator/benchmark
+    bump_values_tag: true
+  - name: vald-readreplica
+    path: charts/vald-readreplica
+    schema_target: ""
+    bump_values_tag: false
