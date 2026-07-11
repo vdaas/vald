@@ -713,7 +713,6 @@ docs/tutorial/vald-agent-standalone-on-docker.md
 docs/tutorial/vald-agent-standalone-on-k8s.md
 docs/tutorial/vald-multicluster-on-k8s.md
 docs/usecase/usage-example.md
-docs/user-guides/_vald-operator-test-strategy.md
 docs/user-guides/backup-configuration.md
 docs/user-guides/capacity-planning.md
 docs/user-guides/client-api-config.md
@@ -730,6 +729,10 @@ docs/user-guides/read-replica-and-rotator.md
 docs/user-guides/sdks.md
 docs/user-guides/upgrade-cluster.md
 docs/user-guides/vald-operator.md
+docs/user-guides/vald-operator/controller-spec.md
+docs/user-guides/vald-operator/design.md
+docs/user-guides/vald-operator/resource-and-topology.md
+docs/user-guides/vald-operator/test-strategy.md
 example/client/agent/main.go
 example/client/go.mod
 example/client/go.mod.default
@@ -1257,8 +1260,6 @@ internal/k8s/client/doc.go
 internal/k8s/client/dynamic.go
 internal/k8s/client/option.go
 internal/k8s/doc.go
-internal/k8s/kustomize/kustomize.go
-internal/k8s/kustomize/kustomize_test.go
 internal/k8s/logger.go
 internal/k8s/option.go
 internal/k8s/portforward/option.go
@@ -2267,11 +2268,6 @@ pkg/operator/benchmark/usecase/doc.go
 pkg/operator/vald/README.md
 pkg/operator/vald/config/config.go
 pkg/operator/vald/config/config_test.go
-pkg/operator/vald/docs/DEVELOPMENT.md
-pkg/operator/vald/docs/design/controller-spec.md
-pkg/operator/vald/docs/design/resource-and-topology-strategy.md
-pkg/operator/vald/docs/design/test-strategy.md
-pkg/operator/vald/docs/explain.md
 pkg/operator/vald/service/builder.go
 pkg/operator/vald/service/builder_test.go
 pkg/operator/vald/service/capability.go

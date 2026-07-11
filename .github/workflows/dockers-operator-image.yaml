@@ -78,7 +78,6 @@ on:
       - internal/io/*.go
       - internal/k8s/*.go
       - internal/k8s/client/*.go
-      - internal/k8s/kustomize/*.go
       - internal/k8s/resource/*.go
       - internal/k8s/vald/operator/api/metadata/*.go
       - internal/k8s/vald/operator/api/v1/*.go
@@ -194,7 +193,6 @@ on:
       - internal/io/*.go
       - internal/k8s/*.go
       - internal/k8s/client/*.go
-      - internal/k8s/kustomize/*.go
       - internal/k8s/resource/*.go
       - internal/k8s/vald/operator/api/metadata/*.go
       - internal/k8s/vald/operator/api/v1/*.go

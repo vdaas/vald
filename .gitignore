@@ -84,3 +84,4 @@ rust/target/
 
 !rust/libs
 /gen
+.worktrees

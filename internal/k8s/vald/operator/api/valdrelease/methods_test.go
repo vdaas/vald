@@ -180,7 +180,7 @@ func TestGatewayLb_SetReplica(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			lb := &GatewayLb{}
-			a := &Agent{MaxReplicas: ptr(tt.agentMax)}
+			a := &Agent{MaxReplicas: new(tt.agentMax)}
 			lb.SetReplica(a)
 			assert.Equal(t, tt.wantMin, *lb.MinReplicas)
 			assert.Equal(t, tt.wantMax, *lb.MaxReplicas)
@@ -292,12 +292,12 @@ func TestDiscoverer_ApplyDefaultsByKind(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &Discoverer{Kind: ptr(DiscovererKind(tt.kind))}
+			d := &Discoverer{Kind: new(DiscovererKind(tt.kind))}
 			if tt.existingServiceType != "" {
-				d.ServiceType = ptr(DiscovererServiceType(tt.existingServiceType))
+				d.ServiceType = new(DiscovererServiceType(tt.existingServiceType))
 			}
 			if tt.existingTrafficPolicy != "" {
-				d.ExternalTrafficPolicy = ptr(tt.existingTrafficPolicy)
+				d.ExternalTrafficPolicy = new(tt.existingTrafficPolicy)
 			}
 			d.ApplyDefaultsByKind(maxSurge, maxUnavailable)
 
