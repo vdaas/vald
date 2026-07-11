@@ -18,7 +18,6 @@ on:
   pull_request:
     paths:
       - "charts/**"
-      - "hack/helm/charts.yaml"
   pull_request_target:
     types:
       - opened
@@ -27,7 +26,6 @@ on:
       - labeled
     paths:
       - "charts/**"
-      - "hack/helm/charts.yaml"
 jobs:
   dump-contexts-to-log:
     timeout-minutes: 30
@@ -65,12 +63,12 @@ jobs:
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Resolve chart list from hack/helm/charts.yaml
+      - name: Resolve chart list from charts/charts.yaml
         id: resolve
         run: |
           {
             echo "charts<<EOF"
-            yq eval -o=json -I=0 '[.charts[] | select(.schema_target != "")]' hack/helm/charts.yaml
+            yq eval -o=json -I=0 '[.charts[] | select(.schema_target != "")]' charts/charts.yaml
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
   lint-chart:

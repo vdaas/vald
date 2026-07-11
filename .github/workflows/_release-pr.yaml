@@ -96,10 +96,10 @@ jobs:
           PREVIOUS_VERSION=`cat versions/VALD_VERSION`
           echo "${RELEASE_TAG}" > versions/VALD_VERSION
 
-          for chart_path in $(yq eval '.charts[].path' hack/helm/charts.yaml); do
+          for chart_path in $(yq eval '.charts[].path' charts/charts.yaml); do
             sed -i -e "s/^version: .*$/version: ${RELEASE_TAG}/" "${chart_path}/Chart.yaml"
           done
-          for chart_path in $(yq eval '.charts[] | select(.bump_values_tag == true) | .path' hack/helm/charts.yaml); do
+          for chart_path in $(yq eval '.charts[] | select(.bump_values_tag == true) | .path' charts/charts.yaml); do
             sed -i -r "s/^(\s*)tag\s*:\s*v[0-9]+\.[0-9]+\.[0-9]+\s*$/\1tag: ${RELEASE_TAG}/" "${chart_path}/values.yaml"
           done
 
