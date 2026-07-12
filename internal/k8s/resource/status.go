@@ -24,11 +24,13 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/k8s"
+	"github.com/vdaas/vald/internal/k8s/client"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	apimeta "k8s.io/apimachinery/pkg/api/meta"
 )
 
 type ResourceStatus int
@@ -49,157 +51,132 @@ const (
 	StatusLoadBalancing                       // Service is still provisioning a load balancer
 )
 
-func extractItems[T any](obj any) ([]T, error) {
-	v := reflect.ValueOf(obj)
-	if v.Kind() == reflect.Pointer {
-		v = v.Elem()
-	}
-	items := v.FieldByName("Items")
-	if !items.IsValid() || items.Kind() != reflect.Slice {
-		return nil, errors.ErrItemsFieldNotFoundOrNotASlice
-	}
-
-	out := make([]T, items.Len())
-	for i := 0; i < items.Len(); i++ {
-		v := items.Index(i)
-		if v.CanAddr() {
-			if ptr, ok := v.Addr().Interface().(T); ok {
-				out[i] = ptr
-				continue
-			}
-		}
-		val, ok := v.Interface().(T) // fallback to value match
-		if !ok {
-			return nil, errors.ErrItemIsNotOfType(i)
-		}
-		out[i] = val
-	}
-	return out, nil
-}
-
-func WaitForStatus[T Object, L ObjectList, C NamedObject, I ResourceInterface[T, L, C]](
-	ctx context.Context, client I, name string, labelSelector string, statuses ...ResourceStatus,
+// WaitForStatus polls the named object (or, when name is empty, every object
+// matching labelSelector) until its evaluated status is one of statuses, the
+// context is canceled, or the default timeout expires. The polling skeleton is
+// shared with ObjectClient.Wait through waitLoop; only the per-tick step
+// differs, and the name/labelSelector split is resolved once instead of per
+// tick.
+func WaitForStatus[T k8s.Object, L k8s.ObjectList](
+	ctx context.Context, c client.Client[T, L], obj T, name string, labelSelector string, statuses ...ResourceStatus,
 ) (matched bool, err error) {
-	var obj T
 	if !slices.ContainsFunc(possibleStatuses(obj), func(st ResourceStatus) bool {
 		return slices.Contains(statuses, st)
 	}) {
 		return false, errors.ErrStatusPatternNeverMatched
 	}
 
-	ticker := time.NewTicker(defaultWaitInterval)
-	timeout := time.NewTimer(defaultWaitTimeout)
-	defer ticker.Stop()
-	defer timeout.Stop()
-	for {
-		select {
-		case <-ctx.Done():
-			return false, ctx.Err()
-		case <-timeout.C:
-			return false, errors.ErrTimeoutWaitingForResourceStatus
-		case <-ticker.C:
-			opts := metav1.ListOptions{}
-			if name != "" {
-				obj, err := client.Get(ctx, name, metav1.GetOptions{})
-				if err != nil {
-					return false, err
-				}
-				status, info, err := checkResourceState(obj)
-				if err != nil {
-					return false, errors.Wrap(err, info)
-				}
-				if slices.Contains(statuses, status) {
-					return true, nil
-				}
-				continue
-			}
-			if labelSelector != "" {
-				opts.LabelSelector = labelSelector
-			}
-			l, err := client.List(ctx, opts)
+	var step func(context.Context) (bool, error)
+	if name != "" {
+		step = func(ctx context.Context) (bool, error) {
+			obj, err := c.Get(ctx, name, "")
 			if err != nil {
 				return false, err
 			}
-			matched = true
-			items, err := extractItems[T](l)
+			status, info, err := checkResourceState(obj)
+			if err != nil {
+				return false, errors.Wrap(err, info)
+			}
+			return slices.Contains(statuses, status), nil
+		}
+	} else {
+		var lopts []k8s.ListOption
+		if labelSelector != "" {
+			lopts = append(lopts, client.MatchingLabelsString(labelSelector))
+		}
+		step = func(ctx context.Context) (bool, error) {
+			l, err := c.List(ctx, lopts...)
+			if err != nil {
+				return false, err
+			}
+			objs, err := apimeta.ExtractList(l)
 			if err != nil {
 				return false, errors.Wrap(err, "failed to extract items")
 			}
-			if len(items) == 0 {
-				continue
+			if len(objs) == 0 {
+				return false, nil
 			}
-			for _, obj := range items {
+			for _, obj := range objs {
 				status, info, err := checkResourceState(obj)
 				if err != nil {
 					return false, errors.Wrap(err, info)
 				}
 				if !slices.Contains(statuses, status) {
-					matched = false
+					return false, nil
 				}
 			}
-			if matched {
-				return true, nil
-			}
+			return true, nil
 		}
 	}
+	return client.WaitLoop(ctx, errors.ErrTimeoutWaitingForResourceStatus, step)
 }
 
-func possibleStatuses[T Object](obj T) []ResourceStatus {
-	switch any(obj).(type) {
-	case *appsv1.Deployment:
-		return []ResourceStatus{StatusPending, StatusUpdating, StatusAvailable, StatusDegraded, StatusFailed, StatusPaused}
-	case *appsv1.StatefulSet:
-		return []ResourceStatus{StatusPending, StatusUpdating, StatusAvailable, StatusDegraded, StatusFailed}
-	case *appsv1.DaemonSet:
-		return []ResourceStatus{StatusPending, StatusUpdating, StatusAvailable, StatusDegraded, StatusFailed}
-	case *batchv1.Job:
-		return []ResourceStatus{StatusUpdating, StatusFailed, StatusCompleted, StatusScheduled}
-	case *batchv1.CronJob:
-		return []ResourceStatus{StatusPaused, StatusPending, StatusAvailable}
-	case *corev1.Pod:
-		return []ResourceStatus{StatusUnknown, StatusAvailable, StatusPending, StatusCompleted, StatusFailed, StatusTerminating, StatusNotReady}
-	case *corev1.Service:
-		return []ResourceStatus{StatusAvailable, StatusLoadBalancing}
-	case *corev1.Secret:
-		return []ResourceStatus{StatusPending, StatusAvailable}
-	case *corev1.ConfigMap:
-		return []ResourceStatus{StatusPending, StatusAvailable}
-	case *admissionregistrationv1.MutatingWebhookConfiguration:
-		return []ResourceStatus{StatusPending, StatusAvailable}
-	case *admissionregistrationv1.ValidatingWebhookConfiguration:
-		return []ResourceStatus{StatusPending, StatusAvailable}
-	default:
-		return []ResourceStatus{StatusUnknown}
+// kindStatusInfo bundles the statuses a Kind can report with the evaluator
+// that computes them, so possibleStatuses and checkResourceState share one
+// per-Kind entry instead of enumerating the same Kind set in two separate
+// type switches that must be kept in sync by hand.
+type kindStatusInfo struct {
+	possible []ResourceStatus
+	evaluate func(obj any) (ResourceStatus, string, error)
+}
+
+// evaluatorFor wraps a Kind-specific evaluator so it can be stored in
+// kindStatusTable under an any-typed signature. registerKind derives the table
+// key and the evaluator's argument type from the same type parameter R, so a
+// mismatched key/evaluator pair cannot be registered; the ok check remains as
+// a defensive fallback for direct table manipulation.
+func evaluatorFor[R any](f func(R) (ResourceStatus, string, error)) func(any) (ResourceStatus, string, error) {
+	return func(obj any) (ResourceStatus, string, error) {
+		res, ok := obj.(R)
+		if !ok {
+			return StatusUnknown, "Unsupported resource type", errors.ErrUnsupportedKubernetesResourceType(obj)
+		}
+		return f(res)
 	}
 }
 
-func checkResourceState[T Object](obj T) (ResourceStatus, string, error) {
-	switch res := any(obj).(type) {
-	case *appsv1.Deployment:
-		return evaluateDeployment(res)
-	case *appsv1.StatefulSet:
-		return evaluateStatefulSet(res)
-	case *appsv1.DaemonSet:
-		return evaluateDaemonSet(res)
-	case *batchv1.Job:
-		return evaluateJob(res)
-	case *batchv1.CronJob:
-		return evaluateCronJob(res)
-	case *corev1.Pod:
-		return evaluatePod(res)
-	case *corev1.Service:
-		return evaluateService(res)
-	case *corev1.Secret:
-		return evaluateSecret(res)
-	case *corev1.ConfigMap:
-		return evaluateConfigMap(res)
-	case *admissionregistrationv1.MutatingWebhookConfiguration:
-		return evaluateMutatingWebhookConfiguration(res)
-	case *admissionregistrationv1.ValidatingWebhookConfiguration:
-		return evaluateValidatingWebhookConfiguration(res)
-	default:
-		return StatusUnknown, "Unsupported resource type", errors.ErrUnsupportedKubernetesResourceType(obj)
+var kindStatusTable = make(map[reflect.Type]kindStatusInfo, 11)
+
+// registerKind ties the statuses a Kind can report to its evaluator under the
+// single type parameter R (inferred from eval), so the table key and the
+// evaluator's argument type cannot drift apart the way hand-paired map
+// literal entries could.
+func registerKind[R k8s.Object](possible []ResourceStatus, eval func(R) (ResourceStatus, string, error)) {
+	kindStatusTable[reflect.TypeFor[R]()] = kindStatusInfo{
+		possible: possible,
+		evaluate: evaluatorFor(eval),
 	}
+}
+
+func init() {
+	registerKind([]ResourceStatus{StatusPending, StatusUpdating, StatusAvailable, StatusDegraded, StatusFailed, StatusPaused}, evaluateDeployment)
+	registerKind([]ResourceStatus{StatusPending, StatusUpdating, StatusAvailable, StatusDegraded, StatusFailed}, evaluateStatefulSet)
+	registerKind([]ResourceStatus{StatusPending, StatusUpdating, StatusAvailable, StatusDegraded, StatusFailed}, evaluateDaemonSet)
+	registerKind([]ResourceStatus{StatusUpdating, StatusFailed, StatusCompleted, StatusScheduled}, evaluateJob)
+	registerKind([]ResourceStatus{StatusPaused, StatusPending, StatusAvailable}, evaluateCronJob)
+	registerKind([]ResourceStatus{StatusUnknown, StatusAvailable, StatusPending, StatusCompleted, StatusFailed, StatusTerminating, StatusNotReady}, evaluatePod)
+	registerKind([]ResourceStatus{StatusAvailable, StatusLoadBalancing}, evaluateService)
+	registerKind([]ResourceStatus{StatusPending, StatusAvailable}, evaluateSecret)
+	registerKind([]ResourceStatus{StatusPending, StatusAvailable}, evaluateConfigMap)
+	registerKind([]ResourceStatus{StatusPending, StatusAvailable}, evaluateMutatingWebhookConfiguration)
+	registerKind([]ResourceStatus{StatusPending, StatusAvailable}, evaluateValidatingWebhookConfiguration)
+}
+
+func possibleStatuses[T k8s.Object](obj T) []ResourceStatus {
+	if info, ok := kindStatusTable[reflect.TypeOf(obj)]; ok {
+		return info.possible
+	}
+	return []ResourceStatus{StatusUnknown}
+}
+
+// checkResourceState dispatches obj to its Kind's evaluator via
+// kindStatusTable. It takes any because dispatch happens on the dynamic type;
+// callers hold either a concrete T or a runtime.Object from apimeta.ExtractList.
+func checkResourceState(obj any) (ResourceStatus, string, error) {
+	if info, ok := kindStatusTable[reflect.TypeOf(obj)]; ok {
+		return info.evaluate(obj)
+	}
+	return StatusUnknown, "Unsupported resource type", errors.ErrUnsupportedKubernetesResourceType(obj)
 }
 
 func evaluateDeployment(deploy *appsv1.Deployment) (ResourceStatus, string, error) {

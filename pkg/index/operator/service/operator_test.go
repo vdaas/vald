@@ -17,15 +17,22 @@
 package service
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
 	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/k8s/client"
+	"github.com/vdaas/vald/internal/k8s/resource"
 	"github.com/vdaas/vald/internal/k8s/vald"
 	mock "github.com/vdaas/vald/internal/test/mock/k8s"
 	"github.com/vdaas/vald/internal/test/testify"
+	"k8s.io/apimachinery/pkg/runtime"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	kclient "sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/fake"
+	"sigs.k8s.io/controller-runtime/pkg/client/interceptor"
 )
 
 func Test_operator_podOnReconcile(t *testing.T) {
@@ -281,26 +288,29 @@ func Test_operator_podOnReconcile(t *testing.T) {
 
 			mock := &mock.ValdK8sClientMock{}
 			mock.On("LabelSelector", testify.Anything, testify.Anything, testify.Anything).Return(client.NewSelector(), nil).Maybe()
-			mock.On("List", testify.Anything, testify.AnythingOfType("*v1.DeploymentList"), testify.Anything).Run(func(args testify.Arguments) {
-				arg, ok := args.Get(1).(*k8s.DeploymentList)
-				require.True(t, ok)
 
-				arg.Items = []k8s.Deployment{*test.readReplicaDeployment}
-			}).Return(nil).Maybe()
-
-			mock.On("List", testify.Anything, testify.AnythingOfType("*v1.JobList"), testify.Anything).Run(func(args testify.Arguments) {
-				arg, ok := args.Get(1).(*k8s.JobList)
-				require.True(t, ok)
-
-				arg.Items = test.runningJobs
-			}).Return(nil).Maybe()
-
-			// testify/mock does not accept to set Times(0) so you cannot do things like .Return(nil).Once(calledTimes)
-			// ref: https://github.com/stretchr/testify/issues/566
-			if test.want.createCalled {
-				mock.On("Create", testify.Anything, testify.Anything, testify.Anything).Return(nil).Once()
+			scheme := runtime.NewScheme()
+			require.NoError(t, clientgoscheme.AddToScheme(scheme))
+			var initObjs []kclient.Object
+			if test.readReplicaDeployment != nil {
+				initObjs = append(initObjs, test.readReplicaDeployment)
 			}
-			defer mock.AssertExpectations(tt)
+			for i := range test.runningJobs {
+				initObjs = append(initObjs, &test.runningJobs[i])
+			}
+
+			// testify/mock does not accept to set Times(0), so the call count is
+			// tracked manually via an interceptor instead of a mock expectation.
+			var createCalls int
+			base := fake.NewClientBuilder().WithScheme(scheme).WithObjects(initObjs...).Build()
+			fakeClient := interceptor.NewClient(base, interceptor.Funcs{
+				Create: func(
+					ctx context.Context, c kclient.WithWatch, obj kclient.Object, opts ...kclient.CreateOption,
+				) error {
+					createCalls++
+					return c.Create(ctx, obj, opts...)
+				},
+			})
 
 			concurrency := uint(1)
 			if test.rotationJobConcurrency != 0 {
@@ -308,6 +318,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 			}
 			op := operator{
 				client:                 mock,
+				deployments:            resource.NewListClient[k8s.Deployment, k8s.DeploymentList](fakeClient),
+				jobs:                   resource.NewListClient[k8s.Job, k8s.JobList](fakeClient),
 				readReplicaEnabled:     test.readReplicaEnabled,
 				rotationJobConcurrency: concurrency,
 			}
@@ -321,6 +333,11 @@ func Test_operator_podOnReconcile(t *testing.T) {
 			res, err := op.podOnReconcile(tt.Context(), test.agentPod)
 			require.Equal(t, test.want.err, err)
 			require.Equal(t, test.want.res, res)
+			wantCreateCalls := 0
+			if test.want.createCalled {
+				wantCreateCalls = 1
+			}
+			require.Equal(t, wantCreateCalls, createCalls)
 		})
 	}
 }
@@ -438,7 +455,7 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 	type fields struct {
 // 		ctrl                              k8s.Controller
 // 		eg                                errgroup.Group
-// 		client                            client.Client
+// 		client                            client.StandaloneClient
 // 		rotatorJob                        *k8s.Job
 // 		namespace                         string
 // 		rotatorName                       string
@@ -577,7 +594,7 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 	type fields struct {
 // 		ctrl                              k8s.Controller
 // 		eg                                errgroup.Group
-// 		client                            client.Client
+// 		client                            client.StandaloneClient
 // 		rotatorJob                        *k8s.Job
 // 		namespace                         string
 // 		rotatorName                       string
@@ -810,7 +827,7 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 	type fields struct {
 // 		ctrl                              k8s.Controller
 // 		eg                                errgroup.Group
-// 		client                            client.Client
+// 		client                            client.StandaloneClient
 // 		rotatorJob                        *k8s.Job
 // 		namespace                         string
 // 		rotatorName                       string
@@ -951,7 +968,7 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 	type fields struct {
 // 		ctrl                              k8s.Controller
 // 		eg                                errgroup.Group
-// 		client                            client.Client
+// 		client                            client.StandaloneClient
 // 		rotatorJob                        *k8s.Job
 // 		namespace                         string
 // 		rotatorName                       string

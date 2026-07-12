@@ -25,112 +25,69 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/watch"
 	applyconfigurationscorev1 "k8s.io/client-go/applyconfigurations/core/v1"
 )
 
-func TestExtractItems(t *testing.T) {
-	t.Parallel()
+// unextractableList is a runtime.Object without an Items field, so
+// apimeta.ExtractList fails on it.
+type unextractableList struct{ metav1.TypeMeta }
 
-	type test struct {
-		name    string
-		obj     any
-		wantLen int
-		wantErr bool
-	}
-
-	tests := []test{
-		{
-			name: "extracts pointers to typed list items",
-			obj: &corev1.PodList{Items: []corev1.Pod{
-				{ObjectMeta: metav1.ObjectMeta{Name: "a"}},
-				{ObjectMeta: metav1.ObjectMeta{Name: "b"}},
-			}},
-			wantLen: 2,
-		},
-		{
-			name:    "empty list yields no items",
-			obj:     &corev1.PodList{},
-			wantLen: 0,
-		},
-		{
-			name:    "object without Items field fails",
-			obj:     &corev1.Pod{},
-			wantErr: true,
-		},
-		{
-			name: "item type mismatch fails",
-			obj: &corev1.ServiceList{Items: []corev1.Service{
-				{ObjectMeta: metav1.ObjectMeta{Name: "svc"}},
-			}},
-			wantErr: true,
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
-			items, err := extractItems[*corev1.Pod](tc.obj)
-			if tc.wantErr != (err != nil) {
-				t.Fatalf("extractItems() error = %v, wantErr %v", err, tc.wantErr)
-			}
-			if !tc.wantErr && len(items) != tc.wantLen {
-				t.Errorf("extractItems() len = %d, want %d", len(items), tc.wantLen)
-			}
-		})
-	}
+func (l *unextractableList) DeepCopyObject() runtime.Object {
+	out := *l
+	return &out
 }
 
-// mismatchListClient returns a list whose items do not match T so that
-// extractItems fails on every List call.
-type mismatchListClient struct{}
+// unextractableListClient returns a list object without an Items field so
+// that item extraction fails on every List call.
+type unextractableListClient struct{}
 
-func (mismatchListClient) Get(context.Context, string, metav1.GetOptions) (*corev1.Pod, error) {
+func (unextractableListClient) Get(context.Context, string, metav1.GetOptions) (*corev1.Pod, error) {
 	return nil, nil
 }
 
-func (mismatchListClient) List(context.Context, metav1.ListOptions) (*corev1.ServiceList, error) {
-	return &corev1.ServiceList{Items: []corev1.Service{
-		{ObjectMeta: metav1.ObjectMeta{Name: "svc"}},
-	}}, nil
+func (unextractableListClient) List(
+	context.Context, metav1.ListOptions,
+) (*unextractableList, error) {
+	return &unextractableList{}, nil
 }
 
-func (mismatchListClient) Watch(context.Context, metav1.ListOptions) (watch.Interface, error) {
+func (unextractableListClient) Watch(context.Context, metav1.ListOptions) (watch.Interface, error) {
 	return nil, nil
 }
 
-func (mismatchListClient) Create(
+func (unextractableListClient) Create(
 	context.Context, *corev1.Pod, metav1.CreateOptions,
 ) (*corev1.Pod, error) {
 	return nil, nil
 }
 
-func (mismatchListClient) Delete(context.Context, string, metav1.DeleteOptions) error {
+func (unextractableListClient) Delete(context.Context, string, metav1.DeleteOptions) error {
 	return nil
 }
 
-func (mismatchListClient) Update(
+func (unextractableListClient) Update(
 	context.Context, *corev1.Pod, metav1.UpdateOptions,
 ) (*corev1.Pod, error) {
 	return nil, nil
 }
 
-func (mismatchListClient) Apply(
+func (unextractableListClient) Apply(
 	context.Context, *applyconfigurationscorev1.PodApplyConfiguration, metav1.ApplyOptions,
 ) (*corev1.Pod, error) {
 	return nil, nil
 }
 
-func (mismatchListClient) Patch(
+func (unextractableListClient) Patch(
 	context.Context, string, types.PatchType, []byte, metav1.PatchOptions, ...string,
 ) (*corev1.Pod, error) {
 	return nil, nil
 }
 
 // TestWaitForStatus_LabelSelector_ExtractError guards the error ordering in
-// the labelSelector path: an extractItems failure must surface immediately
+// the labelSelector path: an item extraction failure must surface immediately
 // instead of being swallowed by the len==0 polling continue (which previously
 // spun until the 5 minute timeout).
 func TestWaitForStatus_LabelSelector_ExtractError(t *testing.T) {
@@ -139,7 +96,7 @@ func TestWaitForStatus_LabelSelector_ExtractError(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	matched, err := WaitForStatus(ctx, mismatchListClient{}, "", "app=vald", StatusAvailable)
+	matched, err := WaitForStatus(ctx, unextractableListClient{}, "", "app=vald", StatusAvailable)
 	if matched {
 		t.Error("WaitForStatus() matched = true, want false")
 	}

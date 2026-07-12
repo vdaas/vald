@@ -19,8 +19,9 @@ package resource
 import (
 	"context"
 
-	json "github.com/vdaas/vald/internal/encoding/json"
+	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/k8s"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -30,9 +31,13 @@ import (
 // This file provides generic helpers for operating on arbitrary runtime
 // objects (such as custom resources) through a scheme-aware client, so that
 // controllers do not have to depend on controller-runtime helpers directly.
+//
+// Object access goes through k8s.Client (the same controller-runtime
+// client.Client alias reconcilers get from mgr.GetClient()), rather than a
+// separately named type, so there is exactly one "scheme-aware client"
+// abstraction across internal/k8s.
 
 type (
-	ObjectAPI       = kclient.Client
 	ObjectListType  = kclient.ObjectList
 	OperationResult = controllerutil.OperationResult
 	ListOption      = kclient.ListOption
@@ -51,8 +56,8 @@ var (
 
 // GetObject fetches the object identified by name and namespace into obj and
 // returns it. Pass an empty namespace for cluster-scoped objects.
-func GetObject[T Object](
-	ctx context.Context, c ObjectAPI, name, namespace string, obj T,
+func GetObject[T k8s.Object](
+	ctx context.Context, c k8s.Client, name, namespace string, obj T,
 ) (T, error) {
 	if err := c.Get(ctx, kclient.ObjectKey{Name: name, Namespace: namespace}, obj); err != nil {
 		return obj, err
@@ -60,7 +65,7 @@ func GetObject[T Object](
 	return obj, nil
 }
 
-func RefreshObject[T Object](ctx context.Context, c ObjectAPI, obj T) (T, error) {
+func RefreshObject[T k8s.Object](ctx context.Context, c k8s.Client, obj T) (T, error) {
 	if err := c.Get(ctx, kclient.ObjectKeyFromObject(obj), obj); err != nil {
 		return obj, err
 	}
@@ -68,7 +73,7 @@ func RefreshObject[T Object](ctx context.Context, c ObjectAPI, obj T) (T, error)
 }
 
 func ListObjects[L ObjectListType](
-	ctx context.Context, c ObjectAPI, list L, opts ...ListOption,
+	ctx context.Context, c k8s.Client, list L, opts ...ListOption,
 ) (L, error) {
 	if err := c.List(ctx, list, opts...); err != nil {
 		return list, err
@@ -79,7 +84,7 @@ func ListObjects[L ObjectListType](
 // ToUnstructured converts obj into its unstructured representation through a
 // JSON round-trip, so the result matches the object's JSON wire format
 // exactly (including omitempty handling).
-func ToUnstructured(obj Object) (*unstructured.Unstructured, error) {
+func ToUnstructured(obj k8s.Object) (*unstructured.Unstructured, error) {
 	raw, err := json.Marshal(obj)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to marshal object")
@@ -93,10 +98,10 @@ func ToUnstructured(obj Object) (*unstructured.Unstructured, error) {
 
 // ObjectsOf returns the addresses of items as an []Object slice, so typed
 // list items can be handed to Object-based helpers without per-caller loops.
-func ObjectsOf[T any, PT Objectable[T]](items []T) []Object {
-	out := make([]Object, len(items))
+func ObjectsOf[T k8s.Object](items []T) []k8s.Object {
+	out := make([]k8s.Object, len(items))
 	for i := range items {
-		out[i] = PT(&items[i])
+		out[i] = items[i]
 	}
 	return out
 }

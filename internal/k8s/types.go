@@ -33,7 +33,7 @@ import (
 	utilyaml "k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/util/jsonpath"
-	metricsv1beta1 "k8s.io/metrics/pkg/apis/metrics/v1beta1"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -45,15 +45,19 @@ import (
 
 type (
 	Client                    = client.Client
+	ClientWithWatch           = client.WithWatch
 	Object                    = client.Object
 	ObjectList                = client.ObjectList
 	ObjectKey                 = client.ObjectKey
 	DeleteAllOfOptions        = client.DeleteAllOfOptions
 	DeleteOptions             = client.DeleteOptions
+	DeleteOption              = client.DeleteOption
 	ListOptions               = client.ListOptions
 	ListOption                = client.ListOption
 	CreateOption              = client.CreateOption
 	GetOption                 = client.GetOption
+	UpdateOption              = client.UpdateOption
+	SubResourceUpdateOption   = client.SubResourceUpdateOption
 	MatchingLabels            = client.MatchingLabels
 	MatchingFields            = client.MatchingFields
 	InNamespace               = client.InNamespace
@@ -68,6 +72,24 @@ type (
 	NodeList                  = corev1.NodeList
 	Deployment                = appsv1.Deployment
 	DeploymentList            = appsv1.DeploymentList
+	StatefulSet               = appsv1.StatefulSet
+	StatefulSetList           = appsv1.StatefulSetList
+	DaemonSet                 = appsv1.DaemonSet
+	DaemonSetList             = appsv1.DaemonSetList
+	ConfigMap                 = corev1.ConfigMap
+	ConfigMapList             = corev1.ConfigMapList
+	Secret                    = corev1.Secret
+	SecretList                = corev1.SecretList
+	Service                   = corev1.Service
+	ServiceList               = corev1.ServiceList
+	CronJob                   = batchv1.CronJob
+	CronJobList               = batchv1.CronJobList
+	MutatingWebhookConfiguration           = admissionregistrationv1.MutatingWebhookConfiguration
+	MutatingWebhookConfigurationList       = admissionregistrationv1.MutatingWebhookConfigurationList
+	ValidatingWebhookConfiguration         = admissionregistrationv1.ValidatingWebhookConfiguration
+	ValidatingWebhookConfigurationList     = admissionregistrationv1.ValidatingWebhookConfigurationList
+	Endpoints                 = corev1.Endpoints
+	EndpointsList             = corev1.EndpointsList
 	ObjectMeta                = metav1.ObjectMeta
 	Job                       = batchv1.Job
 	JobList                   = batchv1.JobList
@@ -108,12 +130,6 @@ type (
 	NamespacedName       = types.NamespacedName
 	PatchOptions         = metav1.PatchOptions
 	Scheme               = runtime.Scheme
-
-	// metrics API types
-	APIPodMetrics      = metricsv1beta1.PodMetrics
-	APIPodMetricsList  = metricsv1beta1.PodMetricsList
-	APINodeMetrics     = metricsv1beta1.NodeMetrics
-	APINodeMetricsList = metricsv1beta1.NodeMetricsList
 )
 
 const (
@@ -150,9 +166,6 @@ const (
 	PathTypeImplementationSpecific = networkingv1.PathTypeImplementationSpecific
 	PathTypePrefix                 = networkingv1.PathTypePrefix
 )
-
-// MetricsAddToScheme registers the metrics.k8s.io API types with a scheme.
-var MetricsAddToScheme = metricsv1beta1.AddToScheme
 
 var (
 	IntOrStringFrom      = intstr.FromString

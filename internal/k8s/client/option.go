@@ -18,12 +18,16 @@ package client
 
 import "k8s.io/apimachinery/pkg/runtime"
 
-type Option func(*client) error
+type options struct {
+	scheme *runtime.Scheme
+}
+
+type Option func(*options) error
 
 // WithSchemeBuilder registers the given scheme builder's types on the
 // client's scheme.
 func WithSchemeBuilder(sb runtime.SchemeBuilder) Option {
-	return func(c *client) error {
-		return sb.AddToScheme(c.scheme)
+	return func(o *options) error {
+		return sb.AddToScheme(o.scheme)
 	}
 }

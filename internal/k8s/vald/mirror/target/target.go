@@ -33,6 +33,7 @@ import (
 type (
 	MirrorTargetWatcher k8s.ResourceController
 	MirrorTarget        = mirrv1.ValdMirrorTarget
+	MirrorTargetList    = mirrv1.ValdMirrorTargetList
 	MirrorTargetStatus  = mirrv1.MirrorTargetStatus
 	MirrorTargetPhase   = mirrv1.MirrorTargetPhase
 )

@@ -48,9 +48,11 @@ type rotator struct {
 }
 
 type subProcess struct {
-	listOpts   k8s.ListOptions
-	client     client.Client
-	volumeName string
+	listOpts    k8s.ListOptions
+	snapshots   client.Client[*k8s.VolumeSnapshot, *k8s.VolumeSnapshotList]
+	pvcs        client.Client[*k8s.PersistentVolumeClaim, *k8s.PersistentVolumeClaimList]
+	deployments client.DeploymentListClient
+	volumeName  string
 }
 
 // New returns Indexer object if no error occurs.
@@ -70,18 +72,18 @@ func New(replicaID string, opts ...Option) (Rotator, error) {
 		}
 	}
 
-	c, err := client.New()
+	c, err := client.New[*k8s.Pod, *k8s.PodList](new(k8s.Pod), new(k8s.PodList))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create kubernetes client: %w", err)
 	}
 
-	ids, err := r.parseReplicaID(replicaID, c)
+	ids, err := r.parseReplicaID(replicaID, c.Raw())
 	if err != nil {
 		return nil, err
 	}
 
 	for _, id := range ids {
-		sub, err := r.newSubprocess(c, id)
+		sub, err := r.newSubprocess(c.Raw(), id)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create rotator subprocess: %w", err)
 		}
@@ -118,18 +120,21 @@ func (r *rotator) Start(ctx context.Context) error {
 	return eg.Wait()
 }
 
-func (r *rotator) newSubprocess(c client.Client, replicaID string) (subProcess, error) {
-	selector, err := c.LabelSelector(r.readReplicaLabelKey, k8s.SelectionOpEquals, []string{replicaID})
+func (r *rotator) newSubprocess(c k8s.ClientWithWatch, replicaID string) (subProcess, error) {
+	selector, err := client.NewLabelSelector(r.readReplicaLabelKey, k8s.SelectionOpEquals, []string{replicaID})
 	if err != nil {
 		return subProcess{}, err
 	}
+	raw := c
 	sub := subProcess{
-		client: c,
 		listOpts: k8s.ListOptions{
 			Namespace:     r.namespace,
 			LabelSelector: selector,
 		},
-		volumeName: r.volumeName,
+		snapshots:   client.NewWithClient[*k8s.VolumeSnapshot, *k8s.VolumeSnapshotList](raw, new(k8s.VolumeSnapshot), new(k8s.VolumeSnapshotList)),
+		pvcs:        client.NewWithClient[*k8s.PersistentVolumeClaim, *k8s.PersistentVolumeClaimList](raw, new(k8s.PersistentVolumeClaim), new(k8s.PersistentVolumeClaimList)),
+		deployments: client.NewWithClient[*k8s.Deployment, *k8s.DeploymentList](raw, new(k8s.Deployment), new(k8s.DeploymentList)),
+		volumeName:  r.volumeName,
 	}
 	return sub, nil
 }
@@ -185,8 +190,8 @@ func (s *subProcess) rotate(ctx context.Context) error {
 func (s *subProcess) createSnapshot(
 	ctx context.Context, deployment *k8s.Deployment,
 ) (newSnap, oldSnap *k8s.VolumeSnapshot, err error) {
-	list := k8s.VolumeSnapshotList{}
-	if err := s.client.List(ctx, &list, &s.listOpts); err != nil {
+	list, err := s.snapshots.List(ctx, &s.listOpts)
+	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get snapshot: %w", err)
 	}
 	if len(list.Items) == 0 {
@@ -220,7 +225,7 @@ func (s *subProcess) createSnapshot(
 	log.Infof("creating new snapshot(%s)...", newSnap.GetName())
 	log.Debugf("snapshot detail: %#v", newSnap)
 
-	err = s.client.Create(ctx, newSnap)
+	err = s.snapshots.Create(ctx, newSnap)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create snapshot: %w", err)
 	}
@@ -231,8 +236,8 @@ func (s *subProcess) createSnapshot(
 func (s *subProcess) createPVC(
 	ctx context.Context, newSnapShot string, deployment *k8s.Deployment,
 ) (newPvc, oldPvc *k8s.PersistentVolumeClaim, err error) {
-	list := k8s.PersistentVolumeClaimList{}
-	if err := s.client.List(ctx, &list, &s.listOpts); err != nil {
+	list, err := s.pvcs.List(ctx, &s.listOpts)
+	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get PVC: %w", err)
 	}
 	if len(list.Items) == 0 {
@@ -277,7 +282,7 @@ func (s *subProcess) createPVC(
 	log.Infof("creating new pvc(%s)...", newPvc.GetName())
 	log.Debugf("pvc detail: %#v", newPvc)
 
-	if err := s.client.Create(ctx, newPvc); err != nil {
+	if err := s.pvcs.Create(ctx, newPvc); err != nil {
 		return nil, nil, fmt.Errorf("failed to create PVC(%s): %w", newPvc.GetName(), err)
 	}
 
@@ -285,8 +290,8 @@ func (s *subProcess) createPVC(
 }
 
 func (s *subProcess) getDeployment(ctx context.Context) (*k8s.Deployment, error) {
-	list := k8s.DeploymentList{}
-	if err := s.client.List(ctx, &list, &s.listOpts); err != nil {
+	list, err := s.deployments.List(ctx, &s.listOpts)
+	if err != nil {
 		return nil, fmt.Errorf("failed to get deployment through client: %w", err)
 	}
 	if len(list.Items) == 0 {
@@ -319,7 +324,7 @@ func (s *subProcess) updateDeployment(
 	log.Infof("updating deployment(%s)...", deployment.GetName())
 	log.Debugf("deployment detail: %#v", deployment)
 
-	if err := s.client.Update(ctx, deployment); err != nil {
+	if err := s.deployments.Update(ctx, deployment); err != nil {
 		return fmt.Errorf("failed to update deployment: %w", err)
 	}
 
@@ -327,13 +332,7 @@ func (s *subProcess) updateDeployment(
 }
 
 func (s *subProcess) deleteSnapshot(ctx context.Context, snapshot *k8s.VolumeSnapshot) error {
-	watcher, err := s.client.Watch(
-		ctx,
-		&k8s.VolumeSnapshotList{
-			Items: []k8s.VolumeSnapshot{*snapshot},
-		},
-		&s.listOpts,
-	)
+	watcher, err := s.snapshots.Watch(ctx, &s.listOpts)
 	if err != nil {
 		return fmt.Errorf("failed to watch snapshot(%s): %w", snapshot.GetName(), err)
 	}
@@ -358,20 +357,14 @@ func (s *subProcess) deleteSnapshot(ctx context.Context, snapshot *k8s.VolumeSna
 		}
 	})
 
-	if err := s.client.Delete(ctx, snapshot); err != nil {
+	if err := s.snapshots.Delete(ctx, snapshot); err != nil {
 		return fmt.Errorf("failed to delete snapshot: %w", err)
 	}
 	return eg.Wait()
 }
 
 func (s *subProcess) deletePVC(ctx context.Context, pvc *k8s.PersistentVolumeClaim) error {
-	watcher, err := s.client.Watch(
-		ctx,
-		&k8s.PersistentVolumeClaimList{
-			Items: []k8s.PersistentVolumeClaim{*pvc},
-		},
-		&s.listOpts,
-	)
+	watcher, err := s.pvcs.Watch(ctx, &s.listOpts)
 	if err != nil {
 		return fmt.Errorf("failed to watch PVC: %w", err)
 	}
@@ -396,7 +389,7 @@ func (s *subProcess) deletePVC(ctx context.Context, pvc *k8s.PersistentVolumeCla
 		}
 	})
 
-	if err := s.client.Delete(ctx, pvc); err != nil {
+	if err := s.pvcs.Delete(ctx, pvc); err != nil {
 		return fmt.Errorf("failed to delete PVC(%s): %w", pvc.GetName(), err)
 	}
 
@@ -415,21 +408,22 @@ func getNewBaseName(old string) string {
 	return newNameBase
 }
 
-func (r *rotator) parseReplicaID(replicaID string, c client.Client) ([]string, error) {
+func (r *rotator) parseReplicaID(replicaID string, c k8s.ClientWithWatch) ([]string, error) {
 	if replicaID == "" {
 		return nil, errors.ErrReadReplicaIDEmpty
 	}
 
 	if replicaID == rotateAllID {
-		var deploymentList k8s.DeploymentList
-		selector, err := c.LabelSelector(r.readReplicaLabelKey, k8s.SelectionOpExists, []string{})
+		selector, err := client.NewLabelSelector(r.readReplicaLabelKey, k8s.SelectionOpExists, []string{})
 		if err != nil {
 			return nil, err
 		}
-		if err := c.List(context.Background(), &deploymentList, &k8s.ListOptions{
+		deploymentClient := client.NewWithClient[*k8s.Deployment, *k8s.DeploymentList](c, new(k8s.Deployment), new(k8s.DeploymentList))
+		deploymentList, err := deploymentClient.List(context.Background(), &k8s.ListOptions{
 			Namespace:     r.namespace,
 			LabelSelector: selector,
-		}); err != nil {
+		})
+		if err != nil {
 			return nil, fmt.Errorf("failed to List deployments in parseReplicaID: %w", err)
 		}
 

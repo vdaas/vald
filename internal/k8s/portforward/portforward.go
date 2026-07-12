@@ -27,14 +27,14 @@ import (
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/k8s"
 	kclient "github.com/vdaas/vald/internal/k8s/client"
-	k8s "github.com/vdaas/vald/internal/k8s/resource"
 	"github.com/vdaas/vald/internal/log"
+	corev1 "k8s.io/api/core/v1"
 	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	watch "k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/tools/portforward"
 	"k8s.io/client-go/transport/spdy"
@@ -60,7 +60,7 @@ type portForward struct {
 	client kclient.ClientSet
 
 	// EndpointsClient is used to watch the Endpoints resource.
-	eclient k8s.EndpointClient
+	eclient kclient.Client[*corev1.Endpoints, *corev1.EndpointsList]
 
 	// Backoff settings for the connection loop.
 	backoff backoff.Backoff
@@ -122,7 +122,11 @@ func New(opts ...Option) (Forwarder, error) {
 	if len(pf.ports) == 0 {
 		return nil, errors.ErrPortForwardPortPairNotFound
 	}
-	pf.eclient = k8s.Endpoints(pf.client, pf.namespace)
+	var err error
+	pf.eclient, err = kclient.NewWithConfig[*corev1.Endpoints, *corev1.EndpointsList](pf.client.GetRESTConfig(), new(corev1.Endpoints), new(corev1.EndpointsList))
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create endpoints client for portforward")
+	}
 
 	if pf.httpClient == nil {
 		pf.httpClient = http.DefaultClient
@@ -282,9 +286,9 @@ func (pf *portForward) Stop() (err error) {
 }
 
 func (pf *portForward) endpointsWatcher(ctx context.Context) (w watch.Interface, err error) {
-	w, err = pf.eclient.Watch(ctx, metav1.ListOptions{
-		FieldSelector: fmt.Sprintf("metadata.name=%s", pf.serviceName),
-	})
+	w, err = pf.eclient.Watch(ctx, k8s.MatchingFields(map[string]string{
+		"metadata.name": pf.serviceName,
+	}))
 	if err != nil {
 		log.Errorf("failed to watch endpoints for service %s: %v", pf.serviceName, err)
 		return nil, err
@@ -295,7 +299,7 @@ func (pf *portForward) endpointsWatcher(ctx context.Context) (w watch.Interface,
 // loadTargets retrieves the current Endpoints for the service,
 // extracts the associated pod names, and updates the internal targets.
 func (pf *portForward) loadTargets(ctx context.Context) {
-	endpoints, err := pf.eclient.Get(ctx, pf.serviceName, metav1.GetOptions{})
+	endpoints, err := pf.eclient.Get(ctx, pf.serviceName, pf.namespace)
 	if err != nil {
 		log.Errorf("failed to get endpoints for service %s: %v", pf.serviceName, err)
 		return

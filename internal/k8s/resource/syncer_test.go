@@ -22,6 +22,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/k8s"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -53,7 +54,7 @@ func newSyncOwner() *appsv1.Deployment {
 
 // listConfigMaps returns every ConfigMap in the namespace as the prune
 // candidate set, mirroring how callers list their owned resource kind.
-func listConfigMaps(c ObjectAPI, ns string) func(ctx context.Context) ([]Object, error) {
+func listConfigMaps(c k8s.Client, ns string) func(ctx context.Context) ([]Object, error) {
 	return func(ctx context.Context) ([]Object, error) {
 		list := &corev1.ConfigMapList{}
 		if err := c.List(ctx, list, kclient.InNamespace(ns)); err != nil {

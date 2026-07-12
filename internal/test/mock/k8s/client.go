@@ -30,7 +30,7 @@ type ValdK8sClientMock struct {
 	mock.Mock
 }
 
-var _ client.Client = (*ValdK8sClientMock)(nil)
+
 
 func (m *ValdK8sClientMock) Get(
 	ctx context.Context, name, namespace string, obj k8s.Object, opts ...crclient.GetOption,
@@ -88,16 +88,27 @@ func (m *ValdK8sClientMock) Watch(
 	return args.Get(0).(watch.Interface), args.Error(1)
 }
 
-func (m *ValdK8sClientMock) MatchingLabels(labels map[string]string) k8s.MatchingLabels {
-	args := m.Called(labels)
-	return args.Get(0).(k8s.MatchingLabels)
-}
-
 func (m *ValdK8sClientMock) LabelSelector(
 	key string, op selection.Operator, vals []string,
 ) (labels.Selector, error) {
 	args := m.Called(key, op, vals)
 	return args.Get(0).(labels.Selector), args.Error(1)
+}
+
+// Raw returns the controller-runtime client backing List/Create/Update/Delete
+// calls made through resource.ObjectClient/ListClient. Tests that exercise
+// those paths must set it via WithRaw before use; other tests that only stub
+// this mock's own methods (Get/List/Create/...) never call it.
+func (m *ValdK8sClientMock) Raw() crclient.WithWatch {
+	args := m.Called()
+	raw, _ := args.Get(0).(crclient.WithWatch)
+	return raw
+}
+
+// WithRaw sets the value Raw() returns and returns m for chaining.
+func (m *ValdK8sClientMock) WithRaw(raw crclient.WithWatch) *ValdK8sClientMock {
+	m.On("Raw").Return(raw)
+	return m
 }
 
 type PatcherMock struct {

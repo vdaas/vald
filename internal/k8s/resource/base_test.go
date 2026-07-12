@@ -142,18 +142,6 @@ func TestBase_DeepCopy(t *testing.T) {
 	}
 }
 
-func TestBase_DeepCopyInto(t *testing.T) {
-	t.Parallel()
-
-	orig := newSynthetic()
-	out := new(synthetic)
-	orig.Base.DeepCopyInto(out)
-	out.Labels["app"] = "mutated"
-	if orig.Labels["app"] != "vald" {
-		t.Errorf("original mutated through Base.DeepCopyInto: %v", orig.Labels)
-	}
-}
-
 func TestBase_NilReceiver(t *testing.T) {
 	t.Parallel()
 
@@ -164,7 +152,6 @@ func TestBase_NilReceiver(t *testing.T) {
 	if got := b.DeepCopyObject(); got != nil {
 		t.Errorf("nil receiver DeepCopyObject() = %v, want nil", got)
 	}
-	b.DeepCopyInto(nil) // must not panic
 }
 
 func TestBase_DeepCopyObject(t *testing.T) {

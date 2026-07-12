@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/k8s/client"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/log"
@@ -35,7 +36,7 @@ type GlobalConfig = config.GlobalConfig
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Config struct {
 	// K8sClient represent k8s client configuration
-	K8sClient client.Client `json:"k8s_client" yaml:"k8s_client"`
+	K8sClient k8s.ClientWithWatch `json:"-" yaml:"-"`
 
 	// Server represent all server configurations
 	Server *config.Servers `json:"server_config" yaml:"server_config"`
@@ -92,16 +93,15 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 	}
 
 	// Get config from applied ValdBenchmarkJob custom resource
-	var jobResource v1.ValdBenchmarkJob
 	if cfg.K8sClient == nil {
-		c, err := client.New(client.WithSchemeBuilder(v1.SchemeBuilder))
+		c, err := client.New[*v1.ValdBenchmarkJob, *v1.ValdBenchmarkJobList](new(v1.ValdBenchmarkJob), new(v1.ValdBenchmarkJobList), client.WithSchemeBuilder(v1.SchemeBuilder))
 		if err != nil {
 			log.Error(err.Error())
 			return nil, err
 		}
-		cfg.K8sClient = c
+		cfg.K8sClient = c.Raw()
 	}
-	err = cfg.K8sClient.Get(ctx, NAME, NAMESPACE, &jobResource)
+	jobResource, err := client.NewWithClient[*v1.ValdBenchmarkJob, *v1.ValdBenchmarkJobList](cfg.K8sClient, new(v1.ValdBenchmarkJob), new(v1.ValdBenchmarkJobList)).Get(ctx, NAME, NAMESPACE)
 	if err != nil {
 		log.Warn(err.Error())
 	} else {

@@ -67,14 +67,12 @@ func (b *Base[T, PT]) self() PT {
 	return PT(unsafe.Pointer(b)) // skipcq: GSC-G103 zero-size first-field embedding contract documented on Base.
 }
 
-// DeepCopyInto copies the receiver's outer object into out via the outer
-// type's own DeepCopyInto implementation.
-func (b *Base[T, PT]) DeepCopyInto(out *T) {
-	if b == nil || out == nil {
-		return
-	}
-	b.self().DeepCopyInto(out)
-}
+// Base deliberately does NOT provide a DeepCopyInto method: if it did, a type
+// that embeds Base but forgets its hand-written DeepCopyInto would still
+// satisfy DeepCopyIntoer through the promoted method and recurse infinitely at
+// runtime (self().DeepCopyInto -> promoted method -> self().DeepCopyInto).
+// Without it, that mistake is a compile error: "*T does not satisfy
+// DeepCopyIntoer[T] (missing method DeepCopyInto)".
 
 func (b *Base[T, PT]) DeepCopy() *T {
 	if b == nil {

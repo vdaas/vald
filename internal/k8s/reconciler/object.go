@@ -36,21 +36,21 @@ type ObjectOption[T k8s.Object] func(*objectReconciler[T])
 // callback. It generalizes the former internal/k8s/v2/pod reconciler.
 type objectReconciler[T k8s.Object] struct {
 	baseReconciler
-	newObj      func() T
 	onReconcile func(ctx context.Context, obj T) (k8s.Result, error)
 	onError     func(err error)
 	forOpts     []builder.ForOption
+	obj         T
 }
 
 // NewObjectReconciler returns an event-type ResourceController named name
-// that watches the object created by newObj and dispatches each reconciled
+// that watches a freshly constructed T and dispatches each reconciled
 // object to the WithOnObjectReconcile callback.
 func NewObjectReconciler[T k8s.Object](
-	name string, newObj func() T, opts ...ObjectOption[T],
+	name string, obj T, opts ...ObjectOption[T],
 ) k8s.ResourceController {
 	r := &objectReconciler[T]{
 		baseReconciler: baseReconciler{name: name},
-		newObj:         newObj,
+		obj:            obj,
 	}
 	for _, opt := range opts {
 		if opt != nil {
@@ -116,7 +116,8 @@ func (r *objectReconciler[T]) Reconcile(
 	if r.mgr == nil {
 		return reconcile.Result{}, errors.Errorf("manager is not registered for %s reconciler", r.name)
 	}
-	obj, err := resource.GetObject(ctx, r.mgr.GetClient(), req.Name, req.Namespace, r.newObj())
+	obj := r.obj.DeepCopyObject().(T)
+	obj, err := resource.GetObject(ctx, r.mgr.GetClient(), req.Name, req.Namespace, obj)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return reconcile.Result{}, nil
@@ -139,14 +140,14 @@ func (r *objectReconciler[T]) Reconcile(
 func (r *objectReconciler[T]) NewReconciler(
 	ctx context.Context, mgr manager.Manager,
 ) reconcile.Reconciler {
-	if !r.setup(ctx, mgr, nil, r.newObj()) {
+	if !r.setup(ctx, mgr, nil, r.obj) {
 		return r
 	}
 	return r
 }
 
 func (r *objectReconciler[T]) For() (k8s.Object, []builder.ForOption) {
-	return r.newObj(), r.forOpts
+	return r.obj.DeepCopyObject().(T), r.forOpts
 }
 
 func (*objectReconciler[T]) Owns() (k8s.Object, []builder.OwnsOption) {

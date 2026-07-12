@@ -23,7 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/k8s/client"
+	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/data/hdf5"
@@ -228,7 +228,7 @@ func WithBeforeJobDuration(dur string) Option {
 }
 
 // WithK8sClient binds the k8s client to the job struct which is used for get BenchmarkJobResource from Kubernetes API server.
-func WithK8sClient(cli client.Client) Option {
+func WithK8sClient(cli k8s.ClientWithWatch) Option {
 	return func(j *job) error {
 		if cli != nil {
 			j.k8sClient = cli

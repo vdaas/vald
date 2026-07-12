@@ -21,6 +21,7 @@ import (
 	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/strings"
+	metricsv1beta1 "k8s.io/metrics/pkg/apis/metrics/v1beta1"
 )
 
 // Pod is the discoverer's domain view of a running Kubernetes Pod with its
@@ -194,7 +195,7 @@ type NodeMetrics struct {
 
 // toPodMetricsMap converts a PodMetricsList into the discoverer's PodMetrics
 // domain model keyed by pod name, averaging usage over the containers.
-func toPodMetricsMap(list *k8s.APIPodMetricsList) map[string]PodMetrics {
+func toPodMetricsMap(list *metricsv1beta1.PodMetricsList) map[string]PodMetrics {
 	var (
 		cpuUsage float64
 		memUsage float64
@@ -224,7 +225,7 @@ func toPodMetricsMap(list *k8s.APIPodMetricsList) map[string]PodMetrics {
 
 // toNodeMetricsMap converts a NodeMetricsList into the discoverer's
 // NodeMetrics domain model keyed by node name.
-func toNodeMetricsMap(list *k8s.APINodeMetricsList) map[string]NodeMetrics {
+func toNodeMetricsMap(list *metricsv1beta1.NodeMetricsList) map[string]NodeMetrics {
 	nodes := make(map[string]NodeMetrics, len(list.Items))
 	for _, node := range list.Items {
 		nodeName := node.GetName()
@@ -242,7 +243,7 @@ func toNodeMetricsMap(list *k8s.APINodeMetricsList) map[string]NodeMetrics {
 // podMetricsContainersNameIndexer extracts the containers.name cache index
 // values for PodMetrics so that field selectors on containers.name work.
 func podMetricsContainersNameIndexer(obj k8s.Object) []string {
-	pod, ok := obj.(*k8s.APIPodMetrics)
+	pod, ok := obj.(*metricsv1beta1.PodMetrics)
 	if !ok {
 		return nil
 	}

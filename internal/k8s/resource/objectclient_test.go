@@ -19,12 +19,15 @@ package resource
 import (
 	"context"
 	"testing"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/watch"
 	ctrl "sigs.k8s.io/controller-runtime"
+	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
 
@@ -38,6 +41,18 @@ func newPodObjectClient(
 	}
 	c := fake.NewClientBuilder().WithScheme(scheme).WithObjects(objs...).Build()
 	return NewObjectClient[corev1.ConfigMap](c)
+}
+
+func newConfigMapListClient(
+	t *testing.T, objs ...Object,
+) *ListClient[corev1.ConfigMap, corev1.ConfigMapList, *corev1.ConfigMap, *corev1.ConfigMapList] {
+	t.Helper()
+	scheme := runtime.NewScheme()
+	if err := corev1.AddToScheme(scheme); err != nil {
+		t.Fatalf("failed to add corev1 scheme: %v", err)
+	}
+	c := fake.NewClientBuilder().WithScheme(scheme).WithObjects(objs...).Build()
+	return NewListClient[corev1.ConfigMap, corev1.ConfigMapList](c)
 }
 
 func newConfigMap(name, namespace string, data map[string]string) *corev1.ConfigMap {
@@ -167,4 +182,87 @@ func TestObjectClient_Wait(t *testing.T) {
 			t.Error("Wait() done = false, want true")
 		}
 	})
+}
+
+func TestListClient_List(t *testing.T) {
+	t.Parallel()
+
+	lc := newConfigMapListClient(t,
+		newConfigMap("a", "default", nil),
+		newConfigMap("b", "default", nil),
+		newConfigMap("c", "other", nil),
+	)
+	list, err := lc.List(context.Background(), kclient.InNamespace("default"))
+	if err != nil {
+		t.Fatalf("List() error = %v", err)
+	}
+	if len(list.Items) != 2 {
+		t.Errorf("List() len = %d, want 2", len(list.Items))
+	}
+}
+
+func TestListClient_CreateUpdateDelete(t *testing.T) {
+	t.Parallel()
+
+	lc := newConfigMapListClient(t)
+	ctx := context.Background()
+
+	obj := newConfigMap("target", "default", map[string]string{"k": "v1"})
+	if err := lc.Create(ctx, obj); err != nil {
+		t.Fatalf("Create() error = %v", err)
+	}
+
+	got, err := lc.Get(ctx, "target", "default")
+	if err != nil {
+		t.Fatalf("Get() after Create error = %v", err)
+	}
+	if got.Data["k"] != "v1" {
+		t.Errorf("data = %q, want %q", got.Data["k"], "v1")
+	}
+
+	got.Data["k"] = "v2"
+	if err := lc.Update(ctx, got); err != nil {
+		t.Fatalf("Update() error = %v", err)
+	}
+	got, err = lc.Get(ctx, "target", "default")
+	if err != nil {
+		t.Fatalf("Get() after Update error = %v", err)
+	}
+	if got.Data["k"] != "v2" {
+		t.Errorf("data after update = %q, want %q", got.Data["k"], "v2")
+	}
+
+	if err := lc.Delete(ctx, got); err != nil {
+		t.Fatalf("Delete() error = %v", err)
+	}
+	if _, err := lc.Get(ctx, "target", "default"); !apierrors.IsNotFound(err) {
+		t.Errorf("Get() after Delete error = %v, want NotFound", err)
+	}
+}
+
+func TestListClient_Watch(t *testing.T) {
+	t.Parallel()
+
+	lc := newConfigMapListClient(t)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	w, err := lc.Watch(ctx, kclient.InNamespace("default"))
+	if err != nil {
+		t.Fatalf("Watch() error = %v", err)
+	}
+	defer w.Stop()
+
+	if err := lc.Create(ctx, newConfigMap("watched", "default", nil)); err != nil {
+		t.Fatalf("Create() error = %v", err)
+	}
+
+	select {
+	case event := <-w.ResultChan():
+		if event.Type != watch.Added {
+			t.Errorf("event.Type = %v, want ADDED", event.Type)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("timed out waiting for watch event")
+	}
 }

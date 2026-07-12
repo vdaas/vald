@@ -29,7 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/k8s/client"
+	"github.com/vdaas/vald/internal/k8s"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -84,7 +84,7 @@ func (jt jobType) String() string {
 type job struct {
 	eg                 errgroup.Group
 	limiter            rate.Limiter
-	k8sClient          client.Client
+	k8sClient          k8s.ClientWithWatch
 	hdf5               hdf5.Data
 	client             vald.Client
 	insertConfig       *config.InsertConfig
@@ -231,7 +231,7 @@ func (j *job) PreStart(ctx context.Context) error {
 				case <-ctx.Done():
 					return nil
 				case <-dt.C:
-					err := j.k8sClient.Get(ctx, j.beforeJobName, j.beforeJobNamespace, &jobResource)
+					err := j.k8sClient.Get(ctx, k8s.ObjectKey{Name: j.beforeJobName, Namespace: j.beforeJobNamespace}, &jobResource)
 					if err != nil {
 						return err
 					}

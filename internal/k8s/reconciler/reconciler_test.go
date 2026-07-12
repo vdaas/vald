@@ -125,10 +125,9 @@ func newFakeClient(t *testing.T, objs ...kclient.Object) k8s.Client {
 func TestListReconciler_Metadata(t *testing.T) {
 	t.Parallel()
 
-	rc := NewListReconciler(
+	rc := NewListReconciler[corev1.PodList](
 		"pod watcher",
 		new(corev1.Pod),
-		func() *corev1.PodList { return new(corev1.PodList) },
 	)
 
 	if got, want := rc.GetName(), "pod watcher"; got != want {
@@ -160,12 +159,11 @@ func TestListReconciler_Metadata(t *testing.T) {
 func TestListReconciler_Watches_SingleFixedRequest(t *testing.T) {
 	t.Parallel()
 
-	rc := NewListReconciler(
+	rc := NewListReconciler[corev1.PodList](
 		"pod watcher",
 		new(corev1.Pod),
-		func() *corev1.PodList { return new(corev1.PodList) },
 	)
-	lr, ok := rc.(*listReconciler[*corev1.PodList])
+	lr, ok := rc.(*listReconciler[corev1.PodList, *corev1.PodList])
 	if !ok {
 		t.Fatalf("NewListReconciler() = %T, want *listReconciler", rc)
 	}
@@ -212,7 +210,7 @@ func TestListReconciler_Reconcile(t *testing.T) {
 	type test struct {
 		name   string
 		client func(t *testing.T) k8s.Client
-		opts   func(reconciled *int, errored *int) []ListOption[*corev1.PodList]
+		opts   func(reconciled *int, errored *int) []ListOption[corev1.PodList, *corev1.PodList]
 		want   want
 	}
 
@@ -223,9 +221,9 @@ func TestListReconciler_Reconcile(t *testing.T) {
 				t.Helper()
 				return newFakeClient(t, newPod("a", "default"), newPod("b", "other"))
 			},
-			opts: func(reconciled, _ *int) []ListOption[*corev1.PodList] {
-				return []ListOption[*corev1.PodList]{
-					WithNamespace[*corev1.PodList]("default"),
+			opts: func(reconciled, _ *int) []ListOption[corev1.PodList, *corev1.PodList] {
+				return []ListOption[corev1.PodList, *corev1.PodList]{
+					WithNamespace[corev1.PodList]("default"),
 					WithOnReconcile(func(_ context.Context, list *corev1.PodList) {
 						*reconciled = len(list.Items)
 					}),
@@ -243,12 +241,12 @@ func TestListReconciler_Reconcile(t *testing.T) {
 				t.Helper()
 				return newFakeClient(t, newPod("a", "default"))
 			},
-			opts: func(reconciled, _ *int) []ListOption[*corev1.PodList] {
-				return []ListOption[*corev1.PodList]{
+			opts: func(reconciled, _ *int) []ListOption[corev1.PodList, *corev1.PodList] {
+				return []ListOption[corev1.PodList, *corev1.PodList]{
 					WithOnReconcile(func(_ context.Context, list *corev1.PodList) {
 						*reconciled = len(list.Items)
 					}),
-					WithRequeueDurations[*corev1.PodList](5*time.Second, 0, 0),
+					WithRequeueDurations[corev1.PodList](5*time.Second, 0, 0),
 				}
 			},
 			want: want{
@@ -266,9 +264,9 @@ func TestListReconciler_Reconcile(t *testing.T) {
 				t.Helper()
 				return &errClient{err: errors.New("boom")}
 			},
-			opts: func(_, errored *int) []ListOption[*corev1.PodList] {
-				return []ListOption[*corev1.PodList]{
-					WithOnError[*corev1.PodList](func(error) { *errored++ }),
+			opts: func(_, errored *int) []ListOption[corev1.PodList, *corev1.PodList] {
+				return []ListOption[corev1.PodList, *corev1.PodList]{
+					WithOnError[corev1.PodList](func(error) { *errored++ }),
 				}
 			},
 			want: want{
@@ -282,9 +280,9 @@ func TestListReconciler_Reconcile(t *testing.T) {
 				t.Helper()
 				return &errClient{err: apierrors.NewNotFound(schema.GroupResource{Resource: "pods"}, "missing")}
 			},
-			opts: func(_, errored *int) []ListOption[*corev1.PodList] {
-				return []ListOption[*corev1.PodList]{
-					WithOnError[*corev1.PodList](func(error) { *errored++ }),
+			opts: func(_, errored *int) []ListOption[corev1.PodList, *corev1.PodList] {
+				return []ListOption[corev1.PodList, *corev1.PodList]{
+					WithOnError[corev1.PodList](func(error) { *errored++ }),
 				}
 			},
 			want: want{
@@ -302,7 +300,6 @@ func TestListReconciler_Reconcile(t *testing.T) {
 			rc := NewListReconciler(
 				"pod watcher",
 				new(corev1.Pod),
-				func() *corev1.PodList { return new(corev1.PodList) },
 				tc.opts(&reconciled, &errored)...,
 			)
 			mgr := newManagerMock(t, tc.client(t))
@@ -334,8 +331,7 @@ func TestListReconciler_NewReconciler(t *testing.T) {
 	rc := NewListReconciler(
 		"pod watcher",
 		new(corev1.Pod),
-		func() *corev1.PodList { return new(corev1.PodList) },
-		WithFieldIndex[*corev1.PodList]("status.phase", func(k8s.Object) []string { return nil }),
+		WithFieldIndex[corev1.PodList]("status.phase", func(k8s.Object) []string { return nil }),
 	)
 	mgr := newManagerMock(t, newFakeClient(t))
 	rc.NewReconciler(context.Background(), mgr)
@@ -366,10 +362,9 @@ func TestReconciler_InitFailure(t *testing.T) {
 			name: "list reconciler with nil manager fails instead of panicking",
 			rec: func(t *testing.T) reconcile.Reconciler {
 				t.Helper()
-				rc := NewListReconciler(
+				rc := NewListReconciler[corev1.PodList](
 					"pods",
 					new(corev1.Pod),
-					func() *corev1.PodList { return new(corev1.PodList) },
 				)
 				return rc.NewReconciler(context.Background(), nil)
 			},
@@ -382,8 +377,7 @@ func TestReconciler_InitFailure(t *testing.T) {
 				rc := NewListReconciler(
 					"pods",
 					new(corev1.Pod),
-					func() *corev1.PodList { return new(corev1.PodList) },
-					WithFieldIndex[*corev1.PodList]("status.phase", func(k8s.Object) []string { return nil }),
+					WithFieldIndex[corev1.PodList]("status.phase", func(k8s.Object) []string { return nil }),
 				)
 				mgr := newManagerMock(t, newFakeClient(t))
 				mgr.indexer.err = errors.New("index boom")
@@ -395,9 +389,8 @@ func TestReconciler_InitFailure(t *testing.T) {
 			name: "object reconciler with nil manager fails instead of panicking",
 			rec: func(t *testing.T) reconcile.Reconciler {
 				t.Helper()
-				rc := NewObjectReconciler(
+				rc := NewObjectReconciler[corev1.Pod](
 					"pod",
-					func() *corev1.Pod { return new(corev1.Pod) },
 				)
 				return rc.NewReconciler(context.Background(), nil)
 			},
@@ -409,8 +402,7 @@ func TestReconciler_InitFailure(t *testing.T) {
 				t.Helper()
 				rc := NewObjectReconciler(
 					"pod",
-					func() *corev1.Pod { return new(corev1.Pod) },
-					WithObjectFieldIndex[*corev1.Pod]("status.phase", func(k8s.Object) []string { return nil }),
+					WithObjectFieldIndex[corev1.Pod]("status.phase", func(k8s.Object) []string { return nil }),
 				)
 				mgr := newManagerMock(t, newFakeClient(t))
 				mgr.indexer.err = errors.New("index boom")
@@ -439,9 +431,8 @@ func TestReconciler_InitFailure(t *testing.T) {
 func TestObjectReconciler_Metadata(t *testing.T) {
 	t.Parallel()
 
-	rc := NewObjectReconciler(
+	rc := NewObjectReconciler[corev1.Pod](
 		"pod object watcher",
-		func() *corev1.Pod { return new(corev1.Pod) },
 	)
 
 	if got, want := rc.GetName(), "pod object watcher"; got != want {
@@ -523,12 +514,11 @@ func TestObjectReconciler_Reconcile(t *testing.T) {
 			var errored int
 			rc := NewObjectReconciler(
 				"pod object watcher",
-				func() *corev1.Pod { return new(corev1.Pod) },
 				WithOnObjectReconcile(func(_ context.Context, pod *corev1.Pod) (k8s.Result, error) {
 					gotName = pod.GetName()
 					return customResult, nil
 				}),
-				WithObjectOnError[*corev1.Pod](func(error) { errored++ }),
+				WithObjectOnError[corev1.Pod](func(error) { errored++ }),
 			)
 			mgr := newManagerMock(t, tc.client(t))
 			rec := rc.NewReconciler(context.Background(), mgr)
@@ -567,10 +557,9 @@ func TestMaxConcurrentReconciles(t *testing.T) {
 	tests := []test{
 		{
 			name: "list reconciler defaults to zero",
-			rc: NewListReconciler(
+			rc: NewListReconciler[corev1.PodList](
 				"pods",
 				new(corev1.Pod),
-				func() *corev1.PodList { return new(corev1.PodList) },
 			),
 			want: 0,
 		},
@@ -579,8 +568,7 @@ func TestMaxConcurrentReconciles(t *testing.T) {
 			rc: NewListReconciler(
 				"pods",
 				new(corev1.Pod),
-				func() *corev1.PodList { return new(corev1.PodList) },
-				WithMaxConcurrentReconciles[*corev1.PodList](4),
+				WithMaxConcurrentReconciles[corev1.PodList](4),
 			),
 			want: 4,
 		},
@@ -589,16 +577,14 @@ func TestMaxConcurrentReconciles(t *testing.T) {
 			rc: NewListReconciler(
 				"pods",
 				new(corev1.Pod),
-				func() *corev1.PodList { return new(corev1.PodList) },
-				WithMaxConcurrentReconciles[*corev1.PodList](-1),
+				WithMaxConcurrentReconciles[corev1.PodList](-1),
 			),
 			want: 0,
 		},
 		{
 			name: "object reconciler defaults to zero",
-			rc: NewObjectReconciler(
+			rc: NewObjectReconciler[corev1.Pod](
 				"pod",
-				func() *corev1.Pod { return new(corev1.Pod) },
 			),
 			want: 0,
 		},
@@ -606,8 +592,7 @@ func TestMaxConcurrentReconciles(t *testing.T) {
 			name: "object reconciler exposes the configured worker count",
 			rc: NewObjectReconciler(
 				"pod",
-				func() *corev1.Pod { return new(corev1.Pod) },
-				WithObjectMaxConcurrentReconciles[*corev1.Pod](2),
+				WithObjectMaxConcurrentReconciles[corev1.Pod](2),
 			),
 			want: 2,
 		},

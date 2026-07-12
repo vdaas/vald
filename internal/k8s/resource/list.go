@@ -44,7 +44,6 @@ func (in *List[T, PT]) DeepCopyInto(out *List[T, PT]) {
 		return
 	}
 	*out = *in
-	out.TypeMeta = in.TypeMeta
 	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	out.Items = CopySliceInto[T, PT](in.Items)
 }

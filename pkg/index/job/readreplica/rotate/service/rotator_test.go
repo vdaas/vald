@@ -22,6 +22,9 @@ import (
 	"github.com/vdaas/vald/internal/k8s/client"
 	mock "github.com/vdaas/vald/internal/test/mock/k8s"
 	"github.com/vdaas/vald/internal/test/testify"
+	"k8s.io/apimachinery/pkg/runtime"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
 
 func Test_getNewBaseName(t *testing.T) {
@@ -87,7 +90,7 @@ func Test_getNewBaseName(t *testing.T) {
 func Test_parseReplicaID(t *testing.T) {
 	labelKey := "foo"
 	type args struct {
-		c         client.Client
+		c         client.StandaloneClient
 		replicaID string
 	}
 	type want struct {
@@ -136,29 +139,19 @@ func Test_parseReplicaID(t *testing.T) {
 		func() test {
 			wantID1 := "bar"
 			wantID2 := "baz"
-			mock := &mock.ValdK8sClientMock{}
 
+			scheme := runtime.NewScheme()
+			if err := clientgoscheme.AddToScheme(scheme); err != nil {
+				t.Fatalf("failed to add scheme: %v", err)
+			}
+			fakeClient := fake.NewClientBuilder().WithScheme(scheme).WithObjects(
+				&k8s.Deployment{ObjectMeta: k8s.ObjectMeta{Name: "dep1", Labels: map[string]string{labelKey: wantID1}}},
+				&k8s.Deployment{ObjectMeta: k8s.ObjectMeta{Name: "dep2", Labels: map[string]string{labelKey: wantID2}}},
+			).Build()
+
+			mock := &mock.ValdK8sClientMock{}
 			mock.On("LabelSelector", testify.Anything, testify.Anything, testify.Anything).Return(client.NewSelector(), nil)
-			mock.On("List", testify.Anything, testify.Anything, testify.Anything).Run(func(args testify.Arguments) {
-				if depList, ok := args.Get(1).(*k8s.DeploymentList); ok {
-					depList.Items = []k8s.Deployment{
-						{
-							ObjectMeta: k8s.ObjectMeta{
-								Labels: map[string]string{
-									labelKey: wantID1,
-								},
-							},
-						},
-						{
-							ObjectMeta: k8s.ObjectMeta{
-								Labels: map[string]string{
-									labelKey: wantID2,
-								},
-							},
-						},
-					}
-				}
-			}).Return(nil)
+			mock.WithRaw(fakeClient)
 			return test{
 				name: "returns all ids when rotate-all option is set",
 				args: args{

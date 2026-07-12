@@ -24,6 +24,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/hash"
 	"github.com/vdaas/vald/internal/k8s"
+	k8sclient "github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/k8s/vald/mirror/target"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
@@ -50,6 +51,7 @@ type discovery struct {
 	eg              errgroup.Group
 	labels          map[string]string
 	targetsByName   atomic.Pointer[map[string]target.Target]
+	mirrorTargets   k8sclient.Client[*target.MirrorTarget, *target.MirrorTargetList]
 	namespace       string
 	colocation      string
 	selfMirrAddrStr string
@@ -95,8 +97,12 @@ func NewDiscovery(opts ...DiscoveryOption) (dsc Discovery, err error) {
 			k8s.WithLeaderElection(false, "", ""),
 			k8s.WithResourceController(watcher),
 		)
+		if err != nil {
+			return nil, err
+		}
 	}
-	return d, err
+	d.mirrorTargets = k8sclient.NewWithClient[*target.MirrorTarget, *target.MirrorTargetList](d.ctrl.GetManager().GetClient().(k8s.ClientWithWatch), new(target.MirrorTarget), new(target.MirrorTargetList))
+	return d, nil
 }
 
 func (d *discovery) onReconcile(_ context.Context, list map[string]target.Target) {
@@ -295,7 +301,7 @@ func (d *discovery) createMirrorTargetResource(
 	if err != nil {
 		return err
 	}
-	return d.ctrl.GetManager().GetClient().Create(ctx, mt)
+	return d.mirrorTargets.Create(ctx, mt)
 }
 
 func (d *discovery) disconnectTarget(
@@ -319,12 +325,7 @@ func (d *discovery) disconnectTarget(
 func (d *discovery) updateMirrorTargetPhase(
 	ctx context.Context, name string, phase target.MirrorTargetPhase,
 ) error {
-	c := d.ctrl.GetManager().GetClient()
-	mt := &target.MirrorTarget{}
-	err := c.Get(ctx, k8s.ObjectKey{
-		Namespace: d.namespace,
-		Name:      name,
-	}, mt)
+	mt, err := d.mirrorTargets.Get(ctx, name, d.namespace)
 	if err != nil {
 		return err
 	}
@@ -333,7 +334,7 @@ func (d *discovery) updateMirrorTargetPhase(
 	}
 	mt.Status.Phase = phase
 	mt.Status.LastTransitionTime = k8s.Now()
-	return c.Status().Update(ctx, mt)
+	return d.mirrorTargets.UpdateStatus(ctx, mt)
 }
 
 func (d *discovery) updateTarget(ctx context.Context, req map[string]*updatedTarget) (errs error) {

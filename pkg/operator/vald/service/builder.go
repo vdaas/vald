@@ -130,7 +130,12 @@ func (b *vrsBuilder) Build(_ context.Context) ([]k8s.Object, error) {
 	}
 
 	b.list.SetGroupVersionKind(valdrelease.GVK)
-	return resource.ObjectsOf(b.list.Items), nil
+	
+	items := make([]*valdrelease.ValdRelease, len(b.list.Items))
+	for i := range b.list.Items {
+		items[i] = &b.list.Items[i]
+	}
+	return resource.ObjectsOf(items), nil
 }
 
 // fetchExistingVrs lists the ValdRelease objects currently present in the
@@ -144,7 +149,11 @@ func fetchExistingVrs(ctx context.Context, c k8s.Client, namespace string) ([]k8
 		return nil, errors.Wrap(err, "failed to list existing ValdRelease objects")
 	}
 
-	out := resource.ObjectsOf(exists.Items)
+	items := make([]*valdrelease.ValdRelease, len(exists.Items))
+	for i := range exists.Items {
+		items[i] = &exists.Items[i]
+	}
+	out := resource.ObjectsOf(items)
 	for _, obj := range out {
 		// Recover GVK if client stripped it
 		if obj.GetObjectKind().GroupVersionKind().Empty() {

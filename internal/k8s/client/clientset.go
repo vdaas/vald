@@ -43,7 +43,7 @@ type clientSet struct {
 // NewClientSet builds a ClientSet from the given kubeconfig path and context.
 // It falls back to the KUBECONFIG environment variable, the recommended home
 // kubeconfig, and finally the in-cluster configuration.
-func NewClientSet(kubeConfig, currentContext string) (c ClientSet, err error) {
+func NewClientSet(kubeConfig, currentContext string) (ClientSet, error) {
 	if kubeConfig == "" {
 		kubeConfig = os.Getenv(clientcmd.RecommendedConfigPathEnvVar)
 		if kubeConfig == "" {
@@ -51,11 +51,7 @@ func NewClientSet(kubeConfig, currentContext string) (c ClientSet, err error) {
 				kubeConfig = clientcmd.RecommendedHomeFile
 			}
 			if kubeConfig == "" {
-				c, err = inClusterConfigClientSet()
-				if err != nil {
-					return nil, err
-				}
-				return c, nil
+				return fallbackToInCluster(nil)
 			}
 		}
 	}
@@ -69,22 +65,28 @@ func NewClientSet(kubeConfig, currentContext string) (c ClientSet, err error) {
 	).ClientConfig()
 	if err != nil {
 		log.Debugf("failed to build config from kubeConfig path %s,\terror: %v", kubeConfig, err)
-		var ierr error
-		c, ierr = inClusterConfigClientSet()
-		if ierr != nil {
-			return nil, errors.Join(err, ierr)
-		}
-		return c, nil
+		return fallbackToInCluster(err)
 	}
 
-	c, err = clientSetFromConfig(cfg)
+	c, err := clientSetFromConfig(cfg)
 	if err != nil {
 		log.Debugf("failed to build config from kubeConfig path %s,\terror: %v", kubeConfig, err)
-		var ierr error
-		c, ierr = inClusterConfigClientSet()
-		if ierr != nil {
-			return nil, errors.Join(err, ierr)
+		return fallbackToInCluster(err)
+	}
+	return c, nil
+}
+
+// fallbackToInCluster builds a ClientSet from the in-cluster configuration.
+// origErr, if non-nil, is the error from the kubeConfig-based attempt that
+// preceded this fallback; it is joined with the in-cluster error so both
+// failure causes surface if the fallback also fails.
+func fallbackToInCluster(origErr error) (ClientSet, error) {
+	c, err := inClusterConfigClientSet()
+	if err != nil {
+		if origErr != nil {
+			return nil, errors.Join(origErr, err)
 		}
+		return nil, err
 	}
 	return c, nil
 }

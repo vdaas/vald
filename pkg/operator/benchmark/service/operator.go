@@ -121,10 +121,9 @@ func (o *operator) initCtrl() error {
 	}
 
 	// watcher of job resource
-	job := reconciler.NewListReconciler(
+	job := reconciler.NewListReconciler[*k8s.JobList](
 		"benchmark job",
-		new(k8s.Job),
-		func() *k8s.JobList { return new(k8s.JobList) },
+		new(k8s.Job), new(k8s.JobList),
 		reconciler.WithOnError[*k8s.JobList](func(err error) {
 			log.Errorf("failed to reconcile job resource: %v", err)
 		}),

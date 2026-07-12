@@ -22,6 +22,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
+	kclient "github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/k8s/resource"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/operator/api/v1"
 	"github.com/vdaas/vald/internal/k8s/vald/operator/api/valdrelease"
@@ -75,7 +76,7 @@ func (rc *resourceController) NewReconciler(_ context.Context, mgr k8s.Manager) 
 		client: mgr.GetClient(),
 		cfg:    rc.cfg,
 		syncer: resource.NewSyncer(mgr.GetClient(), scheme, rc.cfg.ManagedGenerationLabel),
-		vor:    resource.NewObjectClient[v1.ValdOperatorRelease](mgr.GetClient()),
+		vor:    kclient.NewWithClient[*v1.ValdOperatorRelease, *v1.ValdOperatorReleaseList](mgr.GetClient().(k8s.ClientWithWatch), new(v1.ValdOperatorRelease), new(v1.ValdOperatorReleaseList)),
 	}
 }
 
@@ -104,7 +105,7 @@ type reconciler struct {
 	client k8s.Client
 	cfg    *config.Config
 	syncer *resource.Syncer
-	vor    *resource.ObjectClient[v1.ValdOperatorRelease, *v1.ValdOperatorRelease]
+	vor    kclient.Client[*v1.ValdOperatorRelease, *v1.ValdOperatorReleaseList]
 }
 
 // Reconcile implements the main Kubernetes reconciliation loop for

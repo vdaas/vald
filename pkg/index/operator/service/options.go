@@ -15,7 +15,7 @@ package service
 
 import (
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/k8s/client"
+	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
@@ -60,7 +60,7 @@ func WithRotationJobConcurrency(concurrency uint) Option {
 	}
 }
 
-func WithK8sClient(client client.Client) Option {
+func WithK8sClient(client k8s.ClientWithWatch) Option {
 	return func(o *operator) error {
 		if client != nil {
 			o.client = client

@@ -20,7 +20,7 @@ import (
 	"context"
 	"time"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/vdaas/vald/internal/k8s/client"
 	"k8s.io/client-go/util/retry"
 )
 
@@ -28,13 +28,15 @@ const (
 	rolloutAnnotationKey = "kubectl.kubernetes.io/restartedAt"
 )
 
-func RolloutRestart[T Object, L ObjectList, C NamedObject, I WorkloadControllerResourceClient[T, L, C]](
-	ctx context.Context, client I, name string,
+// RolloutRestart triggers a rolling restart of the named workload by stamping
+// the kubectl restartedAt annotation onto its pod template.
+func RolloutRestart(
+	ctx context.Context, patcher client.Patcher, name, namespace string,
 ) error {
 	return retry.RetryOnConflict(retry.DefaultRetry, func() (err error) {
-		_, err = client.SetPodAnnotations(ctx, name, map[string]string{
+		err = patcher.ApplyPodAnnotations(ctx, name, namespace, map[string]string{
 			rolloutAnnotationKey: time.Now().UTC().Format(time.RFC3339),
-		}, metav1.GetOptions{}, metav1.UpdateOptions{})
+		})
 		return err
 	})
 }

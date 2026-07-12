@@ -46,11 +46,11 @@ type ListOption[L k8s.ObjectList] func(*listReconciler[L])
 // job,metrics} reconcilers.
 type listReconciler[L k8s.ObjectList] struct {
 	baseReconciler
-	newList         func() L
 	onReconcile     func(ctx context.Context, list L)
 	onError         func(err error)
 	addToScheme     func(s *runtime.Scheme) error
 	obj             k8s.Object
+	list            L
 	lopts           []k8s.ListOption
 	successRequeue  time.Duration
 	notFoundRequeue time.Duration
@@ -58,15 +58,15 @@ type listReconciler[L k8s.ObjectList] struct {
 }
 
 // NewListReconciler returns a batch-type ResourceController named name that
-// watches obj and, on every reconcile, lists objects into the list created by
-// newList and passes it to the WithOnReconcile callback.
+// watches obj and, on every reconcile, lists objects into a freshly
+// constructed L and passes it to the WithOnReconcile callback.
 func NewListReconciler[L k8s.ObjectList](
-	name string, obj k8s.Object, newList func() L, opts ...ListOption[L],
+	name string, obj k8s.Object, list L, opts ...ListOption[L],
 ) k8s.ResourceController {
 	r := &listReconciler[L]{
 		baseReconciler:  baseReconciler{name: name},
 		obj:             obj,
-		newList:         newList,
+		list:            list,
 		errorRequeue:    defaultErrorRequeueDuration,
 		notFoundRequeue: defaultNotFoundRequeueDuration,
 	}
@@ -171,7 +171,8 @@ func (r *listReconciler[L]) Reconcile(
 	if r.mgr == nil {
 		return reconcile.Result{}, errors.Errorf("manager is not registered for %s reconciler", r.name)
 	}
-	list, err := resource.ListObjects(ctx, r.mgr.GetClient(), r.newList(), r.lopts...)
+	list := r.list.DeepCopyObject().(L)
+	listOut, err := resource.ListObjects(ctx, r.mgr.GetClient(), list, r.lopts...)
 	if err != nil {
 		if r.onError != nil {
 			r.onError(err)
@@ -190,7 +191,7 @@ func (r *listReconciler[L]) Reconcile(
 	}
 
 	if r.onReconcile != nil {
-		r.onReconcile(ctx, list)
+		r.onReconcile(ctx, listOut)
 	}
 
 	if r.successRequeue > 0 {

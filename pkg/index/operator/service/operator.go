@@ -51,7 +51,9 @@ type Operator interface {
 type operator struct {
 	ctrl                              k8s.Controller
 	eg                                errgroup.Group
-	client                            client.Client
+	client                            k8s.ClientWithWatch
+	deployments                       client.Client[*k8s.Deployment, *k8s.DeploymentList]
+	jobs                              client.Client[*k8s.Job, *k8s.JobList]
 	rotatorJob                        *k8s.Job
 	namespace                         string
 	rotatorName                       string
@@ -88,9 +90,8 @@ func New(
 		return pod.Labels["app"] == agentName
 	}
 
-	podController := reconciler.NewObjectReconciler(
-		"pod reconciler for index operator",
-		func() *k8s.Pod { return new(k8s.Pod) },
+	podController := reconciler.NewObjectReconciler[*k8s.Pod](
+		"pod reconciler for index operator", new(k8s.Pod),
 		reconciler.WithOnObjectReconcile(operator.podOnReconcile),
 		reconciler.WithObjectOnError[*k8s.Pod](func(err error) {
 			log.Error("failed to reconcile:", err)
@@ -110,12 +111,14 @@ func New(
 	}
 
 	if operator.client == nil {
-		client, err := client.New()
+		c, err := client.New[*k8s.Pod, *k8s.PodList](new(k8s.Pod), new(k8s.PodList))
 		if err != nil {
 			return nil, err
 		}
-		operator.client = client
+		operator.client = c.Raw()
 	}
+	operator.deployments = client.NewWithClient[*k8s.Deployment, *k8s.DeploymentList](operator.client, new(k8s.Deployment), new(k8s.DeploymentList))
+	operator.jobs = client.NewWithClient[*k8s.Job, *k8s.JobList](operator.client, new(k8s.Job), new(k8s.JobList))
 
 	return operator, nil
 }
@@ -179,16 +182,15 @@ func (o *operator) reconcileRotatorJob(
 	}
 
 	// retrieve the readreplica deployment annotations for podIdx
-	var readReplicaDeployments k8s.DeploymentList
-	selector, err := o.client.LabelSelector(o.readReplicaLabelKey, k8s.SelectionOpEquals, []string{podIdx})
+	selector, err := client.NewLabelSelector(o.readReplicaLabelKey, k8s.SelectionOpEquals, []string{podIdx})
 	if err != nil {
 		return false, fmt.Errorf("creating label selector: %w", err)
 	}
-	listOpts := k8s.ListOptions{
+	readReplicaDeployments, err := o.deployments.List(ctx, &k8s.ListOptions{
 		Namespace:     o.namespace,
 		LabelSelector: selector,
-	}
-	if err := o.client.List(ctx, &readReplicaDeployments, &listOpts); err != nil {
+	})
+	if err != nil {
 		return false, err
 	}
 	if len(readReplicaDeployments.Items) == 0 {
@@ -271,7 +273,7 @@ func (o *operator) createRotationJobOrRequeue(
 		Namespace:    o.namespace,
 	}
 
-	if err := o.client.Create(ctx, job); err != nil {
+	if err := o.jobs.Create(ctx, job); err != nil {
 		return false, fmt.Errorf("creating job resource with k8s API: %w", err)
 	}
 
@@ -284,15 +286,15 @@ func (o *operator) ensureJobConcurrency(
 	ctx context.Context, podIdx string,
 ) (jobReconcileResult, error) {
 	// get all the rotation jobs and make sure the job is not running
-	var jobList k8s.JobList
-	selector, err := o.client.LabelSelector("app", k8s.SelectionOpEquals, []string{o.rotatorName})
+	selector, err := client.NewLabelSelector("app", k8s.SelectionOpEquals, []string{o.rotatorName})
 	if err != nil {
 		return createSkipped, fmt.Errorf("creating label selector: %w", err)
 	}
-	if err := o.client.List(ctx, &jobList, &k8s.ListOptions{
+	jobList, err := o.jobs.List(ctx, &k8s.ListOptions{
 		Namespace:     o.namespace,
 		LabelSelector: selector,
-	}); err != nil {
+	})
+	if err != nil {
 		return createSkipped, fmt.Errorf("listing jobs: %w", err)
 	}
 

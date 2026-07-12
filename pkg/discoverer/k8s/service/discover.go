@@ -35,6 +35,7 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
+	metricsv1beta1 "k8s.io/metrics/pkg/apis/metrics/v1beta1"
 )
 
 type Discoverer interface {
@@ -91,14 +92,13 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 		k8s.WithDialer(d.der),
 		k8s.WithControllerName("vald k8s agent discoverer"),
 		k8s.WithLeaderElection(false, "", ""),
-		k8s.WithResourceController(reconciler.NewListReconciler(
+		k8s.WithResourceController(reconciler.NewListReconciler[*metricsv1beta1.NodeMetricsList](
 			"node metrics discoverer",
-			new(k8s.APINodeMetrics),
-			func() *k8s.APINodeMetricsList { return new(k8s.APINodeMetricsList) },
-			reconciler.WithOnError[*k8s.APINodeMetricsList](func(err error) {
+			new(metricsv1beta1.NodeMetrics), new(metricsv1beta1.NodeMetricsList),
+			reconciler.WithOnError[*metricsv1beta1.NodeMetricsList](func(err error) {
 				log.Error("failed to reconcile node metrics:", err)
 			}),
-			reconciler.WithOnReconcile(func(_ context.Context, list *k8s.APINodeMetricsList) {
+			reconciler.WithOnReconcile(func(_ context.Context, list *metricsv1beta1.NodeMetricsList) {
 				nodes := toNodeMetricsMap(list)
 				log.Debugf("node metrics reconciled\t%#v", nodes)
 				for name, metrics := range nodes {
@@ -112,19 +112,18 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 					return true
 				})
 			}),
-			reconciler.WithAddToScheme[*k8s.APINodeMetricsList](k8s.MetricsAddToScheme),
-			reconciler.WithNamespace[*k8s.APINodeMetricsList](d.namespace),
-			reconciler.WithFields[*k8s.APINodeMetricsList](selector.GetNodeMetricsFields()),
-			reconciler.WithLabels[*k8s.APINodeMetricsList](selector.GetNodeMetricsLabels()),
+			reconciler.WithAddToScheme[*metricsv1beta1.NodeMetricsList](metricsv1beta1.AddToScheme),
+			reconciler.WithNamespace[*metricsv1beta1.NodeMetricsList](d.namespace),
+			reconciler.WithFields[*metricsv1beta1.NodeMetricsList](selector.GetNodeMetricsFields()),
+			reconciler.WithLabels[*metricsv1beta1.NodeMetricsList](selector.GetNodeMetricsLabels()),
 		)),
-		k8s.WithResourceController(reconciler.NewListReconciler(
+		k8s.WithResourceController(reconciler.NewListReconciler[*metricsv1beta1.PodMetricsList](
 			"pod metrics discoverer",
-			new(k8s.APIPodMetrics),
-			func() *k8s.APIPodMetricsList { return new(k8s.APIPodMetricsList) },
-			reconciler.WithOnError[*k8s.APIPodMetricsList](func(err error) {
+			new(metricsv1beta1.PodMetrics), new(metricsv1beta1.PodMetricsList),
+			reconciler.WithOnError[*metricsv1beta1.PodMetricsList](func(err error) {
 				log.Error("failed to reconcile pod metrics:", err)
 			}),
-			reconciler.WithOnReconcile(func(_ context.Context, list *k8s.APIPodMetricsList) {
+			reconciler.WithOnReconcile(func(_ context.Context, list *metricsv1beta1.PodMetricsList) {
 				podList := toPodMetricsMap(list)
 				log.Debugf("pod metrics reconciled\t%#v", podList)
 				for name, pods := range podList {
@@ -138,18 +137,17 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 					return true
 				})
 			}),
-			reconciler.WithAddToScheme[*k8s.APIPodMetricsList](k8s.MetricsAddToScheme),
-			reconciler.WithNamespace[*k8s.APIPodMetricsList](d.namespace),
-			reconciler.WithFields[*k8s.APIPodMetricsList](selector.GetPodMetricsFields()),
-			reconciler.WithLabels[*k8s.APIPodMetricsList](selector.GetPodMetricsLabels()),
-			reconciler.WithFieldIndex[*k8s.APIPodMetricsList]("containers.name", podMetricsContainersNameIndexer),
+			reconciler.WithAddToScheme[*metricsv1beta1.PodMetricsList](metricsv1beta1.AddToScheme),
+			reconciler.WithNamespace[*metricsv1beta1.PodMetricsList](d.namespace),
+			reconciler.WithFields[*metricsv1beta1.PodMetricsList](selector.GetPodMetricsFields()),
+			reconciler.WithLabels[*metricsv1beta1.PodMetricsList](selector.GetPodMetricsLabels()),
+			reconciler.WithFieldIndex[*metricsv1beta1.PodMetricsList]("containers.name", podMetricsContainersNameIndexer),
 		)),
-		k8s.WithResourceController(reconciler.NewListReconciler(
+		k8s.WithResourceController(reconciler.NewListReconciler[*k8s.PodList](
 			"pod discoverer",
-			new(k8s.Pod),
-			func() *k8s.PodList { return new(k8s.PodList) },
+			new(k8s.Pod), new(k8s.PodList),
 			reconciler.WithOnError[*k8s.PodList](func(err error) {
-				log.Error("failed to reconcile pod resource:", err)
+				log.Error("failed to reconcile pod:", err)
 			}),
 			reconciler.WithOnReconcile(func(_ context.Context, list *k8s.PodList) {
 				podList := podsByAppName(list, d.namespace)
@@ -173,12 +171,11 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 			reconciler.WithLabels[*k8s.PodList](selector.GetPodLabels()),
 			reconciler.WithFieldIndex[*k8s.PodList]("status.phase", podStatusPhaseIndexer),
 		)),
-		k8s.WithResourceController(reconciler.NewListReconciler(
+		k8s.WithResourceController(reconciler.NewListReconciler[*k8s.NodeList](
 			"node discoverer",
-			new(k8s.Node),
-			func() *k8s.NodeList { return new(k8s.NodeList) },
+			new(k8s.Node), new(k8s.NodeList),
 			reconciler.WithOnError[*k8s.NodeList](func(err error) {
-				log.Error("failed to reconcile node resource:", err)
+				log.Error("failed to reconcile node:", err)
 			}),
 			reconciler.WithOnReconcile(func(_ context.Context, list *k8s.NodeList) {
 				nodes := toNodes(list)

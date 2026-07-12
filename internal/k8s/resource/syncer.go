@@ -23,6 +23,7 @@ import (
 	"strconv"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/k8s"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -48,7 +49,7 @@ type SyncResults map[string]OperationResult
 // owner-type agnostic: any Object (typically a custom resource) can own the
 // managed set.
 type Syncer struct {
-	api    ObjectAPI
+	api    k8s.Client
 	scheme *runtime.Scheme
 	// generationLabel is the label key that records the owner generation on
 	// every managed resource.
@@ -59,7 +60,7 @@ type Syncer struct {
 // scheme is used for controllerutil.SetControllerReference; the client for the
 // CreateOrUpdate / Delete calls. generationLabel overrides the label key used
 // to record the owner generation; empty falls back to the default.
-func NewSyncer(api ObjectAPI, scheme *runtime.Scheme, generationLabel string) *Syncer {
+func NewSyncer(api k8s.Client, scheme *runtime.Scheme, generationLabel string) *Syncer {
 	if generationLabel == "" {
 		generationLabel = defaultGenerationLabel
 	}
@@ -72,9 +73,9 @@ func NewSyncer(api ObjectAPI, scheme *runtime.Scheme, generationLabel string) *S
 // The returned map carries one entry per Create/Update/Prune.
 func (s *Syncer) Sync(
 	ctx context.Context,
-	owner Object,
-	desired []Object,
-	existing func(ctx context.Context) ([]Object, error),
+	owner k8s.Object,
+	desired []k8s.Object,
+	existing func(ctx context.Context) ([]k8s.Object, error),
 ) (SyncResults, error) {
 	opes := make(SyncResults, max(len(desired), 1))
 	if len(desired) == 0 {
@@ -103,7 +104,7 @@ func (s *Syncer) Sync(
 		// before calling mutate, so snapshot the desired state first and
 		// re-apply it inside mutate; otherwise the desired spec is discarded
 		// and existing objects never converge.
-		want, ok := obj.DeepCopyObject().(Object)
+		want, ok := obj.DeepCopyObject().(k8s.Object)
 		if !ok {
 			return opes, errors.Errorf("failed to snapshot desired state of %s", key)
 		}
@@ -133,7 +134,7 @@ func (s *Syncer) Sync(
 // references. Live identity (name, namespace, uid, resourceVersion,
 // creationTimestamp) and status are preserved so the update targets the
 // current revision.
-func applyDesiredState(obj, desired Object) error {
+func applyDesiredState(obj, desired k8s.Object) error {
 	if o, ok := obj.(*unstructured.Unstructured); ok {
 		d, ok := desired.(*unstructured.Unstructured)
 		if !ok {
@@ -190,9 +191,9 @@ func applyDesiredState(obj, desired Object) error {
 // it).
 func (s *Syncer) prune(
 	ctx context.Context,
-	owner Object,
+	owner k8s.Object,
 	applied SyncResults,
-	existing func(ctx context.Context) ([]Object, error),
+	existing func(ctx context.Context) ([]k8s.Object, error),
 ) (SyncResults, error) {
 	opes := SyncResults{}
 
@@ -219,7 +220,7 @@ func (s *Syncer) prune(
 // syncKey returns a string that uniquely identifies an object across
 // group/version/kind/namespace/name. The group + version are included so
 // same-named/same-kind objects in different API groups don't collide.
-func syncKey(obj Object) string {
+func syncKey(obj k8s.Object) string {
 	gvk := obj.GetObjectKind().GroupVersionKind()
 	return gvk.Group + "/" + gvk.Version + "/" + gvk.Kind + "/" + obj.GetNamespace() + "/" + obj.GetName()
 }

@@ -22,6 +22,10 @@ package crud
 import (
 	"bytes"
 	"context"
+	"fmt"
+	"math/rand/v2"
+	"reflect"
+	"strconv"
 	"testing"
 	"time"
 
@@ -62,6 +66,10 @@ func (r *runner) processKubernetes(t *testing.T, ctx context.Context, plan *conf
 		r.handleKubernetesCustomResource(t, ctx, k)
 		return
 	}
+
+	rawCfg := r.k8s.GetRESTConfig()
+	patcher, _ := kclient.NewPatcher(fieldManager)
+
 	// The create action is special-cased because it always creates a job from
 	// the cronjob named k.Name regardless of the requested kind.
 	if k.Action == config.KubernetesActionCreate {
@@ -69,34 +77,71 @@ func (r *runner) processKubernetes(t *testing.T, ctx context.Context, plan *conf
 			t.Errorf("kubernetes action create is only supported for creating job from cronjob")
 			return
 		}
-		if _, err := resource.CronJob(r.k8s, k.Namespace).CreateJob(ctx, k.Name, resource.EmptyGetOptions, resource.EmptyCreateOptions); err != nil {
+		c, err := kclient.NewWithConfig[*k8s.CronJob, *k8s.CronJobList](rawCfg, new(k8s.CronJob), new(k8s.CronJobList))
+		if err != nil {
+			t.Errorf("failed to create cronjob client: %v", err)
+			return
+		}
+		cj, err := c.Get(ctx, k.Name, k.Namespace)
+		if err != nil {
+			t.Errorf("failed to get cronjob: %v", err)
+			return
+		}
+		jc, err := kclient.NewWithConfig[*k8s.Job, *k8s.JobList](rawCfg, new(k8s.Job), new(k8s.JobList))
+		if err != nil {
+			t.Errorf("failed to create job client: %v", err)
+			return
+		}
+		suffix := strconv.FormatInt(time.Now().UnixNano(), 36) + "-" + strconv.FormatUint(uint64(rand.Uint32()), 36)
+		job := &k8s.Job{
+			ObjectMeta: k8s.ObjectMeta{
+				Name:      fmt.Sprintf("%s-%s", k.Name, suffix),
+				Namespace: k.Namespace,
+			},
+			Spec: k8s.JobSpec{
+				Template: cj.Spec.JobTemplate.Spec.Template,
+			},
+		}
+		if err := jc.Create(ctx, job); err != nil {
 			t.Errorf("failed to create job from cronjob: %v", err)
 		}
 		return
 	}
+
 	switch k.Kind {
 	case config.ConfigMap:
-		handleKubernetesAction(t, ctx, k, resource.ConfigMap(r.k8s, k.Namespace))
+		c, _ := kclient.NewWithConfig[*k8s.ConfigMap, *k8s.ConfigMapList](rawCfg, new(k8s.ConfigMap), new(k8s.ConfigMapList))
+		handleKubernetesAction(t, ctx, k, c)
 	case config.CronJob:
-		handleKubernetesWorkloadAction(t, ctx, k, resource.CronJob(r.k8s, k.Namespace))
+		c, _ := kclient.NewWithConfig[*k8s.CronJob, *k8s.CronJobList](rawCfg, new(k8s.CronJob), new(k8s.CronJobList))
+		handleKubernetesWorkloadAction(t, ctx, k, c, patcher)
 	case config.DaemonSet:
-		handleKubernetesWorkloadAction(t, ctx, k, resource.DaemonSet(r.k8s, k.Namespace))
+		c, _ := kclient.NewWithConfig[*k8s.DaemonSet, *k8s.DaemonSetList](rawCfg, new(k8s.DaemonSet), new(k8s.DaemonSetList))
+		handleKubernetesWorkloadAction(t, ctx, k, c, patcher)
 	case config.Deployment:
-		handleKubernetesWorkloadAction(t, ctx, k, resource.Deployment(r.k8s, k.Namespace))
+		c, _ := kclient.NewWithConfig[*k8s.Deployment, *k8s.DeploymentList](rawCfg, new(k8s.Deployment), new(k8s.DeploymentList))
+		handleKubernetesWorkloadAction(t, ctx, k, c, patcher)
 	case config.Job:
-		handleKubernetesWorkloadAction(t, ctx, k, resource.Job(r.k8s, k.Namespace))
+		c, _ := kclient.NewWithConfig[*k8s.Job, *k8s.JobList](rawCfg, new(k8s.Job), new(k8s.JobList))
+		handleKubernetesWorkloadAction(t, ctx, k, c, patcher)
 	case config.MutatingWebhookConfiguration:
-		handleKubernetesAction(t, ctx, k, resource.MutatingWebhookConfiguration(r.k8s))
+		c, _ := kclient.NewWithConfig[*k8s.MutatingWebhookConfiguration, *k8s.MutatingWebhookConfigurationList](rawCfg, new(k8s.MutatingWebhookConfiguration), new(k8s.MutatingWebhookConfigurationList))
+		handleKubernetesAction(t, ctx, k, c)
 	case config.Pod:
-		handleKubernetesAction(t, ctx, k, resource.Pod(r.k8s, k.Namespace))
+		c, _ := kclient.NewWithConfig[*k8s.Pod, *k8s.PodList](rawCfg, new(k8s.Pod), new(k8s.PodList))
+		handleKubernetesAction(t, ctx, k, c)
 	case config.Secret:
-		handleKubernetesAction(t, ctx, k, resource.Secret(r.k8s, k.Namespace))
+		c, _ := kclient.NewWithConfig[*k8s.Secret, *k8s.SecretList](rawCfg, new(k8s.Secret), new(k8s.SecretList))
+		handleKubernetesAction(t, ctx, k, c)
 	case config.Service:
-		handleKubernetesAction(t, ctx, k, resource.Service(r.k8s, k.Namespace))
+		c, _ := kclient.NewWithConfig[*k8s.Service, *k8s.ServiceList](rawCfg, new(k8s.Service), new(k8s.ServiceList))
+		handleKubernetesAction(t, ctx, k, c)
 	case config.StatefulSet:
-		handleKubernetesWorkloadAction(t, ctx, k, resource.StatefulSet(r.k8s, k.Namespace))
+		c, _ := kclient.NewWithConfig[*k8s.StatefulSet, *k8s.StatefulSetList](rawCfg, new(k8s.StatefulSet), new(k8s.StatefulSetList))
+		handleKubernetesWorkloadAction(t, ctx, k, c, patcher)
 	case config.ValidatingWebhookConfiguration:
-		handleKubernetesAction(t, ctx, k, resource.ValidatingWebhookConfiguration(r.k8s))
+		c, _ := kclient.NewWithConfig[*k8s.ValidatingWebhookConfiguration, *k8s.ValidatingWebhookConfigurationList](rawCfg, new(k8s.ValidatingWebhookConfiguration), new(k8s.ValidatingWebhookConfigurationList))
+		handleKubernetesAction(t, ctx, k, c)
 	default:
 		t.Errorf("unsupported kubernetes kind: %s", k.Kind)
 	}
@@ -104,20 +149,24 @@ func (r *runner) processKubernetes(t *testing.T, ctx context.Context, plan *conf
 
 // handleKubernetesAction executes the actions applicable to every resource kind
 // (get, delete and wait) through the generic resource client.
-func handleKubernetesAction[T resource.Object, L resource.ObjectList, C resource.NamedObject, I resource.ResourceInterface[T, L, C]](
-	t *testing.T, ctx context.Context, k *config.KubernetesConfig, client I,
+func handleKubernetesAction[T k8s.Object, L k8s.ObjectList](
+	t *testing.T, ctx context.Context, k *config.KubernetesConfig, client kclient.Client[T, L],
 ) {
 	t.Helper()
 	switch k.Action {
 	case config.KubernetesActionGet:
-		obj, err := client.Get(ctx, k.Name, resource.EmptyGetOptions)
+		obj, err := client.Get(ctx, k.Name, k.Namespace)
 		if err != nil {
 			t.Errorf("failed to get %s: %v", k.Kind, err)
 			return
 		}
 		log.Infof("kubernetes object: %v", obj)
 	case config.KubernetesActionDelete:
-		if err := client.Delete(ctx, k.Name, resource.EmptyDeleteOptions); err != nil {
+		var tVar T
+		obj := reflect.New(reflect.TypeFor[T]().Elem()).Interface().(T)
+		obj.SetName(k.Name)
+		obj.SetNamespace(k.Namespace)
+		if err := client.Delete(ctx, obj); err != nil {
 			t.Errorf("failed to delete %s: %v", k.Kind, err)
 		}
 	case config.KubernetesActionWait:
@@ -132,13 +181,13 @@ func handleKubernetesAction[T resource.Object, L resource.ObjectList, C resource
 
 // handleKubernetesWorkloadAction adds the workload-controller specific rollout
 // action on top of the common resource actions.
-func handleKubernetesWorkloadAction[T resource.Object, L resource.ObjectList, C resource.NamedObject, I resource.WorkloadControllerResourceClient[T, L, C]](
-	t *testing.T, ctx context.Context, k *config.KubernetesConfig, client I,
+func handleKubernetesWorkloadAction[T k8s.Object, L k8s.ObjectList](
+	t *testing.T, ctx context.Context, k *config.KubernetesConfig, client kclient.Client[T, L], patcher kclient.Patcher,
 ) {
 	t.Helper()
 	switch k.Action {
 	case config.KubernetesActionRollout:
-		if err := resource.RolloutRestart(ctx, client, k.Name); err != nil {
+		if err := resource.RolloutRestart(ctx, patcher, k.Name, k.Namespace); err != nil {
 			t.Errorf("failed to rollout restart %s: %v", k.Kind, err)
 		}
 	default:
