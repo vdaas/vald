@@ -42,7 +42,7 @@ spec:
       type: kind # cluster type hint (informational)
       active: true # whether this infra entry is currently active
       clusters:
-        - id: "abc-123" # cluster identifier (populated by external system)
+        - id: "abc-123" # cluster ID (populated by external system)
           name: "cluster-a" # human-readable cluster name
       nodePools:
         general: # NodePoolTypeGeneral — gateway/discoverer/manager
