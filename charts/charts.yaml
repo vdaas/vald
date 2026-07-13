@@ -13,15 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Single source of truth for the Helm charts managed by this repository.
-# Add a new chart here and it is automatically picked up by:
-#   - .github/workflows/helm-lint.yaml   (per-chart lint matrix)
-#   - .github/workflows/_release-pr.yaml (Chart.yaml/values.yaml version bump on release)
-#
-# schema_target:    make target that generates this chart's values.schema.json.
-#                    Leave empty to exclude the chart from the lint matrix.
-# bump_values_tag:   whether values.yaml has a top-level `tag: vX.Y.Z` image tag
-#                    that should be bumped to the release tag.
 charts:
   - name: vald
     path: charts/vald
