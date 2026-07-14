@@ -125,7 +125,7 @@ spec:
 | `role`       | Free-form role label (e.g. `hot`, `standby`, `blue`, `green`). Copied to VRS labels.                                                                      |
 | `type`       | Cluster type label.                                                                                                                                       |
 | `active`     | When `false`, the entry is skipped during VRS generation.                                                                                                 |
-| `clusters[]` | `{ id, name }`. The `id` field is typically filled by an external system; `name` must be set.                                                            |
+| `clusters[]` | `{ id, name }`. The `id` field is typically filled by an external system; `name` must be set.                                                             |
 | `nodePools`  | Map keyed by pool type: `general` (required) and `agent` (optional). Each pool carries `name`, `replicas`, and `machineResource{ cpu, memory, storage }`. |
 
 #### Node pool types
