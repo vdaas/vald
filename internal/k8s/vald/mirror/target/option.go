@@ -20,25 +20,25 @@ import (
 )
 
 // Option represents the functional option for the settings collected by New;
-// it is the Target instantiation of the shared watcher factory option, which
+// it is the Endpoint instantiation of the shared watcher factory option, which
 // validates every value it is given.
-type Option = vald.WatcherOption[Target]
+type Option = vald.WatcherOption[Endpoint]
 
 // WithControllerName returns the option to set the name of controller; an
 // empty name is rejected with errors.ErrInvalidOption.
 func WithControllerName(name string) Option {
-	return vald.WithWatcherControllerName[Target](name)
+	return vald.WithWatcherControllerName[Endpoint](name)
 }
 
 // WithOnErrorFunc returns the option to set the function to notify an error;
 // a nil callback is rejected with errors.ErrInvalidOption.
 func WithOnErrorFunc(f func(error)) Option {
-	return vald.WithWatcherOnErrorFunc[Target](f)
+	return vald.WithWatcherOnErrorFunc[Endpoint](f)
 }
 
 // WithOnReconcileFunc returns the option to set the function to get the
 // reconciled result; a nil callback is rejected with errors.ErrInvalidOption.
-func WithOnReconcileFunc(f func(context.Context, map[string]Target)) Option {
+func WithOnReconcileFunc(f func(context.Context, map[string]Endpoint)) Option {
 	return vald.WithWatcherOnReconcileFunc(f)
 }
 
@@ -48,12 +48,12 @@ func WithOnReconcileFunc(f func(context.Context, map[string]Target)) Option {
 // wins (known pre-existing limitation of the shared watcher factory, kept
 // as-is).
 func WithNamespaces(nss ...string) Option {
-	return vald.WithWatcherNamespaces[Target](nss...)
+	return vald.WithWatcherNamespaces[Endpoint](nss...)
 }
 
 // WithLabels returns the option to set the label selector to get resources
 // matching the given label; an empty (or nil) label set is rejected with
 // errors.ErrInvalidOption.
 func WithLabels(labels map[string]string) Option {
-	return vald.WithWatcherLabels[Target](labels)
+	return vald.WithWatcherLabels[Endpoint](labels)
 }

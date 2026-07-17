@@ -28,7 +28,7 @@ func TestMain(m *testing.M) {
 
 // NOT IMPLEMENTED BELOW
 //
-// func TestRecoverInterceptor(t *testing.T) {
+// func TestInterceptor(t *testing.T) {
 // 	type want struct {
 // 		want grpc.UnaryServerInterceptor
 // 	}
@@ -95,7 +95,7 @@ func TestMain(m *testing.M) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got := RecoverInterceptor()
+// 			got := Interceptor()
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -103,7 +103,7 @@ func TestMain(m *testing.M) {
 // 	}
 // }
 //
-// func TestRecoverStreamInterceptor(t *testing.T) {
+// func TestStreamInterceptor(t *testing.T) {
 // 	type want struct {
 // 		want grpc.StreamServerInterceptor
 // 	}
@@ -170,7 +170,7 @@ func TestMain(m *testing.M) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got := RecoverStreamInterceptor()
+// 			got := StreamInterceptor()
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

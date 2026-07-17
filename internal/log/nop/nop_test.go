@@ -25,16 +25,16 @@ import (
 func TestNew(t *testing.T) {
 	t.Parallel()
 	type want struct {
-		want logger.Logger
+		want logger.Interface
 	}
 	type test struct {
 		want       want
-		checkFunc  func(want, logger.Logger) error
+		checkFunc  func(want, logger.Interface) error
 		beforeFunc func()
 		afterFunc  func()
 		name       string
 	}
-	defaultCheckFunc := func(w want, got logger.Logger) error {
+	defaultCheckFunc := func(w want, got logger.Interface) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -42,7 +42,7 @@ func TestNew(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return logger.Logger",
+			name: "return logger.Interface",
 			want: want{
 				want: new(nopLogger),
 			},

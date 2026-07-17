@@ -37,7 +37,7 @@ func TestNewBenchmarkJob_OptionErrorSeverity(t *testing.T) {
 		t.Parallel()
 
 		tests := []struct {
-			opt  BenchmarkJobTemplateOption
+			opt  BenchmarkTemplateOption
 			name string
 		}{
 			{name: "container name", opt: WithContainerName("")},
@@ -108,7 +108,7 @@ func TestCreateJobTpl_OptionErrorSeverity(t *testing.T) {
 		t.Parallel()
 
 		tests := []struct {
-			opt  BenchmarkJobOption
+			opt  BenchmarkOption
 			name string
 		}{
 			{name: "empty namespace", opt: WithNamespace("")},
@@ -356,21 +356,21 @@ func TestCreateJobTpl_FieldRefEnvVars(t *testing.T) {
 //
 // func TestNewBenchmarkJob(t *testing.T) {
 // 	type args struct {
-// 		opts []BenchmarkJobTemplateOption
+// 		opts []BenchmarkTemplateOption
 // 	}
 // 	type want struct {
-// 		want BenchmarkJobTpl
+// 		want BenchmarkTpl
 // 		err  error
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
 // 		want       want
-// 		checkFunc  func(want, BenchmarkJobTpl, error) error
+// 		checkFunc  func(want, BenchmarkTpl, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got BenchmarkJobTpl, err error) error {
+// 	defaultCheckFunc := func(w want, got BenchmarkTpl, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
@@ -445,7 +445,7 @@ func TestCreateJobTpl_FieldRefEnvVars(t *testing.T) {
 //
 // func Test_benchmarkJobTpl_CreateJobTpl(t *testing.T) {
 // 	type args struct {
-// 		opts []BenchmarkJobOption
+// 		opts []BenchmarkOption
 // 	}
 // 	type fields struct {
 // 		jobTpl             k8s.Job

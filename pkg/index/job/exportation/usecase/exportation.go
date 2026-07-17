@@ -40,7 +40,7 @@ type run struct {
 }
 
 // New returns Runner instance.
-func New(cfg *config.Data) (_ runner.Runner, err error) {
+func New(cfg *config.Data) (_ runner.Interface, err error) {
 	eg := errgroup.Get()
 
 	gOpts, err := cfg.Exporter.Gateway.Opts()

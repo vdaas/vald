@@ -115,7 +115,7 @@ func newReconciler(t *testing.T, client k8s.Client, opts ...Option) k8s.Reconcil
 func TestNew(t *testing.T) {
 	t.Parallel()
 
-	t.Run("returns a BenchmarkScenarioWatcher with the configured name", func(t *testing.T) {
+	t.Run("returns a BenchmarkWatcher with the configured name", func(t *testing.T) {
 		t.Parallel()
 
 		watcher, err := New(WithControllerName(testControllerName))

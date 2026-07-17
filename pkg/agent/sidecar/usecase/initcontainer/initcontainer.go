@@ -53,7 +53,7 @@ type run struct {
 	rs            restorer.Restorer
 }
 
-func New(cfg *config.Data) (r runner.Runner, err error) {
+func New(cfg *config.Data) (r runner.Interface, err error) {
 	log.Info("Initialized in initcontainer mode")
 
 	eg := errgroup.Get()

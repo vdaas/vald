@@ -28,7 +28,7 @@ import (
 )
 
 var (
-	l    logger.Logger
+	l    logger.Interface
 	once sync.Once
 )
 
@@ -59,7 +59,7 @@ func Close() error {
 	return l.Close()
 }
 
-func getLogger(o *option) logger.Logger {
+func getLogger(o *option) logger.Interface {
 	switch o.logType {
 	case logger.NOP:
 		return nop.New()

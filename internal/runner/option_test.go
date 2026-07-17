@@ -296,7 +296,7 @@ func TestWithConfigLoader(t *testing.T) {
 func TestWithDaemonInitializer(t *testing.T) {
 	type T = runner[any]
 	type args struct {
-		f func(any) (Runner, error)
+		f func(any) (Interface, error)
 	}
 	type want struct {
 		obj *T
@@ -319,7 +319,7 @@ func TestWithDaemonInitializer(t *testing.T) {
 
 	tests := []test{
 		func() test {
-			f := func(any) (Runner, error) {
+			f := func(any) (Interface, error) {
 				return nil, nil
 			}
 			return test{

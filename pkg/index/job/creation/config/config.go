@@ -36,8 +36,8 @@ type Data struct {
 	config.GlobalConfig `json:",inline" yaml:",inline"`
 }
 
-// NewConfig load configurations from file path.
-func NewConfig(path string) (cfg *Data, err error) {
+// New load configurations from file path.
+func New(path string) (cfg *Data, err error) {
 	cfg = new(Data)
 
 	if err = config.Read(path, &cfg); err != nil {

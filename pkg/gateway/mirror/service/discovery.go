@@ -56,7 +56,7 @@ type discovery struct {
 	mirr            Mirror
 	eg              errgroup.Group
 	labels          map[string]string
-	targetsByName   atomic.Pointer[map[string]target.Target]
+	targetsByName   atomic.Pointer[map[string]target.Endpoint]
 	mirrorTargets   *resource.Client[*target.MirrorTarget, *mirrv1.ValdMirrorTargetList]
 	namespace       string
 	colocation      string
@@ -80,7 +80,7 @@ func NewDiscovery(opts ...DiscoveryOption) (Discovery, error) {
 			log.Warn(oerr)
 		}
 	}
-	d.targetsByName.Store(&map[string]target.Target{})
+	d.targetsByName.Store(&map[string]target.Endpoint{})
 	d.selfMirrAddrStr = strings.Join(d.selfMirrAddrs, ",")
 
 	watcher, err := target.New(
@@ -118,7 +118,7 @@ func NewDiscovery(opts ...DiscoveryOption) (Discovery, error) {
 	return d, nil
 }
 
-func (d *discovery) onReconcile(_ context.Context, list map[string]target.Target) {
+func (d *discovery) onReconcile(_ context.Context, list map[string]target.Endpoint) {
 	log.Debugf("mirror reconciled\t%#v", list)
 	d.targetsByName.Store(&list)
 }
@@ -164,22 +164,22 @@ func (d *discovery) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (d *discovery) loadTargets() map[string]target.Target {
+func (d *discovery) loadTargets() map[string]target.Endpoint {
 	if v := d.targetsByName.Load(); v != nil {
 		return *v
 	}
-	return map[string]target.Target{}
+	return map[string]target.Endpoint{}
 }
 
 type createdTarget struct {
 	name string
-	tgt  target.Target
+	tgt  target.Endpoint
 }
 
 type updatedTarget struct {
 	name string
-	old  target.Target
-	new  target.Target
+	old  target.Endpoint
+	new  target.Endpoint
 }
 
 type deletedTarget struct {
@@ -199,12 +199,12 @@ func newMirrorTarget(host string, port int) *payload.Mirror_Target {
 }
 
 func (d *discovery) startSync(
-	ctx context.Context, prev map[string]target.Target,
-) (current map[string]target.Target, errs error) {
+	ctx context.Context, prev map[string]target.Endpoint,
+) (current map[string]target.Endpoint, errs error) {
 	current = d.loadTargets()
 	curAddrs := map[string]string{} // map[addr: metadata.name]
 
-	created := map[string]*createdTarget{} // map[addr: target.Target]
+	created := map[string]*createdTarget{} // map[addr: target.Endpoint]
 	updated := map[string]*updatedTarget{} // map[addr: *updatedTarget]
 	for name, ctgt := range current {
 		addr := net.JoinHostPort(ctgt.Host, uint16(ctgt.Port)) //nolint:gosec // port values come from the MirrorTarget CRD spec, not attacker-controlled input
@@ -252,7 +252,7 @@ func (d *discovery) startSync(
 }
 
 func (d *discovery) syncWithAddr(
-	ctx context.Context, current map[string]target.Target, curAddrs map[string]string,
+	ctx context.Context, current map[string]target.Endpoint, curAddrs map[string]string,
 ) (errs error) {
 	for addr, name := range curAddrs {
 		// When the status code of a regularly running Register RPC is Unimplemented, the connection to the target will be disconnected

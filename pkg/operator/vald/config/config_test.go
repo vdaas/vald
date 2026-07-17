@@ -42,7 +42,7 @@ const minimalServerYAML = `server_config:
 `
 
 //nolint:maintidx
-func TestNewConfig(t *testing.T) {
+func TestNew(t *testing.T) {
 	t.Parallel()
 
 	type test struct {
@@ -208,15 +208,15 @@ operator:
 			t.Parallel()
 
 			path := writeTempFile(t, "config.yaml", tc.yaml)
-			cfg, err := NewConfig(path)
+			cfg, err := New(path)
 			if tc.wantErr {
 				if err == nil {
-					t.Error("NewConfig() error = nil, want error")
+					t.Error("New() error = nil, want error")
 				}
 				return
 			}
 			if err != nil {
-				t.Fatalf("NewConfig() error = %v, want nil", err)
+				t.Fatalf("New() error = %v, want nil", err)
 			}
 			if tc.check != nil {
 				tc.check(t, cfg)

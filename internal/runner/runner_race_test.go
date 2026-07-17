@@ -153,7 +153,7 @@ func TestDo_for_race(t *testing.T) {
 							Version: "v1.1.2",
 						}, nil
 					}),
-					WithDaemonInitializer(func(any) (Runner, error) {
+					WithDaemonInitializer(func(any) (Interface, error) {
 						return nil, errors.New("err")
 					}),
 				},
@@ -185,7 +185,7 @@ func TestDo_for_race(t *testing.T) {
 							Version: "v1.1.2",
 						}, nil
 					}),
-					WithDaemonInitializer(func(any) (Runner, error) {
+					WithDaemonInitializer(func(any) (Interface, error) {
 						return &runnerMock{
 							PreStartFunc: func(ctx context.Context) error {
 								return nil

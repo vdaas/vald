@@ -272,7 +272,7 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 	}
 
 	if g.CircuitBreaker != nil {
-		cb, err := circuitbreaker.NewCircuitBreaker(
+		cb, err := circuitbreaker.New(
 			circuitbreaker.WithBreakerOpts(
 				circuitbreaker.WithClosedErrorRate(g.CircuitBreaker.ClosedErrorRate),
 				circuitbreaker.WithHalfOpenErrorRate(g.CircuitBreaker.HalfOpenErrorRate),

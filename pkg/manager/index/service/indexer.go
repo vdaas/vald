@@ -292,7 +292,7 @@ func (idx *index) loadInfos(ctx context.Context) (err error) {
 			case <-ctx.Done():
 				return nil
 			default:
-				info, err := vald.NewValdClient(conn).IndexInfo(ctx, new(payload.Empty), copts...)
+				info, err := vald.NewFromConn(conn).IndexInfo(ctx, new(payload.Empty), copts...)
 				if err != nil {
 					log.Warnf("an error occurred while calling IndexInfo of %s: %s", addr, err)
 					return nil

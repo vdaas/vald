@@ -643,7 +643,7 @@ func WithClientInterceptors(names ...string) Option {
 					WithStatsHandler(trace.NewStatsHandler()),
 				)
 			case "metricinterceptor", "metric":
-				uci, sci, err := metric.ClientMetricInterceptors()
+				uci, sci, err := metric.ClientInterceptors()
 				if err != nil {
 					lerr := errors.NewErrCriticalOption("gRPCInterceptors", "metric", errors.Wrap(err, "failed to create interceptor"))
 					log.Warn(lerr.Error())

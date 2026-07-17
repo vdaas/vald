@@ -166,7 +166,7 @@ func TestWithGateway(t *testing.T) {
 	t.Run("sets gateway when client is not nil", func(tt *testing.T) {
 		tt.Parallel()
 		e := new(export)
-		client := vald.NewValdClient(nil)
+		client := vald.NewFromConn(nil)
 		if err := WithGateway(client)(e); err != nil {
 			tt.Errorf("err: %v", err)
 		}

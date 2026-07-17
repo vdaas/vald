@@ -50,7 +50,7 @@ type run struct {
 	observability observability.Observability
 }
 
-func New(cfg *config.Config) (r runner.Runner, err error) {
+func New(cfg *config.Config) (r runner.Interface, err error) {
 	log.Info("pkg/tools/benchmark/job/cmd start")
 	eg := errgroup.Get()
 
@@ -141,8 +141,8 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 			// TODO register grpc server handler here
 		}),
 		server.WithGRPCOption(
-			grpc.ChainUnaryInterceptor(recover.RecoverInterceptor()),
-			grpc.ChainStreamInterceptor(recover.RecoverStreamInterceptor()),
+			grpc.ChainUnaryInterceptor(recover.Interceptor()),
+			grpc.ChainStreamInterceptor(recover.StreamInterceptor()),
 		),
 		server.WithPreStartFunc(func() error {
 			// TODO check unbackupped upstream

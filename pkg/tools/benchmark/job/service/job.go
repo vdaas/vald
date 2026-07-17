@@ -205,7 +205,7 @@ func (j *job) PreStart(ctx context.Context) error {
 		}
 		log.Infof("[benchmark job] success download dataset of %s", j.hdf5.GetName().String())
 		log.Infof("[benchmark job] start load dataset of %s", j.hdf5.GetName().String())
-		var key hdf5.Hdf5Key
+		var key hdf5.Key
 		switch j.dataset.Group {
 		case "train":
 			key = hdf5.Train

@@ -39,16 +39,16 @@ type Decoder interface {
 	WriteTo(w io.Writer) (int64, error)
 }
 
-// Zstd is an interface to create Writer and Reader implementation.
-type Zstd interface {
+// Compressor is an interface to create Writer and Reader implementation.
+type Compressor interface {
 	NewWriter(w io.Writer, opts ...EOption) (Encoder, error)
 	NewReader(r io.Reader, opts ...DOption) (Decoder, error)
 }
 
 type compress struct{}
 
-// New returns Zstd implementation.
-func New() Zstd {
+// New returns Compressor implementation.
+func New() Compressor {
 	return new(compress)
 }
 

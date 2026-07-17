@@ -41,13 +41,13 @@ func main() {
 			runner.WithName[*config.Config](name),
 			runner.WithVersion[*config.Config](info.Version, maxVersion, minVersion),
 			runner.WithConfigLoader(func(path string) (*config.Config, *config.GlobalConfig, error) {
-				cfg, err := config.NewConfig(path)
+				cfg, err := config.NewData(path)
 				if err != nil {
 					return nil, nil, errors.Wrap(err, "failed to load "+name+"'s configuration")
 				}
 				return cfg, &cfg.GlobalConfig, nil
 			}),
-			runner.WithDaemonInitializer(func(cfg *config.Config) (runner.Runner, error) {
+			runner.WithDaemonInitializer(func(cfg *config.Config) (runner.Interface, error) {
 				return usecase.New(cfg)
 			}),
 		)

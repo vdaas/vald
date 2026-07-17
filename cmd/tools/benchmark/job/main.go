@@ -48,7 +48,7 @@ func main() {
 				}
 				return cfg, &cfg.GlobalConfig, nil
 			}),
-			runner.WithDaemonInitializer(func(cfg *config.Config) (runner.Runner, error) {
+			runner.WithDaemonInitializer(func(cfg *config.Config) (runner.Interface, error) {
 				return usecase.New(cfg)
 			}),
 		)

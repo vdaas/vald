@@ -38,8 +38,8 @@ type Config struct {
 	config.GlobalConfig `json:",inline" yaml:",inline"`
 }
 
-// NewConfig represents the set config from the given setting file path.
-func NewConfig(path string) (cfg *Config, err error) {
+// NewData represents the set config from the given setting file path.
+func NewData(path string) (cfg *Config, err error) {
 	err = config.Read(path, &cfg)
 	if err != nil {
 		return nil, err

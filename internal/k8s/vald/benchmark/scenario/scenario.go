@@ -22,14 +22,14 @@ import (
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 )
 
-type BenchmarkScenarioWatcher k8s.ResourceController
+type BenchmarkWatcher k8s.ResourceController
 
-// New builds a BenchmarkScenarioWatcher that lists ValdBenchmarkScenario
+// New builds a BenchmarkWatcher that lists ValdBenchmarkScenario
 // objects on every reconcile and hands them to the configured
 // OnReconcileFunc callback as a map keyed by object name. Option application
 // errors abort construction only when critical; any other option error is
 // logged as a warning and skipped.
-func New(opts ...Option) (BenchmarkScenarioWatcher, error) {
+func New(opts ...Option) (BenchmarkWatcher, error) {
 	return vald.NewListWatcher(
 		v1.AddToScheme,
 		func(sc *v1.ValdBenchmarkScenario) v1.ValdBenchmarkScenario { return *sc },

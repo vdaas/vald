@@ -27,8 +27,8 @@ import (
 	"github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
 )
 
-func NewInsertCommit(poolSize uint32, opts ...StrategyOption) benchmark.Strategy {
-	return newStrategy(append([]StrategyOption{
+func NewInsertCommit(poolSize uint32, opts ...Option) benchmark.Strategy {
+	return newStrategy(append([]Option{
 		WithPropName("InsertCommit"),
 		WithProp32(
 			func(ctx context.Context, b *testing.B, c algorithm.Bit32, dataset assets.Dataset, ids []uint, cnt *uint64) (any, error) {

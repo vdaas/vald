@@ -52,8 +52,8 @@ const (
 	containerPortReadiness = 3001
 )
 
-type BenchmarkJobTpl interface {
-	CreateJobTpl(opts ...BenchmarkJobOption) (k8s.Job, error)
+type BenchmarkTpl interface {
+	CreateJobTpl(opts ...BenchmarkOption) (k8s.Job, error)
 }
 
 // fieldRefEnvVar builds an EnvVar sourced from the downward-API field at
@@ -81,9 +81,9 @@ type benchmarkJobTpl struct {
 // Option application errors abort construction only when critical (an empty
 // required field such as the container name or image); any other option error
 // is logged as a warning and skipped.
-func NewBenchmarkJob(opts ...BenchmarkJobTemplateOption) (BenchmarkJobTpl, error) {
+func NewBenchmarkJob(opts ...BenchmarkTemplateOption) (BenchmarkTpl, error) {
 	bjTpl := new(benchmarkJobTpl)
-	for _, opt := range append(defaultBenchmarkJobTemplateOptions, opts...) {
+	for _, opt := range append(defaultBenchmarkTemplateOptions, opts...) {
 		if err := opt(bjTpl); err != nil {
 			if abort, oerr := vald.SkipNonCriticalOptionError(err, opt); abort {
 				return nil, oerr
@@ -97,7 +97,7 @@ func NewBenchmarkJob(opts ...BenchmarkJobTemplateOption) (BenchmarkJobTpl, error
 // given options, with the same severity handling as NewBenchmarkJob: only
 // critical option errors (an empty job name) abort, any other option error is
 // logged as a warning and skipped.
-func (b *benchmarkJobTpl) CreateJobTpl(opts ...BenchmarkJobOption) (k8s.Job, error) {
+func (b *benchmarkJobTpl) CreateJobTpl(opts ...BenchmarkOption) (k8s.Job, error) {
 	for _, opt := range append(defaultBenchmarkJobOpts, opts...) {
 		if err := opt(&b.jobTpl); err != nil {
 			if abort, oerr := vald.SkipNonCriticalOptionError(err, opt); abort {

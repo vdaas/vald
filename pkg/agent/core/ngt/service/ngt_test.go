@@ -1613,7 +1613,7 @@ func Test_ngt_E2E(t *testing.T) {
 				for _, req := range test.args.requests {
 					_, err := test.args.client.Do(ctx, test.args.addr,
 						func(ctx context.Context, conn *grpc.ClientConn, opts ...grpc.CallOption) (any, error) {
-							return vald.NewValdClient(conn).MultiUpsert(ctx, req)
+							return vald.NewFromConn(conn).MultiUpsert(ctx, req)
 						})
 					if err != nil {
 						t.Error(err)

@@ -39,7 +39,7 @@ import (
 	"go.uber.org/automaxprocs/maxprocs"
 )
 
-type Runner interface {
+type Interface interface {
 	PreStart(ctx context.Context) error
 	Start(ctx context.Context) (<-chan error, error)
 	PreStop(ctx context.Context) error
@@ -49,7 +49,7 @@ type Runner interface {
 
 type runner[T any] struct {
 	loadConfig       func(string) (T, *config.GlobalConfig, error)
-	initializeDaemon func(T) (Runner, error)
+	initializeDaemon func(T) (Interface, error)
 	version          string
 	maxVersion       string
 	minVersion       string
@@ -138,7 +138,7 @@ func Do[T any](ctx context.Context, opts ...Option[T]) error {
 	return Run(ctx, daemon, r.name)
 }
 
-func Run(ctx context.Context, run Runner, name string) (err error) {
+func Run(ctx context.Context, run Interface, name string) (err error) {
 	sctx, cancel := signal.NotifyContext(ctx,
 		syscall.SIGINT,
 		syscall.SIGQUIT,

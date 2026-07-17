@@ -45,7 +45,7 @@ func removeTestConfigFile(t *testing.T, path string) {
 	}
 }
 
-func TestNewConfig(t *testing.T) {
+func TestNew(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		path string
@@ -234,7 +234,7 @@ observability:
 				checkFunc = defaultCheckFunc
 			}
 
-			gotCfg, err := NewConfig(test.args.path)
+			gotCfg, err := New(test.args.path)
 			if cerr := checkFunc(test.want, gotCfg, err); cerr != nil {
 				tt.Errorf("error = %v, got = %#v", cerr, gotCfg)
 			}

@@ -56,7 +56,7 @@ type worker struct {
 }
 
 // New initializes and return the worker, or return initialization error if occurred.
-func New(opts ...WorkerOption) (Worker, error) {
+func New(opts ...Option) (Worker, error) {
 	w := new(worker)
 	for _, opt := range append(defaultWorkerOpts, opts...) {
 		if err := opt(w); err != nil {

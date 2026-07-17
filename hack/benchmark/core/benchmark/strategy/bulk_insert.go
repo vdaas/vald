@@ -30,8 +30,8 @@ const (
 	maxBulkSize = 100000
 )
 
-func NewBulkInsert(opts ...StrategyOption) benchmark.Strategy {
-	return newStrategy(append([]StrategyOption{
+func NewBulkInsert(opts ...Option) benchmark.Strategy {
+	return newStrategy(append([]Option{
 		WithPropName("BulkInsert"),
 		WithProp32(
 			func(ctx context.Context, b *testing.B, c algorithm.Bit32, dataset assets.Dataset, ids []uint, cnt *uint64) (any, error) {

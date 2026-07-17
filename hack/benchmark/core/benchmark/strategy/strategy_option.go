@@ -25,9 +25,9 @@ import (
 	"github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
 )
 
-type StrategyOption func(*strategy) error
+type Option func(*strategy) error
 
-var defaultStrategyOptions = []StrategyOption{
+var defaultStrategyOptions = []Option{
 	WithPreProp32(func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset) ([]uint, error) {
 		return nil, nil
 	}),
@@ -38,7 +38,7 @@ var defaultStrategyOptions = []StrategyOption{
 
 func WithPreProp32(
 	fn func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset) ([]uint, error),
-) StrategyOption {
+) Option {
 	return func(s *strategy) error {
 		if fn != nil {
 			s.preProp32 = fn
@@ -49,7 +49,7 @@ func WithPreProp32(
 
 func WithProp32(
 	fn func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (any, error),
-) StrategyOption {
+) Option {
 	return func(s *strategy) error {
 		if fn != nil {
 			s.prop32 = fn
@@ -60,7 +60,7 @@ func WithProp32(
 
 func WithPreProp64(
 	fn func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset) ([]uint, error),
-) StrategyOption {
+) Option {
 	return func(s *strategy) error {
 		if fn != nil {
 			s.preProp64 = fn
@@ -71,7 +71,7 @@ func WithPreProp64(
 
 func WithProp64(
 	fn func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (any, error),
-) StrategyOption {
+) Option {
 	return func(s *strategy) error {
 		if fn != nil {
 			s.prop64 = fn
@@ -80,7 +80,7 @@ func WithProp64(
 	}
 }
 
-func WithPropName(str string) StrategyOption {
+func WithPropName(str string) Option {
 	return func(s *strategy) error {
 		if len(str) != 0 {
 			s.propName = str
@@ -91,7 +91,7 @@ func WithPropName(str string) StrategyOption {
 
 func WithBit32(
 	fn func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit32, algorithm.Closer, error),
-) StrategyOption {
+) Option {
 	return func(s *strategy) (err error) {
 		if fn != nil {
 			s.mode = algorithm.Float32
@@ -103,7 +103,7 @@ func WithBit32(
 
 func WithBit64(
 	fn func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit64, algorithm.Closer, error),
-) StrategyOption {
+) Option {
 	return func(s *strategy) error {
 		if fn != nil {
 			s.mode = algorithm.Float64
@@ -113,7 +113,7 @@ func WithBit64(
 	}
 }
 
-func WithParallel() StrategyOption {
+func WithParallel() Option {
 	return func(s *strategy) error {
 		s.parallel = true
 		return nil

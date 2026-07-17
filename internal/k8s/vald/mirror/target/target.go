@@ -33,7 +33,7 @@ const (
 	MirrorTargetPhaseUnknown      = mirrv1.MirrorTargetUnknown
 )
 
-type Target struct {
+type Endpoint struct {
 	Colocation string
 	Host       string
 	Phase      MirrorTargetPhase
@@ -41,15 +41,15 @@ type Target struct {
 }
 
 // New creates a MirrorTargetWatcher that lists ValdMirrorTarget resources on
-// every reconcile and reports them, converted into Target values keyed by
+// every reconcile and reports them, converted into Endpoint values keyed by
 // name, to the callback registered via WithOnReconcileFunc. Option
 // application errors abort construction only when critical; any other option
 // error is logged as a warning and skipped.
 func New(opts ...Option) (MirrorTargetWatcher, error) {
 	return vald.NewListWatcher(
 		mirrv1.AddToScheme,
-		func(m *mirrv1.ValdMirrorTarget) Target {
-			return Target{
+		func(m *mirrv1.ValdMirrorTarget) Endpoint {
+			return Endpoint{
 				Colocation: m.Spec.Colocation,
 				Host:       m.Spec.Target.Host,
 				Port:       m.Spec.Target.Port,

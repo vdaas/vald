@@ -222,7 +222,7 @@ func (c *correct) Start(ctx context.Context) (err error) {
 		// cancel with nil cause is a no-op when the context has already been
 		// canceled with a specific cause (e.g. io.EOF on stream completion).
 		defer cancel(nil)
-		stream, err := vc.NewValdClient(conn).StreamListObject(ctx, emptyReq, copts...)
+		stream, err := vc.NewFromConn(conn).StreamListObject(ctx, emptyReq, copts...)
 		if err != nil || stream == nil {
 			return err
 		}
@@ -376,7 +376,7 @@ func (c *correct) loadReplicaInfo(
 				return nil
 			}
 
-			ots, gerr := vc.NewValdClient(conn).GetTimestamp(ctx, &payload.Object_TimestampRequest{
+			ots, gerr := vc.NewFromConn(conn).GetTimestamp(ctx, &payload.Object_TimestampRequest{
 				Id: &payload.Object_ID{
 					Id: id,
 				},
@@ -434,7 +434,7 @@ func (c *correct) getLatestObject(
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (any, error) {
-		obj, err := vc.NewValdClient(conn).GetObject(ctx, &payload.Object_VectorRequest{
+		obj, err := vc.NewFromConn(conn).GetObject(ctx, &payload.Object_VectorRequest{
 			Id: &payload.Object_ID{
 				Id: id,
 			},
@@ -489,7 +489,7 @@ func (c *correct) correctTimestamp(
 				conn *grpc.ClientConn,
 				copts ...grpc.CallOption,
 			) (any, error) {
-				client := vc.NewValdClient(conn)
+				client := vc.NewFromConn(conn)
 				_, err := client.UpdateTimestamp(ctx, &payload.Update_TimestampRequest{
 					Id:        latestObject.GetId(),
 					Timestamp: latestObject.GetTimestamp(),
@@ -542,7 +542,7 @@ func (c *correct) correctOversupply(
 					conn *grpc.ClientConn,
 					copts ...grpc.CallOption,
 				) (any, error) {
-					_, err := vc.NewValdClient(conn).Remove(ctx, req, copts...)
+					_, err := vc.NewFromConn(conn).Remove(ctx, req, copts...)
 					if err != nil {
 						if st, ok := status.FromError(err); !ok || st == nil {
 							log.Errorf("gRPC call returned not a gRPC status error: %v", err)
@@ -597,7 +597,7 @@ func (c *correct) correctShortage(
 					conn *grpc.ClientConn,
 					copts ...grpc.CallOption,
 				) (any, error) {
-					client := vc.NewValdClient(conn)
+					client := vc.NewFromConn(conn)
 					_, err := client.Insert(ctx, req, copts...)
 					if err != nil {
 						if st, ok := status.FromError(err); !ok || st == nil {

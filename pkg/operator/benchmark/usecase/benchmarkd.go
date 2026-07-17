@@ -52,7 +52,7 @@ type run struct {
 
 var JOB_NAMESPACE = os.Getenv("JOB_NAMESPACE")
 
-func New(cfg *config.Config) (r runner.Runner, err error) {
+func New(cfg *config.Config) (r runner.Interface, err error) {
 	log.Info("pkg/operator/benchmark/cmd start")
 
 	eg := errgroup.Get()
@@ -80,8 +80,8 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 			// TODO register grpc server handler here
 		}),
 		server.WithGRPCOption(
-			grpc.ChainUnaryInterceptor(recover.RecoverInterceptor()),
-			grpc.ChainStreamInterceptor(recover.RecoverStreamInterceptor()),
+			grpc.ChainUnaryInterceptor(recover.Interceptor()),
+			grpc.ChainStreamInterceptor(recover.StreamInterceptor()),
 		),
 		server.WithPreStartFunc(func() error {
 			// TODO check unbackupped upstream

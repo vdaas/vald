@@ -52,7 +52,7 @@ type run struct {
 	so            observer.StorageObserver
 }
 
-func New(cfg *config.Data) (r runner.Runner, err error) {
+func New(cfg *config.Data) (r runner.Interface, err error) {
 	log.Info("Initialized in sidecar mode")
 
 	eg := errgroup.Get()

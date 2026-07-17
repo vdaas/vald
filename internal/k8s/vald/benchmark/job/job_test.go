@@ -274,7 +274,7 @@ func TestNew_ProductionCallPattern(t *testing.T) {
 	}
 }
 
-// TestNew_Metadata verifies New() returns a BenchmarkJobWatcher whose
+// TestNew_Metadata verifies New() returns a BenchmarkWatcher whose
 // GetName() reflects WithControllerName, and that it plugs into the batch
 // watch/list contract (For unused, Watches installed) rather than the
 // hand-rolled For()-based contract the old reconciler used.
@@ -437,18 +437,18 @@ func TestNew_Reconcile(t *testing.T) {
 // 		opts []Option
 // 	}
 // 	type want struct {
-// 		want BenchmarkJobWatcher
+// 		want BenchmarkWatcher
 // 		err  error
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
 // 		want       want
-// 		checkFunc  func(want, BenchmarkJobWatcher, error) error
+// 		checkFunc  func(want, BenchmarkWatcher, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got BenchmarkJobWatcher, err error) error {
+// 	defaultCheckFunc := func(w want, got BenchmarkWatcher, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}

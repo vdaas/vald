@@ -45,7 +45,7 @@ type run struct {
 	corrector     service.Corrector
 }
 
-func New(cfg *config.Data) (r runner.Runner, err error) {
+func New(cfg *config.Data) (r runner.Interface, err error) {
 	eg := errgroup.Get()
 
 	gOpts, err := cfg.Corrector.Gateway.Opts()
@@ -92,8 +92,8 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	grpcServerOptions := []server.Option{
 		server.WithGRPCOption(
-			grpc.ChainUnaryInterceptor(recover.RecoverInterceptor()),
-			grpc.ChainStreamInterceptor(recover.RecoverStreamInterceptor()),
+			grpc.ChainUnaryInterceptor(recover.Interceptor()),
+			grpc.ChainStreamInterceptor(recover.StreamInterceptor()),
 		),
 	}
 

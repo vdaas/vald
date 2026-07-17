@@ -50,7 +50,7 @@ func WithConfigLoader[T any](f func(string) (T, *config.GlobalConfig, error)) Op
 	}
 }
 
-func WithDaemonInitializer[T any](f func(T) (Runner, error)) Option[T] {
+func WithDaemonInitializer[T any](f func(T) (Interface, error)) Option[T] {
 	return func(r *runner[T]) {
 		if f != nil {
 			r.initializeDaemon = f

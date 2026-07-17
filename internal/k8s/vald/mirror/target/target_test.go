@@ -117,7 +117,7 @@ func TestNew_ControllerName(t *testing.T) {
 
 			watcher, err := New(
 				WithControllerName(tc.opt),
-				WithOnReconcileFunc(func(context.Context, map[string]Target) {}),
+				WithOnReconcileFunc(func(context.Context, map[string]Endpoint) {}),
 			)
 			if err != nil {
 				t.Fatalf("New() error = %v, want nil", err)
@@ -164,13 +164,13 @@ func TestNew_InvalidOptionsAreNonFatal(t *testing.T) {
 
 // TestNew_Reconcile drives the reconciler returned by New() end-to-end
 // through a fake controller-runtime client, characterizing the List ->
-// map[string]Target conversion and the namespace/label filtering options.
+// map[string]Endpoint conversion and the namespace/label filtering options.
 func TestNew_Reconcile(t *testing.T) {
 	t.Parallel()
 
 	type test struct {
 		client  func(t *testing.T) k8s.Client
-		targets map[string]Target
+		targets map[string]Endpoint
 		name    string
 		opts    []Option
 	}
@@ -185,7 +185,7 @@ func TestNew_Reconcile(t *testing.T) {
 					newMirrorTarget("t2", "default", testHostB, 8082, testColocationAZB, MirrorTargetPhasePending),
 				)
 			},
-			targets: map[string]Target{
+			targets: map[string]Endpoint{
 				"t1": {Colocation: testColocationAZA, Host: testHostA, Port: 8081, Phase: MirrorTargetPhaseConnected},
 				"t2": {Colocation: testColocationAZB, Host: testHostB, Port: 8082, Phase: MirrorTargetPhasePending},
 			},
@@ -200,7 +200,7 @@ func TestNew_Reconcile(t *testing.T) {
 				)
 			},
 			opts: []Option{WithNamespaces("ns-a")},
-			targets: map[string]Target{
+			targets: map[string]Endpoint{
 				"t1": {Colocation: testColocationAZA, Host: testHostA, Port: 8081, Phase: MirrorTargetPhaseConnected},
 			},
 		},
@@ -215,7 +215,7 @@ func TestNew_Reconcile(t *testing.T) {
 				return newFakeClient(t, a, b)
 			},
 			opts: []Option{WithLabels(map[string]string{testRoleLabelKey: "primary"})},
-			targets: map[string]Target{
+			targets: map[string]Endpoint{
 				"t1": {Colocation: testColocationAZA, Host: testHostA, Port: 8081, Phase: MirrorTargetPhaseConnected},
 			},
 		},
@@ -226,10 +226,10 @@ func TestNew_Reconcile(t *testing.T) {
 			t.Parallel()
 
 			var errored int
-			var got map[string]Target
+			var got map[string]Endpoint
 			watcher, err := New(append([]Option{
 				WithControllerName("mirror target watcher"),
-				WithOnReconcileFunc(func(_ context.Context, m map[string]Target) { got = m }),
+				WithOnReconcileFunc(func(_ context.Context, m map[string]Endpoint) { got = m }),
 				WithOnErrorFunc(func(error) { errored++ }),
 			}, tc.opts...)...)
 			if err != nil {
@@ -314,7 +314,7 @@ func TestNew_Reconcile_ListErrors(t *testing.T) {
 			var errored int
 			watcher, err := New(
 				WithControllerName("mirror target watcher"),
-				WithOnReconcileFunc(func(context.Context, map[string]Target) {}),
+				WithOnReconcileFunc(func(context.Context, map[string]Endpoint) {}),
 				WithOnErrorFunc(func(error) { errored++ }),
 			)
 			if err != nil {
