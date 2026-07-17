@@ -42,6 +42,9 @@ func New(name, description string, i any) metrics.Metric {
 
 func labelKVs(i any) map[string]string {
 	rt, rv := reflect.TypeOf(i), reflect.ValueOf(i)
+	if rt == nil || rt.Kind() != reflect.Struct {
+		return make(map[string]string)
+	}
 	kvs := make(map[string]string, rt.NumField())
 	for k := 0; k < rt.NumField(); k++ {
 		keyName := rt.Field(k).Tag.Get("info")

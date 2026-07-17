@@ -16,66 +16,44 @@ package target
 import (
 	"context"
 
-	"github.com/vdaas/vald/internal/errors"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	"github.com/vdaas/vald/internal/k8s/vald"
 )
 
-// Option represents the functional option for reconciler.
-type Option func(r *reconciler) error
+// Option represents the functional option for the settings collected by New;
+// it is the Target instantiation of the shared watcher factory option, which
+// validates every value it is given.
+type Option = vald.WatcherOption[Target]
 
-var defaultOptions = []Option{}
-
-// WithControllerName returns the option to set the name of controller.
+// WithControllerName returns the option to set the name of controller; an
+// empty name is rejected with errors.ErrInvalidOption.
 func WithControllerName(name string) Option {
-	return func(r *reconciler) error {
-		if name == "" {
-			return errors.NewErrInvalidOption("controllerName", name)
-		}
-		r.name = name
-		return nil
-	}
+	return vald.WithWatcherControllerName[Target](name)
 }
 
-// WithOnErrorFunc returns the option to set the function to notify an error.
+// WithOnErrorFunc returns the option to set the function to notify an error;
+// a nil callback is rejected with errors.ErrInvalidOption.
 func WithOnErrorFunc(f func(error)) Option {
-	return func(r *reconciler) error {
-		if f == nil {
-			return errors.NewErrInvalidOption("onErrorFunc", f)
-		}
-		r.onError = f
-		return nil
-	}
+	return vald.WithWatcherOnErrorFunc[Target](f)
 }
 
-// WithOnReconcileFunc returns the option to set the function to get the reconciled result.
+// WithOnReconcileFunc returns the option to set the function to get the
+// reconciled result; a nil callback is rejected with errors.ErrInvalidOption.
 func WithOnReconcileFunc(f func(context.Context, map[string]Target)) Option {
-	return func(r *reconciler) error {
-		if f == nil {
-			return errors.NewErrInvalidOption("onReconcileFunc", f)
-		}
-		r.onReconcile = f
-		return nil
-	}
+	return vald.WithWatcherOnReconcileFunc(f)
 }
 
-// WithNamespace returns the option to set the namespace to get resources matching the given namespace..
-func WithNamespace(ns string) Option {
-	return func(r *reconciler) error {
-		if ns == "" {
-			return errors.NewErrInvalidOption("namespace", ns)
-		}
-		r.addListOpts(client.InNamespace(ns))
-		return nil
-	}
+// WithNamespaces returns the option to restrict List to the given namespaces,
+// replacing any previously configured set. controller-runtime keeps a single
+// ListOptions.Namespace, so when multiple namespaces are given the last one
+// wins (known pre-existing limitation of the shared watcher factory, kept
+// as-is).
+func WithNamespaces(nss ...string) Option {
+	return vald.WithWatcherNamespaces[Target](nss...)
 }
 
-// WithLabels returns the option to set the label selector to get resources matching the given label.
+// WithLabels returns the option to set the label selector to get resources
+// matching the given label; an empty (or nil) label set is rejected with
+// errors.ErrInvalidOption.
 func WithLabels(labels map[string]string) Option {
-	return func(r *reconciler) error {
-		if len(labels) == 0 {
-			return errors.NewErrInvalidOption("labels", labels)
-		}
-		r.addListOpts(client.MatchingLabels(labels))
-		return nil
-	}
+	return vald.WithWatcherLabels[Target](labels)
 }

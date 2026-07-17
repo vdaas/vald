@@ -100,7 +100,9 @@ func (r *run) PreStart(ctx context.Context) error {
 // Start is a method used to initiate an operation in the run, and it returns a channel for receiving errors
 // during the operation and an error representing any initialization errors.
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 3) //nolint:gomnd
+	// buffer one slot per error source forwarded below so no sender blocks.
+	const errChanBufferSize = 3
+	ech := make(chan error, errChanBufferSize)
 	var oech, dech, sech <-chan error
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)

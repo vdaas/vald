@@ -19,43 +19,38 @@ package job
 import (
 	"context"
 
+	"github.com/vdaas/vald/internal/k8s/vald"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 )
 
-type Option func(*reconciler) error
+type (
+	// Option configures New; it is the ValdBenchmarkJob instantiation of the
+	// shared watcher factory option.
+	Option = vald.WatcherOption[v1.ValdBenchmarkJob]
 
-var defaultOpts = []Option{}
+	// settings is the ValdBenchmarkJob instantiation of the shared watcher
+	// factory config the options mutate.
+	settings = vald.WatcherConfig[v1.ValdBenchmarkJob]
+)
 
-// WithControllerName returns Option that sets r.name.
+// WithControllerName returns Option that sets the reconciler name.
 func WithControllerName(name string) Option {
-	return func(r *reconciler) error {
-		r.name = name
-		return nil
-	}
+	return vald.WithWatcherControllerName[v1.ValdBenchmarkJob](name)
 }
 
-// WithNamespaces returns Option to set the namespace.
+// WithNamespaces returns Option to restrict List to the given namespaces.
 func WithNamespaces(nss ...string) Option {
-	return func(r *reconciler) error {
-		r.namespaces = nss
-		return nil
-	}
+	return vald.WithWatcherNamespaces[v1.ValdBenchmarkJob](nss...)
 }
 
-// WithOnErrorFunc returns Option that sets r.onError.
+// WithOnErrorFunc returns Option that sets the reconcile error callback.
 func WithOnErrorFunc(f func(err error)) Option {
-	return func(r *reconciler) error {
-		r.onError = f
-		return nil
-	}
+	return vald.WithWatcherOnErrorFunc[v1.ValdBenchmarkJob](f)
 }
 
-// WithOnReconcileFunc returns Option that sets r.onReconcile.
+// WithOnReconcileFunc returns Option that sets the reconcile callback.
 func WithOnReconcileFunc(
 	f func(ctx context.Context, jobList map[string]v1.ValdBenchmarkJob),
 ) Option {
-	return func(r *reconciler) error {
-		r.onReconcile = f
-		return nil
-	}
+	return vald.WithWatcherOnReconcileFunc(f)
 }

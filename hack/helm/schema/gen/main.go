@@ -212,7 +212,7 @@ func genJSONSchema(path string) error {
 	if refsMode {
 		root.Defs = defs
 	}
-	json, err := json.Marshal(root)
+	json, err := json.MarshalIndent(root, "", "  ")
 	if err != nil {
 		return errors.Errorf("error: %s", err)
 	}

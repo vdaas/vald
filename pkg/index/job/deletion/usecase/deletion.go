@@ -137,7 +137,9 @@ func (r *run) PreStart(ctx context.Context) error {
 // Start is a method used to initiate an operation in the run, and it returns a channel for receiving errors
 // during the operation and an error representing any initialization errors.
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 4)
+	// buffer one slot per error source forwarded below so no sender blocks.
+	const errChanBufferSize = 4
+	ech := make(chan error, errChanBufferSize)
 	var sech, oech <-chan error
 	if r.observability != nil {
 		oech = r.observability.Start(ctx)

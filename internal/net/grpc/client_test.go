@@ -16,6 +16,8 @@
 
 package grpc
 
+import _ "github.com/vdaas/vald/internal/net/grpc/logger"
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestNew(t *testing.T) {
@@ -113,6 +115,7 @@ package grpc
 // 	type fields struct {
 // 		dialer                 net.Dialer
 // 		eg                     errgroup.Group
+// 		group                  singleflight.Group[pool.Conn]
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		bo                     backoff.Backoff
 // 		addrs                  map[string]struct{}
@@ -134,6 +137,7 @@ package grpc
 // 		monitorRunning         atomic.Bool
 // 		resolveDNS             bool
 // 		enablePoolRebalance    bool
+// 		enablePoolMetrics      bool
 // 	}
 // 	type want struct {
 // 		want <-chan error
@@ -168,6 +172,7 @@ package grpc
 // 		       fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -189,6 +194,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -212,6 +218,7 @@ package grpc
 // 		           fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -233,6 +240,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -265,6 +273,7 @@ package grpc
 // 			g := &gRPCClient{
 // 				dialer:                 test.fields.dialer,
 // 				eg:                     test.fields.eg,
+// 				group:                  test.fields.group,
 // 				cb:                     test.fields.cb,
 // 				bo:                     test.fields.bo,
 // 				addrs:                  test.fields.addrs,
@@ -286,6 +295,7 @@ package grpc
 // 				monitorRunning:         test.fields.monitorRunning,
 // 				resolveDNS:             test.fields.resolveDNS,
 // 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				enablePoolMetrics:      test.fields.enablePoolMetrics,
 // 			}
 //
 // 			got, err := g.StartConnectionMonitor(test.args.ctx)
@@ -304,6 +314,7 @@ package grpc
 // 	type fields struct {
 // 		dialer                 net.Dialer
 // 		eg                     errgroup.Group
+// 		group                  singleflight.Group[pool.Conn]
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		bo                     backoff.Backoff
 // 		addrs                  map[string]struct{}
@@ -325,6 +336,7 @@ package grpc
 // 		monitorRunning         atomic.Bool
 // 		resolveDNS             bool
 // 		enablePoolRebalance    bool
+// 		enablePoolMetrics      bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -356,6 +368,7 @@ package grpc
 // 		       fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -377,6 +390,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -401,6 +415,7 @@ package grpc
 // 		           fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -422,6 +437,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -454,6 +470,7 @@ package grpc
 // 			g := &gRPCClient{
 // 				dialer:                 test.fields.dialer,
 // 				eg:                     test.fields.eg,
+// 				group:                  test.fields.group,
 // 				cb:                     test.fields.cb,
 // 				bo:                     test.fields.bo,
 // 				addrs:                  test.fields.addrs,
@@ -475,6 +492,7 @@ package grpc
 // 				monitorRunning:         test.fields.monitorRunning,
 // 				resolveDNS:             test.fields.resolveDNS,
 // 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				enablePoolMetrics:      test.fields.enablePoolMetrics,
 // 			}
 //
 // 			err := g.Range(test.args.ctx, test.args.f)
@@ -494,6 +512,7 @@ package grpc
 // 	type fields struct {
 // 		dialer                 net.Dialer
 // 		eg                     errgroup.Group
+// 		group                  singleflight.Group[pool.Conn]
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		bo                     backoff.Backoff
 // 		addrs                  map[string]struct{}
@@ -515,6 +534,7 @@ package grpc
 // 		monitorRunning         atomic.Bool
 // 		resolveDNS             bool
 // 		enablePoolRebalance    bool
+// 		enablePoolMetrics      bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -547,6 +567,7 @@ package grpc
 // 		       fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -568,6 +589,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -593,6 +615,7 @@ package grpc
 // 		           fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -614,6 +637,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -646,6 +670,7 @@ package grpc
 // 			g := &gRPCClient{
 // 				dialer:                 test.fields.dialer,
 // 				eg:                     test.fields.eg,
+// 				group:                  test.fields.group,
 // 				cb:                     test.fields.cb,
 // 				bo:                     test.fields.bo,
 // 				addrs:                  test.fields.addrs,
@@ -667,6 +692,7 @@ package grpc
 // 				monitorRunning:         test.fields.monitorRunning,
 // 				resolveDNS:             test.fields.resolveDNS,
 // 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				enablePoolMetrics:      test.fields.enablePoolMetrics,
 // 			}
 //
 // 			err := g.RangeConcurrent(test.args.ctx, test.args.concurrency, test.args.f)
@@ -686,6 +712,7 @@ package grpc
 // 	type fields struct {
 // 		dialer                 net.Dialer
 // 		eg                     errgroup.Group
+// 		group                  singleflight.Group[pool.Conn]
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		bo                     backoff.Backoff
 // 		addrs                  map[string]struct{}
@@ -707,6 +734,7 @@ package grpc
 // 		monitorRunning         atomic.Bool
 // 		resolveDNS             bool
 // 		enablePoolRebalance    bool
+// 		enablePoolMetrics      bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -739,6 +767,7 @@ package grpc
 // 		       fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -760,6 +789,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -785,6 +815,7 @@ package grpc
 // 		           fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -806,6 +837,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -838,6 +870,7 @@ package grpc
 // 			g := &gRPCClient{
 // 				dialer:                 test.fields.dialer,
 // 				eg:                     test.fields.eg,
+// 				group:                  test.fields.group,
 // 				cb:                     test.fields.cb,
 // 				bo:                     test.fields.bo,
 // 				addrs:                  test.fields.addrs,
@@ -859,6 +892,7 @@ package grpc
 // 				monitorRunning:         test.fields.monitorRunning,
 // 				resolveDNS:             test.fields.resolveDNS,
 // 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				enablePoolMetrics:      test.fields.enablePoolMetrics,
 // 			}
 //
 // 			err := g.OrderedRange(test.args.ctx, test.args.orders, test.args.f)
@@ -879,6 +913,7 @@ package grpc
 // 	type fields struct {
 // 		dialer                 net.Dialer
 // 		eg                     errgroup.Group
+// 		group                  singleflight.Group[pool.Conn]
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		bo                     backoff.Backoff
 // 		addrs                  map[string]struct{}
@@ -900,6 +935,7 @@ package grpc
 // 		monitorRunning         atomic.Bool
 // 		resolveDNS             bool
 // 		enablePoolRebalance    bool
+// 		enablePoolMetrics      bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -933,6 +969,7 @@ package grpc
 // 		       fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -954,6 +991,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -980,6 +1018,7 @@ package grpc
 // 		           fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -1001,6 +1040,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1033,6 +1073,7 @@ package grpc
 // 			g := &gRPCClient{
 // 				dialer:                 test.fields.dialer,
 // 				eg:                     test.fields.eg,
+// 				group:                  test.fields.group,
 // 				cb:                     test.fields.cb,
 // 				bo:                     test.fields.bo,
 // 				addrs:                  test.fields.addrs,
@@ -1054,6 +1095,7 @@ package grpc
 // 				monitorRunning:         test.fields.monitorRunning,
 // 				resolveDNS:             test.fields.resolveDNS,
 // 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				enablePoolMetrics:      test.fields.enablePoolMetrics,
 // 			}
 //
 // 			err := g.OrderedRangeConcurrent(test.args.ctx, test.args.orders, test.args.concurrency, test.args.f)
@@ -1167,6 +1209,7 @@ package grpc
 // 	type fields struct {
 // 		dialer                 net.Dialer
 // 		eg                     errgroup.Group
+// 		group                  singleflight.Group[pool.Conn]
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		bo                     backoff.Backoff
 // 		addrs                  map[string]struct{}
@@ -1188,6 +1231,7 @@ package grpc
 // 		monitorRunning         atomic.Bool
 // 		resolveDNS             bool
 // 		enablePoolRebalance    bool
+// 		enablePoolMetrics      bool
 // 	}
 // 	type want struct {
 // 		wantData any
@@ -1223,6 +1267,7 @@ package grpc
 // 		       fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -1244,6 +1289,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1268,6 +1314,7 @@ package grpc
 // 		           fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -1289,6 +1336,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1321,6 +1369,7 @@ package grpc
 // 			g := &gRPCClient{
 // 				dialer:                 test.fields.dialer,
 // 				eg:                     test.fields.eg,
+// 				group:                  test.fields.group,
 // 				cb:                     test.fields.cb,
 // 				bo:                     test.fields.bo,
 // 				addrs:                  test.fields.addrs,
@@ -1342,6 +1391,7 @@ package grpc
 // 				monitorRunning:         test.fields.monitorRunning,
 // 				resolveDNS:             test.fields.resolveDNS,
 // 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				enablePoolMetrics:      test.fields.enablePoolMetrics,
 // 			}
 //
 // 			gotData, err := g.RoundRobin(test.args.ctx, test.args.f)
@@ -1361,6 +1411,7 @@ package grpc
 // 	type fields struct {
 // 		dialer                 net.Dialer
 // 		eg                     errgroup.Group
+// 		group                  singleflight.Group[pool.Conn]
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		bo                     backoff.Backoff
 // 		addrs                  map[string]struct{}
@@ -1382,6 +1433,7 @@ package grpc
 // 		monitorRunning         atomic.Bool
 // 		resolveDNS             bool
 // 		enablePoolRebalance    bool
+// 		enablePoolMetrics      bool
 // 	}
 // 	type want struct {
 // 		wantData any
@@ -1418,6 +1470,7 @@ package grpc
 // 		       fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -1439,6 +1492,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1464,6 +1518,7 @@ package grpc
 // 		           fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -1485,6 +1540,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1517,6 +1573,7 @@ package grpc
 // 			g := &gRPCClient{
 // 				dialer:                 test.fields.dialer,
 // 				eg:                     test.fields.eg,
+// 				group:                  test.fields.group,
 // 				cb:                     test.fields.cb,
 // 				bo:                     test.fields.bo,
 // 				addrs:                  test.fields.addrs,
@@ -1538,6 +1595,7 @@ package grpc
 // 				monitorRunning:         test.fields.monitorRunning,
 // 				resolveDNS:             test.fields.resolveDNS,
 // 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				enablePoolMetrics:      test.fields.enablePoolMetrics,
 // 			}
 //
 // 			gotData, err := g.Do(test.args.ctx, test.args.addr, test.args.f)
@@ -1558,6 +1616,7 @@ package grpc
 // 	type fields struct {
 // 		dialer                 net.Dialer
 // 		eg                     errgroup.Group
+// 		group                  singleflight.Group[pool.Conn]
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		bo                     backoff.Backoff
 // 		addrs                  map[string]struct{}
@@ -1579,6 +1638,7 @@ package grpc
 // 		monitorRunning         atomic.Bool
 // 		resolveDNS             bool
 // 		enablePoolRebalance    bool
+// 		enablePoolMetrics      bool
 // 	}
 // 	type want struct {
 // 		wantRes       any
@@ -1620,6 +1680,7 @@ package grpc
 // 		       fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -1641,6 +1702,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1667,6 +1729,7 @@ package grpc
 // 		           fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -1688,6 +1751,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1720,6 +1784,7 @@ package grpc
 // 			g := &gRPCClient{
 // 				dialer:                 test.fields.dialer,
 // 				eg:                     test.fields.eg,
+// 				group:                  test.fields.group,
 // 				cb:                     test.fields.cb,
 // 				bo:                     test.fields.bo,
 // 				addrs:                  test.fields.addrs,
@@ -1741,6 +1806,7 @@ package grpc
 // 				monitorRunning:         test.fields.monitorRunning,
 // 				resolveDNS:             test.fields.resolveDNS,
 // 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				enablePoolMetrics:      test.fields.enablePoolMetrics,
 // 			}
 //
 // 			gotRes, gotRetryable, err := g.executeRPC(test.args.ctx, test.args.p, test.args.addr, test.args.f)
@@ -1761,6 +1827,7 @@ package grpc
 // 	type fields struct {
 // 		dialer                 net.Dialer
 // 		eg                     errgroup.Group
+// 		group                  singleflight.Group[pool.Conn]
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		bo                     backoff.Backoff
 // 		addrs                  map[string]struct{}
@@ -1782,6 +1849,7 @@ package grpc
 // 		monitorRunning         atomic.Bool
 // 		resolveDNS             bool
 // 		enablePoolRebalance    bool
+// 		enablePoolMetrics      bool
 // 	}
 // 	type want struct {
 // 		wantData any
@@ -1819,6 +1887,7 @@ package grpc
 // 		       fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -1840,6 +1909,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1866,6 +1936,7 @@ package grpc
 // 		           fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -1887,6 +1958,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1919,6 +1991,7 @@ package grpc
 // 			g := &gRPCClient{
 // 				dialer:                 test.fields.dialer,
 // 				eg:                     test.fields.eg,
+// 				group:                  test.fields.group,
 // 				cb:                     test.fields.cb,
 // 				bo:                     test.fields.bo,
 // 				addrs:                  test.fields.addrs,
@@ -1940,6 +2013,7 @@ package grpc
 // 				monitorRunning:         test.fields.monitorRunning,
 // 				resolveDNS:             test.fields.resolveDNS,
 // 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				enablePoolMetrics:      test.fields.enablePoolMetrics,
 // 			}
 //
 // 			gotData, err := g.do(test.args.ctx, test.args.p, test.args.addr, test.args.f)
@@ -1954,6 +2028,7 @@ package grpc
 // 	type fields struct {
 // 		dialer                 net.Dialer
 // 		eg                     errgroup.Group
+// 		group                  singleflight.Group[pool.Conn]
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		bo                     backoff.Backoff
 // 		addrs                  map[string]struct{}
@@ -1975,6 +2050,7 @@ package grpc
 // 		monitorRunning         atomic.Bool
 // 		resolveDNS             bool
 // 		enablePoolRebalance    bool
+// 		enablePoolMetrics      bool
 // 	}
 // 	type want struct {
 // 		want []DialOption
@@ -2001,6 +2077,7 @@ package grpc
 // 		       fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -2022,6 +2099,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2042,6 +2120,7 @@ package grpc
 // 		           fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -2063,6 +2142,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2095,6 +2175,7 @@ package grpc
 // 			g := &gRPCClient{
 // 				dialer:                 test.fields.dialer,
 // 				eg:                     test.fields.eg,
+// 				group:                  test.fields.group,
 // 				cb:                     test.fields.cb,
 // 				bo:                     test.fields.bo,
 // 				addrs:                  test.fields.addrs,
@@ -2116,6 +2197,7 @@ package grpc
 // 				monitorRunning:         test.fields.monitorRunning,
 // 				resolveDNS:             test.fields.resolveDNS,
 // 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				enablePoolMetrics:      test.fields.enablePoolMetrics,
 // 			}
 //
 // 			got := g.GetDialOption()
@@ -2130,6 +2212,7 @@ package grpc
 // 	type fields struct {
 // 		dialer                 net.Dialer
 // 		eg                     errgroup.Group
+// 		group                  singleflight.Group[pool.Conn]
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		bo                     backoff.Backoff
 // 		addrs                  map[string]struct{}
@@ -2151,6 +2234,7 @@ package grpc
 // 		monitorRunning         atomic.Bool
 // 		resolveDNS             bool
 // 		enablePoolRebalance    bool
+// 		enablePoolMetrics      bool
 // 	}
 // 	type want struct {
 // 		want []CallOption
@@ -2177,6 +2261,7 @@ package grpc
 // 		       fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -2198,6 +2283,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2218,6 +2304,7 @@ package grpc
 // 		           fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -2239,6 +2326,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2271,6 +2359,7 @@ package grpc
 // 			g := &gRPCClient{
 // 				dialer:                 test.fields.dialer,
 // 				eg:                     test.fields.eg,
+// 				group:                  test.fields.group,
 // 				cb:                     test.fields.cb,
 // 				bo:                     test.fields.bo,
 // 				addrs:                  test.fields.addrs,
@@ -2292,6 +2381,7 @@ package grpc
 // 				monitorRunning:         test.fields.monitorRunning,
 // 				resolveDNS:             test.fields.resolveDNS,
 // 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				enablePoolMetrics:      test.fields.enablePoolMetrics,
 // 			}
 //
 // 			got := g.GetCallOption()
@@ -2306,6 +2396,7 @@ package grpc
 // 	type fields struct {
 // 		dialer                 net.Dialer
 // 		eg                     errgroup.Group
+// 		group                  singleflight.Group[pool.Conn]
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		bo                     backoff.Backoff
 // 		addrs                  map[string]struct{}
@@ -2327,6 +2418,7 @@ package grpc
 // 		monitorRunning         atomic.Bool
 // 		resolveDNS             bool
 // 		enablePoolRebalance    bool
+// 		enablePoolMetrics      bool
 // 	}
 // 	type want struct {
 // 		want backoff.Backoff
@@ -2353,6 +2445,7 @@ package grpc
 // 		       fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -2374,6 +2467,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2394,6 +2488,7 @@ package grpc
 // 		           fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -2415,6 +2510,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2447,6 +2543,7 @@ package grpc
 // 			g := &gRPCClient{
 // 				dialer:                 test.fields.dialer,
 // 				eg:                     test.fields.eg,
+// 				group:                  test.fields.group,
 // 				cb:                     test.fields.cb,
 // 				bo:                     test.fields.bo,
 // 				addrs:                  test.fields.addrs,
@@ -2468,6 +2565,7 @@ package grpc
 // 				monitorRunning:         test.fields.monitorRunning,
 // 				resolveDNS:             test.fields.resolveDNS,
 // 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				enablePoolMetrics:      test.fields.enablePoolMetrics,
 // 			}
 //
 // 			got := g.GetBackoff()
@@ -2486,6 +2584,7 @@ package grpc
 // 	type fields struct {
 // 		dialer                 net.Dialer
 // 		eg                     errgroup.Group
+// 		group                  singleflight.Group[pool.Conn]
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		bo                     backoff.Backoff
 // 		addrs                  map[string]struct{}
@@ -2507,6 +2606,7 @@ package grpc
 // 		monitorRunning         atomic.Bool
 // 		resolveDNS             bool
 // 		enablePoolRebalance    bool
+// 		enablePoolMetrics      bool
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -2533,6 +2633,7 @@ package grpc
 // 		       fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -2554,6 +2655,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2578,6 +2680,7 @@ package grpc
 // 		           fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -2599,6 +2702,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2631,6 +2735,7 @@ package grpc
 // 			g := &gRPCClient{
 // 				dialer:                 test.fields.dialer,
 // 				eg:                     test.fields.eg,
+// 				group:                  test.fields.group,
 // 				cb:                     test.fields.cb,
 // 				bo:                     test.fields.bo,
 // 				addrs:                  test.fields.addrs,
@@ -2652,6 +2757,7 @@ package grpc
 // 				monitorRunning:         test.fields.monitorRunning,
 // 				resolveDNS:             test.fields.resolveDNS,
 // 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				enablePoolMetrics:      test.fields.enablePoolMetrics,
 // 			}
 //
 // 			g.SetDisableResolveDNSAddr(test.args.addr, test.args.disabled)
@@ -2671,6 +2777,7 @@ package grpc
 // 	type fields struct {
 // 		dialer                 net.Dialer
 // 		eg                     errgroup.Group
+// 		group                  singleflight.Group[pool.Conn]
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		bo                     backoff.Backoff
 // 		addrs                  map[string]struct{}
@@ -2692,6 +2799,7 @@ package grpc
 // 		monitorRunning         atomic.Bool
 // 		resolveDNS             bool
 // 		enablePoolRebalance    bool
+// 		enablePoolMetrics      bool
 // 	}
 // 	type want struct {
 // 		wantConn pool.Conn
@@ -2728,6 +2836,7 @@ package grpc
 // 		       fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -2749,6 +2858,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2774,6 +2884,7 @@ package grpc
 // 		           fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -2795,6 +2906,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2827,6 +2939,7 @@ package grpc
 // 			g := &gRPCClient{
 // 				dialer:                 test.fields.dialer,
 // 				eg:                     test.fields.eg,
+// 				group:                  test.fields.group,
 // 				cb:                     test.fields.cb,
 // 				bo:                     test.fields.bo,
 // 				addrs:                  test.fields.addrs,
@@ -2848,6 +2961,7 @@ package grpc
 // 				monitorRunning:         test.fields.monitorRunning,
 // 				resolveDNS:             test.fields.resolveDNS,
 // 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				enablePoolMetrics:      test.fields.enablePoolMetrics,
 // 			}
 //
 // 			gotConn, err := g.Connect(test.args.ctx, test.args.addr, test.args.dopts...)
@@ -2866,6 +2980,7 @@ package grpc
 // 	type fields struct {
 // 		dialer                 net.Dialer
 // 		eg                     errgroup.Group
+// 		group                  singleflight.Group[pool.Conn]
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		bo                     backoff.Backoff
 // 		addrs                  map[string]struct{}
@@ -2887,6 +3002,7 @@ package grpc
 // 		monitorRunning         atomic.Bool
 // 		resolveDNS             bool
 // 		enablePoolRebalance    bool
+// 		enablePoolMetrics      bool
 // 	}
 // 	type want struct {
 // 		want bool
@@ -2918,6 +3034,7 @@ package grpc
 // 		       fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -2939,6 +3056,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2963,6 +3081,7 @@ package grpc
 // 		           fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -2984,6 +3103,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3016,6 +3136,7 @@ package grpc
 // 			g := &gRPCClient{
 // 				dialer:                 test.fields.dialer,
 // 				eg:                     test.fields.eg,
+// 				group:                  test.fields.group,
 // 				cb:                     test.fields.cb,
 // 				bo:                     test.fields.bo,
 // 				addrs:                  test.fields.addrs,
@@ -3037,6 +3158,7 @@ package grpc
 // 				monitorRunning:         test.fields.monitorRunning,
 // 				resolveDNS:             test.fields.resolveDNS,
 // 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				enablePoolMetrics:      test.fields.enablePoolMetrics,
 // 			}
 //
 // 			got := g.IsConnected(test.args.ctx, test.args.addr)
@@ -3055,6 +3177,7 @@ package grpc
 // 	type fields struct {
 // 		dialer                 net.Dialer
 // 		eg                     errgroup.Group
+// 		group                  singleflight.Group[pool.Conn]
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		bo                     backoff.Backoff
 // 		addrs                  map[string]struct{}
@@ -3076,6 +3199,7 @@ package grpc
 // 		monitorRunning         atomic.Bool
 // 		resolveDNS             bool
 // 		enablePoolRebalance    bool
+// 		enablePoolMetrics      bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -3107,6 +3231,7 @@ package grpc
 // 		       fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -3128,6 +3253,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3152,6 +3278,7 @@ package grpc
 // 		           fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -3173,6 +3300,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3205,6 +3333,7 @@ package grpc
 // 			g := &gRPCClient{
 // 				dialer:                 test.fields.dialer,
 // 				eg:                     test.fields.eg,
+// 				group:                  test.fields.group,
 // 				cb:                     test.fields.cb,
 // 				bo:                     test.fields.bo,
 // 				addrs:                  test.fields.addrs,
@@ -3226,6 +3355,7 @@ package grpc
 // 				monitorRunning:         test.fields.monitorRunning,
 // 				resolveDNS:             test.fields.resolveDNS,
 // 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				enablePoolMetrics:      test.fields.enablePoolMetrics,
 // 			}
 //
 // 			err := g.Disconnect(test.args.ctx, test.args.addr)
@@ -3243,6 +3373,7 @@ package grpc
 // 	type fields struct {
 // 		dialer                 net.Dialer
 // 		eg                     errgroup.Group
+// 		group                  singleflight.Group[pool.Conn]
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		bo                     backoff.Backoff
 // 		addrs                  map[string]struct{}
@@ -3264,6 +3395,7 @@ package grpc
 // 		monitorRunning         atomic.Bool
 // 		resolveDNS             bool
 // 		enablePoolRebalance    bool
+// 		enablePoolMetrics      bool
 // 	}
 // 	type want struct {
 // 		wantAddrs []string
@@ -3294,6 +3426,7 @@ package grpc
 // 		       fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -3315,6 +3448,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3338,6 +3472,7 @@ package grpc
 // 		           fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -3359,6 +3494,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3391,6 +3527,7 @@ package grpc
 // 			g := &gRPCClient{
 // 				dialer:                 test.fields.dialer,
 // 				eg:                     test.fields.eg,
+// 				group:                  test.fields.group,
 // 				cb:                     test.fields.cb,
 // 				bo:                     test.fields.bo,
 // 				addrs:                  test.fields.addrs,
@@ -3412,6 +3549,7 @@ package grpc
 // 				monitorRunning:         test.fields.monitorRunning,
 // 				resolveDNS:             test.fields.resolveDNS,
 // 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				enablePoolMetrics:      test.fields.enablePoolMetrics,
 // 			}
 //
 // 			gotAddrs := g.ConnectedAddrs(test.args.in0)
@@ -3429,6 +3567,7 @@ package grpc
 // 	type fields struct {
 // 		dialer                 net.Dialer
 // 		eg                     errgroup.Group
+// 		group                  singleflight.Group[pool.Conn]
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		bo                     backoff.Backoff
 // 		addrs                  map[string]struct{}
@@ -3450,6 +3589,7 @@ package grpc
 // 		monitorRunning         atomic.Bool
 // 		resolveDNS             bool
 // 		enablePoolRebalance    bool
+// 		enablePoolMetrics      bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -3480,6 +3620,7 @@ package grpc
 // 		       fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -3501,6 +3642,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3524,6 +3666,7 @@ package grpc
 // 		           fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -3545,6 +3688,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3577,6 +3721,7 @@ package grpc
 // 			g := &gRPCClient{
 // 				dialer:                 test.fields.dialer,
 // 				eg:                     test.fields.eg,
+// 				group:                  test.fields.group,
 // 				cb:                     test.fields.cb,
 // 				bo:                     test.fields.bo,
 // 				addrs:                  test.fields.addrs,
@@ -3598,6 +3743,7 @@ package grpc
 // 				monitorRunning:         test.fields.monitorRunning,
 // 				resolveDNS:             test.fields.resolveDNS,
 // 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				enablePoolMetrics:      test.fields.enablePoolMetrics,
 // 			}
 //
 // 			err := g.Close(test.args.ctx)
@@ -3616,6 +3762,7 @@ package grpc
 // 	type fields struct {
 // 		dialer                 net.Dialer
 // 		eg                     errgroup.Group
+// 		group                  singleflight.Group[pool.Conn]
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		bo                     backoff.Backoff
 // 		addrs                  map[string]struct{}
@@ -3637,6 +3784,7 @@ package grpc
 // 		monitorRunning         atomic.Bool
 // 		resolveDNS             bool
 // 		enablePoolRebalance    bool
+// 		enablePoolMetrics      bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -3668,6 +3816,7 @@ package grpc
 // 		       fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -3689,6 +3838,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3713,6 +3863,7 @@ package grpc
 // 		           fields: fields {
 // 		           dialer:nil,
 // 		           eg:nil,
+// 		           group:nil,
 // 		           cb:nil,
 // 		           bo:nil,
 // 		           addrs:nil,
@@ -3734,6 +3885,7 @@ package grpc
 // 		           monitorRunning:nil,
 // 		           resolveDNS:false,
 // 		           enablePoolRebalance:false,
+// 		           enablePoolMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3766,6 +3918,7 @@ package grpc
 // 			g := &gRPCClient{
 // 				dialer:                 test.fields.dialer,
 // 				eg:                     test.fields.eg,
+// 				group:                  test.fields.group,
 // 				cb:                     test.fields.cb,
 // 				bo:                     test.fields.bo,
 // 				addrs:                  test.fields.addrs,
@@ -3787,6 +3940,7 @@ package grpc
 // 				monitorRunning:         test.fields.monitorRunning,
 // 				resolveDNS:             test.fields.resolveDNS,
 // 				enablePoolRebalance:    test.fields.enablePoolRebalance,
+// 				enablePoolMetrics:      test.fields.enablePoolMetrics,
 // 			}
 //
 // 			err := g.rangeConns(test.args.action, test.args.fn)

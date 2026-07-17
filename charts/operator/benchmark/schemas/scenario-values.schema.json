@@ -46,7 +46,12 @@
       },
       "required": ["name", "indexes", "group", "range"]
     },
-    "jobs": { "type": "array", "items": { "type": "object" } },
+    "jobs": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
     "target": {
       "type": "object",
       "description": "target cluster location",
@@ -56,7 +61,10 @@
           "description": "target cluster host",
           "minLength": 1
         },
-        "meta": { "type": "object", "description": "metadata for target host" },
+        "meta": {
+          "type": "object",
+          "description": "metadata for target host"
+        },
         "port": {
           "type": "integer",
           "description": "target cluster port",

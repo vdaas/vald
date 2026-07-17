@@ -358,6 +358,21 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 	return ports, nil
 }
 
+// DistinctAddrs returns a new slice containing the unique addresses from addrs,
+// preserving the order of their first occurrence.
+func DistinctAddrs(addrs []string) []string {
+	distinct := make([]string, 0, len(addrs))
+	exist := make(map[string]bool, len(addrs))
+
+	for _, addr := range addrs {
+		if !exist[addr] {
+			distinct = append(distinct, addr)
+			exist[addr] = true
+		}
+	}
+	return distinct
+}
+
 // LoadLocalIP returns local ip address.
 func LoadLocalIP() string {
 	addrs, err := net.InterfaceAddrs()

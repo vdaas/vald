@@ -26,5 +26,5 @@ type KindType string
 type Image struct {
 	Repository string `json:"repository,omitempty"`
 	Tag        string `json:"tag,omitempty"`
-	PullPolicy string `json:"pullPolicy,omitempty"`
+	PullPolicy string `json:"pullPolicy,omitempty"` //nolint:tagliatelle // fixed by the ValdRelease CRD wire format (camelCase), not renameable
 }

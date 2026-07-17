@@ -13,24 +13,15 @@
 // limitations under the License.
 package target
 
-import (
-	"reflect"
+import "github.com/vdaas/vald/internal/k8s/vald"
 
-	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/log"
-)
-
-func NewMirrorTargetTemplate(opts ...MirrorTargetOption) (*MirrorTarget, error) {
+func NewMirrorTargetTemplate(opts ...MirrorTargetTemplateOption) (*MirrorTarget, error) {
 	mt := new(MirrorTarget)
-	for _, opt := range append(defaultMirrorTargetOptions, opts...) {
+	for _, opt := range append(defaultMirrorTargetTemplateOptions, opts...) {
 		if err := opt(mt); err != nil {
-			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-			e := &errors.ErrCriticalOption{}
-			if errors.As(err, &e) {
-				log.Error(oerr)
+			if abort, oerr := vald.SkipNonCriticalOptionError(err, opt); abort {
 				return nil, oerr
 			}
-			log.Warn(oerr)
 		}
 	}
 	return mt, nil

@@ -85,6 +85,7 @@ func New(opts ...Option) (MySQL, error) {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
+	m.connected.Store(false)
 
 	return m, nil
 }

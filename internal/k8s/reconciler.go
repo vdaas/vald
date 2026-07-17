@@ -45,6 +45,7 @@ type Controller interface {
 	GetManager() Manager
 }
 
+//nolint:gochecknoglobals // immutable function alias confining k8s.io imports to this package
 var Now = metav1.Now
 
 type ResourceController interface {
@@ -68,7 +69,7 @@ type controller struct {
 	mgr                     manager.Manager
 	der                     net.Dialer
 	name                    string
-	merticsAddr             string
+	metricsAddr             string
 	leaderElectionID        string
 	leaderElectionNamespace string
 	leaseDuration           *time.Duration
@@ -121,7 +122,7 @@ func New(opts ...Option) (cl Controller, err error) {
 				RenewDeadline:           c.renewDeadline,
 				RetryPeriod:             c.retryPeriod,
 				Cache:                   copts,
-				Metrics:                 mserver.Options{BindAddress: c.merticsAddr},
+				Metrics:                 mserver.Options{BindAddress: c.metricsAddr},
 			},
 		)
 		if err != nil {
@@ -187,4 +188,5 @@ func (c *controller) GetManager() Manager {
 	return c.mgr
 }
 
+//nolint:gochecknoglobals // immutable function alias confining k8s.io imports to this package
 var AddClientGoScheme = clientgoscheme.AddToScheme

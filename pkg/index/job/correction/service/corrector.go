@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"reflect"
 	"slices"
-	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -37,6 +36,7 @@ import (
 	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
@@ -70,11 +70,11 @@ type correct struct {
 func New(opts ...Option) (_ Corrector, err error) {
 	c := new(correct)
 	for _, opt := range append(defaultOpts, opts...) {
-		if err := opt(c); err != nil {
-			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+		if werr := opt(c); werr != nil {
+			oerr := errors.ErrOptionFailed(werr, reflect.ValueOf(opt))
 			e := &errors.ErrCriticalOption{}
 			if errors.As(oerr, &e) {
-				log.Error(err)
+				log.Error(werr)
 				return nil, oerr
 			}
 			log.Warn(oerr)
@@ -100,7 +100,10 @@ func New(opts ...Option) (_ Corrector, err error) {
 }
 
 func (c *correct) StartClient(ctx context.Context) (_ <-chan error, err error) {
-	ech := make(chan error, 2)
+	// one slot for the gateway error stream and one for the discoverer error
+	// stream, so neither forwarder blocks.
+	const errChanBufferSize = 2
+	ech := make(chan error, errChanBufferSize)
 	gch, err := c.gateway.Start(ctx)
 	if err != nil {
 		return nil, err
@@ -130,6 +133,7 @@ func (c *correct) StartClient(ctx context.Context) (_ <-chan error, err error) {
 	return ech, nil
 }
 
+//nolint:maintidx // the agent-by-agent stream-and-correct pipeline is one long-lived sequential flow; splitting it would scatter the shared cursor state
 func (c *correct) Start(ctx context.Context) (err error) {
 	detail, err := c.gateway.IndexDetail(ctx, new(payload.Empty))
 	if err != nil {
@@ -264,7 +268,9 @@ func (c *correct) Start(ctx context.Context) (err error) {
 							return nil
 						}
 						defer func() {
-							c.checkedList.Set(id, emptyByte)
+							if serr := c.checkedList.Set(id, emptyByte); serr != nil {
+								log.Errorf("failed to record id %s into the checked list: %v", id, serr)
+							}
 							c.checkedIndexCount.Add(1)
 						}()
 
@@ -370,15 +376,15 @@ func (c *correct) loadReplicaInfo(
 				return nil
 			}
 
-			ots, err := vc.NewValdClient(conn).GetTimestamp(ctx, &payload.Object_TimestampRequest{
+			ots, gerr := vc.NewValdClient(conn).GetTimestamp(ctx, &payload.Object_TimestampRequest{
 				Id: &payload.Object_ID{
 					Id: id,
 				},
 			})
-			if err != nil {
-				if st, ok := status.FromError(err); !ok || st == nil {
-					log.Errorf("gRPC call GetTimestamp to agent: %s, id: %s returned not a gRPC status error: %v", addr, id, err)
-					return err
+			if gerr != nil {
+				if st, ok := status.FromError(gerr); !ok || st == nil {
+					log.Errorf("gRPC call GetTimestamp to agent: %s, id: %s returned not a gRPC status error: %v", addr, id, gerr)
+					return gerr
 				} else if st.Code() == codes.NotFound {
 					// when replica of agent > index replica, this happens
 					return nil
@@ -386,7 +392,7 @@ func (c *correct) loadReplicaInfo(
 					return nil
 				} else {
 					log.Errorf("failed to GetTimestamp with unexpected error. agent: %s, id: %s, code: %v, message: %s", addr, id, st.Code(), st.Message())
-					return err
+					return gerr
 				}
 			}
 
@@ -420,6 +426,7 @@ func (c *correct) loadReplicaInfo(
 	return found, skipped, latest, latestAgent, err
 }
 
+//nolint:nilnil // the grpc round-robin callback contract treats (nil, nil) as "skip this replica"; a sentinel error would abort the whole range
 func (c *correct) getLatestObject(
 	ctx context.Context, id, addr, latestAgent string, latest int64,
 ) (latestObject *payload.Object_Vector) {
@@ -461,6 +468,7 @@ func (c *correct) getLatestObject(
 	return latestObject
 }
 
+//nolint:nilnil // the grpc round-robin callback contract treats (nil, nil) as "skip this replica"; a sentinel error would abort the whole range
 func (c *correct) correctTimestamp(
 	ctx context.Context,
 	id string,
@@ -509,6 +517,7 @@ func (c *correct) correctTimestamp(
 	}
 }
 
+//nolint:nilnil // the grpc round-robin callback contract treats (nil, nil) as "skip this replica"; a sentinel error would abort the whole range
 func (c *correct) correctOversupply(
 	ctx context.Context,
 	id, selfAddr, debugMsg string,
@@ -560,6 +569,7 @@ func (c *correct) correctOversupply(
 	return nil
 }
 
+//nolint:nilnil // the grpc round-robin callback contract treats (nil, nil) as "skip this replica"; a sentinel error would abort the whole range
 func (c *correct) correctShortage(
 	ctx context.Context,
 	id, selfAddr, debugMsg string,

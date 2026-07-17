@@ -57,7 +57,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 
 	eg := errgroup.Get()
 
-	log.Info("pkg/operator/benchmark/cmd success d")
+	log.Info("pkg/operator/benchmark/cmd success")
 
 	operator, err := service.New(
 		service.WithErrGroup(eg),
@@ -116,7 +116,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 						router.WithErrGroup(eg),
 						router.WithHandler(
 							rest.New(
-							// TODO pass grpc handler to REST option
+								rest.WithBenchmark(h),
 							),
 						),
 					),

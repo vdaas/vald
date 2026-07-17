@@ -26,10 +26,21 @@ import (
 	k8smock "github.com/vdaas/vald/internal/test/mock/k8s"
 )
 
+const (
+	testMirrorName1  = "mirror-1"
+	testMirrorHost1  = "192.168.1.2"
+	testMirrorHost2  = "192.168.1.3"
+	testMirrorAddr1  = "192.168.1.2:8081"
+	testMirrorAddr2  = "192.168.1.3:8081"
+	testGatewayHost1 = "192.168.2.2"
+	testGatewayHost2 = "192.168.3.2"
+)
+
+//nolint:maintidx // table-driven test with 6 literal test-case constructors; complexity is inherent to the pattern, not tangled logic
 func Test_discovery_startSync(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx  context.Context
+		ctx  context.Context //nolint:containedctx // table-driven test args struct, ctx passed through to the function under test
 		prev map[string]target.Target
 	}
 	type fields struct {
@@ -62,8 +73,8 @@ func Test_discovery_startSync(t *testing.T) {
 		func() test {
 			prev := make(map[string]target.Target)
 			current := map[string]target.Target{
-				"mirror-1": {
-					Host: "192.168.1.2",
+				testMirrorName1: {
+					Host: testMirrorHost1,
 					Port: 8081,
 				},
 			}
@@ -95,8 +106,8 @@ func Test_discovery_startSync(t *testing.T) {
 		func() test {
 			prev := make(map[string]target.Target)
 			current := map[string]target.Target{
-				"mirror-1": {
-					Host: "192.168.1.2",
+				testMirrorName1: {
+					Host: testMirrorHost1,
 					Port: 8081,
 				},
 			}
@@ -128,8 +139,8 @@ func Test_discovery_startSync(t *testing.T) {
 		}(),
 		func() test {
 			prev := map[string]target.Target{
-				"mirror-1": {
-					Host: "192.168.1.2",
+				testMirrorName1: {
+					Host: testMirrorHost1,
 					Port: 8081,
 				},
 			}
@@ -161,8 +172,8 @@ func Test_discovery_startSync(t *testing.T) {
 		}(),
 		func() test {
 			prev := map[string]target.Target{
-				"mirror-1": {
-					Host: "192.168.1.2",
+				testMirrorName1: {
+					Host: testMirrorHost1,
 					Port: 8081,
 				},
 			}
@@ -195,14 +206,14 @@ func Test_discovery_startSync(t *testing.T) {
 		}(),
 		func() test {
 			prev := map[string]target.Target{
-				"mirror-1": {
-					Host: "192.168.1.2",
+				testMirrorName1: {
+					Host: testMirrorHost1,
 					Port: 8081,
 				},
 			}
 			current := map[string]target.Target{
-				"mirror-1": {
-					Host: "192.168.1.3",
+				testMirrorName1: {
+					Host: testMirrorHost2,
 					Port: 8081,
 				},
 			}
@@ -236,14 +247,14 @@ func Test_discovery_startSync(t *testing.T) {
 		}(),
 		func() test {
 			prev := map[string]target.Target{
-				"mirror-1": {
-					Host: "192.168.1.2",
+				testMirrorName1: {
+					Host: testMirrorHost1,
 					Port: 8081,
 				},
 			}
 			current := map[string]target.Target{
-				"mirror-1": {
-					Host: "192.168.1.3",
+				testMirrorName1: {
+					Host: testMirrorHost2,
 					Port: 8081,
 				},
 			}
@@ -305,8 +316,8 @@ func Test_discovery_startSync(t *testing.T) {
 				}
 
 				got, err := dis.startSync(test.args.ctx, test.args.prev)
-				if err := checkFunc(test.want, got, err); err != nil {
-					tt.Errorf("error = %v", err)
+				if cerr := checkFunc(test.want, got, err); cerr != nil {
+					tt.Errorf("error = %v", cerr)
 				}
 			}
 		})
@@ -316,7 +327,7 @@ func Test_discovery_startSync(t *testing.T) {
 func Test_discovery_syncWithAddr(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx      context.Context
+		ctx      context.Context //nolint:containedctx // table-driven test args struct, ctx passed through to the function under test
 		current  map[string]target.Target
 		curAddrs map[string]string
 	}
@@ -345,14 +356,14 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 	tests := []test{
 		func() test {
 			current := map[string]target.Target{
-				"mirror-1": {
-					Host:  "192.168.1.2",
+				testMirrorName1: {
+					Host:  testMirrorHost1,
 					Port:  8081,
 					Phase: target.MirrorTargetPhaseConnected,
 				},
 			}
 			curAddrs := map[string]string{
-				"192.168.1.2:8081": "mirror-1",
+				testMirrorAddr1: testMirrorName1,
 			}
 
 			return test{
@@ -383,14 +394,14 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 		}(),
 		func() test {
 			current := map[string]target.Target{
-				"mirror-1": {
-					Host:  "192.168.1.2",
+				testMirrorName1: {
+					Host:  testMirrorHost1,
 					Port:  8081,
 					Phase: target.MirrorTargetPhaseDisconnected,
 				},
 			}
 			curAddrs := map[string]string{
-				"192.168.1.2:8081": "mirror-1",
+				testMirrorAddr1: testMirrorName1,
 			}
 
 			return test{
@@ -421,7 +432,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 			current := map[string]target.Target{}
 			curAddrs := map[string]string{}
 			newAddrs := []string{
-				"192.168.1.2:8081",
+				testMirrorAddr1,
 			}
 
 			return test{
@@ -477,8 +488,8 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 				}
 
 				err := dis.syncWithAddr(test.args.ctx, test.args.current, test.args.curAddrs)
-				if err := checkFunc(test.want, err); err != nil {
-					tt.Errorf("error = %v", err)
+				if cerr := checkFunc(test.want, err); cerr != nil {
+					tt.Errorf("error = %v", cerr)
 				}
 			}
 		})
@@ -492,8 +503,8 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		opts []DiscoveryOption
 // 	}
 // 	type want struct {
-// 		wantDsc Discovery
-// 		err     error
+// 		want Discovery
+// 		err  error
 // 	}
 // 	type test struct {
 // 		name       string
@@ -503,12 +514,12 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, gotDsc Discovery, err error) error {
+// 	defaultCheckFunc := func(w want, got Discovery, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
-// 		if !reflect.DeepEqual(gotDsc, w.wantDsc) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotDsc, w.wantDsc)
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 // 		}
 // 		return nil
 // 	}
@@ -568,8 +579,8 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			gotDsc, err := NewDiscovery(test.args.opts...)
-// 			if err := checkFunc(test.want, gotDsc, err); err != nil {
+// 			got, err := NewDiscovery(test.args.opts...)
+// 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})
@@ -588,6 +599,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		eg              errgroup.Group
 // 		labels          map[string]string
 // 		targetsByName   atomic.Pointer[map[string]target.Target]
+// 		mirrorTargets   *resource.Client[*target.MirrorTarget, *mirrv1.ValdMirrorTargetList]
 // 		namespace       string
 // 		colocation      string
 // 		selfMirrAddrStr string
@@ -623,6 +635,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		           eg:nil,
 // 		           labels:nil,
 // 		           targetsByName:nil,
+// 		           mirrorTargets:nil,
 // 		           namespace:"",
 // 		           colocation:"",
 // 		           selfMirrAddrStr:"",
@@ -656,6 +669,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		           eg:nil,
 // 		           labels:nil,
 // 		           targetsByName:nil,
+// 		           mirrorTargets:nil,
 // 		           namespace:"",
 // 		           colocation:"",
 // 		           selfMirrAddrStr:"",
@@ -697,6 +711,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 				eg:              test.fields.eg,
 // 				labels:          test.fields.labels,
 // 				targetsByName:   test.fields.targetsByName,
+// 				mirrorTargets:   test.fields.mirrorTargets,
 // 				namespace:       test.fields.namespace,
 // 				colocation:      test.fields.colocation,
 // 				selfMirrAddrStr: test.fields.selfMirrAddrStr,
@@ -723,6 +738,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		eg              errgroup.Group
 // 		labels          map[string]string
 // 		targetsByName   atomic.Pointer[map[string]target.Target]
+// 		mirrorTargets   *resource.Client[*target.MirrorTarget, *mirrv1.ValdMirrorTargetList]
 // 		namespace       string
 // 		colocation      string
 // 		selfMirrAddrStr string
@@ -766,6 +782,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		           eg:nil,
 // 		           labels:nil,
 // 		           targetsByName:nil,
+// 		           mirrorTargets:nil,
 // 		           namespace:"",
 // 		           colocation:"",
 // 		           selfMirrAddrStr:"",
@@ -798,6 +815,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		           eg:nil,
 // 		           labels:nil,
 // 		           targetsByName:nil,
+// 		           mirrorTargets:nil,
 // 		           namespace:"",
 // 		           colocation:"",
 // 		           selfMirrAddrStr:"",
@@ -839,6 +857,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 				eg:              test.fields.eg,
 // 				labels:          test.fields.labels,
 // 				targetsByName:   test.fields.targetsByName,
+// 				mirrorTargets:   test.fields.mirrorTargets,
 // 				namespace:       test.fields.namespace,
 // 				colocation:      test.fields.colocation,
 // 				selfMirrAddrStr: test.fields.selfMirrAddrStr,
@@ -862,6 +881,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		eg              errgroup.Group
 // 		labels          map[string]string
 // 		targetsByName   atomic.Pointer[map[string]target.Target]
+// 		mirrorTargets   *resource.Client[*target.MirrorTarget, *mirrv1.ValdMirrorTargetList]
 // 		namespace       string
 // 		colocation      string
 // 		selfMirrAddrStr string
@@ -897,6 +917,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		           eg:nil,
 // 		           labels:nil,
 // 		           targetsByName:nil,
+// 		           mirrorTargets:nil,
 // 		           namespace:"",
 // 		           colocation:"",
 // 		           selfMirrAddrStr:"",
@@ -926,6 +947,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		           eg:nil,
 // 		           labels:nil,
 // 		           targetsByName:nil,
+// 		           mirrorTargets:nil,
 // 		           namespace:"",
 // 		           colocation:"",
 // 		           selfMirrAddrStr:"",
@@ -967,6 +989,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 				eg:              test.fields.eg,
 // 				labels:          test.fields.labels,
 // 				targetsByName:   test.fields.targetsByName,
+// 				mirrorTargets:   test.fields.mirrorTargets,
 // 				namespace:       test.fields.namespace,
 // 				colocation:      test.fields.colocation,
 // 				selfMirrAddrStr: test.fields.selfMirrAddrStr,
@@ -975,6 +998,94 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 			}
 //
 // 			got := d.loadTargets()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_newMirrorTarget(t *testing.T) {
+// 	type args struct {
+// 		host string
+// 		port int
+// 	}
+// 	type want struct {
+// 		want *payload.Mirror_Target
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, *payload.Mirror_Target) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got *payload.Mirror_Target) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           host:"",
+// 		           port:0,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           host:"",
+// 		           port:0,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := newMirrorTarget(test.args.host, test.args.port)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -994,6 +1105,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		eg              errgroup.Group
 // 		labels          map[string]string
 // 		targetsByName   atomic.Pointer[map[string]target.Target]
+// 		mirrorTargets   *resource.Client[*target.MirrorTarget, *mirrv1.ValdMirrorTargetList]
 // 		namespace       string
 // 		colocation      string
 // 		selfMirrAddrStr string
@@ -1034,6 +1146,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		           eg:nil,
 // 		           labels:nil,
 // 		           targetsByName:nil,
+// 		           mirrorTargets:nil,
 // 		           namespace:"",
 // 		           colocation:"",
 // 		           selfMirrAddrStr:"",
@@ -1067,6 +1180,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		           eg:nil,
 // 		           labels:nil,
 // 		           targetsByName:nil,
+// 		           mirrorTargets:nil,
 // 		           namespace:"",
 // 		           colocation:"",
 // 		           selfMirrAddrStr:"",
@@ -1108,6 +1222,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 				eg:              test.fields.eg,
 // 				labels:          test.fields.labels,
 // 				targetsByName:   test.fields.targetsByName,
+// 				mirrorTargets:   test.fields.mirrorTargets,
 // 				namespace:       test.fields.namespace,
 // 				colocation:      test.fields.colocation,
 // 				selfMirrAddrStr: test.fields.selfMirrAddrStr,
@@ -1137,6 +1252,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		eg              errgroup.Group
 // 		labels          map[string]string
 // 		targetsByName   atomic.Pointer[map[string]target.Target]
+// 		mirrorTargets   *resource.Client[*target.MirrorTarget, *mirrv1.ValdMirrorTargetList]
 // 		namespace       string
 // 		colocation      string
 // 		selfMirrAddrStr string
@@ -1179,6 +1295,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		           eg:nil,
 // 		           labels:nil,
 // 		           targetsByName:nil,
+// 		           mirrorTargets:nil,
 // 		           namespace:"",
 // 		           colocation:"",
 // 		           selfMirrAddrStr:"",
@@ -1214,6 +1331,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		           eg:nil,
 // 		           labels:nil,
 // 		           targetsByName:nil,
+// 		           mirrorTargets:nil,
 // 		           namespace:"",
 // 		           colocation:"",
 // 		           selfMirrAddrStr:"",
@@ -1255,6 +1373,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 				eg:              test.fields.eg,
 // 				labels:          test.fields.labels,
 // 				targetsByName:   test.fields.targetsByName,
+// 				mirrorTargets:   test.fields.mirrorTargets,
 // 				namespace:       test.fields.namespace,
 // 				colocation:      test.fields.colocation,
 // 				selfMirrAddrStr: test.fields.selfMirrAddrStr,
@@ -1282,6 +1401,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		eg              errgroup.Group
 // 		labels          map[string]string
 // 		targetsByName   atomic.Pointer[map[string]target.Target]
+// 		mirrorTargets   *resource.Client[*target.MirrorTarget, *mirrv1.ValdMirrorTargetList]
 // 		namespace       string
 // 		colocation      string
 // 		selfMirrAddrStr string
@@ -1322,6 +1442,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		           eg:nil,
 // 		           labels:nil,
 // 		           targetsByName:nil,
+// 		           mirrorTargets:nil,
 // 		           namespace:"",
 // 		           colocation:"",
 // 		           selfMirrAddrStr:"",
@@ -1355,6 +1476,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		           eg:nil,
 // 		           labels:nil,
 // 		           targetsByName:nil,
+// 		           mirrorTargets:nil,
 // 		           namespace:"",
 // 		           colocation:"",
 // 		           selfMirrAddrStr:"",
@@ -1396,6 +1518,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 				eg:              test.fields.eg,
 // 				labels:          test.fields.labels,
 // 				targetsByName:   test.fields.targetsByName,
+// 				mirrorTargets:   test.fields.mirrorTargets,
 // 				namespace:       test.fields.namespace,
 // 				colocation:      test.fields.colocation,
 // 				selfMirrAddrStr: test.fields.selfMirrAddrStr,
@@ -1424,6 +1547,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		eg              errgroup.Group
 // 		labels          map[string]string
 // 		targetsByName   atomic.Pointer[map[string]target.Target]
+// 		mirrorTargets   *resource.Client[*target.MirrorTarget, *mirrv1.ValdMirrorTargetList]
 // 		namespace       string
 // 		colocation      string
 // 		selfMirrAddrStr string
@@ -1465,6 +1589,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		           eg:nil,
 // 		           labels:nil,
 // 		           targetsByName:nil,
+// 		           mirrorTargets:nil,
 // 		           namespace:"",
 // 		           colocation:"",
 // 		           selfMirrAddrStr:"",
@@ -1499,6 +1624,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		           eg:nil,
 // 		           labels:nil,
 // 		           targetsByName:nil,
+// 		           mirrorTargets:nil,
 // 		           namespace:"",
 // 		           colocation:"",
 // 		           selfMirrAddrStr:"",
@@ -1540,6 +1666,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 				eg:              test.fields.eg,
 // 				labels:          test.fields.labels,
 // 				targetsByName:   test.fields.targetsByName,
+// 				mirrorTargets:   test.fields.mirrorTargets,
 // 				namespace:       test.fields.namespace,
 // 				colocation:      test.fields.colocation,
 // 				selfMirrAddrStr: test.fields.selfMirrAddrStr,
@@ -1567,6 +1694,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		eg              errgroup.Group
 // 		labels          map[string]string
 // 		targetsByName   atomic.Pointer[map[string]target.Target]
+// 		mirrorTargets   *resource.Client[*target.MirrorTarget, *mirrv1.ValdMirrorTargetList]
 // 		namespace       string
 // 		colocation      string
 // 		selfMirrAddrStr string
@@ -1607,6 +1735,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		           eg:nil,
 // 		           labels:nil,
 // 		           targetsByName:nil,
+// 		           mirrorTargets:nil,
 // 		           namespace:"",
 // 		           colocation:"",
 // 		           selfMirrAddrStr:"",
@@ -1640,6 +1769,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		           eg:nil,
 // 		           labels:nil,
 // 		           targetsByName:nil,
+// 		           mirrorTargets:nil,
 // 		           namespace:"",
 // 		           colocation:"",
 // 		           selfMirrAddrStr:"",
@@ -1681,6 +1811,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 				eg:              test.fields.eg,
 // 				labels:          test.fields.labels,
 // 				targetsByName:   test.fields.targetsByName,
+// 				mirrorTargets:   test.fields.mirrorTargets,
 // 				namespace:       test.fields.namespace,
 // 				colocation:      test.fields.colocation,
 // 				selfMirrAddrStr: test.fields.selfMirrAddrStr,

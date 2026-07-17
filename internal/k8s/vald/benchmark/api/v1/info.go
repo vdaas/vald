@@ -23,6 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+// // standard controller-runtime scheme-registration pattern; GroupVersion/AddToScheme are the actual public API used by every reconciler in this group
 var (
 	// GroupVersion is group version used to register these objects.
 	GroupVersion = schema.GroupVersion{Group: "vald.vdaas.org", Version: "v1"}

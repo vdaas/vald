@@ -16,14 +16,48 @@
 
 package client
 
-import "k8s.io/apimachinery/pkg/runtime"
+import (
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/rest"
+)
 
-type Option func(*client) error
+type Option func(*unifiedClient) error
 
 // WithSchemeBuilder registers the given scheme builder's types on the
 // client's scheme.
 func WithSchemeBuilder(sb runtime.SchemeBuilder) Option {
-	return func(c *client) error {
+	return func(c *unifiedClient) error {
 		return sb.AddToScheme(c.scheme)
+	}
+}
+
+// WithRESTConfig sets the *rest.Config used to construct the underlying
+// controller-runtime client and Clientset, so New can be used from
+// environments that cannot rely on the KUBECONFIG/in-cluster
+// auto-detection (e.g. tests or external tooling holding their own
+// rest.Config).
+func WithRESTConfig(cfg *rest.Config) Option {
+	return func(c *unifiedClient) error {
+		c.restConfig = cfg
+		return nil
+	}
+}
+
+// WithKubeConfigPath sets an explicit kubeconfig file path, overriding the
+// KUBECONFIG environment variable / recommended home file auto-detection
+// that New falls back to when no RESTConfig is supplied.
+func WithKubeConfigPath(path string) Option {
+	return func(c *unifiedClient) error {
+		c.kubeConfigPath = path
+		return nil
+	}
+}
+
+// WithKubeContext selects a non-default context from the resolved
+// kubeconfig.
+func WithKubeContext(name string) Option {
+	return func(c *unifiedClient) error {
+		c.kubeContext = name
+		return nil
 	}
 }

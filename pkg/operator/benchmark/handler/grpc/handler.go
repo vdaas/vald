@@ -19,11 +19,14 @@ package grpc
 import (
 	"context"
 
+	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/pkg/operator/benchmark/service"
 )
 
 type Benchmark interface {
 	Start(context.Context)
+	GetScenarioStatus() map[v1.ValdBenchmarkScenarioStatus]int64
+	GetBenchmarkJobStatus() map[v1.BenchmarkJobStatus]int64
 }
 
 type server struct {

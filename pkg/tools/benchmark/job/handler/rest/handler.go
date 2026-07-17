@@ -16,7 +16,16 @@
 
 package rest
 
-type Handler any
+import (
+	"net/http"
+
+	"github.com/vdaas/vald/internal/net/http/dump"
+	"github.com/vdaas/vald/internal/net/http/json"
+)
+
+type Handler interface {
+	Index(w http.ResponseWriter, r *http.Request) (int, error)
+}
 
 type handler struct{}
 
@@ -28,4 +37,11 @@ func New(opts ...Option) Handler {
 	}
 
 	return h
+}
+
+func (*handler) Index(w http.ResponseWriter, r *http.Request) (int, error) {
+	data := make(map[string]any)
+	return json.Handler(w, r, &data, func() (any, error) {
+		return dump.Request(nil, data, r)
+	})
 }

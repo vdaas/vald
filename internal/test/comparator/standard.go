@@ -28,6 +28,11 @@ type (
 	Path   = cmp.Path
 )
 
+// The go-cmp re-exports below are function-valued aliases assigned once and
+// never mutated, so the global state gochecknoglobals guards against cannot
+// occur.
+//
+//nolint:gochecknoglobals
 var (
 	AllowUnexported  = cmp.AllowUnexported
 	IgnoreUnexported = cmpopts.IgnoreUnexported

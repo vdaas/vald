@@ -26,7 +26,7 @@ import (
 )
 
 func CreateServiceAccountToken(
-	ctx context.Context, c client.ClientSet, namespace, name string, expirationSeconds int64,
+	ctx context.Context, c client.Client, namespace, name string, expirationSeconds int64,
 ) (token string, err error) {
 	if c == nil {
 		return "", errors.ErrKubernetesClientNotFound

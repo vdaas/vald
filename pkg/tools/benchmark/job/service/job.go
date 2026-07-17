@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s/client"
+	"github.com/vdaas/vald/internal/k8s/resource"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -221,7 +222,11 @@ func (j *job) PreStart(ctx context.Context) error {
 	}
 	// Wait for beforeJob completed if exists
 	if len(j.beforeJobName) != 0 {
-		var jobResource v1.ValdBenchmarkJob
+		// The configurable poll interval (beforeJobDur), the unbounded wait and
+		// the propagation of NotFound as an error all differ from
+		// resource.Client.Wait's fixed 5s/5m NotFound-tolerant semantics, so
+		// the loop polls Get directly instead of delegating to Wait.
+		benchJobs := resource.NewClientOf(j.k8sClient, new(v1.ValdBenchmarkJob), new(v1.ValdBenchmarkJobList))
 		log.Info("[benchmark job] check before benchjob is completed or not...")
 		j.eg.Go(safety.RecoverFunc(func() error {
 			dt := time.NewTicker(j.beforeJobDur)
@@ -231,7 +236,7 @@ func (j *job) PreStart(ctx context.Context) error {
 				case <-ctx.Done():
 					return nil
 				case <-dt.C:
-					err := j.k8sClient.Get(ctx, j.beforeJobName, j.beforeJobNamespace, &jobResource)
+					jobResource, err := benchJobs.Get(ctx, j.beforeJobName, j.beforeJobNamespace)
 					if err != nil {
 						return err
 					}
@@ -251,7 +256,10 @@ func (j *job) PreStart(ctx context.Context) error {
 }
 
 func (j *job) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 3)
+	// one slot for the connection-monitor error, one for the job error and
+	// one for the ctx.Err joined on shutdown, so no sender blocks.
+	const errChanBufferSize = 3
+	ech := make(chan error, errChanBufferSize)
 	cech, err := j.client.Start(ctx)
 	if err != nil {
 		log.Error("[benchmark job] failed to start connection monitor")
@@ -283,8 +291,8 @@ func (j *job) Start(ctx context.Context) (<-chan error, error) {
 				case ech <- err:
 				}
 			}
-			if err := p.Signal(syscall.SIGTERM); err != nil {
-				log.Error(err)
+			if serr := p.Signal(syscall.SIGTERM); serr != nil {
+				log.Error(serr)
 			}
 		}()
 		jctx := ctx
@@ -329,10 +337,10 @@ func calcRecall(linearRes, searchRes *payload.Search_Response) (recall float64) 
 
 // TODO: apply many object type.
 func addNoiseToVec(oVec []float32) []float32 {
-	noise := rand.Float32()
+	noise := rand.Float32() //nolint:gosec // benchmark input jitter, no cryptographic strength needed
 	vec := oVec
 	if len(oVec) > 1 {
-		idx := rand.N(uint32(len(oVec) - 1))
+		idx := rand.N(uint32(len(oVec) - 1)) //nolint:gosec // benchmark input jitter, no cryptographic strength needed
 		vec[idx] += noise
 	} else if len(oVec) == 1 {
 		vec[0] += noise

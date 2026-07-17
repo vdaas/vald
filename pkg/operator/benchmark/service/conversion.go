@@ -24,6 +24,8 @@ import (
 
 // jobsByAppNamePool pools the grouping maps handed to jobReconcile so that
 // every reconcile does not reallocate the map and its slices.
+//
+//nolint:gochecknoglobals // process-wide sync.Pool shared across reconciles by design
 var jobsByAppNamePool = sync.Pool{
 	New: func() any {
 		return make(map[string][]k8s.Job)

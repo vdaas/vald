@@ -38,8 +38,8 @@ type (
 const RESTScopeNameNamespace = meta.RESTScopeNameNamespace
 
 // NewDynamicClient builds a dynamic client and a RESTMapper from the
-// ClientSet's rest config so arbitrary GVKs can be resolved to GVRs.
-func NewDynamicClient(c ClientSet) (Dynamic, RESTMapper, error) {
+// Client's rest config so arbitrary GVKs can be resolved to GVRs.
+func NewDynamicClient(c Client) (Dynamic, RESTMapper, error) {
 	if c == nil {
 		return nil, nil, errors.ErrKubernetesClientNotFound
 	}

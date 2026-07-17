@@ -1,25 +1,49 @@
+//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//	https://www.apache.org/licenses/LICENSE-2.0
+//    https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package service
+//
+
+package client
+
+import (
+	"testing"
+
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/rest"
+)
+
+func TestWithRESTConfig(t *testing.T) {
+	t.Parallel()
+
+	cfg := &rest.Config{Host: "https://example.invalid:6443"}
+	c := &unifiedClient{scheme: runtime.NewScheme()}
+
+	if err := WithRESTConfig(cfg)(c); err != nil {
+		t.Fatalf("WithRESTConfig() error = %v", err)
+	}
+	if c.restConfig != cfg {
+		t.Errorf("restConfig = %v, want %v", c.restConfig, cfg)
+	}
+}
 
 // NOT IMPLEMENTED BELOW
 //
-// func TestWithNamespace(t *testing.T) {
+// func TestWithSchemeBuilder(t *testing.T) {
 // 	// Change interface type to the type of object you are testing
 // 	type T = any
 // 	type args struct {
-// 		ns string
+// 		sb runtime.SchemeBuilder
 // 	}
 // 	type want struct {
 // 		obj *T
@@ -66,7 +90,7 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           ns:"",
+// 		           sb:nil,
 // 		       },
 // 		       want: want {
 // 		           obj: new(T),
@@ -86,7 +110,7 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           ns:"",
+// 		           sb:nil,
 // 		           },
 // 		           want: want {
 // 		               obj: new(T),
@@ -121,7 +145,7 @@ package service
 // 			       checkFunc = defaultCheckFunc
 // 			   }
 //
-// 			   got := WithNamespace(test.args.ns)
+// 			   got := WithSchemeBuilder(test.args.sb)
 // 			   obj := new(T)
 // 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 // 			       tt.Errorf("error = %v", err)
@@ -134,7 +158,7 @@ package service
 // 			   if test.checkFunc == nil {
 // 			       checkFunc = defaultCheckFunc
 // 			   }
-// 			   got := WithNamespace(test.args.ns)
+// 			   got := WithSchemeBuilder(test.args.sb)
 // 			   obj := new(T)
 // 			   got(obj)
 // 			   if err := checkFunc(test.want, obj); err != nil {
@@ -145,11 +169,11 @@ package service
 // 	}
 // }
 //
-// func TestWithVolumeName(t *testing.T) {
+// func TestWithKubeConfigPath(t *testing.T) {
 // 	// Change interface type to the type of object you are testing
 // 	type T = any
 // 	type args struct {
-// 		vn string
+// 		path string
 // 	}
 // 	type want struct {
 // 		obj *T
@@ -196,7 +220,7 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           vn:"",
+// 		           path:"",
 // 		       },
 // 		       want: want {
 // 		           obj: new(T),
@@ -216,7 +240,7 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           vn:"",
+// 		           path:"",
 // 		           },
 // 		           want: want {
 // 		               obj: new(T),
@@ -251,7 +275,7 @@ package service
 // 			       checkFunc = defaultCheckFunc
 // 			   }
 //
-// 			   got := WithVolumeName(test.args.vn)
+// 			   got := WithKubeConfigPath(test.args.path)
 // 			   obj := new(T)
 // 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 // 			       tt.Errorf("error = %v", err)
@@ -264,7 +288,7 @@ package service
 // 			   if test.checkFunc == nil {
 // 			       checkFunc = defaultCheckFunc
 // 			   }
-// 			   got := WithVolumeName(test.args.vn)
+// 			   got := WithKubeConfigPath(test.args.path)
 // 			   obj := new(T)
 // 			   got(obj)
 // 			   if err := checkFunc(test.want, obj); err != nil {
@@ -275,11 +299,11 @@ package service
 // 	}
 // }
 //
-// func TestWithReadReplicaLabelKey(t *testing.T) {
+// func TestWithKubeContext(t *testing.T) {
 // 	// Change interface type to the type of object you are testing
 // 	type T = any
 // 	type args struct {
-// 		key string
+// 		name string
 // 	}
 // 	type want struct {
 // 		obj *T
@@ -326,7 +350,7 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           key:"",
+// 		           name:"",
 // 		       },
 // 		       want: want {
 // 		           obj: new(T),
@@ -346,7 +370,7 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           key:"",
+// 		           name:"",
 // 		           },
 // 		           want: want {
 // 		               obj: new(T),
@@ -381,7 +405,7 @@ package service
 // 			       checkFunc = defaultCheckFunc
 // 			   }
 //
-// 			   got := WithReadReplicaLabelKey(test.args.key)
+// 			   got := WithKubeContext(test.args.name)
 // 			   obj := new(T)
 // 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
 // 			       tt.Errorf("error = %v", err)
@@ -394,7 +418,7 @@ package service
 // 			   if test.checkFunc == nil {
 // 			       checkFunc = defaultCheckFunc
 // 			   }
-// 			   got := WithReadReplicaLabelKey(test.args.key)
+// 			   got := WithKubeContext(test.args.name)
 // 			   obj := new(T)
 // 			   got(obj)
 // 			   if err := checkFunc(test.want, obj); err != nil {

@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
-	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/internal/backoff"
@@ -33,6 +32,7 @@ import (
 	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	watch "k8s.io/apimachinery/pkg/watch"
@@ -43,6 +43,11 @@ import (
 // healthCheckInterval is the polling interval Start uses while waiting for
 // the first port forward session to become healthy.
 const healthCheckInterval = 100 * time.Millisecond
+
+// echBufferSize is the buffer size of the daemon error channel: one slot for
+// each of the two daemon goroutines (endpoints watcher and connection loop)
+// so a single pending error from each never blocks.
+const echBufferSize = 2
 
 // Forwarder defines the interface for a persistent port forwarding daemon.
 type Forwarder interface {
@@ -57,7 +62,7 @@ type Forwarder interface {
 // It holds all configuration and state required to run the persistent port forward daemon.
 type portForward struct {
 	// Client provides access to the Kubernetes API.
-	client kclient.ClientSet
+	client kclient.Client
 
 	// EndpointsClient is used to watch the Endpoints resource.
 	eclient k8s.EndpointClient
@@ -68,28 +73,27 @@ type portForward struct {
 	// errgroup is used to manage the lifecycle of the daemon goroutines.
 	eg errgroup.Group
 
-	// Namespace where the service and pods reside.
-	namespace string
-	// ServiceName is the target service name used to fetch endpoints.
-	serviceName string
-	// Addresses are the local bind addresses for the port forward.
-	addresses []string
 	// Ports maps local ports to target pod ports.
 	ports map[uint16]uint16
 
 	// HTTP client used for SPDY transport.
 	httpClient *http.Client
 
-	// targets holds the current list of available pod names (extracted from Endpoints).
-	targets []string
-	// current is used for efficient round-robin selection.
-	current atomic.Uint64 // using atomic operations for concurrent safety
-
 	// cancel cancels the overall port forward daemon context.
 	cancel context.CancelFunc
 
 	// ech is the error channel used to report errors during runtime.
 	ech chan error
+
+	// Namespace where the service and pods reside.
+	namespace string
+	// ServiceName is the target service name used to fetch endpoints.
+	serviceName string
+	// Addresses are the local bind addresses for the port forward.
+	addresses []string
+
+	// targets holds the current list of available pod names (extracted from Endpoints).
+	targets []string
 
 	// mu protects access to the targets slice.
 	mu sync.RWMutex
@@ -99,6 +103,9 @@ type portForward struct {
 	stopOnce sync.Once
 
 	healthy atomic.Bool
+
+	// current is used for efficient round-robin selection.
+	current atomic.Uint64 // using atomic operations for concurrent safety
 }
 
 // New creates a Forwarder instance with default backoff settings.
@@ -130,11 +137,18 @@ func New(opts ...Option) (Forwarder, error) {
 	return pf, nil
 }
 
+// normalize sorts ss in place, removes duplicates, and clips excess capacity,
+// returning the canonical slice form shared by every consumer in this package
+// (round-robin target selection and the port forward session arguments).
+// Sorting before Compact guarantees non-adjacent duplicates are also removed.
+func normalize(ss []string) []string {
+	slices.Sort(ss)
+	return slices.Clip(slices.Compact(ss))
+}
+
 // updateTargets safely replaces the current target pod list and resets the round-robin counter.
 func (pf *portForward) updateTargets(pods []string) {
-	pods = slices.Clip(pods)
-	slices.Sort(pods)
-	pods = slices.Compact(pods)
+	pods = normalize(pods)
 	pf.mu.Lock()
 	pf.targets = pods
 	pf.mu.Unlock()
@@ -150,7 +164,7 @@ func (pf *portForward) getNextPod() (string, error) {
 	if len(pf.targets) == 0 {
 		return "", errors.ErrNoAvailablePods
 	}
-	pod := pf.targets[int(idx-1)%len(pf.targets)]
+	pod := pf.targets[(idx-1)%uint64(len(pf.targets))]
 	return pod, nil
 }
 
@@ -165,7 +179,7 @@ func (pf *portForward) Start(ctx context.Context) (<-chan error, error) {
 	ctx, pf.cancel = context.WithCancel(ctx)
 
 	// Initialize the error channel (named "ech").
-	pf.ech = make(chan error, 2)
+	pf.ech = make(chan error, echBufferSize)
 
 	if pf.eg == nil {
 		pf.eg, ctx = errgroup.New(ctx)
@@ -329,7 +343,7 @@ func (pf *portForward) portForwardToService(ctx context.Context) (err error) {
 
 	log.Infof("Attempting port forward to pod: %s on %v:%v", podName, pf.addresses, pf.ports)
 	// Create an inner context for this port forward session.
-	stop, ech, err := portforwardExtended(ctx, pf.client, pf.namespace, podName, pf.addresses, pf.ports, pf.httpClient)
+	stop, ech, err := portforwardExtended(ctx, pf.eg, pf.client, pf.namespace, podName, pf.addresses, pf.ports, pf.httpClient)
 	if err != nil {
 		log.Errorf("Failed to establish port forward to pod %s: %v", podName, err)
 		if stop != nil {
@@ -359,10 +373,14 @@ func (pf *portForward) portForwardToService(ctx context.Context) (err error) {
 }
 
 // portforwardExtended establishes port forwarding for a specific pod.
-// It is used internally by the connection loop.
+// It is used internally by the connection loop. The session goroutine that
+// drives ForwardPorts is registered on eg (the daemon errgroup) so that
+// Stop's eg.Wait observes session teardown; eg must be non-nil whenever the
+// call can proceed past argument validation.
 func portforwardExtended(
 	ctx context.Context,
-	c kclient.ClientSet,
+	eg errgroup.Group,
+	c kclient.Client,
 	namespace, podName string,
 	addresses []string,
 	ports map[uint16]uint16,
@@ -403,10 +421,8 @@ func portforwardExtended(
 	if len(portPairs) == 0 {
 		return cancel, nil, errors.ErrPortForwardPortPairNotFound
 	}
-	slices.Sort(portPairs)
-	portPairs = slices.Clip(slices.Compact(portPairs))
-	slices.Sort(addresses)
-	addresses = slices.Clip(slices.Compact(addresses))
+	portPairs = normalize(portPairs)
+	addresses = normalize(addresses)
 
 	// Create a channel to signal when the port forwarder is ready.
 	readyChan := make(chan struct{})
@@ -428,7 +444,7 @@ func portforwardExtended(
 
 	// Prepare the error channel (named "ech") to report errors.
 	ech := make(chan error, 1)
-	errgroup.Go(safety.RecoverFunc(func() (err error) {
+	eg.Go(safety.RecoverFunc(func() (err error) {
 		defer cancel()
 		defer close(ech)
 		log.Debugf("port forwarder starting on %v:%v", addresses, portPairs)

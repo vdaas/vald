@@ -22,81 +22,112 @@ import (
 
 	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/k8s"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/os"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/selection"
-	"k8s.io/apimachinery/pkg/watch"
 	applycorev1 "k8s.io/client-go/applyconfigurations/core/v1"
+	"k8s.io/client-go/kubernetes"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	ctrl "sigs.k8s.io/controller-runtime"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	cli "sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-var NewSelector = labels.NewSelector
-
+// Client is the single Kubernetes client abstraction, replacing the former
+// three-way split between the internal/k8s.Client alias, StandaloneClient
+// and ClientSet: full CRUD via the embedded k8s.Client (controller-runtime's
+// Client, what mgr.GetClient() returns), Apply for server-side apply, and
+// direct client-go access (GetClientSet/GetRESTConfig) for functionality
+// controller-runtime's Client cannot express (SPDY port-forward,
+// ServiceAccount token requests, typed clientset calls).
 type Client interface {
-	// Get retrieves an obj for the given object key from the Kubernetes Cluster.
-	// obj must be a struct pointer so that obj can be updated with the response
-	// returned by the Server.
-	Get(ctx context.Context, name string, namespace string, obj k8s.Object, opts ...cli.GetOption) error
-	// List retrieves list of objects for a given namespace and list options. On a
-	// successful call, Items field in the list will be populated with the
-	// result returned from the server.
-	List(ctx context.Context, list cli.ObjectList, opts ...k8s.ListOption) error
-
-	// Create saves the object obj in the Kubernetes cluster. obj must be a
-	// struct pointer so that obj can be updated with the content returned by the Server.
-	Create(ctx context.Context, obj k8s.Object, opts ...k8s.CreateOption) error
-
-	// Delete deletes the given obj from Kubernetes cluster.
-	Delete(ctx context.Context, obj k8s.Object, opts ...cli.DeleteOption) error
-
-	// Update updates the given obj in the Kubernetes cluster. obj must be a
-	// struct pointer so that obj can be updated with the content returned by the Server.
-	Update(ctx context.Context, obj k8s.Object, opts ...cli.UpdateOption) error
-
-	// Patch patches the given obj in the Kubernetes cluster. obj must be a
-	// struct pointer so that obj can be updated with the content returned by the Server.
-	Patch(ctx context.Context, obj k8s.Object, patch cli.Patch, opts ...cli.PatchOption) error
+	k8s.Client
 
 	// Apply applies the given apply configuration to the Kubernetes cluster
-	// using server-side apply.
+	// using server-side apply. This controller-runtime version's Client
+	// already declares Apply as part of its Writer, so restating it here is
+	// purely documentation and does not require a separate implementation.
 	Apply(ctx context.Context, obj runtime.ApplyConfiguration, opts ...cli.ApplyOption) error
 
-	// Watch watches the given obj for changes and takes the appropriate callbacks.
-	Watch(ctx context.Context, obj cli.ObjectList, opts ...k8s.ListOption) (watch.Interface, error)
+	// GetClientSet returns the raw client-go clientset, for APIs
+	// controller-runtime's Client cannot express (typed clientset calls,
+	// SPDY port-forward, ServiceAccount token requests).
+	GetClientSet() kubernetes.Interface
 
-	// MatchingLabels filters the list/delete operation on the given set of labels.
-	MatchingLabels(labels map[string]string) cli.MatchingLabels
-
-	// LabelSelector creates labels.Selector for Options like ListOptions.
-	LabelSelector(key string, op selection.Operator, vals []string) (labels.Selector, error)
+	// GetRESTConfig returns the *rest.Config the client and clientset were
+	// built from.
+	GetRESTConfig() *rest.Config
 }
 
-type client struct {
-	scheme    *runtime.Scheme
-	withWatch cli.WithWatch
+// unifiedClient implements Client. k8s.Client is embedded so the full
+// controller-runtime CRUD surface (including Apply, already declared by its
+// Writer) is promoted automatically; restConfig and clientset cover what
+// controller-runtime's client.Client cannot express. scheme, kubeConfigPath
+// and kubeContext only matter while New is assembling a standalone client
+// from Options and are inert afterwards.
+type unifiedClient struct {
+	k8s.Client
+	restConfig     *rest.Config
+	clientset      kubernetes.Interface
+	scheme         *runtime.Scheme
+	kubeConfigPath string
+	kubeContext    string
 }
 
-func New(opts ...Option) (_ Client, err error) {
-	c := new(client)
-	if c.scheme == nil {
-		c.scheme = runtime.NewScheme()
+func (c *unifiedClient) GetClientSet() kubernetes.Interface {
+	return c.clientset
+}
+
+func (c *unifiedClient) GetRESTConfig() *rest.Config {
+	return c.restConfig
+}
+
+// NewFromManager builds a Client from a controller-runtime manager: the
+// caller already has mgr.GetClient() (a working, watch-capable client scoped
+// to the manager's cache) and mgr.GetConfig() (the REST config used to build
+// a matching client-go Clientset).
+func NewFromManager(mgr k8s.Manager) (Client, error) {
+	cfg := mgr.GetConfig()
+	cs, err := kubernetes.NewForConfig(cfg)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create clientset from manager config")
 	}
+	return &unifiedClient{
+		Client:     mgr.GetClient(),
+		restConfig: cfg,
+		clientset:  cs,
+	}, nil
+}
+
+// New builds a standalone Client for code that runs outside a manager (e.g.
+// one-shot operators, jobs, config loaders). It replaces the former
+// client.New() (StandaloneClient) + client.NewClientSet() (ClientSet) pair:
+// scheme construction and cli.NewWithWatch are carried over unchanged from
+// the old New, and unless WithRESTConfig already supplied a *rest.Config, it
+// is resolved through the same fallback chain the old NewClientSet used (an
+// explicit kubeconfig path, then the KUBECONFIG environment variable, then
+// the recommended home kubeconfig, then finally the in-cluster
+// configuration). The resolved config then builds both the watch-capable
+// controller-runtime client and the client-go Clientset.
+func New(opts ...Option) (Client, error) {
+	c := &unifiedClient{scheme: runtime.NewScheme()}
 	for _, opt := range opts {
 		if err := opt(c); err != nil {
 			return nil, err
 		}
 	}
 
-	// Add the core schemes
+	// Add the core schemes.
 	if err := clientgoscheme.AddToScheme(c.scheme); err != nil {
 		return nil, err
 	}
@@ -104,71 +135,96 @@ func New(opts ...Option) (_ Client, err error) {
 		return nil, err
 	}
 
-	c.withWatch, err = cli.NewWithWatch(ctrl.GetConfigOrDie(), cli.Options{
+	cfg := c.restConfig
+	if cfg == nil {
+		rcfg, err := resolveRESTConfig(c.kubeConfigPath, c.kubeContext)
+		if err != nil {
+			return nil, err
+		}
+		cfg = rcfg
+	}
+
+	wc, err := cli.NewWithWatch(cfg, cli.Options{
 		Scheme: c.scheme,
 	})
 	if err != nil {
 		return nil, err
 	}
 
+	cs, err := kubernetes.NewForConfig(cfg)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create clientset")
+	}
+
+	c.Client = wc
+	c.restConfig = cfg
+	c.clientset = cs
+
 	return c, nil
 }
 
-func (c *client) Get(
-	ctx context.Context, name, namespace string, obj cli.Object, opts ...cli.GetOption,
-) error {
-	return c.withWatch.Get(
-		ctx,
-		cli.ObjectKey{
-			Name:      name,
-			Namespace: namespace,
+// resolveRESTConfig resolves a *rest.Config using the same chain the former
+// NewClientSet used: an explicit kubeConfig path if given, else the
+// KUBECONFIG environment variable, else the recommended home kubeconfig
+// file, else the in-cluster configuration.
+func resolveRESTConfig(kubeConfig, currentContext string) (*rest.Config, error) {
+	if kubeConfig == "" {
+		kubeConfig = os.Getenv(clientcmd.RecommendedConfigPathEnvVar)
+		if kubeConfig == "" {
+			if file.Exists(clientcmd.RecommendedHomeFile) {
+				kubeConfig = clientcmd.RecommendedHomeFile
+			}
+			if kubeConfig == "" {
+				return fallbackToInCluster(nil)
+			}
+		}
+	}
+
+	cfg, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeConfig},
+		&clientcmd.ConfigOverrides{
+			ClusterInfo:    clientcmdapi.Cluster{},
+			CurrentContext: currentContext,
 		},
-		obj,
-		opts...,
-	)
+	).ClientConfig()
+	if err != nil {
+		log.Debugf("failed to build config from kubeConfig path %s,\terror: %v", kubeConfig, err)
+		return fallbackToInCluster(err)
+	}
+
+	applyDefaultRateLimits(cfg)
+	return cfg, nil
 }
 
-func (c *client) List(ctx context.Context, list cli.ObjectList, opts ...cli.ListOption) error {
-	return c.withWatch.List(ctx, list, opts...)
+// fallbackToInCluster builds a *rest.Config from the in-cluster
+// configuration. origErr, if non-nil, is the error from the kubeConfig-based
+// attempt that preceded this fallback; it is joined with the in-cluster
+// error so both failure causes surface if the fallback also fails.
+func fallbackToInCluster(origErr error) (*rest.Config, error) {
+	cfg, err := rest.InClusterConfig()
+	if err != nil {
+		if origErr != nil {
+			return nil, errors.Join(origErr, err)
+		}
+		return nil, err
+	}
+	applyDefaultRateLimits(cfg)
+	return cfg, nil
 }
 
-func (c *client) Create(ctx context.Context, obj k8s.Object, opts ...k8s.CreateOption) error {
-	return c.withWatch.Create(ctx, obj, opts...)
+// applyDefaultRateLimits fills in the QPS/Burst defaults the former
+// clientSetFromConfig used whenever the resolved config left them unset.
+func applyDefaultRateLimits(cfg *rest.Config) {
+	if cfg.QPS == 0.0 {
+		cfg.QPS = 20.0
+	}
+	if cfg.Burst == 0 {
+		cfg.Burst = 30
+	}
 }
 
-func (c *client) Delete(ctx context.Context, obj k8s.Object, opts ...cli.DeleteOption) error {
-	return c.withWatch.Delete(ctx, obj, opts...)
-}
-
-func (c *client) Update(ctx context.Context, obj k8s.Object, opts ...cli.UpdateOption) error {
-	return c.withWatch.Update(ctx, obj, opts...)
-}
-
-func (c *client) Patch(
-	ctx context.Context, obj k8s.Object, patch cli.Patch, opts ...cli.PatchOption,
-) error {
-	return c.withWatch.Patch(ctx, obj, patch, opts...)
-}
-
-func (c *client) Apply(
-	ctx context.Context, obj runtime.ApplyConfiguration, opts ...cli.ApplyOption,
-) error {
-	return c.withWatch.Apply(ctx, obj, opts...)
-}
-
-func (c *client) Watch(
-	ctx context.Context, obj cli.ObjectList, opts ...k8s.ListOption,
-) (watch.Interface, error) {
-	return c.withWatch.Watch(ctx, obj, opts...)
-}
-
-func (*client) MatchingLabels(labels map[string]string) cli.MatchingLabels {
-	return cli.MatchingLabels(labels)
-}
-
-func (*client) LabelSelector(
-	key string, op selection.Operator, vals []string,
-) (labels.Selector, error) {
+// NewLabelSelector creates a labels.Selector for Options like ListOptions.
+func NewLabelSelector(key string, op selection.Operator, vals []string) (labels.Selector, error) {
 	requirements, err := labels.NewRequirement(key, op, vals)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create requirement on creating label selector")
@@ -176,38 +232,21 @@ func (*client) LabelSelector(
 	return labels.NewSelector().Add(*requirements), nil
 }
 
-// PodPredicates returns a builder.Predicates with the given filter function.
-func PodPredicates(filter func(pod *corev1.Pod) bool) builder.Predicates {
-	return builder.WithPredicates(predicate.Funcs{
-		CreateFunc: func(e event.CreateEvent) bool {
-			pod, ok := e.Object.(*corev1.Pod)
-			if !ok {
-				return false
-			}
-			return filter(pod)
-		},
-		DeleteFunc: func(e event.DeleteEvent) bool {
-			pod, ok := e.Object.(*corev1.Pod)
-			if !ok {
-				return false
-			}
-			return filter(pod)
-		},
-		UpdateFunc: func(e event.UpdateEvent) bool {
-			pod, ok := e.ObjectNew.(*corev1.Pod)
-			if !ok {
-				return false
-			}
-			return filter(pod)
-		},
-		GenericFunc: func(e event.GenericEvent) bool {
-			pod, ok := e.Object.(*corev1.Pod)
-			if !ok {
-				return false
-			}
-			return filter(pod)
-		},
-	})
+// ObjectPredicates returns builder.Predicates that pass only events whose
+// object is a PT accepted by filter. It builds on controller-runtime's
+// predicate.NewPredicateFuncs, whose event mapping (Create/Delete/Generic use
+// e.Object, Update uses e.ObjectNew) matches what per-Kind hand-written
+// predicate.Funcs would do. The pointer constraint is spelled inline because
+// reusing resource.Objectable would create an import cycle
+// (internal/k8s/resource imports this package).
+func ObjectPredicates[T any, PT interface {
+	*T
+	cli.Object
+}](filter func(PT) bool) builder.Predicates {
+	return builder.WithPredicates(predicate.NewPredicateFuncs(func(obj cli.Object) bool {
+		o, ok := obj.(PT)
+		return ok && filter(o)
+	}))
 }
 
 // Patcher is an interface for patching resources with controller-runtime client.
@@ -248,7 +287,7 @@ func (s *patcher) ApplyPodAnnotations(
 		return errors.New("agent pod not found on exporting metrics")
 	}
 
-	//nolint:gomnd
+	//nolint:mnd
 	if len(podList.Items) >= 2 {
 		return errors.New("multiple agent pods found on exporting metrics. pods with same name exist in the same namespace?")
 	}

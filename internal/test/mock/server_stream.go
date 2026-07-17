@@ -49,7 +49,7 @@ func (m *StreamInsertServerMock) Recv() (res *payload.Insert_Request, err error)
 		}
 		return res, nil
 	}
-	return nil, nil
+	return nil, nil //nolint:nilnil // mock nil-receiver guard mirrors the real stream's "no message, no error" state
 }
 
 // ServerStreamMock implements grpc.ServerStream mock implementation.

@@ -43,7 +43,6 @@ type vrsBuilder struct {
 	// cluster it is DeepCopy'd instead of re-unmarshalling Overlay.Raw, which
 	// is a reconcile hot path (raw size × clusters × requeue frequency).
 	overlay    *k8s.Unstructured
-	gvk        k8s.GroupVersionKind
 	capability nodePoolCapability
 }
 
@@ -51,7 +50,6 @@ func newVrsBuilder(
 	cr *v1.ValdOperatorRelease, cfg *config.Config, capability nodePoolCapability,
 ) *vrsBuilder {
 	return &vrsBuilder{
-		gvk:        valdrelease.GVK,
 		list:       &valdrelease.ValdReleaseList{},
 		cr:         cr,
 		cfg:        cfg,
@@ -89,8 +87,11 @@ func (b *vrsBuilder) Build(_ context.Context) ([]k8s.Object, error) {
 			continue
 		}
 
+		// The row is constructed locally (not fetched), so its GVK is set here
+		// as part of construction: it flows through mergeOverlay's unstructured
+		// round-trip into every built item and is what Syncer keys on.
 		row := &valdrelease.ValdRelease{}
-		row.SetGroupVersionKind(b.gvk)
+		row.SetGroupVersionKind(valdrelease.GVK)
 		row.SetNamespace(b.cr.Namespace)
 		row.SetLabels(metadata.CreateSubResourceLabels(valdrelease.GVK.Kind))
 
@@ -111,16 +112,33 @@ func (b *vrsBuilder) Build(_ context.Context) ([]k8s.Object, error) {
 		b.reflectPersistentVolume(row)
 		b.applyNodeAffinities(row)
 
+		// Merge the per-infra labels on top of the existing ones so the
+		// managed-by / managed-resource labels set above survive. The labels
+		// are constant within an infra, so this happens once before the
+		// unstructured conversion below.
+		row.SetLabels(mergeLabels(row.GetLabels(), b.buildLabels(i)))
+
+		// Convert the fully-built row once per infra: between the clusters of
+		// one infra the row differs only by metadata.name, which is stamped
+		// onto the unstructured form inside the loop. The conversion is a JSON
+		// round trip of the whole tree and dominates the per-cluster cost when
+		// repeated (measured ~49% of mergeOverlay).
+		current, err := resource.ToUnstructured(row)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to convert row to unstructured")
+		}
+
 		for _, cluster := range infra.Clusters {
 			name, err := b.makeName(b.cr.GetNamespace(), cluster.Name)
 			if err != nil {
 				return nil, errors.Wrapf(err, "failed to make name for cluster %s", cluster.Name)
 			}
-			row.SetName(name)
-			// Merge the per-infra labels on top of the existing ones so the
-			// managed-by / managed-resource labels set above survive.
-			row.SetLabels(mergeLabels(row.GetLabels(), b.buildLabels(i)))
-			u, err := b.mergeOverlay(row)
+			// Renaming current in place between iterations is safe: mergeOverlay
+			// materializes its merged map into an independent typed object
+			// before returning, so nothing built for a previous cluster keeps a
+			// reference into current's maps.
+			current.SetName(name)
+			u, err := b.mergeOverlay(current)
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to merge overlay")
 			}
@@ -129,29 +147,34 @@ func (b *vrsBuilder) Build(_ context.Context) ([]k8s.Object, error) {
 		}
 	}
 
-	b.list.SetGroupVersionKind(valdrelease.GVK)
 	return resource.ObjectsOf(b.list.Items), nil
 }
 
 // fetchExistingVrs lists the ValdRelease objects currently present in the
-// namespace, restoring the GVK the client may have stripped, so the syncer
-// can prune the ones the current build no longer produces.
+// namespace so the syncer can prune the ones the current build no longer
+// produces. The GVK the client strips on decode is restored by
+// resource.ListObjects from the client scheme, with a static fallback to
+// valdrelease.GVK so every returned item is unconditionally identifiable.
 func fetchExistingVrs(ctx context.Context, c k8s.Client, namespace string) ([]k8s.Object, error) {
 	exists := &valdrelease.ValdReleaseList{}
-	exists.SetGroupVersionKind(valdrelease.GVK)
-
 	if _, err := resource.ListObjects(ctx, c, exists, k8s.InNamespace(namespace)); err != nil {
 		return nil, errors.Wrap(err, "failed to list existing ValdRelease objects")
 	}
-
-	out := resource.ObjectsOf(exists.Items)
-	for _, obj := range out {
-		// Recover GVK if client stripped it
-		if obj.GetObjectKind().GroupVersionKind().Empty() {
-			obj.GetObjectKind().SetGroupVersionKind(valdrelease.GVK)
+	// The scheme-based restoration above is best-effort: it silently skips
+	// when the scheme cannot resolve the type (unregistered, or the same Go
+	// type registered under multiple GVKs — the typical path when the CRD
+	// gains a new API version). An item left with an empty GVK would give the
+	// syncer a "///ns/name" prune key that never matches the desired set, and
+	// every existing ValdRelease would be deleted. Stamping the static GVK
+	// here restores the old unconditional guarantee against that deletion
+	// accident; the empty check makes it a no-op whenever the automatic
+	// restoration already succeeded.
+	for i := range exists.Items {
+		if exists.Items[i].GroupVersionKind().Empty() {
+			exists.Items[i].SetGroupVersionKind(valdrelease.GVK)
 		}
 	}
-	return out, nil
+	return resource.ObjectsOf(exists.Items), nil
 }
 
 func (b *vrsBuilder) validate() error {
@@ -373,9 +396,6 @@ func (b *vrsBuilder) buildLogging(ll string) *valdrelease.Logging {
 
 // ptr returns a pointer to v. The generated ValdRelease types use pointers for
 // nearly every field, so the builder wraps its scalar inputs with this.
-//
-//go:fix inline
-
 func ptr[T any](v T) *T { return new(v) }
 
 // toAnyMap converts a string map into the free-form map[string]interface{}
@@ -394,7 +414,7 @@ func toAnyMap(m map[string]string) map[string]any {
 // nsPtr clones m into an independent NodeSelector and returns its address, so
 // multiple components can share the same source map without aliasing.
 func nsPtr(m map[string]string) *valdrelease.NodeSelector {
-	ns := valdrelease.NodeSelector(maps.Clone(m))
+	ns := maps.Clone(m)
 	return &ns
 }
 
@@ -402,32 +422,42 @@ func (b *vrsBuilder) labelKey(suffix string) string {
 	return labelKey(b.cfg.NodePoolLabelPrefix, suffix)
 }
 
-// mergeOverlay layers the default VRS template, the built row and the
-// CR-supplied overlay patch on top of each other and decodes the merged
-// result back into a ValdRelease.
+// mergeOverlay layers the default VRS template, the built row (already
+// converted to its unstructured form by Build) and the CR-supplied overlay
+// patch on top of each other and decodes the merged result back into a
+// ValdRelease. current is treated as read-only.
 //
 // Merge semantics: each successive layer wins over the previous one for every
 // key that is present, including bool false, numeric zero, and empty strings.
 // Merging happens at the unstructured (map[string]any) level to avoid the
 // limitations of reflection-based mergers with types that have unexported
 // fields (resource.Quantity) or zero-value booleans (*bool → false).
-func (b *vrsBuilder) mergeOverlay(row k8s.Object) (*valdrelease.ValdRelease, error) {
-	current, err := resource.ToUnstructured(row)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to convert row to unstructured")
-	}
-
-	// Copy the parsed default VRS before mutating; the cached version must remain intact.
-	baseVrs := b.cfg.DefaultVrs.Us.DeepCopy()
-	baseVrs.SetName(current.GetName())
-	baseVrs.SetNamespace(current.GetNamespace())
-
+func (b *vrsBuilder) mergeOverlay(current *k8s.Unstructured) (*valdrelease.ValdRelease, error) {
 	// Merge at the unstructured map level: base → current → overlay.
 	// Each subsequent layer wins for every key it provides.
-	merged := deepMergeMap(baseVrs.Object, current.Object)
-	if patch := b.makeOverlayPatch(row); patch != nil {
+	//
+	// The cached default VRS map is passed directly as the merge base:
+	// deepMergeMap never mutates its inputs (it writes only into clones), so
+	// the previous defensive DeepCopy of the whole template tree is not needed.
+	// TestVrsBuilder_Build_DoesNotMutateDefaultVrsCache pins this invariant.
+	merged := deepMergeMap(b.cfg.DefaultVrs.Us.Object, current.Object)
+	if patch := b.makeOverlayPatch(current); patch != nil {
 		merged = deepMergeMap(merged, patch.Object)
 	}
+
+	// Stamping name/namespace on the merged result is equivalent to the old
+	// behaviour of stamping the base copy: `current` always carries the row's
+	// metadata.name (and namespace when non-empty), so those keys already won
+	// the merge; Set* additionally removes a template-supplied value when the
+	// row's is empty, exactly as SetName/SetNamespace on the base copy did.
+	// Writing into merged["metadata"] cannot touch the cached template: the
+	// metadata map here is either a fresh clone made by deepMergeMap (both
+	// layers carry metadata) or current's own map (template has none) — and in
+	// the latter case Set* re-writes the very values current already carries,
+	// leaving even that shared map unchanged.
+	mergedU := &k8s.Unstructured{Object: merged}
+	mergedU.SetName(current.GetName())
+	mergedU.SetNamespace(current.GetNamespace())
 
 	raw, err := json.Marshal(merged)
 	if err != nil {
@@ -471,8 +501,12 @@ func (b *vrsBuilder) parseOverlay() error {
 	if err := json.Unmarshal(patchRaw, &obj); err != nil {
 		return err
 	}
+	// The overlay patch is constructed locally from CR-supplied JSON (not
+	// fetched), so its GVK is pinned here: the patch is the last merge layer,
+	// which keeps a stray apiVersion/kind in the raw overlay from leaking
+	// into the built items.
 	b.overlay = &k8s.Unstructured{Object: obj}
-	b.overlay.SetGroupVersionKind(b.gvk)
+	b.overlay.SetGroupVersionKind(valdrelease.GVK)
 	return nil
 }
 

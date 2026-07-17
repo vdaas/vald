@@ -59,7 +59,7 @@ func WithResourceController(rc ResourceController) Option {
 
 func WithMetricsAddress(addr string) Option {
 	return func(c *controller) error {
-		c.merticsAddr = addr
+		c.metricsAddr = addr
 		return nil
 	}
 }

@@ -22,6 +22,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
+	"github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/k8s/resource"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/operator/api/v1"
 	"github.com/vdaas/vald/internal/k8s/vald/operator/api/valdrelease"
@@ -59,24 +60,38 @@ func (*resourceController) GetName() string {
 
 // NewReconciler returns the reconciler for the ValdOperatorRelease. It registers the
 // ValdOperatorRelease/ValdRelease schemes and the client-go native schemes to the
-// manager's scheme before constructing the reconciler.
+// manager's scheme before constructing the reconciler. Building the vor
+// resource client cannot fail in practice (mgr.GetConfig() is already
+// resolved by the time the manager builds this controller), but
+// k8s.ResourceController.NewReconciler has no error return, so a failure is
+// recorded in initErr and surfaced by Reconcile instead of panicking here.
 func (rc *resourceController) NewReconciler(_ context.Context, mgr k8s.Manager) k8s.Reconciler {
 	scheme := mgr.GetScheme()
-	if err := k8s.AddClientGoScheme(scheme); err != nil {
-		log.Errorf("failed to register client-go scheme: %v", err)
+	for _, reg := range []struct {
+		add  func(*k8s.Scheme) error
+		name string
+	}{
+		{k8s.AddClientGoScheme, "client-go"},
+		{v1.AddToScheme, "ValdOperatorRelease"},
+		{valdrelease.AddToScheme, "ValdRelease"},
+	} {
+		if err := reg.add(scheme); err != nil {
+			log.Errorf("failed to register %s scheme: %v", reg.name, err)
+		}
 	}
-	if err := v1.AddToScheme(scheme); err != nil {
-		log.Errorf("failed to register ValdOperatorRelease scheme: %v", err)
-	}
-	if err := valdrelease.AddToScheme(scheme); err != nil {
-		log.Errorf("failed to register ValdRelease scheme: %v", err)
-	}
-	return &reconciler{
+	r := &reconciler{
 		client: mgr.GetClient(),
 		cfg:    rc.cfg,
 		syncer: resource.NewSyncer(mgr.GetClient(), scheme, rc.cfg.ManagedGenerationLabel),
-		vor:    resource.NewObjectClient[v1.ValdOperatorRelease](mgr.GetClient()),
 	}
+	cl, err := client.NewFromManager(mgr)
+	if err != nil {
+		r.initErr = errors.Wrap(err, "failed to build k8s client for ValdOperatorRelease reconciler")
+		log.Error(r.initErr)
+		return r
+	}
+	r.vor = resource.NewClient(cl, new(v1.ValdOperatorRelease), new(v1.ValdOperatorReleaseList))
+	return r
 }
 
 // MaxConcurrentReconciles implements the optional k8s.ConcurrentReconciler
@@ -104,7 +119,11 @@ type reconciler struct {
 	client k8s.Client
 	cfg    *config.Config
 	syncer *resource.Syncer
-	vor    *resource.ObjectClient[v1.ValdOperatorRelease, *v1.ValdOperatorRelease]
+	vor    *resource.Client[*v1.ValdOperatorRelease, *v1.ValdOperatorReleaseList]
+	// initErr records a NewReconciler construction failure (building the vor
+	// resource client) so Reconcile can surface it, since
+	// k8s.ResourceController.NewReconciler has no error return.
+	initErr error
 }
 
 // Reconcile implements the main Kubernetes reconciliation loop for
@@ -118,6 +137,10 @@ type reconciler struct {
 // defaultRequeueAfterWaiting.
 func (r *reconciler) Reconcile(ctx context.Context, req k8s.Request) (k8s.Result, error) {
 	log.Debug("reconciling ValdOperatorRelease")
+
+	if r.initErr != nil {
+		return k8s.Result{}, r.initErr
+	}
 
 	cr, err := r.vor.Get(ctx, req.Name, req.Namespace)
 	if err != nil {

@@ -20,8 +20,8 @@ golangci-lint/install: \
 	$(BINDIR)/golangci-lint
 
 $(BINDIR)/golangci-lint:
-	curl -fsSL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-	| sh -s -- -b $(BINDIR) $(GOLANGCILINT_VERSION)
+	curl -fsSL https://github.com/golangci/golangci-lint/releases/download/$(GOLANGCILINT_VERSION)/golangci-lint-$(patsubst v%,%,$(GOLANGCILINT_VERSION))-$(GOOS)-$(GOARCH).tar.gz \
+	| tar -zx -C $(BINDIR) --strip-components=1 golangci-lint-$(patsubst v%,%,$(GOLANGCILINT_VERSION))-$(GOOS)-$(GOARCH)/golangci-lint
 
 .PHONY: goimports/install
 ## install goimports

@@ -163,9 +163,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 						router.WithTimeout(sc.HTTP.HandlerTimeout),
 						router.WithErrGroup(eg),
 						router.WithHandler(
-							rest.New(
-							// TODO pass grpc handler to REST option
-							),
+							rest.New(),
 						),
 					),
 				),
@@ -203,7 +201,9 @@ func (r *run) PreStart(ctx context.Context) error {
 }
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 3)
+	// buffer one slot per error source forwarded below so no sender blocks.
+	const errChanBufferSize = 3
+	ech := make(chan error, errChanBufferSize)
 	var oech, dech, sech <-chan error
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
@@ -246,14 +246,18 @@ func (r *run) PreStop(ctx context.Context) error {
 	return nil
 }
 
-func (r *run) Stop(ctx context.Context) error {
+func (r *run) Stop(ctx context.Context) (errs error) {
 	if r.observability != nil {
-		r.observability.Stop(ctx)
+		if err := r.observability.Stop(ctx); err != nil {
+			errs = errors.Join(errs, err)
+		}
 	}
 	if r.job != nil {
-		r.job.Stop(ctx)
+		if err := r.job.Stop(ctx); err != nil {
+			errs = errors.Join(errs, err)
+		}
 	}
-	return r.server.Shutdown(ctx)
+	return errors.Join(errs, r.server.Shutdown(ctx))
 }
 
 func (r *run) PostStop(ctx context.Context) error {

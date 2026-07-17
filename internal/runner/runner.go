@@ -47,19 +47,19 @@ type Runner interface {
 	PostStop(ctx context.Context) error
 }
 
-type runner struct {
-	loadConfig       func(string) (any, *config.GlobalConfig, error)
-	initializeDaemon func(any) (Runner, error)
+type runner[T any] struct {
+	loadConfig       func(string) (T, *config.GlobalConfig, error)
+	initializeDaemon func(T) (Runner, error)
 	version          string
 	maxVersion       string
 	minVersion       string
 	name             string
 }
 
-func Do(ctx context.Context, opts ...Option) error {
-	r := new(runner)
+func Do[T any](ctx context.Context, opts ...Option[T]) error {
+	r := new(runner[T])
 
-	for _, opt := range append(defaultOptions, opts...) {
+	for _, opt := range opts {
 		opt(r)
 	}
 

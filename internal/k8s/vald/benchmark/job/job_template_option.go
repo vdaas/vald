@@ -17,59 +17,72 @@
 package job
 
 import (
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
 	corev1 "k8s.io/api/core/v1"
 )
 
-type BenchmarkJobTplOption func(b *benchmarkJobTpl) error
+// BenchmarkJobTemplateOption configures the benchmark job template built by
+// NewBenchmarkJob. Empty required fields (container name/image, operator
+// config map) fail with errors.ErrCriticalOption and abort construction; any
+// other invalid value fails with errors.ErrInvalidOption, which NewBenchmarkJob
+// logs as a warning and skips.
+type BenchmarkJobTemplateOption func(b *benchmarkJobTpl) error
 
-var defaultBenchmarkJobTplOpts = []BenchmarkJobTplOption{
+var defaultBenchmarkJobTemplateOptions = []BenchmarkJobTemplateOption{
 	WithContainerName("vald-benchmark-job"),
 	WithContainerImage("vdaas/vald-benchmark-job"),
 	WithImagePullPolicy(PullAlways),
 }
 
 // WithContainerName sets the docker container name of benchmark job.
-func WithContainerName(name string) BenchmarkJobTplOption {
+func WithContainerName(name string) BenchmarkJobTemplateOption {
 	return func(b *benchmarkJobTpl) error {
-		if len(name) > 0 {
-			b.containerName = name
+		if name == "" {
+			return errors.NewErrCriticalOption("containerName", name)
 		}
+		b.containerName = name
 		return nil
 	}
 }
 
 // WithContainerImage sets the docker image path for benchmark job.
-func WithContainerImage(name string) BenchmarkJobTplOption {
+func WithContainerImage(name string) BenchmarkJobTemplateOption {
 	return func(b *benchmarkJobTpl) error {
-		if len(name) > 0 {
-			b.containerImageName = name
+		if name == "" {
+			return errors.NewErrCriticalOption("containerImage", name)
 		}
+		b.containerImageName = name
 		return nil
 	}
 }
 
 // WithImagePullPolicy sets the docker image pull policy for benchmark job.
-func WithImagePullPolicy(p ImagePullPolicy) BenchmarkJobTplOption {
+func WithImagePullPolicy(p ImagePullPolicy) BenchmarkJobTemplateOption {
 	return func(b *benchmarkJobTpl) error {
-		if len(p) > 0 {
-			b.imagePullPolicy = p
+		if p == "" {
+			return errors.NewErrInvalidOption("imagePullPolicy", p)
 		}
+		b.imagePullPolicy = p
 		return nil
 	}
 }
 
 // WithOperatorConfigMap sets the configMapName for mounting Job Pod.
-func WithOperatorConfigMap(cm string) BenchmarkJobTplOption {
+func WithOperatorConfigMap(cm string) BenchmarkJobTemplateOption {
 	return func(b *benchmarkJobTpl) error {
-		if len(cm) > 0 {
-			b.configMapName = cm
+		if cm == "" {
+			return errors.NewErrCriticalOption("operatorConfigMap", cm)
 		}
+		b.configMapName = cm
 		return nil
 	}
 }
 
 // BenchmarkJobOption represents the option for create benchmark job template.
+// An empty job name fails with errors.ErrCriticalOption and aborts
+// CreateJobTpl; any other invalid value fails with errors.ErrInvalidOption,
+// which CreateJobTpl logs as a warning and skips.
 type BenchmarkJobOption func(b *k8s.Job) error
 
 const (
@@ -92,9 +105,10 @@ var defaultBenchmarkJobOpts = []BenchmarkJobOption{
 // WithSvcAccountName sets the service account name for benchmark job.
 func WithSvcAccountName(name string) BenchmarkJobOption {
 	return func(b *k8s.Job) error {
-		if len(name) > 0 {
-			b.Spec.Template.Spec.ServiceAccountName = name
+		if name == "" {
+			return errors.NewErrInvalidOption("svcAccountName", name)
 		}
+		b.Spec.Template.Spec.ServiceAccountName = name
 		return nil
 	}
 }
@@ -102,9 +116,10 @@ func WithSvcAccountName(name string) BenchmarkJobOption {
 // WithRestartPolicy sets the job restart policy for benchmark job.
 func WithRestartPolicy(rp RestartPolicy) BenchmarkJobOption {
 	return func(b *k8s.Job) error {
-		if len(rp) > 0 {
-			b.Spec.Template.Spec.RestartPolicy = corev1.RestartPolicy(rp)
+		if rp == "" {
+			return errors.NewErrInvalidOption("restartPolicy", rp)
 		}
+		b.Spec.Template.Spec.RestartPolicy = corev1.RestartPolicy(rp)
 		return nil
 	}
 }
@@ -112,6 +127,9 @@ func WithRestartPolicy(rp RestartPolicy) BenchmarkJobOption {
 // WithName sets the job name of benchmark job.
 func WithName(name string) BenchmarkJobOption {
 	return func(b *k8s.Job) error {
+		if name == "" {
+			return errors.NewErrCriticalOption("name", name)
+		}
 		b.Name = name
 		return nil
 	}
@@ -120,6 +138,9 @@ func WithName(name string) BenchmarkJobOption {
 // WithNamespace specify namespace where job will execute.
 func WithNamespace(ns string) BenchmarkJobOption {
 	return func(b *k8s.Job) error {
+		if ns == "" {
+			return errors.NewErrInvalidOption("namespace", ns)
+		}
 		b.Namespace = ns
 		return nil
 	}
@@ -128,9 +149,10 @@ func WithNamespace(ns string) BenchmarkJobOption {
 // WithOwnerRef sets the OwnerReference to the job resource.
 func WithOwnerRef(refs []k8s.OwnerReference) BenchmarkJobOption {
 	return func(b *k8s.Job) error {
-		if len(refs) > 0 {
-			b.OwnerReferences = refs
+		if len(refs) == 0 {
+			return errors.NewErrInvalidOption("ownerRefs", refs)
 		}
+		b.OwnerReferences = refs
 		return nil
 	}
 }
@@ -158,9 +180,10 @@ func WithParallelism(parallelism int32) BenchmarkJobOption {
 // WithLabel sets the label to the job resource.
 func WithLabel(label map[string]string) BenchmarkJobOption {
 	return func(b *k8s.Job) error {
-		if len(label) > 0 {
-			b.Labels = label
+		if len(label) == 0 {
+			return errors.NewErrInvalidOption("label", label)
 		}
+		b.Labels = label
 		return nil
 	}
 }

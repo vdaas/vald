@@ -99,8 +99,8 @@ func TestNewConfig(t *testing.T) {
 			}
 
 			gotCfg, err := NewConfig(tt.Context(), test.args.path)
-			if err := checkFunc(test.want, gotCfg, err); err != nil {
-				tt.Errorf("error = %v, got = %#v", err, gotCfg)
+			if cerr := checkFunc(test.want, gotCfg, err); cerr != nil {
+				tt.Errorf("error = %v, got = %#v", cerr, gotCfg)
 			}
 		})
 	}

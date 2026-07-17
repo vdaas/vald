@@ -28,8 +28,13 @@ const (
 	rolloutAnnotationKey = "kubectl.kubernetes.io/restartedAt"
 )
 
-func RolloutRestart[T Object, L ObjectList, C NamedObject, I WorkloadControllerResourceClient[T, L, C]](
-	ctx context.Context, client I, name string,
+// RolloutRestart triggers a rolling restart of the named workload by stamping
+// the kubectl restartedAt annotation onto its pod template. It only needs the
+// pod-annotation surface, so it constrains client to podAnnotationInterface[T]
+// instead of the full WorkloadControllerResourceClient — T is inferred from
+// the client's SetPodAnnotations result type at every call site.
+func RolloutRestart[T Object](
+	ctx context.Context, client podAnnotationInterface[T], name string,
 ) error {
 	return retry.RetryOnConflict(retry.DefaultRetry, func() (err error) {
 		_, err = client.SetPodAnnotations(ctx, name, map[string]string{

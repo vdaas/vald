@@ -15,16 +15,16 @@ package target
 
 import "github.com/vdaas/vald/internal/errors"
 
-type MirrorTargetOption func(*MirrorTarget) error
+type MirrorTargetTemplateOption func(*MirrorTarget) error
 
-var defaultMirrorTargetOptions = []MirrorTargetOption{
+var defaultMirrorTargetTemplateOptions = []MirrorTargetTemplateOption{
 	WithMirrorTargetLabels(map[string]string{
 		"app.kubernetes.io/name":       "mirror-target",
 		"app.kubernetes.io/managed-by": "gateway-mirror",
 	}),
 }
 
-func WithMirrorTargetNamespace(ns string) MirrorTargetOption {
+func WithMirrorTargetNamespace(ns string) MirrorTargetTemplateOption {
 	return func(mt *MirrorTarget) error {
 		if ns != "" {
 			mt.Namespace = ns
@@ -33,7 +33,7 @@ func WithMirrorTargetNamespace(ns string) MirrorTargetOption {
 	}
 }
 
-func WithMirrorTargetName(name string) MirrorTargetOption {
+func WithMirrorTargetName(name string) MirrorTargetTemplateOption {
 	return func(mt *MirrorTarget) error {
 		if name == "" {
 			return errors.NewErrCriticalOption("name", name)
@@ -43,14 +43,14 @@ func WithMirrorTargetName(name string) MirrorTargetOption {
 	}
 }
 
-func WithMirrorTargetStatus(st *MirrorTargetStatus) MirrorTargetOption {
+func WithMirrorTargetStatus(st *MirrorTargetStatus) MirrorTargetTemplateOption {
 	return func(mt *MirrorTarget) error {
 		mt.Status = *st
 		return nil
 	}
 }
 
-func WithMirrorTargetLabels(labels map[string]string) MirrorTargetOption {
+func WithMirrorTargetLabels(labels map[string]string) MirrorTargetTemplateOption {
 	return func(mt *MirrorTarget) error {
 		if len(labels) != 0 {
 			mt.Labels = labels
@@ -59,7 +59,7 @@ func WithMirrorTargetLabels(labels map[string]string) MirrorTargetOption {
 	}
 }
 
-func WithMirrorTargetColocation(n string) MirrorTargetOption {
+func WithMirrorTargetColocation(n string) MirrorTargetTemplateOption {
 	return func(mt *MirrorTarget) error {
 		if n == "" {
 			return errors.NewErrCriticalOption("colocation", n)
@@ -69,7 +69,7 @@ func WithMirrorTargetColocation(n string) MirrorTargetOption {
 	}
 }
 
-func WithMirrorTargetHost(n string) MirrorTargetOption {
+func WithMirrorTargetHost(n string) MirrorTargetTemplateOption {
 	return func(mt *MirrorTarget) error {
 		if n == "" {
 			return errors.NewErrCriticalOption("host", n)
@@ -79,7 +79,7 @@ func WithMirrorTargetHost(n string) MirrorTargetOption {
 	}
 }
 
-func WithMirrorTargetPort(port int) MirrorTargetOption {
+func WithMirrorTargetPort(port int) MirrorTargetTemplateOption {
 	return func(mt *MirrorTarget) error {
 		if port <= 0 {
 			return errors.NewErrCriticalOption("port", port)

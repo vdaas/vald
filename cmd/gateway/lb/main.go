@@ -38,17 +38,17 @@ func main() {
 	if err := safety.RecoverFunc(func() error {
 		return runner.Do(
 			context.Background(),
-			runner.WithName(name),
-			runner.WithVersion(info.Version, maxVersion, minVersion),
-			runner.WithConfigLoader(func(path string) (any, *config.GlobalConfig, error) {
+			runner.WithName[*config.Data](name),
+			runner.WithVersion[*config.Data](info.Version, maxVersion, minVersion),
+			runner.WithConfigLoader(func(path string) (*config.Data, *config.GlobalConfig, error) {
 				cfg, err := config.NewConfig(path)
 				if err != nil {
 					return nil, nil, errors.Wrap(err, "failed to load "+name+"'s configuration")
 				}
 				return cfg, &cfg.GlobalConfig, nil
 			}),
-			runner.WithDaemonInitializer(func(cfg any) (runner.Runner, error) {
-				return usecase.New(cfg.(*config.Data))
+			runner.WithDaemonInitializer(func(cfg *config.Data) (runner.Runner, error) {
+				return usecase.New(cfg)
 			}),
 		)
 	})(); err != nil {
