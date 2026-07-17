@@ -63,12 +63,8 @@ jobs:
           make files
           make update
           make helm/schema/all
-          make k8s/manifest/update
-          make k8s/manifest/operator/helm/update
-          make k8s/manifest/operator/benchmark/update
-          make helm/docs/vald
-          make helm/docs/operator/helm
-          make helm/docs/operator/benchmark
+          make k8s/manifest/all
+          make helm/docs/all
           make proto/replace license format format/go format/go/test
           make perm
       - name: Check difference

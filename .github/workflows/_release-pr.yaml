@@ -96,24 +96,17 @@ jobs:
           PREVIOUS_VERSION=`cat versions/VALD_VERSION`
           echo "${RELEASE_TAG}" > versions/VALD_VERSION
 
-          sed -i -e "s/^version: .*$/version: ${RELEASE_TAG}/" charts/vald/Chart.yaml
-          sed -i -r "s/^(\s*)tag\s*:\s*v[0-9]+\.[0-9]+\.[0-9]+\s*$/\1tag: ${RELEASE_TAG}/" charts/vald/values.yaml
-          sed -i -e "s/^version: .*$/version: ${RELEASE_TAG}/" charts/operator/helm/Chart.yaml
-          sed -i -r "s/^(\s*)tag\s*:\s*v[0-9]+\.[0-9]+\.[0-9]+\s*$/\1tag: ${RELEASE_TAG}/" charts/operator/helm/values.yaml
-          sed -i -e "s/^version: .*$/version: ${RELEASE_TAG}/" charts/vald-readreplica/Chart.yaml
-          sed -i -e "s/^version: .*$/version: ${RELEASE_TAG}/" charts/operator/benchmark/Chart.yaml
-          sed -i -r "s/^(\s*)tag\s*:\s*v[0-9]+\.[0-9]+\.[0-9]+\s*$/\1tag: ${RELEASE_TAG}/" charts/operator/benchmark/values.yaml
+          for chart_path in $(yq eval '.charts[].path' charts/charts.yaml); do
+            sed -i -e "s/^version: .*$/version: ${RELEASE_TAG}/" "${chart_path}/Chart.yaml"
+          done
+          for chart_path in $(yq eval '.charts[] | select(.bump_values_tag == true) | .path' charts/charts.yaml); do
+            sed -i -r "s/^(\s*)tag\s*:\s*v[0-9]+\.[0-9]+\.[0-9]+\s*$/\1tag: ${RELEASE_TAG}/" "${chart_path}/values.yaml"
+          done
 
           make helm/schema/all
           make helm/schema/crd/all
-          make k8s/manifest/update
-          make k8s/manifest/operator/helm/update
-          make k8s/manifest/operator/benchmark/update
-          make k8s/manifest/readreplica/update
-          make helm/docs/vald
-          make helm/docs/operator/helm
-          make helm/docs/operator/benchmark
-          make helm/docs/vald-readreplica
+          make k8s/manifest/all
+          make helm/docs/all
 
           BODY=""
           if [ ! -z "${PR_NUM}" ]; then
@@ -133,6 +126,7 @@ jobs:
             CHANGELOG.md \
             charts \
             k8s \
+            pkg \
             versions/VALD_VERSION
           git commit -S --signoff -m ":bookmark: :robot: Release ${RELEASE_TAG}"
           git push -u origin ${PREPARE_RELEASE_BRANCH_NAME}

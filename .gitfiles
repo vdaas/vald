@@ -356,6 +356,7 @@ assets/test/templates/option/results.tmpl
 buf.gen.yaml
 buf.lock
 buf.yaml
+charts/charts.yaml
 charts/operator/benchmark/Chart.yaml
 charts/operator/benchmark/README.md
 charts/operator/benchmark/README.md.gotmpl

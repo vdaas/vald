@@ -41,13 +41,47 @@ jobs:
     permissions:
       contents: read
     uses: ./.github/workflows/_detect-ci-container.yaml
-  lint-vald-chart:
+  resolve-charts:
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    name: resolve chart list
+    runs-on: ubuntu-latest
+    needs: [detect-ci-container]
+    container:
+      image: ghcr.io/vdaas/vald/vald-dev-container:${{ needs.detect-ci-container.outputs.TAG }}
+      credentials:
+        username: ${{ secrets.PACKAGE_USER }}
+        password: ${{ secrets.PACKAGE_TOKEN }}
+    outputs:
+      charts: ${{ steps.resolve.outputs.charts }}
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+      - name: Resolve chart list from charts/charts.yaml
+        id: resolve
+        run: |
+          {
+            echo "charts<<EOF"
+            yq eval -o=json -I=0 '[.charts[] | select(.schema_target != "")]' charts/charts.yaml
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+  lint-chart:
     timeout-minutes: 30
     permissions:
       contents: read
-    name: lint for vald chart
+    name: lint for ${{ matrix.chart.name }} chart
     runs-on: ubuntu-latest
-    needs: [detect-ci-container]
+    needs: [detect-ci-container, resolve-charts]
+    strategy:
+      fail-fast: false
+      matrix:
+        chart: ${{ fromJson(needs.resolve-charts.outputs.charts) }}
     container:
       image: ghcr.io/vdaas/vald/vald-dev-container:${{ needs.detect-ci-container.outputs.TAG }}
       credentials:
@@ -61,64 +95,16 @@ jobs:
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Generate schema for charts/vald
+      - name: Generate schema for ${{ matrix.chart.path }}
+        env:
+          SCHEMA_TARGET: ${{ matrix.chart.schema_target }}
         run: |
-          make helm/schema/vald
-      - name: Run lint for charts/vald
+          make "${SCHEMA_TARGET}"
+      - name: Run lint for ${{ matrix.chart.path }}
+        env:
+          CHART_PATH: ${{ matrix.chart.path }}
         run: |
-          helm lint charts/vald
-  lint-vald-helm-operator-chart:
-    timeout-minutes: 30
-    permissions:
-      contents: read
-    name: lint for vald-helm-operator chart
-    runs-on: ubuntu-latest
-    needs: [detect-ci-container]
-    container:
-      image: ghcr.io/vdaas/vald/vald-dev-container:${{ needs.detect-ci-container.outputs.TAG }}
-      credentials:
-        username: ${{ secrets.PACKAGE_USER }}
-        password: ${{ secrets.PACKAGE_TOKEN }}
-    steps:
-      - name: Check out code.
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          persist-credentials: false
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Generate schema for charts/operator/helm
-        run: |
-          make helm/schema/operator/helm
-      - name: Run lint for charts/operator/helm
-        run: |
-          helm lint charts/operator/helm
-  lint-vald-operator-chart:
-    timeout-minutes: 30
-    permissions:
-      contents: read
-    name: lint for vald-operator chart
-    runs-on: ubuntu-latest
-    needs: [detect-ci-container]
-    container:
-      image: ghcr.io/vdaas/vald/vald-dev-container:${{ needs.detect-ci-container.outputs.TAG }}
-      credentials:
-        username: ${{ secrets.PACKAGE_USER }}
-        password: ${{ secrets.PACKAGE_TOKEN }}
-    steps:
-      - name: Check out code.
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          persist-credentials: false
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Generate schema for charts/operator/vald
-        run: |
-          make helm/schema/operator/vald
-      - name: Run lint for charts/operator/vald
-        run: |
-          helm lint charts/operator/vald
+          helm lint "${CHART_PATH}"
   lint-values-schema:
     timeout-minutes: 30
     permissions:
