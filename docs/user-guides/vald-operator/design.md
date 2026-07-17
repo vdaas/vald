@@ -42,7 +42,7 @@ A list of infrastructure entries. Each entry produces VRS objects for its cluste
 | `role`       | Free-form role label (e.g. `hot`, `standby`, `blue`, `green`). Copied to VRS labels.                                                                      |
 | `type`       | Cluster type label.                                                                                                                                       |
 | `active`     | When `false`, the entry is skipped during VRS generation.                                                                                                 |
-| `clusters[]` | `{ id, name }`. `id` is typically filled in by an external system once the target cluster exists; `name` must be set.                                     |
+| `clusters[]` | `{ id, name }`. The `id` field is typically filled in by an external system once the target cluster exists; `name` must be set.                           |
 | `nodePools`  | Map keyed by pool type: `general` (required) and `agent` (optional). Each pool carries `name`, `replicas`, and `machineResource{ cpu, memory, storage }`. |
 
 The `machineResource` values drive per-component resource and replica calculations for
@@ -92,7 +92,7 @@ A phase check returns one of four `result` states
 | Result            | Condition status      | Meaning                                                                      |
 | ----------------- | --------------------- | ---------------------------------------------------------------------------- |
 | `Progressing("")` | Unknown / Progressing | The controller is actively working.                                          |
-| `Pending("msg")`  | Unknown / Pending     | Waiting on something external (e.g. external system assigning a cluster id). |
+| `Pending("msg")`  | Unknown / Pending     | Waiting on something external (e.g. external system assigning a cluster ID). |
 | `Succeeded()`     | True / Succeeded      | Done.                                                                        |
 | `Failed(err)`     | False / Failed        | Misconfiguration or unrecoverable error.                                     |
 

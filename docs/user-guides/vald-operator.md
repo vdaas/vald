@@ -49,7 +49,7 @@ make k8s/operator/vald/delete
 
 ## CRD: ValdOperatorRelease (`vor`)
 
-The goal of the `ValdOperatorRelease` resource is to collapse the large `ValdRelease` configuration surface into the minimum a user must supply.
+The goal of the `ValdOperatorRelease` resource is to collapse the large `ValdRelease` configuration surface into what a user must supply.
 There are two input groups:
 
 1. **Infrastructure / node-pool information** — `spec.infrastructure[]`
@@ -69,7 +69,7 @@ spec:
       type: kind # cluster type hint (informational)
       active: true
       clusters:
-        - id: "abc-123" # cluster identifier (populated by external system)
+        - id: "abc-123" # cluster ID (populated by external system)
           name: "cluster-a" # human-readable cluster name
       nodePools:
         general: # gateway / discoverer / manager
@@ -125,7 +125,7 @@ spec:
 | `role`       | Free-form role label (e.g. `hot`, `standby`, `blue`, `green`). Copied to VRS labels.                                                                      |
 | `type`       | Cluster type label.                                                                                                                                       |
 | `active`     | When `false`, the entry is skipped during VRS generation.                                                                                                 |
-| `clusters[]` | `{ id, name }`. `id` is typically filled by an external system; `name` must be set.                                                                       |
+| `clusters[]` | `{ id, name }`. The `id` field is typically filled by an external system; `name` must be set.                                                             |
 | `nodePools`  | Map keyed by pool type: `general` (required) and `agent` (optional). Each pool carries `name`, `replicas`, and `machineResource{ cpu, memory, storage }`. |
 
 #### Node pool types
@@ -187,7 +187,7 @@ Each phase carries a `Condition` plus an optional `Builder` (creates/updates res
 ### Accumulating, self-healing conditions
 
 `status.conditions` **accumulates** as phases progress (conditions are never removed), and every reconcile re-evaluates **all** conditions.
-If a previously-`True` condition later breaks (e.g. a generated VRS is deleted), the controller detects it and restarts work from that phase.
+If a `True` condition later breaks (e.g. a generated VRS is deleted), the controller detects it and restarts work from that phase.
 
 ```
 Reconcile N:   [WaitingClusterCreate=True]
@@ -224,7 +224,7 @@ Reconcile N+3: [WaitingClusterCreate=True, WaitingCreateVrs=False]
 4. **Resolve resources from node pools**: derive replicas and per-component CPU/memory from the agent node pool.
 5. **Apply optional settings**: persistent volume, node affinities.
 6. **Per cluster**: for each `infra.clusters[]`, set name, apply labels, then merge the overlay.
-   One VRS is produced per cluster, so a single VOR can yield many VRS objects.
+   One VRS is produced for each cluster, so a single VOR can yield one VRS per target cluster.
 
 ### Overlay
 
@@ -251,7 +251,7 @@ RAM limit    = (not set)
 ```
 
 The 0.6 ratio reserves 60% of the node for agent pods; the remaining 40% covers OS, DaemonSets, and system processes.
-Memory limit is intentionally absent because the NGT index uses mmap and a hard limit would trigger OOM kills.
+Memory limit is intentionally absent because the NGT index uses memory-mapped files and a hard limit would trigger OOM kills.
 
 ### Agent pod count
 
@@ -294,12 +294,12 @@ topologySpreadConstraints:
 
 ## Multi-Cluster Distribution
 
-The same VOR can be distributed to multiple clusters, generating a VRS only where a matching node pool exists.
+The same VOR can be distributed across clusters and generates a VRS where a matching node pool exists.
 
 ### Node-pool matching
 
 When `REQUIRE_NODEPOOL_MATCH=true`, the controller lists Nodes and resolves a `NodePoolCapability`.
-A VRS is generated only when a `general` pool is present.
+A VRS is generated when a `general` pool is present.
 Nodes are matched by labels:
 
 ```
@@ -314,9 +314,9 @@ When `REQUIRE_NODEPOOL_MATCH=false` (default), the controller skips node listing
 ### Use cases
 
 - **Single cluster**: Deploy VOR once; VRS generates in that cluster.
-- **Multi-cluster same config**: Deploy VOR to all clusters; only generate VRS where node-pool labels match.
-- **Blue/green deployments**: Multiple VOR objects with different roles and endpoints.
-- **VRS generation only**: Generate VRS manifests in a management cluster and distribute separately to workload clusters.
+- **Multi-cluster same config**: Deploy VOR to all clusters; generate VRS where node-pool labels match.
+- **Blue/green deployments**: Use separate VOR objects with different roles and endpoints.
+- **VRS generation**: Generate VRS manifests in a management cluster and distribute them to workload clusters.
 
 ## Configuration
 
