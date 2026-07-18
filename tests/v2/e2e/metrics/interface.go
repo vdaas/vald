@@ -47,11 +47,21 @@ type CounterManager interface {
 	IncCounter(name string, val int64)
 }
 
+// RecallRecorder is the interface for recording an out-of-band recall ratio
+// metric. Unlike Recorder.Record, it is not folded into RequestResult: recall
+// is computed by the caller (e.g. tests/v2/e2e/crud/search_test.go's
+// calculateRecall) strictly after a response has already been unmarshalled,
+// i.e. after Record() would have already been called for that same request.
+type RecallRecorder interface {
+	RecordRecall(val float64)
+}
+
 // Collector is the interface for the metrics collector.
 type Collector interface {
 	Recorder
 	Reporter
 	CounterManager
+	RecallRecorder
 	MergeInto(dest Collector) error
 	Clone() (Collector, error)
 	merge(other *collector) error

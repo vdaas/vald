@@ -31,6 +31,42 @@ e2e/v2/operator:
 		E2E_MANIFEST_PATH=$(ROOTDIR)/k8s/operator/vald/samples/controller_v1_valdoperatorrelease.yaml \
 		e2e/v2
 
+.PHONY: e2e/pareto-chart
+## build and run the tests/v2/e2e/metrics/chart Recall-QPS Pareto chart library's
+## test suite (real gonum/plot SVG rendering, real metrics.GlobalSnapshot JSON
+## round-trips via LoadParetoSeries). To actually render a chart from real
+## GlobalSnapshot JSON files, use e2e/pareto-chart/build + e2e/pareto-chart/run below.
+e2e/pareto-chart:
+	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
+	go test \
+	-race \
+	-v \
+	-mod=readonly \
+	$(ROOTDIR)/tests/v2/e2e/metrics/chart/...
+
+.PHONY: e2e/pareto-chart/build
+## build the tests/v2/e2e/metrics/chart/cmd/chart CLI binary (Recall-QPS Pareto
+## SVG renderer, hack/tools/metrics/main.go-style wrapper around LoadParetoSeries
+## + RenderParetoSVG) to $(ROOTDIR)/.bin/pareto-chart
+e2e/pareto-chart/build:
+	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
+	go build \
+	-mod=readonly \
+	-o $(ROOTDIR)/.bin/pareto-chart \
+	$(ROOTDIR)/tests/v2/e2e/metrics/chart/cmd/chart
+
+.PHONY: e2e/pareto-chart/run
+## build and run the pareto-chart CLI to render a Recall-QPS Pareto SVG.
+## Pass the full flag set (including one or more repeatable -series flags) via
+## PARETO_ARGS, e.g.:
+##   make e2e/pareto-chart/run PARETO_ARGS='-series "ngt-k10=run1.json,run2.json" -series "hnsw-k10=run3.json" -output pareto.svg'
+e2e/pareto-chart/run: e2e/pareto-chart/build
+	$(ROOTDIR)/.bin/pareto-chart $(PARETO_ARGS)
+
 .PHONY: e2e/faiss
 ## run e2e/faiss
 e2e/faiss:

@@ -57,9 +57,11 @@ var (
 	defaultOptions = []Option{
 		WithLatencyHistogram(defaultHistogramOpts...),
 		WithQueueWaitHistogram(defaultHistogramOpts...),
+		WithRecallHistogram(defaultHistogramOpts...),
 		WithExemplar(defaultExemplarOpts...),
 		WithLatencyTDigest(defaultTDigestOpts...),
 		WithQueueWaitTDigest(defaultTDigestOpts...),
+		WithRecallTDigest(defaultTDigestOpts...),
 		WithDetailedErrorTracking(true),
 	}
 )
@@ -136,6 +138,18 @@ func WithQueueWaitHistogram(opts ...HistogramOption) Option {
 	}
 }
 
+// WithRecallHistogram sets the histogram for recall metrics.
+func WithRecallHistogram(opts ...HistogramOption) Option {
+	return func(c *collector) error {
+		h, err := NewHistogram(opts...)
+		if err != nil {
+			return err
+		}
+		c.recalls = h
+		return nil
+	}
+}
+
 // WithLatencyTDigest sets the t-digest for latency metrics.
 func WithLatencyTDigest(opts ...TDigestOption) Option {
 	return func(c *collector) error {
@@ -156,6 +170,18 @@ func WithQueueWaitTDigest(opts ...TDigestOption) Option {
 			return err
 		}
 		c.qwPercentiles = t
+		return nil
+	}
+}
+
+// WithRecallTDigest sets the t-digest for recall metrics.
+func WithRecallTDigest(opts ...TDigestOption) Option {
+	return func(c *collector) error {
+		t, err := NewTDigest(opts...)
+		if err != nil {
+			return err
+		}
+		c.recallPercentiles = t
 		return nil
 	}
 }

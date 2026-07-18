@@ -132,9 +132,11 @@ func (h *CounterHandle) Add(val int64) {
 type collector struct {
 	qwPercentiles         TDigest
 	latPercentiles        TDigest
+	recallPercentiles     TDigest
 	queueWaits            Histogram
 	exemplars             Exemplar
 	latencies             Histogram
+	recalls               Histogram
 	counters              map[string]*CounterHandle
 	errorCounts           *shardedErrorCounts
 	scales                []Scale
@@ -190,6 +192,12 @@ func (c *collector) Reset() {
 	}
 	if c.qwPercentiles != nil {
 		c.qwPercentiles.Reset()
+	}
+	if c.recalls != nil {
+		c.recalls.Reset()
+	}
+	if c.recallPercentiles != nil {
+		c.recallPercentiles.Reset()
 	}
 	if c.exemplars != nil {
 		c.exemplars.Reset()
@@ -300,6 +308,11 @@ func (c *collector) mergeHistograms(other *collector) error {
 			return err
 		}
 	}
+	if c.recalls != nil && other.recalls != nil {
+		if err := other.recalls.Merge(c.recalls); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -311,6 +324,11 @@ func (c *collector) mergeTDigests(other *collector) error {
 	}
 	if c.qwPercentiles != nil && other.qwPercentiles != nil {
 		if err := other.qwPercentiles.Merge(c.qwPercentiles); err != nil {
+			return err
+		}
+	}
+	if c.recallPercentiles != nil && other.recallPercentiles != nil {
+		if err := other.recallPercentiles.Merge(c.recallPercentiles); err != nil {
 			return err
 		}
 	}
@@ -447,6 +465,23 @@ func (c *collector) Record(ctx context.Context, key uint64, rr *RequestResult) {
 	}
 }
 
+// RecordRecall records a recall ratio, independent of Record(). Recall is
+// computed by the caller (e.g. tests/v2/e2e/crud/search_test.go's
+// calculateRecall) strictly after a response has already been unmarshalled,
+// i.e. after Record() would already have been called for that same request.
+// It therefore never touches Total/Errors or any other Record()-owned
+// counter. NaN/+Inf/-Inf are silently dropped, mirroring the existing
+// Histogram.Record/TDigest.Add guards; no other filtering (including
+// clamping to [0,1]) is performed.
+func (c *collector) RecordRecall(val float64) {
+	if c.recalls != nil {
+		c.recalls.Record(val)
+	}
+	if c.recallPercentiles != nil {
+		c.recallPercentiles.Add(val)
+	}
+}
+
 // CounterHandle returns a handle for a pre-registered custom counter.
 func (c *collector) CounterHandle(name string) (*CounterHandle, error) {
 	c.mu.RLock()
@@ -498,6 +533,12 @@ func (c *collector) Clone() (Collector, error) {
 	}
 	if c.qwPercentiles != nil {
 		newC.qwPercentiles = c.qwPercentiles.Clone()
+	}
+	if c.recalls != nil {
+		newC.recalls = c.recalls.Clone()
+	}
+	if c.recallPercentiles != nil {
+		newC.recallPercentiles = c.recallPercentiles.Clone()
 	}
 	if c.exemplars != nil {
 		newC.exemplars = c.exemplars.Clone()
@@ -552,7 +593,7 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 		errorDetails = make(map[string]uint64)
 	}
 
-	var latSnap, qwSnap *HistogramSnapshot
+	var latSnap, qwSnap, recallSnap *HistogramSnapshot
 	var exSnap []*ExemplarItem
 	var exDetails *ExemplarDetails
 	if c.latencies != nil {
@@ -560,6 +601,9 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 	}
 	if c.queueWaits != nil {
 		qwSnap = c.queueWaits.Snapshot()
+	}
+	if c.recalls != nil {
+		recallSnap = c.recalls.Snapshot()
 	}
 	if c.exemplars != nil {
 		exSnap = c.exemplars.Snapshot()
@@ -583,7 +627,7 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 		lastUpdated = time.Unix(0, t)
 	}
 
-	var latPercentiles, qwPercentiles TDigest
+	var latPercentiles, qwPercentiles, recallPercentiles TDigest
 	if c.latPercentiles != nil {
 		// Ensure we always return a merged *tdigest for consistent serialization
 		if sharded, ok := c.latPercentiles.(*shardedTDigest); ok {
@@ -599,20 +643,29 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 			qwPercentiles = c.qwPercentiles.Clone()
 		}
 	}
+	if c.recallPercentiles != nil {
+		if sharded, ok := c.recallPercentiles.(*shardedTDigest); ok {
+			recallPercentiles = sharded.mergeAllShards()
+		} else {
+			recallPercentiles = c.recallPercentiles.Clone()
+		}
+	}
 
 	snap := &GlobalSnapshot{
-		Total:           c.total.Load(),
-		Errors:          c.errors.Load(),
-		StartTime:       startTime,
-		LastUpdated:     lastUpdated,
-		Latencies:       latSnap,
-		QueueWaits:      qwSnap,
-		LatPercentiles:  latPercentiles,
-		QWPercentiles:   qwPercentiles,
-		Exemplars:       exSnap,
-		ExemplarDetails: exDetails,
-		Codes:           codesMap,
-		ErrorDetails:    errorDetails,
+		Total:             c.total.Load(),
+		Errors:            c.errors.Load(),
+		StartTime:         startTime,
+		LastUpdated:       lastUpdated,
+		Latencies:         latSnap,
+		QueueWaits:        qwSnap,
+		Recalls:           recallSnap,
+		LatPercentiles:    latPercentiles,
+		QWPercentiles:     qwPercentiles,
+		RecallPercentiles: recallPercentiles,
+		Exemplars:         exSnap,
+		ExemplarDetails:   exDetails,
+		Codes:             codesMap,
+		ErrorDetails:      errorDetails,
 	}
 
 	if snap.Latencies != nil && snap.ExemplarDetails != nil {
@@ -686,12 +739,14 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 	}
 
 	merged := &GlobalSnapshot{
-		Latencies:      &HistogramSnapshot{},
-		QueueWaits:     &HistogramSnapshot{},
-		LatPercentiles: snapshots[0].LatPercentiles,
-		QWPercentiles:  snapshots[0].QWPercentiles,
-		Codes:          make(map[codes.Code]uint64),
-		ErrorDetails:   make(map[string]uint64),
+		Latencies:         &HistogramSnapshot{},
+		QueueWaits:        &HistogramSnapshot{},
+		Recalls:           &HistogramSnapshot{},
+		LatPercentiles:    snapshots[0].LatPercentiles,
+		QWPercentiles:     snapshots[0].QWPercentiles,
+		RecallPercentiles: snapshots[0].RecallPercentiles,
+		Codes:             make(map[codes.Code]uint64),
+		ErrorDetails:      make(map[string]uint64),
 	}
 	base := snapshots[0]
 	merged.StartTime = base.StartTime
@@ -735,6 +790,14 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 				return nil, err
 			}
 		}
+		if s.Recalls != nil {
+			if merged.Recalls == nil {
+				merged.Recalls = &HistogramSnapshot{}
+			}
+			if err := merged.Recalls.Merge(s.Recalls); err != nil {
+				return nil, err
+			}
+		}
 		if s.LatPercentiles != nil {
 			if merged.LatPercentiles == nil {
 				merged.LatPercentiles, _ = NewTDigest(defaultTDigestOpts...)
@@ -748,6 +811,14 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 				merged.QWPercentiles, _ = NewTDigest(defaultTDigestOpts...)
 			}
 			if err := merged.QWPercentiles.Merge(s.QWPercentiles); err != nil {
+				return nil, err
+			}
+		}
+		if s.RecallPercentiles != nil {
+			if merged.RecallPercentiles == nil {
+				merged.RecallPercentiles, _ = NewTDigest(defaultTDigestOpts...)
+			}
+			if err := merged.RecallPercentiles.Merge(s.RecallPercentiles); err != nil {
 				return nil, err
 			}
 		}
@@ -766,22 +837,41 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 
 // GlobalSnapshot contains the aggregated metrics for all requests.
 type GlobalSnapshot struct {
-	StartTime       time.Time             `json:"start_time"`
-	LastUpdated     time.Time             `json:"last_updated"`
-	LatPercentiles  TDigest               `json:"lat_percentiles"`
-	QWPercentiles   TDigest               `json:"qw_percentiles"`
-	Latencies       *HistogramSnapshot    `json:"latencies"`
-	QueueWaits      *HistogramSnapshot    `json:"queue_waits"`
-	ExemplarDetails *ExemplarDetails      `json:"exemplar_details,omitempty"`
-	Codes           map[codes.Code]uint64 `json:"codes"`
-	ErrorDetails    map[string]uint64     `json:"error_details,omitempty"`
-	SchemaVersion   string                `json:"schema_version"`
-	SketchKind      string                `json:"sketch_kind"`
-	Exemplars       []*ExemplarItem       `json:"exemplars"`
-	Errors          uint64                `json:"errors"`
-	Total           uint64                `json:"total"`
-	BoundsHash      uint64                `json:"bounds_hash"`
-	InvariantsOK    bool                  `json:"invariants_ok"`
+	StartTime         time.Time             `json:"start_time"`
+	LastUpdated       time.Time             `json:"last_updated"`
+	LatPercentiles    TDigest               `json:"lat_percentiles"`
+	QWPercentiles     TDigest               `json:"qw_percentiles"`
+	RecallPercentiles TDigest               `json:"recall_percentiles"`
+	Latencies         *HistogramSnapshot    `json:"latencies"`
+	QueueWaits        *HistogramSnapshot    `json:"queue_waits"`
+	Recalls           *HistogramSnapshot    `json:"recalls"`
+	ExemplarDetails   *ExemplarDetails      `json:"exemplar_details,omitempty"`
+	Codes             map[codes.Code]uint64 `json:"codes"`
+	ErrorDetails      map[string]uint64     `json:"error_details,omitempty"`
+	SchemaVersion     string                `json:"schema_version"`
+	SketchKind        string                `json:"sketch_kind"`
+	Exemplars         []*ExemplarItem       `json:"exemplars"`
+	Errors            uint64                `json:"errors"`
+	Total             uint64                `json:"total"`
+	BoundsHash        uint64                `json:"bounds_hash"`
+	InvariantsOK      bool                  `json:"invariants_ok"`
+}
+
+// AchievedQPS returns the achieved throughput (Total / elapsed seconds) for
+// this snapshot. It is defensive against a nil receiver, zero Total, and
+// zero/degenerate time windows (StartTime/LastUpdated unset, or LastUpdated
+// at or before StartTime, e.g. clock skew) - all of which return 0 rather
+// than NaN/+-Inf, since a non-finite value would poison a log-scale chart
+// axis (see tests/v2/e2e/metrics/chart).
+func (s *GlobalSnapshot) AchievedQPS() float64 {
+	if s == nil || s.Total == 0 || s.StartTime.IsZero() || s.LastUpdated.IsZero() {
+		return 0
+	}
+	elapsed := s.LastUpdated.Sub(s.StartTime).Seconds()
+	if elapsed <= 0 {
+		return 0
+	}
+	return float64(s.Total) / elapsed
 }
 
 // MarshalJSON implements the json.Marshaler interface.
@@ -796,8 +886,9 @@ func (s *GlobalSnapshot) UnmarshalJSON(data []byte) error {
 	type Alias GlobalSnapshot
 	// Define a shadow struct with concrete *tdigest fields
 	aux := &struct {
-		LatPercentiles *tdigest `json:"lat_percentiles"`
-		QWPercentiles  *tdigest `json:"qw_percentiles"`
+		LatPercentiles    *tdigest `json:"lat_percentiles"`
+		QWPercentiles     *tdigest `json:"qw_percentiles"`
+		RecallPercentiles *tdigest `json:"recall_percentiles"`
 		*Alias
 	}{
 		Alias: (*Alias)(s),
@@ -813,6 +904,9 @@ func (s *GlobalSnapshot) UnmarshalJSON(data []byte) error {
 	}
 	if aux.QWPercentiles != nil {
 		s.QWPercentiles = aux.QWPercentiles
+	}
+	if aux.RecallPercentiles != nil {
+		s.RecallPercentiles = aux.RecallPercentiles
 	}
 
 	return nil

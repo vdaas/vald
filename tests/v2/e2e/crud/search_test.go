@@ -74,6 +74,19 @@ func calculateRecall(t *testing.T, neighbors []int, res *payload.Search_Response
 	return recall(t, topKIDs, neighbors[:len(topKIDs)])
 }
 
+// recordRecall records a computed recall ratio into plan's metrics.Collector,
+// mirroring the plan.Metrics.Enabled / plan.Collector != nil guard already
+// used everywhere else Record()-driven metrics are collected (see
+// single()/stream() in grpc_test.go). Recall is intentionally recorded via
+// Collector.RecordRecall rather than Record(), since it is computed here,
+// strictly after Record() has already run for this same request (see the
+// design rationale in metrics.RecallRecorder).
+func recordRecall(plan *config.Execution, rc float64) {
+	if plan != nil && plan.Metrics != nil && plan.Metrics.Enabled && plan.Collector != nil {
+		plan.Collector.RecordRecall(rc)
+	}
+}
+
 // newSearchConfig creates a new Search_Config instance based on the provided search query and test ID.
 // It parses the timeout string into nanoseconds, sets a default timeout if needed, and conditionally sets the ratio.
 func newSearchConfig(t *testing.T, id string, query *config.SearchQuery) *payload.Search_Config {
@@ -177,64 +190,69 @@ func (r *runner) processSearch(
 		switch plan.Mode {
 		case config.OperationUnary, config.OperationOther:
 			// For unary search requests, use the generic unarySearch function with the searchRequest builder.
-			return unary(t, ctx, test, plan, r.client.Search, searchRequest, checkUnarySearchResponse(neighbors))
+			return unary(t, ctx, test, plan, r.client.Search, searchRequest, checkUnarySearchResponse(neighbors, plan))
 		case config.OperationMultiple:
 			// For bulk search requests, use the generic multiSearch function with searchRequest and searchMultiRequest builders.
-			return multi(t, ctx, test, plan, r.client.MultiSearch, searchRequest, searchMultiRequest, checkMultiSearchResponse(neighbors))
+			return multi(t, ctx, test, plan, r.client.MultiSearch, searchRequest, searchMultiRequest, checkMultiSearchResponse(neighbors, plan))
 		case config.OperationStream:
 			// For streaming search requests, use the generic streamSearch function with the searchRequest builder.
-			stream(t, ctx, test, plan, r.client.StreamSearch, searchRequest, checkStreamSearchResponse(neighbors))
+			stream(t, ctx, test, plan, r.client.StreamSearch, searchRequest, checkStreamSearchResponse(neighbors, plan))
 		}
 	case config.OpSearchByID:
 		switch plan.Mode {
 		case config.OperationUnary, config.OperationOther:
-			return unary(t, ctx, train, plan, r.client.SearchByID, searchIDRequest, checkUnarySearchResponse(neighbors))
+			return unary(t, ctx, train, plan, r.client.SearchByID, searchIDRequest, checkUnarySearchResponse(neighbors, plan))
 		case config.OperationMultiple:
-			return multi(t, ctx, train, plan, r.client.MultiSearchByID, searchIDRequest, searchMultiIDRequest, checkMultiSearchResponse(neighbors))
+			return multi(t, ctx, train, plan, r.client.MultiSearchByID, searchIDRequest, searchMultiIDRequest, checkMultiSearchResponse(neighbors, plan))
 		case config.OperationStream:
-			stream(t, ctx, train, plan, r.client.StreamSearchByID, searchIDRequest, checkStreamSearchResponse(neighbors))
+			stream(t, ctx, train, plan, r.client.StreamSearchByID, searchIDRequest, checkStreamSearchResponse(neighbors, plan))
 		}
 	case config.OpLinearSearch:
 		switch plan.Mode {
 		case config.OperationUnary, config.OperationOther:
-			return unary(t, ctx, test, plan, r.client.LinearSearch, searchRequest, checkUnarySearchResponse(neighbors))
+			return unary(t, ctx, test, plan, r.client.LinearSearch, searchRequest, checkUnarySearchResponse(neighbors, plan))
 		case config.OperationMultiple:
-			return multi(t, ctx, test, plan, r.client.MultiLinearSearch, searchRequest, searchMultiRequest, checkMultiSearchResponse(neighbors))
+			return multi(t, ctx, test, plan, r.client.MultiLinearSearch, searchRequest, searchMultiRequest, checkMultiSearchResponse(neighbors, plan))
 		case config.OperationStream:
-			stream(t, ctx, test, plan, r.client.StreamLinearSearch, searchRequest, checkStreamSearchResponse(neighbors))
+			stream(t, ctx, test, plan, r.client.StreamLinearSearch, searchRequest, checkStreamSearchResponse(neighbors, plan))
 		}
 	case config.OpLinearSearchByID:
 		switch plan.Mode {
 		case config.OperationUnary, config.OperationOther:
-			return unary(t, ctx, test, plan, r.client.LinearSearchByID, searchIDRequest, checkUnarySearchResponse(neighbors))
+			return unary(t, ctx, test, plan, r.client.LinearSearchByID, searchIDRequest, checkUnarySearchResponse(neighbors, plan))
 		case config.OperationMultiple:
-			return multi(t, ctx, train, plan, r.client.MultiLinearSearchByID, searchIDRequest, searchMultiIDRequest, checkMultiSearchResponse(neighbors))
+			return multi(t, ctx, train, plan, r.client.MultiLinearSearchByID, searchIDRequest, searchMultiIDRequest, checkMultiSearchResponse(neighbors, plan))
 		case config.OperationStream:
-			stream(t, ctx, train, plan, r.client.StreamLinearSearchByID, searchIDRequest, checkStreamSearchResponse(neighbors))
+			stream(t, ctx, train, plan, r.client.StreamLinearSearchByID, searchIDRequest, checkStreamSearchResponse(neighbors, plan))
 		}
 	}
 	return nil
 }
 
+// checkUnarySearchResponse returns a callback that computes the recall of a
+// single search response and records it into plan's metrics.Collector (see
+// recordRecall). plan may be nil (e.g. some callers/tests do not need
+// metrics), in which case recordRecall is a no-op.
 func checkUnarySearchResponse(
-	neighbors iter.Cycle[[][]int, []int],
+	neighbors iter.Cycle[[][]int, []int], plan *config.Execution,
 ) func(t *testing.T, idx uint64, res *payload.Search_Response, err error) bool {
 	return func(t *testing.T, idx uint64, res *payload.Search_Response, err error) bool {
 		t.Helper()
 		rc := calculateRecall(t, neighbors.At(idx), res)
 		t.Logf("request id %s searched recall: %f, payload %s", res.GetRequestId(), rc, res.String())
+		recordRecall(plan, rc)
 		return true
 	}
 }
 
 func checkMultiSearchResponse(
-	neighbors iter.Cycle[[][]int, []int],
+	neighbors iter.Cycle[[][]int, []int], plan *config.Execution,
 ) func(t *testing.T, idx uint64, res *payload.Search_Responses, err error) bool {
 	return func(t *testing.T, idx uint64, res *payload.Search_Responses, err error) bool {
 		t.Helper()
 		// For each response in the bulk response, log the recall.
 		for _, r := range res.GetResponses() {
-			if !checkUnarySearchResponse(neighbors)(t, getIndexFromSearchResponse(t, r), r, err) {
+			if !checkUnarySearchResponse(neighbors, plan)(t, getIndexFromSearchResponse(t, r), r, err) {
 				return false
 			}
 		}
@@ -243,7 +261,7 @@ func checkMultiSearchResponse(
 }
 
 func checkStreamSearchResponse(
-	neighbors iter.Cycle[[][]int, []int],
+	neighbors iter.Cycle[[][]int, []int], plan *config.Execution,
 ) func(t *testing.T, idx uint64, res *payload.Search_StreamResponse, err error) bool {
 	return func(t *testing.T, idx uint64, res *payload.Search_StreamResponse, err error) bool {
 		t.Helper()
@@ -256,7 +274,7 @@ func checkStreamSearchResponse(
 			t.Error("search stream response is nil, it can be timeout")
 			return true
 		}
-		return checkUnarySearchResponse(neighbors)(t, getIndexFromSearchResponse(t, r), r, err)
+		return checkUnarySearchResponse(neighbors, plan)(t, getIndexFromSearchResponse(t, r), r, err)
 	}
 }
 

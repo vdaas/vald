@@ -17,6 +17,7 @@
 package metrics
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"slices"
@@ -86,11 +87,15 @@ func NewHistogram(opts ...HistogramOption) (Histogram, error) {
 	}
 	// Apply default options first
 	for _, opt := range defaultHistogramOpts {
-		_ = opt(&cfg)
+		if err := opt(&cfg); err != nil {
+			return nil, err
+		}
 	}
 	// Apply user options
 	for _, opt := range opts {
-		_ = opt(&cfg)
+		if err := opt(&cfg); err != nil {
+			return nil, err
+		}
 	}
 
 	if cfg.NumShards <= 1 {
@@ -544,6 +549,31 @@ type HistogramSnapshot struct {
 	StdDev float64   `json:"std_dev"`
 	Min    float64   `json:"min"`
 	Max    float64   `json:"max"`
+}
+
+// MarshalJSON implements the json.Marshaler interface. When Total is 0,
+// Min/Max hold the +Inf/-Inf sentinels used internally (see
+// histogram.Init/Reset and histogram.Snapshot) to seed the running min/max
+// computation; encoding/json has no representation for +/-Inf, so substitute
+// 0 in that case. This lets a never-recorded HistogramSnapshot (e.g.
+// GlobalSnapshot.Recalls before any RecordRecall call, or GlobalSnapshot.
+// Latencies/QueueWaits before any Record call) round-trip through JSON
+// instead of failing to marshal.
+func (s *HistogramSnapshot) MarshalJSON() ([]byte, error) {
+	if s == nil {
+		return []byte("null"), nil
+	}
+	type Alias HistogramSnapshot
+	out := *s
+	if out.Total == 0 {
+		if math.IsInf(out.Min, 0) {
+			out.Min = 0
+		}
+		if math.IsInf(out.Max, 0) {
+			out.Max = 0
+		}
+	}
+	return json.Marshal((*Alias)(&out))
 }
 
 func (s *HistogramSnapshot) String() string {
