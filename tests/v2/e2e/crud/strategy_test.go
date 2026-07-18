@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	k8s "github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/k8s/portforward"
+	"github.com/vdaas/vald/internal/k8s/resource"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/sync/errgroup"
@@ -42,7 +43,8 @@ type runner struct {
 	rootCtx context.Context
 	client  vald.Client
 	aclient agent.Client
-	k8s     k8s.ClientSet
+	k8s     k8s.Client
+	clients *resource.Clients
 }
 
 func TestE2EStrategy(t *testing.T) {
@@ -56,7 +58,7 @@ func TestE2EStrategy(t *testing.T) {
 	var err error
 	r := new(runner)
 	if cfg.Kubernetes != nil {
-		r.k8s, err = k8s.NewClientSet(cfg.Kubernetes.KubeConfig, "")
+		r.k8s, err = k8s.New(k8s.WithKubeConfigPath(cfg.Kubernetes.KubeConfig))
 		if err != nil {
 			t.Errorf("failed to create kubernetes client: %v", err)
 		}
@@ -90,6 +92,7 @@ func TestE2EStrategy(t *testing.T) {
 			defer pfd.Stop()
 		}
 	}
+	r.clients = resource.NewClients(r.k8s)
 	if cfg.Target != nil {
 		r.client, ctx, err = newClient(t, ctx, cfg.Metadata)
 		if err != nil {

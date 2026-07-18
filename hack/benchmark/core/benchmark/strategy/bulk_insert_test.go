@@ -21,7 +21,7 @@ package strategy
 //
 // func TestNewBulkInsert(t *testing.T) {
 // 	type args struct {
-// 		opts []StrategyOption
+// 		opts []Option
 // 	}
 // 	type want struct {
 // 		want benchmark.Strategy

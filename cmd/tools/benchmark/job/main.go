@@ -39,18 +39,16 @@ func main() {
 		ctx := context.Background()
 		return runner.Do(
 			ctx,
-			runner.WithName(name),
-			runner.WithVersion(info.Version, maxVersion, minVersion),
-			runner.WithConfigLoader(func(path string) (any, *config.GlobalConfig, error) {
+			runner.WithName[*config.Data](name),
+			runner.WithVersion[*config.Data](info.Version, maxVersion, minVersion),
+			runner.WithConfigLoader(func(path string) (*config.Data, *config.GlobalConfig, error) {
 				cfg, err := config.NewConfig(ctx, path)
 				if err != nil {
 					return nil, nil, errors.Wrap(err, "failed to load "+name+"'s configuration")
 				}
 				return cfg, &cfg.GlobalConfig, nil
 			}),
-			runner.WithDaemonInitializer(func(cfg any) (runner.Runner, error) {
-				return usecase.New(cfg.(*config.Config))
-			}),
+			runner.WithDaemonInitializer(usecase.New),
 		)
 	})(); err != nil {
 		log.Fatal(err, info.Get())

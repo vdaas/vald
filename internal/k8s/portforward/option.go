@@ -33,7 +33,7 @@ var defaultOptions = []Option{
 	WithNamespace("default"),
 }
 
-func WithClient(client kclient.ClientSet) Option {
+func WithClient(client kclient.Client) Option {
 	return func(pf *portForward) {
 		if client != nil {
 			pf.client = client

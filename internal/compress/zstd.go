@@ -27,7 +27,7 @@ import (
 
 type zstdCompressor struct {
 	gobc     Compressor
-	zstd     zstd.Zstd
+	zstd     zstd.Compressor
 	eoptions []zstd.EOption
 }
 

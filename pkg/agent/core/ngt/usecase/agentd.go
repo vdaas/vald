@@ -53,7 +53,7 @@ const (
 	fieldManager = "vald-agent-index-controller"
 )
 
-func New(cfg *config.Data) (r runner.Runner, err error) {
+func New(cfg *config.Data) (r runner.Interface, err error) {
 	serviceOpts := []service.Option{
 		service.WithErrGroup(errgroup.Get()),
 		service.WithEnableInMemoryMode(cfg.NGT.EnableInMemoryMode),

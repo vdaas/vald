@@ -27,7 +27,7 @@ type Dataset struct {
 	Neighbors [][]int
 }
 
-func HDF5ToDataset(name string) (*Dataset, error) {
+func ToDataset(name string) (*Dataset, error) {
 	file, err := hdf5.OpenFile(name, hdf5.F_ACC_RDONLY)
 	if err != nil {
 		return nil, err

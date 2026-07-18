@@ -13,654 +13,204 @@
 // limitations under the License.
 package service
 
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/k8s/client"
+	"github.com/vdaas/vald/internal/sync/errgroup"
+	mock "github.com/vdaas/vald/internal/test/mock/k8s"
+)
+
+func mustNewGroup(t *testing.T) errgroup.Group {
+	t.Helper()
+	eg, _ := errgroup.New(t.Context())
+	return eg
+}
+
+func TestWithErrGroup(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		setsEG bool
+	}{
+		{
+			name:   "replaces the errgroup when a non-nil group is given",
+			setsEG: true,
+		},
+		{
+			name:   "keeps the previous errgroup when nil is given",
+			setsEG: false,
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+
+			preset := mustNewGroup(tt)
+			o := &operator{eg: preset}
+
+			var given errgroup.Group
+			if test.setsEG {
+				given = mustNewGroup(tt)
+			}
+
+			err := WithErrGroup(given)(o)
+			require.NoError(tt, err)
+
+			if test.setsEG {
+				require.Same(tt, given, o.eg)
+			} else {
+				require.Same(tt, preset, o.eg)
+			}
+		})
+	}
+}
+
+func TestWithReadReplicaEnabled(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		enabled bool
+	}{
+		{name: "enables read replica", enabled: true},
+		{name: "disables read replica", enabled: false},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+
+			o := new(operator)
+			err := WithReadReplicaEnabled(test.enabled)(o)
+			require.NoError(tt, err)
+			require.Equal(tt, test.enabled, o.readReplicaEnabled)
+		})
+	}
+}
+
+func TestWithReadReplicaLabelKey(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		key  string
+	}{
+		{name: "sets a non-empty key", key: "vald-readreplica-id"},
+		{name: "sets an empty key", key: ""},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+
+			o := new(operator)
+			err := WithReadReplicaLabelKey(test.key)(o)
+			require.NoError(tt, err)
+			require.Equal(tt, test.key, o.readReplicaLabelKey)
+		})
+	}
+}
+
+func TestWithRotationJobConcurrency(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name        string
+		concurrency uint
+		wantErr     bool
+	}{
+		{
+			name:        "sets the concurrency when greater than 0",
+			concurrency: 5,
+		},
+		{
+			name:        "returns ErrCriticalOption when 0 is given",
+			concurrency: 0,
+			wantErr:     true,
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+
+			o := new(operator)
+			err := WithRotationJobConcurrency(test.concurrency)(o)
+
+			if test.wantErr {
+				var critical *errors.ErrCriticalOption
+				require.ErrorAs(tt, err, &critical)
+				require.Zero(tt, o.rotationJobConcurrency, "operator state must be left untouched on failure")
+				return
+			}
+			require.NoError(tt, err)
+			require.Equal(tt, test.concurrency, o.rotationJobConcurrency)
+		})
+	}
+}
+
+func TestWithK8sClient(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		givenNil  bool
+		wantsSame bool
+	}{
+		{
+			name:      "sets the client when non-nil",
+			wantsSame: true,
+		},
+		{
+			name:     "keeps the previous client when nil is given",
+			givenNil: true,
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+
+			preset := &mock.ValdK8sClientMock{}
+			o := &operator{client: preset}
+
+			var given client.Client
+			if !test.givenNil {
+				given = &mock.ValdK8sClientMock{}
+			}
+
+			err := WithK8sClient(given)(o)
+			require.NoError(tt, err)
+
+			if test.wantsSame {
+				require.Same(tt, given, o.client)
+			} else {
+				require.Same(tt, preset, o.client)
+			}
+		})
+	}
+}
+
+func TestDefaultOpts(t *testing.T) {
+	t.Parallel()
+
+	o := new(operator)
+	for _, opt := range defaultOpts {
+		require.NoError(t, opt(o))
+	}
+
+	require.NotNil(t, o.eg, "WithErrGroup(errgroup.Get()) must set a non-nil errgroup")
+	require.Equal(t, uint(1), o.rotationJobConcurrency, "WithRotationJobConcurrency(1) must be applied by default")
+}
+
 // NOT IMPLEMENTED BELOW
-//
-// func TestWithErrGroup(t *testing.T) {
-// 	// Change interface type to the type of object you are testing
-// 	type T = any
-// 	type args struct {
-// 		eg errgroup.Group
-// 	}
-// 	type want struct {
-// 		obj *T
-// 		// Uncomment this line if the option returns an error, otherwise delete it
-// 		// err error
-// 	}
-// 	type test struct {
-// 		name string
-// 		args args
-// 		want want
-// 		// Use the first line if the option returns an error. otherwise use the second line
-// 		// checkFunc  func(want, *T, error) error
-// 		// checkFunc  func(want, *T) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-//
-// 	// Uncomment this block if the option returns an error, otherwise delete it
-// 	/*
-// 	   defaultCheckFunc := func(w want, obj *T, err error) error {
-// 	       if !errors.Is(err, w.err) {
-// 	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 	       }
-// 	       if !reflect.DeepEqual(obj, w.obj) {
-// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-// 	       }
-// 	       return nil
-// 	   }
-// 	*/
-//
-// 	// Uncomment this block if the option do not returns an error, otherwise delete it
-// 	/*
-// 	   defaultCheckFunc := func(w want, obj *T) error {
-// 	       if !reflect.DeepEqual(obj, w.obj) {
-// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-// 	       }
-// 	       return nil
-// 	   }
-// 	*/
-//
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           eg:nil,
-// 		       },
-// 		       want: want {
-// 		           obj: new(T),
-// 		       },
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           eg:nil,
-// 		           },
-// 		           want: want {
-// 		               obj: new(T),
-// 		           },
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-//
-// 			// Uncomment this block if the option returns an error, otherwise delete it
-// 			/*
-// 			   checkFunc := test.checkFunc
-// 			   if test.checkFunc == nil {
-// 			       checkFunc = defaultCheckFunc
-// 			   }
-//
-// 			   got := WithErrGroup(test.args.eg)
-// 			   obj := new(T)
-// 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
-// 			       tt.Errorf("error = %v", err)
-// 			   }
-// 			*/
-//
-// 			// Uncomment this block if the option do not return an error, otherwise delete it
-// 			/*
-// 			   checkFunc := test.checkFunc
-// 			   if test.checkFunc == nil {
-// 			       checkFunc = defaultCheckFunc
-// 			   }
-// 			   got := WithErrGroup(test.args.eg)
-// 			   obj := new(T)
-// 			   got(obj)
-// 			   if err := checkFunc(test.want, obj); err != nil {
-// 			       tt.Errorf("error = %v", err)
-// 			   }
-// 			*/
-// 		})
-// 	}
-// }
-//
-// func TestWithReadReplicaEnabled(t *testing.T) {
-// 	// Change interface type to the type of object you are testing
-// 	type T = any
-// 	type args struct {
-// 		enabled bool
-// 	}
-// 	type want struct {
-// 		obj *T
-// 		// Uncomment this line if the option returns an error, otherwise delete it
-// 		// err error
-// 	}
-// 	type test struct {
-// 		name string
-// 		args args
-// 		want want
-// 		// Use the first line if the option returns an error. otherwise use the second line
-// 		// checkFunc  func(want, *T, error) error
-// 		// checkFunc  func(want, *T) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-//
-// 	// Uncomment this block if the option returns an error, otherwise delete it
-// 	/*
-// 	   defaultCheckFunc := func(w want, obj *T, err error) error {
-// 	       if !errors.Is(err, w.err) {
-// 	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 	       }
-// 	       if !reflect.DeepEqual(obj, w.obj) {
-// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-// 	       }
-// 	       return nil
-// 	   }
-// 	*/
-//
-// 	// Uncomment this block if the option do not returns an error, otherwise delete it
-// 	/*
-// 	   defaultCheckFunc := func(w want, obj *T) error {
-// 	       if !reflect.DeepEqual(obj, w.obj) {
-// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-// 	       }
-// 	       return nil
-// 	   }
-// 	*/
-//
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           enabled:false,
-// 		       },
-// 		       want: want {
-// 		           obj: new(T),
-// 		       },
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           enabled:false,
-// 		           },
-// 		           want: want {
-// 		               obj: new(T),
-// 		           },
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-//
-// 			// Uncomment this block if the option returns an error, otherwise delete it
-// 			/*
-// 			   checkFunc := test.checkFunc
-// 			   if test.checkFunc == nil {
-// 			       checkFunc = defaultCheckFunc
-// 			   }
-//
-// 			   got := WithReadReplicaEnabled(test.args.enabled)
-// 			   obj := new(T)
-// 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
-// 			       tt.Errorf("error = %v", err)
-// 			   }
-// 			*/
-//
-// 			// Uncomment this block if the option do not return an error, otherwise delete it
-// 			/*
-// 			   checkFunc := test.checkFunc
-// 			   if test.checkFunc == nil {
-// 			       checkFunc = defaultCheckFunc
-// 			   }
-// 			   got := WithReadReplicaEnabled(test.args.enabled)
-// 			   obj := new(T)
-// 			   got(obj)
-// 			   if err := checkFunc(test.want, obj); err != nil {
-// 			       tt.Errorf("error = %v", err)
-// 			   }
-// 			*/
-// 		})
-// 	}
-// }
-//
-// func TestWithReadReplicaLabelKey(t *testing.T) {
-// 	// Change interface type to the type of object you are testing
-// 	type T = any
-// 	type args struct {
-// 		key string
-// 	}
-// 	type want struct {
-// 		obj *T
-// 		// Uncomment this line if the option returns an error, otherwise delete it
-// 		// err error
-// 	}
-// 	type test struct {
-// 		name string
-// 		args args
-// 		want want
-// 		// Use the first line if the option returns an error. otherwise use the second line
-// 		// checkFunc  func(want, *T, error) error
-// 		// checkFunc  func(want, *T) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-//
-// 	// Uncomment this block if the option returns an error, otherwise delete it
-// 	/*
-// 	   defaultCheckFunc := func(w want, obj *T, err error) error {
-// 	       if !errors.Is(err, w.err) {
-// 	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 	       }
-// 	       if !reflect.DeepEqual(obj, w.obj) {
-// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-// 	       }
-// 	       return nil
-// 	   }
-// 	*/
-//
-// 	// Uncomment this block if the option do not returns an error, otherwise delete it
-// 	/*
-// 	   defaultCheckFunc := func(w want, obj *T) error {
-// 	       if !reflect.DeepEqual(obj, w.obj) {
-// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-// 	       }
-// 	       return nil
-// 	   }
-// 	*/
-//
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           key:"",
-// 		       },
-// 		       want: want {
-// 		           obj: new(T),
-// 		       },
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           key:"",
-// 		           },
-// 		           want: want {
-// 		               obj: new(T),
-// 		           },
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-//
-// 			// Uncomment this block if the option returns an error, otherwise delete it
-// 			/*
-// 			   checkFunc := test.checkFunc
-// 			   if test.checkFunc == nil {
-// 			       checkFunc = defaultCheckFunc
-// 			   }
-//
-// 			   got := WithReadReplicaLabelKey(test.args.key)
-// 			   obj := new(T)
-// 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
-// 			       tt.Errorf("error = %v", err)
-// 			   }
-// 			*/
-//
-// 			// Uncomment this block if the option do not return an error, otherwise delete it
-// 			/*
-// 			   checkFunc := test.checkFunc
-// 			   if test.checkFunc == nil {
-// 			       checkFunc = defaultCheckFunc
-// 			   }
-// 			   got := WithReadReplicaLabelKey(test.args.key)
-// 			   obj := new(T)
-// 			   got(obj)
-// 			   if err := checkFunc(test.want, obj); err != nil {
-// 			       tt.Errorf("error = %v", err)
-// 			   }
-// 			*/
-// 		})
-// 	}
-// }
-//
-// func TestWithRotationJobConcurrency(t *testing.T) {
-// 	// Change interface type to the type of object you are testing
-// 	type T = any
-// 	type args struct {
-// 		concurrency uint
-// 	}
-// 	type want struct {
-// 		obj *T
-// 		// Uncomment this line if the option returns an error, otherwise delete it
-// 		// err error
-// 	}
-// 	type test struct {
-// 		name string
-// 		args args
-// 		want want
-// 		// Use the first line if the option returns an error. otherwise use the second line
-// 		// checkFunc  func(want, *T, error) error
-// 		// checkFunc  func(want, *T) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-//
-// 	// Uncomment this block if the option returns an error, otherwise delete it
-// 	/*
-// 	   defaultCheckFunc := func(w want, obj *T, err error) error {
-// 	       if !errors.Is(err, w.err) {
-// 	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 	       }
-// 	       if !reflect.DeepEqual(obj, w.obj) {
-// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-// 	       }
-// 	       return nil
-// 	   }
-// 	*/
-//
-// 	// Uncomment this block if the option do not returns an error, otherwise delete it
-// 	/*
-// 	   defaultCheckFunc := func(w want, obj *T) error {
-// 	       if !reflect.DeepEqual(obj, w.obj) {
-// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-// 	       }
-// 	       return nil
-// 	   }
-// 	*/
-//
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           concurrency:0,
-// 		       },
-// 		       want: want {
-// 		           obj: new(T),
-// 		       },
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           concurrency:0,
-// 		           },
-// 		           want: want {
-// 		               obj: new(T),
-// 		           },
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-//
-// 			// Uncomment this block if the option returns an error, otherwise delete it
-// 			/*
-// 			   checkFunc := test.checkFunc
-// 			   if test.checkFunc == nil {
-// 			       checkFunc = defaultCheckFunc
-// 			   }
-//
-// 			   got := WithRotationJobConcurrency(test.args.concurrency)
-// 			   obj := new(T)
-// 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
-// 			       tt.Errorf("error = %v", err)
-// 			   }
-// 			*/
-//
-// 			// Uncomment this block if the option do not return an error, otherwise delete it
-// 			/*
-// 			   checkFunc := test.checkFunc
-// 			   if test.checkFunc == nil {
-// 			       checkFunc = defaultCheckFunc
-// 			   }
-// 			   got := WithRotationJobConcurrency(test.args.concurrency)
-// 			   obj := new(T)
-// 			   got(obj)
-// 			   if err := checkFunc(test.want, obj); err != nil {
-// 			       tt.Errorf("error = %v", err)
-// 			   }
-// 			*/
-// 		})
-// 	}
-// }
-//
-// func TestWithK8sClient(t *testing.T) {
-// 	// Change interface type to the type of object you are testing
-// 	type T = any
-// 	type args struct {
-// 		client client.Client
-// 	}
-// 	type want struct {
-// 		obj *T
-// 		// Uncomment this line if the option returns an error, otherwise delete it
-// 		// err error
-// 	}
-// 	type test struct {
-// 		name string
-// 		args args
-// 		want want
-// 		// Use the first line if the option returns an error. otherwise use the second line
-// 		// checkFunc  func(want, *T, error) error
-// 		// checkFunc  func(want, *T) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-//
-// 	// Uncomment this block if the option returns an error, otherwise delete it
-// 	/*
-// 	   defaultCheckFunc := func(w want, obj *T, err error) error {
-// 	       if !errors.Is(err, w.err) {
-// 	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 	       }
-// 	       if !reflect.DeepEqual(obj, w.obj) {
-// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-// 	       }
-// 	       return nil
-// 	   }
-// 	*/
-//
-// 	// Uncomment this block if the option do not returns an error, otherwise delete it
-// 	/*
-// 	   defaultCheckFunc := func(w want, obj *T) error {
-// 	       if !reflect.DeepEqual(obj, w.obj) {
-// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
-// 	       }
-// 	       return nil
-// 	   }
-// 	*/
-//
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           client:nil,
-// 		       },
-// 		       want: want {
-// 		           obj: new(T),
-// 		       },
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           client:nil,
-// 		           },
-// 		           want: want {
-// 		               obj: new(T),
-// 		           },
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-//
-// 			// Uncomment this block if the option returns an error, otherwise delete it
-// 			/*
-// 			   checkFunc := test.checkFunc
-// 			   if test.checkFunc == nil {
-// 			       checkFunc = defaultCheckFunc
-// 			   }
-//
-// 			   got := WithK8sClient(test.args.client)
-// 			   obj := new(T)
-// 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
-// 			       tt.Errorf("error = %v", err)
-// 			   }
-// 			*/
-//
-// 			// Uncomment this block if the option do not return an error, otherwise delete it
-// 			/*
-// 			   checkFunc := test.checkFunc
-// 			   if test.checkFunc == nil {
-// 			       checkFunc = defaultCheckFunc
-// 			   }
-// 			   got := WithK8sClient(test.args.client)
-// 			   obj := new(T)
-// 			   got(obj)
-// 			   if err := checkFunc(test.want, obj); err != nil {
-// 			       tt.Errorf("error = %v", err)
-// 			   }
-// 			*/
-// 		})
-// 	}
-// }

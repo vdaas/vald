@@ -16,19 +16,13 @@
 
 package grpc
 
-import (
-	"context"
-
-	"github.com/vdaas/vald/pkg/tools/benchmark/job/service"
-)
+import "context"
 
 type Benchmark interface {
 	Start(context.Context)
 }
 
-type server struct {
-	job service.Job
-}
+type server struct{}
 
 func New(opts ...Option) (bm Benchmark, err error) {
 	b := new(server)

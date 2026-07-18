@@ -31,8 +31,8 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 	// create data
 	vecs := j.hdf5.GetByGroupName(j.dataset.Group)
 	cfg := &payload.Search_Config{
-		Num:     uint32(j.searchConfig.Num),
-		MinNum:  uint32(j.searchConfig.MinNum),
+		Num:     uint32(j.searchConfig.Num),    //nolint:gosec // search result count is a non-negative config value well below int32 max
+		MinNum:  uint32(j.searchConfig.MinNum), //nolint:gosec // search result count is a non-negative config value well below int32 max
 		Radius:  float32(j.searchConfig.Radius),
 		Epsilon: float32(j.searchConfig.Epsilon),
 		Timeout: j.timeout.Nanoseconds(),

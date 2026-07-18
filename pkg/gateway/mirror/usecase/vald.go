@@ -51,7 +51,7 @@ type run struct {
 }
 
 // New returns Runner instance.
-func New(cfg *config.Data) (r runner.Runner, err error) {
+func New(cfg *config.Data) (r runner.Interface, err error) {
 	eg := errgroup.Get()
 
 	netOpts, err := cfg.Mirror.Net.Opts()

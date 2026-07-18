@@ -13,6 +13,8 @@
 // limitations under the License.
 package grpc
 
+import _ "github.com/vdaas/vald/internal/net/grpc/logger"
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestWrapGRPCMethod(t *testing.T) {

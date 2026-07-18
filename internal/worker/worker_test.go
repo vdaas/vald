@@ -33,7 +33,7 @@ import (
 
 func TestNew(t *testing.T) {
 	type args struct {
-		opts []WorkerOption
+		opts []Option
 	}
 	type want struct {
 		want Worker
@@ -114,7 +114,7 @@ func TestNew(t *testing.T) {
 		{
 			name: "return worker with option",
 			args: args{
-				opts: []WorkerOption{
+				opts: []Option{
 					WithName("test1"),
 				},
 			},

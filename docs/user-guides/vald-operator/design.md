@@ -114,7 +114,7 @@ function of `(CR, Config, Capability)` — it makes no Kubernetes API calls.
    - `buildAgent` — NGT settings
    - `buildManager` — Manager mode when `indexer.manager == true`, otherwise Creator/Saver mode
    - `buildDiscoverer` — kind + namespaced RBAC names
-4. **Resolve resources from node pools** — `SetRelationalResources` derives replicas and
+4. **Resolve resources from node pools** — `SetScaledResources` derives replicas and
    per-component CPU/memory from the resolved agent node pool. The general-pool fallback
    rule lives in `resolveAgentNodePool` (`pkg/operator/vald/service/rules.go`).
 5. **Optional settings** — persistent volume and node affinities (both in `builder.go`).

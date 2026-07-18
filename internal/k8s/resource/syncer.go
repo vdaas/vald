@@ -23,6 +23,9 @@ import (
 	"strconv"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/k8s"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/sync"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -34,6 +37,11 @@ import (
 // defaultGenerationLabel is the fallback label key that records the owner
 // generation on managed resources when the caller omits it.
 const defaultGenerationLabel = "managed-generation"
+
+// unstructuredMetadataKey is the top-level unstructured object key
+// applyDesiredState always preserves from the live object rather than
+// overwriting with desired.
+const unstructuredMetadataKey = "metadata"
 
 // prunedResult marks an object that Sync deleted because the desired set no
 // longer contains it.
@@ -48,7 +56,7 @@ type SyncResults map[string]OperationResult
 // owner-type agnostic: any Object (typically a custom resource) can own the
 // managed set.
 type Syncer struct {
-	api    ObjectAPI
+	api    k8s.Client
 	scheme *runtime.Scheme
 	// generationLabel is the label key that records the owner generation on
 	// every managed resource.
@@ -59,7 +67,7 @@ type Syncer struct {
 // scheme is used for controllerutil.SetControllerReference; the client for the
 // CreateOrUpdate / Delete calls. generationLabel overrides the label key used
 // to record the owner generation; empty falls back to the default.
-func NewSyncer(api ObjectAPI, scheme *runtime.Scheme, generationLabel string) *Syncer {
+func NewSyncer(api k8s.Client, scheme *runtime.Scheme, generationLabel string) *Syncer {
 	if generationLabel == "" {
 		generationLabel = defaultGenerationLabel
 	}
@@ -127,6 +135,38 @@ func (s *Syncer) Sync(
 	return opes, nil
 }
 
+// payloadFieldCache memoizes, per concrete struct type, the indices of the
+// exported fields applyDesiredState copies (every payload field other than
+// TypeMeta/ObjectMeta/Status). The index set is a static property of the Go
+// type, so entries are immutable once computed; concurrent recomputation is
+// idempotent. The pointer indirection exists only because the map value must
+// be comparable.
+//
+//nolint:gochecknoglobals // process-wide memoization of immutable per-type data; concurrency-safe by construction
+var payloadFieldCache sync.Map[reflect.Type, *[]int]
+
+// payloadFieldIndexes returns the cached field indices applyDesiredState must
+// copy for the struct type t.
+func payloadFieldIndexes(t reflect.Type) []int {
+	if idx, ok := payloadFieldCache.Load(t); ok {
+		return *idx
+	}
+	idx := make([]int, 0, t.NumField())
+	for i := range t.NumField() {
+		f := t.Field(i)
+		if !f.IsExported() {
+			continue
+		}
+		switch f.Name {
+		case "TypeMeta", "ObjectMeta", "Status":
+			continue
+		}
+		idx = append(idx, i)
+	}
+	payloadFieldCache.Store(t, &idx)
+	return idx
+}
+
 // applyDesiredState re-applies the desired state captured before
 // ctrl.CreateOrUpdate's Get onto the freshly fetched obj: every non-metadata
 // payload entry (spec, data, ...) plus labels, annotations and owner
@@ -143,7 +183,7 @@ func applyDesiredState(obj, desired Object) error {
 			o.Object = make(map[string]any, len(d.Object))
 		}
 		for k := range o.Object {
-			if k == "metadata" || k == "status" {
+			if k == unstructuredMetadataKey || k == "status" {
 				continue
 			}
 			if _, ok := d.Object[k]; !ok {
@@ -152,7 +192,7 @@ func applyDesiredState(obj, desired Object) error {
 		}
 		for k, v := range d.Object {
 			switch k {
-			case "metadata", "status":
+			case unstructuredMetadataKey, "status":
 			default:
 				o.Object[k] = v
 			}
@@ -167,15 +207,7 @@ func applyDesiredState(obj, desired Object) error {
 		if oe.Kind() != reflect.Struct {
 			return errors.Errorf("unsupported object kind %s for %T", oe.Kind(), obj)
 		}
-		for i := range oe.NumField() {
-			f := oe.Type().Field(i)
-			if !f.IsExported() {
-				continue
-			}
-			switch f.Name {
-			case "TypeMeta", "ObjectMeta", "Status":
-				continue
-			}
+		for _, i := range payloadFieldIndexes(oe.Type()) {
 			oe.Field(i).Set(de.Field(i))
 		}
 	}
@@ -203,6 +235,15 @@ func (s *Syncer) prune(
 
 	for _, obj := range items {
 		if !metav1.IsControlledBy(obj, owner) {
+			continue
+		}
+		// Fail-safe: an empty GVK means the caller could not restore the
+		// object's identity, so its syncKey degenerates to "///ns/name" and
+		// can never match a desired entry. Never conclude that an object of
+		// unknown identity is unneeded — deleting it here would wipe
+		// still-desired objects.
+		if obj.GetObjectKind().GroupVersionKind().Empty() {
+			log.Warnf("skipping prune of %s/%s: object GroupVersionKind is empty", obj.GetNamespace(), obj.GetName())
 			continue
 		}
 		key := syncKey(obj)

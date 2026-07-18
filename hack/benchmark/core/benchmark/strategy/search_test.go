@@ -24,7 +24,7 @@ package strategy
 // 		size    int
 // 		epsilon float32
 // 		radius  float32
-// 		opts    []StrategyOption
+// 		opts    []Option
 // 	}
 // 	type want struct {
 // 		want benchmark.Strategy

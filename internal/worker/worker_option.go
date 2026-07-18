@@ -18,15 +18,15 @@ package worker
 
 import "github.com/vdaas/vald/internal/sync/errgroup"
 
-type WorkerOption func(w *worker) error
+type Option func(w *worker) error
 
-var defaultWorkerOpts = []WorkerOption{
+var defaultWorkerOpts = []Option{
 	WithName("worker"),
 	WithLimitation(10),
 	WithErrGroup(errgroup.Get()),
 }
 
-func WithName(name string) WorkerOption {
+func WithName(name string) Option {
 	return func(w *worker) error {
 		if name != "" {
 			w.name = name
@@ -35,7 +35,7 @@ func WithName(name string) WorkerOption {
 	}
 }
 
-func WithLimitation(limit int) WorkerOption {
+func WithLimitation(limit int) Option {
 	return func(w *worker) error {
 		if limit > 0 {
 			w.limitation = limit
@@ -44,7 +44,7 @@ func WithLimitation(limit int) WorkerOption {
 	}
 }
 
-func WithErrGroup(eg errgroup.Group) WorkerOption {
+func WithErrGroup(eg errgroup.Group) Option {
 	return func(w *worker) error {
 		if eg != nil {
 			w.eg = eg
@@ -53,7 +53,7 @@ func WithErrGroup(eg errgroup.Group) WorkerOption {
 	}
 }
 
-func WithQueueOption(opts ...QueueOption) WorkerOption {
+func WithQueueOption(opts ...QueueOption) Option {
 	return func(w *worker) error {
 		if opts == nil {
 			return nil

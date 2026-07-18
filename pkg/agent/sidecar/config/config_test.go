@@ -179,7 +179,7 @@ package config
 // 	}
 // }
 //
-// func TestNewConfig(t *testing.T) {
+// func TestNew(t *testing.T) {
 // 	type args struct {
 // 		path string
 // 	}
@@ -260,7 +260,7 @@ package config
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			gotCfg, err := NewConfig(test.args.path)
+// 			gotCfg, err := New(test.args.path)
 // 			if err := checkFunc(test.want, gotCfg, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

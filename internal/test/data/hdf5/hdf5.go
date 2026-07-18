@@ -30,7 +30,7 @@ import (
 
 type Data interface {
 	Download(url string) error
-	Read(key Hdf5Key) error
+	Read(key Key) error
 	GetName() DatasetName
 	GetPath() string
 	GetByGroupName(name string) [][]float32
@@ -72,15 +72,15 @@ func (d DatasetUrl) String() string {
 	}
 }
 
-type Hdf5Key int
+type Key int
 
 const (
-	Train Hdf5Key = iota + 1
+	Train Key = iota + 1
 	Test
 	Neighors
 )
 
-func (key Hdf5Key) String() string {
+func (key Key) String() string {
 	switch key {
 	case Train:
 		return "train"
@@ -124,7 +124,7 @@ func (d *data) Download(url string) error {
 	}
 }
 
-func (d *data) Read(key Hdf5Key) error {
+func (d *data) Read(key Key) error {
 	f, err := hdf5.OpenFile(d.path, hdf5.F_ACC_RDONLY)
 	if err != nil {
 		return err
@@ -242,7 +242,7 @@ func downloadFile(url, path string) error {
 	return nil
 }
 
-func ReadDatasetF32(file *hdf5.File, key Hdf5Key) ([][]float32, error) {
+func ReadDatasetF32(file *hdf5.File, key Key) ([][]float32, error) {
 	data, err := file.OpenDataset(key.String())
 	if err != nil {
 		return nil, err
@@ -271,7 +271,7 @@ func ReadDatasetF32(file *hdf5.File, key Hdf5Key) ([][]float32, error) {
 	return vecs, nil
 }
 
-func ReadDatasetI32(file *hdf5.File, key Hdf5Key) ([][]int32, error) {
+func ReadDatasetI32(file *hdf5.File, key Key) ([][]int32, error) {
 	data, err := file.OpenDataset(key.String())
 	if err != nil {
 		return nil, err

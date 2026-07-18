@@ -41,8 +41,8 @@ type Data struct {
 	GlobalConfig `json:",inline" yaml:",inline"`
 }
 
-// NewConfig returns the Data struct or error from the given file path.
-func NewConfig(path string) (cfg *Data, err error) {
+// New returns the Data struct or error from the given file path.
+func New(path string) (cfg *Data, err error) {
 	cfg = new(Data)
 
 	err = config.Read(path, &cfg)

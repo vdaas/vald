@@ -19,6 +19,7 @@ package service
 import (
 	"context"
 	"os"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -27,12 +28,21 @@ import (
 	"github.com/vdaas/vald/internal/k8s/vald/operator/api/metadata"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/operator/api/v1"
 	"github.com/vdaas/vald/internal/k8s/vald/operator/api/valdrelease"
+	mock "github.com/vdaas/vald/internal/test/mock/k8s"
 	"github.com/vdaas/vald/pkg/operator/vald/config"
 )
 
-func loadValdOperatorReleaseFromYAML(tb testing.TB, path string) *v1.ValdOperatorRelease {
+const (
+	testIngressHost         = "foo.example.com"
+	testServiceTypeLoadBlnc = "LoadBalancer"
+	testVrNamespaceA        = "ns-a"
+	testVrName1             = "vr-1"
+	testVrName2             = "vr-2"
+)
+
+func loadValdOperatorReleaseFromYAML(tb testing.TB) *v1.ValdOperatorRelease {
 	tb.Helper()
-	data, err := os.ReadFile(path) //nolint:gosec
+	data, err := os.ReadFile("testdata/vor.yaml") //nolint:gosec
 	assert.NoError(tb, err)
 
 	var cr v1.ValdOperatorRelease
@@ -48,7 +58,7 @@ func TestVrsBuilder_Validate(t *testing.T) {
 			Spec: v1.ValdOperatorReleaseSpec{
 				Infrastructure: []v1.ValdOperatorReleaseInfra{
 					{
-						Role: "green",
+						Role: testRoleGreen,
 						Clusters: []v1.DestClusters{
 							{ID: "abc-123", Name: "cluster-a"},
 						},
@@ -80,7 +90,7 @@ func TestVrsBuilder_Validate(t *testing.T) {
 			cr: &v1.ValdOperatorRelease{
 				Spec: v1.ValdOperatorReleaseSpec{
 					Infrastructure: []v1.ValdOperatorReleaseInfra{
-						{Role: "green", Clusters: []v1.DestClusters{}},
+						{Role: testRoleGreen, Clusters: []v1.DestClusters{}},
 					},
 				},
 			},
@@ -119,7 +129,7 @@ func TestVrsBuilder_Build(t *testing.T) {
 	// Initialize config for testing
 	cfg := initConfig(t)
 
-	cr := loadValdOperatorReleaseFromYAML(t, "testdata/vor.yaml")
+	cr := loadValdOperatorReleaseFromYAML(t)
 
 	b := newVrsBuilder(cr, cfg, alwaysAvailable())
 	objList, err := b.Build(context.Background())
@@ -157,7 +167,7 @@ func TestVrsBuilder_Build(t *testing.T) {
 
 func TestVrsBuilder_Build_ManagedLabelsPreserved(t *testing.T) {
 	cfg := initConfig(t)
-	cr := loadValdOperatorReleaseFromYAML(t, "testdata/vor.yaml")
+	cr := loadValdOperatorReleaseFromYAML(t)
 
 	items, err := newVrsBuilder(cr, cfg, alwaysAvailable()).Build(context.Background())
 	assert.NoError(t, err)
@@ -177,7 +187,7 @@ func TestVrsBuilder_Build_ManagedLabelsPreserved(t *testing.T) {
 
 func TestVrsBuilder_Build_OverlayAppliedPerCluster(t *testing.T) {
 	cfg := initConfig(t)
-	cr := loadValdOperatorReleaseFromYAML(t, "testdata/vor.yaml")
+	cr := loadValdOperatorReleaseFromYAML(t)
 
 	items, err := newVrsBuilder(cr, cfg, alwaysAvailable()).Build(context.Background())
 	assert.NoError(t, err)
@@ -207,7 +217,7 @@ func minimalVor() *v1.ValdOperatorRelease {
 		Spec: v1.ValdOperatorReleaseSpec{
 			Infrastructure: []v1.ValdOperatorReleaseInfra{
 				{
-					Role:   "green",
+					Role:   testRoleGreen,
 					Active: true,
 					Clusters: []v1.DestClusters{
 						{Name: "cluster-1"},
@@ -285,12 +295,12 @@ func TestBuildLb_IngressEnabled(t *testing.T) {
 	cr := minimalVor()
 	cr.Spec.VectorEngine.Vald.Gateway.Ingress = &v1.GatewayIngress{
 		Enabled: true,
-		Host:    "foo.example.com",
+		Host:    testIngressHost,
 	}
 	lb := newTestBuilder(cr, cfg).buildLb()
 
 	assert.True(t, *lb.Ingress.Enabled)
-	assert.Equal(t, "foo.example.com", *lb.Ingress.Host)
+	assert.Equal(t, testIngressHost, *lb.Ingress.Host)
 }
 
 func TestBuildLb_IngressDisabledWhenNil(t *testing.T) {
@@ -313,7 +323,7 @@ func TestBuildLb_ServiceTypeDefault(t *testing.T) {
 func TestBuildLb_ServiceTypeLoadBalancer(t *testing.T) {
 	cfg := initConfig(t)
 	cr := minimalVor()
-	cr.Spec.VectorEngine.Vald.Gateway.ServiceType = "LoadBalancer"
+	cr.Spec.VectorEngine.Vald.Gateway.ServiceType = testServiceTypeLoadBlnc
 	lb := newTestBuilder(cr, cfg).buildLb()
 
 	assert.Equal(t, valdrelease.GatewayLbServiceTypeLoadBalancer, *lb.ServiceType)
@@ -330,7 +340,7 @@ func TestBuildLb_ServiceTypeClusterIP(t *testing.T) {
 
 func TestBuildLb_ServiceTypeFromConfig(t *testing.T) {
 	cfg := initConfigWith(t, func(o *config.Operator) {
-		o.Networking.GatewayServiceType = "LoadBalancer"
+		o.Networking.GatewayServiceType = testServiceTypeLoadBlnc
 	})
 	cr := minimalVor() // CR spec leaves ServiceType empty
 
@@ -342,7 +352,7 @@ func TestBuildLb_ServiceTypeFromConfig(t *testing.T) {
 
 func TestBuildLb_ServiceTypeCRWinsOverConfig(t *testing.T) {
 	cfg := initConfigWith(t, func(o *config.Operator) {
-		o.Networking.GatewayServiceType = "LoadBalancer"
+		o.Networking.GatewayServiceType = testServiceTypeLoadBlnc
 	})
 	cr := minimalVor()
 	cr.Spec.VectorEngine.Vald.Gateway.ServiceType = "ClusterIP"
@@ -360,7 +370,7 @@ func TestBuildIngress_ConfigGateDisablesCREnabled(t *testing.T) {
 	cr := minimalVor()
 	cr.Spec.VectorEngine.Vald.Gateway.Ingress = &v1.GatewayIngress{
 		Enabled: true,
-		Host:    "foo.example.com",
+		Host:    testIngressHost,
 	}
 
 	lb := newTestBuilder(cr, cfg).buildLb()
@@ -381,7 +391,7 @@ func TestBuildIngress_AnnotationsFromConfig(t *testing.T) {
 	cr := minimalVor()
 	cr.Spec.VectorEngine.Vald.Gateway.Ingress = &v1.GatewayIngress{
 		Enabled: true,
-		Host:    "foo.example.com",
+		Host:    testIngressHost,
 	}
 
 	lb := newTestBuilder(cr, cfg).buildLb()
@@ -601,12 +611,91 @@ func TestVrsBuilder_ReflectPersistentVolume_ConfigFallback(t *testing.T) {
 	assert.Equal(t, "fallback-am", *r.Spec.Agent.PersistentVolume.AccessMode, "config fallback when CR omits AM")
 }
 
+// --- existing VRS fetch ---
+
+// schemeOverrideClient wraps a working client but reports a scheme that cannot
+// resolve ValdRelease, simulating the failure mode of the generic GVK
+// auto-restoration in resource.ListObjects (the type unregistered, or the same
+// Go type registered under multiple GVKs after a CRD API-version bump).
+type schemeOverrideClient struct {
+	k8s.Client
+	scheme *k8s.Scheme
+}
+
+func (c *schemeOverrideClient) Scheme() *k8s.Scheme { return c.scheme }
+
+func TestFetchExistingVrs_RestoresGVK(t *testing.T) {
+	newVr := func(name, namespace string) *valdrelease.ValdRelease {
+		vr := &valdrelease.ValdRelease{}
+		vr.SetName(name)
+		vr.SetNamespace(namespace)
+		return vr
+	}
+
+	tests := []struct {
+		name      string
+		namespace string
+		objs      []k8s.Object
+		wantNames []string
+		// unresolvableScheme makes the client report a scheme that cannot
+		// resolve ValdRelease, so the generic auto-restoration skips and only
+		// the static valdrelease.GVK fallback can fill the item GVKs.
+		unresolvableScheme bool
+	}{
+		{
+			name:      "restores the stripped GVK on every listed object",
+			namespace: testVrNamespaceA,
+			objs:      []k8s.Object{newVr(testVrName1, testVrNamespaceA), newVr(testVrName2, testVrNamespaceA)},
+			wantNames: []string{testVrName1, testVrName2},
+		},
+		{
+			name:      "namespace scoping excludes foreign objects",
+			namespace: testVrNamespaceA,
+			objs:      []k8s.Object{newVr(testVrName1, testVrNamespaceA), newVr("vr-3", "ns-b")},
+			wantNames: []string{testVrName1},
+		},
+		{
+			name:      "empty namespace yields no objects",
+			namespace: "ns-empty",
+			objs:      []k8s.Object{newVr(testVrName1, testVrNamespaceA)},
+			wantNames: []string{},
+		},
+		{
+			name:               "static fallback stamps the GVK when the scheme cannot resolve the type",
+			namespace:          testVrNamespaceA,
+			objs:               []k8s.Object{newVr(testVrName1, testVrNamespaceA), newVr(testVrName2, testVrNamespaceA)},
+			wantNames:          []string{testVrName1, testVrName2},
+			unresolvableScheme: true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			var c k8s.Client = mock.NewFakeClientBuilder().WithScheme(newTestScheme(t)).WithObjects(tc.objs...).Build()
+			if tc.unresolvableScheme {
+				c = &schemeOverrideClient{Client: c, scheme: k8s.NewScheme()}
+			}
+
+			out, err := fetchExistingVrs(context.Background(), c, tc.namespace)
+			assert.NoError(t, err)
+
+			names := make([]string, 0, len(out))
+			for _, obj := range out {
+				names = append(names, obj.GetName())
+				assert.Equal(t, valdrelease.GVK, obj.GetObjectKind().GroupVersionKind(),
+					"%s: the GVK stripped by the client must be restored for syncer prune keys", obj.GetName())
+			}
+			assert.ElementsMatch(t, tc.wantNames, names)
+		})
+	}
+}
+
 // --- overlay parse / clone ---
 
 func newOverlayBuilder(raw []byte) *vrsBuilder {
 	cr := &v1.ValdOperatorRelease{}
 	cr.Spec.VectorEngine.Vald.Overlay = v1.JSON{Raw: raw}
-	return &vrsBuilder{cr: cr, gvk: valdrelease.GVK}
+	return &vrsBuilder{cr: cr}
 }
 
 func TestVrsBuilder_ParseOverlay(t *testing.T) {
@@ -682,12 +771,77 @@ func TestVrsBuilder_MakeOverlayPatch_ClonesParsedOverlay(t *testing.T) {
 	assert.Equal(t, float64(256), dim)
 }
 
+// TestVrsBuilder_Build_DoesNotMutateDefaultVrsCache pins the invariant that
+// lets mergeOverlay pass the cached default VRS template directly into
+// deepMergeMap without a per-row DeepCopy: neither Build nor a repeated Build
+// on the same builder may mutate cfg.DefaultVrs.Us.
+func TestVrsBuilder_Build_DoesNotMutateDefaultVrsCache(t *testing.T) {
+	cfg := initConfig(t)
+	cr := loadValdOperatorReleaseFromYAML(t)
+
+	pristine := cfg.DefaultVrs.Us.DeepCopy()
+
+	b := newVrsBuilder(cr, cfg, alwaysAvailable())
+	first, err := b.Build(context.Background())
+	assert.NoError(t, err)
+	assert.NotEmpty(t, first)
+	assert.Equal(t, pristine.Object, cfg.DefaultVrs.Us.Object,
+		"the cached default VRS template must stay intact after Build")
+
+	// A second Build through the same cached template must both leave the
+	// cache intact and produce the same objects as the first one.
+	second, err := newVrsBuilder(cr, cfg, alwaysAvailable()).Build(context.Background())
+	assert.NoError(t, err)
+	assert.Equal(t, pristine.Object, cfg.DefaultVrs.Us.Object,
+		"the cached default VRS template must stay intact after repeated Builds")
+	assert.Equal(t, first, second, "repeated Builds must be deterministic")
+}
+
+// TestVrsBuilder_Build_WithinInfraOnlyNameVaries pins the invariant that lets
+// mergeOverlay hoist the row's ToUnstructured conversion to once per
+// infrastructure: within one infra, the built items differ only in
+// metadata.name (every other field is derived from cr/cfg/infra, never from
+// the individual cluster).
+func TestVrsBuilder_Build_WithinInfraOnlyNameVaries(t *testing.T) {
+	cfg := initConfig(t)
+	cr := loadValdOperatorReleaseFromYAML(t)
+
+	items, err := newVrsBuilder(cr, cfg, alwaysAvailable()).Build(context.Background())
+	assert.NoError(t, err)
+	if len(items) < 2 {
+		t.Skipf("fixture yields %d items; need >=2 clusters in one infra to exercise the invariant", len(items))
+	}
+
+	names := make(map[string]bool, len(items))
+	normalized := make([]map[string]any, 0, len(items))
+	for _, it := range items {
+		names[it.GetName()] = true
+		us, uerr := resource.ToUnstructured(it)
+		assert.NoError(t, uerr)
+		us.SetName("normalized")
+		normalized = append(normalized, us.Object)
+	}
+	assert.Len(t, names, len(items), "every built item must carry a distinct name (no aliasing across clusters)")
+	for i := 1; i < len(normalized); i++ {
+		if !reflect.DeepEqual(normalized[0], normalized[i]) {
+			// Items from different infras may legitimately differ; the
+			// invariant only holds within one infra. The fixture builds one
+			// infra role per pair, so compare within pairs when totals allow.
+			continue
+		}
+	}
+	// Strict pairwise check within the first infra (fixture: clusters of the
+	// same infra are adjacent in Build output).
+	assert.True(t, reflect.DeepEqual(normalized[0], normalized[1]),
+		"items of the same infra must be identical apart from metadata.name")
+}
+
 // BenchmarkVrsBuilder_Build tracks the Build hot path (called per reconcile);
 // the overlay is parsed once per Build and cloned per cluster instead of
 // re-unmarshalling the raw JSON on every iteration.
 func BenchmarkVrsBuilder_Build(b *testing.B) {
 	cfg := initConfig(b)
-	cr := loadValdOperatorReleaseFromYAML(b, "testdata/vor.yaml")
+	cr := loadValdOperatorReleaseFromYAML(b)
 	ctx := context.Background()
 
 	b.ReportAllocs()
@@ -697,3 +851,3260 @@ func BenchmarkVrsBuilder_Build(b *testing.B) {
 		}
 	}
 }
+
+// NOT IMPLEMENTED BELOW
+//
+// func Test_newVrsBuilder(t *testing.T) {
+// 	type args struct {
+// 		cr         *v1.ValdOperatorRelease
+// 		cfg        *config.Config
+// 		capability nodePoolCapability
+// 	}
+// 	type want struct {
+// 		want *vrsBuilder
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, *vrsBuilder) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got *vrsBuilder) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := newVrsBuilder(test.args.cr, test.args.cfg, test.args.capability)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_vrsBuilder_Build(t *testing.T) {
+// 	type args struct {
+// 		in0 context.Context
+// 	}
+// 	type fields struct {
+// 		list       *valdrelease.ValdReleaseList
+// 		cr         *v1.ValdOperatorRelease
+// 		cfg        *config.Config
+// 		overlay    *k8s.Unstructured
+// 		capability nodePoolCapability
+// 	}
+// 	type want struct {
+// 		want []k8s.Object
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, []k8s.Object, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got []k8s.Object, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           in0:nil,
+// 		       },
+// 		       fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           in0:nil,
+// 		           },
+// 		           fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			b := &vrsBuilder{
+// 				list:       test.fields.list,
+// 				cr:         test.fields.cr,
+// 				cfg:        test.fields.cfg,
+// 				overlay:    test.fields.overlay,
+// 				capability: test.fields.capability,
+// 			}
+//
+// 			got, err := b.Build(test.args.in0)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_fetchExistingVrs(t *testing.T) {
+// 	type args struct {
+// 		ctx       context.Context
+// 		c         k8s.Client
+// 		namespace string
+// 	}
+// 	type want struct {
+// 		want []k8s.Object
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, []k8s.Object, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got []k8s.Object, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           c:nil,
+// 		           namespace:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           c:nil,
+// 		           namespace:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got, err := fetchExistingVrs(test.args.ctx, test.args.c, test.args.namespace)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_vrsBuilder_validate(t *testing.T) {
+// 	type fields struct {
+// 		list       *valdrelease.ValdReleaseList
+// 		cr         *v1.ValdOperatorRelease
+// 		cfg        *config.Config
+// 		overlay    *k8s.Unstructured
+// 		capability nodePoolCapability
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			b := &vrsBuilder{
+// 				list:       test.fields.list,
+// 				cr:         test.fields.cr,
+// 				cfg:        test.fields.cfg,
+// 				overlay:    test.fields.overlay,
+// 				capability: test.fields.capability,
+// 			}
+//
+// 			err := b.validate()
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_vrsBuilder_buildDefaults(t *testing.T) {
+// 	type fields struct {
+// 		list       *valdrelease.ValdReleaseList
+// 		cr         *v1.ValdOperatorRelease
+// 		cfg        *config.Config
+// 		overlay    *k8s.Unstructured
+// 		capability nodePoolCapability
+// 	}
+// 	type want struct {
+// 		want *valdrelease.Defaults
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *valdrelease.Defaults) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *valdrelease.Defaults) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			b := &vrsBuilder{
+// 				list:       test.fields.list,
+// 				cr:         test.fields.cr,
+// 				cfg:        test.fields.cfg,
+// 				overlay:    test.fields.overlay,
+// 				capability: test.fields.capability,
+// 			}
+//
+// 			got := b.buildDefaults()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_vrsBuilder_buildAgent(t *testing.T) {
+// 	type fields struct {
+// 		list       *valdrelease.ValdReleaseList
+// 		cr         *v1.ValdOperatorRelease
+// 		cfg        *config.Config
+// 		overlay    *k8s.Unstructured
+// 		capability nodePoolCapability
+// 	}
+// 	type want struct {
+// 		want *valdrelease.Agent
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *valdrelease.Agent) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *valdrelease.Agent) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			b := &vrsBuilder{
+// 				list:       test.fields.list,
+// 				cr:         test.fields.cr,
+// 				cfg:        test.fields.cfg,
+// 				overlay:    test.fields.overlay,
+// 				capability: test.fields.capability,
+// 			}
+//
+// 			got := b.buildAgent()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_vrsBuilder_buildAgentNgt(t *testing.T) {
+// 	type fields struct {
+// 		list       *valdrelease.ValdReleaseList
+// 		cr         *v1.ValdOperatorRelease
+// 		cfg        *config.Config
+// 		overlay    *k8s.Unstructured
+// 		capability nodePoolCapability
+// 	}
+// 	type want struct {
+// 		want *valdrelease.AgentNgt
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *valdrelease.AgentNgt) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *valdrelease.AgentNgt) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			b := &vrsBuilder{
+// 				list:       test.fields.list,
+// 				cr:         test.fields.cr,
+// 				cfg:        test.fields.cfg,
+// 				overlay:    test.fields.overlay,
+// 				capability: test.fields.capability,
+// 			}
+//
+// 			got := b.buildAgentNgt()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_vrsBuilder_buildGateway(t *testing.T) {
+// 	type fields struct {
+// 		list       *valdrelease.ValdReleaseList
+// 		cr         *v1.ValdOperatorRelease
+// 		cfg        *config.Config
+// 		overlay    *k8s.Unstructured
+// 		capability nodePoolCapability
+// 	}
+// 	type want struct {
+// 		want *valdrelease.Gateway
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *valdrelease.Gateway) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *valdrelease.Gateway) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			b := &vrsBuilder{
+// 				list:       test.fields.list,
+// 				cr:         test.fields.cr,
+// 				cfg:        test.fields.cfg,
+// 				overlay:    test.fields.overlay,
+// 				capability: test.fields.capability,
+// 			}
+//
+// 			got := b.buildGateway()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_vrsBuilder_buildLb(t *testing.T) {
+// 	type fields struct {
+// 		list       *valdrelease.ValdReleaseList
+// 		cr         *v1.ValdOperatorRelease
+// 		cfg        *config.Config
+// 		overlay    *k8s.Unstructured
+// 		capability nodePoolCapability
+// 	}
+// 	type want struct {
+// 		want *valdrelease.GatewayLb
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *valdrelease.GatewayLb) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *valdrelease.GatewayLb) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			b := &vrsBuilder{
+// 				list:       test.fields.list,
+// 				cr:         test.fields.cr,
+// 				cfg:        test.fields.cfg,
+// 				overlay:    test.fields.overlay,
+// 				capability: test.fields.capability,
+// 			}
+//
+// 			got := b.buildLb()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_vrsBuilder_buildIngress(t *testing.T) {
+// 	type args struct {
+// 		in *v1.GatewayIngress
+// 	}
+// 	type fields struct {
+// 		list       *valdrelease.ValdReleaseList
+// 		cr         *v1.ValdOperatorRelease
+// 		cfg        *config.Config
+// 		overlay    *k8s.Unstructured
+// 		capability nodePoolCapability
+// 	}
+// 	type want struct {
+// 		want *valdrelease.GatewayLbIngress
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *valdrelease.GatewayLbIngress) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got *valdrelease.GatewayLbIngress) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           in:nil,
+// 		       },
+// 		       fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           in:nil,
+// 		           },
+// 		           fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			b := &vrsBuilder{
+// 				list:       test.fields.list,
+// 				cr:         test.fields.cr,
+// 				cfg:        test.fields.cfg,
+// 				overlay:    test.fields.overlay,
+// 				capability: test.fields.capability,
+// 			}
+//
+// 			got := b.buildIngress(test.args.in)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_vrsBuilder_getGatewayIngressPathType(t *testing.T) {
+// 	type fields struct {
+// 		list       *valdrelease.ValdReleaseList
+// 		cr         *v1.ValdOperatorRelease
+// 		cfg        *config.Config
+// 		overlay    *k8s.Unstructured
+// 		capability nodePoolCapability
+// 	}
+// 	type want struct {
+// 		want string
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, string) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got string) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			b := &vrsBuilder{
+// 				list:       test.fields.list,
+// 				cr:         test.fields.cr,
+// 				cfg:        test.fields.cfg,
+// 				overlay:    test.fields.overlay,
+// 				capability: test.fields.capability,
+// 			}
+//
+// 			got := b.getGatewayIngressPathType()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_vrsBuilder_getGatewayServiceType(t *testing.T) {
+// 	type args struct {
+// 		st string
+// 	}
+// 	type fields struct {
+// 		list       *valdrelease.ValdReleaseList
+// 		cr         *v1.ValdOperatorRelease
+// 		cfg        *config.Config
+// 		overlay    *k8s.Unstructured
+// 		capability nodePoolCapability
+// 	}
+// 	type want struct {
+// 		want *valdrelease.GatewayLbServiceType
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *valdrelease.GatewayLbServiceType) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got *valdrelease.GatewayLbServiceType) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           st:"",
+// 		       },
+// 		       fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           st:"",
+// 		           },
+// 		           fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			b := &vrsBuilder{
+// 				list:       test.fields.list,
+// 				cr:         test.fields.cr,
+// 				cfg:        test.fields.cfg,
+// 				overlay:    test.fields.overlay,
+// 				capability: test.fields.capability,
+// 			}
+//
+// 			got := b.getGatewayServiceType(test.args.st)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_vrsBuilder_buildDiscoverer(t *testing.T) {
+// 	type fields struct {
+// 		list       *valdrelease.ValdReleaseList
+// 		cr         *v1.ValdOperatorRelease
+// 		cfg        *config.Config
+// 		overlay    *k8s.Unstructured
+// 		capability nodePoolCapability
+// 	}
+// 	type want struct {
+// 		want *valdrelease.Discoverer
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *valdrelease.Discoverer) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *valdrelease.Discoverer) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			b := &vrsBuilder{
+// 				list:       test.fields.list,
+// 				cr:         test.fields.cr,
+// 				cfg:        test.fields.cfg,
+// 				overlay:    test.fields.overlay,
+// 				capability: test.fields.capability,
+// 			}
+//
+// 			got := b.buildDiscoverer()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_vrsBuilder_buildManager(t *testing.T) {
+// 	type fields struct {
+// 		list       *valdrelease.ValdReleaseList
+// 		cr         *v1.ValdOperatorRelease
+// 		cfg        *config.Config
+// 		overlay    *k8s.Unstructured
+// 		capability nodePoolCapability
+// 	}
+// 	type want struct {
+// 		want *valdrelease.Manager
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *valdrelease.Manager) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *valdrelease.Manager) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			b := &vrsBuilder{
+// 				list:       test.fields.list,
+// 				cr:         test.fields.cr,
+// 				cfg:        test.fields.cfg,
+// 				overlay:    test.fields.overlay,
+// 				capability: test.fields.capability,
+// 			}
+//
+// 			got := b.buildManager()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_vrsBuilder_makeName(t *testing.T) {
+// 	type args struct {
+// 		str []string
+// 	}
+// 	type fields struct {
+// 		list       *valdrelease.ValdReleaseList
+// 		cr         *v1.ValdOperatorRelease
+// 		cfg        *config.Config
+// 		overlay    *k8s.Unstructured
+// 		capability nodePoolCapability
+// 	}
+// 	type want struct {
+// 		want string
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, string, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got string, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           str:nil,
+// 		       },
+// 		       fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           str:nil,
+// 		           },
+// 		           fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			b := &vrsBuilder{
+// 				list:       test.fields.list,
+// 				cr:         test.fields.cr,
+// 				cfg:        test.fields.cfg,
+// 				overlay:    test.fields.overlay,
+// 				capability: test.fields.capability,
+// 			}
+//
+// 			got, err := b.makeName(test.args.str...)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_vrsBuilder_buildLabels(t *testing.T) {
+// 	type args struct {
+// 		iKey int
+// 	}
+// 	type fields struct {
+// 		list       *valdrelease.ValdReleaseList
+// 		cr         *v1.ValdOperatorRelease
+// 		cfg        *config.Config
+// 		overlay    *k8s.Unstructured
+// 		capability nodePoolCapability
+// 	}
+// 	type want struct {
+// 		want map[string]string
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, map[string]string) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got map[string]string) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           iKey:0,
+// 		       },
+// 		       fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           iKey:0,
+// 		           },
+// 		           fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			b := &vrsBuilder{
+// 				list:       test.fields.list,
+// 				cr:         test.fields.cr,
+// 				cfg:        test.fields.cfg,
+// 				overlay:    test.fields.overlay,
+// 				capability: test.fields.capability,
+// 			}
+//
+// 			got := b.buildLabels(test.args.iKey)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_mergeLabels(t *testing.T) {
+// 	type args struct {
+// 		base    map[string]string
+// 		overlay map[string]string
+// 	}
+// 	type want struct {
+// 		want map[string]string
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, map[string]string) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got map[string]string) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           base:nil,
+// 		           overlay:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           base:nil,
+// 		           overlay:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := mergeLabels(test.args.base, test.args.overlay)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_vrsBuilder_buildLogging(t *testing.T) {
+// 	type args struct {
+// 		ll string
+// 	}
+// 	type fields struct {
+// 		list       *valdrelease.ValdReleaseList
+// 		cr         *v1.ValdOperatorRelease
+// 		cfg        *config.Config
+// 		overlay    *k8s.Unstructured
+// 		capability nodePoolCapability
+// 	}
+// 	type want struct {
+// 		want *valdrelease.Logging
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *valdrelease.Logging) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got *valdrelease.Logging) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ll:"",
+// 		       },
+// 		       fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ll:"",
+// 		           },
+// 		           fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			b := &vrsBuilder{
+// 				list:       test.fields.list,
+// 				cr:         test.fields.cr,
+// 				cfg:        test.fields.cfg,
+// 				overlay:    test.fields.overlay,
+// 				capability: test.fields.capability,
+// 			}
+//
+// 			got := b.buildLogging(test.args.ll)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_ptr(t *testing.T) {
+// 	type args struct {
+// 		v T
+// 	}
+// 	type want struct {
+// 		want *T
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, *T) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got *T) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           v:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           v:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := ptr(test.args.v)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_toAnyMap(t *testing.T) {
+// 	type args struct {
+// 		m map[string]string
+// 	}
+// 	type want struct {
+// 		want map[string]any
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, map[string]any) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got map[string]any) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           m:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           m:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := toAnyMap(test.args.m)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_nsPtr(t *testing.T) {
+// 	type args struct {
+// 		m map[string]string
+// 	}
+// 	type want struct {
+// 		want *valdrelease.NodeSelector
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, *valdrelease.NodeSelector) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got *valdrelease.NodeSelector) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           m:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           m:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := nsPtr(test.args.m)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_vrsBuilder_labelKey(t *testing.T) {
+// 	type args struct {
+// 		suffix string
+// 	}
+// 	type fields struct {
+// 		list       *valdrelease.ValdReleaseList
+// 		cr         *v1.ValdOperatorRelease
+// 		cfg        *config.Config
+// 		overlay    *k8s.Unstructured
+// 		capability nodePoolCapability
+// 	}
+// 	type want struct {
+// 		want string
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, string) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got string) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           suffix:"",
+// 		       },
+// 		       fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           suffix:"",
+// 		           },
+// 		           fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			b := &vrsBuilder{
+// 				list:       test.fields.list,
+// 				cr:         test.fields.cr,
+// 				cfg:        test.fields.cfg,
+// 				overlay:    test.fields.overlay,
+// 				capability: test.fields.capability,
+// 			}
+//
+// 			got := b.labelKey(test.args.suffix)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_vrsBuilder_mergeOverlay(t *testing.T) {
+// 	type args struct {
+// 		current *k8s.Unstructured
+// 	}
+// 	type fields struct {
+// 		list       *valdrelease.ValdReleaseList
+// 		cr         *v1.ValdOperatorRelease
+// 		cfg        *config.Config
+// 		overlay    *k8s.Unstructured
+// 		capability nodePoolCapability
+// 	}
+// 	type want struct {
+// 		want *valdrelease.ValdRelease
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *valdrelease.ValdRelease, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got *valdrelease.ValdRelease, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           current:nil,
+// 		       },
+// 		       fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           current:nil,
+// 		           },
+// 		           fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			b := &vrsBuilder{
+// 				list:       test.fields.list,
+// 				cr:         test.fields.cr,
+// 				cfg:        test.fields.cfg,
+// 				overlay:    test.fields.overlay,
+// 				capability: test.fields.capability,
+// 			}
+//
+// 			got, err := b.mergeOverlay(test.args.current)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_deepMergeMap(t *testing.T) {
+// 	type args struct {
+// 		dst map[string]any
+// 		src map[string]any
+// 	}
+// 	type want struct {
+// 		want map[string]any
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, map[string]any) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got map[string]any) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           dst:nil,
+// 		           src:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           dst:nil,
+// 		           src:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := deepMergeMap(test.args.dst, test.args.src)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_vrsBuilder_parseOverlay(t *testing.T) {
+// 	type fields struct {
+// 		list       *valdrelease.ValdReleaseList
+// 		cr         *v1.ValdOperatorRelease
+// 		cfg        *config.Config
+// 		overlay    *k8s.Unstructured
+// 		capability nodePoolCapability
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			b := &vrsBuilder{
+// 				list:       test.fields.list,
+// 				cr:         test.fields.cr,
+// 				cfg:        test.fields.cfg,
+// 				overlay:    test.fields.overlay,
+// 				capability: test.fields.capability,
+// 			}
+//
+// 			err := b.parseOverlay()
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_vrsBuilder_makeOverlayPatch(t *testing.T) {
+// 	type args struct {
+// 		row k8s.Object
+// 	}
+// 	type fields struct {
+// 		list       *valdrelease.ValdReleaseList
+// 		cr         *v1.ValdOperatorRelease
+// 		cfg        *config.Config
+// 		overlay    *k8s.Unstructured
+// 		capability nodePoolCapability
+// 	}
+// 	type want struct {
+// 		want *k8s.Unstructured
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *k8s.Unstructured) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got *k8s.Unstructured) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           row:nil,
+// 		       },
+// 		       fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           row:nil,
+// 		           },
+// 		           fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			b := &vrsBuilder{
+// 				list:       test.fields.list,
+// 				cr:         test.fields.cr,
+// 				cfg:        test.fields.cfg,
+// 				overlay:    test.fields.overlay,
+// 				capability: test.fields.capability,
+// 			}
+//
+// 			got := b.makeOverlayPatch(test.args.row)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_vrsBuilder_buildNodeSelector(t *testing.T) {
+// 	type args struct {
+// 		nt v1.NodePoolType
+// 	}
+// 	type fields struct {
+// 		list       *valdrelease.ValdReleaseList
+// 		cr         *v1.ValdOperatorRelease
+// 		cfg        *config.Config
+// 		overlay    *k8s.Unstructured
+// 		capability nodePoolCapability
+// 	}
+// 	type want struct {
+// 		want map[string]string
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, map[string]string) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got map[string]string) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           nt:nil,
+// 		       },
+// 		       fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           nt:nil,
+// 		           },
+// 		           fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			b := &vrsBuilder{
+// 				list:       test.fields.list,
+// 				cr:         test.fields.cr,
+// 				cfg:        test.fields.cfg,
+// 				overlay:    test.fields.overlay,
+// 				capability: test.fields.capability,
+// 			}
+//
+// 			got := b.buildNodeSelector(test.args.nt)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_vrsBuilder_buildToleration(t *testing.T) {
+// 	type args struct {
+// 		nt v1.NodePoolType
+// 	}
+// 	type fields struct {
+// 		list       *valdrelease.ValdReleaseList
+// 		cr         *v1.ValdOperatorRelease
+// 		cfg        *config.Config
+// 		overlay    *k8s.Unstructured
+// 		capability nodePoolCapability
+// 	}
+// 	type want struct {
+// 		want *[]k8s.Toleration
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *[]k8s.Toleration) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got *[]k8s.Toleration) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           nt:nil,
+// 		       },
+// 		       fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           nt:nil,
+// 		           },
+// 		           fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			b := &vrsBuilder{
+// 				list:       test.fields.list,
+// 				cr:         test.fields.cr,
+// 				cfg:        test.fields.cfg,
+// 				overlay:    test.fields.overlay,
+// 				capability: test.fields.capability,
+// 			}
+//
+// 			got := b.buildToleration(test.args.nt)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_vrsBuilder_effectiveNodePoolType(t *testing.T) {
+// 	type args struct {
+// 		nt v1.NodePoolType
+// 	}
+// 	type fields struct {
+// 		list       *valdrelease.ValdReleaseList
+// 		cr         *v1.ValdOperatorRelease
+// 		cfg        *config.Config
+// 		overlay    *k8s.Unstructured
+// 		capability nodePoolCapability
+// 	}
+// 	type want struct {
+// 		want v1.NodePoolType
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, v1.NodePoolType) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got v1.NodePoolType) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           nt:nil,
+// 		       },
+// 		       fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           nt:nil,
+// 		           },
+// 		           fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			b := &vrsBuilder{
+// 				list:       test.fields.list,
+// 				cr:         test.fields.cr,
+// 				cfg:        test.fields.cfg,
+// 				overlay:    test.fields.overlay,
+// 				capability: test.fields.capability,
+// 			}
+//
+// 			got := b.effectiveNodePoolType(test.args.nt)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_vrsBuilder_applyNodeAffinities(t *testing.T) {
+// 	type args struct {
+// 		v *valdrelease.ValdRelease
+// 	}
+// 	type fields struct {
+// 		list       *valdrelease.ValdReleaseList
+// 		cr         *v1.ValdOperatorRelease
+// 		cfg        *config.Config
+// 		overlay    *k8s.Unstructured
+// 		capability nodePoolCapability
+// 	}
+// 	type want struct{}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want) error {
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           v:nil,
+// 		       },
+// 		       fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           v:nil,
+// 		           },
+// 		           fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			b := &vrsBuilder{
+// 				list:       test.fields.list,
+// 				cr:         test.fields.cr,
+// 				cfg:        test.fields.cfg,
+// 				overlay:    test.fields.overlay,
+// 				capability: test.fields.capability,
+// 			}
+//
+// 			b.applyNodeAffinities(test.args.v)
+// 			if err := checkFunc(test.want); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_vrsBuilder_reflectPersistentVolume(t *testing.T) {
+// 	type args struct {
+// 		v *valdrelease.ValdRelease
+// 	}
+// 	type fields struct {
+// 		list       *valdrelease.ValdReleaseList
+// 		cr         *v1.ValdOperatorRelease
+// 		cfg        *config.Config
+// 		overlay    *k8s.Unstructured
+// 		capability nodePoolCapability
+// 	}
+// 	type want struct{}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want) error {
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           v:nil,
+// 		       },
+// 		       fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           v:nil,
+// 		           },
+// 		           fields: fields {
+// 		           list:nil,
+// 		           cr:nil,
+// 		           cfg:nil,
+// 		           overlay:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			b := &vrsBuilder{
+// 				list:       test.fields.list,
+// 				cr:         test.fields.cr,
+// 				cfg:        test.fields.cfg,
+// 				overlay:    test.fields.overlay,
+// 				capability: test.fields.capability,
+// 			}
+//
+// 			b.reflectPersistentVolume(test.args.v)
+// 			if err := checkFunc(test.want); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }

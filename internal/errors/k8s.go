@@ -25,6 +25,8 @@ var (
 
 	ErrKubernetesClientNotFound = New("kubernetes client not found")
 
+	ErrKubernetesClientWatchNotSupported = New("kubernetes client does not support watch")
+
 	ErrStatusPatternNeverMatched = New("status pattern never matched")
 
 	ErrUnsupportedKubernetesResourceType = func(obj any) error {

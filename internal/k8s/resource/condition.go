@@ -21,8 +21,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// SetStatusCondition updates LastTransitionTime only when Status changes, unlike UpsertCondition.
-var SetStatusCondition = apimeta.SetStatusCondition
+// SetStatusCondition updates LastTransitionTime only when Status changes,
+// unlike UpsertCondition. Delegates to
+// k8s.io/apimachinery/pkg/api/meta.SetStatusCondition.
+func SetStatusCondition(conditions *[]metav1.Condition, newCondition metav1.Condition) {
+	apimeta.SetStatusCondition(conditions, newCondition)
+}
 
 // UpsertCondition inserts newCond into conditions or replaces the entry with
 // the same Type. Unlike meta.SetStatusCondition it replaces the entry (and

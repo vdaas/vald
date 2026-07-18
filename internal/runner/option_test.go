@@ -31,7 +31,7 @@ var goleakIgnoreOptions = []goleak.Option{
 }
 
 func TestWithName(t *testing.T) {
-	type T = runner
+	type T = runner[any]
 	type args struct {
 		name string
 	}
@@ -90,7 +90,7 @@ func TestWithName(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			got := WithName(test.args.name)
+			got := WithName[any](test.args.name)
 			obj := new(T)
 			got(obj)
 			if err := checkFunc(test.want, obj); err != nil {
@@ -101,7 +101,7 @@ func TestWithName(t *testing.T) {
 }
 
 func TestWithVersion(t *testing.T) {
-	type T = runner
+	type T = runner[any]
 	type args struct {
 		ver string
 		max string
@@ -208,7 +208,7 @@ func TestWithVersion(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			got := WithVersion(test.args.ver, test.args.max, test.args.min)
+			got := WithVersion[any](test.args.ver, test.args.max, test.args.min)
 			obj := new(T)
 			got(obj)
 			if err := checkFunc(test.want, obj); err != nil {
@@ -219,7 +219,7 @@ func TestWithVersion(t *testing.T) {
 }
 
 func TestWithConfigLoader(t *testing.T) {
-	type T = runner
+	type T = runner[any]
 	type args struct {
 		f func(string) (any, *config.GlobalConfig, error)
 	}
@@ -294,9 +294,9 @@ func TestWithConfigLoader(t *testing.T) {
 }
 
 func TestWithDaemonInitializer(t *testing.T) {
-	type T = runner
+	type T = runner[any]
 	type args struct {
-		f func(any) (Runner, error)
+		f func(any) (Interface, error)
 	}
 	type want struct {
 		obj *T
@@ -319,7 +319,7 @@ func TestWithDaemonInitializer(t *testing.T) {
 
 	tests := []test{
 		func() test {
-			f := func(any) (Runner, error) {
+			f := func(any) (Interface, error) {
 				return nil, nil
 			}
 			return test{

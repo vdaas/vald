@@ -22,11 +22,11 @@ import "github.com/vdaas/vald/internal/config"
 // GlobalConfig is type alias for config.GlobalConfig.
 type GlobalConfig = config.GlobalConfig
 
-// Config represent a application setting data content (config.yaml).
+// Data represents an application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
-type Config struct {
+type Data struct {
 	// Server represent all server configurations
-	Server *config.Servers `json:"server_config" yaml:"server_config"`
+	Server *config.Servers `json:"server_config" yaml:"server_config"` //nolint:tagliatelle // fixed by the existing config.yaml wire format, not renameable
 
 	// Observability represent observability configurations
 	Observability *config.Observability `json:"observability" yaml:"observability"`
@@ -38,8 +38,8 @@ type Config struct {
 	config.GlobalConfig `json:",inline" yaml:",inline"`
 }
 
-// NewConfig represents the set config from the given setting file path.
-func NewConfig(path string) (cfg *Config, err error) {
+// New represents the set config from the given setting file path.
+func New(path string) (cfg *Data, err error) {
 	err = config.Read(path, &cfg)
 	if err != nil {
 		return nil, err
@@ -68,7 +68,7 @@ func NewConfig(path string) (cfg *Config, err error) {
 const BenchmarkOperatorInfo = "benchmark_operator_info"
 
 // func FakeData() {
-// 	d := Config{
+// 	d := Data{
 // 		Version: "v0.0.1",
 // 		Server: &config.Servers{
 // 			Servers: []*config.Server{

@@ -17,9 +17,9 @@
 package resource
 
 import (
-	"encoding/json"
 	"testing"
 
+	json "github.com/vdaas/vald/internal/encoding/json"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -39,15 +39,15 @@ func TestList_DeepCopy(t *testing.T) {
 	t.Parallel()
 
 	type test struct {
-		name   string
 		mutate func(cp *nestedList)
 		check  func(t *testing.T, orig *nestedList)
+		name   string
 	}
 
 	tests := []test{
 		{
 			name:   "mutating copied item references does not affect the original",
-			mutate: func(cp *nestedList) { cp.Items[0].Names[0] = "mutated" },
+			mutate: func(cp *nestedList) { cp.Items[0].Names[0] = testMutatedValue },
 			check: func(t *testing.T, orig *nestedList) {
 				t.Helper()
 				if orig.Items[0].Names[0] != "a" {
@@ -100,7 +100,7 @@ func TestList_DeepCopy(t *testing.T) {
 		if !ok {
 			t.Fatalf("DeepCopyObject() = %T, want *nestedList", obj)
 		}
-		cp.Items[0].Names[0] = "mutated"
+		cp.Items[0].Names[0] = testMutatedValue
 		if orig.Items[0].Names[0] != "a" {
 			t.Errorf("original mutated through DeepCopyObject: %v", orig.Items)
 		}
@@ -155,3 +155,164 @@ func TestAddListToScheme(t *testing.T) {
 		t.Errorf("ObjectKinds = %v, want to contain %v", gvks, want)
 	}
 }
+
+// NOT IMPLEMENTED BELOW
+//
+// func TestList_DeepCopyInto(t *testing.T) {
+// 	type args struct {
+// 		out *List[T, PT]
+// 	}
+// 	type want struct{}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		in         *List[T, PT]
+// 		want       want
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want) error {
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           out:List[T, PT]{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           out:List[T, PT]{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			in := &List[T, PT]{}
+//
+// 			in.DeepCopyInto(test.args.out)
+// 			if err := checkFunc(test.want); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func TestList_DeepCopyObject(t *testing.T) {
+// 	type want struct {
+// 		want runtime.Object
+// 	}
+// 	type test struct {
+// 		name       string
+// 		in         *List[T, PT]
+// 		want       want
+// 		checkFunc  func(want, runtime.Object) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got runtime.Object) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			in := &List[T, PT]{}
+//
+// 			got := in.DeepCopyObject()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }

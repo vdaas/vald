@@ -43,7 +43,7 @@ import (
 
 type run struct {
 	eg            errgroup.Group
-	cfg           *config.Config
+	cfg           *config.Data
 	operator      service.Operator
 	h             handler.Benchmark
 	server        starter.Server
@@ -52,12 +52,12 @@ type run struct {
 
 var JOB_NAMESPACE = os.Getenv("JOB_NAMESPACE")
 
-func New(cfg *config.Config) (r runner.Runner, err error) {
+func New(cfg *config.Data) (r runner.Interface, err error) {
 	log.Info("pkg/operator/benchmark/cmd start")
 
 	eg := errgroup.Get()
 
-	log.Info("pkg/operator/benchmark/cmd success d")
+	log.Info("pkg/operator/benchmark/cmd success")
 
 	operator, err := service.New(
 		service.WithErrGroup(eg),
@@ -80,8 +80,8 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 			// TODO register grpc server handler here
 		}),
 		server.WithGRPCOption(
-			grpc.ChainUnaryInterceptor(recover.RecoverInterceptor()),
-			grpc.ChainStreamInterceptor(recover.RecoverStreamInterceptor()),
+			grpc.ChainUnaryInterceptor(recover.Interceptor()),
+			grpc.ChainStreamInterceptor(recover.StreamInterceptor()),
 		),
 		server.WithPreStartFunc(func() error {
 			// TODO check unbackupped upstream
@@ -116,7 +116,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 						router.WithErrGroup(eg),
 						router.WithHandler(
 							rest.New(
-							// TODO pass grpc handler to REST option
+								rest.WithBenchmark(h),
 							),
 						),
 					),

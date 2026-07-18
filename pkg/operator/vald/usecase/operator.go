@@ -42,7 +42,7 @@ type run struct {
 	operator      service.Operator
 }
 
-func New(cfg *config.Data) (_ runner.Runner, err error) {
+func New(cfg *config.Data) (_ runner.Interface, err error) {
 	eg := errgroup.Get()
 	operator, err := service.New(cfg.Operator)
 	if err != nil {
@@ -54,8 +54,8 @@ func New(cfg *config.Data) (_ runner.Runner, err error) {
 		starter.WithGRPC(func(cfg *iconfig.Server) []server.Option {
 			return []server.Option{
 				server.WithGRPCOption(
-					grpc.ChainUnaryInterceptor(recover.RecoverInterceptor()),
-					grpc.ChainStreamInterceptor(recover.RecoverStreamInterceptor()),
+					grpc.ChainUnaryInterceptor(recover.Interceptor()),
+					grpc.ChainStreamInterceptor(recover.StreamInterceptor()),
 				),
 			}
 		}),

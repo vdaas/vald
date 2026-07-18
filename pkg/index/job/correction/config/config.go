@@ -28,7 +28,7 @@ type GlobalConfig = config.GlobalConfig
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Data struct {
 	// Server represent all server configurations
-	Server *config.Servers `json:"server_config" yaml:"server_config"`
+	Server *config.Servers `json:"server_config" yaml:"server_config"` //nolint:tagliatelle // fixed by the existing config.yaml wire format, not renameable
 
 	// Observability represent observability configurations
 	Observability *config.Observability `json:"observability" yaml:"observability"`
@@ -40,7 +40,7 @@ type Data struct {
 	config.GlobalConfig `json:",inline" yaml:",inline"`
 }
 
-func NewConfig(path string) (cfg *Data, err error) {
+func New(path string) (cfg *Data, err error) {
 	cfg = new(Data)
 
 	err = config.Read(path, &cfg)

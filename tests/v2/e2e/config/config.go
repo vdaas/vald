@@ -1409,34 +1409,32 @@ func (p Port) Port() uint16 {
 	return uint16(port)
 }
 
+// kubernetesStatusTable maps every normalized KubernetesStatus onto its
+// resource-level counterpart. Kept as a table so adding a status is a single
+// row instead of a new switch arm.
+//
+//nolint:gochecknoglobals // immutable lookup table, effectively a const
+var kubernetesStatusTable = map[KubernetesStatus]resource.ResourceStatus{
+	KubernetesStatusUnknown:       resource.StatusUnknown,
+	KubernetesStatusPending:       resource.StatusPending,
+	KubernetesStatusUpdating:      resource.StatusUpdating,
+	KubernetesStatusAvailable:     resource.StatusAvailable,
+	KubernetesStatusDegraded:      resource.StatusDegraded,
+	KubernetesStatusFailed:        resource.StatusFailed,
+	KubernetesStatusCompleted:     resource.StatusCompleted,
+	KubernetesStatusScheduled:     resource.StatusScheduled,
+	KubernetesStatusScaling:       resource.StatusScaling,
+	KubernetesStatusPaused:        resource.StatusPaused,
+	KubernetesStatusTerminating:   resource.StatusTerminating,
+	KubernetesStatusNotReady:      resource.StatusNotReady,
+	KubernetesStatusLoadBalancing: resource.StatusLoadBalancing,
+}
+
+// Status maps the configured status name onto its resource-level counterpart,
+// falling back to StatusUnknown for values outside the table.
 func (ks KubernetesStatus) Status() resource.ResourceStatus {
-	switch strings.TrimForCompare(ks) {
-	case KubernetesStatusUnknown:
-		return resource.StatusUnknown
-	case KubernetesStatusPending:
-		return resource.StatusPending
-	case KubernetesStatusUpdating:
-		return resource.StatusUpdating
-	case KubernetesStatusAvailable:
-		return resource.StatusAvailable
-	case KubernetesStatusDegraded:
-		return resource.StatusDegraded
-	case KubernetesStatusFailed:
-		return resource.StatusFailed
-	case KubernetesStatusCompleted:
-		return resource.StatusCompleted
-	case KubernetesStatusScheduled:
-		return resource.StatusScheduled
-	case KubernetesStatusScaling:
-		return resource.StatusScaling
-	case KubernetesStatusPaused:
-		return resource.StatusPaused
-	case KubernetesStatusTerminating:
-		return resource.StatusTerminating
-	case KubernetesStatusNotReady:
-		return resource.StatusNotReady
-	case KubernetesStatusLoadBalancing:
-		return resource.StatusLoadBalancing
+	if st, ok := kubernetesStatusTable[strings.TrimForCompare(ks)]; ok {
+		return st
 	}
 	return resource.StatusUnknown
 }

@@ -10,7 +10,9 @@
         "addrs": {
           "type": "array",
           "description": "gRPC client addresses",
-          "items": { "type": "string" }
+          "items": {
+            "type": "string"
+          }
         },
         "backoff": {
           "type": "object",
@@ -45,7 +47,9 @@
             }
           }
         },
-        "call_option": { "type": "object" },
+        "call_option": {
+          "type": "object"
+        },
         "circuit_breaker": {
           "type": "object",
           "properties": {
@@ -245,11 +249,21 @@
                 "tls": {
                   "type": "object",
                   "properties": {
-                    "ca": { "type": "string" },
-                    "cert": { "type": "string" },
-                    "enabled": { "type": "boolean" },
-                    "insecure_skip_verify": { "type": "boolean" },
-                    "key": { "type": "string" }
+                    "ca": {
+                      "type": "string"
+                    },
+                    "cert": {
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "insecure_skip_verify": {
+                      "type": "boolean"
+                    },
+                    "key": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -272,23 +286,43 @@
           "type": "string",
           "description": "gRPC client health check duration"
         },
-        "max_recv_msg_size": { "type": "integer" },
-        "max_retry_rpc_buffer_size": { "type": "integer" },
-        "max_send_msg_size": { "type": "integer" },
+        "max_recv_msg_size": {
+          "type": "integer"
+        },
+        "max_retry_rpc_buffer_size": {
+          "type": "integer"
+        },
+        "max_send_msg_size": {
+          "type": "integer"
+        },
         "tls": {
           "type": "object",
           "properties": {
-            "ca": { "type": "string", "description": "TLS ca path" },
-            "cert": { "type": "string", "description": "TLS cert path" },
-            "enabled": { "type": "boolean", "description": "TLS enabled" },
+            "ca": {
+              "type": "string",
+              "description": "TLS ca path"
+            },
+            "cert": {
+              "type": "string",
+              "description": "TLS cert path"
+            },
+            "enabled": {
+              "type": "boolean",
+              "description": "TLS enabled"
+            },
             "insecure_skip_verify": {
               "type": "boolean",
               "description": "enable/disable skip SSL certificate verification"
             },
-            "key": { "type": "string", "description": "TLS key path" }
+            "key": {
+              "type": "string",
+              "description": "TLS key path"
+            }
           }
         },
-        "wait_for_ready": { "type": "boolean" }
+        "wait_for_ready": {
+          "type": "boolean"
+        }
       }
     },
     "concurrency_limit": {
@@ -346,16 +380,26 @@
         "logging": {
           "type": "object",
           "properties": {
-            "format": { "type": "string", "enum": ["raw", "json"] },
+            "format": {
+              "type": "string",
+              "enum": ["raw", "json"]
+            },
             "level": {
               "type": "string",
               "enum": ["debug", "info", "warn", "error", "fatal"]
             },
-            "logger": { "type": "string", "enum": ["glg", "zap"] }
+            "logger": {
+              "type": "string",
+              "enum": ["glg", "zap"]
+            }
           }
         },
-        "time_zone": { "type": "string" },
-        "version": { "type": "string" }
+        "time_zone": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
       }
     },
     "insert_config": {
@@ -366,7 +410,10 @@
           "type": "boolean",
           "description": "skip strict exists check flag config"
         },
-        "timestamp": { "type": "string", "description": "index timestamp" }
+        "timestamp": {
+          "type": "string",
+          "description": "index timestamp"
+        }
       }
     },
     "job_type": {
@@ -390,7 +437,10 @@
           "type": "object",
           "description": "filter target config",
           "properties": {
-            "host": { "type": "string", "description": "filter target host" }
+            "host": {
+              "type": "string",
+              "description": "filter target host"
+            }
           }
         }
       }
@@ -403,7 +453,10 @@
           "type": "boolean",
           "description": "skip strict exists check flag config"
         },
-        "timestamp": { "type": "string", "description": "index timestamp" }
+        "timestamp": {
+          "type": "string",
+          "description": "index timestamp"
+        }
       }
     },
     "repetition": {
@@ -425,7 +478,9 @@
     "rules": {
       "type": "array",
       "description": "executing rule",
-      "items": { "type": "string" }
+      "items": {
+        "type": "string"
+      }
     },
     "search_config": {
       "type": "object",
@@ -446,13 +501,22 @@
           "type": "boolean",
           "description": "enable linear search for calculation recall"
         },
-        "epsilon": { "type": "number", "description": "epsilon" },
+        "epsilon": {
+          "type": "number",
+          "description": "epsilon"
+        },
         "min_num": {
           "type": "integer",
           "description": "minimum number of top-k"
         },
-        "num": { "type": "integer", "description": "number of top-k" },
-        "radius": { "type": "number", "description": "radius" },
+        "num": {
+          "type": "integer",
+          "description": "number of top-k"
+        },
+        "radius": {
+          "type": "number",
+          "description": "radius"
+        },
         "timeout": {
           "type": "string",
           "description": "search operation timeout"
@@ -872,7 +936,10 @@
                   "type": "boolean",
                   "description": "gRPC server enabled"
                 },
-                "host": { "type": "string", "description": "gRPC server host" },
+                "host": {
+                  "type": "string",
+                  "description": "gRPC server host"
+                },
                 "port": {
                   "type": "integer",
                   "description": "gRPC server port",
@@ -1066,7 +1133,10 @@
                   "type": "boolean",
                   "description": "REST server enabled"
                 },
-                "host": { "type": "string", "description": "REST server host" },
+                "host": {
+                  "type": "string",
+                  "description": "REST server host"
+                },
                 "port": {
                   "type": "integer",
                   "description": "REST server port",
@@ -1196,7 +1266,10 @@
           "description": "target cluster host",
           "minLength": 1
         },
-        "meta": { "type": "object", "description": "metadata for target host" },
+        "meta": {
+          "type": "object",
+          "description": "metadata for target host"
+        },
         "port": {
           "type": "integer",
           "description": "target cluster port",
@@ -1224,7 +1297,10 @@
           "type": "boolean",
           "description": "skip strict exists check flag config"
         },
-        "timestamp": { "type": "string", "description": "index timestamp" }
+        "timestamp": {
+          "type": "string",
+          "description": "index timestamp"
+        }
       }
     },
     "upsert_config": {
@@ -1239,7 +1315,10 @@
           "type": "boolean",
           "description": "skip strict exists check flag config"
         },
-        "timestamp": { "type": "string", "description": "index timestamp" }
+        "timestamp": {
+          "type": "string",
+          "description": "index timestamp"
+        }
       }
     }
   }

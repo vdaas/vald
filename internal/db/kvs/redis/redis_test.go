@@ -166,24 +166,24 @@ func Test_redisClient_ping(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		client               Redis
+		client               Client
 		initialPingDuration  time.Duration
 		initialPingTimeLimit time.Duration
 	}
 	type want struct {
-		wantR Redis
+		wantR Client
 		err   error
 	}
 	type test struct {
 		want       want
 		args       args
-		checkFunc  func(want, Redis, error) error
+		checkFunc  func(want, Client, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 		name       string
 		fields     fields
 	}
-	defaultCheckFunc := func(w want, gotR Redis, err error) error {
+	defaultCheckFunc := func(w want, gotR Client, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -228,7 +228,7 @@ func Test_redisClient_ping(t *testing.T) {
 				fields: fields{
 					initialPingDuration:  time.Millisecond,
 					initialPingTimeLimit: 3 * time.Millisecond,
-					client: func() Redis {
+					client: func() Client {
 						return &MockRedis{
 							PingFunc: func() (cmd *StatusCmd) {
 								cmd = new(StatusCmd)
@@ -279,7 +279,7 @@ func Test_redisClient_setClient(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		client               Redis
+		client               Client
 		dialer               net.Dialer
 		clusterSlots         func(context.Context) ([]redis.ClusterSlot, error)
 		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
@@ -452,7 +452,7 @@ func Test_redisClient_setClient(t *testing.T) {
 
 func Test_redisClient_newClient(t *testing.T) {
 	type fields struct {
-		client               Redis
+		client               Client
 		dialer               net.Dialer
 		clusterSlots         func(context.Context) ([]redis.ClusterSlot, error)
 		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
@@ -675,7 +675,7 @@ func Test_redisClient_newClusterClient(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		client               Redis
+		client               Client
 		dialer               net.Dialer
 		clusterSlots         func(context.Context) ([]redis.ClusterSlot, error)
 		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
@@ -925,7 +925,7 @@ func Test_redisClient_Connect(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		client               Redis
+		client               Client
 		dialer               net.Dialer
 		clusterSlots         func(ctx context.Context) ([]redis.ClusterSlot, error)
 		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
@@ -956,19 +956,19 @@ func Test_redisClient_Connect(t *testing.T) {
 		readOnly             bool
 	}
 	type want struct {
-		want Redis
+		want Client
 		err  error
 	}
 	type test struct {
 		want       want
 		args       args
-		checkFunc  func(want, Redis, error) error
+		checkFunc  func(want, Client, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 		name       string
 		fields     fields
 	}
-	defaultCheckFunc := func(w want, got Redis, err error) error {
+	defaultCheckFunc := func(w want, got Client, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}

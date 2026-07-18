@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
+	_ "github.com/vdaas/vald/internal/net/grpc/logger"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"google.golang.org/grpc"

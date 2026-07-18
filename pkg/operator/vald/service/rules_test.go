@@ -20,9 +20,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/vdaas/vald/internal/k8s"
+	"github.com/vdaas/vald/internal/k8s/resource"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/operator/api/v1"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 func TestResolveAgentNodePool(t *testing.T) {
@@ -47,19 +47,19 @@ func TestResolveAgentNodePool(t *testing.T) {
 	t.Run("agent pool present with replicas: use agent", func(t *testing.T) {
 		got := resolveAgentNodePool(makeInfra(3, 2, true))
 		assert.Equal(t, 2, got.NodeCount)
-		assert.Equal(t, resource.MustParse("16"), got.MachineResource[corev1.ResourceCPU])
+		assert.Equal(t, resource.MustParse("16"), got.MachineResource[k8s.ResourceCPU])
 	})
 
 	t.Run("agent pool present but replicas == 0: fall back to general", func(t *testing.T) {
 		got := resolveAgentNodePool(makeInfra(3, 0, true))
 		assert.Equal(t, 3, got.NodeCount)
-		assert.Equal(t, resource.MustParse("4"), got.MachineResource[corev1.ResourceCPU])
+		assert.Equal(t, resource.MustParse("4"), got.MachineResource[k8s.ResourceCPU])
 	})
 
 	t.Run("agent pool absent: fall back to general", func(t *testing.T) {
 		got := resolveAgentNodePool(makeInfra(3, 0, false))
 		assert.Equal(t, 3, got.NodeCount)
-		assert.Equal(t, resource.MustParse("4"), got.MachineResource[corev1.ResourceCPU])
+		assert.Equal(t, resource.MustParse("4"), got.MachineResource[k8s.ResourceCPU])
 	})
 
 	t.Run("no pools at all: empty spec without panicking", func(t *testing.T) {
@@ -109,3 +109,181 @@ func TestAgentPvSize(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW
+//
+// func Test_resolveAgentNodePool(t *testing.T) {
+// 	type args struct {
+// 		infra v1.ValdOperatorReleaseInfra
+// 	}
+// 	type want struct {
+// 		want agentNodePoolSpec
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, agentNodePoolSpec) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got agentNodePoolSpec) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           infra:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           infra:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := resolveAgentNodePool(test.args.infra)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_agentPvSize(t *testing.T) {
+// 	type args struct {
+// 		memoryBytes    int64
+// 		pvBufferRatio  float64
+// 		pvMinSizeBytes int64
+// 	}
+// 	type want struct {
+// 		want string
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, string) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got string) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           memoryBytes:0,
+// 		           pvBufferRatio:0,
+// 		           pvMinSizeBytes:0,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           memoryBytes:0,
+// 		           pvBufferRatio:0,
+// 		           pvMinSizeBytes:0,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := agentPvSize(test.args.memoryBytes, test.args.pvBufferRatio, test.args.pvMinSizeBytes)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }

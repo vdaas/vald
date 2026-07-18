@@ -29,11 +29,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	utilyaml "k8s.io/apimachinery/pkg/util/yaml"
-	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/util/jsonpath"
-	metricsv1beta1 "k8s.io/metrics/pkg/apis/metrics/v1beta1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -79,8 +77,9 @@ type (
 	PersistentVolumeClaimSpec = corev1.PersistentVolumeClaimSpec
 	TypedLocalObjectReference = corev1.TypedLocalObjectReference
 	Manager                   = manager.Manager
+	RESTConfig                = rest.Config
 
-	// reconciler interface types
+	// reconciler interface types.
 	Request       = ctrl.Request
 	Reconciler    = reconcile.Reconciler
 	ForOption     = builder.ForOption
@@ -88,20 +87,16 @@ type (
 	WatchesOption = builder.WatchesOption
 	EventHandler  = handler.EventHandler
 
-	// condition types
+	// condition types.
 	Condition       = metav1.Condition
 	ConditionStatus = metav1.ConditionStatus
 
-	// k8s workload types not yet aliased
+	// k8s workload types not yet aliased.
 	Toleration           = corev1.Toleration
 	ResourceList         = corev1.ResourceList
 	ResourceRequirements = corev1.ResourceRequirements
-	ServiceType          = corev1.ServiceType
 
-	// networking types
-	PathType = networkingv1.PathType
-
-	// unstructured / schema / scheme types
+	// unstructured / schema / scheme types.
 	Unstructured         = unstructured.Unstructured
 	GroupVersionKind     = schema.GroupVersionKind
 	GroupVersionResource = schema.GroupVersionResource
@@ -109,53 +104,51 @@ type (
 	PatchOptions         = metav1.PatchOptions
 	Scheme               = runtime.Scheme
 
-	// metrics API types
-	APIPodMetrics      = metricsv1beta1.PodMetrics
-	APIPodMetricsList  = metricsv1beta1.PodMetricsList
-	APINodeMetrics     = metricsv1beta1.NodeMetrics
-	APINodeMetricsList = metricsv1beta1.NodeMetricsList
+	// metadata / runtime / client primitive types.
+	Time          = metav1.Time
+	UID           = types.UID
+	RuntimeObject = runtime.Object
+	WithWatch     = client.WithWatch
 )
 
 const (
 	ApplyPatchType              = types.ApplyPatchType
 	DeletePropagationBackground = metav1.DeletePropagationBackground
-	WatchDeletedEvent           = watch.Deleted
 	SelectionOpEquals           = selection.Equals
 	SelectionOpExists           = selection.Exists
 	PodIndexLabel               = appsv1.PodIndexLabel
 	PodRunning                  = corev1.PodRunning
 	PodPending                  = corev1.PodPending
+	ResourceCPU                 = corev1.ResourceCPU
 	ResourceMemory              = corev1.ResourceMemory
 	NodeInternalIP              = corev1.NodeInternalIP
 	NodeInternalDNS             = corev1.NodeInternalDNS
 	NodeExternalIP              = corev1.NodeExternalIP
 	NodeExternalDNS             = corev1.NodeExternalDNS
+	NodeHostName                = corev1.NodeHostName
 
-	// condition status constants
+	// condition status constants.
 	ConditionTrue    = metav1.ConditionTrue
 	ConditionFalse   = metav1.ConditionFalse
 	ConditionUnknown = metav1.ConditionUnknown
 
-	// toleration constants
+	// toleration constants.
 	TolerationOpEqual     = corev1.TolerationOpEqual
 	TaintEffectNoSchedule = corev1.TaintEffectNoSchedule
 
-	// service type constants
+	// service type constants.
 	ServiceTypeClusterIP    = corev1.ServiceTypeClusterIP
 	ServiceTypeLoadBalancer = corev1.ServiceTypeLoadBalancer
-	ServiceTypeNodePort     = corev1.ServiceTypeNodePort
 
-	// path type constants
+	// path type constants.
 	PathTypeExact                  = networkingv1.PathTypeExact
 	PathTypeImplementationSpecific = networkingv1.PathTypeImplementationSpecific
 	PathTypePrefix                 = networkingv1.PathTypePrefix
 )
 
-// MetricsAddToScheme registers the metrics.k8s.io API types with a scheme.
-var MetricsAddToScheme = metricsv1beta1.AddToScheme
-
+//nolint:gochecknoglobals // immutable function aliases confining k8s.io imports to this package
 var (
-	IntOrStringFrom      = intstr.FromString
+	AddCoreToScheme      = corev1.AddToScheme
 	IsNotFound           = apierrors.IsNotFound
 	NestedFloat64        = unstructured.NestedFloat64
 	NewJSONPath          = jsonpath.New

@@ -49,7 +49,7 @@ type run struct {
 	der           net.Dialer
 }
 
-func New(cfg *config.Data) (r runner.Runner, err error) {
+func New(cfg *config.Data) (r runner.Interface, err error) {
 	eg := errgroup.Get()
 	netOpts, err := cfg.Discoverer.Net.Opts()
 	if err != nil {

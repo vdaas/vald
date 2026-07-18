@@ -189,7 +189,9 @@ func decodeDetails(objs ...any) (details []Detail) {
 			for i := 0; i < v.Len(); i++ {
 				var val any
 				if v.Index(i).Kind() == reflect.Pointer {
-					val = v.Index(i).Elem().Interface()
+					if !v.Index(i).IsNil() {
+						val = v.Index(i).Elem().Interface()
+					}
 				} else {
 					val = v.Index(i).Interface()
 				}

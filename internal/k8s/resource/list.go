@@ -34,8 +34,8 @@ import (
 // AddKnownTypeWithName (see AddListToScheme) instead of AddKnownTypes.
 type List[T any, PT DeepCopyIntoer[T]] struct {
 	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata"`
-	Items           []T `json:"items"`
+	metav1.ListMeta `json:"metadata"` //nolint:tagliatelle // fixed by the Kubernetes list API wire format, not renameable
+	Items           []T               `json:"items"`
 }
 
 // skipcq: RVV-B0001 name is fixed by the DeepCopyIntoer contract.
@@ -44,7 +44,6 @@ func (in *List[T, PT]) DeepCopyInto(out *List[T, PT]) {
 		return
 	}
 	*out = *in
-	out.TypeMeta = in.TypeMeta
 	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	out.Items = CopySliceInto[T, PT](in.Items)
 }

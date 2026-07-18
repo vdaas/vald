@@ -95,7 +95,7 @@ func (g *gateway) BroadCast(
 		case <-ictx.Done():
 			return nil
 		default:
-			err = f(ictx, addr, vc.NewValdClient(conn), copts...)
+			err = f(ictx, addr, vc.NewFromConn(conn), copts...)
 			if err != nil {
 				return err
 			}
@@ -130,7 +130,7 @@ func (g *gateway) DoMulti(
 		copts ...grpc.CallOption,
 	) (err error) {
 		if atomic.LoadUint32(&cur) < limit {
-			err = f(ictx, addr, vc.NewValdClient(conn), copts...)
+			err = f(ictx, addr, vc.NewFromConn(conn), copts...)
 			if err != nil {
 				return err
 			}
@@ -148,7 +148,7 @@ func (g *gateway) DoMulti(
 			if atomic.LoadUint32(&cur) < limit {
 				_, ok := visited.Load(addr)
 				if !ok {
-					err = f(ictx, addr, vc.NewValdClient(conn), copts...)
+					err = f(ictx, addr, vc.NewFromConn(conn), copts...)
 					if err != nil {
 						return err
 					}

@@ -20,7 +20,7 @@ the builder. This keeps `vrsBuilder.Build` a pure function of `(CR, Config, Capa
 ```go
 // pkg/operator/vald/service/builder.go
 agentPool := resolveAgentNodePool(infra)
-row.SetRelationalResources(agentPool.NodeCount, agentPool.MachineResource, resourceParams)
+row.SetScaledResources(agentPool.NodeCount, agentPool.MachineResource, resourceParams)
 ```
 
 `ResolveAgentNodePool` returns the dedicated `agent` pool when present, and otherwise
@@ -38,13 +38,13 @@ Agent pods request a fraction of the node's resources so that
 `AgentPodsPerNode` (default 2) pods fit on one node:
 
 ```
-CPU request  = nodeCPU  × ResourceRatio / AgentPodsPerNode
-RAM request  = nodeRAM  × ResourceRatio / AgentPodsPerNode
-CPU limit    = nodeCPU  × ResourceRatio          (all pods on this node share the limit)
+CPU request  = nodeCPU  × AgentResourceRatio / AgentPodsPerNode
+RAM request  = nodeRAM  × AgentResourceRatio / AgentPodsPerNode
+CPU limit    = nodeCPU  × AgentResourceRatio          (all pods on this node share the limit)
 RAM limit    = (not set)
 ```
 
-`ResourceRatio = 0.6` — 60% of the node is reserved for agent pods combined; the
+`AgentResourceRatio = 0.6` — 60% of the node is reserved for agent pods combined; the
 remaining 40% covers OS, DaemonSets, and other system processes.
 
 Memory limit is intentionally absent: the NGT index grows on disk after startup and

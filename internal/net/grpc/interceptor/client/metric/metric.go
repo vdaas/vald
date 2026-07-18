@@ -36,7 +36,7 @@ const (
 	gRPCStatus        = "grpc_client_status"
 )
 
-func ClientMetricInterceptors() (grpc.UnaryClientInterceptor, grpc.StreamClientInterceptor, error) {
+func ClientInterceptors() (grpc.UnaryClientInterceptor, grpc.StreamClientInterceptor, error) {
 	meter := metrics.GetMeter()
 
 	latencyHistogram, err := meter.Float64Histogram(

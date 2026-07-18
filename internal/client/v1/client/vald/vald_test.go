@@ -107,7 +107,7 @@ package vald
 // 	}
 // }
 //
-// func TestNewValdClient(t *testing.T) {
+// func TestNewFromConn(t *testing.T) {
 // 	type args struct {
 // 		cc *grpc.ClientConn
 // 	}
@@ -184,7 +184,7 @@ package vald
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got := NewValdClient(test.args.cc)
+// 			got := NewFromConn(test.args.cc)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

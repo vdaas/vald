@@ -22,7 +22,7 @@ package strategy
 // func TestNewBulkInsertCommit(t *testing.T) {
 // 	type args struct {
 // 		poolSize uint32
-// 		opts     []StrategyOption
+// 		opts     []Option
 // 	}
 // 	type want struct {
 // 		want benchmark.Strategy

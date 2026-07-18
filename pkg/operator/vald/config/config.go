@@ -451,7 +451,7 @@ func (o *Operator) Load() (*Config, error) {
 	return c, nil
 }
 
-func NewConfig(path string) (cfg *Data, err error) {
+func New(path string) (cfg *Data, err error) {
 	cfg = new(Data)
 
 	if err = config.Read(path, &cfg); err != nil {

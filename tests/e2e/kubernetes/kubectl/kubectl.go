@@ -56,7 +56,7 @@ func DebugLog(ctx context.Context, t *testing.T, label, kubeconfig string) error
 	return runCmd(t, cmd)
 }
 
-func KubectlCmd(ctx context.Context, t *testing.T, kubeconfig string, subcmds ...string) error {
+func Cmd(ctx context.Context, t *testing.T, kubeconfig string, subcmds ...string) error {
 	t.Helper()
 	cmd := exec.CommandContext(ctx, "kubectl", append([]string{"--kubeconfig", kubeconfig}, subcmds...)...)
 	return runCmd(t, cmd)
