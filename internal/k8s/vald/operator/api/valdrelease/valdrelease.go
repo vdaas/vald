@@ -24,6 +24,8 @@ import (
 )
 
 // GroupVersion / GVK identify the ValdRelease custom resource.
+//
+// // standard controller-runtime scheme-registration pattern; GroupVersion/GVK/AddToScheme are the public API consumed by every reconciler in this group
 var (
 	GroupVersion = schema.GroupVersion{Group: "vald.vdaas.org", Version: "v1"}
 	GVK          = schema.GroupVersionKind{Group: GroupVersion.Group, Version: GroupVersion.Version, Kind: "ValdRelease"}
@@ -61,11 +63,14 @@ func (in *VrsStatus) DeepCopyInto(out *VrsStatus) {
 // (Values), derived from charts/vald/values.schema.json instead of a
 // hand-maintained mirror. The embedded resource.Base promotes DeepCopy /
 // DeepCopyObject generically; DeepCopyInto is provided by the generator.
-type ValdRelease struct {
+//
+// // fieldalignment: resource.Base must stay the zero-size first field (contract documented on Base) and the K8s API convention fixes the
+// TypeMeta/ObjectMeta/Spec/Status order
+type ValdRelease struct { //nolint:tagliatelle // generic embed field name confuses the linter's tag-name check
 	resource.Base[ValdRelease, *ValdRelease] `json:"-"`
 
 	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata"`
+	metav1.ObjectMeta `json:"metadata"` //nolint:tagliatelle // fixed by the Kubernetes object API wire format, not renameable
 
 	Spec   Values    `json:"spec"`
 	Status VrsStatus `json:"status"`

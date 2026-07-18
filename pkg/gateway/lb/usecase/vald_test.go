@@ -114,18 +114,18 @@ func Test_discovererClient(t *testing.T) {
 // 		cfg *config.Data
 // 	}
 // 	type want struct {
-// 		wantR runner.Runner
+// 		wantR runner.Interface
 // 		err   error
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
 // 		want       want
-// 		checkFunc  func(want, runner.Runner, error) error
+// 		checkFunc  func(want, runner.Interface, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, gotR runner.Runner, err error) error {
+// 	defaultCheckFunc := func(w want, gotR runner.Interface, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}

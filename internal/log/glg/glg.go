@@ -40,7 +40,7 @@ type logger struct {
 }
 
 // New returns a new logger instance.
-func New(opts ...Option) log.Logger {
+func New(opts ...Option) log.Interface {
 	l := new(logger)
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(l)

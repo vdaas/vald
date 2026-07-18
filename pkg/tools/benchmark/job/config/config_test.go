@@ -33,18 +33,18 @@ func TestNewConfig(t *testing.T) {
 		path string
 	}
 	type want struct {
-		wantCfg *Config
+		wantCfg *Data
 		err     error
 	}
 	type test struct {
 		want       want
-		checkFunc  func(want, *Config, error) error
+		checkFunc  func(want, *Data, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
 		name       string
 		args       args
 	}
-	defaultCheckFunc := func(w want, gotCfg *Config, err error) error {
+	defaultCheckFunc := func(w want, gotCfg *Data, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -62,7 +62,7 @@ func TestNewConfig(t *testing.T) {
 				args: args{
 					path: path,
 				},
-				checkFunc: func(w want, gotCfg *Config, err error) error {
+				checkFunc: func(w want, gotCfg *Data, err error) error {
 					if errors.Is(err, fs.ErrPermission) {
 						return nil
 					}
@@ -99,8 +99,8 @@ func TestNewConfig(t *testing.T) {
 			}
 
 			gotCfg, err := NewConfig(tt.Context(), test.args.path)
-			if err := checkFunc(test.want, gotCfg, err); err != nil {
-				tt.Errorf("error = %v, got = %#v", err, gotCfg)
+			if cerr := checkFunc(test.want, gotCfg, err); cerr != nil {
+				tt.Errorf("error = %v, got = %#v", cerr, gotCfg)
 			}
 		})
 	}

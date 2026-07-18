@@ -22,6 +22,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
+	_ "github.com/vdaas/vald/internal/net/grpc/logger"
 	"google.golang.org/grpc/encoding"
 	"google.golang.org/grpc/mem"
 )

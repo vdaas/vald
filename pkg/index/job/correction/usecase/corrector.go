@@ -45,7 +45,7 @@ type run struct {
 	corrector     service.Corrector
 }
 
-func New(cfg *config.Data) (r runner.Runner, err error) {
+func New(cfg *config.Data) (r runner.Interface, err error) {
 	eg := errgroup.Get()
 
 	gOpts, err := cfg.Corrector.Gateway.Opts()
@@ -92,8 +92,8 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	grpcServerOptions := []server.Option{
 		server.WithGRPCOption(
-			grpc.ChainUnaryInterceptor(recover.RecoverInterceptor()),
-			grpc.ChainStreamInterceptor(recover.RecoverStreamInterceptor()),
+			grpc.ChainUnaryInterceptor(recover.Interceptor()),
+			grpc.ChainStreamInterceptor(recover.StreamInterceptor()),
 		),
 	}
 
@@ -149,7 +149,9 @@ func (r *run) PreStart(ctx context.Context) error {
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	log.Info("starting servers")
-	ech := make(chan error, 3) //nolint:gomnd
+	// buffer one slot per error source forwarded below so no sender blocks.
+	const errChanBufferSize = 3
+	ech := make(chan error, errChanBufferSize)
 	var oech <-chan error
 	if r.observability != nil {
 		oech = r.observability.Start(ctx)
@@ -185,17 +187,17 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer func() {
 			log.Info("finding my pid to kill myself")
-			p, err := os.FindProcess(os.Getpid())
-			if err != nil {
+			p, perr := os.FindProcess(os.Getpid())
+			if perr != nil {
 				// using Fatal to avoid this process to be zombie
 				// skipcq: RVV-A0003
-				log.Fatalf("failed to find my pid to kill %v", err)
+				log.Fatalf("failed to find my pid to kill %v", perr)
 				return
 			}
 
 			log.Info("sending SIGTERM to myself to stop this job")
-			if err := p.Signal(syscall.SIGTERM); err != nil {
-				log.Error(err)
+			if serr := p.Signal(syscall.SIGTERM); serr != nil {
+				log.Error(serr)
 			}
 		}()
 

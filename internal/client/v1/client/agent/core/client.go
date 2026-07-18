@@ -87,7 +87,7 @@ func New(opts ...Option) (Client, error) {
 
 func NewAgentClient(cc *grpc.ClientConn) Client {
 	return &singleAgentClient{
-		Client: vald.NewValdClient(cc),
+		Client: vald.NewFromConn(cc),
 		ac:     agent.NewAgentClient(cc),
 	}
 }

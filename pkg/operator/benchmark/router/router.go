@@ -40,6 +40,8 @@ func New(opts ...Option) http.Handler {
 		opt(r)
 	}
 
+	h := r.handler
+
 	return routing.New(
 		routing.WithMiddleware(
 			middleware.NewTimeout(
@@ -48,7 +50,30 @@ func New(opts ...Option) http.Handler {
 			),
 		),
 		routing.WithRoutes([]routing.Route{
-			// TODO add REST API interface here
+			{
+				Name: "Index",
+				Methods: []string{
+					http.MethodGet,
+				},
+				Pattern:     "/",
+				HandlerFunc: h.Index,
+			},
+			{
+				Name: "Scenario Status",
+				Methods: []string{
+					http.MethodGet,
+				},
+				Pattern:     "/status/scenario",
+				HandlerFunc: h.ScenarioStatus,
+			},
+			{
+				Name: "Job Status",
+				Methods: []string{
+					http.MethodGet,
+				},
+				Pattern:     "/status/job",
+				HandlerFunc: h.JobStatus,
+			},
 		}...),
 	)
 }

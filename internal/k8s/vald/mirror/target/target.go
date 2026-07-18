@@ -14,20 +14,9 @@
 package target
 
 import (
-	"context"
-	"reflect"
-	"time"
-
-	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
+	"github.com/vdaas/vald/internal/k8s/vald"
 	mirrv1 "github.com/vdaas/vald/internal/k8s/vald/mirror/api/v1"
-	"github.com/vdaas/vald/internal/log"
-	apierr "k8s.io/apimachinery/pkg/api/errors"
-	"sigs.k8s.io/controller-runtime/pkg/builder"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 type (
@@ -44,96 +33,30 @@ const (
 	MirrorTargetPhaseUnknown      = mirrv1.MirrorTargetUnknown
 )
 
-const (
-	reconcileRequeueDurationForInvalidError  = 100 * time.Millisecond
-	reconcileRequeueDurationForNotFoundError = time.Second
-)
-
-type reconciler struct {
-	mgr         manager.Manager
-	name        string
-	onError     func(err error)
-	onReconcile func(ctx context.Context, mm map[string]Target)
-	lopts       []client.ListOption
-}
-
-type Target struct {
+type Endpoint struct {
 	Colocation string
 	Host       string
 	Phase      MirrorTargetPhase
 	Port       int
 }
 
+// New creates a MirrorTargetWatcher that lists ValdMirrorTarget resources on
+// every reconcile and reports them, converted into Endpoint values keyed by
+// name, to the callback registered via WithOnReconcileFunc. Option
+// application errors abort construction only when critical; any other option
+// error is logged as a warning and skipped.
 func New(opts ...Option) (MirrorTargetWatcher, error) {
-	r := new(reconciler)
-	for _, opt := range append(defaultOptions, opts...) {
-		if err := opt(r); err != nil {
-			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-			e := &errors.ErrCriticalOption{}
-			if errors.As(err, &e) {
-				log.Error(oerr)
-				return nil, oerr
+	return vald.NewListWatcher(
+		mirrv1.AddToScheme,
+		func(m *mirrv1.ValdMirrorTarget) Endpoint {
+			return Endpoint{
+				Colocation: m.Spec.Colocation,
+				Host:       m.Spec.Target.Host,
+				Port:       m.Spec.Target.Port,
+				Phase:      m.Status.Phase,
 			}
-			log.Warn(oerr)
-		}
-	}
-	return r, nil
-}
-
-func (r *reconciler) addListOpts(opt client.ListOption) {
-	if opt == nil {
-		return
-	}
-	r.lopts = append(r.lopts, opt)
-}
-
-func (r *reconciler) Reconcile(
-	ctx context.Context, _ reconcile.Request,
-) (res reconcile.Result, err error) {
-	ml := &mirrv1.ValdMirrorTargetList{}
-	err = r.mgr.GetClient().List(ctx, ml, r.lopts...)
-	if err != nil {
-		if r.onError != nil {
-			r.onError(err)
-		}
-		if apierr.IsNotFound(err) {
-			return reconcile.Result{RequeueAfter: reconcileRequeueDurationForNotFoundError}, nil
-		}
-		return reconcile.Result{RequeueAfter: reconcileRequeueDurationForInvalidError}, err
-	}
-	tm := make(map[string]Target, len(ml.Items))
-	for _, m := range ml.Items {
-		tm[m.GetName()] = Target{
-			Colocation: m.Spec.Colocation,
-			Host:       m.Spec.Target.Host,
-			Port:       m.Spec.Target.Port,
-			Phase:      m.Status.Phase,
-		}
-	}
-	r.onReconcile(ctx, tm)
-	return res, nil
-}
-
-func (r *reconciler) GetName() string {
-	return r.name
-}
-
-func (r *reconciler) NewReconciler(_ context.Context, mgr manager.Manager) reconcile.Reconciler {
-	if r.mgr == nil && mgr != nil {
-		r.mgr = mgr
-	}
-	mirrv1.AddToScheme(r.mgr.GetScheme())
-	return r
-}
-
-func (*reconciler) For() (client.Object, []builder.ForOption) {
-	return new(mirrv1.ValdMirrorTarget), nil
-}
-
-func (*reconciler) Owns() (client.Object, []builder.OwnsOption) {
-	return nil, nil
-}
-
-func (*reconciler) Watches() (client.Object, handler.EventHandler, []builder.WatchesOption) {
-	return nil, nil, nil
+		},
+		vald.SkipNonCriticalOptionError,
+		opts...,
+	)
 }

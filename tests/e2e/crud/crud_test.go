@@ -120,7 +120,7 @@ func init() {
 	}
 
 	fmt.Printf("loading dataset: %s ", *datasetName)
-	ds, err = hdf5.HDF5ToDataset(*datasetName)
+	ds, err = hdf5.ToDataset(*datasetName)
 	if err != nil {
 		panic(err)
 	}
@@ -907,7 +907,7 @@ func TestE2EReadReplica(t *testing.T) {
 	t.Log("waiting for read replica rotator jobs to complete...")
 	if err := kubectl.WaitResources(ctx, t, "job", "app=vald-readreplica-rotate", "complete", "60s", kubeConfig); err != nil {
 		t.Log("wait failed. printing yaml of vald-readreplica-rotate")
-		kubectl.KubectlCmd(ctx, t, kubeConfig, "get", "pod", "-l", "app=vald-readreplica-rotate", "-o", "yaml")
+		kubectl.Cmd(ctx, t, kubeConfig, "get", "pod", "-l", "app=vald-readreplica-rotate", "-o", "yaml")
 		t.Log("wait failed. printing log of vald-index-operator")
 		kubectl.DebugLog(ctx, t, "app=vald-index-operator", kubeConfig)
 		t.Log("wait failed. printing log of vald-readreplica-rotate")

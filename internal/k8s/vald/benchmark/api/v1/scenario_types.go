@@ -36,13 +36,13 @@ const (
 	BenchmarkScenarioHealthy   ValdBenchmarkScenarioStatus = "Healthy"
 )
 
-type ValdBenchmarkScenario struct {
+type ValdBenchmarkScenario struct { //nolint:tagliatelle // generic embed field name confuses the linter's tag-name check
 	resource.Base[ValdBenchmarkScenario, *ValdBenchmarkScenario] `json:"-"`
 
-	metav1.TypeMeta   `                            json:",inline"`
+	metav1.TypeMeta   `json:",inline"`
 	Status            ValdBenchmarkScenarioStatus `json:"status,omitempty"`
-	metav1.ObjectMeta `                            json:"metadata"`
-	Spec              ValdBenchmarkScenarioSpec `json:"spec"`
+	metav1.ObjectMeta `json:"metadata"`           //nolint:tagliatelle // fixed by the Kubernetes object API wire format, not renameable
+	Spec              ValdBenchmarkScenarioSpec   `json:"spec"`
 }
 
 // ValdBenchmarkScenarioList contains a list of ValdBenchmarkScenario. The
@@ -68,4 +68,9 @@ func (in *ValdBenchmarkScenarioSpec) DeepCopyInto(out *ValdBenchmarkScenarioSpec
 	out.Target = resource.CopyPtr(in.Target)
 	out.Dataset = resource.CopyPtrInto(in.Dataset)
 	out.Jobs = resource.CopySliceFunc(in.Jobs, resource.CopyPtrInto[BenchmarkJobSpec])
+}
+
+// DeepCopy returns a deep copy of the receiver.
+func (in *ValdBenchmarkScenarioSpec) DeepCopy() *ValdBenchmarkScenarioSpec {
+	return resource.CopyPtrInto(in)
 }

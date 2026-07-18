@@ -43,7 +43,7 @@ type strategy struct {
 	parallel  bool
 }
 
-func newStrategy(opts ...StrategyOption) benchmark.Strategy {
+func newStrategy(opts ...Option) benchmark.Strategy {
 	s := &strategy{
 		// invalid mode.
 		mode: algorithm.Mode(100),

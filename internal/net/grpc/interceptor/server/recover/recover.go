@@ -23,7 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 )
 
-func RecoverInterceptor() grpc.UnaryServerInterceptor {
+func Interceptor() grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
 		req any,
@@ -38,7 +38,7 @@ func RecoverInterceptor() grpc.UnaryServerInterceptor {
 	}
 }
 
-func RecoverStreamInterceptor() grpc.StreamServerInterceptor {
+func StreamInterceptor() grpc.StreamServerInterceptor {
 	return func(
 		srv any,
 		ss grpc.ServerStream,

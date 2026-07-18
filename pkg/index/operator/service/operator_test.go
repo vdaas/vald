@@ -17,19 +17,27 @@
 package service
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
 	"github.com/vdaas/vald/internal/k8s"
-	"github.com/vdaas/vald/internal/k8s/client"
+	"github.com/vdaas/vald/internal/k8s/resource"
 	"github.com/vdaas/vald/internal/k8s/vald"
 	mock "github.com/vdaas/vald/internal/test/mock/k8s"
-	"github.com/vdaas/vald/internal/test/testify"
 )
 
+//nolint:maintidx // table-driven test with multiple literal test-case constructors; complexity is inherent to the pattern, not tangled logic
 func Test_operator_podOnReconcile(t *testing.T) {
 	t.Parallel()
+
+	const (
+		readReplicaLabelKey = "app"
+		rotatorName         = "rotator"
+		testDeploymentName  = "deploymentName"
+		testRunningJob1     = "already running job1"
+	)
 
 	type want struct {
 		res          k8s.Result
@@ -84,7 +92,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 				},
 				readReplicaDeployment: &k8s.Deployment{
 					ObjectMeta: k8s.ObjectMeta{
-						Name: "deploymentName",
+						Name:   testDeploymentName,
+						Labels: map[string]string{readReplicaLabelKey: "0"},
 						Annotations: map[string]string{
 							vald.LastTimeSnapshotTimestampAnnotationsKey: rotateTime.Format(vald.TimeFormat),
 						},
@@ -117,7 +126,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 				},
 				readReplicaDeployment: &k8s.Deployment{
 					ObjectMeta: k8s.ObjectMeta{
-						Name: "deploymentName",
+						Name:   testDeploymentName,
+						Labels: map[string]string{readReplicaLabelKey: "0"},
 						Annotations: map[string]string{
 							vald.LastTimeSnapshotTimestampAnnotationsKey: rotateTime.Format(vald.TimeFormat),
 						},
@@ -150,7 +160,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 				},
 				readReplicaDeployment: &k8s.Deployment{
 					ObjectMeta: k8s.ObjectMeta{
-						Name: "deploymentName",
+						Name:   testDeploymentName,
+						Labels: map[string]string{readReplicaLabelKey: "0"},
 						Annotations: map[string]string{
 							vald.LastTimeSnapshotTimestampAnnotationsKey: rotateTime.Format(vald.TimeFormat),
 						},
@@ -159,7 +170,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 				runningJobs: []k8s.Job{
 					{
 						ObjectMeta: k8s.ObjectMeta{
-							Name: "already running job1",
+							Name:   testRunningJob1,
+							Labels: map[string]string{readReplicaLabelKey: rotatorName},
 						},
 						Status: k8s.JobStatus{
 							Active: 1,
@@ -194,7 +206,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 				},
 				readReplicaDeployment: &k8s.Deployment{
 					ObjectMeta: k8s.ObjectMeta{
-						Name: "deploymentName",
+						Name:   testDeploymentName,
+						Labels: map[string]string{readReplicaLabelKey: "0"},
 						Annotations: map[string]string{
 							vald.LastTimeSnapshotTimestampAnnotationsKey: rotateTime.Format(vald.TimeFormat),
 						},
@@ -203,7 +216,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 				runningJobs: []k8s.Job{
 					{
 						ObjectMeta: k8s.ObjectMeta{
-							Name: "already running job1",
+							Name:   testRunningJob1,
+							Labels: map[string]string{readReplicaLabelKey: rotatorName},
 						},
 						Status: k8s.JobStatus{
 							Active: 1,
@@ -238,7 +252,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 				},
 				readReplicaDeployment: &k8s.Deployment{
 					ObjectMeta: k8s.ObjectMeta{
-						Name: "deploymentName",
+						Name:   testDeploymentName,
+						Labels: map[string]string{readReplicaLabelKey: "0"},
 						Annotations: map[string]string{
 							vald.LastTimeSnapshotTimestampAnnotationsKey: rotateTime.Format(vald.TimeFormat),
 						},
@@ -247,7 +262,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 				runningJobs: []k8s.Job{
 					{
 						ObjectMeta: k8s.ObjectMeta{
-							Name: "already running job1",
+							Name:   testRunningJob1,
+							Labels: map[string]string{readReplicaLabelKey: rotatorName},
 						},
 						Status: k8s.JobStatus{
 							Active: 1,
@@ -255,7 +271,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 					},
 					{
 						ObjectMeta: k8s.ObjectMeta{
-							Name: "already running job2",
+							Name:   "already running job2",
+							Labels: map[string]string{readReplicaLabelKey: rotatorName},
 						},
 						Status: k8s.JobStatus{
 							Active: 1,
@@ -279,35 +296,41 @@ func Test_operator_podOnReconcile(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 
-			mock := &mock.ValdK8sClientMock{}
-			mock.On("LabelSelector", testify.Anything, testify.Anything, testify.Anything).Return(client.NewSelector(), nil).Maybe()
-			mock.On("List", testify.Anything, testify.AnythingOfType("*v1.DeploymentList"), testify.Anything).Run(func(args testify.Arguments) {
-				arg, ok := args.Get(1).(*k8s.DeploymentList)
-				require.True(t, ok)
+			mockClient := &mock.ValdK8sClientMock{}
 
-				arg.Items = []k8s.Deployment{*test.readReplicaDeployment}
-			}).Return(nil).Maybe()
-
-			mock.On("List", testify.Anything, testify.AnythingOfType("*v1.JobList"), testify.Anything).Run(func(args testify.Arguments) {
-				arg, ok := args.Get(1).(*k8s.JobList)
-				require.True(t, ok)
-
-				arg.Items = test.runningJobs
-			}).Return(nil).Maybe()
-
-			// testify/mock does not accept to set Times(0) so you cannot do things like .Return(nil).Once(calledTimes)
-			// ref: https://github.com/stretchr/testify/issues/566
-			if test.want.createCalled {
-				mock.On("Create", testify.Anything, testify.Anything, testify.Anything).Return(nil).Once()
+			scheme := k8s.NewScheme()
+			require.NoError(t, k8s.AddClientGoScheme(scheme))
+			var initObjs []k8s.Object
+			if test.readReplicaDeployment != nil {
+				initObjs = append(initObjs, test.readReplicaDeployment)
 			}
-			defer mock.AssertExpectations(tt)
+			for i := range test.runningJobs {
+				initObjs = append(initObjs, &test.runningJobs[i])
+			}
+
+			// testify/mock does not accept to set Times(0), so the call count is
+			// tracked manually via an interceptor instead of a mock expectation.
+			var createCalls int
+			base := mock.NewFakeClientBuilder().WithScheme(scheme).WithObjects(initObjs...).Build()
+			fakeClient := mock.NewInterceptorClient(base, mock.InterceptorFuncs{
+				Create: func(
+					ctx context.Context, c k8s.WithWatch, obj k8s.Object, opts ...k8s.CreateOption,
+				) error {
+					createCalls++
+					return c.Create(ctx, obj, opts...)
+				},
+			})
 
 			concurrency := uint(1)
 			if test.rotationJobConcurrency != 0 {
 				concurrency = test.rotationJobConcurrency
 			}
 			op := operator{
-				client:                 mock,
+				client:                 mockClient,
+				deployments:            resource.NewClient(fakeClient, new(k8s.Deployment), new(k8s.DeploymentList)),
+				jobs:                   resource.NewClient(fakeClient, new(k8s.Job), new(k8s.JobList)),
+				readReplicaLabelKey:    readReplicaLabelKey,
+				rotatorName:            rotatorName,
 				readReplicaEnabled:     test.readReplicaEnabled,
 				rotationJobConcurrency: concurrency,
 			}
@@ -321,6 +344,11 @@ func Test_operator_podOnReconcile(t *testing.T) {
 			res, err := op.podOnReconcile(tt.Context(), test.agentPod)
 			require.Equal(t, test.want.err, err)
 			require.Equal(t, test.want.res, res)
+			wantCreateCalls := 0
+			if test.want.createCalled {
+				wantCreateCalls = 1
+			}
+			require.Equal(t, wantCreateCalls, createCalls)
 		})
 	}
 }
@@ -337,8 +365,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		opts                   []Option
 // 	}
 // 	type want struct {
-// 		wantO Operator
-// 		err   error
+// 		want Operator
+// 		err  error
 // 	}
 // 	type test struct {
 // 		name       string
@@ -348,12 +376,12 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, gotO Operator, err error) error {
+// 	defaultCheckFunc := func(w want, got Operator, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
-// 		if !reflect.DeepEqual(gotO, w.wantO) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotO, w.wantO)
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 // 		}
 // 		return nil
 // 	}
@@ -423,8 +451,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			gotO, err := New(test.args.namespace, test.args.agentName, test.args.rotatorName, test.args.targetReadReplicaIDKey, test.args.rotatorJob, test.args.opts...)
-// 			if err := checkFunc(test.want, gotO, err); err != nil {
+// 			got, err := New(test.args.namespace, test.args.agentName, test.args.rotatorName, test.args.targetReadReplicaIDKey, test.args.rotatorJob, test.args.opts...)
+// 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})
@@ -439,6 +467,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		ctrl                              k8s.Controller
 // 		eg                                errgroup.Group
 // 		client                            client.Client
+// 		deployments                       *resource.Client[*k8s.Deployment, *k8s.DeploymentList]
+// 		jobs                              *resource.Client[*k8s.Job, *k8s.JobList]
 // 		rotatorJob                        *k8s.Job
 // 		namespace                         string
 // 		rotatorName                       string
@@ -481,6 +511,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		           ctrl:nil,
 // 		           eg:nil,
 // 		           client:nil,
+// 		           deployments:nil,
+// 		           jobs:nil,
 // 		           rotatorJob:nil,
 // 		           namespace:"",
 // 		           rotatorName:"",
@@ -512,6 +544,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		           ctrl:nil,
 // 		           eg:nil,
 // 		           client:nil,
+// 		           deployments:nil,
+// 		           jobs:nil,
 // 		           rotatorJob:nil,
 // 		           namespace:"",
 // 		           rotatorName:"",
@@ -552,6 +586,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 				ctrl:                              test.fields.ctrl,
 // 				eg:                                test.fields.eg,
 // 				client:                            test.fields.client,
+// 				deployments:                       test.fields.deployments,
+// 				jobs:                              test.fields.jobs,
 // 				rotatorJob:                        test.fields.rotatorJob,
 // 				namespace:                         test.fields.namespace,
 // 				rotatorName:                       test.fields.rotatorName,
@@ -578,6 +614,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		ctrl                              k8s.Controller
 // 		eg                                errgroup.Group
 // 		client                            client.Client
+// 		deployments                       *resource.Client[*k8s.Deployment, *k8s.DeploymentList]
+// 		jobs                              *resource.Client[*k8s.Job, *k8s.JobList]
 // 		rotatorJob                        *k8s.Job
 // 		namespace                         string
 // 		rotatorName                       string
@@ -621,6 +659,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		           ctrl:nil,
 // 		           eg:nil,
 // 		           client:nil,
+// 		           deployments:nil,
+// 		           jobs:nil,
 // 		           rotatorJob:nil,
 // 		           namespace:"",
 // 		           rotatorName:"",
@@ -653,6 +693,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		           ctrl:nil,
 // 		           eg:nil,
 // 		           client:nil,
+// 		           deployments:nil,
+// 		           jobs:nil,
 // 		           rotatorJob:nil,
 // 		           namespace:"",
 // 		           rotatorName:"",
@@ -693,6 +735,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 				ctrl:                              test.fields.ctrl,
 // 				eg:                                test.fields.eg,
 // 				client:                            test.fields.client,
+// 				deployments:                       test.fields.deployments,
+// 				jobs:                              test.fields.jobs,
 // 				rotatorJob:                        test.fields.rotatorJob,
 // 				namespace:                         test.fields.namespace,
 // 				rotatorName:                       test.fields.rotatorName,
@@ -811,6 +855,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		ctrl                              k8s.Controller
 // 		eg                                errgroup.Group
 // 		client                            client.Client
+// 		deployments                       *resource.Client[*k8s.Deployment, *k8s.DeploymentList]
+// 		jobs                              *resource.Client[*k8s.Job, *k8s.JobList]
 // 		rotatorJob                        *k8s.Job
 // 		namespace                         string
 // 		rotatorName                       string
@@ -854,6 +900,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		           ctrl:nil,
 // 		           eg:nil,
 // 		           client:nil,
+// 		           deployments:nil,
+// 		           jobs:nil,
 // 		           rotatorJob:nil,
 // 		           namespace:"",
 // 		           rotatorName:"",
@@ -886,6 +934,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		           ctrl:nil,
 // 		           eg:nil,
 // 		           client:nil,
+// 		           deployments:nil,
+// 		           jobs:nil,
 // 		           rotatorJob:nil,
 // 		           namespace:"",
 // 		           rotatorName:"",
@@ -926,6 +976,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 				ctrl:                              test.fields.ctrl,
 // 				eg:                                test.fields.eg,
 // 				client:                            test.fields.client,
+// 				deployments:                       test.fields.deployments,
+// 				jobs:                              test.fields.jobs,
 // 				rotatorJob:                        test.fields.rotatorJob,
 // 				namespace:                         test.fields.namespace,
 // 				rotatorName:                       test.fields.rotatorName,
@@ -952,6 +1004,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		ctrl                              k8s.Controller
 // 		eg                                errgroup.Group
 // 		client                            client.Client
+// 		deployments                       *resource.Client[*k8s.Deployment, *k8s.DeploymentList]
+// 		jobs                              *resource.Client[*k8s.Job, *k8s.JobList]
 // 		rotatorJob                        *k8s.Job
 // 		namespace                         string
 // 		rotatorName                       string
@@ -995,6 +1049,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		           ctrl:nil,
 // 		           eg:nil,
 // 		           client:nil,
+// 		           deployments:nil,
+// 		           jobs:nil,
 // 		           rotatorJob:nil,
 // 		           namespace:"",
 // 		           rotatorName:"",
@@ -1027,6 +1083,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		           ctrl:nil,
 // 		           eg:nil,
 // 		           client:nil,
+// 		           deployments:nil,
+// 		           jobs:nil,
 // 		           rotatorJob:nil,
 // 		           namespace:"",
 // 		           rotatorName:"",
@@ -1067,6 +1125,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 				ctrl:                              test.fields.ctrl,
 // 				eg:                                test.fields.eg,
 // 				client:                            test.fields.client,
+// 				deployments:                       test.fields.deployments,
+// 				jobs:                              test.fields.jobs,
 // 				rotatorJob:                        test.fields.rotatorJob,
 // 				namespace:                         test.fields.namespace,
 // 				rotatorName:                       test.fields.rotatorName,

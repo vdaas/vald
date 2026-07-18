@@ -69,34 +69,34 @@ func (r *runner) processKubernetes(t *testing.T, ctx context.Context, plan *conf
 			t.Errorf("kubernetes action create is only supported for creating job from cronjob")
 			return
 		}
-		if _, err := resource.CronJob(r.k8s, k.Namespace).CreateJob(ctx, k.Name, resource.EmptyGetOptions, resource.EmptyCreateOptions); err != nil {
+		if _, err := r.clients.CronJob(k.Namespace).CreateJob(ctx, k.Name, resource.EmptyGetOptions, resource.EmptyCreateOptions); err != nil {
 			t.Errorf("failed to create job from cronjob: %v", err)
 		}
 		return
 	}
 	switch k.Kind {
 	case config.ConfigMap:
-		handleKubernetesAction(t, ctx, k, resource.ConfigMap(r.k8s, k.Namespace))
+		handleKubernetesAction(t, ctx, k, r.clients.ConfigMap(k.Namespace))
 	case config.CronJob:
-		handleKubernetesWorkloadAction(t, ctx, k, resource.CronJob(r.k8s, k.Namespace))
+		handleKubernetesWorkloadAction(t, ctx, k, r.clients.CronJob(k.Namespace))
 	case config.DaemonSet:
-		handleKubernetesWorkloadAction(t, ctx, k, resource.DaemonSet(r.k8s, k.Namespace))
+		handleKubernetesWorkloadAction(t, ctx, k, r.clients.DaemonSet(k.Namespace))
 	case config.Deployment:
-		handleKubernetesWorkloadAction(t, ctx, k, resource.Deployment(r.k8s, k.Namespace))
+		handleKubernetesWorkloadAction(t, ctx, k, r.clients.Deployment(k.Namespace))
 	case config.Job:
-		handleKubernetesWorkloadAction(t, ctx, k, resource.Job(r.k8s, k.Namespace))
+		handleKubernetesWorkloadAction(t, ctx, k, r.clients.Job(k.Namespace))
 	case config.MutatingWebhookConfiguration:
-		handleKubernetesAction(t, ctx, k, resource.MutatingWebhookConfiguration(r.k8s))
+		handleKubernetesAction(t, ctx, k, r.clients.MutatingWebhookConfiguration())
 	case config.Pod:
-		handleKubernetesAction(t, ctx, k, resource.Pod(r.k8s, k.Namespace))
+		handleKubernetesAction(t, ctx, k, r.clients.Pod(k.Namespace))
 	case config.Secret:
-		handleKubernetesAction(t, ctx, k, resource.Secret(r.k8s, k.Namespace))
+		handleKubernetesAction(t, ctx, k, r.clients.Secret(k.Namespace))
 	case config.Service:
-		handleKubernetesAction(t, ctx, k, resource.Service(r.k8s, k.Namespace))
+		handleKubernetesAction(t, ctx, k, r.clients.Service(k.Namespace))
 	case config.StatefulSet:
-		handleKubernetesWorkloadAction(t, ctx, k, resource.StatefulSet(r.k8s, k.Namespace))
+		handleKubernetesWorkloadAction(t, ctx, k, r.clients.StatefulSet(k.Namespace))
 	case config.ValidatingWebhookConfiguration:
-		handleKubernetesAction(t, ctx, k, resource.ValidatingWebhookConfiguration(r.k8s))
+		handleKubernetesAction(t, ctx, k, r.clients.ValidatingWebhookConfiguration())
 	default:
 		t.Errorf("unsupported kubernetes kind: %s", k.Kind)
 	}

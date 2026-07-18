@@ -31,6 +31,7 @@ k8s/manifest/all:
 	$(MAKE) k8s/manifest/operator/vald/update
 	$(MAKE) k8s/manifest/operator/benchmark/update
 	$(MAKE) k8s/manifest/readreplica/update
+	$(MAKE) remove/empty/file
 
 .PHONY: k8s/manifest/clean
 ## clean k8s manifests
@@ -40,8 +41,7 @@ k8s/manifest/clean:
 	$(ROOTDIR)/k8s/discoverer \
 	$(ROOTDIR)/k8s/gateway \
 	$(ROOTDIR)/k8s/index \
-	$(ROOTDIR)/k8s/manager \
-	$(ROOTDIR)/k8s/tests
+	$(ROOTDIR)/k8s/manager
 
 .PHONY: k8s/manifest/update
 ## update k8s manifests using helm templates

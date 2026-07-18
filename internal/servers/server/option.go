@@ -681,8 +681,8 @@ func WithGRPCInterceptors(names ...string) Option {
 			case "recoverinterceptor", "recover":
 				s.grpc.opts = append(
 					s.grpc.opts,
-					grpc.ChainUnaryInterceptor(recover.RecoverInterceptor()),
-					grpc.ChainStreamInterceptor(recover.RecoverStreamInterceptor()),
+					grpc.ChainUnaryInterceptor(recover.Interceptor()),
+					grpc.ChainStreamInterceptor(recover.StreamInterceptor()),
 				)
 			case "accessloginterceptor", "accesslog":
 				s.grpc.opts = append(

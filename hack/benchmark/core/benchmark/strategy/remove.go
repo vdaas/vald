@@ -27,8 +27,8 @@ import (
 	"github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
 )
 
-func NewRemove(opts ...StrategyOption) benchmark.Strategy {
-	return newStrategy(append([]StrategyOption{
+func NewRemove(opts ...Option) benchmark.Strategy {
+	return newStrategy(append([]Option{
 		WithPropName("Remove"),
 		WithPreProp32(
 			func(ctx context.Context, b *testing.B, c algorithm.Bit32, dataset assets.Dataset) (ids []uint, err error) {

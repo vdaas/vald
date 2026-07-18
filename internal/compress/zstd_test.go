@@ -146,7 +146,7 @@ func Test_zstdCompressor_CompressVector(t *testing.T) {
 	}
 	type fields struct {
 		gobc     Compressor
-		zstd     zstd.Zstd
+		zstd     zstd.Compressor
 		eoptions []zstd.EOption
 	}
 	type want struct {
@@ -405,7 +405,7 @@ func Test_zstdCompressor_DecompressVector(t *testing.T) {
 	}
 	type fields struct {
 		gobc     Compressor
-		zstd     zstd.Zstd
+		zstd     zstd.Compressor
 		eoptions []zstd.EOption
 	}
 	type want struct {
@@ -578,7 +578,7 @@ func Test_zstdCompressor_Reader(t *testing.T) {
 	}
 	type fields struct {
 		gobc     Compressor
-		zstd     zstd.Zstd
+		zstd     zstd.Compressor
 		eoptions []zstd.EOption
 	}
 	type want struct {
@@ -687,7 +687,7 @@ func Test_zstdCompressor_Writer(t *testing.T) {
 	}
 	type fields struct {
 		gobc     Compressor
-		zstd     zstd.Zstd
+		zstd     zstd.Compressor
 		eoptions []zstd.EOption
 	}
 	type want struct {

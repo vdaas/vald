@@ -46,7 +46,7 @@ type run struct {
 	observability observability.Observability
 }
 
-func New(cfg *config.Data) (r runner.Runner, err error) {
+func New(cfg *config.Data) (r runner.Interface, err error) {
 	faiss, err := service.New(
 		cfg.Faiss,
 		service.WithErrGroup(errgroup.Get()),

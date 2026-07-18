@@ -37,7 +37,7 @@ func TestMain(m *testing.M) {
 func TestRun(t *testing.T) {
 	type args struct {
 		ctx  context.Context
-		run  Runner
+		run  Interface
 		name string
 	}
 	type want struct {
@@ -64,7 +64,7 @@ func TestRun(t *testing.T) {
 				name: "returns nil when internal functionally occurs no error",
 				args: args{
 					ctx: ctx,
-					run: func() Runner {
+					run: func() Interface {
 						return &runnerMock{
 							PreStartFunc: func(ctx context.Context) error {
 								return nil
@@ -101,7 +101,7 @@ func TestRun(t *testing.T) {
 				args: args{
 					ctx:  ctx,
 					name: "vald",
-					run: func() Runner {
+					run: func() Interface {
 						return &runnerMock{
 							PreStartFunc: func(ctx context.Context) error {
 								return nil
@@ -165,7 +165,7 @@ func TestRun(t *testing.T) {
 				args: args{
 					ctx:  ctx,
 					name: "vald",
-					run: func() Runner {
+					run: func() Interface {
 						return &runnerMock{
 							PreStartFunc: func(ctx context.Context) error {
 								return nil
@@ -226,7 +226,7 @@ func TestRun(t *testing.T) {
 			name: "returns error when run.PreStart returns error",
 			args: args{
 				ctx: t.Context(),
-				run: func() Runner {
+				run: func() Interface {
 					return &runnerMock{
 						PreStartFunc: func(context.Context) error {
 							return errors.New("err")
@@ -244,7 +244,7 @@ func TestRun(t *testing.T) {
 			name: "returns error when run.Start returns error",
 			args: args{
 				ctx: t.Context(),
-				run: func() Runner {
+				run: func() Interface {
 					return &runnerMock{
 						PreStartFunc: func(context.Context) error {
 							return nil

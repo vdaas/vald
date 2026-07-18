@@ -27,6 +27,7 @@ import (
 	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
+//nolint:gochecknoglobals // sync.Once guard for the process-wide controller-runtime logger bridge
 var setLoggerOnce sync.Once
 
 // setControllerRuntimeLogger bridges controller-runtime's logr output into

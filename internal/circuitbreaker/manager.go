@@ -41,8 +41,8 @@ type breakerManager struct {
 	opts []BreakerOption
 }
 
-// NewCircuitBreaker returns CircuitBreaker object if no error occurs.
-func NewCircuitBreaker(opts ...Option) (CircuitBreaker, error) {
+// New returns CircuitBreaker object if no error occurs.
+func New(opts ...Option) (CircuitBreaker, error) {
 	bm := &breakerManager{}
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(bm); err != nil {

@@ -23,7 +23,7 @@ import (
 	"github.com/vdaas/vald/pkg/agent/sidecar/usecase/sidecar"
 )
 
-func New(cfg *config.Data) (r runner.Runner, err error) {
+func New(cfg *config.Data) (r runner.Interface, err error) {
 	switch config.SidecarMode(cfg.AgentSidecar.Mode) {
 	case config.INITCONTAINER:
 		return initcontainer.New(cfg)

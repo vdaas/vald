@@ -24,6 +24,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
+	_ "github.com/vdaas/vald/internal/net/grpc/logger"
 	"github.com/vdaas/vald/internal/test/data/request"
 	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/internal/test/goleak"

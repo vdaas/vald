@@ -50,7 +50,7 @@ type run struct {
 	egress        egress.Client
 }
 
-func New(cfg *config.Data) (r runner.Runner, err error) {
+func New(cfg *config.Data) (r runner.Interface, err error) {
 	if addrs := cfg.Client.Addrs; len(addrs) == 0 {
 		return nil, errors.ErrGRPCTargetAddrNotFound
 	}

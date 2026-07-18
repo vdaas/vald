@@ -14,5 +14,7 @@
 // limitations under the License.
 //
 
-// Package k8s provides functionality for Vald.
+// Package k8s provides Kubernetes client mocks and fake-client re-exports
+// for tests. Test-only: production code under pkg/ must not import this
+// package (enforced by the test-confinement depguard rule).
 package k8s

@@ -76,7 +76,7 @@ $(LIB_PATH):
 	mkdir -p $(LIB_PATH)
 
 BUN_INSTALL ?= $(USR_LOCAL)
-BUN_GLOBAL_BIN ?= $(eval BUN_GLOBAL_BIN := $(shell bun pm bin -g))$(BUN_GLOBAL_BIN)
+BUN_GLOBAL_BIN ?= $(eval BUN_GLOBAL_BIN := $(shell bun pm bin -g 2>/dev/null))$(BUN_GLOBAL_BIN)
 
 GOPRIVATE := $(GOPKG),$(GOPKG)/apis,$(GOPKG)-client-go
 GOPROXY := "https://proxy.golang.org,direct"
@@ -447,7 +447,7 @@ perm:
 	find $(ROOTDIR) -type d -not -path "$(ROOTDIR)/.git*" -exec chmod 755 {} \;
 	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
 		grep -vE '^\s*#' "$(ROOTDIR)/.gitfiles" | grep -v gitignore \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" chmod 644 "{}"; \
+		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c '[ -f "{}" ] || exit 0; chmod 644 "{}"'; \
 	fi
 	if [ -d "$(ROOTDIR)/.git" ]; then \
 		chmod 750 "$(ROOTDIR)/.git"; \
@@ -599,13 +599,24 @@ format/diff:
 	@$(MAKE) format/yaml/diff
 
 .PHONY: remove/empty/file
-## removes empty file such as just includes \r \n space tab
+## removes empty file such as just includes \r \n space tab, a buf/prost-generated Rust stub
+## for a proto package with no messages of its own (marked "// @generated" with no real code),
+## or a helm-templated YAML manifest whose conditional block rendered nothing (license header only).
+## NOTE: a YAML made entirely of comments/--- on purpose would also be deleted; no such file
+## exists in this repo today, so this is an accepted trade-off, not a bug.
 remove/empty/file: \
 	files
 	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
 		grep -vE '^\s*#' "$(ROOTDIR)/.gitfiles" | grep -v gitkeep \
 		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" -n1 sh -c ' \
-		if [ -f "{}" ] && [ -z "$$(tr -d '\''[:space:]'\'' < "{}")" ]; then rm "{}"; fi'; \
+		f="{}"; \
+		if [ -f "$$f" ] && [ -z "$$(tr -d '\''[:space:]'\'' < "$$f")" ]; then \
+			rm "$$f"; \
+		elif [ -f "$$f" ] && [ "$${f%.rs}" != "$$f" ] && [ "$$(head -n1 "$$f")" = "// @generated" ] && ! grep -qvE '\''^[[:space:]]*(//.*)?$$'\'' "$$f"; then \
+			rm "$$f"; \
+		elif [ -f "$$f" ] && { [ "$${f%.yaml}" != "$$f" ] || [ "$${f%.yml}" != "$$f" ]; } && awk '\''$$0 !~ /^[[:space:]]*(#.*)?[[:space:]]*$$/ && $$0 !~ /^---[[:space:]]*$$/ {c++} END{exit c==0?0:1}'\'' "$$f"; then \
+			rm "$$f"; \
+		fi'; \
 		fi
 
 .PHONY: format/go
@@ -666,12 +677,12 @@ format/rust: \
 	rustfmt/install \
 	files
 	@echo "Formatting Rust files..."
-	@cd $(ROOTDIR)/rust && $(CARGO_HOME)/bin/cargo fmt
+	- @cd $(ROOTDIR)/rust && $(CARGO_HOME)/bin/cargo fmt
 	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
 		grep -e "\.rs$$" "$(ROOTDIR)/.gitfiles" \
 		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
 		echo "Formatting Rust file {}" && \
-		$(CARGO_HOME)/bin/rustfmt --edition 2024 --style-edition 2024 {}'; \
+		cd $(ROOTDIR)/rust && $(CARGO_HOME)/bin/rustfmt --edition 2024 --style-edition 2024 $(ROOTDIR)/{}'; \
 	fi
 	@echo "Rust formatting complete."
 

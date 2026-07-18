@@ -524,12 +524,9 @@ func Test_data_ShowVersion(t *testing.T) {
 //
 // func Test_parser_Restore(t *testing.T) {
 // 	type fields struct {
-// 		overrideDefault bool
-// 		name            string
-// 		filters         []func(string) bool
-// 		f               *flag.FlagSet
-// 		defaults        *flag.FlagSet
-// 		filePath        struct {
+// 		f        *flag.FlagSet
+// 		defaults *flag.FlagSet
+// 		filePath struct {
 // 			keys        []string
 // 			defaultPath string
 // 			description string
@@ -539,7 +536,10 @@ func Test_data_ShowVersion(t *testing.T) {
 // 			defaultFlag bool
 // 			description string
 // 		}
-// 		ErrorHandler ErrorHandling
+// 		name            string
+// 		filters         []func(string) bool
+// 		ErrorHandler    ErrorHandling
+// 		overrideDefault bool
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -559,14 +559,14 @@ func Test_data_ShowVersion(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           overrideDefault:false,
-// 		           name:"",
-// 		           filters:nil,
 // 		           f:flag.FlagSet{},
 // 		           defaults:flag.FlagSet{},
 // 		           filePath:struct{keys []string; defaultPath string; description string}{},
 // 		           version:struct{keys []string; defaultFlag bool; description string}{},
+// 		           name:"",
+// 		           filters:nil,
 // 		           ErrorHandler:nil,
+// 		           overrideDefault:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -585,14 +585,14 @@ func Test_data_ShowVersion(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           overrideDefault:false,
-// 		           name:"",
-// 		           filters:nil,
 // 		           f:flag.FlagSet{},
 // 		           defaults:flag.FlagSet{},
 // 		           filePath:struct{keys []string; defaultPath string; description string}{},
 // 		           version:struct{keys []string; defaultFlag bool; description string}{},
+// 		           name:"",
+// 		           filters:nil,
 // 		           ErrorHandler:nil,
+// 		           overrideDefault:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -623,14 +623,14 @@ func Test_data_ShowVersion(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &parser{
-// 				overrideDefault: test.fields.overrideDefault,
-// 				name:            test.fields.name,
-// 				filters:         test.fields.filters,
 // 				f:               test.fields.f,
 // 				defaults:        test.fields.defaults,
 // 				filePath:        test.fields.filePath,
 // 				version:         test.fields.version,
+// 				name:            test.fields.name,
+// 				filters:         test.fields.filters,
 // 				ErrorHandler:    test.fields.ErrorHandler,
+// 				overrideDefault: test.fields.overrideDefault,
 // 			}
 //
 // 			p.Restore()
@@ -643,12 +643,9 @@ func Test_data_ShowVersion(t *testing.T) {
 //
 // func Test_parser_Override(t *testing.T) {
 // 	type fields struct {
-// 		overrideDefault bool
-// 		name            string
-// 		filters         []func(string) bool
-// 		f               *flag.FlagSet
-// 		defaults        *flag.FlagSet
-// 		filePath        struct {
+// 		f        *flag.FlagSet
+// 		defaults *flag.FlagSet
+// 		filePath struct {
 // 			keys        []string
 // 			defaultPath string
 // 			description string
@@ -658,7 +655,10 @@ func Test_data_ShowVersion(t *testing.T) {
 // 			defaultFlag bool
 // 			description string
 // 		}
-// 		ErrorHandler ErrorHandling
+// 		name            string
+// 		filters         []func(string) bool
+// 		ErrorHandler    ErrorHandling
+// 		overrideDefault bool
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -678,14 +678,14 @@ func Test_data_ShowVersion(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           overrideDefault:false,
-// 		           name:"",
-// 		           filters:nil,
 // 		           f:flag.FlagSet{},
 // 		           defaults:flag.FlagSet{},
 // 		           filePath:struct{keys []string; defaultPath string; description string}{},
 // 		           version:struct{keys []string; defaultFlag bool; description string}{},
+// 		           name:"",
+// 		           filters:nil,
 // 		           ErrorHandler:nil,
+// 		           overrideDefault:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -704,14 +704,14 @@ func Test_data_ShowVersion(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           overrideDefault:false,
-// 		           name:"",
-// 		           filters:nil,
 // 		           f:flag.FlagSet{},
 // 		           defaults:flag.FlagSet{},
 // 		           filePath:struct{keys []string; defaultPath string; description string}{},
 // 		           version:struct{keys []string; defaultFlag bool; description string}{},
+// 		           name:"",
+// 		           filters:nil,
 // 		           ErrorHandler:nil,
+// 		           overrideDefault:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -742,14 +742,14 @@ func Test_data_ShowVersion(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			p := &parser{
-// 				overrideDefault: test.fields.overrideDefault,
-// 				name:            test.fields.name,
-// 				filters:         test.fields.filters,
 // 				f:               test.fields.f,
 // 				defaults:        test.fields.defaults,
 // 				filePath:        test.fields.filePath,
 // 				version:         test.fields.version,
+// 				name:            test.fields.name,
+// 				filters:         test.fields.filters,
 // 				ErrorHandler:    test.fields.ErrorHandler,
+// 				overrideDefault: test.fields.overrideDefault,
 // 			}
 //
 // 			p.Override()

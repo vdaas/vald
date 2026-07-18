@@ -1061,6 +1061,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 // 		Size                 int
 // 		ResolveDNS           bool
 // 		EnableRebalance      bool
+// 		EnableMetrics        bool
 // 	}
 // 	type want struct {
 // 		want *ConnectionPool
@@ -1090,6 +1091,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 // 		           Size:0,
 // 		           ResolveDNS:false,
 // 		           EnableRebalance:false,
+// 		           EnableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1113,6 +1115,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 // 		           Size:0,
 // 		           ResolveDNS:false,
 // 		           EnableRebalance:false,
+// 		           EnableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1148,6 +1151,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 // 				Size:                 test.fields.Size,
 // 				ResolveDNS:           test.fields.ResolveDNS,
 // 				EnableRebalance:      test.fields.EnableRebalance,
+// 				EnableMetrics:        test.fields.EnableMetrics,
 // 			}
 //
 // 			got := cp.Bind()

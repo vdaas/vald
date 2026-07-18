@@ -71,6 +71,7 @@ func TestNew(t *testing.T) {
 				_ = opt(m)
 			}
 			m.dbr = dbr.New()
+			m.connected.Store(false)
 			return test{
 				name: "return (MySQL, nil) when opts is nil",
 				want: want{
@@ -84,6 +85,7 @@ func TestNew(t *testing.T) {
 				_ = opt(m)
 			}
 			m.dbr = dbr.New()
+			m.connected.Store(false)
 			return test{
 				name: "return (MySQL, nil) when opts is not empty",
 				want: want{

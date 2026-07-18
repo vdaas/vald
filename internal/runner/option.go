@@ -18,42 +18,40 @@ package runner
 
 import "github.com/vdaas/vald/internal/config"
 
-type Option func(*runner)
+type Option[T any] func(*runner[T])
 
-var defaultOptions = []Option{}
-
-func WithName(name string) Option {
-	return func(r *runner) {
+func WithName[T any](name string) Option[T] {
+	return func(r *runner[T]) {
 		if name != "" {
 			r.name = name
 		}
 	}
 }
 
-func WithVersion(ver, max, min string) Option {
-	return func(r *runner) {
+func WithVersion[T any](ver, maxVer, minVer string) Option[T] {
+	return func(r *runner[T]) {
 		if ver != "" {
 			r.version = ver
 		}
-		if max != "" {
-			r.maxVersion = max
+		if maxVer != "" {
+			r.maxVersion = maxVer
 		}
-		if min != "" {
-			r.minVersion = min
+		if minVer != "" {
+			r.minVersion = minVer
 		}
 	}
 }
 
-func WithConfigLoader(f func(string) (any, *config.GlobalConfig, error)) Option {
-	return func(r *runner) {
+func WithConfigLoader[T any](f func(string) (T, *config.GlobalConfig, error)) Option[T] {
+	return func(r *runner[T]) {
 		if f != nil {
 			r.loadConfig = f
 		}
 	}
 }
 
-func WithDaemonInitializer(f func(any) (Runner, error)) Option {
-	return func(r *runner) {
+func WithDaemonInitializer[T any](f func(T) (Interface, error)) Option[T] {
+	return func(r *runner[T]) {
 		if f != nil {
 			r.initializeDaemon = f
 		}

@@ -19,6 +19,7 @@ package job
 
 import (
 	"github.com/vdaas/vald/internal/k8s"
+	"github.com/vdaas/vald/internal/k8s/vald"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -28,25 +29,47 @@ type (
 )
 
 const (
-	PullAlways       ImagePullPolicy = "Always"
-	PullNever        ImagePullPolicy = "Never"
-	PullIfNotPresent ImagePullPolicy = "PullIfNotPresent"
+	PullAlways ImagePullPolicy = "Always"
 
-	RestartPolicyAlways    RestartPolicy = "Always"
-	RestartPolicyOnFailure RestartPolicy = "OnFailure"
-	RestartPolicyNever     RestartPolicy = "Never"
+	RestartPolicyNever RestartPolicy = "Never"
 
 	volumeName = "vald-benchmark-job-config"
 	svcAccount = "vald-benchmark-operator"
+
+	configVolumeDefaultMode = 420
+
+	pyroscopeScrapeEnabled = "true"
+
+	livenessProbeInitialDelaySeconds = 60
+	livenessProbePeriodSeconds       = 10
+	livenessProbeTimeoutSeconds      = 300
+
+	startupProbeFailureThreshold = 30
+	startupProbePeriodSeconds    = 10
+	startupProbeTimeoutSeconds   = 300
+
+	containerPortLiveness  = 3000
+	containerPortReadiness = 3001
 )
 
-var mode = int32(420)
-
-type BenchmarkJobTpl interface {
-	CreateJobTpl(opts ...BenchmarkJobOption) (k8s.Job, error)
+type BenchmarkTpl interface {
+	CreateJobTpl(opts ...BenchmarkOption) (k8s.Job, error)
 }
 
-type benchmarkJobTpl struct {
+// fieldRefEnvVar builds an EnvVar sourced from the downward-API field at
+// fieldPath.
+func fieldRefEnvVar(name, fieldPath string) corev1.EnvVar {
+	return corev1.EnvVar{
+		Name: name,
+		ValueFrom: &corev1.EnvVarSource{
+			FieldRef: &corev1.ObjectFieldSelector{
+				FieldPath: fieldPath,
+			},
+		},
+	}
+}
+
+type benchmarkJobTemplate struct {
 	jobTpl             k8s.Job
 	containerName      string
 	containerImageName string
@@ -54,30 +77,40 @@ type benchmarkJobTpl struct {
 	imagePullPolicy    ImagePullPolicy
 }
 
-func NewBenchmarkJob(opts ...BenchmarkJobTplOption) (BenchmarkJobTpl, error) {
-	bjTpl := new(benchmarkJobTpl)
-	for _, opt := range append(defaultBenchmarkJobTplOpts, opts...) {
-		err := opt(bjTpl)
-		if err != nil {
-			return nil, err
+// NewBenchmarkJob builds a benchmark job template from the given options.
+// Option application errors abort construction only when critical (an empty
+// required field such as the container name or image); any other option error
+// is logged as a warning and skipped.
+func NewBenchmarkJob(opts ...BenchmarkTemplateOption) (BenchmarkTpl, error) {
+	template := new(benchmarkJobTemplate)
+	for _, opt := range append(defaultBenchmarkJobTemplateOptions, opts...) {
+		if err := opt(template); err != nil {
+			if abort, oerr := vald.SkipNonCriticalOptionError(err, opt); abort {
+				return nil, oerr
+			}
 		}
 	}
-	return bjTpl, nil
+	return template, nil
 }
 
-func (b *benchmarkJobTpl) CreateJobTpl(opts ...BenchmarkJobOption) (k8s.Job, error) {
+// CreateJobTpl materializes the k8s Job manifest from the template and the
+// given options, with the same severity handling as NewBenchmarkJob: only
+// critical option errors (an empty job name) abort, any other option error is
+// logged as a warning and skipped.
+func (b *benchmarkJobTemplate) CreateJobTpl(opts ...BenchmarkOption) (k8s.Job, error) {
 	for _, opt := range append(defaultBenchmarkJobOpts, opts...) {
-		err := opt(&b.jobTpl)
-		if err != nil {
-			return b.jobTpl, err
+		if err := opt(&b.jobTpl); err != nil {
+			if abort, oerr := vald.SkipNonCriticalOptionError(err, opt); abort {
+				return b.jobTpl, oerr
+			}
 		}
 	}
 	// TODO: check enable pprof flag
 	b.jobTpl.Spec.Template.Annotations = map[string]string{
-		"pyroscope.io/scrape":              "true",
+		"pyroscope.io/scrape":              pyroscopeScrapeEnabled,
 		"pyroscope.io/application-name":    "benchmark-job",
-		"pyroscope.io/profile-cpu-enabled": "true",
-		"pyroscope.io/profile-mem-enabled": "true",
+		"pyroscope.io/profile-cpu-enabled": pyroscopeScrapeEnabled,
+		"pyroscope.io/profile-mem-enabled": pyroscopeScrapeEnabled,
 		"pyroscope.io/port":                "6060",
 	}
 	b.jobTpl.Spec.Template.Spec.Containers = []corev1.Container{
@@ -86,9 +119,9 @@ func (b *benchmarkJobTpl) CreateJobTpl(opts ...BenchmarkJobOption) (k8s.Job, err
 			Image:           b.containerImageName,
 			ImagePullPolicy: corev1.PullPolicy(b.imagePullPolicy),
 			LivenessProbe: &corev1.Probe{
-				InitialDelaySeconds: int32(60),
-				PeriodSeconds:       int32(10),
-				TimeoutSeconds:      int32(300),
+				InitialDelaySeconds: int32(livenessProbeInitialDelaySeconds),
+				PeriodSeconds:       int32(livenessProbePeriodSeconds),
+				TimeoutSeconds:      int32(livenessProbeTimeoutSeconds),
 				ProbeHandler: corev1.ProbeHandler{
 					Exec: &corev1.ExecAction{
 						Command: []string{
@@ -99,9 +132,9 @@ func (b *benchmarkJobTpl) CreateJobTpl(opts ...BenchmarkJobOption) (k8s.Job, err
 				},
 			},
 			StartupProbe: &corev1.Probe{
-				FailureThreshold: int32(30),
-				PeriodSeconds:    int32(10),
-				TimeoutSeconds:   int32(300),
+				FailureThreshold: int32(startupProbeFailureThreshold),
+				PeriodSeconds:    int32(startupProbePeriodSeconds),
+				TimeoutSeconds:   int32(startupProbeTimeoutSeconds),
 				ProbeHandler: corev1.ProbeHandler{
 					Exec: &corev1.ExecAction{
 						Command: []string{
@@ -115,55 +148,20 @@ func (b *benchmarkJobTpl) CreateJobTpl(opts ...BenchmarkJobOption) (k8s.Job, err
 				{
 					Name:          "liveness",
 					Protocol:      corev1.ProtocolTCP,
-					ContainerPort: int32(3000),
+					ContainerPort: int32(containerPortLiveness),
 				},
 				{
 					Name:          "readiness",
 					Protocol:      corev1.ProtocolTCP,
-					ContainerPort: int32(3001),
+					ContainerPort: int32(containerPortReadiness),
 				},
 			},
 			Env: []corev1.EnvVar{
-				{
-					Name: "CRD_NAMESPACE",
-					ValueFrom: &corev1.EnvVarSource{
-						FieldRef: &corev1.ObjectFieldSelector{
-							FieldPath: "metadata.namespace",
-						},
-					},
-				},
-				{
-					Name: "CRD_NAME",
-					ValueFrom: &corev1.EnvVarSource{
-						FieldRef: &corev1.ObjectFieldSelector{
-							FieldPath: "metadata.labels['job-name']",
-						},
-					},
-				},
-				{
-					Name: "MY_NODE_NAME",
-					ValueFrom: &corev1.EnvVarSource{
-						FieldRef: &corev1.ObjectFieldSelector{
-							FieldPath: "spec.nodeName",
-						},
-					},
-				},
-				{
-					Name: "MY_POD_NAMESPACE",
-					ValueFrom: &corev1.EnvVarSource{
-						FieldRef: &corev1.ObjectFieldSelector{
-							FieldPath: "metadata.namespace",
-						},
-					},
-				},
-				{
-					Name: "MY_POD_NAME",
-					ValueFrom: &corev1.EnvVarSource{
-						FieldRef: &corev1.ObjectFieldSelector{
-							FieldPath: "metadata.name",
-						},
-					},
-				},
+				fieldRefEnvVar("CRD_NAMESPACE", "metadata.namespace"),
+				fieldRefEnvVar("CRD_NAME", "metadata.labels['job-name']"),
+				fieldRefEnvVar("MY_NODE_NAME", "spec.nodeName"),
+				fieldRefEnvVar("MY_POD_NAMESPACE", "metadata.namespace"),
+				fieldRefEnvVar("MY_POD_NAME", "metadata.name"),
 			},
 			VolumeMounts: []corev1.VolumeMount{
 				{
@@ -175,6 +173,7 @@ func (b *benchmarkJobTpl) CreateJobTpl(opts ...BenchmarkJobOption) (k8s.Job, err
 	}
 	// mount benchmark operator config map.
 	// It is used for bind only observability config for each benchmark job
+	mode := int32(configVolumeDefaultMode)
 	b.jobTpl.Spec.Template.Spec.Volumes = []corev1.Volume{
 		{
 			Name: volumeName,

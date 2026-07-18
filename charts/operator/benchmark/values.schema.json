@@ -3,7 +3,10 @@
   "title": "Values",
   "type": "object",
   "properties": {
-    "affinity": { "type": "object", "description": "affinity" },
+    "affinity": {
+      "type": "object",
+      "description": "affinity"
+    },
     "annotations": {
       "type": "object",
       "description": "deployment annotations"
@@ -11,7 +14,9 @@
     "env": {
       "type": "array",
       "description": "environment variables",
-      "items": { "type": "object" }
+      "items": {
+        "type": "object"
+      }
     },
     "image": {
       "type": "object",
@@ -40,7 +45,9 @@
             "addrs": {
               "type": "array",
               "description": "gRPC client addresses",
-              "items": { "type": "string" }
+              "items": {
+                "type": "string"
+              }
             },
             "backoff": {
               "type": "object",
@@ -75,7 +82,9 @@
                 }
               }
             },
-            "call_option": { "type": "object" },
+            "call_option": {
+              "type": "object"
+            },
             "circuit_breaker": {
               "type": "object",
               "properties": {
@@ -275,11 +284,21 @@
                     "tls": {
                       "type": "object",
                       "properties": {
-                        "ca": { "type": "string" },
-                        "cert": { "type": "string" },
-                        "enabled": { "type": "boolean" },
-                        "insecure_skip_verify": { "type": "boolean" },
-                        "key": { "type": "string" }
+                        "ca": {
+                          "type": "string"
+                        },
+                        "cert": {
+                          "type": "string"
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "insecure_skip_verify": {
+                          "type": "boolean"
+                        },
+                        "key": {
+                          "type": "string"
+                        }
                       }
                     }
                   }
@@ -302,23 +321,43 @@
               "type": "string",
               "description": "gRPC client health check duration"
             },
-            "max_recv_msg_size": { "type": "integer" },
-            "max_retry_rpc_buffer_size": { "type": "integer" },
-            "max_send_msg_size": { "type": "integer" },
+            "max_recv_msg_size": {
+              "type": "integer"
+            },
+            "max_retry_rpc_buffer_size": {
+              "type": "integer"
+            },
+            "max_send_msg_size": {
+              "type": "integer"
+            },
             "tls": {
               "type": "object",
               "properties": {
-                "ca": { "type": "string", "description": "TLS ca path" },
-                "cert": { "type": "string", "description": "TLS cert path" },
-                "enabled": { "type": "boolean", "description": "TLS enabled" },
+                "ca": {
+                  "type": "string",
+                  "description": "TLS ca path"
+                },
+                "cert": {
+                  "type": "string",
+                  "description": "TLS cert path"
+                },
+                "enabled": {
+                  "type": "boolean",
+                  "description": "TLS enabled"
+                },
                 "insecure_skip_verify": {
                   "type": "boolean",
                   "description": "enable/disable skip SSL certificate verification"
                 },
-                "key": { "type": "string", "description": "TLS key path" }
+                "key": {
+                  "type": "string",
+                  "description": "TLS key path"
+                }
               }
             },
-            "wait_for_ready": { "type": "boolean" }
+            "wait_for_ready": {
+              "type": "boolean"
+            }
           }
         },
         "image": {
@@ -328,8 +367,12 @@
               "type": "string",
               "enum": ["Always", "Never", "IfNotPresent"]
             },
-            "repository": { "type": "string" },
-            "tag": { "type": "string" }
+            "repository": {
+              "type": "string"
+            },
+            "tag": {
+              "type": "string"
+            }
           }
         }
       }
@@ -354,7 +397,10 @@
         }
       }
     },
-    "name": { "type": "string", "description": "name of the deployment" },
+    "name": {
+      "type": "string",
+      "description": "name of the deployment"
+    },
     "nodeSelector": {
       "type": "object",
       "description": "node labels for pod assignment"
@@ -362,7 +408,9 @@
     "observability": {
       "type": "object",
       "properties": {
-        "enabled": { "type": "boolean" },
+        "enabled": {
+          "type": "boolean"
+        },
         "otlp": {
           "type": "object",
           "properties": {
@@ -372,41 +420,80 @@
                 "metrics": {
                   "type": "object",
                   "properties": {
-                    "enable_cgo": { "type": "boolean" },
-                    "enable_goroutine": { "type": "boolean" },
-                    "enable_memory": { "type": "boolean" },
-                    "enable_version_info": { "type": "boolean" },
+                    "enable_cgo": {
+                      "type": "boolean"
+                    },
+                    "enable_goroutine": {
+                      "type": "boolean"
+                    },
+                    "enable_memory": {
+                      "type": "boolean"
+                    },
+                    "enable_version_info": {
+                      "type": "boolean"
+                    },
                     "version_info_labels": {
                       "type": "array",
-                      "items": { "type": "string" }
+                      "items": {
+                        "type": "string"
+                      }
                     }
                   }
                 },
-                "namespace": { "type": "string" },
-                "node_name": { "type": "string" },
-                "pod_name": { "type": "string" },
-                "service_name": { "type": "string" }
+                "namespace": {
+                  "type": "string"
+                },
+                "node_name": {
+                  "type": "string"
+                },
+                "pod_name": {
+                  "type": "string"
+                },
+                "service_name": {
+                  "type": "string"
+                }
               }
             },
-            "collector_endpoint": { "type": "string" },
-            "metrics_export_interval": { "type": "string" },
-            "metrics_export_timeout": { "type": "string" },
-            "trace_batch_timeout": { "type": "string" },
-            "trace_export_timeout": { "type": "string" },
-            "trace_max_export_batch_size": { "type": "integer" },
-            "trace_max_queue_size": { "type": "integer" }
+            "collector_endpoint": {
+              "type": "string"
+            },
+            "metrics_export_interval": {
+              "type": "string"
+            },
+            "metrics_export_timeout": {
+              "type": "string"
+            },
+            "trace_batch_timeout": {
+              "type": "string"
+            },
+            "trace_export_timeout": {
+              "type": "string"
+            },
+            "trace_max_export_batch_size": {
+              "type": "integer"
+            },
+            "trace_max_queue_size": {
+              "type": "integer"
+            }
           }
         },
         "trace": {
           "type": "object",
           "properties": {
-            "enabled": { "type": "boolean" },
-            "sampling_rate": { "type": "integer" }
+            "enabled": {
+              "type": "boolean"
+            },
+            "sampling_rate": {
+              "type": "integer"
+            }
           }
         }
       }
     },
-    "podAnnotations": { "type": "object", "description": "pod annotations" },
+    "podAnnotations": {
+      "type": "object",
+      "description": "pod annotations"
+    },
     "podSecurityContext": {
       "type": "object",
       "description": "security context for pod"
@@ -432,8 +519,12 @@
       "type": "object",
       "description": "kubernetes resources of pod",
       "properties": {
-        "limits": { "type": "object" },
-        "requests": { "type": "object" }
+        "limits": {
+          "type": "object"
+        },
+        "requests": {
+          "type": "object"
+        }
       }
     },
     "securityContext": {
@@ -443,15 +534,21 @@
     "server_config": {
       "type": "object",
       "properties": {
-        "full_shutdown_duration": { "type": "string" },
+        "full_shutdown_duration": {
+          "type": "string"
+        },
         "healths": {
           "type": "object",
           "properties": {
             "liveness": {
               "type": "object",
               "properties": {
-                "enabled": { "type": "boolean" },
-                "host": { "type": "string" },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "host": {
+                  "type": "string"
+                },
                 "livenessProbe": {
                   "type": "object",
                   "properties": {
@@ -494,36 +591,66 @@
                     }
                   }
                 },
-                "port": { "type": "integer" },
+                "port": {
+                  "type": "integer"
+                },
                 "server": {
                   "type": "object",
                   "properties": {
                     "http": {
                       "type": "object",
                       "properties": {
-                        "idle_timeout": { "type": "string" },
-                        "read_header_timeout": { "type": "string" },
-                        "read_timeout": { "type": "string" },
-                        "shutdown_duration": { "type": "string" },
-                        "timeout": { "type": "string" },
-                        "write_timeout": { "type": "string" }
+                        "idle_timeout": {
+                          "type": "string"
+                        },
+                        "read_header_timeout": {
+                          "type": "string"
+                        },
+                        "read_timeout": {
+                          "type": "string"
+                        },
+                        "shutdown_duration": {
+                          "type": "string"
+                        },
+                        "timeout": {
+                          "type": "string"
+                        },
+                        "write_timeout": {
+                          "type": "string"
+                        }
                       }
                     },
-                    "mode": { "type": "string" },
-                    "network": { "type": "string" },
-                    "probe_wait_time": { "type": "string" },
-                    "socket_path": { "type": "string" }
+                    "mode": {
+                      "type": "string"
+                    },
+                    "network": {
+                      "type": "string"
+                    },
+                    "probe_wait_time": {
+                      "type": "string"
+                    },
+                    "socket_path": {
+                      "type": "string"
+                    }
                   }
                 },
-                "servicePort": { "type": "integer" }
+                "servicePort": {
+                  "type": "integer"
+                }
               }
             },
             "readiness": {
               "type": "object",
               "properties": {
-                "enabled": { "type": "boolean" },
-                "host": { "type": "string" },
-                "port": { "type": "integer" },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "host": {
+                  "type": "string"
+                },
+                "port": {
+                  "type": "integer"
+                },
                 "readinessProbe": {
                   "type": "object",
                   "properties": {
@@ -572,21 +699,43 @@
                     "http": {
                       "type": "object",
                       "properties": {
-                        "handler_timeout": { "type": "string" },
-                        "idle_timeout": { "type": "string" },
-                        "read_header_timeout": { "type": "string" },
-                        "read_timeout": { "type": "string" },
-                        "shutdown_duration": { "type": "string" },
-                        "write_timeout": { "type": "string" }
+                        "handler_timeout": {
+                          "type": "string"
+                        },
+                        "idle_timeout": {
+                          "type": "string"
+                        },
+                        "read_header_timeout": {
+                          "type": "string"
+                        },
+                        "read_timeout": {
+                          "type": "string"
+                        },
+                        "shutdown_duration": {
+                          "type": "string"
+                        },
+                        "write_timeout": {
+                          "type": "string"
+                        }
                       }
                     },
-                    "mode": { "type": "string" },
-                    "network": { "type": "string" },
-                    "probe_wait_time": { "type": "string" },
-                    "socket_path": { "type": "string" }
+                    "mode": {
+                      "type": "string"
+                    },
+                    "network": {
+                      "type": "string"
+                    },
+                    "probe_wait_time": {
+                      "type": "string"
+                    },
+                    "socket_path": {
+                      "type": "string"
+                    }
                   }
                 },
-                "servicePort": { "type": "integer" }
+                "servicePort": {
+                  "type": "integer"
+                }
               }
             },
             "startup": {
@@ -648,27 +797,53 @@
             "pprof": {
               "type": "object",
               "properties": {
-                "enabled": { "type": "boolean" },
-                "host": { "type": "string" },
-                "port": { "type": "integer" },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "host": {
+                  "type": "string"
+                },
+                "port": {
+                  "type": "integer"
+                },
                 "server": {
                   "type": "object",
                   "properties": {
                     "http": {
                       "type": "object",
                       "properties": {
-                        "handler_timeout": { "type": "string" },
-                        "idle_timeout": { "type": "string" },
-                        "read_header_timeout": { "type": "string" },
-                        "read_timeout": { "type": "string" },
-                        "shutdown_duration": { "type": "string" },
-                        "write_timeout": { "type": "string" }
+                        "handler_timeout": {
+                          "type": "string"
+                        },
+                        "idle_timeout": {
+                          "type": "string"
+                        },
+                        "read_header_timeout": {
+                          "type": "string"
+                        },
+                        "read_timeout": {
+                          "type": "string"
+                        },
+                        "shutdown_duration": {
+                          "type": "string"
+                        },
+                        "write_timeout": {
+                          "type": "string"
+                        }
                       }
                     },
-                    "mode": { "type": "string" },
-                    "network": { "type": "string" },
-                    "probe_wait_time": { "type": "string" },
-                    "socket_path": { "type": "string" }
+                    "mode": {
+                      "type": "string"
+                    },
+                    "network": {
+                      "type": "string"
+                    },
+                    "probe_wait_time": {
+                      "type": "string"
+                    },
+                    "socket_path": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -681,10 +856,18 @@
             "grpc": {
               "type": "object",
               "properties": {
-                "enabled": { "type": "boolean" },
-                "host": { "type": "string" },
-                "name": { "type": "string" },
-                "port": { "type": "integer" },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "host": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "port": {
+                  "type": "integer"
+                },
                 "server": {
                   "type": "object",
                   "properties": {
@@ -694,11 +877,21 @@
                         "bidirectional_stream_concurrency": {
                           "type": "integer"
                         },
-                        "connection_timeout": { "type": "string" },
-                        "enable_reflection": { "type": "boolean" },
-                        "header_table_size": { "type": "integer" },
-                        "initial_conn_window_size": { "type": "integer" },
-                        "initial_window_size": { "type": "integer" },
+                        "connection_timeout": {
+                          "type": "string"
+                        },
+                        "enable_reflection": {
+                          "type": "boolean"
+                        },
+                        "header_table_size": {
+                          "type": "integer"
+                        },
+                        "initial_conn_window_size": {
+                          "type": "integer"
+                        },
+                        "initial_window_size": {
+                          "type": "integer"
+                        },
                         "interceptors": {
                           "type": "array",
                           "items": {
@@ -744,40 +937,74 @@
                             }
                           }
                         },
-                        "max_header_list_size": { "type": "integer" },
-                        "max_receive_message_size": { "type": "integer" },
-                        "max_send_msg_size": { "type": "integer" },
-                        "read_buffer_size": { "type": "integer" },
-                        "write_buffer_size": { "type": "integer" }
+                        "max_header_list_size": {
+                          "type": "integer"
+                        },
+                        "max_receive_message_size": {
+                          "type": "integer"
+                        },
+                        "max_send_msg_size": {
+                          "type": "integer"
+                        },
+                        "read_buffer_size": {
+                          "type": "integer"
+                        },
+                        "write_buffer_size": {
+                          "type": "integer"
+                        }
                       }
                     },
-                    "mode": { "type": "string" },
-                    "network": { "type": "string" },
-                    "probe_wait_time": { "type": "string" },
-                    "restart": { "type": "boolean" },
-                    "socket_path": { "type": "string" }
+                    "mode": {
+                      "type": "string"
+                    },
+                    "network": {
+                      "type": "string"
+                    },
+                    "probe_wait_time": {
+                      "type": "string"
+                    },
+                    "restart": {
+                      "type": "boolean"
+                    },
+                    "socket_path": {
+                      "type": "string"
+                    }
                   }
                 },
-                "servicePort": { "type": "integer" }
+                "servicePort": {
+                  "type": "integer"
+                }
               }
             },
             "rest": {
               "type": "object",
-              "properties": { "enabled": { "type": "boolean" } }
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                }
+              }
             }
           }
         },
         "tls": {
           "type": "object",
           "properties": {
-            "ca": { "type": "string" },
-            "cert": { "type": "string" },
-            "enabled": { "type": "boolean" },
+            "ca": {
+              "type": "string"
+            },
+            "cert": {
+              "type": "string"
+            },
+            "enabled": {
+              "type": "boolean"
+            },
             "insecure_skip_verify": {
               "type": "boolean",
               "description": "enable/disable skip SSL certificate verification"
             },
-            "key": { "type": "string" }
+            "key": {
+              "type": "string"
+            }
           }
         }
       }
@@ -789,12 +1016,18 @@
           "type": "object",
           "description": "service annotations"
         },
-        "enabled": { "type": "boolean", "description": "service enabled" },
+        "enabled": {
+          "type": "boolean",
+          "description": "service enabled"
+        },
         "externalTrafficPolicy": {
           "type": "string",
           "description": "external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local"
         },
-        "labels": { "type": "object", "description": "service labels" },
+        "labels": {
+          "type": "object",
+          "description": "service labels"
+        },
         "type": {
           "type": "string",
           "description": "service type: ClusterIP, LoadBalancer or NodePort",
@@ -809,14 +1042,22 @@
           "type": "boolean",
           "description": "service account will be created"
         },
-        "name": { "type": "string", "description": "name of service account" }
+        "name": {
+          "type": "string",
+          "description": "name of service account"
+        }
       }
     },
-    "time_zone": { "type": "string", "description": "time_zone" },
+    "time_zone": {
+      "type": "string",
+      "description": "time_zone"
+    },
     "tolerations": {
       "type": "array",
       "description": "tolerations",
-      "items": { "type": "object" }
+      "items": {
+        "type": "object"
+      }
     },
     "version": {
       "type": "string",

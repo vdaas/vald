@@ -1186,6 +1186,107 @@ func TestJoinHostPort(t *testing.T) {
 	}
 }
 
+func TestDistinctAddrs(t *testing.T) {
+	t.Parallel()
+	// Named once and referenced by identifier below (rather than repeating the
+	// literals) to avoid tripping goconst across the many test cases that need
+	// to reuse the same addresses to exercise duplicate removal.
+	const (
+		addr1 = "10.0.0.1:8081"
+		addr2 = "10.0.0.2:8081"
+		addr3 = "10.0.0.3:8081"
+	)
+	type args struct {
+		addrs []string
+	}
+	type want struct {
+		want []string
+	}
+	type test struct {
+		checkFunc  func(want, []string) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+		name       string
+		args       args
+		want       want
+	}
+	defaultCheckFunc := func(w want, got []string) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return empty slice when addrs is nil",
+			args: args{
+				addrs: nil,
+			},
+			want: want{
+				want: []string{},
+			},
+		},
+		{
+			name: "return empty slice when addrs is empty",
+			args: args{
+				addrs: []string{},
+			},
+			want: want{
+				want: []string{},
+			},
+		},
+		{
+			name: "return the same addrs when there are no duplicates",
+			args: args{
+				addrs: []string{addr1, addr2, addr3},
+			},
+			want: want{
+				want: []string{addr1, addr2, addr3},
+			},
+		},
+		{
+			name: "remove duplicated addrs while preserving order of first occurrence",
+			args: args{
+				addrs: []string{addr2, addr1, addr2, addr3, addr1},
+			},
+			want: want{
+				want: []string{addr2, addr1, addr3},
+			},
+		},
+		{
+			name: "return single element slice when all addrs are the same",
+			args: args{
+				addrs: []string{addr1, addr1, addr1},
+			},
+			want: want{
+				want: []string{addr1},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			got := DistinctAddrs(test.args.addrs)
+			if err := checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestIsUDP(t *testing.T) {

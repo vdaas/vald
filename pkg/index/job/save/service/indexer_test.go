@@ -29,10 +29,12 @@ import (
 	grpcmock "github.com/vdaas/vald/internal/test/mock/grpc"
 )
 
+const testAgentAddr = "127.0.0.1:8080"
+
 func Test_index_Start(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx context.Context
+		ctx context.Context //nolint:containedctx // the args struct carrying ctx is the repo-wide table-driven test pattern
 	}
 	type fields struct {
 		client      discoverer.Client
@@ -60,7 +62,7 @@ func Test_index_Start(t *testing.T) {
 	tests := []test{
 		func() test {
 			addrs := []string{
-				"127.0.0.1:8080",
+				testAgentAddr,
 			}
 			return test{
 				name: "Success: when there is no error in the save indexing request process",
@@ -93,7 +95,7 @@ func Test_index_Start(t *testing.T) {
 				},
 				fields: fields{
 					targetAddrs: []string{
-						"127.0.0.1:8080",
+						testAgentAddr,
 						"127.0.0.1:8081",
 						"127.0.0.1:8083",
 					},
@@ -119,7 +121,7 @@ func Test_index_Start(t *testing.T) {
 		}(),
 		func() test {
 			addrs := []string{
-				"127.0.0.1:8080",
+				testAgentAddr,
 			}
 			return test{
 				name: "Fail: when there is an error wrapped with gRPC status in the save indexing request process",
@@ -153,7 +155,7 @@ func Test_index_Start(t *testing.T) {
 		}(),
 		func() test {
 			addrs := []string{
-				"127.0.0.1:8080",
+				testAgentAddr,
 			}
 			return test{
 				name: "Fail: When the OrderedRangeConcurrent method returns a gRPC client conn not found error",
@@ -206,8 +208,8 @@ func Test_index_Start(t *testing.T) {
 			}
 
 			err := idx.Start(test.args.ctx)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
+			if cerr := checkFunc(test.want, err); cerr != nil {
+				tt.Errorf("error = %v", cerr)
 			}
 		})
 	}
@@ -298,91 +300,6 @@ func Test_index_Start(t *testing.T) {
 //
 // 			got, err := New(test.args.opts...)
 // 			if err := checkFunc(test.want, got, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func Test_delDuplicateAddrs(t *testing.T) {
-// 	type args struct {
-// 		targetAddrs []string
-// 	}
-// 	type want struct {
-// 		want []string
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		want       want
-// 		checkFunc  func(want, []string) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, got []string) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           targetAddrs:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           targetAddrs:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-//
-// 			got := delDuplicateAddrs(test.args.targetAddrs)
-// 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})

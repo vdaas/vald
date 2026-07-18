@@ -16,7 +16,7 @@
 
 package logger
 
-type Logger interface {
+type Interface interface {
 	// Debug logs the vals at Debug level.
 	Debug(vals ...any)
 

@@ -24,13 +24,13 @@ type GlobalConfig = config.GlobalConfig
 // Data represents the application configurations.
 type Data struct {
 	// Server represent all server configurations
-	Server *config.Servers `json:"server_config" yaml:"server_config"`
+	Server *config.Servers `json:"server_config" yaml:"server_config"` //nolint:tagliatelle // fixed by the existing config.yaml wire format, not renameable
 
 	// Observability represent observability configurations
 	Observability *config.Observability `json:"observability" yaml:"observability"`
 
 	// Deletion represent index deletion configuration
-	Deletion *config.IndexDeleter `json:"deleter" yaml:"deleter"`
+	Deletion *config.IndexDeleter `json:"deleter" yaml:"deleter"` //nolint:tagliatelle // fixed by the existing config.yaml wire format, not renameable
 
 	// GlobalConfig represent the global configuration
 	config.GlobalConfig `json:",inline" yaml:",inline"`

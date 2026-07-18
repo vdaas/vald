@@ -16,6 +16,14 @@
 
 package rest
 
+import "github.com/vdaas/vald/pkg/operator/benchmark/handler/grpc"
+
 type Option func(*handler)
 
 var defaultOpts = []Option{}
+
+func WithBenchmark(bm grpc.Benchmark) Option {
+	return func(h *handler) {
+		h.bm = bm
+	}
+}

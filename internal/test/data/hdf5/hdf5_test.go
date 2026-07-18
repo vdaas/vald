@@ -161,7 +161,7 @@ func TestDatasetUrl_String(t *testing.T) {
 	}
 }
 
-func Test_Hdf5Key_String(t *testing.T) {
+func Test_Key_String(t *testing.T) {
 	type want struct {
 		want string
 	}
@@ -171,7 +171,7 @@ func Test_Hdf5Key_String(t *testing.T) {
 		afterFunc  func(*testing.T)
 		name       string
 		want       want
-		h          Hdf5Key
+		h          Key
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -442,7 +442,7 @@ func Test_data_Read(t *testing.T) {
 		name      DatasetName
 	}
 	type args struct {
-		key Hdf5Key
+		key Key
 	}
 	type want struct {
 		err error
@@ -1246,7 +1246,7 @@ func Test_downloadFile(t *testing.T) {
 func TestReadDatasetF32(t *testing.T) {
 	type args struct {
 		file *hdf5.File
-		key  Hdf5Key
+		key  Key
 	}
 	type want struct {
 		err  error
@@ -1338,7 +1338,7 @@ func TestReadDatasetF32(t *testing.T) {
 func TestReadDatasetI32(t *testing.T) {
 	type args struct {
 		file *hdf5.File
-		key  Hdf5Key
+		key  Key
 	}
 	type want struct {
 		err  error
@@ -1429,13 +1429,13 @@ func TestReadDatasetI32(t *testing.T) {
 
 // NOT IMPLEMENTED BELOW
 //
-// func TestHdf5Key_String(t *testing.T) {
+// func TestKey_String(t *testing.T) {
 // 	type want struct {
 // 		want string
 // 	}
 // 	type test struct {
 // 		name       string
-// 		key        Hdf5Key
+// 		key        Key
 // 		want       want
 // 		checkFunc  func(want, string) error
 // 		beforeFunc func(*testing.T)

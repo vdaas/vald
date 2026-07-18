@@ -34,11 +34,11 @@ var Nil = redis.Nil
 
 // Connector is an interface to connect to Redis servers.
 type Connector interface {
-	Connect(ctx context.Context) (Redis, error)
+	Connect(ctx context.Context) (Client, error)
 }
 
-// Redis is an interface to communicate with Redis servers.
-type Redis interface {
+// Client is an interface to communicate with Redis servers.
+type Client interface {
 	TxPipeline() redis.Pipeliner
 	Ping(context.Context) *StatusCmd
 	Close() error
@@ -61,7 +61,7 @@ type (
 
 type redisClient struct {
 	dialer               net.Dialer
-	client               Redis
+	client               Client
 	limiter              Limiter
 	tlsConfig            *tls.Config
 	dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
@@ -263,7 +263,7 @@ func (rc *redisClient) newClusterClient(ctx context.Context) (c *redis.ClusterCl
 }
 
 // Connect returns Redis instance that has connection to servers.
-func (rc *redisClient) Connect(ctx context.Context) (Redis, error) {
+func (rc *redisClient) Connect(ctx context.Context) (Client, error) {
 	if rc.dialer != nil {
 		rc.dialer.StartDialerCache(ctx)
 		rc.dialerFunc = rc.dialer.GetDialer()
@@ -276,7 +276,7 @@ func (rc *redisClient) Connect(ctx context.Context) (Redis, error) {
 	return rc.ping(ctx)
 }
 
-func (rc *redisClient) ping(ctx context.Context) (r Redis, err error) {
+func (rc *redisClient) ping(ctx context.Context) (r Client, err error) {
 	pctx, cancel := context.WithTimeout(ctx, rc.initialPingTimeLimit)
 	defer cancel()
 	tick := time.NewTicker(rc.initialPingDuration)

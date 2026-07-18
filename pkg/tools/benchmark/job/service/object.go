@@ -85,7 +85,7 @@ func (j *job) getObject(ctx context.Context, ech chan error) error {
 			for i, target := range j.objectConfig.FilterConfig.Targets {
 				ft[i] = &payload.Filter_Target{
 					Host: target.Host,
-					Port: uint32(target.Port),
+					Port: uint32(target.Port), //nolint:gosec // filter target port is a non-negative config value within uint16 range
 				}
 			}
 		}

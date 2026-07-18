@@ -22,6 +22,7 @@ import (
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
@@ -62,21 +63,8 @@ func New(opts ...Option) (Indexer, error) {
 			log.Warn(oerr)
 		}
 	}
-	idx.targetAddrs = delDuplicateAddrs(idx.targetAddrs)
+	idx.targetAddrs = net.DistinctAddrs(idx.targetAddrs)
 	return idx, nil
-}
-
-func delDuplicateAddrs(targetAddrs []string) []string {
-	addrs := make([]string, 0, len(targetAddrs))
-	exist := make(map[string]bool)
-
-	for _, addr := range targetAddrs {
-		if !exist[addr] {
-			addrs = append(addrs, addr)
-			exist[addr] = true
-		}
-	}
-	return addrs
 }
 
 // StartClient starts the gRPC client.

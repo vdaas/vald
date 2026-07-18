@@ -118,8 +118,7 @@ pprof/%.mem.svg: \
 ## run all benchmarks
 bench: \
 	bench/core \
-	bench/agent \
-	bench/gateway
+	bench/agent
 
 .PHONY: bench/core
 ## run benchmarks for core
@@ -242,37 +241,6 @@ pprof/agent/sequential/grpc.bin: \
 	-count=1 \
 	-timeout=1h \
 	-bench=gRPC_Sequential \
-	-benchmem \
-	-o $@ \
-	-cpuprofile $(patsubst %.bin,%.cpu.out,$@) \
-	-memprofile $(patsubst %.bin,%.mem.out,$@) \
-	-trace $(patsubst %.bin,%.trace.out,$@) \
-	$< \
-	-dataset=$(DATASET_ARGS)
-
-.PHONY: bench/gateway
-## run benchmarks for gateway
-bench/gateway: \
-	bench/gateway/sequential
-
-.PHONY: bench/gateway/sequential
-## run benchmark for gateway sequential
-bench/gateway/sequential: \
-	pprof/gateway/sequential.cpu.svg \
-	pprof/gateway/sequential.mem.svg
-pprof/gateway/sequential.bin: \
-	hack/benchmark/e2e/gateway/vald/vald_bench_test.go \
-	ngt/install
-	mkdir -p $(dir $@)
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test \
-	-mod=readonly \
-	-count=1 \
-	-timeout=1h \
-	-bench=Sequential \
 	-benchmem \
 	-o $@ \
 	-cpuprofile $(patsubst %.bin,%.cpu.out,$@) \

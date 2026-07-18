@@ -30,6 +30,16 @@ define mkdir
 	mkdir -p $1
 endef
 
+# safe-version-write atomically publishes a fetched version string into
+# $(ROOTDIR)/versions/$1. Callers must redirect their curl|grep|sed pipeline into
+# $(ROOTDIR)/versions/$1.tmp and then chain this via `&& $(call safe-version-write,$1)`.
+# The target file is only overwritten when the fetch succeeded (pipefail, set via
+# .SHELLFLAGS) and produced non-empty output, so a rate-limited or offline upstream
+# never truncates an already-pinned version file.
+define safe-version-write
+[ -s $(ROOTDIR)/versions/$1.tmp ] && mv -f $(ROOTDIR)/versions/$1.tmp $(ROOTDIR)/versions/$1 || { rm -f $(ROOTDIR)/versions/$1.tmp; exit 1; }
+endef
+
 define profile-web
 	go tool pprof -http=":6061" \
 	$1.bin \

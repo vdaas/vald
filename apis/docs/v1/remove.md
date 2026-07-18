@@ -146,18 +146,18 @@ This design allows for versatile deletion operations, facilitating tasks such as
 
   - Remove.TimestampRequest
 
-        | field | type | label | description |
-        | :---: | :--- | :---- | :---------- |
-        | timestamps | Remove.Timestamp | repeated | The timestamp comparison list. If more than one is specified, the `AND`
+    |   field    | type             | label    | description                                                             |
+    | :--------: | :--------------- | :------- | :---------------------------------------------------------------------- |
+    | timestamps | Remove.Timestamp | repeated | The timestamp comparison list. If more than one is specified, the `AND` |
 
-    search is applied. |
+search is applied. |
 
-  - Remove.Timestamp
+- Remove.Timestamp
 
-    |   field   | type                      | label | description               |
-    | :-------: | :------------------------ | :---- | :------------------------ |
-    | timestamp | int64                     |       | The timestamp.            |
-    | operator  | Remove.Timestamp.Operator |       | The conditional operator. |
+  |   field   | type                      | label | description               |
+  | :-------: | :------------------------ | :---- | :------------------------ |
+  | timestamp | int64                     |       | The timestamp.            |
+  | operator  | Remove.Timestamp.Operator |       | The conditional operator. |
 
 ### Output
 

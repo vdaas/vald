@@ -30,10 +30,17 @@ type Quantity = k8sresource.Quantity
 // BinarySI is the binary SI format for Quantity values (Ki, Mi, Gi, …).
 const BinarySI = k8sresource.BinarySI
 
-var (
-	NewQuantity = k8sresource.NewQuantity
-	MustParse   = k8sresource.MustParse
-)
+// NewQuantity constructs a Quantity from a value and format, delegating to
+// k8s.io/apimachinery/pkg/api/resource.NewQuantity.
+func NewQuantity(value int64, format k8sresource.Format) *Quantity {
+	return k8sresource.NewQuantity(value, format)
+}
+
+// MustParse parses str into a Quantity, panicking if str is invalid.
+// Delegates to k8s.io/apimachinery/pkg/api/resource.MustParse.
+func MustParse(str string) Quantity {
+	return k8sresource.MustParse(str)
+}
 
 // DeepCopyIntoer constrains PT to a pointer to T that provides DeepCopyInto,
 // the single method each type still has to implement by hand (field
@@ -64,17 +71,15 @@ type Base[T any, PT DeepCopyIntoer[T]] struct{}
 // self recovers the outer object from the embedded zero-sized Base pointer.
 // This relies on the first-field embedding contract documented on Base.
 func (b *Base[T, PT]) self() PT {
-	return PT(unsafe.Pointer(b)) // skipcq: GSC-G103 zero-size first-field embedding contract documented on Base.
+	return PT(unsafe.Pointer(b)) //nolint:gosec // skipcq: GSC-G103 zero-size first-field embedding contract documented on Base.
 }
 
-// DeepCopyInto copies the receiver's outer object into out via the outer
-// type's own DeepCopyInto implementation.
-func (b *Base[T, PT]) DeepCopyInto(out *T) {
-	if b == nil || out == nil {
-		return
-	}
-	b.self().DeepCopyInto(out)
-}
+// Base deliberately does NOT provide a DeepCopyInto method: if it did, a type
+// that embeds Base but forgets its hand-written DeepCopyInto would still
+// satisfy DeepCopyIntoer through the promoted method and recurse infinitely at
+// runtime (self().DeepCopyInto -> promoted method -> self().DeepCopyInto).
+// Without it, that mistake is a compile error: "*T does not satisfy
+// DeepCopyIntoer[T] (missing method DeepCopyInto)".
 
 func (b *Base[T, PT]) DeepCopy() *T {
 	if b == nil {

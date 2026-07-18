@@ -357,8 +357,7 @@ A method to get all the vectors with server streaming
 
 | code | description |
 | :--: | :---------- |
-
-TODO
+| TODO |
 
 Please refer to [Response Status Code](../status.md) for more details.
 
@@ -420,8 +419,7 @@ Represent the RPC to get the vector metadata. This RPC is mainly used for index 
 
 | code | description |
 | :--: | :---------- |
-
-TODO
+| TODO |
 
 Please refer to [Response Status Code](../status.md) for more details.
 

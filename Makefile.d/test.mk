@@ -421,7 +421,6 @@ gotests/gen-test:
 gotests/patch: \
 	files
 	@$(call green, "apply patches to go test files...")
-	find $(ROOTDIR)/internal/k8s/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%k8s.io/apimachinery/pkg/api/errors%$(GOPKG)/internal/errors%g"
 	@cat $(ROOTDIR)/.gitfiles | grep -E '^(\./)?internal/k8s/.*\_test.go$$' | xargs -I {} -P$(CORES) bash -c ' \
 	echo "Replacing internal/k8s Test File {}" && \
 	sed -i -E "s%cockroachdb/errors%$(REPO)/internal/errors%g" {} && \

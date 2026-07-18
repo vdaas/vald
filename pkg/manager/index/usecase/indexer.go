@@ -47,7 +47,7 @@ type run struct {
 	indexer       service.Indexer
 }
 
-func New(cfg *config.Data) (r runner.Runner, err error) {
+func New(cfg *config.Data) (r runner.Interface, err error) {
 	eg := errgroup.Get()
 
 	var indexer service.Indexer

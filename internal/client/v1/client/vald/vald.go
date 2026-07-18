@@ -64,7 +64,7 @@ func New(opts ...Option) (Client, error) {
 	return c, nil
 }
 
-func NewValdClient(cc *grpc.ClientConn) Client {
+func NewFromConn(cc *grpc.ClientConn) Client {
 	return &singleClient{vc: vald.NewValdClient(cc)}
 }
 
