@@ -46,6 +46,8 @@ const (
 	OpIndexProperty         OperationType = "index_property"
 	OpFlush                 OperationType = "flush"
 
+	OpResourceStatsDetail OperationType = "resource_stats_detail"
+
 	OpCreateIndex        OperationType = "create_index"
 	OpSaveIndex          OperationType = "save_index"
 	OpCreateAndSaveIndex OperationType = "create_and_save_index"

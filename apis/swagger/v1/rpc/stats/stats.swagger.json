@@ -7,6 +7,9 @@
   "tags": [
     {
       "name": "Stats"
+    },
+    {
+      "name": "StatsDetail"
     }
   ],
   "consumes": ["application/json"],
@@ -14,13 +17,13 @@
   "paths": {
     "/resource/stats": {
       "get": {
-        "summary": "Overview\nRepresent the RPC to get the resource stats.",
+        "summary": "Represent the RPC to get the resource stats.",
         "operationId": "Stats_ResourceStats",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1InfoResourceStats"
+              "$ref": "#/definitions/v1InfoStatsResourceStats"
             }
           },
           "default": {
@@ -32,10 +35,43 @@
         },
         "tags": ["Stats"]
       }
+    },
+    "/resource/stats/detail": {
+      "get": {
+        "summary": "Represent the RPC to get the resource stats for each agent.",
+        "operationId": "StatsDetail_ResourceStatsDetail",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/InfoStatsResourceStatsDetail"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": ["StatsDetail"]
+      }
     }
   },
   "definitions": {
-    "InfoCgroupStats": {
+    "InfoStatsResourceStatsDetail": {
+      "type": "object",
+      "properties": {
+        "details": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/v1InfoStatsResourceStats"
+          }
+        }
+      },
+      "title": "Represents the resource stats for each agent"
+    },
+    "StatsCgroupStats": {
       "type": "object",
       "properties": {
         "cpuLimitCores": {
@@ -94,7 +130,7 @@
       },
       "description": "The `Status` type defines a logical error model that is suitable for\ndifferent programming environments, including REST APIs and RPC APIs. It is\nused by [gRPC](https://github.com/grpc). Each `Status` message contains\nthree pieces of data: error code, error message, and error details.\n\nYou can find out more about this error model and how to work with it in the\n[API Design Guide](https://cloud.google.com/apis/design/errors)."
     },
-    "v1InfoResourceStats": {
+    "v1InfoStatsResourceStats": {
       "type": "object",
       "properties": {
         "name": {
@@ -104,7 +140,7 @@
           "type": "string"
         },
         "cgroupStats": {
-          "$ref": "#/definitions/InfoCgroupStats",
+          "$ref": "#/definitions/StatsCgroupStats",
           "title": "Container resource usage statistics"
         }
       },
