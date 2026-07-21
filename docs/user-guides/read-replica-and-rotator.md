@@ -19,19 +19,19 @@ The read replica is managed with a separate chart from the Vald cluster and is d
    ```yaml
    agent:
    ngt:
-       export_index_info_to_k8s: true
+     export_index_info_to_k8s: true
    readreplica:
-       enabled: true
-       minReplicas: 1 # if you don't use hpa, this will be the replicas of the Deployment
-       maxReplicas: 3
-       hpa:
-       enabled: true # if you prefer to use hpa
-       targetCPUUtilizationPercentage: 80
+     enabled: true
+     minReplicas: 1 # if you don't use hpa, this will be the replicas of the Deployment
+     maxReplicas: 3
+     hpa:
+     enabled: true # if you prefer to use hpa
+     targetCPUUtilizationPercentage: 80
    manager:
    index:
-       operator:
-       enabled: true
-       rotation_job_concurrency: 2
+     operator:
+     enabled: true
+     rotation_job_concurrency: 2
    ```
 
 1. Deploy Vald cluster
