@@ -347,7 +347,7 @@ int faiss_add_ivfpq(
   try {
     //printf("is_trained: %d\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->is_trained);
     //printf("ntotal: %ld\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->ntotal);
-    (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->add_with_ids(nb, xb, xids);
+    (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->add_with_ids(nb, xb, reinterpret_cast<const faiss::idx_t*>(xids));
     //printf("is_trained: %d\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->is_trained);
     //printf("ntotal: %ld\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->ntotal);
   } catch(std::exception &err) {
@@ -371,7 +371,7 @@ int faiss_add_binaryivf(
   //fflush(stdout);
 
   try {
-    (static_cast<faiss::IndexBinaryIVF*>(st->faiss_index))->add_with_ids(nb, xb, xids);
+    (static_cast<faiss::IndexBinaryIVF*>(st->faiss_index))->add_with_ids(nb, xb, reinterpret_cast<const faiss::idx_t*>(xids));
   } catch(std::exception &err) {
     std::stringstream ss;
     ss << "Capi : " << __FUNCTION__ << "() : Error: " << err.what();
@@ -425,7 +425,7 @@ bool faiss_search_ivfpq(
     //printf("is_trained: %d\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->is_trained);
     //printf("ntotal: %ld\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->ntotal);
     (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->nprobe = nprobe;
-    (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->search(nq, xq, k, D, I);
+    (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->search(nq, xq, k, D, reinterpret_cast<faiss::idx_t*>(I));
     //printf("I=\n");
     //for(int i = 0; i < nq; i++) {
     //    for(int j = 0; j < k; j++) {
@@ -465,7 +465,7 @@ bool faiss_search_binaryivf(
   int32_t* tmpD = new int32_t[nq*k];
   try {
     (static_cast<faiss::IndexBinaryIVF*>(st->faiss_index))->nprobe = nprobe;
-    (static_cast<faiss::IndexBinaryIVF*>(st->faiss_index))->search(nq, xq, k, tmpD, I);
+    (static_cast<faiss::IndexBinaryIVF*>(st->faiss_index))->search(nq, xq, k, tmpD, reinterpret_cast<faiss::idx_t*>(I));
   } catch(std::exception &err) {
     delete[] tmpD;
     std::stringstream ss;
@@ -514,7 +514,7 @@ int faiss_remove_ivfpq(
   try {
     //printf("is_trained: %d\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->is_trained);
     //printf("ntotal: %ld\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->ntotal);
-    faiss::IDSelectorArray sel(size, ids);
+    faiss::IDSelectorArray sel(size, reinterpret_cast<const faiss::idx_t*>(ids));
     (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->remove_ids(sel);
     //printf("is_trained: %d\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->is_trained);
     //printf("ntotal: %ld\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->ntotal);
@@ -537,7 +537,7 @@ int faiss_remove_binaryivf(
   //fflush(stdout);
 
   try {
-    faiss::IDSelectorArray sel(size, ids);
+    faiss::IDSelectorArray sel(size, reinterpret_cast<const faiss::idx_t*>(ids));
     (static_cast<faiss::IndexBinaryIVF*>(st->faiss_index))->remove_ids(sel);
   } catch(std::exception &err) {
     std::stringstream ss;

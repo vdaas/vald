@@ -377,6 +377,7 @@ $(LIB_PATH)/libhdf5.a: $(LIB_PATH) \
 	-DHDF5_BUILD_HL_LIB=ON \
 	-DHDF5_BUILD_STATIC_EXECS=ON \
 	-DHDF5_BUILD_TOOLS=OFF \
+	$(HDF5_BUILD_EXAMPLES) \
 	-DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
 	-DH5_ZLIB_INCLUDE_DIR=$(USR_LOCAL)/include \
 	-DH5_ZLIB_LIBRARY=$(LIB_PATH)/libz.a \
@@ -389,7 +390,7 @@ $(LIB_PATH)/libhdf5.a: $(LIB_PATH) \
 	&& make install \
 	&& cd $(ROOTDIR) \
 	&& rm -rf $(TEMP_DIR)/hdf5.tar.gz $(TEMP_DIR)/hdf5 \
-	&& ldconfig
+	&& (command -v ldconfig >/dev/null 2>&1 && ldconfig || true)
 
 .PHONY: yq/install
 ## install yq

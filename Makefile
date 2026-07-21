@@ -173,7 +173,11 @@ FAISS_LDFLAGS = $(NGT_LDFLAGS)
 HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl -lm
 CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
 # TEST_LDFLAGS without -static to avoid conflicts with CGO and glibc dynamic linking requirements
+ifeq ($(GOOS),darwin)
+TEST_LDFLAGS_BASE = -fPIC -pthread -lc++ -lm -L$(OPENMP_PREFIX)/lib -Wl,-rpath,$(USR_LOCAL)/lib -lomp -framework Accelerate -lpthread
+else
 TEST_LDFLAGS_BASE = -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -ffat-lto-objects -march=native -mtune=native -fno-plt -O3 -ffast-math -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
+endif
 TEST_LDFLAGS = $(TEST_LDFLAGS_BASE) $(CGO_LDFLAGS)
 
 ifeq ($(GOARCH),amd64)
@@ -216,6 +220,11 @@ ifeq ($(GOOS),darwin)
 # Homebrew, consistent with the existing darwin HDF5/ZLIB handling.
 OPENMP_PREFIX := $(shell brew --prefix libomp 2>/dev/null)
 OPENMP_CFLAGS := -I$(OPENMP_PREFIX)/include
+# cgo (go test/go build) must see libomp headers on Darwin; export so all go
+# invocations inherit them (test targets only set CGO_LDFLAGS inline).
+CGO_CFLAGS += $(OPENMP_CFLAGS)
+CGO_CXXFLAGS += $(OPENMP_CFLAGS)
+export CGO_CFLAGS CGO_CXXFLAGS
 NATIVE_LTO_FLAGS ?= -flto=thin
 # NGT: let cmake find_package(OpenMP) via OpenMP_ROOT; install rpath so bin/ngt
 # resolves libngt without ldconfig (absent on Darwin).
@@ -227,6 +236,8 @@ FAISS_CMAKE_C_FLAGS := $(CFLAGS) $(NATIVE_LTO_FLAGS) $(OPENMP_CFLAGS)
 FAISS_CMAKE_EXE_LINKER_FLAGS :=
 FAISS_EXTRA_CMAKE_FLAGS := -DOpenMP_ROOT=$(OPENMP_PREFIX)
 FAISS_BLA_VENDOR :=
+# HDF5: skip the static example binaries on Darwin (no crt0.o for -static).
+HDF5_BUILD_EXAMPLES := -DHDF5_BUILD_EXAMPLES=OFF
 else
 NATIVE_LTO_FLAGS ?= -flto=auto -ffat-lto-objects
 OPENMP_CFLAGS :=
@@ -235,6 +246,7 @@ FAISS_CMAKE_C_FLAGS := $(LDFLAGS)
 FAISS_CMAKE_EXE_LINKER_FLAGS := $(FAISS_LDFLAGS)
 FAISS_EXTRA_CMAKE_FLAGS :=
 FAISS_BLA_VENDOR := -DBLA_VENDOR=OpenBLAS
+HDF5_BUILD_EXAMPLES :=
 endif
 
 BENCH_DATASET_MD5S := $(eval BENCH_DATASET_MD5S := $(shell find $(BENCH_DATASET_MD5_DIR) -type f -regex ".*\.md5"))$(BENCH_DATASET_MD5S)
