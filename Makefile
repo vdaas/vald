@@ -212,14 +212,29 @@ endif
 # see docs/contributing/development.md (`brew install libomp hdf5 ...`). LTO uses
 # Apple thin-LTO on Darwin (-ffat-lto-objects is unsupported for Mach-O).
 ifeq ($(GOOS),darwin)
-NGT_LTO_FLAGS ?= -flto=thin
-NGT_OPENMP_PREFIX := $(shell brew --prefix libomp 2>/dev/null)
-NGT_OPENMP_CFLAGS := -I$(NGT_OPENMP_PREFIX)/include
-NGT_EXTRA_CMAKE_FLAGS ?= -DOpenMP_ROOT=$(NGT_OPENMP_PREFIX) -DCMAKE_SHARED_LINKER_FLAGS=-L$(NGT_OPENMP_PREFIX)/lib -DCMAKE_EXE_LINKER_FLAGS=-L$(NGT_OPENMP_PREFIX)/lib -DCMAKE_INSTALL_RPATH=@loader_path/../lib
+# Shared darwin native-build helpers. OpenMP runtime (libomp) is provided by
+# Homebrew, consistent with the existing darwin HDF5/ZLIB handling.
+OPENMP_PREFIX := $(shell brew --prefix libomp 2>/dev/null)
+OPENMP_CFLAGS := -I$(OPENMP_PREFIX)/include
+NATIVE_LTO_FLAGS ?= -flto=thin
+# NGT: let cmake find_package(OpenMP) via OpenMP_ROOT; install rpath so bin/ngt
+# resolves libngt without ldconfig (absent on Darwin).
+NGT_EXTRA_CMAKE_FLAGS ?= -DOpenMP_ROOT=$(OPENMP_PREFIX) -DCMAKE_SHARED_LINKER_FLAGS=-L$(OPENMP_PREFIX)/lib -DCMAKE_EXE_LINKER_FLAGS=-L$(OPENMP_PREFIX)/lib -DCMAKE_INSTALL_RPATH=@loader_path/../lib
+# Faiss: drop the GNU LDFLAGS-as-CFLAGS and the -fopenmp/-lopenblas/-llapack/
+# -lgfortran linker flags; let cmake find OpenMP (OpenMP_ROOT) and BLAS/LAPACK
+# (Accelerate.framework) natively. BLA_VENDOR unset -> Accelerate on Darwin.
+FAISS_CMAKE_C_FLAGS := $(CFLAGS) $(NATIVE_LTO_FLAGS) $(OPENMP_CFLAGS)
+FAISS_CMAKE_EXE_LINKER_FLAGS :=
+FAISS_EXTRA_CMAKE_FLAGS := -DOpenMP_ROOT=$(OPENMP_PREFIX)
+FAISS_BLA_VENDOR :=
 else
-NGT_LTO_FLAGS ?= -flto=auto -ffat-lto-objects
-NGT_OPENMP_CFLAGS :=
+NATIVE_LTO_FLAGS ?= -flto=auto -ffat-lto-objects
+OPENMP_CFLAGS :=
 NGT_EXTRA_CMAKE_FLAGS ?=
+FAISS_CMAKE_C_FLAGS := $(LDFLAGS)
+FAISS_CMAKE_EXE_LINKER_FLAGS := $(FAISS_LDFLAGS)
+FAISS_EXTRA_CMAKE_FLAGS :=
+FAISS_BLA_VENDOR := -DBLA_VENDOR=OpenBLAS
 endif
 
 BENCH_DATASET_MD5S := $(eval BENCH_DATASET_MD5S := $(shell find $(BENCH_DATASET_MD5_DIR) -type f -regex ".*\.md5"))$(BENCH_DATASET_MD5S)
@@ -864,8 +879,8 @@ $(USR_LOCAL)/include/NGT/Capi.h:
 	-DCMAKE_AR=$$(command -v llvm-ar 2>/dev/null || ls /usr/bin/llvm-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ar 2>/dev/null || ls /usr/bin/gcc-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ar) \
 	-DCMAKE_CXX_COMPILER_AR=$$(command -v llvm-ar 2>/dev/null || ls /usr/bin/llvm-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ar 2>/dev/null || ls /usr/bin/gcc-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ar) \
 	-DCMAKE_RANLIB=$$(command -v llvm-ranlib 2>/dev/null || ls /usr/bin/llvm-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ranlib 2>/dev/null || ls /usr/bin/gcc-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ranlib) \
-	-DCMAKE_C_FLAGS="$(CFLAGS) $(NGT_LTO_FLAGS) $(NGT_OPENMP_CFLAGS)" \
-	-DCMAKE_CXX_FLAGS="$(CXXFLAGS) $(NGT_LTO_FLAGS) $(NGT_OPENMP_CFLAGS)" \
+	-DCMAKE_C_FLAGS="$(CFLAGS) $(NATIVE_LTO_FLAGS) $(OPENMP_CFLAGS)" \
+	-DCMAKE_CXX_FLAGS="$(CXXFLAGS) $(NATIVE_LTO_FLAGS) $(OPENMP_CFLAGS)" \
 	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
 	$(NGT_EXTRA_CMAKE_FLAGS) \
 	-B $(TEMP_DIR)/NGT-$(NGT_VERSION)/build $(TEMP_DIR)/NGT-$(NGT_VERSION)
@@ -889,16 +904,17 @@ $(LIB_PATH)/libfaiss.a:
 	-DBUILD_TESTING=OFF \
 	-DFAISS_ENABLE_PYTHON=OFF \
 	-DFAISS_ENABLE_GPU=OFF \
-	-DBLA_VENDOR=OpenBLAS \
-	-DCMAKE_C_FLAGS="$(LDFLAGS)" \
-	-DCMAKE_EXE_LINKER_FLAGS="$(FAISS_LDFLAGS)" \
+	$(FAISS_BLA_VENDOR) \
+	-DCMAKE_C_FLAGS="$(FAISS_CMAKE_C_FLAGS)" \
+	-DCMAKE_EXE_LINKER_FLAGS="$(FAISS_CMAKE_EXE_LINKER_FLAGS)" \
+	$(FAISS_EXTRA_CMAKE_FLAGS) \
 	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
 	-B $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build $(TEMP_DIR)/faiss-$(FAISS_VERSION)
 	make -C $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build -j$(CORES) faiss
 	make -C $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build install
 	cd $(ROOTDIR)
 	rm -rf $(TEMP_DIR)/v$(FAISS_VERSION).tar.gz $(TEMP_DIR)/faiss-$(FAISS_VERSION)
-	ldconfig
+	command -v ldconfig >/dev/null 2>&1 && ldconfig || true
 
 .PHONY: usearch/install
 ## install usearch
