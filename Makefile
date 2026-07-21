@@ -62,8 +62,6 @@ VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
 
 NGT_REPO = github.com/NGT-labs/NGT
 
-NGT_EXTRA_CMAKE_FLAGS ?=
-
 TEST_NOT_IMPL_PLACEHOLDER = NOT IMPLEMENTED BELOW
 
 TEMP_DIR := $(eval TEMP_DIR := $(shell mktemp -d))$(TEMP_DIR)
@@ -206,6 +204,22 @@ EXTLDFLAGS ?=
 else
 EXTLDFLAGS ?= -Wl,--no-keep-memory
 endif
+endif
+
+# NGT build flags: OS-aware and overridable. NGT requires an OpenMP runtime.
+# On Linux/container the compiler bundles libgomp/libomp. On macOS, OpenMP
+# (libomp), HDF5, and the other native-build deps are provided by Homebrew --
+# see docs/contributing/development.md (`brew install libomp hdf5 ...`). LTO uses
+# Apple thin-LTO on Darwin (-ffat-lto-objects is unsupported for Mach-O).
+ifeq ($(GOOS),darwin)
+NGT_LTO_FLAGS ?= -flto=thin
+NGT_OPENMP_PREFIX := $(shell brew --prefix libomp 2>/dev/null)
+NGT_OPENMP_CFLAGS := -I$(NGT_OPENMP_PREFIX)/include
+NGT_EXTRA_CMAKE_FLAGS ?= -DOpenMP_ROOT=$(NGT_OPENMP_PREFIX) -DCMAKE_SHARED_LINKER_FLAGS=-L$(NGT_OPENMP_PREFIX)/lib -DCMAKE_EXE_LINKER_FLAGS=-L$(NGT_OPENMP_PREFIX)/lib -DCMAKE_INSTALL_RPATH=@loader_path/../lib
+else
+NGT_LTO_FLAGS ?= -flto=auto -ffat-lto-objects
+NGT_OPENMP_CFLAGS :=
+NGT_EXTRA_CMAKE_FLAGS ?=
 endif
 
 BENCH_DATASET_MD5S := $(eval BENCH_DATASET_MD5S := $(shell find $(BENCH_DATASET_MD5_DIR) -type f -regex ".*\.md5"))$(BENCH_DATASET_MD5S)
@@ -850,8 +864,8 @@ $(USR_LOCAL)/include/NGT/Capi.h:
 	-DCMAKE_AR=$$(command -v llvm-ar 2>/dev/null || ls /usr/bin/llvm-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ar 2>/dev/null || ls /usr/bin/gcc-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ar) \
 	-DCMAKE_CXX_COMPILER_AR=$$(command -v llvm-ar 2>/dev/null || ls /usr/bin/llvm-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ar 2>/dev/null || ls /usr/bin/gcc-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ar) \
 	-DCMAKE_RANLIB=$$(command -v llvm-ranlib 2>/dev/null || ls /usr/bin/llvm-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ranlib 2>/dev/null || ls /usr/bin/gcc-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ranlib) \
-	-DCMAKE_C_FLAGS="$(CFLAGS) -flto=auto -ffat-lto-objects" \
-	-DCMAKE_CXX_FLAGS="$(CXXFLAGS) -flto=auto -ffat-lto-objects" \
+	-DCMAKE_C_FLAGS="$(CFLAGS) $(NGT_LTO_FLAGS) $(NGT_OPENMP_CFLAGS)" \
+	-DCMAKE_CXX_FLAGS="$(CXXFLAGS) $(NGT_LTO_FLAGS) $(NGT_OPENMP_CFLAGS)" \
 	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
 	$(NGT_EXTRA_CMAKE_FLAGS) \
 	-B $(TEMP_DIR)/NGT-$(NGT_VERSION)/build $(TEMP_DIR)/NGT-$(NGT_VERSION)
@@ -859,7 +873,7 @@ $(USR_LOCAL)/include/NGT/Capi.h:
 	make -C $(TEMP_DIR)/NGT-$(NGT_VERSION)/build install
 	cd $(ROOTDIR)
 	rm -rf $(TEMP_DIR)/NGT-$(NGT_VERSION)
-	ldconfig
+	command -v ldconfig >/dev/null 2>&1 && ldconfig || true
 
 .PHONY: faiss/install
 ## install Faiss

@@ -84,3 +84,7 @@ rust/target/
 
 !rust/libs
 /gen
+
+# local native-build prefixes (macOS dev)
+.local/
+.local-ngt/
