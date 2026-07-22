@@ -65,7 +65,3 @@ analyze:
       type: go
       target: github.com/vdaas/vald/hack/tools/config/discoverer/k8s
       path: hack/tools/config/discoverer/k8s
-    - name: github.com/vdaas/vald/hack/tools/metrics
-      type: go
-      target: github.com/vdaas/vald/hack/tools/metrics
-      path: hack/tools/metrics

@@ -88,22 +88,31 @@ jobs:
             sleep 30
 
             kubectl wait --for=condition=Ready pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
-            POD_NAME=`kubectl get pods | grep vald-lb-gateway | awk '{print $1}'`
+            # e2e/v2/maxdim (tests/v2/e2e's config-based max-dimension scenario,
+            # see tests/v2/e2e/assets/max_vector_dim.yaml) treats a
+            # ResourceExhausted Insert response as a legitimate boundary result
+            # rather than a test failure, so `go test` always exits 0 on a
+            # clean boundary hit; unlike the removed v1 `e2e/maxdim` target it
+            # has no `-file` flag to report the outcome, so the boundary is
+            # detected here by grepping the captured test log instead. See
+            # tests/v2/e2e/crud/grpc_test.go printCallback/emptyCallback,
+            # which logs the raw gRPC error (containing "ResourceExhausted")
+            # even when the expect assertion for it passes.
+            set +e
             make E2E_BIND_PORT=8081 \
-              E2E_MAX_DIM_RESULT_FILEPATH=${FILEPATH} \
               E2E_MAX_DIM_BIT=${BIT} \
-              E2E_TARGET_POD_NAME=${POD_NAME} \
               E2E_TARGET_NAMESPACE=default \
-              e2e/maxdim
-            CODE=`sed -n 1P ${FILEPATH}`
-            if [ ${CODE} = "ResourceExhausted" ]; then
-              echo "Finish: Bit=${BIT} with ${CODE}"
+              e2e/v2/maxdim 2>&1 | tee ${FILEPATH}
+            RESULT=${PIPESTATUS[0]}
+            set -e
+            if grep -q "ResourceExhausted" ${FILEPATH}; then
+              echo "Finish: Bit=${BIT} with ResourceExhausted (boundary reached)"
               BIT=$(($BIT-1))
               rm ${FILEPATH}
               break;
             fi
-            if [ ${CODE} != "OK" ]; then
-              echo "Finish: Bit=${BIT} with Error: ${CODE}"
+            if [ ${RESULT} -ne 0 ]; then
+              echo "Finish: Bit=${BIT} with Error: exit code ${RESULT}"
               rm ${FILEPATH}
               break;
             fi

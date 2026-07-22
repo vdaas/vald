@@ -32,7 +32,7 @@ import (
 	"github.com/vdaas/vald/tests/v2/e2e/config"
 )
 
-func (r *runner) processHTTP(t *testing.T, ctx context.Context, plan *config.Execution) {
+func (r *runner) processHTTP(t testing.TB, ctx context.Context, plan *config.Execution) {
 	t.Helper()
 	if plan == nil || plan.HTTP == nil {
 		t.Fatal("http plan is nil")

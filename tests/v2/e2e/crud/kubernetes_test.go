@@ -45,7 +45,7 @@ const (
 	manifestDecodeBufferSize = 4096
 )
 
-func (r *runner) processKubernetes(t *testing.T, ctx context.Context, plan *config.Execution) {
+func (r *runner) processKubernetes(t testing.TB, ctx context.Context, plan *config.Execution) {
 	t.Helper()
 	if plan == nil || plan.Kubernetes == nil {
 		t.Fatal("kubernetes plan is nil")
@@ -105,7 +105,7 @@ func (r *runner) processKubernetes(t *testing.T, ctx context.Context, plan *conf
 // handleKubernetesAction executes the actions applicable to every resource kind
 // (get, delete and wait) through the generic resource client.
 func handleKubernetesAction[T resource.Object, L resource.ObjectList, C resource.NamedObject, I resource.ResourceInterface[T, L, C]](
-	t *testing.T, ctx context.Context, k *config.KubernetesConfig, client I,
+	t testing.TB, ctx context.Context, k *config.KubernetesConfig, client I,
 ) {
 	t.Helper()
 	switch k.Action {
@@ -133,7 +133,7 @@ func handleKubernetesAction[T resource.Object, L resource.ObjectList, C resource
 // handleKubernetesWorkloadAction adds the workload-controller specific rollout
 // action on top of the common resource actions.
 func handleKubernetesWorkloadAction[T resource.Object, L resource.ObjectList, C resource.NamedObject, I resource.WorkloadControllerResourceClient[T, L, C]](
-	t *testing.T, ctx context.Context, k *config.KubernetesConfig, client I,
+	t testing.TB, ctx context.Context, k *config.KubernetesConfig, client I,
 ) {
 	t.Helper()
 	switch k.Action {
@@ -197,7 +197,7 @@ func resourceFor(
 // manifest through the dynamic client. Apply uses server-side apply so the
 // operation is idempotent across repeated e2e runs.
 func (r *runner) handleKubernetesManifest(
-	t *testing.T, ctx context.Context, k *config.KubernetesConfig,
+	t testing.TB, ctx context.Context, k *config.KubernetesConfig,
 ) {
 	t.Helper()
 	objs, err := decodeManifest(k.Manifest)
@@ -256,7 +256,7 @@ func (r *runner) handleKubernetesManifest(
 // handleKubernetesCustomResource executes get/delete/wait actions on an
 // arbitrary custom resource identified by group/version/resource.
 func (r *runner) handleKubernetesCustomResource(
-	t *testing.T, ctx context.Context, k *config.KubernetesConfig,
+	t testing.TB, ctx context.Context, k *config.KubernetesConfig,
 ) {
 	t.Helper()
 	dyn, _, err := kclient.NewDynamicClient(r.k8s)

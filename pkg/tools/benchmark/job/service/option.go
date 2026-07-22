@@ -26,7 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/sync/errgroup"
-	"github.com/vdaas/vald/internal/test/data/hdf5"
+	"github.com/vdaas/vald/internal/test/data/hdf5" //nolint:depguard // hdf5 dataset loading is the benchmark job's core input path, not test-only usage
 	"github.com/vdaas/vald/internal/timeutil"
 )
 

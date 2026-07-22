@@ -104,7 +104,11 @@ func (p *parser) Parse() (Data, bool, error) {
 		)
 	}
 
-	args := os.Args[1:]
+	// Clone before filtering: slices.DeleteFunc compacts in place and zeroes
+	// the removed tail, so running it directly on os.Args[1:] would destroy
+	// the filtered arguments (e.g. go test's -test.* flags) inside the global
+	// os.Args itself for every later reader.
+	args := slices.Clone(os.Args[1:])
 	if p.filters != nil {
 		args = slices.DeleteFunc(args, func(s string) bool {
 			for _, filter := range p.filters {

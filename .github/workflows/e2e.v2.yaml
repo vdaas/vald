@@ -67,6 +67,7 @@ jobs:
               { scenario: "unary_crud",  deployment: "helm-chart", cluster: "k3d", environment: "null" },
               { scenario: "multi_crud",  deployment: "helm-chart", cluster: "k3d", environment: "null" },
               { scenario: "rollout",     deployment: "helm-chart", cluster: "k3d", environment: "null" },
+              { scenario: "faiss_crud",  deployment: "helm-chart", cluster: "k3d", environment: "faiss" },
               { scenario: "stream_crud", deployment: "helm-operator", cluster: "k3d", environment: "null" },
               { scenario: "index_correction", deployment: "helm-chart", cluster: "k3d", environment: "management" },
               { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "management" },
@@ -150,8 +151,13 @@ jobs:
         if: ${{ matrix.deployment == 'helm-chart' && matrix.environment != 'mirror' && matrix.scenario != 'readreplica' }}
         uses: ./.github/actions/e2e-deploy-vald
         with:
-          helm_extra_options: "${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}"
-          values: .github/helm/values/values-${{ 'profile' == matrix.environment && matrix.environment || 'lb' }}.yaml
+          # The FAISS scenario needs the Agent image switched from the
+          # default vdaas/vald-agent-ngt to vdaas/vald-agent-faiss; append
+          # that override last so it wins over k8s/vald/manifests' own
+          # `--set agent.image.repository=...-agent-ngt` (see Makefile.d/e2e.mk
+          # e2e/v2/actions/run/faiss for the equivalent local dev target).
+          helm_extra_options: "${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}${{ matrix.environment == 'faiss' && ' --set agent.image.repository=vdaas/vald-agent-faiss' || '' }}"
+          values: .github/helm/values/values-${{ (matrix.environment == 'profile' || matrix.environment == 'faiss') && matrix.environment || 'lb' }}.yaml
           wait_for_selector: "app=vald-lb-gateway"
       - name: Deploy Vald Read Replica
         if: ${{ 'readreplica' == matrix.scenario }}
@@ -231,6 +237,7 @@ jobs:
         run: |
           make k8s/metrics/profefe/deploy
           kubectl patch cronjob kprofefe -p '{"spec": {"schedule": "*/1 * * * *"}}'
+          sleep 3
           kubectl wait --for=condition=ready pod -l app=profefe --timeout=300s
 
       # TODO: correction & skip

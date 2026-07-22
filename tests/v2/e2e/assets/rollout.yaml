@@ -180,7 +180,15 @@ strategies:
           - mode: unary
             name: IndexInfo
             type: index_info
-            retry_until_success_timeout: 5m
+            # retry_until_success_timeout was never a real config key
+            # (unknown keys are silently dropped), so this gate never
+            # actually retried; repeats with exit_condition: success bounded
+            # by the execution timeout is the working construct.
+            timeout: 5m
+            repeats:
+              enabled: true
+              exit_condition: success
+              interval: 5s
             expect:
               - status_code: ok
                 path: $.stored

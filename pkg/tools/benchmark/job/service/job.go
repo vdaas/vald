@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/internal/algorithm/recall"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
@@ -37,7 +38,7 @@ import (
 	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync/errgroup"
-	"github.com/vdaas/vald/internal/test/data/hdf5"
+	"github.com/vdaas/vald/internal/test/data/hdf5" //nolint:depguard // hdf5 dataset loading is the benchmark job's core input path, not test-only usage
 	"github.com/vdaas/vald/internal/timeutil/rate"
 )
 
@@ -315,25 +316,29 @@ func (j *job) Stop(ctx context.Context) (err error) {
 	return err
 }
 
-func calcRecall(linearRes, searchRes *payload.Search_Response) (recall float64) {
+// calcRecall extracts the result IDs and delegates to the repository's
+// shared recall implementation, with the linear (exhaustive) search results
+// as the ground truth. Passing k = len(linear IDs) keeps the reported
+// values identical to the historical local implementation, whose
+// denominator was the linear result count. The equivalence assumes
+// len(search results) <= len(linear results), which holds because both
+// requests are built from the same search config Num; if the search ever
+// returned more, matches beyond that position would now be excluded per
+// the normalized recall@k definition, where the old code counted a match
+// anywhere in the list (see the regression test pinning both sides).
+func calcRecall(linearRes, searchRes *payload.Search_Response) float64 {
 	if linearRes == nil || searchRes == nil {
-		return recall
+		return 0
 	}
-	lres := linearRes.Results
-	sres := searchRes.Results
-	if len(lres) == 0 || len(sres) == 0 {
-		return recall
+	lids := make([]string, 0, len(linearRes.GetResults()))
+	for _, v := range linearRes.GetResults() {
+		lids = append(lids, v.GetId())
 	}
-	linearIds := map[string]struct{}{}
-	for _, v := range lres {
-		linearIds[v.Id] = struct{}{}
+	sids := make([]string, 0, len(searchRes.GetResults()))
+	for _, v := range searchRes.GetResults() {
+		sids = append(sids, v.GetId())
 	}
-	for _, v := range sres {
-		if _, ok := linearIds[v.Id]; ok {
-			recall++
-		}
-	}
-	return recall / float64(len(lres))
+	return recall.Calc(sids, lids, len(lids))
 }
 
 // TODO: apply many object type.

@@ -30,53 +30,54 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/proto"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/tests/v2/e2e/config"
+	"github.com/vdaas/vald/tests/v2/e2e/metrics"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
-// recall calculates the recall ratio by comparing the list of result IDs
-// with the expected neighbors provided as a slice of integers.
-// It returns the ratio of matching neighbor IDs to the total number of expected neighbors.
-func recall(t *testing.T, resultIDs []string, neighbors []int) float64 {
+// resultIDsToInts converts the string result IDs returned by a search
+// response into ints so they can be compared against
+// tests/v2/e2e/hdf5.Dataset.Neighbors (which are already []int) via
+// metrics.CalcRecall. IDs that fail to parse are dropped (and reported via
+// t.Error) rather than aborting the whole recall calculation, since a single
+// malformed ID must not hide the recall signal of the rest of the response.
+func resultIDsToInts(t testing.TB, ids []string) []int {
 	t.Helper()
-	// Create a set of expected neighbor IDs for fast lookup.
-	ns := make(map[string]struct{})
-	for _, n := range neighbors {
-		ns[strconv.Itoa(n)] = struct{}{}
-	}
-
-	// Count how many resultIDs exist in the set of expected neighbor IDs.
-	var count int
-	for _, r := range resultIDs {
-		if _, ok := ns[r]; ok {
-			count++
+	out := make([]int, 0, len(ids))
+	for _, id := range ids {
+		n, err := strconv.Atoi(id)
+		if err != nil {
+			t.Errorf("failed to parse result ID %q as int for recall calculation: %v", id, err)
+			continue
 		}
+		out = append(out, n)
 	}
-	// Return the recall as a ratio.
-	return float64(count) / float64(len(neighbors))
+	return out
 }
 
-// calculateRecall extracts the topK result IDs from the search response and computes the recall.
-// It uses the provided index to select the expected neighbor IDs from a global source (ds.Neighbors).
-func calculateRecall(t *testing.T, neighbors []int, res *payload.Search_Response) float64 {
+// calculateRecall extracts the topK result IDs from the search response and
+// computes the recall@k against neighbors (one row of
+// tests/v2/e2e/hdf5.Dataset.Neighbors) using metrics.CalcRecall, which
+// clamps k down to len(neighbors) and truncates both sides consistently
+// (see tests/v2/e2e/metrics/recall.go for the exact semantics).
+func calculateRecall(t testing.TB, neighbors []int, res *payload.Search_Response) float64 {
 	t.Helper()
-	// Extract the IDs from the results.
-	topKIDs := make([]string, 0, len(res.GetResults()))
-	for _, d := range res.GetResults() {
-		topKIDs = append(topKIDs, d.GetId())
-	}
-
+	results := res.GetResults()
 	// If no results are returned, log an error.
-	if len(topKIDs) == 0 {
-		t.Errorf("empty result is returned for test ID %s: %#v", res.GetRequestId(), topKIDs)
+	if len(results) == 0 {
+		t.Errorf("empty result is returned for test ID %s: %#v", res.GetRequestId(), results)
 		return 0
 	}
-	// ds.Neighbors is assumed to be defined globally with expected neighbor IDs.
-	return recall(t, topKIDs, neighbors[:len(topKIDs)])
+	topKIDs := make([]string, 0, len(results))
+	for _, d := range results {
+		topKIDs = append(topKIDs, d.GetId())
+	}
+	got := resultIDsToInts(t, topKIDs)
+	return metrics.CalcRecall(got, neighbors, len(results))
 }
 
 // newSearchConfig creates a new Search_Config instance based on the provided search query and test ID.
 // It parses the timeout string into nanoseconds, sets a default timeout if needed, and conditionally sets the ratio.
-func newSearchConfig(t *testing.T, id string, query *config.SearchQuery) *payload.Search_Config {
+func newSearchConfig(t testing.TB, id string, query *config.SearchQuery) *payload.Search_Config {
 	t.Helper()
 	if query == nil {
 		t.Errorf("search query is nil")
@@ -117,7 +118,7 @@ type newSearchRequest[R proto.Message] func(id string, vec []float32, scfg *payl
 var (
 	// searchRequest builds a Search_Request given a vector and search configuration.
 	// The id parameter is ignored in this case.
-	searchRequest newRequest[*payload.Search_Request] = func(t *testing.T, _ uint64, id string, vec []float32, e *config.Execution) *payload.Search_Request {
+	searchRequest newRequest[*payload.Search_Request] = func(t testing.TB, _ uint64, id string, vec []float32, e *config.Execution) *payload.Search_Request {
 		return &payload.Search_Request{
 			Vector: vec,
 			Config: newSearchConfig(t, id, e.Search),
@@ -126,7 +127,7 @@ var (
 
 	// searchIDRequest builds a Search_IDRequest given an id and search configuration.
 	// The vector is ignored for search-by-ID requests.
-	searchIDRequest newRequest[*payload.Search_IDRequest] = func(t *testing.T, _ uint64, id string, _ []float32, e *config.Execution) *payload.Search_IDRequest {
+	searchIDRequest newRequest[*payload.Search_IDRequest] = func(t testing.TB, _ uint64, id string, _ []float32, e *config.Execution) *payload.Search_IDRequest {
 		return &payload.Search_IDRequest{
 			Id:     id,
 			Config: newSearchConfig(t, id, e.Search),
@@ -134,14 +135,14 @@ var (
 	}
 
 	// searchMultiRequest builds a Search_MultiRequest from a slice of Search_Request.
-	searchMultiRequest newMultiRequest[*payload.Search_Request, *payload.Search_MultiRequest] = func(t *testing.T, reqs ...*payload.Search_Request) *payload.Search_MultiRequest {
+	searchMultiRequest newMultiRequest[*payload.Search_Request, *payload.Search_MultiRequest] = func(t testing.TB, reqs ...*payload.Search_Request) *payload.Search_MultiRequest {
 		return &payload.Search_MultiRequest{
 			Requests: reqs,
 		}
 	}
 
 	// searchMultiIDRequest builds a Search_MultiIDRequest from a slice of Search_IDRequest.
-	searchMultiIDRequest newMultiRequest[*payload.Search_IDRequest, *payload.Search_MultiIDRequest] = func(t *testing.T, reqs ...*payload.Search_IDRequest) *payload.Search_MultiIDRequest {
+	searchMultiIDRequest newMultiRequest[*payload.Search_IDRequest, *payload.Search_MultiIDRequest] = func(t testing.TB, reqs ...*payload.Search_IDRequest) *payload.Search_MultiIDRequest {
 		return &payload.Search_MultiIDRequest{
 			Requests: reqs,
 		}
@@ -151,7 +152,7 @@ var (
 // processSearch dispatches the search operation based on the type and mode specified in the plan.
 // It supports unary, multiple (bulk), and stream operations for both vector search and search-by-ID.
 func (r *runner) processSearch(
-	t *testing.T,
+	t testing.TB,
 	ctx context.Context,
 	test, train iter.Cycle[[][]float32, []float32],
 	neighbors iter.Cycle[[][]int, []int],
@@ -177,64 +178,72 @@ func (r *runner) processSearch(
 		switch plan.Mode {
 		case config.OperationUnary, config.OperationOther:
 			// For unary search requests, use the generic unarySearch function with the searchRequest builder.
-			return unary(t, ctx, test, plan, r.client.Search, searchRequest, checkUnarySearchResponse(neighbors))
+			return unary(t, ctx, test, plan, r.client.Search, searchRequest, checkUnarySearchResponse(neighbors, plan))
 		case config.OperationMultiple:
 			// For bulk search requests, use the generic multiSearch function with searchRequest and searchMultiRequest builders.
-			return multi(t, ctx, test, plan, r.client.MultiSearch, searchRequest, searchMultiRequest, checkMultiSearchResponse(neighbors))
+			return multi(t, ctx, test, plan, r.client.MultiSearch, searchRequest, searchMultiRequest, checkMultiSearchResponse(neighbors, plan))
 		case config.OperationStream:
 			// For streaming search requests, use the generic streamSearch function with the searchRequest builder.
-			stream(t, ctx, test, plan, r.client.StreamSearch, searchRequest, checkStreamSearchResponse(neighbors))
+			stream(t, ctx, test, plan, r.client.StreamSearch, searchRequest, checkStreamSearchResponse(neighbors, plan))
 		}
 	case config.OpSearchByID:
 		switch plan.Mode {
 		case config.OperationUnary, config.OperationOther:
-			return unary(t, ctx, train, plan, r.client.SearchByID, searchIDRequest, checkUnarySearchResponse(neighbors))
+			return unary(t, ctx, train, plan, r.client.SearchByID, searchIDRequest, checkUnarySearchResponse(neighbors, plan))
 		case config.OperationMultiple:
-			return multi(t, ctx, train, plan, r.client.MultiSearchByID, searchIDRequest, searchMultiIDRequest, checkMultiSearchResponse(neighbors))
+			return multi(t, ctx, train, plan, r.client.MultiSearchByID, searchIDRequest, searchMultiIDRequest, checkMultiSearchResponse(neighbors, plan))
 		case config.OperationStream:
-			stream(t, ctx, train, plan, r.client.StreamSearchByID, searchIDRequest, checkStreamSearchResponse(neighbors))
+			stream(t, ctx, train, plan, r.client.StreamSearchByID, searchIDRequest, checkStreamSearchResponse(neighbors, plan))
 		}
 	case config.OpLinearSearch:
 		switch plan.Mode {
 		case config.OperationUnary, config.OperationOther:
-			return unary(t, ctx, test, plan, r.client.LinearSearch, searchRequest, checkUnarySearchResponse(neighbors))
+			return unary(t, ctx, test, plan, r.client.LinearSearch, searchRequest, checkUnarySearchResponse(neighbors, plan))
 		case config.OperationMultiple:
-			return multi(t, ctx, test, plan, r.client.MultiLinearSearch, searchRequest, searchMultiRequest, checkMultiSearchResponse(neighbors))
+			return multi(t, ctx, test, plan, r.client.MultiLinearSearch, searchRequest, searchMultiRequest, checkMultiSearchResponse(neighbors, plan))
 		case config.OperationStream:
-			stream(t, ctx, test, plan, r.client.StreamLinearSearch, searchRequest, checkStreamSearchResponse(neighbors))
+			stream(t, ctx, test, plan, r.client.StreamLinearSearch, searchRequest, checkStreamSearchResponse(neighbors, plan))
 		}
 	case config.OpLinearSearchByID:
 		switch plan.Mode {
 		case config.OperationUnary, config.OperationOther:
-			return unary(t, ctx, test, plan, r.client.LinearSearchByID, searchIDRequest, checkUnarySearchResponse(neighbors))
+			// The train cycle is passed for consistency with the other ByID
+			// branches; searchIDRequest ignores the vector and derives the ID
+			// from the request index alone.
+			return unary(t, ctx, train, plan, r.client.LinearSearchByID, searchIDRequest, checkUnarySearchResponse(neighbors, plan))
 		case config.OperationMultiple:
-			return multi(t, ctx, train, plan, r.client.MultiLinearSearchByID, searchIDRequest, searchMultiIDRequest, checkMultiSearchResponse(neighbors))
+			return multi(t, ctx, train, plan, r.client.MultiLinearSearchByID, searchIDRequest, searchMultiIDRequest, checkMultiSearchResponse(neighbors, plan))
 		case config.OperationStream:
-			stream(t, ctx, train, plan, r.client.StreamLinearSearchByID, searchIDRequest, checkStreamSearchResponse(neighbors))
+			stream(t, ctx, train, plan, r.client.StreamLinearSearchByID, searchIDRequest, checkStreamSearchResponse(neighbors, plan))
 		}
 	}
 	return nil
 }
 
+// checkUnarySearchResponse returns a callback that logs the recall@k of each
+// search response and, when plan.Metrics is enabled, records it into
+// plan.Collector via recordRecall (see recall_qps_test.go) so it can be
+// exposed alongside QPS once the strategy/operation/execution finishes.
 func checkUnarySearchResponse(
-	neighbors iter.Cycle[[][]int, []int],
-) func(t *testing.T, idx uint64, res *payload.Search_Response, err error) bool {
-	return func(t *testing.T, idx uint64, res *payload.Search_Response, err error) bool {
+	neighbors iter.Cycle[[][]int, []int], plan *config.Execution,
+) func(t testing.TB, idx uint64, res *payload.Search_Response, err error) bool {
+	return func(t testing.TB, idx uint64, res *payload.Search_Response, err error) bool {
 		t.Helper()
 		rc := calculateRecall(t, neighbors.At(idx), res)
 		t.Logf("request id %s searched recall: %f, payload %s", res.GetRequestId(), rc, res.String())
+		recordRecall(plan, rc)
 		return true
 	}
 }
 
 func checkMultiSearchResponse(
-	neighbors iter.Cycle[[][]int, []int],
-) func(t *testing.T, idx uint64, res *payload.Search_Responses, err error) bool {
-	return func(t *testing.T, idx uint64, res *payload.Search_Responses, err error) bool {
+	neighbors iter.Cycle[[][]int, []int], plan *config.Execution,
+) func(t testing.TB, idx uint64, res *payload.Search_Responses, err error) bool {
+	return func(t testing.TB, idx uint64, res *payload.Search_Responses, err error) bool {
 		t.Helper()
 		// For each response in the bulk response, log the recall.
 		for _, r := range res.GetResponses() {
-			if !checkUnarySearchResponse(neighbors)(t, getIndexFromSearchResponse(t, r), r, err) {
+			if !checkUnarySearchResponse(neighbors, plan)(t, getIndexFromSearchResponse(t, r), r, err) {
 				return false
 			}
 		}
@@ -243,24 +252,33 @@ func checkMultiSearchResponse(
 }
 
 func checkStreamSearchResponse(
-	neighbors iter.Cycle[[][]int, []int],
-) func(t *testing.T, idx uint64, res *payload.Search_StreamResponse, err error) bool {
-	return func(t *testing.T, idx uint64, res *payload.Search_StreamResponse, err error) bool {
+	neighbors iter.Cycle[[][]int, []int], plan *config.Execution,
+) func(t testing.TB, idx uint64, res *payload.Search_StreamResponse, err error) bool {
+	return func(t testing.TB, idx uint64, res *payload.Search_StreamResponse, err error) bool {
 		t.Helper()
 		if err != nil {
-			st := res.GetStatus()
-			t.Error(st.String())
+			t.Error(res.GetStatus().String())
 		}
 		r := res.GetResponse()
 		if r == nil {
-			t.Error("search stream response is nil, it can be timeout")
+			// The gateway's StreamSearch handler reports a per-item failure
+			// (e.g. a real per-request timeout) by sending a
+			// Search_StreamResponse whose oneof holds a Status rather than a
+			// Response, while the RPC itself stays healthy (err above is
+			// nil in this case). Surface that real status/code instead of
+			// guessing "it can be timeout".
+			if st := res.GetStatus(); st != nil {
+				t.Errorf("search stream response has no result, status: %s", st.String())
+			} else {
+				t.Error("search stream response is nil, it can be timeout")
+			}
 			return true
 		}
-		return checkUnarySearchResponse(neighbors)(t, getIndexFromSearchResponse(t, r), r, err)
+		return checkUnarySearchResponse(neighbors, plan)(t, getIndexFromSearchResponse(t, r), r, err)
 	}
 }
 
-func getIndexFromSearchResponse(t *testing.T, res *payload.Search_Response) (idx uint64) {
+func getIndexFromSearchResponse(t testing.TB, res *payload.Search_Response) (idx uint64) {
 	t.Helper()
 	if res == nil {
 		t.Error("search response is nil")

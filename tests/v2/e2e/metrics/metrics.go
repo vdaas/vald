@@ -125,6 +125,16 @@ func (h *CounterHandle) Add(val int64) {
 	h.value.Add(uint64(val))
 }
 
+// Value returns the counter's current accumulated value.
+// It is safe to call on a nil handle or a handle with no underlying storage,
+// both of which report 0.
+func (h *CounterHandle) Value() uint64 {
+	if h == nil || h.value == nil {
+		return 0
+	}
+	return h.value.Load()
+}
+
 // --- Collector ---
 
 // collector is the main entry point for metrics aggregation. It is thread-safe.

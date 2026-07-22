@@ -1068,7 +1068,9 @@ jobs:
 			if err != nil {
 				return errors.Wrap(err, "failed to execute template")
 			}
-			buf.WriteString("\r\n")
+			// A bare LF here: CRLF would poison every generated workflow with
+			// carriage returns that git then has to normalize on checkin.
+			buf.WriteString("\n")
 			buf.WriteString(workflowYaml)
 			fileName := file.Join(os.Args[1], ".github/workflows", "dockers-"+data.Name+"-image.yaml")
 			_, err = file.OverWriteFile(egctx, fileName, buf, fs.ModePerm)
@@ -1194,6 +1196,10 @@ jobs:
 			tpl := buf.String()
 			buf.Reset()
 			template.Must(template.New("Dockerfile").Parse(tpl)).Execute(buf, data)
+			// End the file with a newline: POSIX text files end with one, and
+			// the license generator appends it anyway — without this the two
+			// generators ping-pong the final line of every Dockerfile.
+			buf.WriteString("\n")
 			fileName := file.Join(os.Args[1], "dockers", data.PackageDir, "Dockerfile")
 			_, err := file.OverWriteFile(egctx, fileName, buf, fs.ModePerm)
 			if err != nil {
@@ -1225,13 +1231,13 @@ func (n PackageNode) ToSlice() (pkgs []string) {
 
 // String returns string of the dependency tree in a readable format.
 func (n PackageNode) String() string {
-	return n.string(0)
+	return n.render(0)
 }
 
-func (n PackageNode) string(depth int) (tree string) {
+func (n PackageNode) render(depth int) (tree string) {
 	tree = fmt.Sprintf("%s- %s\n", strings.Repeat("  ", depth), n.Name)
 	for _, node := range n.Imports {
-		tree += node.string(depth + 1)
+		tree += node.render(depth + 1)
 	}
 	return tree
 }

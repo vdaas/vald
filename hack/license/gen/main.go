@@ -20,11 +20,13 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"go/format"
 	"io/fs"
 	"path/filepath"
 	"text/template"
 	"time"
 
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
@@ -160,6 +162,7 @@ func main() {
 	}
 }
 
+// skipcq: GO-R1005
 func dirwalk(dir string) ([]string, error) {
 	for _, sd := range skipDir {
 		if strings.Contains(dir, sd) {
@@ -256,6 +259,7 @@ func isSymlink(path string) (bool, error) {
 	return lst.Mode()&os.ModeSymlink == os.ModeSymlink, nil
 }
 
+// skipcq: GO-R1005
 func readAndRewrite(path string) error {
 	// return if it is a symlink
 	isSym, err := isSymlink(path)
@@ -423,7 +427,19 @@ func readAndRewrite(path string) error {
 		}
 		return errors.Errorf("filepath %s, could not open", path)
 	}
-	_, err = f.WriteString(strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n"))
+	content := strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n")
+	// Emit Go sources in gofmt's normal form: a license header that directly
+	// precedes the package clause is a doc comment, which go/format (Go
+	// 1.19+) reformats — the leading blank comment line is dropped and
+	// space-indented lines become tab-indented. Writing the template style
+	// verbatim would make this generator and the later format/go pass
+	// ping-pong those headers, so `make license` alone never converged.
+	if filepath.Ext(path) == ".go" {
+		if formatted, ferr := format.Source(conv.Atob(content)); ferr == nil {
+			content = conv.Btoa(formatted)
+		}
+	}
+	_, err = f.WriteString(content)
 	if err != nil {
 		// skipcq: RVV-A0003
 		log.Fatal(err)

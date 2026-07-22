@@ -14,5 +14,25 @@
 // limitations under the License.
 //
 
-// Package test provides functions for general testing use
+// Package test is the facade of Vald's layered testing framework. The
+// implementation lives in three single-responsibility subpackages, and this
+// package re-exports their APIs (generic type aliases plus thin forwarding
+// functions) so call sites can use everything through one import:
+//
+//   - capability: the testing.TB capability layer — the Runner[X]
+//     constraint (a testing.TB that spawns subtests of its own type), the
+//     errors.As-style As[C] probe resolving benchmark-/test-only surfaces
+//     through wrapper chains, the named helpers built on it (IsBenchmark,
+//     Loop, Measured, ReportMetric, timer control, Parallel), and the
+//     type-erased Node.
+//   - table: the table-driven core — CaseFor/Result/DoFor and Run, generic
+//     over Runner[X] so the same tables drive tests and benchmarks.
+//   - testdata: fixture path resolution under internal/test/data, keeping
+//     filesystem dependencies out of the framework layers.
+//
+// Typical use stays unchanged from the historical API: test.Run with
+// test.Case rows in tests, test.BenchmarkCase in benchmarks, test.NewNode
+// for non-generic orchestration trees, and test.GetTestdataPath for
+// fixtures. Code needing a capability without a named helper probes for its
+// own narrow interface via test.As.
 package test

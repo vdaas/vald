@@ -290,10 +290,6 @@ GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 	-not -path '$(ROOTDIR)/internal/db/rdb/mysql/dbr/*' \
 	-not -path '$(ROOTDIR)/internal/test/comparator/*' \
 	-not -path '$(ROOTDIR)/internal/test/mock/*' \
-	-not -path '$(ROOTDIR)/hack/benchmark/internal/client/ngtd/*' \
-	-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/agent/*' \
-	-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/external/*' \
-	-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/gateway/*' \
 	-not -path '$(ROOTDIR)/hack/gorules/*' \
 	-not -path '$(ROOTDIR)/hack/license/*' \
 	-not -path '$(ROOTDIR)/hack/docker/*' \
@@ -322,10 +318,6 @@ GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 	-not -path '$(ROOTDIR)/internal/db/rdb/mysql/dbr/*' \
 	-not -path '$(ROOTDIR)/internal/test/comparator/*' \
 	-not -path '$(ROOTDIR)/internal/test/mock/*' \
-	-not -path '$(ROOTDIR)/hack/benchmark/internal/client/ngtd/*' \
-	-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/agent/*' \
-	-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/external/*' \
-	-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/gateway/*' \
 	-not -path '$(ROOTDIR)/hack/gorules/*' \
 	-not -path '$(ROOTDIR)/hack/license/*' \
 	-not -path '$(ROOTDIR)/hack/docker/*' \
@@ -392,6 +384,11 @@ E2E_DATASET_NAME ?= fashion-mnist-784-euclidean.hdf5
 E2E_GET_OBJECT_COUNT ?= 10
 E2E_INSERT_COUNT ?= 60000
 E2E_EXPECTED_INDEX ?= 180000
+E2E_MAX_DIM_BIT ?= 1
+E2E_MAX_DIM_CONFIG_NAME ?= max_vector_dim.yaml
+E2E_MAX_DIM_CONFIG ?= $(E2E_CONFIG_DIR)/$(E2E_MAX_DIM_CONFIG_NAME)
+E2E_MAX_DIM_WAIT ?= 30s
+E2E_MAX_DIM_RETRY_TIMEOUT ?= 5m
 E2E_PARALLELISM ?= 10
 E2E_QPS ?= 3000
 E2E_SEARCH_COUNT ?= 1000
@@ -527,6 +524,13 @@ license:
 ## generate dockerfiles
 dockerfile:
 	$(call gen-dockerfile,$(ROOTDIR),$(MAINTAINER))
+	- @$(MAKE) prettier/install
+	- @$(MAKE) yamlfmt/install
+	@echo "Formatting generated workflow files..."
+	- @find $(ROOTDIR)/.github/workflows -name 'dockers-*-image.yaml' \
+		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
+		yamlfmt {} && \
+		bunx prettier --log-level warn --write {}'
 
 .PHONY: dashboard
 ## generate dashboards
@@ -540,6 +544,13 @@ k8s/metrics/grafana/dashboards/00-vald-cluster-overview.yaml: $(shell find hack/
 ## generate workflows
 workflow:
 	$(call gen-dockerfile,$(ROOTDIR),$(MAINTAINER))
+	- @$(MAKE) prettier/install
+	- @$(MAKE) yamlfmt/install
+	@echo "Formatting generated workflow files..."
+	- @find $(ROOTDIR)/.github/workflows -name 'dockers-*-image.yaml' \
+		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
+		yamlfmt {} && \
+		bunx prettier --log-level warn --write {}'
 
 .PHONY: deadlink-checker
 ## generate deadlink-checker

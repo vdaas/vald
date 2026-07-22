@@ -85,3 +85,12 @@ rust/target/
 !rust/libs
 /gen
 .worktrees
+
+# Node tooling artifacts: textlint/cspell/prettier installs (bun add) create
+# these in the workspace; without ignoring them, the `files` target sweeps
+# every node_modules path into .gitfiles and files/cspell then spell-checks
+# third-party dependency file names.
+node_modules/
+/package.json
+/bun.lock
+/bun.lockb

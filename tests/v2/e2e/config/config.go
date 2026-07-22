@@ -261,8 +261,26 @@ type PortForward struct {
 type Port string
 
 // Dataset holds dataset-related configuration.
+//
+// For single-file formats (currently hdf5, dispatched by tests/v2/e2e/dataset
+// on the Name extension), Name alone is sufficient: it bundles train, test,
+// and neighbor vectors together.
+//
+// For multi-file billion-scale formats (fvecs/bvecs, e.g. SIFT1B/DEEP1B; see
+// tests/v2/e2e/dataset/x1b), Name is the train vectors file and Query and
+// Neighbors must both also be set, pointing at the corresponding query
+// vectors (same fvecs/bvecs encoding as Name) and ivecs groundtruth
+// neighbor-index files respectively.
+//
+// Name (and Query/Neighbors) is mutually exclusive with Dimension. Dimension
+// is used for scenarios that only need synthetically generated vectors (e.g.
+// maximum vector dimension probing), where preparing a fixture per dimension
+// is impractical.
 type Dataset struct {
-	Name string `yaml:"name" json:"name,omitempty"`
+	Name      string `yaml:"name,omitempty"      json:"name,omitempty"`
+	Query     string `yaml:"query,omitempty"     json:"query,omitempty"`
+	Neighbors string `yaml:"neighbors,omitempty" json:"neighbors,omitempty"`
+	Dimension int    `yaml:"dimension,omitempty" json:"dimension,omitempty"`
 }
 
 // Expect holds expected results for executions.
@@ -662,6 +680,12 @@ func (ot OperationType) Bind() (bound OperationType, err error) {
 		return OpIndexProperty, nil
 	case "flush", "fl", "f":
 		return OpFlush, nil
+	case "createindex", "createidx", "ci":
+		return OpCreateIndex, nil
+	case "saveindex", "saveidx", "si":
+		return OpSaveIndex, nil
+	case "createandsaveindex", "createandsave", "cas":
+		return OpCreateAndSaveIndex, nil
 	case "kubernetes", "kube", "k8s":
 		return OpKubernetes, nil
 	case "client", "cli", "c", "grpc":
@@ -1023,9 +1047,21 @@ func (d *Dataset) Bind() (bound *Dataset, err error) {
 		return nil, errors.Wrap(errors.ErrInvalidConfig, "missing required fields on Dataset")
 	}
 	d.Name = config.GetActualValue(d.Name)
-	// Name can be empty for scenarios that do not require a dataset (e.g. operator verification).
+	// Name can be empty for scenarios that do not require a dataset (e.g. operator
+	// verification) or that synthesize one from Dimension instead (e.g. maximum
+	// vector dimension probing).
 	if d.Name != "" && !file.Exists(d.Name) {
 		return nil, errors.Errorf("dataset file: %s does not exist", d.Name)
+	}
+	// Query and Neighbors are only meaningful for multi-file formats (e.g.
+	// x1b fvecs/bvecs); when present they must point at existing files.
+	// Whether they are required at all is a format-specific decision left to
+	// the dispatching loader (see tests/v2/e2e/dataset.ToDataset).
+	if d.Query = config.GetActualValue(d.Query); d.Query != "" && !file.Exists(d.Query) {
+		return nil, errors.Errorf("dataset query: %s does not exist", d.Query)
+	}
+	if d.Neighbors = config.GetActualValue(d.Neighbors); d.Neighbors != "" && !file.Exists(d.Neighbors) {
+		return nil, errors.Errorf("dataset neighbors: %s does not exist", d.Neighbors)
 	}
 	return d, nil
 }

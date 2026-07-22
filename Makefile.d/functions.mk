@@ -212,145 +212,31 @@ define run-v2-e2e-crud-test
 	-config $(E2E_CONFIG)
 endef
 
-define run-e2e-crud-test
+define run-v2-e2e-max-dim-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
+	CGO_CFLAGS="$(CGO_CFLAGS)" \
+	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
+	E2E_ADDR="$(E2E_BIND_HOST):$(E2E_BIND_PORT)" \
+	E2E_BIND_HOST="$(E2E_BIND_HOST)" \
+	E2E_BIND_PORT="$(E2E_BIND_PORT)" \
+	E2E_TARGET_NAMESPACE="$(E2E_TARGET_NAMESPACE)" \
+	E2E_TARGET_NAME="$(E2E_TARGET_NAME)" \
+	E2E_PORTFORWARD_ENABLED="$(E2E_PORTFORWARD_ENABLED)" \
+	E2E_MAX_DIM_BIT="$(E2E_MAX_DIM_BIT)" \
+	E2E_MAX_DIM="$(E2E_MAX_DIM)" \
+	E2E_MAX_DIM_WAIT="$(E2E_MAX_DIM_WAIT)" \
+	E2E_MAX_DIM_RETRY_TIMEOUT="$(E2E_MAX_DIM_RETRY_TIMEOUT)" \
 	go test \
 	-race \
+	-v \
 	-mod=readonly \
 	$1 \
-	-v $(ROOTDIR)/tests/e2e/crud/crud_test.go \
+	$(ROOTDIR)/tests/v2/e2e/crud \
 	-tags "e2e" \
 	-timeout $(E2E_TIMEOUT) \
-	-host=$(E2E_BIND_HOST) \
-	-port=$(E2E_BIND_PORT) \
-	-dataset=$(ROOTDIR)/hack/benchmark/assets/dataset/$(E2E_DATASET_NAME) \
-	-insert-num=$(E2E_INSERT_COUNT) \
-	-correction-insert-num=$(E2E_INSERT_COUNT) \
-	-insert-num=$(E2E_INSERT_COUNT) \
-	-search-num=$(E2E_SEARCH_COUNT) \
-	-search-by-id-num=$(E2E_SEARCH_BY_ID_COUNT) \
-	-get-object-num=$(E2E_GET_OBJECT_COUNT) \
-	-update-num=$(E2E_UPDATE_COUNT) \
-	-upsert-num=$(E2E_UPSERT_COUNT) \
-	-remove-num=$(E2E_REMOVE_COUNT) \
-	-insert-from=$(E2E_INSERT_FROM) \
-	-update-from=$(E2E_UPDATE_FROM) \
-	-upsert-from=$(E2E_UPSERT_FROM) \
-	-remove-from=$(E2E_REMOVE_FROM) \
-	-search-from=$(E2E_SEARCH_FROM) \
-	-search-by-id-from=$(E2E_SEARCH_BY_ID_FROM) \
-	-get-object-from=$(E2E_GET_OBJECT_FROM) \
-	-wait-after-insert=$(E2E_WAIT_FOR_CREATE_INDEX_DURATION) \
-	-portforward=$(E2E_PORTFORWARD_ENABLED) \
-	-portforward-pod-name=$(E2E_TARGET_POD_NAME) \
-	-portforward-pod-port=$(E2E_TARGET_PORT) \
-	-namespace=$(E2E_TARGET_NAMESPACE) \
-	-kubeconfig=$(KUBECONFIG)
-endef
-
-define run-e2e-crud-faiss-test
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test \
-	-race \
-	-mod=readonly \
-	$1 \
-	-v $(ROOTDIR)/tests/e2e/crud/crud_faiss_test.go \
-	-tags "e2e" \
-	-timeout $(E2E_TIMEOUT) \
-	-host=$(E2E_BIND_HOST) \
-	-port=$(E2E_BIND_PORT) \
-	-dataset=$(ROOTDIR)/hack/benchmark/assets/dataset/$(E2E_DATASET_NAME).hdf5 \
-	-insert-num=$(E2E_INSERT_COUNT) \
-	-search-num=$(E2E_SEARCH_COUNT) \
-	-update-num=$(E2E_UPDATE_COUNT) \
-	-remove-num=$(E2E_REMOVE_COUNT) \
-	-wait-after-insert=$(E2E_WAIT_FOR_CREATE_INDEX_DURATION) \
-	-portforward=$(E2E_PORTFORWARD_ENABLED) \
-	-portforward-pod-name=$(E2E_TARGET_POD_NAME) \
-	-portforward-pod-port=$(E2E_TARGET_PORT) \
-	-namespace=$(E2E_TARGET_NAMESPACE)
-endef
-
-define run-e2e-multi-crud-test
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test \
-	-race \
-	-mod=readonly \
-	$1 \
-	-v $(ROOTDIR)/tests/e2e/multiapis/multiapis_test.go \
-	-tags "e2e" \
-	-timeout $(E2E_TIMEOUT) \
-	-host=$(E2E_BIND_HOST) \
-	-port=$(E2E_BIND_PORT) \
-	-dataset=$(ROOTDIR)/hack/benchmark/assets/dataset/$(E2E_DATASET_NAME) \
-	-insert-num=$(E2E_INSERT_COUNT) \
-	-search-num=$(E2E_SEARCH_COUNT) \
-	-search-by-id-num=$(E2E_SEARCH_BY_ID_COUNT) \
-	-get-object-num=$(E2E_GET_OBJECT_COUNT) \
-	-update-num=$(E2E_UPDATE_COUNT) \
-	-upsert-num=$(E2E_UPSERT_COUNT) \
-	-remove-num=$(E2E_REMOVE_COUNT) \
-	-wait-after-insert=$(E2E_WAIT_FOR_CREATE_INDEX_DURATION) \
-	-portforward=$(E2E_PORTFORWARD_ENABLED) \
-	-portforward-pod-name=$(E2E_TARGET_POD_NAME) \
-	-portforward-pod-port=$(E2E_TARGET_PORT) \
-	-namespace=$(E2E_TARGET_NAMESPACE) \
-	-kubeconfig=$(KUBECONFIG)
-endef
-
-define run-e2e-max-dim-test
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test \
-	-race \
-	-mod=readonly \
-	-v $(ROOTDIR)/tests/e2e/performance/max_vector_dim_test.go \
-	-tags "e2e" \
-	-timeout $(E2E_TIMEOUT) \
-	-file $(E2E_MAX_DIM_RESULT_FILEPATH) \
-	-host=$(E2E_BIND_HOST) \
-	-port=$(E2E_BIND_PORT) \
-	-bit=${E2E_MAX_DIM_BIT} \
-	-portforward=$(E2E_PORTFORWARD_ENABLED) \
-	-portforward-pod-name=$(E2E_TARGET_POD_NAME) \
-	-portforward-pod-port=$(E2E_TARGET_PORT) \
-	-namespace=$(E2E_TARGET_NAMESPACE) \
-	-kubeconfig=$(KUBECONFIG)
-endef
-
-define run-e2e-sidecar-test
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test \
-	-race \
-	-mod=readonly \
-	$1 \
-	-v $(ROOTDIR)/tests/e2e/sidecar/sidecar_test.go \
-	-tags "e2e" \
-	-timeout $(E2E_TIMEOUT) \
-	-host=$(E2E_BIND_HOST) \
-	-port=$(E2E_BIND_PORT) \
-	-dataset=$(ROOTDIR)/hack/benchmark/assets/dataset/$(E2E_DATASET_NAME) \
-	-insert-num=$(E2E_INSERT_COUNT) \
-	-search-num=$(E2E_SEARCH_COUNT) \
-	-portforward=$(E2E_PORTFORWARD_ENABLED) \
-	-portforward-pod-name=$(E2E_TARGET_POD_NAME) \
-	-portforward-pod-port=$(E2E_TARGET_PORT) \
-	-namespace=$(E2E_TARGET_NAMESPACE) \
-	-kubeconfig=$(KUBECONFIG)
+	-config $(E2E_MAX_DIM_CONFIG)
 endef
 
 # This function generate only implementation tests, with the following conditions:

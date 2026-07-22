@@ -31,19 +31,19 @@ import (
 )
 
 var (
-	objectRequest newRequest[*payload.Object_VectorRequest] = func(t *testing.T, _ uint64, id string, _ []float32, _ *config.Execution) *payload.Object_VectorRequest {
+	objectRequest newRequest[*payload.Object_VectorRequest] = func(t testing.TB, _ uint64, id string, _ []float32, _ *config.Execution) *payload.Object_VectorRequest {
 		return &payload.Object_VectorRequest{
 			Id: existsRequest(t, 0, id, nil, nil),
 		}
 	}
 
-	existsRequest newRequest[*payload.Object_ID] = func(t *testing.T, _ uint64, id string, _ []float32, _ *config.Execution) *payload.Object_ID {
+	existsRequest newRequest[*payload.Object_ID] = func(t testing.TB, _ uint64, id string, _ []float32, _ *config.Execution) *payload.Object_ID {
 		return &payload.Object_ID{
 			Id: id,
 		}
 	}
 
-	timestampRequest newRequest[*payload.Object_TimestampRequest] = func(t *testing.T, _ uint64, id string, _ []float32, _ *config.Execution) *payload.Object_TimestampRequest {
+	timestampRequest newRequest[*payload.Object_TimestampRequest] = func(t testing.TB, _ uint64, id string, _ []float32, _ *config.Execution) *payload.Object_TimestampRequest {
 		return &payload.Object_TimestampRequest{
 			Id: existsRequest(t, 0, id, nil, nil),
 		}
@@ -51,7 +51,7 @@ var (
 )
 
 func (r *runner) processObject(
-	t *testing.T,
+	t testing.TB,
 	ctx context.Context,
 	train iter.Cycle[[][]float32, []float32],
 	plan *config.Execution,

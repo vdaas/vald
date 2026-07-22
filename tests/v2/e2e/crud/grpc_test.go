@@ -40,6 +40,7 @@ import (
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/tests/v2/e2e/config"
 	"github.com/vdaas/vald/tests/v2/e2e/metrics"
+	rpcstatus "google.golang.org/genproto/googleapis/rpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -50,20 +51,20 @@ type (
 	// newStream is a generic type for functions that create a new gRPC stream.
 	newStream[S grpc.ClientStream] func(ctx context.Context, opts ...grpc.CallOption) (S, error)
 	// newRequest is a function type that creates a new request.
-	newRequest[Q proto.Message] func(t *testing.T, idx uint64, id string, vec []float32, e *config.Execution) Q
+	newRequest[Q proto.Message] func(t testing.TB, idx uint64, id string, vec []float32, e *config.Execution) Q
 	// newMultiRequest is a generic type for functions that build bulk search requests.
-	newMultiRequest[R, S proto.Message] func(t *testing.T, reqs ...R) S
+	newMultiRequest[R, S proto.Message] func(t testing.TB, reqs ...R) S
 	// callback is a function type that processes the response and error from a gRPC call.
-	callback[R proto.Message] func(t *testing.T, idx uint64, res R, err error) bool
+	callback[R proto.Message] func(t testing.TB, idx uint64, res R, err error) bool
 )
 
-func passThrough[M proto.Message](t *testing.T, msg M) any {
+func passThrough[M proto.Message](t testing.TB, msg M) any {
 	t.Helper()
 	return msg
 }
 
 func emptyCallback[M proto.Message](name string) callback[M] {
-	return func(t *testing.T, _ uint64, _ M, err error) bool {
+	return func(t testing.TB, _ uint64, _ M, err error) bool {
 		t.Helper()
 		if err != nil {
 			log.Errorf("%s operation returned error: %v", name, err)
@@ -73,8 +74,8 @@ func emptyCallback[M proto.Message](name string) callback[M] {
 	}
 }
 
-func printCallback[M proto.Message](unwrap func(t *testing.T, msg M) any) callback[M] {
-	return func(t *testing.T, idx uint64, msg M, err error) bool {
+func printCallback[M proto.Message](unwrap func(t testing.TB, msg M) any) callback[M] {
+	return func(t testing.TB, idx uint64, msg M, err error) bool {
 		t.Helper()
 		if err != nil {
 			log.Errorf("idx: %d operation returned error: %v", idx, err)
@@ -117,7 +118,7 @@ func compare(a, b any) (float64, float64, bool) {
 }
 
 func handleGRPCWithStatusCode(
-	t *testing.T, err error, code codes.Code, res proto.Message, plan *config.Execution,
+	t testing.TB, err error, code codes.Code, res proto.Message, plan *config.Execution,
 ) error {
 	t.Helper()
 	if len(plan.Expect) == 0 {
@@ -204,21 +205,47 @@ func handleGRPCWithStatusCode(
 	return err
 }
 
+// streamStatusResponse is implemented by proto messages that embed a
+// google.rpc.Status inside their own oneof payload (e.g.
+// *payload.Search_StreamResponse, *payload.Object_StreamLocation). Vald's
+// streaming gateway handlers report a per-item failure this way without
+// failing the RPC itself (see internal/net/grpc/stream.go
+// BidirectionalStream, which always calls stream.Send(res) even when the
+// per-item handler returned an error), so the transport-level err stays nil
+// and the real per-item outcome is only visible via res's embedded Status.
+type streamStatusResponse interface {
+	GetStatus() *rpcstatus.Status
+}
+
 // handleGRPCCall centralizes the gRPC error handling, logging and assertion.
 // It compares the error's status code with the expected codes from the plan.
 // If the error is expected, it logs a message; otherwise, it logs an error.
 // If the results do not match, it logs an error.
 func handleGRPCCall(
-	t *testing.T, err error, res proto.Message, plan *config.Execution,
+	t testing.TB, err error, res proto.Message, plan *config.Execution,
 ) (code codes.Code, msg string, rerr error) {
 	t.Helper()
-	if err != nil {
+	switch {
+	case err != nil:
 		if st, ok := status.FromError(err); ok && st != nil {
 			msg = st.String()
 			code = st.Code()
-			rerr = errors.Wrapf(err, "gRPC request received: %s", msg)
 		}
-	} else {
+	case res != nil:
+		code = codes.OK
+		if sg, ok := res.(streamStatusResponse); ok {
+			if st := sg.GetStatus(); st != nil {
+				stCode := codes.Unknown
+				if c := st.GetCode(); c >= 0 {
+					stCode = codes.Code(c)
+				}
+				if stCode != codes.OK {
+					code = stCode
+					msg = st.GetMessage()
+				}
+			}
+		}
+	default:
 		code = codes.OK
 	}
 	rerr = handleGRPCWithStatusCode(t, err, code, res, plan)
@@ -226,7 +253,7 @@ func handleGRPCCall(
 }
 
 func single[Q, R proto.Message](
-	t *testing.T,
+	t testing.TB,
 	ctx context.Context,
 	idx uint64,
 	plan *config.Execution,
@@ -263,6 +290,16 @@ func single[Q, R proto.Message](
 	if rerr != nil && errors.IsNot(err, rerr) {
 		return rerr
 	}
+	if err != nil && rerr == nil {
+		// plan.Expect explicitly lists this status code (handleGRPCCall
+		// accepted the error), so the error IS the expected outcome and
+		// there is no response payload for the callbacks to validate —
+		// without this, a callback treating any non-nil err as failure
+		// would override the expectation (e.g. an Nx benchmark scenario
+		// whose create_index legitimately returns failedprecondition on
+		// re-execution, as documented for E2E_BENCH_TIME in e2e.mk).
+		return nil
+	}
 	for _, cb := range callback {
 		if cb != nil {
 			if !cb(t, idx, res, err) {
@@ -274,7 +311,7 @@ func single[Q, R proto.Message](
 }
 
 func unary[Q, R proto.Message](
-	t *testing.T,
+	t testing.TB,
 	ctx context.Context,
 	data iter.Cycle[[][]float32, []float32],
 	plan *config.Execution,
@@ -285,9 +322,11 @@ func unary[Q, R proto.Message](
 	t.Helper()
 	// Create an error group to manage concurrent requests.
 	eg, ctx := errgroup.New(ctx)
-	// Set the concurrency limit from the plan configuration.
-	if plan != nil && plan.BaseConfig != nil {
-		// Set the concurrency limit from the plan configuration.
+	// Set the concurrency limit from the plan configuration. Parallelism 0
+	// (unset) must not reach SetLimit: it would create a zero-capacity
+	// semaphore that every eg.Go blocks on forever, deadlocking the
+	// execution until its timeout.
+	if plan != nil && plan.BaseConfig != nil && plan.Parallelism > 0 {
 		eg.SetLimit(int(plan.Parallelism))
 	}
 	for i, vec := range data.Seq2(ctx) {
@@ -303,7 +342,7 @@ func unary[Q, R proto.Message](
 }
 
 func multi[Q, M, R proto.Message](
-	t *testing.T,
+	t testing.TB,
 	ctx context.Context,
 	data iter.Cycle[[][]float32, []float32],
 	plan *config.Execution,
@@ -314,9 +353,11 @@ func multi[Q, M, R proto.Message](
 ) error {
 	t.Helper()
 	eg, ctx := errgroup.New(ctx)
-	// Set the concurrency limit from the plan configuration.
-	if plan != nil && plan.BaseConfig != nil {
-		// Set the concurrency limit from the plan configuration.
+	// Set the concurrency limit from the plan configuration. Parallelism 0
+	// (unset) must not reach SetLimit: it would create a zero-capacity
+	// semaphore that every eg.Go blocks on forever, deadlocking the
+	// execution until its timeout.
+	if plan != nil && plan.BaseConfig != nil && plan.Parallelism > 0 {
 		eg.SetLimit(int(plan.Parallelism))
 	}
 	var bulkSize uint64
@@ -351,7 +392,7 @@ func multi[Q, M, R proto.Message](
 }
 
 func stream[Q, R proto.Message, S grpc.TypedClientStream[Q, R]](
-	t *testing.T,
+	t testing.TB,
 	ctx context.Context,
 	data iter.Cycle[[][]float32, []float32],
 	plan *config.Execution,

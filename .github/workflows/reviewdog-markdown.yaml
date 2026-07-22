@@ -89,6 +89,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
+          # reviewdog diffs against the PR base ref; on a shallow checkout its
+          # git-fetch fallback trips over git 2.54's "shallow file has changed
+          # since we read it" and kills the job even with zero findings.
+          fetch-depth: 0
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}

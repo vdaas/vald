@@ -34,7 +34,7 @@ import (
 // For Train and Test, if more samples are requested than are available,
 // a NoiseModifier (via a noiseGenerator) is used to add noise on‑the‑fly.
 func getDatasetSlices(
-	t *testing.T, e *config.Execution,
+	t testing.TB, e *config.Execution,
 ) (train, test iter.Cycle[[][]float32, []float32], neighbors iter.Cycle[[][]int, []int]) {
 	t.Helper()
 	if ds == nil || e == nil || e.BaseConfig == nil {

@@ -116,10 +116,6 @@
         {
           "linters": ["depguard"],
           "path": "^internal/sync/"
-        },
-        {
-          "linters": ["depguard"],
-          "path": "hack/benchmark/src/singleflight/singleflight_bench_test\\.go"
         }
       ]
     },

@@ -183,6 +183,7 @@ k8s/vald/deploy: k8s/vald/manifests
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent/ngt || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/agent/faiss || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent/readreplica || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway || true
@@ -214,6 +215,7 @@ k8s/vald/delete: k8s/vald/manifests
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index || true
 	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer || true
 	kubectl delete -f $(TEMP_DIR)/vald/templates/agent/readreplica || true
+	kubectl delete -f $(TEMP_DIR)/vald/templates/agent/faiss || true
 	kubectl delete -f $(TEMP_DIR)/vald/templates/agent/ngt || true
 	kubectl delete -f $(TEMP_DIR)/vald/templates/agent || true
 	kubectl delete -f $(TEMP_DIR)/vald/crds || true

@@ -33,9 +33,8 @@ import (
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
 	"github.com/vdaas/vald/internal/sync/errgroup"
-	"github.com/vdaas/vald/internal/test/data/hdf5"
+	"github.com/vdaas/vald/internal/test/data/hdf5" //nolint:depguard // hdf5 dataset loading is the benchmark job's core input path, not test-only usage
 	"github.com/vdaas/vald/pkg/tools/benchmark/job/config"
-	handler "github.com/vdaas/vald/pkg/tools/benchmark/job/handler/grpc"
 	"github.com/vdaas/vald/pkg/tools/benchmark/job/handler/rest"
 	"github.com/vdaas/vald/pkg/tools/benchmark/job/router"
 	"github.com/vdaas/vald/pkg/tools/benchmark/job/service"
@@ -45,7 +44,6 @@ type run struct {
 	eg            errgroup.Group
 	cfg           *config.Data
 	job           service.Job
-	h             handler.Benchmark
 	server        starter.Server
 	observability observability.Observability
 }
@@ -131,11 +129,6 @@ func New(cfg *config.Data) (r runner.Interface, err error) {
 		return nil, err
 	}
 
-	h, err := handler.New()
-	if err != nil {
-		return nil, err
-	}
-
 	grpcServerOptions := []server.Option{
 		server.WithGRPCRegisterar(func(srv *grpc.Server) {
 			// TODO register grpc server handler here
@@ -182,7 +175,6 @@ func New(cfg *config.Data) (r runner.Interface, err error) {
 		eg:            eg,
 		cfg:           cfg,
 		job:           job,
-		h:             h,
 		server:        srv,
 		observability: obs,
 	}, nil
@@ -216,8 +208,6 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			ech <- err
 			return err
 		}
-
-		r.h.Start(ctx)
 
 		sech = r.server.ListenAndServe(ctx)
 

@@ -27,7 +27,7 @@ import (
 	"github.com/vdaas/vald/tests/v2/e2e/config"
 )
 
-func (r *runner) processIndex(t *testing.T, ctx context.Context, plan *config.Execution) error {
+func (r *runner) processIndex(t testing.TB, ctx context.Context, plan *config.Execution) error {
 	t.Helper()
 	if plan == nil {
 		t.Fatalf("index operation plan is nil")
