@@ -1,18 +1,15 @@
-Vald Benchmark Operator
-===
+# Vald Benchmark Operator
 
 This is a Helm chart to install `vald-benchmark-operator`.
 
 Current chart version is `v1.7.17`
 
-Table of Contents
----
+## Table of Contents
 
 - [Install](#install)
 - [Configuration](#configuration)
 
-Install
----
+## Install
 
 Add Vald Helm repository
 
@@ -22,8 +19,7 @@ Run the following command to install the chart,
 
     $ helm install vald-benchmark-operator vald/vald-benchmark-operator
 
-Configuration
----
+## Configuration
 
 | Key                                                                         | Type   | Default                                                                                                                                                                                                                                                                                                                                       | Description                                                                                                                                    |
 | --------------------------------------------------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |

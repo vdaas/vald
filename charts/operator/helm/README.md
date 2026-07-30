@@ -1,12 +1,10 @@
-vald-helm-operator
-===
+# vald-helm-operator
 
 This is a Helm chart to install vald-helm-operator.
 
 Current chart version is `v1.7.17`
 
-Table of Contents
----
+## Table of Contents
 
 - [Install](#install)
 - [Custom Resources](#custom-resources)
@@ -14,8 +12,7 @@ Table of Contents
   - [ValdHelmOperatorRelease](#valdhelmoperatorrelease)
 - [Configuration](#configuration)
 
-Install
----
+## Install
 
 Add Vald Helm repository
 
@@ -25,8 +22,7 @@ Run the following command to install the chart,
 
     $ helm install vald-helm-operator-release vald/vald-helm-operator
 
-Upgrading the version
----
+## Upgrading the version
 
 Please upgrade the CRDs first because Helm doesn't have a support to upgrade CRDs.
 
@@ -40,8 +36,7 @@ If you're using `valdhelmoperatorrelease` (or `vhor`) resource, please update th
 
 On the other hand, please update the operator's deployment manually.
 
-Custom Resources
----
+## Custom Resources
 
 ### ValdRelease
 
@@ -73,8 +68,7 @@ metadata:
 spec: {}
 ```
 
-Configuration
----
+## Configuration
 
 | Key                                | Type   | Default                                                                                                                                                                        | Description                                                                                                                      |
 | ---------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
