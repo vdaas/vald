@@ -56,15 +56,12 @@ type (
 	VolumeSnapshot            = snapshotv1.VolumeSnapshot
 	VolumeSnapshotList        = snapshotv1.VolumeSnapshotList
 	Pod                       = corev1.Pod
-<<<<<<< HEAD
-=======
 	PodList                   = corev1.PodList
 	PodSpec                   = corev1.PodSpec
 	PodStatus                 = corev1.PodStatus
 	Container                 = corev1.Container
 	Node                      = corev1.Node
 	NodeList                  = corev1.NodeList
->>>>>>> 95ced8bfd ([Feature] Add Vald Operator (enabled multiple cluster operation) (#3557))
 	Deployment                = appsv1.Deployment
 	DeploymentList            = appsv1.DeploymentList
 	ObjectMeta                = metav1.ObjectMeta
@@ -118,8 +115,6 @@ const (
 	SelectionOpEquals           = selection.Equals
 	SelectionOpExists           = selection.Exists
 	PodIndexLabel               = appsv1.PodIndexLabel
-<<<<<<< HEAD
-=======
 	PodRunning                  = corev1.PodRunning
 	PodPending                  = corev1.PodPending
 	ResourceCPU                 = corev1.ResourceCPU
@@ -159,5 +154,4 @@ var (
 	NewYAMLOrJSONDecoder = utilyaml.NewYAMLOrJSONDecoder
 	YAMLMarshal          = yaml.Marshal
 	YAMLUnmarshal        = yaml.Unmarshal
->>>>>>> 95ced8bfd ([Feature] Add Vald Operator (enabled multiple cluster operation) (#3557))
 )
