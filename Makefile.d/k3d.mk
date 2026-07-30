@@ -45,7 +45,7 @@ k3d/start:
 	--k3s-arg '--kubelet-arg=eviction-hard=imagefs.available<1%,nodefs.available<1%@agent:*' \
 	--k3s-arg '--kubelet-arg=eviction-minimum-reclaim=imagefs.available=1%,nodefs.available=1%@agent:*' \
 	$(K3D_OPTIONS)
-	@make k3d/config
+	@$(MAKE) k3d/config
 
 .PHONY: k3d/vs/start
 ## start k3d cluster with volume snapshot

@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 // Package service manages the main logic of server.
 package service
@@ -82,10 +80,12 @@ func podsByAppName(list *k8s.PodList, namespace string) map[string][]Pod {
 			cpuRequest += float64(request.Cpu().Value())
 			memRequest += float64(request.Memory().Value())
 		}
-		cpuLimit /= float64(len(pod.Spec.Containers))
-		memLimit /= float64(len(pod.Spec.Containers))
-		cpuRequest /= float64(len(pod.Spec.Containers))
-		memRequest /= float64(len(pod.Spec.Containers))
+		if n := len(pod.Spec.Containers); n > 0 {
+			cpuLimit /= float64(n)
+			memLimit /= float64(n)
+			cpuRequest /= float64(n)
+			memRequest /= float64(n)
+		}
 		podName, ok := pod.GetObjectMeta().GetLabels()["app"]
 		if !ok {
 			pns := strings.Split(pod.GetName(), "-")
@@ -140,6 +140,9 @@ func toNodes(list *k8s.NodeList) []Node {
 				if eip == "" {
 					eip = addr.Address
 				}
+			case k8s.NodeHostName:
+				// Not an IP source; listed explicitly so this switch stays
+				// exhaustive over NodeAddressType.
 			}
 		}
 		nodes = append(nodes, Node{
@@ -194,7 +197,7 @@ type NodeMetrics struct {
 
 // toPodMetricsMap converts a PodMetricsList into the discoverer's PodMetrics
 // domain model keyed by pod name, averaging usage over the containers.
-func toPodMetricsMap(list *k8s.APIPodMetricsList) map[string]PodMetrics {
+func toPodMetricsMap(list *k8s.PodMetricsList) map[string]PodMetrics {
 	var (
 		cpuUsage float64
 		memUsage float64
@@ -224,7 +227,7 @@ func toPodMetricsMap(list *k8s.APIPodMetricsList) map[string]PodMetrics {
 
 // toNodeMetricsMap converts a NodeMetricsList into the discoverer's
 // NodeMetrics domain model keyed by node name.
-func toNodeMetricsMap(list *k8s.APINodeMetricsList) map[string]NodeMetrics {
+func toNodeMetricsMap(list *k8s.NodeMetricsList) map[string]NodeMetrics {
 	nodes := make(map[string]NodeMetrics, len(list.Items))
 	for _, node := range list.Items {
 		nodeName := node.GetName()
@@ -242,7 +245,7 @@ func toNodeMetricsMap(list *k8s.APINodeMetricsList) map[string]NodeMetrics {
 // podMetricsContainersNameIndexer extracts the containers.name cache index
 // values for PodMetrics so that field selectors on containers.name work.
 func podMetricsContainersNameIndexer(obj k8s.Object) []string {
-	pod, ok := obj.(*k8s.APIPodMetrics)
+	pod, ok := obj.(*k8s.PodMetrics)
 	if !ok {
 		return nil
 	}

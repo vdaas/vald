@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 // Package service manages the main logic of benchmark job.
 package service
@@ -31,8 +29,8 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 	// create data
 	vecs := j.hdf5.GetByGroupName(j.dataset.Group)
 	cfg := &payload.Search_Config{
-		Num:     uint32(j.searchConfig.Num),
-		MinNum:  uint32(j.searchConfig.MinNum),
+		Num:     uint32(j.searchConfig.Num),    //nolint:gosec // search result count is a non-negative config value well below int32 max
+		MinNum:  uint32(j.searchConfig.MinNum), //nolint:gosec // search result count is a non-negative config value well below int32 max
 		Radius:  float32(j.searchConfig.Radius),
 		Epsilon: float32(j.searchConfig.Epsilon),
 		Timeout: j.timeout.Nanoseconds(),

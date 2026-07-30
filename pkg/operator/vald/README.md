@@ -73,7 +73,6 @@ here instead of in the template.
 | Key                                      | Type   | Default              | Description                                                       |
 | ---------------------------------------- | ------ | -------------------- | ----------------------------------------------------------------- |
 | `default_vrs_path`                       | string | `""`                 | Path of the default ValdRelease template yaml.                    |
-| `internal_host_domain`                   | string | `""`                 | Internal host domain of the cluster.                              |
 | `log_level`                              | string | `""`                 | Log level passed through to the underlying vald deployment.       |
 | `log_format`                             | string | `raw`                | Log format passed through to the underlying vald deployment.      |
 | `logger`                                 | string | `glg`                | Logger passed through to the underlying vald deployment.          |

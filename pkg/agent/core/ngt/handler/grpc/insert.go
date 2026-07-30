@@ -25,6 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/errhandler"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -36,38 +37,10 @@ func (s *server) Insert(
 	ctx context.Context, req *payload.Insert_Request,
 ) (res *payload.Object_Location, err error) {
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.InsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	vec := req.GetVector()
-	if len(vec.GetVector()) != s.ngt.GetDimensionSize() {
-		err = errors.ErrIncompatibleDimensionSize(len(vec.GetVector()), int(s.ngt.GetDimensionSize()))
-		err = status.WrapWithInvalidArgument("Insert API Incompatible Dimension Size detected",
-			err,
-			&errdetails.RequestInfo{
-				RequestId:   vec.GetId(),
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.BadRequest{
-				FieldViolations: []*errdetails.BadRequestFieldViolation{
-					{
-						Field:       "vector dimension size",
-						Description: err.Error(),
-					},
-				},
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.Insert",
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			})
-		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+	if err = s.validateVectorDimension(span, vald.InsertRPCName, ngtResourceType+"/ngt.Insert",
+		vec.GetId(), req, len(vec.GetVector()), s.ngt.GetDimensionSize()); err != nil {
 		return nil, err
 	}
 
@@ -84,10 +57,7 @@ func (s *server) Insert(
 					RequestId:   req.GetVector().GetId(),
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.Insert",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.Insert"))
 			log.Warn(err)
 			attrs = trace.StatusCodeAborted(err.Error())
 		} else if errors.Is(err, errors.ErrUUIDAlreadyExists(vec.GetId())) {
@@ -96,10 +66,7 @@ func (s *server) Insert(
 					RequestId:   req.GetVector().GetId(),
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.Insert",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.Insert"))
 			log.Warn(err)
 			attrs = trace.StatusCodeAlreadyExists(err.Error())
 		} else if errors.Is(err, errors.ErrUUIDNotFound(0)) {
@@ -116,10 +83,7 @@ func (s *server) Insert(
 						},
 					},
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.Insert",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.Insert"))
 			log.Warn(err)
 			attrs = trace.StatusCodeInvalidArgument(err.Error())
 		} else {
@@ -133,17 +97,10 @@ func (s *server) Insert(
 					RequestId:   req.GetVector().GetId(),
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.Insert",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
+				s.resourceInfo(ngtResourceType+"/ngt.Insert"), info.Get())
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
 		}
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 	return s.newLocation(vec.GetId()), nil
@@ -151,27 +108,15 @@ func (s *server) Insert(
 
 func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error) {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamInsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Insert_Request) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"/"+vald.StreamInsertRPCName+"/id-"+req.GetVector().GetId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.Insert(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				return &payload.Object_StreamLocation{
 					Payload: &payload.Object_StreamLocation_Status{
 						Status: st.Proto(),
@@ -186,11 +131,7 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 		})
 	if err != nil {
 		st, _ := status.FromError(err)
-		if st != nil && span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanStatus(span, st, err)
 		return err
 	}
 	return nil
@@ -200,11 +141,7 @@ func (s *server) MultiInsert(
 	ctx context.Context, reqs *payload.Insert_MultiRequest,
 ) (res *payload.Object_Locations, err error) {
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiInsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	uuids := make([]string, 0, len(reqs.GetRequests()))
 	vmap := make(map[string][]float32, len(reqs.GetRequests()))
 	var ts int64
@@ -232,17 +169,9 @@ func (s *server) MultiInsert(
 						},
 					},
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.MultiInsert",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.MultiInsert"))
 			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Object_Locations](span, codes.InvalidArgument, err)
 		}
 		vmap[vec.GetId()] = vec.GetVector()
 		uuids = append(uuids, vec.GetId())
@@ -260,10 +189,7 @@ func (s *server) MultiInsert(
 					RequestId:   strings.Join(uuids, ", "),
 					ServingData: errdetails.Serialize(reqs),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.MultiInsert",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.MultiInsert"))
 			log.Warn(err)
 			attrs = trace.StatusCodeAborted(err.Error())
 		} else if alreadyExistsIDs := func() []string {
@@ -280,10 +206,7 @@ func (s *server) MultiInsert(
 					RequestId:   strings.Join(uuids, ", "),
 					ServingData: errdetails.Serialize(reqs),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.MultiInsert",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.MultiInsert"))
 			log.Warn(err)
 			attrs = trace.StatusCodeAlreadyExists(err.Error())
 		} else if errors.Is(err, errors.ErrUUIDNotFound(0)) {
@@ -300,10 +223,7 @@ func (s *server) MultiInsert(
 						},
 					},
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.MultiInsert",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.MultiInsert"))
 			log.Warn(err)
 			attrs = trace.StatusCodeInvalidArgument(err.Error())
 		} else {
@@ -312,10 +232,7 @@ func (s *server) MultiInsert(
 					RequestId:   strings.Join(uuids, ", "),
 					ServingData: errdetails.Serialize(reqs),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.MultiInsert",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
+				s.resourceInfo(ngtResourceType+"/ngt.MultiInsert"), info.Get())
 			log.Error(err)
 			attrs = trace.StatusCodeInternal(err.Error())
 		}

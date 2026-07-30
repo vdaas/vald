@@ -15,7 +15,7 @@ package circuitbreaker
 
 // NOT IMPLEMENTED BELOW
 //
-// func TestNewCircuitBreaker(t *testing.T) {
+// func TestNew(t *testing.T) {
 // 	type args struct {
 // 		opts []Option
 // 	}
@@ -96,7 +96,7 @@ package circuitbreaker
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got, err := NewCircuitBreaker(test.args.opts...)
+// 			got, err := New(test.args.opts...)
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

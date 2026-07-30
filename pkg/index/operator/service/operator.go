@@ -24,6 +24,7 @@ import (
 	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/k8s/reconciler"
+	"github.com/vdaas/vald/internal/k8s/resource"
 	"github.com/vdaas/vald/internal/k8s/vald"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -33,6 +34,10 @@ import (
 
 const (
 	apiName = "vald/index/operator"
+
+	// errChanBufferSize covers one error from the controller's error channel
+	// and one from the reconcile loop without blocking either sender.
+	errChanBufferSize = 2
 )
 
 type jobReconcileResult int
@@ -52,6 +57,8 @@ type operator struct {
 	ctrl                              k8s.Controller
 	eg                                errgroup.Group
 	client                            client.Client
+	deployments                       *resource.Client[*k8s.Deployment, *k8s.DeploymentList]
+	jobs                              *resource.Client[*k8s.Job, *k8s.JobList]
 	rotatorJob                        *k8s.Job
 	namespace                         string
 	rotatorName                       string
@@ -66,7 +73,7 @@ func New(
 	namespace, agentName, rotatorName, targetReadReplicaIDKey string,
 	rotatorJob *k8s.Job,
 	opts ...Option,
-) (o Operator, err error) {
+) (Operator, error) {
 	operator := new(operator)
 	operator.namespace = namespace
 	operator.targetReadReplicaIDAnnotationsKey = targetReadReplicaIDKey
@@ -85,29 +92,29 @@ func New(
 	}
 
 	isAgent := func(pod *k8s.Pod) bool {
-		return pod.Labels["app"] == agentName
+		return pod.Namespace == operator.namespace && pod.Labels["app"] == agentName
 	}
 
 	podController := reconciler.NewObjectReconciler(
 		"pod reconciler for index operator",
-		func() *k8s.Pod { return new(k8s.Pod) },
-		reconciler.WithOnObjectReconcile(operator.podOnReconcile),
-		reconciler.WithObjectOnError[*k8s.Pod](func(err error) {
+		operator.podOnReconcile,
+		reconciler.WithObjectOnError(func(err error) {
 			log.Error("failed to reconcile:", err)
 		}),
 		// To only reconcile for agent pods
-		reconciler.WithObjectForOptions[*k8s.Pod](
-			client.PodPredicates(isAgent),
+		reconciler.WithObjectForOptions(
+			client.ObjectPredicates(isAgent),
 		),
 	)
 
-	operator.ctrl, err = k8s.New(
+	ctrl, err := k8s.New(
 		k8s.WithResourceController(podController),
 		k8s.WithLeaderElection(true, "vald-index-operator", operator.namespace),
 	)
 	if err != nil {
 		return nil, err
 	}
+	operator.ctrl = ctrl
 
 	if operator.client == nil {
 		client, err := client.New()
@@ -116,6 +123,8 @@ func New(
 		}
 		operator.client = client
 	}
+	operator.deployments = resource.NewClientOf(operator.client, new(k8s.Deployment), new(k8s.DeploymentList))
+	operator.jobs = resource.NewClientOf(operator.client, new(k8s.Job), new(k8s.JobList))
 
 	return operator, nil
 }
@@ -133,7 +142,7 @@ func (o *operator) Start(ctx context.Context) (<-chan error, error) {
 	if err != nil {
 		return nil, err
 	}
-	ech := make(chan error, 2)
+	ech := make(chan error, errChanBufferSize)
 	o.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
 		for {
@@ -179,16 +188,11 @@ func (o *operator) reconcileRotatorJob(
 	}
 
 	// retrieve the readreplica deployment annotations for podIdx
-	var readReplicaDeployments k8s.DeploymentList
-	selector, err := o.client.LabelSelector(o.readReplicaLabelKey, k8s.SelectionOpEquals, []string{podIdx})
+	readReplicaDeployments, err := o.deployments.List(ctx,
+		k8s.InNamespace(o.namespace),
+		k8s.MatchingLabels{o.readReplicaLabelKey: podIdx},
+	)
 	if err != nil {
-		return false, fmt.Errorf("creating label selector: %w", err)
-	}
-	listOpts := k8s.ListOptions{
-		Namespace:     o.namespace,
-		LabelSelector: selector,
-	}
-	if err := o.client.List(ctx, &readReplicaDeployments, &listOpts); err != nil {
 		return false, err
 	}
 	if len(readReplicaDeployments.Items) == 0 {
@@ -271,7 +275,7 @@ func (o *operator) createRotationJobOrRequeue(
 		Namespace:    o.namespace,
 	}
 
-	if err := o.client.Create(ctx, job); err != nil {
+	if err := o.jobs.Create(ctx, job); err != nil {
 		return false, fmt.Errorf("creating job resource with k8s API: %w", err)
 	}
 
@@ -284,21 +288,25 @@ func (o *operator) ensureJobConcurrency(
 	ctx context.Context, podIdx string,
 ) (jobReconcileResult, error) {
 	// get all the rotation jobs and make sure the job is not running
-	var jobList k8s.JobList
-	selector, err := o.client.LabelSelector("app", k8s.SelectionOpEquals, []string{o.rotatorName})
+	selector, err := client.NewLabelSelector("app", k8s.SelectionOpEquals, []string{o.rotatorName})
 	if err != nil {
 		return createSkipped, fmt.Errorf("creating label selector: %w", err)
 	}
-	if err := o.client.List(ctx, &jobList, &k8s.ListOptions{
+	jobList, err := o.jobs.List(ctx, &k8s.ListOptions{
 		Namespace:     o.namespace,
 		LabelSelector: selector,
-	}); err != nil {
+	})
+	if err != nil {
 		return createSkipped, fmt.Errorf("listing jobs: %w", err)
 	}
 
-	// no need to check finished jobs
+	// Drop only jobs that have actually finished (a terminal Succeeded/Failed
+	// count) from the concurrency/dedup accounting. A just-created rotation Job
+	// also has Active==0 until the Job controller schedules its pod, so keying
+	// solely on Active==0 would treat that brand-new Job as finished and let a
+	// second reconcile in the propagation window create a duplicate.
 	jobList.Items = slices.DeleteFunc(jobList.Items, func(job k8s.Job) bool {
-		return job.Status.Active == 0
+		return job.Status.Active == 0 && (job.Status.Succeeded > 0 || job.Status.Failed > 0)
 	})
 
 	if len(jobList.Items) >= int(o.rotationJobConcurrency) {

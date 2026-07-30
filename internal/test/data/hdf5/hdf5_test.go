@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 // Package hdf5 is load hdf5 file
 package hdf5
@@ -161,7 +159,7 @@ func TestDatasetUrl_String(t *testing.T) {
 	}
 }
 
-func Test_Hdf5Key_String(t *testing.T) {
+func Test_Key_String(t *testing.T) {
 	type want struct {
 		want string
 	}
@@ -171,7 +169,7 @@ func Test_Hdf5Key_String(t *testing.T) {
 		afterFunc  func(*testing.T)
 		name       string
 		want       want
-		h          Hdf5Key
+		h          Key
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -442,7 +440,7 @@ func Test_data_Read(t *testing.T) {
 		name      DatasetName
 	}
 	type args struct {
-		key Hdf5Key
+		key Key
 	}
 	type want struct {
 		err error
@@ -1246,7 +1244,7 @@ func Test_downloadFile(t *testing.T) {
 func TestReadDatasetF32(t *testing.T) {
 	type args struct {
 		file *hdf5.File
-		key  Hdf5Key
+		key  Key
 	}
 	type want struct {
 		err  error
@@ -1338,7 +1336,7 @@ func TestReadDatasetF32(t *testing.T) {
 func TestReadDatasetI32(t *testing.T) {
 	type args struct {
 		file *hdf5.File
-		key  Hdf5Key
+		key  Key
 	}
 	type want struct {
 		err  error
@@ -1429,13 +1427,13 @@ func TestReadDatasetI32(t *testing.T) {
 
 // NOT IMPLEMENTED BELOW
 //
-// func TestHdf5Key_String(t *testing.T) {
+// func TestKey_String(t *testing.T) {
 // 	type want struct {
 // 		want string
 // 	}
 // 	type test struct {
 // 		name       string
-// 		key        Hdf5Key
+// 		key        Key
 // 		want       want
 // 		checkFunc  func(want, string) error
 // 		beforeFunc func(*testing.T)

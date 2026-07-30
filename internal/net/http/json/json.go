@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package json
 
@@ -51,20 +49,24 @@ func EncodeResponse(w http.ResponseWriter, data any, status int, contentTypes ..
 
 // DecodeResponse decodes http response body.
 func DecodeResponse(res *http.Response, data any) (err error) {
-	if res != nil && res.Body != nil && data != nil && res.ContentLength != 0 {
-		err = json.Decode(res.Body, data)
-		if err != nil {
-			return err
+	if res == nil || res.Body == nil {
+		return nil
+	}
+	// Always drain and close the body so the underlying connection can be
+	// reused instead of leaked, even when there is nothing to decode: a nil
+	// data target or an empty / zero-ContentLength body previously left
+	// res.Body open because the close lived inside that same guard.
+	defer func() {
+		if _, cerr := io.Copy(io.Discard, res.Body); cerr != nil && err == nil {
+			err = errors.ErrRequestBodyFlush(cerr)
 		}
-
-		_, err := io.Copy(io.Discard, res.Body)
-		if err != nil {
-			return errors.ErrRequestBodyFlush(err)
+		if cerr := res.Body.Close(); cerr != nil && err == nil {
+			err = errors.ErrRequestBodyClose(cerr)
 		}
-		// close
-		err = res.Body.Close()
-		if err != nil {
-			return errors.ErrRequestBodyClose(err)
+	}()
+	if data != nil && res.ContentLength != 0 {
+		if derr := json.Decode(res.Body, data); derr != nil {
+			return derr
 		}
 	}
 	return nil

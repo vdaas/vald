@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 // Package metrics provides a metrics collection and aggregation system for E2E tests.
 // It supports recording latencies, queue waits, error counts, and custom counters,
@@ -123,6 +121,16 @@ func (h *CounterHandle) Add(val int64) {
 		return // Counters do not support negative increments
 	}
 	h.value.Add(uint64(val))
+}
+
+// Value returns the counter's current accumulated value.
+// It is safe to call on a nil handle or a handle with no underlying storage,
+// both of which report 0.
+func (h *CounterHandle) Value() uint64 {
+	if h == nil || h.value == nil {
+		return 0
+	}
+	return h.value.Load()
 }
 
 // --- Collector ---

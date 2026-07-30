@@ -30,7 +30,7 @@ import (
 func TestDo_for_race(t *testing.T) {
 	type args struct {
 		ctx  context.Context
-		opts []Option
+		opts []Option[any]
 	}
 	type want struct {
 		err error
@@ -91,7 +91,7 @@ func TestDo_for_race(t *testing.T) {
 			name: "returns error when option is not nil and r.loadConfig returns error",
 			args: args{
 				ctx: t.Context(),
-				opts: []Option{
+				opts: []Option[any]{
 					WithConfigLoader(func(string) (any, *config.GlobalConfig, error) {
 						return nil, nil, errors.New("err")
 					}),
@@ -112,8 +112,8 @@ func TestDo_for_race(t *testing.T) {
 			name: "returns error when option is not nil and ver.Check returns error",
 			args: args{
 				ctx: t.Context(),
-				opts: []Option{
-					WithVersion("v1.1.7", "v1.1.5", "v1.1.0"),
+				opts: []Option[any]{
+					WithVersion[any]("v1.1.7", "v1.1.5", "v1.1.0"),
 					WithConfigLoader(func(string) (any, *config.GlobalConfig, error) {
 						return nil, &config.GlobalConfig{
 							Logging: &config.Logging{
@@ -141,8 +141,8 @@ func TestDo_for_race(t *testing.T) {
 			name: "returns error when option is not nil and r.initializeDaemon returns error",
 			args: args{
 				ctx: t.Context(),
-				opts: []Option{
-					WithVersion("v1.1.2", "v1.1.5", "v1.1.0"),
+				opts: []Option[any]{
+					WithVersion[any]("v1.1.2", "v1.1.5", "v1.1.0"),
 					WithConfigLoader(func(string) (any, *config.GlobalConfig, error) {
 						return nil, &config.GlobalConfig{
 							Logging: &config.Logging{
@@ -153,7 +153,7 @@ func TestDo_for_race(t *testing.T) {
 							Version: "v1.1.2",
 						}, nil
 					}),
-					WithDaemonInitializer(func(any) (Runner, error) {
+					WithDaemonInitializer(func(any) (Interface, error) {
 						return nil, errors.New("err")
 					}),
 				},
@@ -173,8 +173,8 @@ func TestDo_for_race(t *testing.T) {
 			name: "returns nil when option is not nil and Run returns nil",
 			args: args{
 				ctx: t.Context(),
-				opts: []Option{
-					WithVersion("v1.1.2", "v1.1.5", "v1.1.0"),
+				opts: []Option[any]{
+					WithVersion[any]("v1.1.2", "v1.1.5", "v1.1.0"),
 					WithConfigLoader(func(string) (any, *config.GlobalConfig, error) {
 						return nil, &config.GlobalConfig{
 							Logging: &config.Logging{
@@ -185,7 +185,7 @@ func TestDo_for_race(t *testing.T) {
 							Version: "v1.1.2",
 						}, nil
 					}),
-					WithDaemonInitializer(func(any) (Runner, error) {
+					WithDaemonInitializer(func(any) (Interface, error) {
 						return &runnerMock{
 							PreStartFunc: func(ctx context.Context) error {
 								return nil

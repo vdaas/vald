@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 // Package pool provides grpc connection pooling functionality for better performance.
 package pool
@@ -95,6 +93,15 @@ func (pc *poolConn) Close(ctx context.Context, delay time.Duration) error {
 			err := pc.conn.Close()
 			if err != nil {
 				log.Errorf("failed to close gRPC pool connection for %s, error: %v", pc.addr, err)
+			}
+			// Close() transitions the conn to Shutdown synchronously, so re-check
+			// right away and return instead of waiting a full ticker interval;
+			// otherwise serial Disconnect is O(slots * interval) (~48s for a
+			// 4-slot pool at the default 2m delay), exceeding typical shutdown
+			// grace periods. Fall through to the ticker only if it is somehow
+			// not yet Shutdown, so this can never busy-loop.
+			if pc.conn.GetState() == connectivity.Shutdown {
+				return nil
 			}
 		case connectivity.Shutdown:
 			return nil
@@ -301,24 +308,19 @@ func (p *pool) load(idx uint64) (ridx uint64, pc *poolConn) {
 	return 0, nil
 }
 
-// store sets the poolConn at the specified index.
-func (p *pool) store(idx uint64, pc *poolConn) {
+// casStore atomically replaces the connection at idx only if the slot still
+// holds old, reporting whether the swap happened. refreshConn uses it so a
+// connection dialed by a losing concurrent refresh is not silently clobbered
+// (and leaked) by overwriting one a winning refresh already stored.
+func (p *pool) casStore(idx uint64, old, pc *poolConn) bool {
 	if idx >= p.poolSize.Load() {
-		return
-	}
-	size := p.Size()
-	if size <= idx {
-		size = max(idx+1, defaultPoolSize)
-		p.grow(size)
+		return false
 	}
 	slots := p.getSlots()
-	if slots == nil {
-		slots = make([]atomic.Pointer[poolConn], size)
-		slots[idx].Store(pc)
-		p.connSlots.Store(&slots)
-		return
+	if slots == nil || idx >= uint64(len(slots)) {
+		return false
 	}
-	slots[idx].Store(pc)
+	return slots[idx].CompareAndSwap(old, pc)
 }
 
 // loop iterates over each connection slot and applies the provided function.
@@ -443,7 +445,16 @@ func (p *pool) refreshConn(
 			return nil // do not propagate dial error in async
 		}
 
-		p.store(idx, &poolConn{conn: newConn, addr: addr})
+		newPC := &poolConn{conn: newConn, addr: addr}
+		if !p.casStore(idx, pc, newPC) {
+			// A concurrent refresh already replaced this slot; close the conn
+			// we just dialed instead of overwriting (and leaking) the winner's,
+			// and leave the old pc for that refresh to close.
+			if cerr := newPC.Close(ctx, p.oldConnCloseDelay); cerr != nil {
+				log.Errorf("failed to close superseded connection pool %d/%d addr = %s\terror = %v", idx+1, p.Size(), addr, cerr)
+			}
+			return nil
+		}
 
 		if pc != nil && pc.conn != nil {
 			log.Debugf("closing unhealthy connection pool %d/%d len %d for addr: %s", idx+1, p.Size(), p.Len(), pc.addr)
@@ -725,6 +736,14 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 	if err := eg.Wait(); err != nil {
 		return nil, false
 	}
+
+	// Re-read the slots snapshot before the third pass: refreshConn stored the
+	// new connections into the current connSlots, which a concurrent grow() may
+	// have swapped to a different backing array since the entry snapshot.
+	// Reading the stale array here would miss the connections we just refreshed
+	// and spuriously return not-found.
+	slots = *p.connSlots.Load()
+	slen = uint64(len(slots))
 
 	// Third pass return connected pool conn
 	for _, idx := range rc {

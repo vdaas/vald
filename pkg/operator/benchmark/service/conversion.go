@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package service
 
@@ -24,6 +22,8 @@ import (
 
 // jobsByAppNamePool pools the grouping maps handed to jobReconcile so that
 // every reconcile does not reallocate the map and its slices.
+//
+//nolint:gochecknoglobals // process-wide sync.Pool shared across reconciles by design
 var jobsByAppNamePool = sync.Pool{
 	New: func() any {
 		return make(map[string][]k8s.Job)
@@ -47,19 +47,20 @@ func jobsByAppName(list *k8s.JobList) map[string][]k8s.Job {
 			name = strings.Join(jns[:len(jns)-1], "-")
 		}
 
-		if _, ok := jobs[name]; !ok {
-			jobs[name] = make([]k8s.Job, 0, len(list.Items))
-		}
+		// No capacity hint: pre-sizing every group's slice to len(list.Items)
+		// over-allocated O(groups x items) capacity per reconcile; groups are
+		// typically small, so let append grow them.
 		jobs[name] = append(jobs[name], job)
 	}
 	return jobs
 }
 
-// releaseJobsByAppName truncates the grouped slices and returns the map to
-// the pool.
+// releaseJobsByAppName resets the map and returns it to the pool. It uses
+// clear (rather than truncating each slice to [:0:cap]) so that stale app-name
+// keys do not accumulate across pooled reuses and the value slices' backing
+// arrays — which retain full k8s.Job objects — are released for GC. The map
+// allocation itself is still reused via the pool.
 func releaseJobsByAppName(jobs map[string][]k8s.Job) {
-	for name := range jobs {
-		jobs[name] = jobs[name][:0:len(jobs[name])]
-	}
+	clear(jobs)
 	jobsByAppNamePool.Put(jobs)
 }

@@ -1,32 +1,33 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 // Package config stores all server application settings for benchmark operator
 package config
 
-import "github.com/vdaas/vald/internal/config"
+import (
+	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/errors"
+)
 
 // GlobalConfig is type alias for config.GlobalConfig.
 type GlobalConfig = config.GlobalConfig
 
-// Config represent a application setting data content (config.yaml).
+// Data represents an application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
-type Config struct {
+type Data struct {
 	// Server represent all server configurations
-	Server *config.Servers `json:"server_config" yaml:"server_config"`
+	Server *config.Servers `json:"server_config" yaml:"server_config"` //nolint:tagliatelle // fixed by the existing config.yaml wire format, not renameable
 
 	// Observability represent observability configurations
 	Observability *config.Observability `json:"observability" yaml:"observability"`
@@ -38,8 +39,8 @@ type Config struct {
 	config.GlobalConfig `json:",inline" yaml:",inline"`
 }
 
-// NewConfig represents the set config from the given setting file path.
-func NewConfig(path string) (cfg *Config, err error) {
+// New represents the set config from the given setting file path.
+func New(path string) (cfg *Data, err error) {
 	err = config.Read(path, &cfg)
 	if err != nil {
 		return nil, err
@@ -47,6 +48,8 @@ func NewConfig(path string) (cfg *Config, err error) {
 
 	if cfg != nil {
 		cfg.Bind()
+	} else {
+		return nil, errors.ErrInvalidConfig
 	}
 
 	if cfg.Server != nil {
@@ -58,7 +61,12 @@ func NewConfig(path string) (cfg *Config, err error) {
 	}
 
 	if cfg.Job != nil {
-		cfg.Job.Image = cfg.Job.Image.Bind()
+		// Image is *BenchmarkJobImageInfo with json:"...,omitempty", so it can be
+		// nil even when Job is set (a config that specifies job: but omits image:).
+		// Bind() has a pointer receiver that dereferences the receiver, so guard it.
+		if cfg.Job.Image != nil {
+			cfg.Job.Image = cfg.Job.Image.Bind()
+		}
 	} else {
 		cfg.Job = new(config.OperatorJobConfig)
 	}
@@ -68,7 +76,7 @@ func NewConfig(path string) (cfg *Config, err error) {
 const BenchmarkOperatorInfo = "benchmark_operator_info"
 
 // func FakeData() {
-// 	d := Config{
+// 	d := Data{
 // 		Version: "v0.0.1",
 // 		Server: &config.Servers{
 // 			Servers: []*config.Server{

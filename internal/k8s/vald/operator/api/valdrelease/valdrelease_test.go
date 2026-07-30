@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package valdrelease
 
@@ -112,3 +110,211 @@ func TestValdRelease_JSONRoundTrip(t *testing.T) {
 	assert.Equal(t, AgentNgtDistanceType("l2"), *got.Spec.Agent.Ngt.DistanceType)
 	assert.Equal(t, 4, *got.Spec.Gateway.Lb.MaxReplicas)
 }
+
+// NOT IMPLEMENTED BELOW
+//
+// func TestVrsStatus_DeepCopyInto(t *testing.T) {
+// 	type args struct {
+// 		out *VrsStatus
+// 	}
+// 	type fields struct {
+// 		Status    Status
+// 		Condition metav1.Condition
+// 	}
+// 	type want struct{}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want) error {
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           out:VrsStatus{},
+// 		       },
+// 		       fields: fields {
+// 		           Status:nil,
+// 		           Condition:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           out:VrsStatus{},
+// 		           },
+// 		           fields: fields {
+// 		           Status:nil,
+// 		           Condition:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			in := &VrsStatus{
+// 				Status:    test.fields.Status,
+// 				Condition: test.fields.Condition,
+// 			}
+//
+// 			in.DeepCopyInto(test.args.out)
+// 			if err := checkFunc(test.want); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func TestValdRelease_DeepCopyInto(t *testing.T) {
+// 	type args struct {
+// 		out *ValdRelease
+// 	}
+// 	type fields struct {
+// 		Base       resource.Base[ValdRelease, *ValdRelease]
+// 		TypeMeta   metav1.TypeMeta
+// 		ObjectMeta metav1.ObjectMeta
+// 		Spec       Values
+// 		Status     VrsStatus
+// 	}
+// 	type want struct{}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want) error {
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           out:ValdRelease{},
+// 		       },
+// 		       fields: fields {
+// 		           Base:nil,
+// 		           TypeMeta:nil,
+// 		           ObjectMeta:nil,
+// 		           Spec:Values{},
+// 		           Status:VrsStatus{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           out:ValdRelease{},
+// 		           },
+// 		           fields: fields {
+// 		           Base:nil,
+// 		           TypeMeta:nil,
+// 		           ObjectMeta:nil,
+// 		           Spec:Values{},
+// 		           Status:VrsStatus{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			in := &ValdRelease{
+// 				Base:       test.fields.Base,
+// 				TypeMeta:   test.fields.TypeMeta,
+// 				ObjectMeta: test.fields.ObjectMeta,
+// 				Spec:       test.fields.Spec,
+// 				Status:     test.fields.Status,
+// 			}
+//
+// 			in.DeepCopyInto(test.args.out)
+// 			if err := checkFunc(test.want); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }

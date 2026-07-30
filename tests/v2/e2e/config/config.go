@@ -1,20 +1,18 @@
 //go:build e2e
 
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 // Package config provides configuration types and logic for loading and binding configuration values.
 // This file includes refactored Bind methods (always returning error) and non-Bind functions,
@@ -261,8 +259,26 @@ type PortForward struct {
 type Port string
 
 // Dataset holds dataset-related configuration.
+//
+// For single-file formats (currently hdf5, dispatched by tests/v2/e2e/dataset
+// on the Name extension), Name alone is sufficient: it bundles train, test,
+// and neighbor vectors together.
+//
+// For multi-file billion-scale formats (fvecs/bvecs, e.g. SIFT1B/DEEP1B; see
+// tests/v2/e2e/dataset/x1b), Name is the train vectors file and Query and
+// Neighbors must both also be set, pointing at the corresponding query
+// vectors (same fvecs/bvecs encoding as Name) and ivecs groundtruth
+// neighbor-index files respectively.
+//
+// Name (and Query/Neighbors) is mutually exclusive with Dimension. Dimension
+// is used for scenarios that only need synthetically generated vectors (e.g.
+// maximum vector dimension probing), where preparing a fixture per dimension
+// is impractical.
 type Dataset struct {
-	Name string `yaml:"name" json:"name,omitempty"`
+	Name      string `yaml:"name,omitempty"      json:"name,omitempty"`
+	Query     string `yaml:"query,omitempty"     json:"query,omitempty"`
+	Neighbors string `yaml:"neighbors,omitempty" json:"neighbors,omitempty"`
+	Dimension int    `yaml:"dimension,omitempty" json:"dimension,omitempty"`
 }
 
 // Expect holds expected results for executions.
@@ -662,6 +678,12 @@ func (ot OperationType) Bind() (bound OperationType, err error) {
 		return OpIndexProperty, nil
 	case "flush", "fl", "f":
 		return OpFlush, nil
+	case "createindex", "createidx", "ci":
+		return OpCreateIndex, nil
+	case "saveindex", "saveidx", "si":
+		return OpSaveIndex, nil
+	case "createandsaveindex", "createandsave", "cas":
+		return OpCreateAndSaveIndex, nil
 	case "kubernetes", "kube", "k8s":
 		return OpKubernetes, nil
 	case "client", "cli", "c", "grpc":
@@ -1023,9 +1045,21 @@ func (d *Dataset) Bind() (bound *Dataset, err error) {
 		return nil, errors.Wrap(errors.ErrInvalidConfig, "missing required fields on Dataset")
 	}
 	d.Name = config.GetActualValue(d.Name)
-	// Name can be empty for scenarios that do not require a dataset (e.g. operator verification).
+	// Name can be empty for scenarios that do not require a dataset (e.g. operator
+	// verification) or that synthesize one from Dimension instead (e.g. maximum
+	// vector dimension probing).
 	if d.Name != "" && !file.Exists(d.Name) {
 		return nil, errors.Errorf("dataset file: %s does not exist", d.Name)
+	}
+	// Query and Neighbors are only meaningful for multi-file formats (e.g.
+	// x1b fvecs/bvecs); when present they must point at existing files.
+	// Whether they are required at all is a format-specific decision left to
+	// the dispatching loader (see tests/v2/e2e/dataset.ToDataset).
+	if d.Query = config.GetActualValue(d.Query); d.Query != "" && !file.Exists(d.Query) {
+		return nil, errors.Errorf("dataset query: %s does not exist", d.Query)
+	}
+	if d.Neighbors = config.GetActualValue(d.Neighbors); d.Neighbors != "" && !file.Exists(d.Neighbors) {
+		return nil, errors.Errorf("dataset neighbors: %s does not exist", d.Neighbors)
 	}
 	return d, nil
 }
@@ -1409,34 +1443,32 @@ func (p Port) Port() uint16 {
 	return uint16(port)
 }
 
+// kubernetesStatusTable maps every normalized KubernetesStatus onto its
+// resource-level counterpart. Kept as a table so adding a status is a single
+// row instead of a new switch arm.
+//
+//nolint:gochecknoglobals // immutable lookup table, effectively a const
+var kubernetesStatusTable = map[KubernetesStatus]resource.ResourceStatus{
+	KubernetesStatusUnknown:       resource.StatusUnknown,
+	KubernetesStatusPending:       resource.StatusPending,
+	KubernetesStatusUpdating:      resource.StatusUpdating,
+	KubernetesStatusAvailable:     resource.StatusAvailable,
+	KubernetesStatusDegraded:      resource.StatusDegraded,
+	KubernetesStatusFailed:        resource.StatusFailed,
+	KubernetesStatusCompleted:     resource.StatusCompleted,
+	KubernetesStatusScheduled:     resource.StatusScheduled,
+	KubernetesStatusScaling:       resource.StatusScaling,
+	KubernetesStatusPaused:        resource.StatusPaused,
+	KubernetesStatusTerminating:   resource.StatusTerminating,
+	KubernetesStatusNotReady:      resource.StatusNotReady,
+	KubernetesStatusLoadBalancing: resource.StatusLoadBalancing,
+}
+
+// Status maps the configured status name onto its resource-level counterpart,
+// falling back to StatusUnknown for values outside the table.
 func (ks KubernetesStatus) Status() resource.ResourceStatus {
-	switch strings.TrimForCompare(ks) {
-	case KubernetesStatusUnknown:
-		return resource.StatusUnknown
-	case KubernetesStatusPending:
-		return resource.StatusPending
-	case KubernetesStatusUpdating:
-		return resource.StatusUpdating
-	case KubernetesStatusAvailable:
-		return resource.StatusAvailable
-	case KubernetesStatusDegraded:
-		return resource.StatusDegraded
-	case KubernetesStatusFailed:
-		return resource.StatusFailed
-	case KubernetesStatusCompleted:
-		return resource.StatusCompleted
-	case KubernetesStatusScheduled:
-		return resource.StatusScheduled
-	case KubernetesStatusScaling:
-		return resource.StatusScaling
-	case KubernetesStatusPaused:
-		return resource.StatusPaused
-	case KubernetesStatusTerminating:
-		return resource.StatusTerminating
-	case KubernetesStatusNotReady:
-		return resource.StatusNotReady
-	case KubernetesStatusLoadBalancing:
-		return resource.StatusLoadBalancing
+	if st, ok := kubernetesStatusTable[strings.TrimForCompare(ks)]; ok {
+		return st
 	}
 	return resource.StatusUnknown
 }

@@ -3,7 +3,10 @@
   "title": "Values",
   "type": "object",
   "properties": {
-    "affinity": { "type": "object", "description": "affinity" },
+    "affinity": {
+      "type": "object",
+      "description": "affinity"
+    },
     "annotations": {
       "type": "object",
       "description": "deployment annotations"
@@ -29,11 +32,16 @@
         }
       }
     },
-    "dnsPolicy": { "type": "string", "description": "pod dns policy" },
+    "dnsPolicy": {
+      "type": "string",
+      "description": "pod dns policy"
+    },
     "env": {
       "type": "array",
       "description": "environment variables",
-      "items": { "type": "object" }
+      "items": {
+        "type": "object"
+      }
     },
     "image": {
       "type": "object",
@@ -43,7 +51,10 @@
           "description": "image pull policy",
           "enum": ["Always", "Never", "IfNotPresent"]
         },
-        "repository": { "type": "string", "description": "image repository" },
+        "repository": {
+          "type": "string",
+          "description": "image repository"
+        },
         "tag": {
           "type": "string",
           "description": "image tag (falls back to the Chart appVersion when empty)"
@@ -53,12 +64,16 @@
     "imagePullSecrets": {
       "type": "array",
       "description": "image pull secrets",
-      "items": { "type": "object" }
+      "items": {
+        "type": "object"
+      }
     },
     "initContainers": {
       "type": "array",
       "description": "init containers",
-      "items": { "type": "object" }
+      "items": {
+        "type": "object"
+      }
     },
     "labels": {
       "type": "object",
@@ -106,7 +121,9 @@
             "cache_namespaces": {
               "type": "array",
               "description": "restrict the manager cache to these namespaces ([] = whole cluster)",
-              "items": { "type": "string" }
+              "items": {
+                "type": "string"
+              }
             },
             "leader_election": {
               "type": "object",
@@ -125,7 +142,7 @@
                 },
                 "namespace": {
                   "type": "string",
-                  "description": "namespace of the lease resource"
+                  "description": "namespace of the lease resource (resolved from the MY_POD_NAMESPACE env at startup so the Lease lives in the release namespace, where the chart's Role/RoleBinding grant access)"
                 },
                 "renew_deadline": {
                   "type": "string",
@@ -168,7 +185,10 @@
             }
           }
         },
-        "name": { "type": "string", "description": "controller name" },
+        "name": {
+          "type": "string",
+          "description": "controller name"
+        },
         "namespace": {
           "type": "string",
           "description": "namespace the operator is deployed in"
@@ -292,10 +312,6 @@
                 }
               }
             },
-            "internal_host_domain": {
-              "type": "string",
-              "description": "internal host domain of the cluster"
-            },
             "log_format": {
               "type": "string",
               "description": "log format passed through to the underlying vald deployment (\"\" = raw)"
@@ -353,16 +369,26 @@
       "type": "object",
       "description": "kubernetes resources of the container",
       "properties": {
-        "limits": { "type": "object" },
-        "requests": { "type": "object" }
+        "limits": {
+          "type": "object"
+        },
+        "requests": {
+          "type": "object"
+        }
       }
     },
-    "restartPolicy": { "type": "string", "description": "pod restart policy" },
+    "restartPolicy": {
+      "type": "string",
+      "description": "pod restart policy"
+    },
     "revisionHistoryLimit": {
       "type": "integer",
       "description": "number of old ReplicaSets to retain"
     },
-    "schedulerName": { "type": "string", "description": "scheduler name" },
+    "schedulerName": {
+      "type": "string",
+      "description": "scheduler name"
+    },
     "securityContext": {
       "type": "object",
       "description": "security context for the container"
@@ -440,22 +466,42 @@
                     "http": {
                       "type": "object",
                       "properties": {
-                        "handler_timeout": { "type": "string" },
-                        "idle_timeout": { "type": "string" },
-                        "read_header_timeout": { "type": "string" },
-                        "read_timeout": { "type": "string" },
-                        "shutdown_duration": { "type": "string" },
-                        "write_timeout": { "type": "string" }
+                        "handler_timeout": {
+                          "type": "string"
+                        },
+                        "idle_timeout": {
+                          "type": "string"
+                        },
+                        "read_header_timeout": {
+                          "type": "string"
+                        },
+                        "read_timeout": {
+                          "type": "string"
+                        },
+                        "shutdown_duration": {
+                          "type": "string"
+                        },
+                        "write_timeout": {
+                          "type": "string"
+                        }
                       }
                     },
-                    "mode": { "type": "string" },
-                    "network": { "type": "string" },
-                    "probe_wait_time": { "type": "string" },
+                    "mode": {
+                      "type": "string"
+                    },
+                    "network": {
+                      "type": "string"
+                    },
+                    "probe_wait_time": {
+                      "type": "string"
+                    },
                     "socket_option": {
                       "type": "object",
                       "description": "socket options of the liveness server listener"
                     },
-                    "socket_path": { "type": "string" }
+                    "socket_path": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -523,22 +569,42 @@
                     "http": {
                       "type": "object",
                       "properties": {
-                        "handler_timeout": { "type": "string" },
-                        "idle_timeout": { "type": "string" },
-                        "read_header_timeout": { "type": "string" },
-                        "read_timeout": { "type": "string" },
-                        "shutdown_duration": { "type": "string" },
-                        "write_timeout": { "type": "string" }
+                        "handler_timeout": {
+                          "type": "string"
+                        },
+                        "idle_timeout": {
+                          "type": "string"
+                        },
+                        "read_header_timeout": {
+                          "type": "string"
+                        },
+                        "read_timeout": {
+                          "type": "string"
+                        },
+                        "shutdown_duration": {
+                          "type": "string"
+                        },
+                        "write_timeout": {
+                          "type": "string"
+                        }
                       }
                     },
-                    "mode": { "type": "string" },
-                    "network": { "type": "string" },
-                    "probe_wait_time": { "type": "string" },
+                    "mode": {
+                      "type": "string"
+                    },
+                    "network": {
+                      "type": "string"
+                    },
+                    "probe_wait_time": {
+                      "type": "string"
+                    },
                     "socket_option": {
                       "type": "object",
                       "description": "socket options of the readiness server listener"
                     },
-                    "socket_path": { "type": "string" }
+                    "socket_path": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -621,15 +687,25 @@
                       "type": "object",
                       "description": "http options of the pprof server (rendered into config.yaml as-is)"
                     },
-                    "mode": { "type": "string" },
-                    "network": { "type": "string" },
-                    "probe_wait_time": { "type": "string" },
-                    "restart": { "type": "boolean" },
+                    "mode": {
+                      "type": "string"
+                    },
+                    "network": {
+                      "type": "string"
+                    },
+                    "probe_wait_time": {
+                      "type": "string"
+                    },
+                    "restart": {
+                      "type": "boolean"
+                    },
                     "socket_option": {
                       "type": "object",
                       "description": "socket options of the pprof server listener"
                     },
-                    "socket_path": { "type": "string" }
+                    "socket_path": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -646,7 +722,10 @@
                   "type": "boolean",
                   "description": "gRPC server enabled"
                 },
-                "host": { "type": "string", "description": "gRPC server host" },
+                "host": {
+                  "type": "string",
+                  "description": "gRPC server host"
+                },
                 "port": {
                   "type": "integer",
                   "description": "gRPC server port (also used as the grpc containerPort)"
@@ -658,15 +737,25 @@
                       "type": "object",
                       "description": "gRPC server options (rendered into config.yaml as-is)"
                     },
-                    "mode": { "type": "string" },
-                    "network": { "type": "string" },
-                    "probe_wait_time": { "type": "string" },
-                    "restart": { "type": "boolean" },
+                    "mode": {
+                      "type": "string"
+                    },
+                    "network": {
+                      "type": "string"
+                    },
+                    "probe_wait_time": {
+                      "type": "string"
+                    },
+                    "restart": {
+                      "type": "boolean"
+                    },
                     "socket_option": {
                       "type": "object",
                       "description": "socket options of the gRPC server listener"
                     },
-                    "socket_path": { "type": "string" }
+                    "socket_path": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -676,14 +765,26 @@
         "tls": {
           "type": "object",
           "properties": {
-            "ca": { "type": "string", "description": "TLS ca path" },
-            "cert": { "type": "string", "description": "TLS cert path" },
-            "enabled": { "type": "boolean", "description": "TLS enabled" },
+            "ca": {
+              "type": "string",
+              "description": "TLS ca path"
+            },
+            "cert": {
+              "type": "string",
+              "description": "TLS cert path"
+            },
+            "enabled": {
+              "type": "boolean",
+              "description": "TLS enabled"
+            },
             "insecure_skip_verify": {
               "type": "boolean",
               "description": "enable/disable skip SSL certificate verification"
             },
-            "key": { "type": "string", "description": "TLS key path" }
+            "key": {
+              "type": "string",
+              "description": "TLS key path"
+            }
           }
         }
       }
@@ -699,7 +800,10 @@
           "type": "string",
           "description": "cluster IP (\"None\" makes the service headless)"
         },
-        "enabled": { "type": "boolean", "description": "service enabled" },
+        "enabled": {
+          "type": "boolean",
+          "description": "service enabled"
+        },
         "externalTrafficPolicy": {
           "type": "string",
           "description": "external traffic policy (can be specified when service type is LoadBalancer or NodePort): Cluster or Local"
@@ -707,7 +811,9 @@
         "extraPorts": {
           "type": "array",
           "description": "additional service ports (readiness/pprof ports are derived from server_config while enabled)",
-          "items": { "type": "object" }
+          "items": {
+            "type": "object"
+          }
         },
         "labels": {
           "type": "object",
@@ -744,11 +850,18 @@
         "rollingUpdate": {
           "type": "object",
           "properties": {
-            "maxSurge": { "type": "string" },
-            "maxUnavailable": { "type": "string" }
+            "maxSurge": {
+              "type": "string"
+            },
+            "maxUnavailable": {
+              "type": "string"
+            }
           }
         },
-        "type": { "type": "string", "enum": ["RollingUpdate", "Recreate"] }
+        "type": {
+          "type": "string",
+          "enum": ["RollingUpdate", "Recreate"]
+        }
       }
     },
     "terminationGracePeriodSeconds": {
@@ -762,12 +875,16 @@
     "tolerations": {
       "type": "array",
       "description": "tolerations",
-      "items": { "type": "object" }
+      "items": {
+        "type": "object"
+      }
     },
     "topologySpreadConstraints": {
       "type": "array",
       "description": "topology spread constraints",
-      "items": { "type": "object" }
+      "items": {
+        "type": "object"
+      }
     },
     "version": {
       "type": "string",
@@ -776,12 +893,16 @@
     "volumeMounts": {
       "type": "array",
       "description": "additional volume mounts",
-      "items": { "type": "object" }
+      "items": {
+        "type": "object"
+      }
     },
     "volumes": {
       "type": "array",
       "description": "additional volumes",
-      "items": { "type": "object" }
+      "items": {
+        "type": "object"
+      }
     }
   }
 }

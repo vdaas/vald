@@ -19,10 +19,17 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// scales are the rounding scales tried largest-first by getScale.
+//
+//nolint:gochecknoglobals // read-only lookup table; Go has no const slices
 var scales = []resource.Scale{
 	resource.Mega,
 	resource.Kilo,
 }
+
+// milliPerUnit converts between whole resource units and milli-units
+// (1 core = 1000m).
+const milliPerUnit = 1000
 
 func CalcResource(value int64, ratio float64, divs ...float64) resource.Quantity {
 	result := float64(value) * ratio
@@ -36,19 +43,20 @@ func CalcResource(value int64, ratio float64, divs ...float64) resource.Quantity
 	}
 
 	res := resource.Quantity{}
-	res.SetMilli(int64(result * 1000))
+	res.SetMilli(int64(result * milliPerUnit))
 	return res
 }
 
 func NormalizeResourceList(rl v1.ResourceList) v1.ResourceList {
 	normalized := v1.ResourceList{}
 	for name, quantity := range rl {
+		//nolint:exhaustive // only CPU and memory are normalized; every other ResourceName intentionally passes through unchanged
 		switch name {
 		case v1.ResourceCPU:
 			quantity.Format = resource.DecimalSI
 			milli := quantity.ScaledValue(resource.Milli)
-			if milli >= 1000 && milli%1000 == 0 {
-				quantity.SetScaled(milli/1000, 0)
+			if milli >= milliPerUnit && milli%milliPerUnit == 0 {
+				quantity.SetScaled(milli/milliPerUnit, 0)
 				break
 			}
 			quantity.SetScaled(milli, resource.Milli)

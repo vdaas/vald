@@ -20,8 +20,8 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/k8s/client"
+	"github.com/vdaas/vald/internal/k8s/resource"
 	mock "github.com/vdaas/vald/internal/test/mock/k8s"
-	"github.com/vdaas/vald/internal/test/testify"
 )
 
 func Test_getNewBaseName(t *testing.T) {
@@ -136,29 +136,18 @@ func Test_parseReplicaID(t *testing.T) {
 		func() test {
 			wantID1 := "bar"
 			wantID2 := "baz"
-			mock := &mock.ValdK8sClientMock{}
 
-			mock.On("LabelSelector", testify.Anything, testify.Anything, testify.Anything).Return(client.NewSelector(), nil)
-			mock.On("List", testify.Anything, testify.Anything, testify.Anything).Run(func(args testify.Arguments) {
-				if depList, ok := args.Get(1).(*k8s.DeploymentList); ok {
-					depList.Items = []k8s.Deployment{
-						{
-							ObjectMeta: k8s.ObjectMeta{
-								Labels: map[string]string{
-									labelKey: wantID1,
-								},
-							},
-						},
-						{
-							ObjectMeta: k8s.ObjectMeta{
-								Labels: map[string]string{
-									labelKey: wantID2,
-								},
-							},
-						},
-					}
-				}
-			}).Return(nil)
+			scheme := k8s.NewScheme()
+			if err := k8s.AddClientGoScheme(scheme); err != nil {
+				t.Fatalf("failed to add scheme: %v", err)
+			}
+			fakeClient := mock.NewFakeClientBuilder().WithScheme(scheme).WithObjects(
+				&k8s.Deployment{ObjectMeta: k8s.ObjectMeta{Name: "dep1", Labels: map[string]string{labelKey: wantID1}}},
+				&k8s.Deployment{ObjectMeta: k8s.ObjectMeta{Name: "dep2", Labels: map[string]string{labelKey: wantID2}}},
+			).Build()
+
+			mock := &mock.ValdK8sClientMock{}
+			mock.WithRaw(fakeClient)
 			return test{
 				name: "returns all ids when rotate-all option is set",
 				args: args{
@@ -179,7 +168,10 @@ func Test_parseReplicaID(t *testing.T) {
 			r := &rotator{
 				readReplicaLabelKey: labelKey,
 			}
-			ids, err := r.parseReplicaID(tt.args.replicaID, tt.args.c)
+			if tt.args.c != nil {
+				r.deployments = resource.NewClientOf(tt.args.c, new(k8s.Deployment), new(k8s.DeploymentList))
+			}
+			ids, err := r.parseReplicaID(tt.args.replicaID)
 			require.Equal(t, tt.want.ids, ids)
 			require.Equal(t, tt.want.err, err)
 		})
@@ -285,6 +277,9 @@ func Test_parseReplicaID(t *testing.T) {
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
+// 		snapshots           *resource.Client[*k8s.VolumeSnapshot, *k8s.VolumeSnapshotList]
+// 		pvcs                *resource.Client[*k8s.PersistentVolumeClaim, *k8s.PersistentVolumeClaimList]
+// 		deployments         *resource.Client[*k8s.Deployment, *k8s.DeploymentList]
 // 		namespace           string
 // 		volumeName          string
 // 		readReplicaLabelKey string
@@ -317,6 +312,9 @@ func Test_parseReplicaID(t *testing.T) {
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
+// 		           snapshots:nil,
+// 		           pvcs:nil,
+// 		           deployments:nil,
 // 		           namespace:"",
 // 		           volumeName:"",
 // 		           readReplicaLabelKey:"",
@@ -342,6 +340,9 @@ func Test_parseReplicaID(t *testing.T) {
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
+// 		           snapshots:nil,
+// 		           pvcs:nil,
+// 		           deployments:nil,
 // 		           namespace:"",
 // 		           volumeName:"",
 // 		           readReplicaLabelKey:"",
@@ -376,6 +377,9 @@ func Test_parseReplicaID(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			r := &rotator{
+// 				snapshots:           test.fields.snapshots,
+// 				pvcs:                test.fields.pvcs,
+// 				deployments:         test.fields.deployments,
 // 				namespace:           test.fields.namespace,
 // 				volumeName:          test.fields.volumeName,
 // 				readReplicaLabelKey: test.fields.readReplicaLabelKey,
@@ -392,10 +396,12 @@ func Test_parseReplicaID(t *testing.T) {
 //
 // func Test_rotator_newSubprocess(t *testing.T) {
 // 	type args struct {
-// 		c         client.Client
 // 		replicaID string
 // 	}
 // 	type fields struct {
+// 		snapshots           *resource.Client[*k8s.VolumeSnapshot, *k8s.VolumeSnapshotList]
+// 		pvcs                *resource.Client[*k8s.PersistentVolumeClaim, *k8s.PersistentVolumeClaimList]
+// 		deployments         *resource.Client[*k8s.Deployment, *k8s.DeploymentList]
 // 		namespace           string
 // 		volumeName          string
 // 		readReplicaLabelKey string
@@ -403,21 +409,17 @@ func Test_parseReplicaID(t *testing.T) {
 // 	}
 // 	type want struct {
 // 		want subProcess
-// 		err  error
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, subProcess, error) error
+// 		checkFunc  func(want, subProcess) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got subProcess, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
+// 	defaultCheckFunc := func(w want, got subProcess) error {
 // 		if !reflect.DeepEqual(got, w.want) {
 // 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 // 		}
@@ -429,10 +431,12 @@ func Test_parseReplicaID(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           c:nil,
 // 		           replicaID:"",
 // 		       },
 // 		       fields: fields {
+// 		           snapshots:nil,
+// 		           pvcs:nil,
+// 		           deployments:nil,
 // 		           namespace:"",
 // 		           volumeName:"",
 // 		           readReplicaLabelKey:"",
@@ -455,10 +459,12 @@ func Test_parseReplicaID(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           c:nil,
 // 		           replicaID:"",
 // 		           },
 // 		           fields: fields {
+// 		           snapshots:nil,
+// 		           pvcs:nil,
+// 		           deployments:nil,
 // 		           namespace:"",
 // 		           volumeName:"",
 // 		           readReplicaLabelKey:"",
@@ -493,14 +499,17 @@ func Test_parseReplicaID(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			r := &rotator{
+// 				snapshots:           test.fields.snapshots,
+// 				pvcs:                test.fields.pvcs,
+// 				deployments:         test.fields.deployments,
 // 				namespace:           test.fields.namespace,
 // 				volumeName:          test.fields.volumeName,
 // 				readReplicaLabelKey: test.fields.readReplicaLabelKey,
 // 				subProcesses:        test.fields.subProcesses,
 // 			}
 //
-// 			got, err := r.newSubprocess(test.args.c, test.args.replicaID)
-// 			if err := checkFunc(test.want, got, err); err != nil {
+// 			got := r.newSubprocess(test.args.replicaID)
+// 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})
@@ -512,9 +521,12 @@ func Test_parseReplicaID(t *testing.T) {
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		listOpts   k8s.ListOptions
-// 		client     client.Client
-// 		volumeName string
+// 		snapshots   *resource.Client[*k8s.VolumeSnapshot, *k8s.VolumeSnapshotList]
+// 		pvcs        *resource.Client[*k8s.PersistentVolumeClaim, *k8s.PersistentVolumeClaimList]
+// 		deployments *resource.Client[*k8s.Deployment, *k8s.DeploymentList]
+// 		selector    string
+// 		volumeName  string
+// 		listOpts    []k8s.ListOption
 // 	}
 // 	type want struct {
 // 		err error
@@ -543,9 +555,12 @@ func Test_parseReplicaID(t *testing.T) {
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           listOpts:nil,
-// 		           client:nil,
+// 		           snapshots:nil,
+// 		           pvcs:nil,
+// 		           deployments:nil,
+// 		           selector:"",
 // 		           volumeName:"",
+// 		           listOpts:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -567,9 +582,12 @@ func Test_parseReplicaID(t *testing.T) {
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           listOpts:nil,
-// 		           client:nil,
+// 		           snapshots:nil,
+// 		           pvcs:nil,
+// 		           deployments:nil,
+// 		           selector:"",
 // 		           volumeName:"",
+// 		           listOpts:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -600,9 +618,12 @@ func Test_parseReplicaID(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &subProcess{
-// 				listOpts:   test.fields.listOpts,
-// 				client:     test.fields.client,
-// 				volumeName: test.fields.volumeName,
+// 				snapshots:   test.fields.snapshots,
+// 				pvcs:        test.fields.pvcs,
+// 				deployments: test.fields.deployments,
+// 				selector:    test.fields.selector,
+// 				volumeName:  test.fields.volumeName,
+// 				listOpts:    test.fields.listOpts,
 // 			}
 //
 // 			err := s.rotate(test.args.ctx)
@@ -619,9 +640,12 @@ func Test_parseReplicaID(t *testing.T) {
 // 		deployment *k8s.Deployment
 // 	}
 // 	type fields struct {
-// 		listOpts   k8s.ListOptions
-// 		client     client.Client
-// 		volumeName string
+// 		snapshots   *resource.Client[*k8s.VolumeSnapshot, *k8s.VolumeSnapshotList]
+// 		pvcs        *resource.Client[*k8s.PersistentVolumeClaim, *k8s.PersistentVolumeClaimList]
+// 		deployments *resource.Client[*k8s.Deployment, *k8s.DeploymentList]
+// 		selector    string
+// 		volumeName  string
+// 		listOpts    []k8s.ListOption
 // 	}
 // 	type want struct {
 // 		wantNewSnap *k8s.VolumeSnapshot
@@ -659,9 +683,12 @@ func Test_parseReplicaID(t *testing.T) {
 // 		           deployment:nil,
 // 		       },
 // 		       fields: fields {
-// 		           listOpts:nil,
-// 		           client:nil,
+// 		           snapshots:nil,
+// 		           pvcs:nil,
+// 		           deployments:nil,
+// 		           selector:"",
 // 		           volumeName:"",
+// 		           listOpts:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -684,9 +711,12 @@ func Test_parseReplicaID(t *testing.T) {
 // 		           deployment:nil,
 // 		           },
 // 		           fields: fields {
-// 		           listOpts:nil,
-// 		           client:nil,
+// 		           snapshots:nil,
+// 		           pvcs:nil,
+// 		           deployments:nil,
+// 		           selector:"",
 // 		           volumeName:"",
+// 		           listOpts:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -717,9 +747,12 @@ func Test_parseReplicaID(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &subProcess{
-// 				listOpts:   test.fields.listOpts,
-// 				client:     test.fields.client,
-// 				volumeName: test.fields.volumeName,
+// 				snapshots:   test.fields.snapshots,
+// 				pvcs:        test.fields.pvcs,
+// 				deployments: test.fields.deployments,
+// 				selector:    test.fields.selector,
+// 				volumeName:  test.fields.volumeName,
+// 				listOpts:    test.fields.listOpts,
 // 			}
 //
 // 			gotNewSnap, gotOldSnap, err := s.createSnapshot(test.args.ctx, test.args.deployment)
@@ -737,9 +770,12 @@ func Test_parseReplicaID(t *testing.T) {
 // 		deployment  *k8s.Deployment
 // 	}
 // 	type fields struct {
-// 		listOpts   k8s.ListOptions
-// 		client     client.Client
-// 		volumeName string
+// 		snapshots   *resource.Client[*k8s.VolumeSnapshot, *k8s.VolumeSnapshotList]
+// 		pvcs        *resource.Client[*k8s.PersistentVolumeClaim, *k8s.PersistentVolumeClaimList]
+// 		deployments *resource.Client[*k8s.Deployment, *k8s.DeploymentList]
+// 		selector    string
+// 		volumeName  string
+// 		listOpts    []k8s.ListOption
 // 	}
 // 	type want struct {
 // 		wantNewPvc *k8s.PersistentVolumeClaim
@@ -778,9 +814,12 @@ func Test_parseReplicaID(t *testing.T) {
 // 		           deployment:nil,
 // 		       },
 // 		       fields: fields {
-// 		           listOpts:nil,
-// 		           client:nil,
+// 		           snapshots:nil,
+// 		           pvcs:nil,
+// 		           deployments:nil,
+// 		           selector:"",
 // 		           volumeName:"",
+// 		           listOpts:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -804,9 +843,12 @@ func Test_parseReplicaID(t *testing.T) {
 // 		           deployment:nil,
 // 		           },
 // 		           fields: fields {
-// 		           listOpts:nil,
-// 		           client:nil,
+// 		           snapshots:nil,
+// 		           pvcs:nil,
+// 		           deployments:nil,
+// 		           selector:"",
 // 		           volumeName:"",
+// 		           listOpts:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -837,9 +879,12 @@ func Test_parseReplicaID(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &subProcess{
-// 				listOpts:   test.fields.listOpts,
-// 				client:     test.fields.client,
-// 				volumeName: test.fields.volumeName,
+// 				snapshots:   test.fields.snapshots,
+// 				pvcs:        test.fields.pvcs,
+// 				deployments: test.fields.deployments,
+// 				selector:    test.fields.selector,
+// 				volumeName:  test.fields.volumeName,
+// 				listOpts:    test.fields.listOpts,
 // 			}
 //
 // 			gotNewPvc, gotOldPvc, err := s.createPVC(test.args.ctx, test.args.newSnapShot, test.args.deployment)
@@ -855,9 +900,12 @@ func Test_parseReplicaID(t *testing.T) {
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		listOpts   k8s.ListOptions
-// 		client     client.Client
-// 		volumeName string
+// 		snapshots   *resource.Client[*k8s.VolumeSnapshot, *k8s.VolumeSnapshotList]
+// 		pvcs        *resource.Client[*k8s.PersistentVolumeClaim, *k8s.PersistentVolumeClaimList]
+// 		deployments *resource.Client[*k8s.Deployment, *k8s.DeploymentList]
+// 		selector    string
+// 		volumeName  string
+// 		listOpts    []k8s.ListOption
 // 	}
 // 	type want struct {
 // 		want *k8s.Deployment
@@ -890,9 +938,12 @@ func Test_parseReplicaID(t *testing.T) {
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           listOpts:nil,
-// 		           client:nil,
+// 		           snapshots:nil,
+// 		           pvcs:nil,
+// 		           deployments:nil,
+// 		           selector:"",
 // 		           volumeName:"",
+// 		           listOpts:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -914,9 +965,12 @@ func Test_parseReplicaID(t *testing.T) {
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           listOpts:nil,
-// 		           client:nil,
+// 		           snapshots:nil,
+// 		           pvcs:nil,
+// 		           deployments:nil,
+// 		           selector:"",
 // 		           volumeName:"",
+// 		           listOpts:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -947,9 +1001,12 @@ func Test_parseReplicaID(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &subProcess{
-// 				listOpts:   test.fields.listOpts,
-// 				client:     test.fields.client,
-// 				volumeName: test.fields.volumeName,
+// 				snapshots:   test.fields.snapshots,
+// 				pvcs:        test.fields.pvcs,
+// 				deployments: test.fields.deployments,
+// 				selector:    test.fields.selector,
+// 				volumeName:  test.fields.volumeName,
+// 				listOpts:    test.fields.listOpts,
 // 			}
 //
 // 			got, err := s.getDeployment(test.args.ctx)
@@ -968,9 +1025,12 @@ func Test_parseReplicaID(t *testing.T) {
 // 		snapshotTime time.Time
 // 	}
 // 	type fields struct {
-// 		listOpts   k8s.ListOptions
-// 		client     client.Client
-// 		volumeName string
+// 		snapshots   *resource.Client[*k8s.VolumeSnapshot, *k8s.VolumeSnapshotList]
+// 		pvcs        *resource.Client[*k8s.PersistentVolumeClaim, *k8s.PersistentVolumeClaimList]
+// 		deployments *resource.Client[*k8s.Deployment, *k8s.DeploymentList]
+// 		selector    string
+// 		volumeName  string
+// 		listOpts    []k8s.ListOption
 // 	}
 // 	type want struct {
 // 		err error
@@ -1002,9 +1062,12 @@ func Test_parseReplicaID(t *testing.T) {
 // 		           snapshotTime:time.Time{},
 // 		       },
 // 		       fields: fields {
-// 		           listOpts:nil,
-// 		           client:nil,
+// 		           snapshots:nil,
+// 		           pvcs:nil,
+// 		           deployments:nil,
+// 		           selector:"",
 // 		           volumeName:"",
+// 		           listOpts:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1029,9 +1092,12 @@ func Test_parseReplicaID(t *testing.T) {
 // 		           snapshotTime:time.Time{},
 // 		           },
 // 		           fields: fields {
-// 		           listOpts:nil,
-// 		           client:nil,
+// 		           snapshots:nil,
+// 		           pvcs:nil,
+// 		           deployments:nil,
+// 		           selector:"",
 // 		           volumeName:"",
+// 		           listOpts:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1062,9 +1128,12 @@ func Test_parseReplicaID(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &subProcess{
-// 				listOpts:   test.fields.listOpts,
-// 				client:     test.fields.client,
-// 				volumeName: test.fields.volumeName,
+// 				snapshots:   test.fields.snapshots,
+// 				pvcs:        test.fields.pvcs,
+// 				deployments: test.fields.deployments,
+// 				selector:    test.fields.selector,
+// 				volumeName:  test.fields.volumeName,
+// 				listOpts:    test.fields.listOpts,
 // 			}
 //
 // 			err := s.updateDeployment(test.args.ctx, test.args.newPVC, test.args.deployment, test.args.snapshotTime)
@@ -1075,230 +1144,14 @@ func Test_parseReplicaID(t *testing.T) {
 // 	}
 // }
 //
-// func Test_subProcess_deleteSnapshot(t *testing.T) {
-// 	type args struct {
-// 		ctx      context.Context
-// 		snapshot *k8s.VolumeSnapshot
-// 	}
-// 	type fields struct {
-// 		listOpts   k8s.ListOptions
-// 		client     client.Client
-// 		volumeName string
-// 	}
-// 	type want struct {
-// 		err error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, error) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           ctx:nil,
-// 		           snapshot:nil,
-// 		       },
-// 		       fields: fields {
-// 		           listOpts:nil,
-// 		           client:nil,
-// 		           volumeName:"",
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           ctx:nil,
-// 		           snapshot:nil,
-// 		           },
-// 		           fields: fields {
-// 		           listOpts:nil,
-// 		           client:nil,
-// 		           volumeName:"",
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			s := &subProcess{
-// 				listOpts:   test.fields.listOpts,
-// 				client:     test.fields.client,
-// 				volumeName: test.fields.volumeName,
-// 			}
-//
-// 			err := s.deleteSnapshot(test.args.ctx, test.args.snapshot)
-// 			if err := checkFunc(test.want, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func Test_subProcess_deletePVC(t *testing.T) {
-// 	type args struct {
-// 		ctx context.Context
-// 		pvc *k8s.PersistentVolumeClaim
-// 	}
-// 	type fields struct {
-// 		listOpts   k8s.ListOptions
-// 		client     client.Client
-// 		volumeName string
-// 	}
-// 	type want struct {
-// 		err error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, error) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           ctx:nil,
-// 		           pvc:nil,
-// 		       },
-// 		       fields: fields {
-// 		           listOpts:nil,
-// 		           client:nil,
-// 		           volumeName:"",
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           ctx:nil,
-// 		           pvc:nil,
-// 		           },
-// 		           fields: fields {
-// 		           listOpts:nil,
-// 		           client:nil,
-// 		           volumeName:"",
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			s := &subProcess{
-// 				listOpts:   test.fields.listOpts,
-// 				client:     test.fields.client,
-// 				volumeName: test.fields.volumeName,
-// 			}
-//
-// 			err := s.deletePVC(test.args.ctx, test.args.pvc)
-// 			if err := checkFunc(test.want, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
 // func Test_rotator_parseReplicaID(t *testing.T) {
 // 	type args struct {
 // 		replicaID string
-// 		c         client.Client
 // 	}
 // 	type fields struct {
+// 		snapshots           *resource.Client[*k8s.VolumeSnapshot, *k8s.VolumeSnapshotList]
+// 		pvcs                *resource.Client[*k8s.PersistentVolumeClaim, *k8s.PersistentVolumeClaimList]
+// 		deployments         *resource.Client[*k8s.Deployment, *k8s.DeploymentList]
 // 		namespace           string
 // 		volumeName          string
 // 		readReplicaLabelKey string
@@ -1333,9 +1186,11 @@ func Test_parseReplicaID(t *testing.T) {
 // 		       name: "test_case_1",
 // 		       args: args {
 // 		           replicaID:"",
-// 		           c:nil,
 // 		       },
 // 		       fields: fields {
+// 		           snapshots:nil,
+// 		           pvcs:nil,
+// 		           deployments:nil,
 // 		           namespace:"",
 // 		           volumeName:"",
 // 		           readReplicaLabelKey:"",
@@ -1359,9 +1214,11 @@ func Test_parseReplicaID(t *testing.T) {
 // 		           name: "test_case_2",
 // 		           args: args {
 // 		           replicaID:"",
-// 		           c:nil,
 // 		           },
 // 		           fields: fields {
+// 		           snapshots:nil,
+// 		           pvcs:nil,
+// 		           deployments:nil,
 // 		           namespace:"",
 // 		           volumeName:"",
 // 		           readReplicaLabelKey:"",
@@ -1396,13 +1253,16 @@ func Test_parseReplicaID(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			r := &rotator{
+// 				snapshots:           test.fields.snapshots,
+// 				pvcs:                test.fields.pvcs,
+// 				deployments:         test.fields.deployments,
 // 				namespace:           test.fields.namespace,
 // 				volumeName:          test.fields.volumeName,
 // 				readReplicaLabelKey: test.fields.readReplicaLabelKey,
 // 				subProcesses:        test.fields.subProcesses,
 // 			}
 //
-// 			got, err := r.parseReplicaID(test.args.replicaID, test.args.c)
+// 			got, err := r.parseReplicaID(test.args.replicaID)
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

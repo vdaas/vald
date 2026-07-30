@@ -45,6 +45,11 @@ type Mirror interface {
 	RangeMirrorAddr(f func(addr string, _ any) bool)
 }
 
+// startErrChanBufferSize sized generously above expected concurrent register/
+// connect/disconnect failures so Start's error-reporting goroutines never
+// block sending on ech.
+const startErrChanBufferSize = 100
+
 type MirrorClient interface {
 	vald.Client
 	mirror.MirrorClient
@@ -65,10 +70,10 @@ func NewMirrorClient(conn *grpc.ClientConn) MirrorClient {
 type mirr struct {
 	eg            errgroup.Group
 	gateway       Gateway
+	selfMirrTgts  []*payload.Mirror_Target
 	addrs         sync.Map[string, any]
 	selfMirrAddrs sync.Map[string, any]
 	gwAddrs       sync.Map[string, any]
-	selfMirrTgts  []*payload.Mirror_Target
 	registerDur   time.Duration
 }
 
@@ -77,10 +82,10 @@ type mirr struct {
 func NewMirror(opts ...MirrorOption) (_ Mirror, err error) {
 	m := new(mirr)
 	for _, opt := range append(defaultMirrOpts, opts...) {
-		if err := opt(m); err != nil {
-			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+		if optErr := opt(m); optErr != nil {
+			oerr := errors.ErrOptionFailed(optErr, reflect.ValueOf(opt))
 			e := &errors.ErrCriticalOption{}
-			if errors.As(err, &e) {
+			if errors.As(optErr, &e) {
 				log.Error(oerr)
 				return nil, oerr
 			}
@@ -116,7 +121,7 @@ func (m *mirr) Start(ctx context.Context) <-chan error { // skipcq: GO-R1005
 			span.End()
 		}
 	}()
-	ech := make(chan error, 100)
+	ech := make(chan error, startErrChanBufferSize)
 
 	m.eg.Go(func() error {
 		tic := time.NewTicker(m.registerDur)
@@ -183,10 +188,10 @@ func (m *mirr) registers(
 	var mu sync.Mutex
 
 	err := m.gateway.DoMulti(ctx, m.connectedOtherMirrorAddrs(ctx), func(ctx context.Context, target string, vc MirrorClient, copts ...grpc.CallOption) error {
-		ctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Mirror.registers/"+target)
+		ctx, tgtSpan := trace.StartSpan(ctx, "vald/gateway/mirror/service/Mirror.registers/"+target)
 		defer func() {
-			if span != nil {
-				span.End()
+			if tgtSpan != nil {
+				tgtSpan.End()
 			}
 		}()
 
@@ -226,31 +231,34 @@ func (m *mirr) registers(
 				// When the ingress resource is deleted, the controller's default backend results(Unimplemented error) are returned so that the connection should be disconnected.
 				// If it is a different namespace on the same cluster, the connection is automatically disconnected because the net.grpc health check fails.
 				if st.Code() == codes.Unimplemented {
-					host, port, err := net.SplitHostPort(target)
-					if err != nil {
-						log.Warn(err)
+					host, port, splitErr := net.SplitHostPort(target)
+					if splitErr != nil {
+						log.Warn(splitErr)
 					} else {
-						if err := m.Disconnect(ctx, &payload.Mirror_Target{
+						if derr := m.Disconnect(ctx, &payload.Mirror_Target{
 							Host: host,
 							Port: uint32(port),
-						}); err != nil {
-							log.Errorf("failed to disconnect %s, err: %v", target, err)
+						}); derr != nil {
+							log.Errorf("failed to disconnect %s, err: %v", target, derr)
 						}
 					}
 				}
 			}
 			log.Errorf("failed to send Register API to %s\t: %v", target, err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(attrs...)
-				span.SetStatus(trace.StatusError, err.Error())
+			if tgtSpan != nil {
+				tgtSpan.RecordError(err)
+				tgtSpan.SetAttributes(attrs...)
+				tgtSpan.SetStatus(trace.StatusError, err.Error())
 			}
 			result.Store(target, err)
 			return err
 		}
 		if res != nil && len(res.GetTargets()) > 0 {
 			for _, tgt := range res.GetTargets() {
-				addr := net.JoinHostPort(tgt.Host, uint16(tgt.Port))
+				// Pre-existing behavior: port comes from a peer gateway's Register
+				// response over gRPC; an out-of-range value truncates silently
+				// instead of erroring (accepted risk, not attacker-input validation).
+				addr := net.JoinHostPort(tgt.Host, uint16(tgt.Port)) //nolint:gosec
 				mu.Lock()
 				if !exists[addr] {
 					exists[addr] = true
@@ -282,15 +290,15 @@ func (m *mirr) registers(
 		}
 		log.Error(err)
 
-		st, msg, err := status.ParseError(err, codes.Internal,
+		st, msg, perr := status.ParseError(err, codes.Internal,
 			"failed to parse "+mirror.RegisterRPCName+" gRPC error response",
 		)
 		if span != nil {
-			span.RecordError(err)
+			span.RecordError(perr)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-			span.SetStatus(trace.StatusError, err.Error())
+			span.SetStatus(trace.StatusError, perr.Error())
 		}
-		return resTgts, err
+		return resTgts, perr
 	}
 	return resTgts, err
 }
@@ -307,7 +315,11 @@ func (m *mirr) Connect(ctx context.Context, targets ...*payload.Mirror_Target) e
 		return errors.ErrTargetNotFound
 	}
 	for _, target := range targets {
-		addr := net.JoinHostPort(target.GetHost(), uint16(target.GetPort())) // addr: host:port
+		// addr: host:port. Pre-existing behavior: callers pass targets sourced
+		// either from the MirrorTarget CRD spec or, via registers(), from a peer
+		// gateway's gRPC response; an out-of-range port truncates silently
+		// instead of erroring (accepted risk).
+		addr := net.JoinHostPort(target.GetHost(), uint16(target.GetPort())) //nolint:gosec
 		if !m.isSelfMirrorAddr(addr) && !m.isGatewayAddr(addr) {
 			_, ok := m.addrs.Load(addr)
 			if !ok || !m.IsConnected(ctx, addr) {
@@ -336,7 +348,11 @@ func (m *mirr) Disconnect(ctx context.Context, targets ...*payload.Mirror_Target
 		return errors.ErrTargetNotFound
 	}
 	for _, target := range targets {
-		addr := net.JoinHostPort(target.GetHost(), uint16(target.GetPort()))
+		// Pre-existing behavior: callers pass targets sourced either from the
+		// MirrorTarget CRD spec or, via registers(), from a peer gateway's gRPC
+		// response; an out-of-range port truncates silently instead of erroring
+		// (accepted risk).
+		addr := net.JoinHostPort(target.GetHost(), uint16(target.GetPort())) //nolint:gosec
 		if !m.isGatewayAddr(addr) {
 			_, ok := m.addrs.Load(addr)
 			if ok || m.IsConnected(ctx, addr) {

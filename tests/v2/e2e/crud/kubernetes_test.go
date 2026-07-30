@@ -1,20 +1,18 @@
 //go:build e2e
 
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 // package crud provides end-to-end tests using ann-benchmarks datasets.
 package crud
@@ -45,7 +43,7 @@ const (
 	manifestDecodeBufferSize = 4096
 )
 
-func (r *runner) processKubernetes(t *testing.T, ctx context.Context, plan *config.Execution) {
+func (r *runner) processKubernetes(t testing.TB, ctx context.Context, plan *config.Execution) {
 	t.Helper()
 	if plan == nil || plan.Kubernetes == nil {
 		t.Fatal("kubernetes plan is nil")
@@ -69,34 +67,34 @@ func (r *runner) processKubernetes(t *testing.T, ctx context.Context, plan *conf
 			t.Errorf("kubernetes action create is only supported for creating job from cronjob")
 			return
 		}
-		if _, err := resource.CronJob(r.k8s, k.Namespace).CreateJob(ctx, k.Name, resource.EmptyGetOptions, resource.EmptyCreateOptions); err != nil {
+		if _, err := r.clients.CronJob(k.Namespace).CreateJob(ctx, k.Name, resource.EmptyGetOptions, resource.EmptyCreateOptions); err != nil {
 			t.Errorf("failed to create job from cronjob: %v", err)
 		}
 		return
 	}
 	switch k.Kind {
 	case config.ConfigMap:
-		handleKubernetesAction(t, ctx, k, resource.ConfigMap(r.k8s, k.Namespace))
+		handleKubernetesAction(t, ctx, k, r.clients.ConfigMap(k.Namespace))
 	case config.CronJob:
-		handleKubernetesWorkloadAction(t, ctx, k, resource.CronJob(r.k8s, k.Namespace))
+		handleKubernetesWorkloadAction(t, ctx, k, r.clients.CronJob(k.Namespace))
 	case config.DaemonSet:
-		handleKubernetesWorkloadAction(t, ctx, k, resource.DaemonSet(r.k8s, k.Namespace))
+		handleKubernetesWorkloadAction(t, ctx, k, r.clients.DaemonSet(k.Namespace))
 	case config.Deployment:
-		handleKubernetesWorkloadAction(t, ctx, k, resource.Deployment(r.k8s, k.Namespace))
+		handleKubernetesWorkloadAction(t, ctx, k, r.clients.Deployment(k.Namespace))
 	case config.Job:
-		handleKubernetesWorkloadAction(t, ctx, k, resource.Job(r.k8s, k.Namespace))
+		handleKubernetesWorkloadAction(t, ctx, k, r.clients.Job(k.Namespace))
 	case config.MutatingWebhookConfiguration:
-		handleKubernetesAction(t, ctx, k, resource.MutatingWebhookConfiguration(r.k8s))
+		handleKubernetesAction(t, ctx, k, r.clients.MutatingWebhookConfiguration())
 	case config.Pod:
-		handleKubernetesAction(t, ctx, k, resource.Pod(r.k8s, k.Namespace))
+		handleKubernetesAction(t, ctx, k, r.clients.Pod(k.Namespace))
 	case config.Secret:
-		handleKubernetesAction(t, ctx, k, resource.Secret(r.k8s, k.Namespace))
+		handleKubernetesAction(t, ctx, k, r.clients.Secret(k.Namespace))
 	case config.Service:
-		handleKubernetesAction(t, ctx, k, resource.Service(r.k8s, k.Namespace))
+		handleKubernetesAction(t, ctx, k, r.clients.Service(k.Namespace))
 	case config.StatefulSet:
-		handleKubernetesWorkloadAction(t, ctx, k, resource.StatefulSet(r.k8s, k.Namespace))
+		handleKubernetesWorkloadAction(t, ctx, k, r.clients.StatefulSet(k.Namespace))
 	case config.ValidatingWebhookConfiguration:
-		handleKubernetesAction(t, ctx, k, resource.ValidatingWebhookConfiguration(r.k8s))
+		handleKubernetesAction(t, ctx, k, r.clients.ValidatingWebhookConfiguration())
 	default:
 		t.Errorf("unsupported kubernetes kind: %s", k.Kind)
 	}
@@ -105,7 +103,7 @@ func (r *runner) processKubernetes(t *testing.T, ctx context.Context, plan *conf
 // handleKubernetesAction executes the actions applicable to every resource kind
 // (get, delete and wait) through the generic resource client.
 func handleKubernetesAction[T resource.Object, L resource.ObjectList, C resource.NamedObject, I resource.ResourceInterface[T, L, C]](
-	t *testing.T, ctx context.Context, k *config.KubernetesConfig, client I,
+	t testing.TB, ctx context.Context, k *config.KubernetesConfig, client I,
 ) {
 	t.Helper()
 	switch k.Action {
@@ -133,7 +131,7 @@ func handleKubernetesAction[T resource.Object, L resource.ObjectList, C resource
 // handleKubernetesWorkloadAction adds the workload-controller specific rollout
 // action on top of the common resource actions.
 func handleKubernetesWorkloadAction[T resource.Object, L resource.ObjectList, C resource.NamedObject, I resource.WorkloadControllerResourceClient[T, L, C]](
-	t *testing.T, ctx context.Context, k *config.KubernetesConfig, client I,
+	t testing.TB, ctx context.Context, k *config.KubernetesConfig, client I,
 ) {
 	t.Helper()
 	switch k.Action {
@@ -197,7 +195,7 @@ func resourceFor(
 // manifest through the dynamic client. Apply uses server-side apply so the
 // operation is idempotent across repeated e2e runs.
 func (r *runner) handleKubernetesManifest(
-	t *testing.T, ctx context.Context, k *config.KubernetesConfig,
+	t testing.TB, ctx context.Context, k *config.KubernetesConfig,
 ) {
 	t.Helper()
 	objs, err := decodeManifest(k.Manifest)
@@ -256,7 +254,7 @@ func (r *runner) handleKubernetesManifest(
 // handleKubernetesCustomResource executes get/delete/wait actions on an
 // arbitrary custom resource identified by group/version/resource.
 func (r *runner) handleKubernetesCustomResource(
-	t *testing.T, ctx context.Context, k *config.KubernetesConfig,
+	t testing.TB, ctx context.Context, k *config.KubernetesConfig,
 ) {
 	t.Helper()
 	dyn, _, err := kclient.NewDynamicClient(r.k8s)

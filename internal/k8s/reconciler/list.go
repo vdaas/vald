@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package reconciler
 
@@ -20,7 +18,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/k8s/resource"
 	"github.com/vdaas/vald/internal/log"
@@ -38,115 +35,114 @@ const (
 	defaultNotFoundRequeueDuration = time.Second
 )
 
-type ListOption[L k8s.ObjectList] func(*listReconciler[L])
-
-// listReconciler is a batch-type k8s.ResourceController: every reconcile it
-// lists all objects matching the configured options and hands the whole list
-// to the callback. It generalizes the former internal/k8s/{pod,node,service,
-// job,metrics} reconcilers.
-type listReconciler[L k8s.ObjectList] struct {
+// listCore holds the type-independent state shared by every listReconciler
+// instantiation, so ListOption functions need no type parameters and call
+// sites never spell explicit type arguments.
+type listCore struct {
 	baseReconciler
-	newList         func() L
-	onReconcile     func(ctx context.Context, list L)
 	onError         func(err error)
 	addToScheme     func(s *runtime.Scheme) error
 	obj             k8s.Object
-	lopts           []k8s.ListOption
+	listOpts        []k8s.ListOption
 	successRequeue  time.Duration
 	notFoundRequeue time.Duration
 	errorRequeue    time.Duration
 }
 
+type ListOption func(*listCore)
+
+// listReconciler is a batch-type k8s.ResourceController: every reconcile it
+// lists all objects matching the configured options and hands the whole list
+// to the callback. It generalizes the former internal/k8s/{pod,node,service,
+// job,metrics} reconcilers.
+type listReconciler[L any, PL resource.ListPtr[L]] struct {
+	listCore
+	onReconcile func(ctx context.Context, list PL)
+}
+
 // NewListReconciler returns a batch-type ResourceController named name that
-// watches obj and, on every reconcile, lists objects into the list created by
-// newList and passes it to the WithOnReconcile callback.
-func NewListReconciler[L k8s.ObjectList](
-	name string, obj k8s.Object, newList func() L, opts ...ListOption[L],
+// watches obj and, on every reconcile, lists objects into a freshly
+// constructed PL and passes it to onReconcile — the only type-dependent
+// input, taken positionally so L and PL are inferred from it.
+func NewListReconciler[L any, PL resource.ListPtr[L]](
+	name string, obj k8s.Object, onReconcile func(ctx context.Context, list PL), opts ...ListOption,
 ) k8s.ResourceController {
-	r := &listReconciler[L]{
-		baseReconciler:  baseReconciler{name: name},
-		obj:             obj,
-		newList:         newList,
-		errorRequeue:    defaultErrorRequeueDuration,
-		notFoundRequeue: defaultNotFoundRequeueDuration,
+	r := &listReconciler[L, PL]{
+		listCore: listCore{
+			baseReconciler:  baseReconciler{name: name},
+			obj:             obj,
+			errorRequeue:    defaultErrorRequeueDuration,
+			notFoundRequeue: defaultNotFoundRequeueDuration,
+		},
+		onReconcile: onReconcile,
 	}
 	for _, opt := range opts {
 		if opt != nil {
-			opt(r)
+			opt(&r.listCore)
 		}
 	}
 	return r
 }
 
-func WithOnReconcile[L k8s.ObjectList](f func(ctx context.Context, list L)) ListOption[L] {
-	return func(r *listReconciler[L]) {
-		r.onReconcile = f
+func WithOnError(f func(err error)) ListOption {
+	return func(c *listCore) {
+		c.onError = f
 	}
 }
 
-func WithOnError[L k8s.ObjectList](f func(err error)) ListOption[L] {
-	return func(r *listReconciler[L]) {
-		r.onError = f
-	}
-}
-
-func WithNamespace[L k8s.ObjectList](ns string) ListOption[L] {
-	return func(r *listReconciler[L]) {
+func WithNamespace(ns string) ListOption {
+	return func(c *listCore) {
 		if ns != "" {
-			r.lopts = append(r.lopts, k8s.InNamespace(ns))
+			c.listOpts = append(c.listOpts, k8s.InNamespace(ns))
 		}
 	}
 }
 
-func WithLabels[L k8s.ObjectList](ls map[string]string) ListOption[L] {
-	return func(r *listReconciler[L]) {
+func WithLabels(ls map[string]string) ListOption {
+	return func(c *listCore) {
 		if len(ls) > 0 {
-			r.lopts = append(r.lopts, k8s.MatchingLabels(ls))
+			c.listOpts = append(c.listOpts, k8s.MatchingLabels(ls))
 		}
 	}
 }
 
 // WithFields restricts the list to objects matching the given field selectors.
 // The referenced fields must be indexed via WithFieldIndex.
-func WithFields[L k8s.ObjectList](fs map[string]string) ListOption[L] {
-	return func(r *listReconciler[L]) {
+func WithFields(fs map[string]string) ListOption {
+	return func(c *listCore) {
 		if len(fs) > 0 {
-			r.lopts = append(r.lopts, k8s.MatchingFields(fs))
+			c.listOpts = append(c.listOpts, k8s.MatchingFields(fs))
 		}
 	}
 }
 
 // WithAddToScheme sets the scheme registration function executed in
 // NewReconciler. When unset, the client-go native scheme is registered.
-func WithAddToScheme[L k8s.ObjectList](f func(s *runtime.Scheme) error) ListOption[L] {
-	return func(r *listReconciler[L]) {
-		r.addToScheme = f
+func WithAddToScheme(f func(s *runtime.Scheme) error) ListOption {
+	return func(c *listCore) {
+		c.addToScheme = f
 	}
 }
 
 // WithFieldIndex registers a cache index for the given field so that
 // WithFields selectors on that field work against the informer cache.
-func WithFieldIndex[L k8s.ObjectList](
-	field string, indexer func(o k8s.Object) []string,
-) ListOption[L] {
-	return func(r *listReconciler[L]) {
-		r.addFieldIndex(field, indexer)
+func WithFieldIndex(field string, indexer func(o k8s.Object) []string) ListOption {
+	return func(c *listCore) {
+		c.addFieldIndex(field, indexer)
 	}
 }
 
 // WithRequeueDurations adjusts the requeue intervals: success is the periodic
 // requeue after a successful reconcile (0 disables it), notFound and onError
 // are the retry intervals for NotFound and other list errors.
-func WithRequeueDurations[L k8s.ObjectList](
-	success, notFound, onError time.Duration,
-) ListOption[L] {
-	return func(r *listReconciler[L]) {
-		r.successRequeue = success
+func WithRequeueDurations(success, notFound, onError time.Duration) ListOption {
+	return func(c *listCore) {
+		c.successRequeue = success
 		if notFound > 0 {
-			r.notFoundRequeue = notFound
+			c.notFoundRequeue = notFound
 		}
 		if onError > 0 {
-			r.errorRequeue = onError
+			c.errorRequeue = onError
 		}
 	}
 }
@@ -154,24 +150,21 @@ func WithRequeueDurations[L k8s.ObjectList](
 // WithMaxConcurrentReconciles sets the number of concurrent reconcile workers
 // requested for this controller. Non-positive values keep the
 // controller-runtime default (1).
-func WithMaxConcurrentReconciles[L k8s.ObjectList](n int) ListOption[L] {
-	return func(r *listReconciler[L]) {
+func WithMaxConcurrentReconciles(n int) ListOption {
+	return func(c *listCore) {
 		if n > 0 {
-			r.maxConcurrent = n
+			c.maxConcurrent = n
 		}
 	}
 }
 
-func (r *listReconciler[L]) Reconcile(
+func (r *listReconciler[L, PL]) Reconcile(
 	ctx context.Context, _ reconcile.Request,
 ) (reconcile.Result, error) {
-	if r.initErr != nil {
-		return reconcile.Result{}, r.initErr
+	if err := r.checkReady(); err != nil {
+		return reconcile.Result{}, err
 	}
-	if r.mgr == nil {
-		return reconcile.Result{}, errors.Errorf("manager is not registered for %s reconciler", r.name)
-	}
-	list, err := resource.ListObjects(ctx, r.mgr.GetClient(), r.newList(), r.lopts...)
+	list, err := resource.ListObjects(ctx, r.client, PL(new(L)), r.listOpts...)
 	if err != nil {
 		if r.onError != nil {
 			r.onError(err)
@@ -182,8 +175,11 @@ func (r *listReconciler[L]) Reconcile(
 		}
 		// controller-runtime ignores the Result when a non-nil error is
 		// returned, so consume the error here to make the configured
-		// errorRequeue interval effective.
+		// errorRequeue interval effective. Log it first so the swallowed
+		// error stays visible (controller-runtime's own error logging and
+		// ReconcileErrors metric are bypassed once we return a nil error).
 		if r.errorRequeue > 0 {
+			log.Errorf("failed to reconcile, requeuing after %s: %v", r.errorRequeue, err)
 			return reconcile.Result{RequeueAfter: r.errorRequeue}, nil
 		}
 		return reconcile.Result{}, err
@@ -203,31 +199,25 @@ func (r *listReconciler[L]) Reconcile(
 // manager and returns the reconciler itself. Registration failures are
 // recorded and surfaced by Reconcile because this method cannot return an
 // error.
-func (r *listReconciler[L]) NewReconciler(
+func (r *listReconciler[L, PL]) NewReconciler(
 	ctx context.Context, mgr manager.Manager,
 ) reconcile.Reconciler {
-	if !r.setup(ctx, mgr, r.addToScheme, r.obj) {
-		return r
-	}
+	r.setup(ctx, mgr, r.addToScheme, r.obj)
 	return r
 }
 
-// For returns nil: the batch reconciler installs its watch through Watches()
-// so every event maps to one fixed request instead of one request per object.
-func (*listReconciler[L]) For() (k8s.Object, []builder.ForOption) {
-	return nil, nil
-}
-
-func (*listReconciler[L]) Owns() (k8s.Object, []builder.OwnsOption) {
-	return nil, nil
-}
-
 // Watches returns the watched object together with an event handler that maps
-// every event to a single fixed request. Reconcile ignores the request and
-// lists all objects anyway, so per-object requests only multiply the number
-// of full List reconciles (O(N^2) work per event wave); the fixed request
-// lets the workqueue deduplicate concurrent events into one reconcile.
-func (r *listReconciler[L]) Watches() (k8s.Object, handler.EventHandler, []builder.WatchesOption) {
+// every event to a single fixed request; the batch reconciler installs its
+// watch here instead of For(), so every event maps to one fixed request
+// instead of one request per object. Reconcile ignores the request and lists
+// all objects anyway, so per-object requests only multiply the number of full
+// List reconciles (O(N^2) work per event wave); the fixed request lets the
+// workqueue deduplicate concurrent events into one reconcile.
+func (r *listReconciler[L, PL]) Watches() (
+	k8s.Object,
+	handler.EventHandler,
+	[]builder.WatchesOption,
+) {
 	req := reconcile.Request{NamespacedName: types.NamespacedName{Name: r.name}}
 	return r.obj, handler.EnqueueRequestsFromMapFunc(func(context.Context, k8s.Object) []reconcile.Request {
 		return []reconcile.Request{req}

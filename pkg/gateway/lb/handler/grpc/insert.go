@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package grpc
 
@@ -30,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/errhandler"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -42,11 +41,7 @@ func (s *server) Insert(
 	ctx context.Context, req *payload.Insert_Request,
 ) (ce *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.InsertRPCServiceName+"/"+vald.InsertRPCName), apiName+"/"+vald.InsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	uuid := req.GetVector().GetId()
 	reqInfo := &errdetails.RequestInfo{
 		RequestId:   uuid,
@@ -67,12 +62,7 @@ func (s *server) Insert(
 					},
 				},
 			})
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.InvalidArgument, err)
 	}
 	vec := req.GetVector().GetVector()
 	vl := len(vec)
@@ -87,12 +77,7 @@ func (s *server) Insert(
 					},
 				},
 			}, info.Get())
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.InvalidArgument, err)
 	}
 	if !req.GetConfig().GetSkipStrictExistCheck() {
 		id, err := s.exists(ctx, uuid)
@@ -116,11 +101,7 @@ func (s *server) Insert(
 			attrs = trace.StatusCodeAlreadyExists(err.Error())
 		}
 		if err != nil {
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(attrs...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
+			errhandler.RecordSpanAttrs(span, attrs, err)
 			return nil, err
 		}
 		if req.GetConfig() != nil {
@@ -150,11 +131,7 @@ func (s *server) Insert(
 	var errs error
 	err = s.gateway.DoMulti(ctx, s.replica, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
 		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "DoMulti/"+target), apiName+"/"+vald.InsertRPCName+"/"+target)
-		defer func() {
-			if span != nil {
-				span.End()
-			}
-		}()
+		defer trace.End(span)
 		loc, err := vc.Insert(ctx, req, copts...)
 		if err != nil {
 			switch {
@@ -225,12 +202,7 @@ func (s *server) Insert(
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName + ".DoMulti",
 					ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
 				})
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Object_Location](span, codes.Internal, err)
 		}
 		if errs == nil {
 			errs = err
@@ -240,12 +212,8 @@ func (s *server) Insert(
 	}
 	if errs != nil {
 		st, _ := status.FromError(errs)
-		if st != nil && span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		errhandler.RecordSpanStatus(span, st, errs)
+		return nil, errs
 	}
 	slices.Sort(locs)
 	ce.Name = strings.Join(locs, ",")
@@ -254,27 +222,15 @@ func (s *server) Insert(
 
 func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.InsertRPCServiceName+"/"+vald.StreamInsertRPCName), apiName+"/"+vald.StreamInsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Insert_Request) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BidirectionalStream"), apiName+"/"+vald.StreamInsertRPCName+"/id-"+req.GetVector().GetId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.Insert(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				return &payload.Object_StreamLocation{
 					Payload: &payload.Object_StreamLocation_Status{
 						Status: st.Proto(),
@@ -289,11 +245,7 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 		})
 	if err != nil {
 		st, _ := status.FromError(err)
-		if st != nil && span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanStatus(span, st, err)
 		return err
 	}
 	return nil
@@ -303,11 +255,7 @@ func (s *server) MultiInsert(
 	ctx context.Context, reqs *payload.Insert_MultiRequest,
 ) (locs *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.InsertRPCServiceName+"/"+vald.MultiInsertRPCName), apiName+"/"+vald.MultiInsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	var (
 		emu sync.Mutex
 		lmu sync.Mutex
@@ -323,19 +271,11 @@ func (s *server) MultiInsert(
 			req := r
 			eg.Go(safety.RecoverFunc(func() (err error) {
 				ectx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ectx, "eg.Go"), apiName+"/"+vald.MultiInsertRPCName+"/id-"+req.GetVector().GetId())
-				defer func() {
-					if sspan != nil {
-						sspan.End()
-					}
-				}()
+				defer trace.End(sspan)
 				res, err := s.Insert(ectx, req)
 				if err != nil {
 					st, _ := status.FromError(err)
-					if st != nil && sspan != nil {
-						sspan.RecordError(err)
-						sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-						sspan.SetStatus(trace.StatusError, err.Error())
-					}
+					errhandler.RecordSpanStatus(sspan, st, err)
 					emu.Lock()
 					if errs == nil {
 						errs = err
@@ -402,13 +342,8 @@ func (s *server) MultiInsert(
 	}
 
 	if errs != nil {
-		st, _ := status.FromError(err)
-		if st != nil && span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		errs = err
+		st, _ := status.FromError(errs)
+		errhandler.RecordSpanStatus(span, st, errs)
 	}
 
 	return locs, errs

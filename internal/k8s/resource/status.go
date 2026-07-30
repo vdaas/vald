@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package resource
 
@@ -28,6 +26,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
+	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -49,34 +48,12 @@ const (
 	StatusLoadBalancing                       // Service is still provisioning a load balancer
 )
 
-func extractItems[T any](obj any) ([]T, error) {
-	v := reflect.ValueOf(obj)
-	if v.Kind() == reflect.Pointer {
-		v = v.Elem()
-	}
-	items := v.FieldByName("Items")
-	if !items.IsValid() || items.Kind() != reflect.Slice {
-		return nil, errors.ErrItemsFieldNotFoundOrNotASlice
-	}
-
-	out := make([]T, items.Len())
-	for i := 0; i < items.Len(); i++ {
-		v := items.Index(i)
-		if v.CanAddr() {
-			if ptr, ok := v.Addr().Interface().(T); ok {
-				out[i] = ptr
-				continue
-			}
-		}
-		val, ok := v.Interface().(T) // fallback to value match
-		if !ok {
-			return nil, errors.ErrItemIsNotOfType(i)
-		}
-		out[i] = val
-	}
-	return out, nil
-}
-
+// WaitForStatus polls the named object (or, when name is empty, every object
+// matching labelSelector) until its evaluated status is one of statuses, the
+// context is canceled, or the default timeout expires. The polling skeleton is
+// shared with ObjectClient.Wait through waitLoop; only the per-tick step
+// differs, and the name/labelSelector split is resolved once instead of per
+// tick.
 func WaitForStatus[T Object, L ObjectList, C NamedObject, I ResourceInterface[T, L, C]](
 	ctx context.Context, client I, name string, labelSelector string, statuses ...ResourceStatus,
 ) (matched bool, err error) {
@@ -87,119 +64,131 @@ func WaitForStatus[T Object, L ObjectList, C NamedObject, I ResourceInterface[T,
 		return false, errors.ErrStatusPatternNeverMatched
 	}
 
-	ticker := time.NewTicker(defaultWaitInterval)
-	timeout := time.NewTimer(defaultWaitTimeout)
-	defer ticker.Stop()
-	defer timeout.Stop()
-	for {
-		select {
-		case <-ctx.Done():
-			return false, ctx.Err()
-		case <-timeout.C:
-			return false, errors.ErrTimeoutWaitingForResourceStatus
-		case <-ticker.C:
-			opts := metav1.ListOptions{}
-			if name != "" {
-				obj, err := client.Get(ctx, name, metav1.GetOptions{})
-				if err != nil {
-					return false, err
-				}
-				status, info, err := checkResourceState(obj)
-				if err != nil {
-					return false, errors.Wrap(err, info)
-				}
-				if slices.Contains(statuses, status) {
-					return true, nil
-				}
-				continue
+	var step func(context.Context) (bool, error)
+	if name != "" {
+		step = func(ctx context.Context) (bool, error) {
+			obj, err := client.Get(ctx, name, metav1.GetOptions{})
+			if err != nil {
+				return false, err
 			}
-			if labelSelector != "" {
-				opts.LabelSelector = labelSelector
+			status, info, err := checkResourceState(obj)
+			if err != nil {
+				return false, errors.Wrap(err, info)
 			}
+			return slices.Contains(statuses, status), nil
+		}
+	} else {
+		opts := metav1.ListOptions{}
+		if labelSelector != "" {
+			opts.LabelSelector = labelSelector
+		}
+		step = func(ctx context.Context) (bool, error) {
 			l, err := client.List(ctx, opts)
 			if err != nil {
 				return false, err
 			}
-			matched = true
-			items, err := extractItems[T](l)
+			objs, err := apimeta.ExtractList(l)
 			if err != nil {
 				return false, errors.Wrap(err, "failed to extract items")
 			}
-			if len(items) == 0 {
-				continue
+			if len(objs) == 0 {
+				return false, nil
 			}
-			for _, obj := range items {
+			for _, obj := range objs {
 				status, info, err := checkResourceState(obj)
 				if err != nil {
 					return false, errors.Wrap(err, info)
 				}
 				if !slices.Contains(statuses, status) {
-					matched = false
+					return false, nil
 				}
 			}
-			if matched {
-				return true, nil
-			}
+			return true, nil
 		}
 	}
+	return waitLoop(ctx, errors.ErrTimeoutWaitingForResourceStatus, step)
+}
+
+// kindStatusInfo bundles the statuses a Kind can report with the evaluator
+// that computes them, so possibleStatuses and checkResourceState share one
+// per-Kind entry instead of enumerating the same Kind set in two separate
+// type switches that must be kept in sync by hand.
+type kindStatusInfo struct {
+	evaluate func(obj any) (ResourceStatus, string, error)
+	possible []ResourceStatus
+}
+
+// evaluatorFor wraps a Kind-specific evaluator so it can be stored in
+// kindStatusTable under an any-typed signature. registerKind derives the table
+// key and the evaluator's argument type from the same type parameter R, so a
+// mismatched key/evaluator pair cannot be registered; the ok check remains as
+// a defensive fallback for direct table manipulation.
+func evaluatorFor[R any](
+	f func(R) (ResourceStatus, string, error),
+) func(any) (ResourceStatus, string, error) {
+	return func(obj any) (ResourceStatus, string, error) {
+		res, ok := obj.(R)
+		if !ok {
+			return StatusUnknown, "Unsupported resource type", errors.ErrUnsupportedKubernetesResourceType(obj)
+		}
+		return f(res)
+	}
+}
+
+// kindStatusTable is a read-only-after-init dispatch table shared by
+// possibleStatuses/checkResourceState; it is built by newKindStatusTable
+// (rather than a var + init()) so the registration order stays a plain,
+// testable function instead of hidden package-init side effects.
+//
+//nolint:gochecknoglobals
+var kindStatusTable = newKindStatusTable()
+
+// registerKind ties the statuses a Kind can report to its evaluator under the
+// single type parameter R (inferred from eval), so the table key and the
+// evaluator's argument type cannot drift apart the way hand-paired map
+// literal entries could.
+func registerKind[R Object](
+	t map[reflect.Type]kindStatusInfo,
+	possible []ResourceStatus,
+	eval func(R) (ResourceStatus, string, error),
+) {
+	t[reflect.TypeFor[R]()] = kindStatusInfo{
+		possible: possible,
+		evaluate: evaluatorFor(eval),
+	}
+}
+
+func newKindStatusTable() map[reflect.Type]kindStatusInfo {
+	t := make(map[reflect.Type]kindStatusInfo)
+	registerKind(t, []ResourceStatus{StatusPending, StatusUpdating, StatusAvailable, StatusDegraded, StatusFailed, StatusPaused}, evaluateDeployment)
+	registerKind(t, []ResourceStatus{StatusPending, StatusUpdating, StatusAvailable, StatusDegraded}, evaluateStatefulSet)
+	registerKind(t, []ResourceStatus{StatusPending, StatusUpdating, StatusAvailable, StatusDegraded}, evaluateDaemonSet)
+	registerKind(t, []ResourceStatus{StatusUpdating, StatusFailed, StatusCompleted, StatusScheduled}, evaluateJob)
+	registerKind(t, []ResourceStatus{StatusPaused, StatusPending, StatusAvailable}, evaluateCronJob)
+	registerKind(t, []ResourceStatus{StatusUnknown, StatusAvailable, StatusPending, StatusCompleted, StatusFailed, StatusTerminating, StatusNotReady}, evaluatePod)
+	registerKind(t, []ResourceStatus{StatusAvailable, StatusLoadBalancing}, evaluateService)
+	registerKind(t, []ResourceStatus{StatusPending, StatusAvailable}, evaluateSecret)
+	registerKind(t, []ResourceStatus{StatusPending, StatusAvailable}, evaluateConfigMap)
+	registerKind(t, []ResourceStatus{StatusPending, StatusAvailable}, evaluateMutatingWebhookConfiguration)
+	registerKind(t, []ResourceStatus{StatusPending, StatusAvailable}, evaluateValidatingWebhookConfiguration)
+	return t
 }
 
 func possibleStatuses[T Object](obj T) []ResourceStatus {
-	switch any(obj).(type) {
-	case *appsv1.Deployment:
-		return []ResourceStatus{StatusPending, StatusUpdating, StatusAvailable, StatusDegraded, StatusFailed, StatusPaused}
-	case *appsv1.StatefulSet:
-		return []ResourceStatus{StatusPending, StatusUpdating, StatusAvailable, StatusDegraded, StatusFailed}
-	case *appsv1.DaemonSet:
-		return []ResourceStatus{StatusPending, StatusUpdating, StatusAvailable, StatusDegraded, StatusFailed}
-	case *batchv1.Job:
-		return []ResourceStatus{StatusUpdating, StatusFailed, StatusCompleted, StatusScheduled}
-	case *batchv1.CronJob:
-		return []ResourceStatus{StatusPaused, StatusPending, StatusAvailable}
-	case *corev1.Pod:
-		return []ResourceStatus{StatusUnknown, StatusAvailable, StatusPending, StatusCompleted, StatusFailed, StatusTerminating, StatusNotReady}
-	case *corev1.Service:
-		return []ResourceStatus{StatusAvailable, StatusLoadBalancing}
-	case *corev1.Secret:
-		return []ResourceStatus{StatusPending, StatusAvailable}
-	case *corev1.ConfigMap:
-		return []ResourceStatus{StatusPending, StatusAvailable}
-	case *admissionregistrationv1.MutatingWebhookConfiguration:
-		return []ResourceStatus{StatusPending, StatusAvailable}
-	case *admissionregistrationv1.ValidatingWebhookConfiguration:
-		return []ResourceStatus{StatusPending, StatusAvailable}
-	default:
-		return []ResourceStatus{StatusUnknown}
+	if info, ok := kindStatusTable[reflect.TypeOf(obj)]; ok {
+		return info.possible
 	}
+	return []ResourceStatus{StatusUnknown}
 }
 
-func checkResourceState[T Object](obj T) (ResourceStatus, string, error) {
-	switch res := any(obj).(type) {
-	case *appsv1.Deployment:
-		return evaluateDeployment(res)
-	case *appsv1.StatefulSet:
-		return evaluateStatefulSet(res)
-	case *appsv1.DaemonSet:
-		return evaluateDaemonSet(res)
-	case *batchv1.Job:
-		return evaluateJob(res)
-	case *batchv1.CronJob:
-		return evaluateCronJob(res)
-	case *corev1.Pod:
-		return evaluatePod(res)
-	case *corev1.Service:
-		return evaluateService(res)
-	case *corev1.Secret:
-		return evaluateSecret(res)
-	case *corev1.ConfigMap:
-		return evaluateConfigMap(res)
-	case *admissionregistrationv1.MutatingWebhookConfiguration:
-		return evaluateMutatingWebhookConfiguration(res)
-	case *admissionregistrationv1.ValidatingWebhookConfiguration:
-		return evaluateValidatingWebhookConfiguration(res)
-	default:
-		return StatusUnknown, "Unsupported resource type", errors.ErrUnsupportedKubernetesResourceType(obj)
+// checkResourceState dispatches obj to its Kind's evaluator via
+// kindStatusTable. It takes any because dispatch happens on the dynamic type;
+// callers hold either a concrete T or a runtime.Object from apimeta.ExtractList.
+func checkResourceState(obj any) (ResourceStatus, string, error) {
+	if info, ok := kindStatusTable[reflect.TypeOf(obj)]; ok {
+		return info.evaluate(obj)
 	}
+	return StatusUnknown, "Unsupported resource type", errors.ErrUnsupportedKubernetesResourceType(obj)
 }
 
 func evaluateDeployment(deploy *appsv1.Deployment) (ResourceStatus, string, error) {
@@ -230,6 +219,9 @@ func evaluateDeployment(deploy *appsv1.Deployment) (ResourceStatus, string, erro
 			progressingCond = &deploy.Status.Conditions[i]
 		case appsv1.DeploymentAvailable:
 			availableCond = &deploy.Status.Conditions[i]
+		case appsv1.DeploymentReplicaFailure:
+			// Not evaluated for status; listed explicitly so this switch
+			// stays exhaustive over DeploymentConditionType.
 		}
 	}
 	if progressingCond != nil && progressingCond.Status == corev1.ConditionFalse {
@@ -307,13 +299,12 @@ func evaluateDaemonSet(ds *appsv1.DaemonSet) (ResourceStatus, string, error) {
 		return StatusPending, details("Update not yet observed by controller."), nil
 	}
 
-	// Check DaemonSet conditions if present (not always available)
-	for _, cond := range ds.Status.Conditions {
-		if cond.Type == appsv1.DaemonSetConditionType("") && cond.Status == corev1.ConditionFalse {
-			return StatusFailed, details(fmt.Sprintf("Condition %s is false: %s.", cond.Type, cond.Reason)), nil
-		}
-	}
-
+	// DaemonSet has no standard failure condition: k8s.io/api/apps/v1 defines
+	// DaemonSetConditionType but no constants, and the core controller does not
+	// populate .status.conditions. Unhealthy DaemonSets are reported as Degraded
+	// via the NumberAvailable check below; StatusFailed is intentionally not a
+	// possible status for this kind (see registerKind), so WaitForStatus fails
+	// fast instead of polling until timeout.
 	if ds.Status.UpdatedNumberScheduled < ds.Status.DesiredNumberScheduled {
 		return StatusUpdating, details(fmt.Sprintf("Only %d out of %d pods updated.", ds.Status.UpdatedNumberScheduled, ds.Status.DesiredNumberScheduled)), nil
 	}
@@ -339,6 +330,9 @@ func evaluateJob(job *batchv1.Job) (ResourceStatus, string, error) {
 			return StatusFailed, details(fmt.Sprintf("Condition Type: %s, Status: %s, Reason: %s.", cond.Type, cond.Status, cond.Reason)), nil
 		case batchv1.JobComplete:
 			return StatusCompleted, "Job has completed.", nil
+		case batchv1.JobSuspended, batchv1.JobFailureTarget, batchv1.JobSuccessCriteriaMet:
+			// Not evaluated for status; listed explicitly so this switch stays
+			// exhaustive over JobConditionType.
 		}
 	}
 
