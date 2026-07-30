@@ -23,16 +23,7 @@ edition = "2024"
 [dependencies]
 algorithm = { version = "0.1.0", path = "../../libs/algorithm" }
 qbg = { version = "0.1.0", path = "../../libs/algorithms/qbg" }
-<<<<<<< HEAD
-<<<<<<< HEAD
-anyhow = "1.0.102"
-cargo = "0.95.0"
-=======
-anyhow = "1.0.103"
->>>>>>> d50c5e731 (add ADOPTERS.md, MAINTAINERS.md (#3556))
-=======
 anyhow = "1.0.104"
->>>>>>> 95ced8bfd ([Feature] Add Vald Operator (enabled multiple cluster operation) (#3557))
 chrono = "0.4.45"
 config = "0.15.25"
 flexi_logger = "0.31"
