@@ -53,8 +53,8 @@ data:
               max_conn_age: ""
               max_conn_age_grace: ""
               max_conn_idle: ""
-              min_time: 10m
-              permit_without_stream: false
+              min_time: 1s
+              permit_without_stream: true
               time: 3h
               timeout: 60s
             max_concurrent_streams: 0
@@ -293,9 +293,9 @@ data:
             insecure: true
             interceptors: []
             keepalive:
-              permit_without_stream: false
-              time: ""
-              timeout: 30s
+              permit_without_stream: true
+              time: 10s
+              timeout: 5s
             max_call_attempts: 0
             max_header_list_size: 0
             max_msg_size: 0
@@ -420,9 +420,9 @@ data:
                 tcp_no_delay: false
                 tcp_quick_ack: false
             keepalive:
-              permit_without_stream: false
-              time: ""
-              timeout: 30s
+              permit_without_stream: true
+              time: 10s
+              timeout: 5s
           tls:
             ca: /path/to/ca
             cert: /path/to/cert

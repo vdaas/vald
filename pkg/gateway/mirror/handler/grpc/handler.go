@@ -28,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/errhandler"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -55,6 +56,16 @@ type server struct {
 
 const apiName = "vald/gateway/mirror"
 
+// resourceInfo builds the errdetails.ResourceInfo shared by every handler error
+// path: the resourceType is caller-specific, the resource name is always this
+// server's apiName/name/ip triple.
+func (s *server) resourceInfo(resourceType string) *errdetails.ResourceInfo {
+	return &errdetails.ResourceInfo{
+		ResourceType: resourceType,
+		ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+	}
+}
+
 // New returns a Vald server as gRPC handler with mirror using the provided options.
 func New(opts ...Option) (Server, error) {
 	s := new(server)
@@ -79,20 +90,13 @@ func (s *server) Register(
 	ctx context.Context, req *payload.Mirror_Targets,
 ) (*payload.Mirror_Targets, error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+mirror.RPCServiceName+"/"+mirror.RegisterRPCName), apiName+"/"+mirror.RegisterRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err := s.mirror.Connect(ctx, req.GetTargets()...)
 	if err != nil {
 		reqInfo := &errdetails.RequestInfo{
 			ServingData: errdetails.Serialize(req),
 		}
-		resInfo := &errdetails.ResourceInfo{
-			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + mirror.RegisterRPCName,
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-		}
+		resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + mirror.RegisterRPCName)
 		var attrs trace.Attributes
 
 		switch {
@@ -131,11 +135,7 @@ func (s *server) Register(
 			attrs = trace.StatusCodeInternal(err.Error())
 		}
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 
@@ -151,18 +151,10 @@ func (s *server) Register(
 					},
 				},
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + mirror.RegisterRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			},
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+mirror.RegisterRPCName),
 		)
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Mirror_Targets](span, codes.Internal, err)
 	}
 	return &payload.Mirror_Targets{
 		Targets: tgts,
@@ -174,11 +166,7 @@ func (s *server) Exists(
 	ctx context.Context, meta *payload.Object_ID,
 ) (id *payload.Object_ID, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.ExistsRPCName), apiName+"/"+vald.ExistsRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		id, err = vc.Exists(ctx, meta, copts...)
@@ -226,11 +214,7 @@ func (s *server) Exists(
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
 		}
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 	return id, nil
@@ -241,11 +225,7 @@ func (s *server) Search(
 	ctx context.Context, req *payload.Search_Request,
 ) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.SearchRPCName), apiName+"/"+vald.SearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		res, err = vc.Search(ctx, req, copts...)
@@ -294,11 +274,7 @@ func (s *server) Search(
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
 		}
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 	return res, nil
@@ -309,11 +285,7 @@ func (s *server) SearchByID(
 	ctx context.Context, req *payload.Search_IDRequest,
 ) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.SearchByIDRPCName), apiName+"/"+vald.SearchByIDRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		res, err = vc.SearchByID(ctx, req, copts...)
@@ -362,11 +334,7 @@ func (s *server) SearchByID(
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
 		}
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 	return res, nil
@@ -375,19 +343,11 @@ func (s *server) SearchByID(
 // StreamSearch bypasses it as a Search request to Vald gateway (LB gateway) in its own cluster.
 func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.StreamSearchRPCName), apiName+"/"+vald.StreamSearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Search_Request) (*payload.Search_StreamResponse, error) {
 			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BidirectionalStream"), apiName+"/"+vald.StreamSearchRPCName+"/requestID-"+req.GetConfig().GetRequestId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.Search(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
@@ -434,19 +394,11 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 // StreamSearchByID bypasses it as a SearchByID request to Vald gateway (LB gateway) in its own cluster.
 func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.StreamSearchByIDRPCName), apiName+"/"+vald.StreamSearchByIDRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Search_IDRequest) (*payload.Search_StreamResponse, error) {
 			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BidirectionalStream"), apiName+"."+vald.StreamSearchByIDRPCName+"/id-"+req.GetId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.SearchByID(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
@@ -495,11 +447,7 @@ func (s *server) MultiSearch(
 	ctx context.Context, req *payload.Search_MultiRequest,
 ) (res *payload.Search_Responses, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.MultiSearchRPCName), apiName+"/"+vald.MultiSearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		res, err = vc.MultiSearch(ctx, req, copts...)
@@ -547,11 +495,7 @@ func (s *server) MultiSearch(
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
 		}
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 	return res, nil
@@ -562,11 +506,7 @@ func (s *server) MultiSearchByID(
 	ctx context.Context, req *payload.Search_MultiIDRequest,
 ) (res *payload.Search_Responses, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.MultiSearchByIDRPCName), apiName+"/"+vald.MultiSearchByIDRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		res, err = vc.MultiSearchByID(ctx, req, copts...)
@@ -614,11 +554,7 @@ func (s *server) MultiSearchByID(
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
 		}
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 	return res, nil
@@ -629,11 +565,7 @@ func (s *server) LinearSearch(
 	ctx context.Context, req *payload.Search_Request,
 ) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.LinearSearchRPCName), apiName+"/"+vald.LinearSearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		res, err = vc.LinearSearch(ctx, req, copts...)
@@ -682,11 +614,7 @@ func (s *server) LinearSearch(
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
 		}
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 	return res, nil
@@ -697,11 +625,7 @@ func (s *server) LinearSearchByID(
 	ctx context.Context, req *payload.Search_IDRequest,
 ) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.LinearSearchByIDRPCName), apiName+"/"+vald.LinearSearchByIDRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		res, err = vc.LinearSearchByID(ctx, req, copts...)
@@ -750,11 +674,7 @@ func (s *server) LinearSearchByID(
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
 		}
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 	return res, nil
@@ -763,19 +683,11 @@ func (s *server) LinearSearchByID(
 // StreamLinearSearch bypasses it as a LinearSearch request to Vald gateway (LB gateway) in its own cluster.
 func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer) (err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.StreamLinearSearchRPCName), apiName+"/"+vald.StreamLinearSearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Search_Request) (*payload.Search_StreamResponse, error) {
 			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BidirectionalStream"), apiName+"/"+vald.StreamLinearSearchRPCName+"/requestID-"+req.GetConfig().GetRequestId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.LinearSearch(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
@@ -827,19 +739,11 @@ func (s *server) StreamLinearSearchByID(
 		grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.StreamLinearSearchByIDRPCName),
 		apiName+"/"+vald.StreamLinearSearchByIDRPCName,
 	)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Search_IDRequest) (*payload.Search_StreamResponse, error) {
 			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BidirectionalStream"), apiName+"."+vald.StreamLinearSearchByIDRPCName+"/id-"+req.GetId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.LinearSearchByID(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
@@ -888,11 +792,7 @@ func (s *server) MultiLinearSearch(
 	ctx context.Context, req *payload.Search_MultiRequest,
 ) (res *payload.Search_Responses, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.MultiLinearSearchRPCName), apiName+"/"+vald.MultiLinearSearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		res, err = vc.MultiLinearSearch(ctx, req, copts...)
@@ -940,11 +840,7 @@ func (s *server) MultiLinearSearch(
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
 		}
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 	return res, nil
@@ -955,11 +851,7 @@ func (s *server) MultiLinearSearchByID(
 	ctx context.Context, req *payload.Search_MultiIDRequest,
 ) (res *payload.Search_Responses, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.MultiLinearSearchByIDRPCName), apiName+"/"+vald.MultiLinearSearchByIDRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		res, err = vc.MultiLinearSearchByID(ctx, req, copts...)
@@ -1007,11 +899,7 @@ func (s *server) MultiLinearSearchByID(
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
 		}
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 	return res, nil
@@ -1025,11 +913,7 @@ func (s *server) Insert(
 	ctx context.Context, req *payload.Insert_Request,
 ) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.InsertRPCServiceName+"/"+vald.InsertRPCName), apiName+"/"+vald.InsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	// If this condition is matched, it means that the request was proxied from another Mirror gateway.
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
@@ -1069,11 +953,7 @@ func (s *server) handleInsert(
 	ctx context.Context, req *payload.Insert_Request,
 ) (loc *payload.Object_Location, err error) { // skipcq: GO-R1005
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleInsert"), apiName+"/handleInsert")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	var mu sync.Mutex
 	var result sync.Map[string, *errorState] // map[target host: error state]
@@ -1083,11 +963,7 @@ func (s *server) handleInsert(
 	}
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc service.MirrorClient, copts ...grpc.CallOption) error {
 		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.InsertRPCName+"/"+target)
-		defer func() {
-			if span != nil {
-				span.End()
-			}
-		}()
+		defer trace.End(span)
 
 		code := codes.OK
 		ce, err := s.doInsert(ctx, req, func(ctx context.Context) (*payload.Object_Location, error) {
@@ -1121,21 +997,13 @@ func (s *server) handleInsert(
 		reqInfo := &errdetails.RequestInfo{
 			RequestId: req.GetVector().GetId(),
 		}
-		resInfo := &errdetails.ResourceInfo{
-			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName + ".BroadCast",
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-		}
+		resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName + ".BroadCast")
 		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
 			err = status.WrapWithInternal(
 				vald.InsertRPCName+" API connection not found", err, reqInfo, resInfo,
 			)
 			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Object_Location](span, codes.Internal, err)
 		}
 
 		// There is no possibility to reach this part, but we add error handling just in case.
@@ -1173,20 +1041,12 @@ func (s *server) handleInsert(
 	reqInfo := &errdetails.RequestInfo{
 		RequestId: req.GetVector().GetId(),
 	}
-	resInfo := &errdetails.ResourceInfo{
-		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
-		ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-	}
+	resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName)
 
 	switch {
 	case result.Len() == len(alreadyExistsTgts):
 		err = status.WrapWithAlreadyExists(vald.InsertRPCName+" API target same vector already exists", err, reqInfo, resInfo)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeAlreadyExists(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.AlreadyExists, err)
 	case result.Len() > len(successTgts)+len(alreadyExistsTgts): // Contains errors except for ALREADY_EXIST.
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.InsertRPCName+" gRPC error response", reqInfo, resInfo,
@@ -1226,11 +1086,7 @@ func (s *server) handleInsertResult(
 	result *sync.Map[string, *errorState],
 ) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleInsertResult"), apiName+"/handleInsertResult")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	var mu sync.Mutex
 	loc = &payload.Object_Location{
@@ -1240,11 +1096,7 @@ func (s *server) handleInsertResult(
 
 	err = s.gateway.DoMulti(ctx, alreadyExistsTgts, func(ctx context.Context, target string, vc service.MirrorClient, copts ...grpc.CallOption) error {
 		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "DoMulti/"+target), apiName+"/"+vald.UpdateRPCName+"/"+target)
-		defer func() {
-			if span != nil {
-				span.End()
-			}
-		}()
+		defer trace.End(span)
 
 		code := codes.OK
 		ce, err := s.doUpdate(ctx, req, func(ctx context.Context) (*payload.Object_Location, error) {
@@ -1278,21 +1130,13 @@ func (s *server) handleInsertResult(
 		reqInfo := &errdetails.RequestInfo{
 			RequestId: req.GetVector().GetId(),
 		}
-		resInfo := &errdetails.ResourceInfo{
-			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName + "." + vald.InsertRPCName + ".DoMulti",
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-		}
+		resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName + "." + vald.InsertRPCName + ".DoMulti")
 		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
 			err = status.WrapWithInternal(
 				vald.UpdateRPCName+" for "+vald.InsertRPCName+" API connection not found", err, reqInfo, resInfo,
 			)
 			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Object_Location](span, codes.Internal, err)
 		}
 
 		// There is no possibility to reach this part, but we add error handling just in case.
@@ -1330,21 +1174,13 @@ func (s *server) handleInsertResult(
 	reqInfo := &errdetails.RequestInfo{
 		RequestId: req.GetVector().GetId(),
 	}
-	resInfo := &errdetails.ResourceInfo{
-		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName + "." + vald.UpdateRPCName,
-		ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-	}
+	resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName + "." + vald.UpdateRPCName)
 
 	switch {
 	case result.Len() == len(alreadyExistsTgts):
 		err = status.WrapWithAlreadyExists(vald.UpdateRPCName+" for "+vald.InsertRPCName+" API target same vector already exists", err, reqInfo, resInfo)
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeAlreadyExists(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.AlreadyExists, err)
 	case result.Len() > len(successTgts)+len(alreadyExistsTgts): // Contains errors except for ALREADY_EXIST.
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.UpdateRPCName+" for "+vald.InsertRPCName+" gRPC error response", reqInfo, resInfo,
@@ -1367,11 +1203,7 @@ func (s *server) doInsert(
 	f func(ctx context.Context) (*payload.Object_Location, error),
 ) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "doInsert"), apiName+"/doInsert")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	loc, err = f(ctx)
 	if err != nil {
@@ -1379,10 +1211,7 @@ func (s *server) doInsert(
 			RequestId:   req.GetVector().GetId(),
 			ServingData: errdetails.Serialize(req),
 		}
-		resInfo := &errdetails.ResourceInfo{
-			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-		}
+		resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName)
 		var attrs trace.Attributes
 
 		switch {
@@ -1417,11 +1246,7 @@ func (s *server) doInsert(
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
 		}
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 	return loc, nil
@@ -1433,19 +1258,11 @@ func (s *server) doInsert(
 // The response is then sent back through the stream with the corresponding status or location information.
 func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.InsertRPCServiceName+"/"+vald.StreamInsertRPCName), apiName+"/"+vald.StreamInsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Insert_Request) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BidirectionalStream"), apiName+"/"+vald.StreamInsertRPCName+"/id-"+req.GetVector().GetId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.Insert(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
@@ -1496,11 +1313,7 @@ func (s *server) MultiInsert(
 	ctx context.Context, reqs *payload.Insert_MultiRequest,
 ) (res *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.InsertRPCServiceName+"/"+vald.MultiInsertRPCName), apiName+"/"+vald.MultiInsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	res = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
@@ -1516,11 +1329,7 @@ func (s *server) MultiInsert(
 			defer wg.Done()
 			ti := "errgroup.Go/id-" + req.GetVector().GetId()
 			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, ti), apiName+"/"+vald.MultiInsertRPCName+"/"+ti)
-			defer func() {
-				if span != nil {
-					span.End()
-				}
-			}()
+			defer trace.End(span)
 
 			loc, err := s.Insert(ctx, req)
 			if err != nil {
@@ -1549,10 +1358,7 @@ func (s *server) MultiInsert(
 	wg.Wait()
 	if errs != nil {
 		st, msg, err := status.ParseError(errs, codes.Internal, "failed to parse "+vald.MultiInsertRPCName+" gRPC error response",
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiInsertRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			})
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.MultiInsertRPCName))
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -1571,11 +1377,7 @@ func (s *server) Update(
 	ctx context.Context, req *payload.Update_Request,
 ) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpdateRPCServiceName+"/"+vald.UpdateRPCName), apiName+"/"+vald.UpdateRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	// If this condition is matched, it means that the request was proxied from another Mirror gateway.
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
@@ -1615,11 +1417,7 @@ func (s *server) handleUpdate(
 	ctx context.Context, req *payload.Update_Request,
 ) (loc *payload.Object_Location, err error) { // skipcq: GO-R1005
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleUpdate"), apiName+"/handleUpdate")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	var mu sync.Mutex
 	var result sync.Map[string, *errorState] // map[target host: error state]
@@ -1629,11 +1427,7 @@ func (s *server) handleUpdate(
 	}
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc service.MirrorClient, copts ...grpc.CallOption) error {
 		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.UpdateRPCName+"/"+target)
-		defer func() {
-			if span != nil {
-				span.End()
-			}
-		}()
+		defer trace.End(span)
 
 		code := codes.OK
 		ce, err := s.doUpdate(ctx, req, func(ctx context.Context) (*payload.Object_Location, error) {
@@ -1668,21 +1462,13 @@ func (s *server) handleUpdate(
 			RequestId:   req.GetVector().GetId(),
 			ServingData: errdetails.Serialize(req),
 		}
-		resInfo := &errdetails.ResourceInfo{
-			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName + ".BroadCast",
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-		}
+		resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName + ".BroadCast")
 		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
 			err = status.WrapWithInternal(
 				vald.UpdateRPCName+" API connection not found", err, reqInfo, resInfo,
 			)
 			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Object_Location](span, codes.Internal, err)
 		}
 
 		// There is no possibility to reach this part, but we add error handling just in case.
@@ -1724,30 +1510,17 @@ func (s *server) handleUpdate(
 	reqInfo := &errdetails.RequestInfo{
 		RequestId: req.GetVector().GetId(),
 	}
-	resInfo := &errdetails.ResourceInfo{
-		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName,
-		ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-	}
+	resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName)
 
 	switch {
 	case result.Len() == len(notFoundTgts):
 		err = status.WrapWithNotFound(vald.UpdateRPCName+" API target not found", err, reqInfo, resInfo)
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeAlreadyExists(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.NotFound, err)
 	case result.Len() == alreadyExistsCnt:
 		err = status.WrapWithAlreadyExists(vald.UpdateRPCName+" API target same vector already exists", err, reqInfo, resInfo)
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.AlreadyExists, err)
 	case result.Len() > len(successTgts)+len(notFoundTgts)+alreadyExistsCnt: // Contains errors except for NOT_FOUND and ALREADY_EXIST.
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.UpdateRPCName+" gRPC error response", reqInfo, resInfo)
@@ -1786,11 +1559,7 @@ func (s *server) handleUpdateResult(
 	result *sync.Map[string, *errorState],
 ) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleUpdateResult"), apiName+"/handleUpdateResult")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	var mu sync.Mutex
 	loc = &payload.Object_Location{
@@ -1800,11 +1569,7 @@ func (s *server) handleUpdateResult(
 
 	err = s.gateway.DoMulti(ctx, notFoundTgts, func(ctx context.Context, target string, vc service.MirrorClient, copts ...grpc.CallOption) error {
 		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.InsertRPCName+"/"+target)
-		defer func() {
-			if span != nil {
-				span.End()
-			}
-		}()
+		defer trace.End(span)
 
 		code := codes.OK
 		ce, err := s.doInsert(ctx, req, func(ctx context.Context) (*payload.Object_Location, error) {
@@ -1839,21 +1604,13 @@ func (s *server) handleUpdateResult(
 			RequestId:   req.GetVector().GetId(),
 			ServingData: errdetails.Serialize(req),
 		}
-		resInfo := &errdetails.ResourceInfo{
-			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName + "." + vald.InsertRPCName + ".BroadCast",
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-		}
+		resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName + "." + vald.InsertRPCName + ".BroadCast")
 		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
 			err = status.WrapWithInternal(
 				vald.InsertRPCName+" for "+vald.UpdateRPCName+" API connection not found", err, reqInfo, resInfo,
 			)
 			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Object_Location](span, codes.Internal, err)
 		}
 
 		// There is no possibility to reach this part, but we add error handling just in case.
@@ -1896,30 +1653,17 @@ func (s *server) handleUpdateResult(
 		RequestId:   req.GetVector().GetId(),
 		ServingData: errdetails.Serialize(req),
 	}
-	resInfo := &errdetails.ResourceInfo{
-		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName + "." + vald.InsertRPCName,
-		ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-	}
+	resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName + "." + vald.InsertRPCName)
 
 	switch {
 	case result.Len() == len(notFoundTgts):
 		err = status.WrapWithNotFound(vald.InsertRPCName+" for "+vald.UpdateRPCName+" API target not found", err, reqInfo, resInfo)
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeAlreadyExists(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.NotFound, err)
 	case result.Len() == alreadyExistsCnt:
 		err = status.WrapWithAlreadyExists(vald.InsertRPCName+" for "+vald.UpdateRPCName+" API target same vector already exists", err, reqInfo, resInfo)
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.AlreadyExists, err)
 	case result.Len() > len(successTgts)+len(notFoundTgts)+alreadyExistsCnt: // Contains errors except for NOT_FOUND and ALREADY_EXIST.
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.InsertRPCName+" for "+vald.UpdateRPCName+" gRPC error response", reqInfo, resInfo)
@@ -1941,11 +1685,7 @@ func (s *server) doUpdate(
 	f func(ctx context.Context) (*payload.Object_Location, error),
 ) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "doUpdate"), apiName+"/doUpdate")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	loc, err = f(ctx)
 	if err != nil {
@@ -1953,10 +1693,7 @@ func (s *server) doUpdate(
 			RequestId:   req.GetVector().GetId(),
 			ServingData: errdetails.Serialize(req),
 		}
-		resInfo := &errdetails.ResourceInfo{
-			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName,
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-		}
+		resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName)
 		var attrs trace.Attributes
 
 		switch {
@@ -1991,11 +1728,7 @@ func (s *server) doUpdate(
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
 		}
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 	return loc, nil
@@ -2007,19 +1740,11 @@ func (s *server) doUpdate(
 // The response is then sent back through the stream with the corresponding status or location information.
 func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.UpdateRPCServiceName+"/"+vald.StreamUpdateRPCName), apiName+"/"+vald.StreamUpdateRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Update_Request) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BidirectionalStream"), apiName+"/"+vald.StreamUpdateRPCName+"/id-"+req.GetVector().GetId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.Update(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
@@ -2070,11 +1795,7 @@ func (s *server) MultiUpdate(
 	ctx context.Context, reqs *payload.Update_MultiRequest,
 ) (res *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpdateRPCServiceName+"/"+vald.MultiUpdateRPCName), apiName+"/"+vald.MultiUpdateRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	res = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
@@ -2090,11 +1811,7 @@ func (s *server) MultiUpdate(
 			defer wg.Done()
 			ti := "errgroup.Go/id-" + req.GetVector().GetId()
 			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, ti), apiName+"/"+vald.MultiUpdateRPCName+"/"+ti)
-			defer func() {
-				if span != nil {
-					span.End()
-				}
-			}()
+			defer trace.End(span)
 
 			loc, err := s.Update(ctx, req)
 			if err != nil {
@@ -2123,10 +1840,7 @@ func (s *server) MultiUpdate(
 	wg.Wait()
 	if errs != nil {
 		st, msg, err := status.ParseError(errs, codes.Internal, "failed to parse "+vald.MultiUpdateRPCName+" gRPC error response",
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiUpdateRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			})
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.MultiUpdateRPCName))
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -2145,11 +1859,7 @@ func (s *server) Upsert(
 	ctx context.Context, req *payload.Upsert_Request,
 ) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpsertRPCServiceName+"/"+vald.UpsertRPCName), apiName+"/"+vald.UpsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	// If this condition is matched, it means that the request was proxied from another Mirror gateway.
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
@@ -2189,11 +1899,7 @@ func (s *server) handleUpsert(
 	ctx context.Context, req *payload.Upsert_Request,
 ) (loc *payload.Object_Location, err error) { // skipcq: GO-R1005
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleUpsert"), apiName+"/handleUpsert")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	var mu sync.Mutex
 	var result sync.Map[string, *errorState] // map[target host: error state]
@@ -2203,11 +1909,7 @@ func (s *server) handleUpsert(
 	}
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc service.MirrorClient, copts ...grpc.CallOption) error {
 		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.UpsertRPCName+"/"+target)
-		defer func() {
-			if span != nil {
-				span.End()
-			}
-		}()
+		defer trace.End(span)
 
 		code := codes.OK
 		ce, err := s.doUpsert(ctx, req, func(ctx context.Context) (*payload.Object_Location, error) {
@@ -2242,21 +1944,13 @@ func (s *server) handleUpsert(
 			RequestId:   req.GetVector().GetId(),
 			ServingData: errdetails.Serialize(req),
 		}
-		resInfo := &errdetails.ResourceInfo{
-			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertRPCName + ".BroadCast",
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-		}
+		resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertRPCName + ".BroadCast")
 		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
 			err = status.WrapWithInternal(
 				vald.UpsertRPCName+" API connection not found", err, reqInfo, resInfo,
 			)
 			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Object_Location](span, codes.Internal, err)
 		}
 
 		// There is no possibility to reach this part, but we add error handling just in case.
@@ -2294,21 +1988,13 @@ func (s *server) handleUpsert(
 		RequestId:   req.GetVector().GetId(),
 		ServingData: errdetails.Serialize(req),
 	}
-	resInfo := &errdetails.ResourceInfo{
-		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertRPCName,
-		ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-	}
+	resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertRPCName)
 
 	switch {
 	case result.Len() == alreadyExistsCnt:
 		err = status.WrapWithAlreadyExists(vald.UpsertRPCName+" API target same vector already exists", err, reqInfo, resInfo)
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeAlreadyExists(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.AlreadyExists, err)
 	default:
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.UpsertRPCName+" gRPC error response", reqInfo, resInfo)
@@ -2328,11 +2014,7 @@ func (s *server) doUpsert(
 	f func(ctx context.Context) (*payload.Object_Location, error),
 ) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "doUpsert"), apiName+"/doUpsert")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	loc, err = f(ctx)
 	if err != nil {
@@ -2340,10 +2022,7 @@ func (s *server) doUpsert(
 			RequestId:   req.GetVector().GetId(),
 			ServingData: errdetails.Serialize(req),
 		}
-		resInfo := &errdetails.ResourceInfo{
-			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertRPCName,
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-		}
+		resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertRPCName)
 		var attrs trace.Attributes
 
 		switch {
@@ -2378,11 +2057,7 @@ func (s *server) doUpsert(
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
 		}
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 	return loc, nil
@@ -2394,19 +2069,11 @@ func (s *server) doUpsert(
 // The response is then sent back through the stream with the corresponding status or location information.
 func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.UpsertRPCServiceName+"/"+vald.StreamUpsertRPCName), apiName+"/"+vald.StreamUpsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Upsert_Request) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BidirectionalStream"), apiName+"/"+vald.StreamUpsertRPCName+"/id-"+req.GetVector().GetId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.Upsert(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
@@ -2457,11 +2124,7 @@ func (s *server) MultiUpsert(
 	ctx context.Context, reqs *payload.Upsert_MultiRequest,
 ) (res *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpsertRPCServiceName+"/"+vald.MultiUpsertRPCName), apiName+"/"+vald.MultiUpsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	res = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
@@ -2477,11 +2140,7 @@ func (s *server) MultiUpsert(
 			defer wg.Done()
 			ti := "errgroup.Go/id-" + req.GetVector().GetId()
 			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, ti), apiName+"/"+vald.MultiUpsertRPCName+"/"+ti)
-			defer func() {
-				if span != nil {
-					span.End()
-				}
-			}()
+			defer trace.End(span)
 
 			loc, err := s.Upsert(ctx, req)
 			if err != nil {
@@ -2510,10 +2169,7 @@ func (s *server) MultiUpsert(
 	wg.Wait()
 	if errs != nil {
 		st, msg, err := status.ParseError(errs, codes.Internal, "failed to parse "+vald.MultiUpsertRPCName+" gRPC error response",
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiUpsertRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			})
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.MultiUpsertRPCName))
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -2532,11 +2188,7 @@ func (s *server) Remove(
 	ctx context.Context, req *payload.Remove_Request,
 ) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.RemoveRPCName), apiName+"/"+vald.RemoveRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	// If this condition is matched, it means that the request was proxied from another Mirror gateway.
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
@@ -2576,11 +2228,7 @@ func (s *server) handleRemove(
 	ctx context.Context, req *payload.Remove_Request,
 ) (loc *payload.Object_Location, err error) { // skipcq: GO-R1005
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleRemove"), apiName+"/handleRemove")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	var mu sync.Mutex
 	var result sync.Map[string, *errorState] // map[target host: error state]
@@ -2590,11 +2238,7 @@ func (s *server) handleRemove(
 	}
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc service.MirrorClient, copts ...grpc.CallOption) error {
 		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.RemoveRPCName+"/"+target)
-		defer func() {
-			if span != nil {
-				span.End()
-			}
-		}()
+		defer trace.End(span)
 
 		code := codes.OK
 		ce, err := s.doRemove(ctx, req, func(ctx context.Context) (*payload.Object_Location, error) {
@@ -2628,21 +2272,13 @@ func (s *server) handleRemove(
 		reqInfo := &errdetails.RequestInfo{
 			RequestId: req.GetId().GetId(),
 		}
-		resInfo := &errdetails.ResourceInfo{
-			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName + ".BroadCast",
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-		}
+		resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName + ".BroadCast")
 		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
 			err = status.WrapWithInternal(
 				vald.RemoveRPCName+" API connection not found", err, reqInfo, resInfo,
 			)
 			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Object_Location](span, codes.Internal, err)
 		}
 
 		// There is no possibility to reach this part, but we add error handling just in case.
@@ -2680,20 +2316,12 @@ func (s *server) handleRemove(
 	reqInfo := &errdetails.RequestInfo{
 		RequestId: req.GetId().GetId(),
 	}
-	resInfo := &errdetails.ResourceInfo{
-		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName,
-		ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-	}
+	resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName)
 
 	switch {
 	case result.Len() == notFoundCnt:
 		err = status.WrapWithNotFound(vald.RemoveRPCName+" API id "+req.GetId().GetId()+" not found", err, reqInfo, resInfo)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeAlreadyExists(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.NotFound, err)
 	default:
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.RemoveRPCName+" gRPC error response", reqInfo, resInfo)
@@ -2713,21 +2341,14 @@ func (s *server) doRemove(
 	f func(ctx context.Context) (*payload.Object_Location, error),
 ) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "doRemove"), apiName+"/doRemove")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	loc, err = f(ctx)
 	if err != nil {
 		reqInfo := &errdetails.RequestInfo{
 			RequestId: req.GetId().GetId(),
 		}
-		resInfo := &errdetails.ResourceInfo{
-			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName,
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-		}
+		resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName)
 		var attrs trace.Attributes
 
 		switch {
@@ -2762,11 +2383,7 @@ func (s *server) doRemove(
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
 		}
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 	return loc, nil
@@ -2778,19 +2395,11 @@ func (s *server) doRemove(
 // The response is then sent back through the stream with the corresponding status or location information.
 func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.StreamRemoveRPCName), apiName+"/"+vald.StreamRemoveRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Remove_Request) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BidirectionalStream"), apiName+"/"+vald.StreamRemoveRPCName+"/id-"+req.GetId().GetId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.Remove(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
@@ -2841,11 +2450,7 @@ func (s *server) MultiRemove(
 	ctx context.Context, reqs *payload.Remove_MultiRequest,
 ) (res *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.MultiRemoveRPCName), apiName+"/"+vald.MultiRemoveRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	res = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
@@ -2861,11 +2466,7 @@ func (s *server) MultiRemove(
 			defer wg.Done()
 			ti := "errgroup.Go/id-" + req.GetId().GetId()
 			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, ti), apiName+"/"+vald.MultiRemoveRPCName+"/"+ti)
-			defer func() {
-				if span != nil {
-					span.End()
-				}
-			}()
+			defer trace.End(span)
 
 			loc, err := s.Remove(ctx, req)
 			if err != nil {
@@ -2894,10 +2495,7 @@ func (s *server) MultiRemove(
 	wg.Wait()
 	if errs != nil {
 		st, msg, err := status.ParseError(errs, codes.Internal, "failed to parse "+vald.MultiRemoveRPCName+" gRPC error response",
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiRemoveRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			})
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.MultiRemoveRPCName))
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -2916,11 +2514,7 @@ func (s *server) RemoveByTimestamp(
 	ctx context.Context, req *payload.Remove_TimestampRequest,
 ) (locs *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.RemoveByTimestampRPCName), apiName+"/"+vald.RemoveByTimestampRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	// If this condition is matched, it means that the request was proxied from another Mirror gateway.
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
@@ -2960,11 +2554,7 @@ func (s *server) handleRemoveByTimestamp(
 	ctx context.Context, req *payload.Remove_TimestampRequest,
 ) (locs *payload.Object_Locations, err error) { // skipcq: GO-R1005
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleRemoveByTimestamp"), apiName+"/handleRemoveByTimestamp")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	var mu sync.Mutex
 	var result sync.Map[string, *errorState] // map[target host: error state]
@@ -2972,11 +2562,7 @@ func (s *server) handleRemoveByTimestamp(
 
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc service.MirrorClient, copts ...grpc.CallOption) error {
 		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.RemoveByTimestampRPCName+"/"+target)
-		defer func() {
-			if span != nil {
-				span.End()
-			}
-		}()
+		defer trace.End(span)
 
 		code := codes.OK
 		res, err := s.doRemoveByTimestamp(ctx, req, func(ctx context.Context) (*payload.Object_Locations, error) {
@@ -3009,21 +2595,13 @@ func (s *server) handleRemoveByTimestamp(
 		reqInfo := &errdetails.RequestInfo{
 			ServingData: errdetails.Serialize(req),
 		}
-		resInfo := &errdetails.ResourceInfo{
-			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveByTimestampRPCName + ".BroadCast",
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-		}
+		resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveByTimestampRPCName + ".BroadCast")
 		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
 			err = status.WrapWithInternal(
 				vald.RemoveByTimestampRPCName+" API connection not found", err, reqInfo, resInfo,
 			)
 			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Object_Locations](span, codes.Internal, err)
 		}
 
 		// There is no possibility to reach this part, but we add error handling just in case.
@@ -3061,21 +2639,13 @@ func (s *server) handleRemoveByTimestamp(
 	reqInfo := &errdetails.RequestInfo{
 		ServingData: errdetails.Serialize(req),
 	}
-	resInfo := &errdetails.ResourceInfo{
-		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveByTimestampRPCName,
-		ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-	}
+	resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveByTimestampRPCName)
 
 	switch {
 	case result.Len() == notFoundCnt:
 		err = status.WrapWithNotFound(vald.RemoveByTimestampRPCName+" API target not found", err, reqInfo, resInfo)
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeAlreadyExists(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Locations](span, codes.NotFound, err)
 	default:
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.RemoveByTimestampRPCName+" gRPC error response", reqInfo, resInfo)
@@ -3095,21 +2665,14 @@ func (s *server) doRemoveByTimestamp(
 	f func(ctx context.Context) (*payload.Object_Locations, error),
 ) (locs *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "doRemoveByTimestamp"), apiName+"/doRemoveByTimestamp")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	locs, err = f(ctx)
 	if err != nil {
 		reqInfo := &errdetails.RequestInfo{
 			ServingData: errdetails.Serialize(req),
 		}
-		resInfo := &errdetails.ResourceInfo{
-			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveByTimestampRPCName,
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-		}
+		resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveByTimestampRPCName)
 		var attrs trace.Attributes
 
 		switch {
@@ -3144,11 +2707,7 @@ func (s *server) doRemoveByTimestamp(
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
 		}
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 	return locs, nil
@@ -3159,11 +2718,7 @@ func (s *server) GetObject(
 	ctx context.Context, req *payload.Object_VectorRequest,
 ) (vec *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.GetObjectRPCName), apiName+"/"+vald.GetObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		vec, err = vc.GetObject(ctx, req, copts...)
@@ -3212,11 +2767,7 @@ func (s *server) GetObject(
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
 		}
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 	return vec, nil
@@ -3225,19 +2776,11 @@ func (s *server) GetObject(
 // StreamGetObject bypasses it as a GetObject request to the Vald LB gateway in its own cluster.
 func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.StreamGetObjectRPCName), apiName+"/"+vald.StreamGetObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Object_VectorRequest) (*payload.Object_StreamVector, error) {
 			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BidirectionalStream"), apiName+"/"+vald.StreamInsertRPCName+"/id-"+req.GetId().GetId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.GetObject(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
@@ -3286,24 +2829,12 @@ func (s *server) StreamListObject(
 	req *payload.Object_List_Request, stream vald.Object_StreamListObjectServer,
 ) error {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.StreamListObjectRPCName), apiName+"/"+vald.StreamListObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	_, err := s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, target string, vc service.MirrorClient, copts ...grpc.CallOption) (obj any, err error) {
 		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "Do/"+target), apiName+"/"+vald.StreamListObjectRPCName+"/"+target)
-		defer func() {
-			if span != nil {
-				span.End()
-			}
-		}()
-		client, err := vc.StreamListObject(ctx, req, copts...)
-		if err != nil {
-			return nil, err
-		}
-		return obj, s.doStreamListObject(ctx, client, stream)
+		defer trace.End(span)
+		return obj, s.doStreamListObject(ctx, vc, req, stream, copts...)
 	})
 	if err != nil {
 		st, _ := status.FromError(err)
@@ -3324,13 +2855,24 @@ func (s *server) StreamListObject(
 
 func (s *server) doStreamListObject(
 	ctx context.Context,
-	client vald.Object_StreamListObjectClient,
+	vc service.MirrorClient,
+	req *payload.Object_List_Request,
 	server vald.Object_StreamListObjectServer,
+	copts ...grpc.CallOption,
 ) (err error) { // skipcq: GO-R1005
 	cctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	eg, egctx := errgroup.WithContext(cctx)
 	eg.SetLimit(s.streamConcurrency)
+	// Bind the client stream to egctx (created before it here), which is cancelled
+	// both on EOF (cancel() -> cctx -> egctx) and on an eg.Go worker error
+	// (errgroup), so client.Recv() below actually aborts on either. Binding it to
+	// the caller's ancestor ctx (the previous ordering) made the cancellation a
+	// no-op and silently defeated the early-abort on a downstream send failure.
+	client, err := vc.StreamListObject(egctx, req, copts...)
+	if err != nil {
+		return err
+	}
 
 	var mu, rmu sync.Mutex
 	var egCnt int64
@@ -3349,11 +2891,7 @@ func (s *server) doStreamListObject(
 			eg.Go(safety.RecoverFunc(func() (err error) {
 				id := fmt.Sprintf("stream-%020d", atomic.AddInt64(&egCnt, 1))
 				_, span := trace.StartSpan(egctx, apiName+"/streamListObject/"+id)
-				defer func() {
-					if span != nil {
-						span.End()
-					}
-				}()
+				defer trace.End(span)
 
 				rmu.Lock()
 				res, err := client.Recv()
@@ -3383,11 +2921,7 @@ func (s *server) doStreamListObject(
 						}
 					}
 					log.Warn(err)
-					if span != nil {
-						span.RecordError(err)
-						span.SetAttributes(attr...)
-						span.SetStatus(trace.StatusError, err.Error())
-					}
+					errhandler.RecordSpanAttrs(span, attr, err)
 					return err
 				}
 				if res.GetVector() == nil {
@@ -3422,11 +2956,7 @@ func (s *server) doStreamListObject(
 						}
 					}
 					log.Warn(err)
-					if span != nil {
-						span.RecordError(err)
-						span.SetAttributes(attr...)
-						span.SetStatus(trace.StatusError, err.Error())
-					}
+					errhandler.RecordSpanAttrs(span, attr, err)
 					return err
 				}
 				return nil

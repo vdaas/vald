@@ -38,13 +38,13 @@ var defaultOptions = []Option{
 }
 
 type option struct {
-	logger  logger.Logger
+	logger  logger.Interface
 	logType logger.Type
 	level   level.Level
 	format  format.Format
 }
 
-func WithLogger(l logger.Logger) Option {
+func WithLogger(l logger.Interface) Option {
 	return func(o *option) {
 		if l == nil {
 			return

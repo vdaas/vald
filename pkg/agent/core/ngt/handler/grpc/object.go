@@ -23,7 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
-	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/errhandler"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/sync"
@@ -33,48 +33,15 @@ func (s *server) Exists(
 	ctx context.Context, uid *payload.Object_ID,
 ) (res *payload.Object_ID, err error) {
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.ExistsRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	uuid := uid.GetId()
-	if len(uuid) == 0 {
-		err = errors.ErrInvalidUUID(uuid)
-		err = status.WrapWithInvalidArgument(fmt.Sprintf("Exists API invalid argument for uuid \"%s\" detected", uuid), err,
-			&errdetails.RequestInfo{
-				RequestId:   uuid,
-				ServingData: errdetails.Serialize(uid),
-			},
-			&errdetails.BadRequest{
-				FieldViolations: []*errdetails.BadRequestFieldViolation{
-					{
-						Field:       "uuid",
-						Description: err.Error(),
-					},
-				},
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.Exists",
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			})
-
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		log.Warn(err)
+	if err = s.validateUUID(span, vald.ExistsRPCName, ngtResourceType+"/ngt.Exists",
+		uuid, uid); err != nil {
 		return nil, err
 	}
 	if _, ok := s.ngt.Exists(uuid); !ok {
 		err = status.New(codes.NotFound, errors.ErrObjectIDNotFound(uid.GetId()).Error()).Err()
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_ID](span, codes.NotFound, err)
 	}
 	return uid, nil
 }
@@ -83,48 +50,16 @@ func (s *server) GetObject(
 	ctx context.Context, id *payload.Object_VectorRequest,
 ) (res *payload.Object_Vector, err error) {
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.GetObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	uuid := id.GetId().GetId()
-	if len(uuid) == 0 {
-		err = errors.ErrInvalidUUID(uuid)
-		err = status.WrapWithInvalidArgument(fmt.Sprintf("GetObject API invalid argument for uuid \"%s\" detected", uuid), err,
-			&errdetails.RequestInfo{
-				RequestId:   uuid,
-				ServingData: errdetails.Serialize(id),
-			},
-			&errdetails.BadRequest{
-				FieldViolations: []*errdetails.BadRequestFieldViolation{
-					{
-						Field:       "uuid",
-						Description: err.Error(),
-					},
-				},
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.GetObject",
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			})
-		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+	if err = s.validateUUID(span, vald.GetObjectRPCName, ngtResourceType+"/ngt.GetObject",
+		uuid, id); err != nil {
 		return nil, err
 	}
 	vec, ts, err := s.ngt.GetObject(uuid)
 	if err != nil || vec == nil {
 		err = status.New(codes.NotFound, errors.ErrObjectNotFound(err, uuid).Error()).Err()
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Vector](span, codes.NotFound, err)
 	}
 
 	return &payload.Object_Vector{
@@ -136,27 +71,15 @@ func (s *server) GetObject(
 
 func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err error) {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamGetObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Object_VectorRequest) (*payload.Object_StreamVector, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"/"+vald.StreamGetObjectRPCName+"/id-"+req.GetId().GetId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.GetObject(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				return &payload.Object_StreamVector{
 					Payload: &payload.Object_StreamVector_Status{
 						Status: st.Proto(),
@@ -171,11 +94,7 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 		})
 	if err != nil {
 		st, _ := status.FromError(err)
-		if st != nil && span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanStatus(span, st, err)
 
 		log.Error(err)
 		return err
@@ -187,11 +106,7 @@ func (s *server) StreamListObject(
 	_ *payload.Object_List_Request, stream vald.Object_StreamListObjectServer,
 ) (err error) {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamListObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	var (
 		mu   sync.Mutex
@@ -265,48 +180,16 @@ func (s *server) GetTimestamp(
 	ctx context.Context, id *payload.Object_TimestampRequest,
 ) (res *payload.Object_Timestamp, err error) {
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.GetTimestampRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	uuid := id.GetId().GetId()
-	if len(uuid) == 0 {
-		err = errors.ErrInvalidUUID(uuid)
-		err = status.WrapWithInvalidArgument(fmt.Sprintf("GetTimestamp API invalid argument for uuid \"%s\" detected", uuid), err,
-			&errdetails.RequestInfo{
-				RequestId:   uuid,
-				ServingData: errdetails.Serialize(id),
-			},
-			&errdetails.BadRequest{
-				FieldViolations: []*errdetails.BadRequestFieldViolation{
-					{
-						Field:       "uuid",
-						Description: err.Error(),
-					},
-				},
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.GetTimestamp",
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			})
-		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+	if err = s.validateUUID(span, vald.GetTimestampRPCName, ngtResourceType+"/ngt.GetTimestamp",
+		uuid, id); err != nil {
 		return nil, err
 	}
 	_, ts, err := s.ngt.GetObject(uuid)
 	if err != nil {
 		err = status.New(codes.NotFound, errors.ErrObjectNotFound(err, uuid).Error()).Err()
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Timestamp](span, codes.NotFound, err)
 	}
 	return &payload.Object_Timestamp{
 		Id:        uuid,

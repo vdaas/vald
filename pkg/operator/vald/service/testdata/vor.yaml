@@ -1,0 +1,111 @@
+#
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: vald.vdaas.org/v1
+kind: ValdOperatorRelease
+metadata:
+  name: example-valdoperatorrelease
+  namespace: user123-someimagesearch
+  annotations:
+    description: |
+      This is a test description.
+      It can be multi-line.
+spec:
+  infrastructure:
+    - role: "green"
+      type: "local"
+      active: true
+      clusters:
+        - id: "12345678-1234-1234-1234-123456789012"
+          name: "lpokijhbgaev"
+        - id: "87654321-4321-4321-4321-210987654321"
+          name: "bhnjmktyuioi"
+      nodePools:
+        general:
+          name: "node-pool-1-general"
+          machineResource:
+            name: "c4.large"
+            cpu: "4"
+            memory: "8Gi"
+            storage: "100Gi"
+          replicas: 3
+        agent:
+          name: "agent-pool-1-agent"
+          machineResource:
+            name: "highcpu"
+            cpu: "16"
+            memory: "32Gi"
+            storage: "200Gi"
+          replicas: 2
+    - role: "blue"
+      type: "local"
+      active: true
+      clusters:
+        - id: "12345678-1234-1234-1234-123456789012"
+          name: "asdcwea"
+        - id: "87654321-4321-4321-4321-210987654321"
+          name: "duelvngpr8se2"
+      nodePools:
+        general:
+          name: "u-100184-ureco"
+          machineResource:
+            name: "c4.large"
+            cpu: "4"
+            memory: "16Gi"
+            storage: "100Gi"
+          replicas: 3
+        agent:
+          name: "agent-pool"
+          machineResource:
+            name: "Nx.4vCPU_4GiB_60GiB"
+            cpu: "8"
+            memory: "32Gi"
+            storage: "200Gi"
+          replicas: 2
+  vectorEngine:
+    name: "vald"
+    vald:
+      defaults:
+        logLevel: "info"
+      agent:
+        ngt:
+          creationEdgeSize: 10
+          searchEdgeSize: 40
+          dimension: 128
+          distanceType: "l2"
+          objectType: float
+        persistentVolume:
+          enabled: true
+      indexer:
+        manager: false
+        indexDuration: "24h"
+        indexSchedule: "0 2 * * *"
+        saveDuration: "1h"
+        saveSchedule: "0 * * * *"
+        concurrency: 2
+      gateway:
+        indexReplica: 3
+      discoverer:
+        kind: "DaemonSet"
+      overlay:
+        spec:
+          discoverer:
+            clusterRole:
+              enabled: false
+            clusterRoleBinding:
+              enabled: false
+          agent:
+            ngt:
+              dimension: 256

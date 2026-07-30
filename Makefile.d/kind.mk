@@ -28,7 +28,7 @@ $(BINDIR)/kind: $(BINDIR)/docker
 ## start kind (kubernetes in docker) cluster
 kind/start:
 	kind create cluster --name $(NAME)
-	@make kind/login
+	@$(MAKE) kind/login
 
 .PHONY: kind/login
 ## login command for kind (kubernetes in docker) cluster
@@ -76,7 +76,7 @@ kind/vs/start:
 	sed -e 's/apiServerAddress: "127.0.0.1"/apiServerAddress: "$(shell grep host.docker.internal /etc/hosts | cut -f1)"/' $(ROOTDIR)/k8s/debug/kind/e2e.yaml | kind create cluster --name $(NAME)-vs --config -
 	# WARN for DinD user use below instead of above
 	# kind create cluster --name $(NAME)-vs --config	$(ROOTDIR)/k8s/debug/kind/e2e.yaml
-	@make kind/vs/login
+	@$(MAKE) kind/vs/login
 
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml
@@ -92,7 +92,7 @@ kind/vs/start:
 	&& kubectl apply -f examples/csi-pvc.yaml \
 	&& rm -rf $(TEMP_DIR)/csi-driver-hostpath
 
-	@make k8s/metrics/metrics-server/deploy
+	@$(MAKE) k8s/metrics/metrics-server/deploy
 	helm upgrade --install --set args={--kubelet-insecure-tls} metrics-server metrics-server/metrics-server -n kube-system
 	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
 

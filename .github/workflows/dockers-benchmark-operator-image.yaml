@@ -55,8 +55,8 @@ on:
       - apis/grpc/v1/rpc/errdetails/*.go
       - apis/grpc/v1/rpc/stats/*.go
       - apis/proto/**
-      - cmd/tools/benchmark/operator/*.go
-      - dockers/tools/benchmark/operator/Dockerfile
+      - cmd/operator/benchmark/*.go
+      - dockers/operator/benchmark/Dockerfile
       - go.mod
       - go.sum
       - hack/docker/gen/main.go
@@ -77,7 +77,10 @@ on:
       - internal/info/*.go
       - internal/io/*.go
       - internal/k8s/*.go
-      - internal/k8s/job/*.go
+      - internal/k8s/client/*.go
+      - internal/k8s/reconciler/*.go
+      - internal/k8s/resource/*.go
+      - internal/k8s/vald/*.go
       - internal/k8s/vald/benchmark/api/v1/*.go
       - internal/k8s/vald/benchmark/job/*.go
       - internal/k8s/vald/benchmark/scenario/*.go
@@ -141,6 +144,7 @@ on:
       - internal/servers/starter/*.go
       - internal/strings/*.go
       - internal/sync/*.go
+      - internal/sync/atomic/*.go
       - internal/sync/errgroup/*.go
       - internal/sync/semaphore/*.go
       - internal/sync/singleflight/*.go
@@ -148,12 +152,12 @@ on:
       - internal/timeutil/location/*.go
       - internal/tls/*.go
       - internal/version/*.go
-      - pkg/tools/benchmark/operator/config/*.go
-      - pkg/tools/benchmark/operator/handler/grpc/*.go
-      - pkg/tools/benchmark/operator/handler/rest/*.go
-      - pkg/tools/benchmark/operator/router/*.go
-      - pkg/tools/benchmark/operator/service/*.go
-      - pkg/tools/benchmark/operator/usecase/*.go
+      - pkg/operator/benchmark/config/*.go
+      - pkg/operator/benchmark/handler/grpc/*.go
+      - pkg/operator/benchmark/handler/rest/*.go
+      - pkg/operator/benchmark/router/*.go
+      - pkg/operator/benchmark/service/*.go
+      - pkg/operator/benchmark/usecase/*.go
       - versions/GO_VERSION
   pull_request_target:
     types:
@@ -174,8 +178,8 @@ on:
       - apis/grpc/v1/rpc/errdetails/*.go
       - apis/grpc/v1/rpc/stats/*.go
       - apis/proto/**
-      - cmd/tools/benchmark/operator/*.go
-      - dockers/tools/benchmark/operator/Dockerfile
+      - cmd/operator/benchmark/*.go
+      - dockers/operator/benchmark/Dockerfile
       - go.mod
       - go.sum
       - hack/docker/gen/main.go
@@ -196,7 +200,10 @@ on:
       - internal/info/*.go
       - internal/io/*.go
       - internal/k8s/*.go
-      - internal/k8s/job/*.go
+      - internal/k8s/client/*.go
+      - internal/k8s/reconciler/*.go
+      - internal/k8s/resource/*.go
+      - internal/k8s/vald/*.go
       - internal/k8s/vald/benchmark/api/v1/*.go
       - internal/k8s/vald/benchmark/job/*.go
       - internal/k8s/vald/benchmark/scenario/*.go
@@ -260,6 +267,7 @@ on:
       - internal/servers/starter/*.go
       - internal/strings/*.go
       - internal/sync/*.go
+      - internal/sync/atomic/*.go
       - internal/sync/errgroup/*.go
       - internal/sync/semaphore/*.go
       - internal/sync/singleflight/*.go
@@ -267,10 +275,10 @@ on:
       - internal/timeutil/location/*.go
       - internal/tls/*.go
       - internal/version/*.go
-      - pkg/tools/benchmark/operator/config/*.go
-      - pkg/tools/benchmark/operator/handler/grpc/*.go
-      - pkg/tools/benchmark/operator/handler/rest/*.go
-      - pkg/tools/benchmark/operator/router/*.go
-      - pkg/tools/benchmark/operator/service/*.go
-      - pkg/tools/benchmark/operator/usecase/*.go
+      - pkg/operator/benchmark/config/*.go
+      - pkg/operator/benchmark/handler/grpc/*.go
+      - pkg/operator/benchmark/handler/rest/*.go
+      - pkg/operator/benchmark/router/*.go
+      - pkg/operator/benchmark/service/*.go
+      - pkg/operator/benchmark/usecase/*.go
       - versions/GO_VERSION

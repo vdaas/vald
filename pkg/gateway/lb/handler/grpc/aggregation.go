@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/errhandler"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -60,11 +61,7 @@ func (s *server) aggregationSearch(
 		vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error),
 ) (res *payload.Search_Response, attrs []attribute.KeyValue, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "aggregationSearch"), apiName+"/aggregationSearch")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	if bcfg == nil {
 		return nil, nil, errors.ErrInvalidSearchConfig("bcfg is nil in aggregationSearch")
@@ -88,61 +85,10 @@ func (s *server) aggregationSearch(
 	aggr.Start(ctx)
 	err = s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 		sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/aggregationSearch/"+target)
-		defer func() {
-			if sspan != nil {
-				sspan.End()
-			}
-		}()
+		defer trace.End(sspan)
 		r, err := f(sctx, fcfg, vc, copts...)
 		if err != nil {
-			switch {
-			case errors.Is(err, context.Canceled),
-				errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
-				if sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.StatusCodeCancelled(
-						errdetails.ValdGRPCResourceTypePrefix +
-							"/vald.v1.search.BroadCast/" +
-							target + " canceled: " + err.Error())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
-				return nil
-			case errors.Is(err, context.DeadlineExceeded),
-				errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
-				if sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.StatusCodeDeadlineExceeded(
-						errdetails.ValdGRPCResourceTypePrefix +
-							"/vald.v1.search.BroadCast/" +
-							target + " deadline_exceeded: " + err.Error())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
-				return nil
-			default:
-				st, ok := status.FromError(err)
-				if !ok {
-					log.Debug(err)
-					return nil
-				}
-				if sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
-				switch st.Code() {
-				case codes.Internal,
-					codes.Unavailable,
-					codes.ResourceExhausted:
-					log.Warn(err)
-					return err
-				case codes.NotFound,
-					codes.Aborted,
-					codes.InvalidArgument:
-					return nil
-				}
-				log.Debug(err)
-			}
-			return nil
+			return handleSearchBroadCastError(sspan, target, err)
 		}
 		if r == nil || len(r.GetResults()) == 0 {
 			select {
@@ -153,63 +99,12 @@ func (s *server) aggregationSearch(
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
 					})
-				if sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanError(sspan, codes.NotFound, err)
 				return nil
 			default:
 				r, err = f(sctx, fcfg, vc, copts...)
 				if err != nil {
-					switch {
-					case errors.Is(err, context.Canceled),
-						errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
-						if sspan != nil {
-							sspan.RecordError(err)
-							sspan.SetAttributes(trace.StatusCodeCancelled(
-								errdetails.ValdGRPCResourceTypePrefix +
-									"/vald.v1.search.BroadCast/" +
-									target + " canceled: " + err.Error())...)
-							sspan.SetStatus(trace.StatusError, err.Error())
-						}
-						return nil
-					case errors.Is(err, context.DeadlineExceeded),
-						errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
-						if sspan != nil {
-							sspan.RecordError(err)
-							sspan.SetAttributes(trace.StatusCodeDeadlineExceeded(
-								errdetails.ValdGRPCResourceTypePrefix +
-									"/vald.v1.search.BroadCast/" +
-									target + " deadline_exceeded: " + err.Error())...)
-							sspan.SetStatus(trace.StatusError, err.Error())
-						}
-						return nil
-					default:
-						st, ok := status.FromError(err)
-						if !ok {
-							log.Debug(err)
-							return nil
-						}
-						if sspan != nil {
-							sspan.RecordError(err)
-							sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-							sspan.SetStatus(trace.StatusError, err.Error())
-						}
-						switch st.Code() {
-						case codes.Internal,
-							codes.Unavailable,
-							codes.ResourceExhausted:
-							log.Warn(err)
-							return err
-						case codes.NotFound,
-							codes.Aborted,
-							codes.InvalidArgument:
-							return nil
-						}
-						log.Debug(err)
-					}
-					return nil
+					return handleSearchBroadCastError(sspan, target, err)
 				}
 				if r == nil || len(r.GetResults()) == 0 {
 					err = status.WrapWithNotFound(fmt.Sprintf("failed to process search request from %s", target),
@@ -218,11 +113,7 @@ func (s *server) aggregationSearch(
 							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
 							ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
 						})
-					if sspan != nil {
-						sspan.RecordError(err)
-						sspan.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-						sspan.SetStatus(trace.StatusError, err.Error())
-					}
+					errhandler.RecordSpanError(sspan, codes.NotFound, err)
 					return nil
 				}
 			}
@@ -242,11 +133,7 @@ func (s *server) aggregationSearch(
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
 			})
 		attrs = trace.StatusCodeInternal(err.Error())
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, attrs, err
 	}
 	res = aggr.Result()
@@ -269,11 +156,7 @@ func (s *server) aggregationSearch(
 				}, info.Get(),
 			)
 			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(attrs...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
+			errhandler.RecordSpanAttrs(span, attrs, err)
 			return nil, attrs, err
 		}
 		if 0 < minNum && len(res.GetResults()) < minNum {
@@ -290,11 +173,7 @@ func (s *server) aggregationSearch(
 				}, info.Get(),
 			)
 			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(attrs...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
+			errhandler.RecordSpanAttrs(span, attrs, err)
 			return nil, attrs, err
 		}
 	}
@@ -311,11 +190,7 @@ func (s *server) aggregationSearch(
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
 			}, info.Get())
 		attrs = trace.FromGRPCStatus(st.Code(), msg)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		log.Warn(err)
 		if len(res.GetResults()) == 0 {
 			return nil, attrs, err
@@ -335,11 +210,7 @@ func (s *server) aggregationSearch(
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
 			}, info.Get())
 		attrs = trace.StatusCodeNotFound(err.Error())
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, attrs, err
 	}
 
@@ -348,11 +219,7 @@ func (s *server) aggregationSearch(
 			err = errors.ErrInsuffcientSearchResult
 		}
 		attrs = trace.StatusCodeNotFound(err.Error())
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		err = status.WrapWithNotFound(
 			fmt.Sprintf("error search result length is not enough required: %d, found: %d", minNum, len(res.GetResults())),
 			errors.ErrInsuffcientSearchResult,
@@ -366,11 +233,7 @@ func (s *server) aggregationSearch(
 			}, info.Get(),
 		)
 		attrs = trace.StatusCodeNotFound(err.Error())
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, attrs, err
 	}
 	res.RequestId = bcfg.GetRequestId()
@@ -394,6 +257,63 @@ type valdStdAggr struct {
 // newStd returns a valdStdAggr configured for the standard aggregation algorithm.
 // It sets the top-k size (`num`), the forwarding top-k size (`fnum`), and allocates internal buffers sized proportionally to `replica`.
 // The returned Aggregator is initialized (including its error group) and ready to Start and receive results.
+// handleSearchBroadCastError classifies a per-target BroadCast search RPC error:
+// it records the error on span and returns a non-nil error only for codes that
+// must fail the whole BroadCast (Internal/Unavailable/ResourceExhausted); every
+// other outcome (Canceled/DeadlineExceeded/NotFound/etc.) is a tolerable
+// per-target miss and returns nil. Extracted from the previously duplicated
+// initial-call and retry-call error handling in aggregationSearch.
+func handleSearchBroadCastError(sspan trace.Span, target string, err error) error {
+	switch {
+	case errors.Is(err, context.Canceled),
+		errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
+		if sspan != nil {
+			sspan.RecordError(err)
+			sspan.SetAttributes(trace.StatusCodeCancelled(
+				errdetails.ValdGRPCResourceTypePrefix +
+					"/vald.v1.search.BroadCast/" +
+					target + " canceled: " + err.Error())...)
+			sspan.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil
+	case errors.Is(err, context.DeadlineExceeded),
+		errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
+		if sspan != nil {
+			sspan.RecordError(err)
+			sspan.SetAttributes(trace.StatusCodeDeadlineExceeded(
+				errdetails.ValdGRPCResourceTypePrefix +
+					"/vald.v1.search.BroadCast/" +
+					target + " deadline_exceeded: " + err.Error())...)
+			sspan.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil
+	default:
+		st, ok := status.FromError(err)
+		if !ok {
+			log.Debug(err)
+			return nil
+		}
+		if sspan != nil {
+			sspan.RecordError(err)
+			sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
+			sspan.SetStatus(trace.StatusError, err.Error())
+		}
+		switch st.Code() {
+		case codes.Internal,
+			codes.Unavailable,
+			codes.ResourceExhausted:
+			log.Warn(err)
+			return err
+		case codes.NotFound,
+			codes.Aborted,
+			codes.InvalidArgument:
+			return nil
+		}
+		log.Debug(err)
+	}
+	return nil
+}
+
 func newStd(num, fnum, replica int) Aggregator {
 	vsa := &valdStdAggr{
 		num:  num,
@@ -465,12 +385,22 @@ func (v *valdStdAggr) Start(ctx context.Context) {
 		for {
 			select {
 			case <-ctx.Done():
+				// Do NOT close(v.dch): concurrent Send goroutines fanned out by
+				// BroadCast may be between their v.closed check and their send,
+				// and a send on a closed channel panics. That panic is a
+				// runtime.Error which safety.RecoverFunc re-panics, crashing the
+				// gateway. Instead flag closed (future Sends return early) and
+				// drain what is already buffered without blocking; in-flight
+				// Sends observe ctx.Done() via their own select and stop.
 				v.closed.Store(true)
-				close(v.dch)
-				for dist := range v.dch {
-					add(dist.distance, dist.raw)
+				for {
+					select {
+					case dist := <-v.dch:
+						add(dist.distance, dist.raw)
+					default:
+						return nil
+					}
 				}
-				return nil
 			case dist := <-v.dch:
 				add(dist.distance, dist.raw)
 			}

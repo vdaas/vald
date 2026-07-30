@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package grpc
 
@@ -29,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/errhandler"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -40,11 +39,7 @@ func (s *server) Upsert(
 	ctx context.Context, req *payload.Upsert_Request,
 ) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpsertRPCServiceName+"/"+vald.UpsertRPCName), apiName+"/"+vald.UpsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	vec := req.GetVector()
 	uuid := vec.GetId()
@@ -66,12 +61,7 @@ func (s *server) Upsert(
 					},
 				},
 			})
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.InvalidArgument, err)
 	}
 
 	vl := len(vec.GetVector())
@@ -86,12 +76,7 @@ func (s *server) Upsert(
 					},
 				},
 			}, info.Get())
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.InvalidArgument, err)
 	}
 	var shouldInsert bool
 	if !req.GetConfig().GetSkipStrictExistCheck() {
@@ -120,11 +105,7 @@ func (s *server) Upsert(
 			attrs = trace.StatusCodeAlreadyExists(err.Error())
 		}
 		if err != nil {
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(attrs...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
+			errhandler.RecordSpanAttrs(span, attrs, err)
 			return nil, err
 		}
 	} else {
@@ -145,11 +126,7 @@ func (s *server) Upsert(
 				err = nil
 			}
 			if err != nil {
-				if span != nil {
-					span.RecordError(err)
-					span.SetAttributes(attrs...)
-					span.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanAttrs(span, attrs, err)
 				return nil, err
 			}
 		}
@@ -205,27 +182,15 @@ func (s *server) Upsert(
 
 func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.UpsertRPCServiceName+"/"+vald.StreamUpsertRPCName), apiName+"/"+vald.StreamUpsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Upsert_Request) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BidirectionalStream"), apiName+"/"+vald.StreamUpsertRPCName+"/id-"+req.GetVector().GetId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.Upsert(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				return &payload.Object_StreamLocation{
 					Payload: &payload.Object_StreamLocation_Status{
 						Status: st.Proto(),
@@ -240,11 +205,7 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 		})
 	if err != nil {
 		st, _ := status.FromError(err)
-		if st != nil && span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanStatus(span, st, err)
 		return err
 	}
 	return nil
@@ -254,11 +215,7 @@ func (s *server) MultiUpsert(
 	ctx context.Context, reqs *payload.Upsert_MultiRequest,
 ) (locs *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpsertRPCServiceName+"/"+vald.MultiUpsertRPCName), apiName+"/"+vald.MultiUpsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	var (
 		emu sync.Mutex
 		lmu sync.Mutex
@@ -274,19 +231,11 @@ func (s *server) MultiUpsert(
 			req := r
 			eg.Go(safety.RecoverFunc(func() (err error) {
 				ectx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ectx, "eg.Go"), apiName+"/"+vald.MultiUpsertRPCName+"/id-"+req.GetVector().GetId())
-				defer func() {
-					if sspan != nil {
-						sspan.End()
-					}
-				}()
+				defer trace.End(sspan)
 				res, err := s.Upsert(ectx, req)
 				if err != nil {
 					st, _ := status.FromError(err)
-					if st != nil && sspan != nil {
-						sspan.RecordError(err)
-						sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-						sspan.SetStatus(trace.StatusError, err.Error())
-					}
+					errhandler.RecordSpanStatus(sspan, st, err)
 					emu.Lock()
 					if errs == nil {
 						errs = err
@@ -353,13 +302,8 @@ func (s *server) MultiUpsert(
 	}
 
 	if errs != nil {
-		st, _ := status.FromError(err)
-		if st != nil && span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		errs = err
+		st, _ := status.FromError(errs)
+		errhandler.RecordSpanStatus(span, st, errs)
 	}
 
 	return locs, errs

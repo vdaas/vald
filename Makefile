@@ -14,7 +14,8 @@
 # limitations under the License.
 #
 
-SHELL = bash
+SHELL = /usr/bin/env bash
+.SHELLFLAGS := -eu -o pipefail -c
 ORG ?= vdaas
 NAME = vald
 REPO = $(ORG)/$(NAME)
@@ -47,6 +48,7 @@ INDEX_SAVE_IMAGE = $(NAME)-index-save
 LB_GATEWAY_IMAGE = $(NAME)-lb-gateway
 MANAGER_INDEX_IMAGE = $(NAME)-manager-index
 MIRROR_GATEWAY_IMAGE = $(NAME)-mirror-gateway
+OPERATOR_IMAGE = $(NAME)-operator
 READREPLICA_ROTATE_IMAGE = $(NAME)-readreplica-rotate
 E2E_IMAGE = $(NAME)-e2e
 MAINTAINER = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
@@ -74,7 +76,7 @@ $(LIB_PATH):
 	mkdir -p $(LIB_PATH)
 
 BUN_INSTALL ?= $(USR_LOCAL)
-BUN_GLOBAL_BIN ?= $(eval BUN_GLOBAL_BIN := $(shell bun pm bin -g))$(BUN_GLOBAL_BIN)
+BUN_GLOBAL_BIN ?= $(eval BUN_GLOBAL_BIN := $(or $(shell bun pm bin -g 2>/dev/null),$(BINDIR)))$(BUN_GLOBAL_BIN)
 
 GOPRIVATE := $(GOPKG),$(GOPKG)/apis,$(GOPKG)-client-go
 GOPROXY := "https://proxy.golang.org,direct"
@@ -97,6 +99,7 @@ BUF_VERSION := $(eval BUF_VERSION := $(shell cat versions/BUF_VERSION))$(BUF_VER
 BUSYBOX_VERSION := $(eval BUSYBOX_VERSION := $(shell cat versions/BUSYBOX_VERSION))$(BUSYBOX_VERSION)
 CMAKE_VERSION := $(eval CMAKE_VERSION := $(shell cat versions/CMAKE_VERSION))$(CMAKE_VERSION)
 DOCKER_VERSION := $(eval DOCKER_VERSION := $(shell cat versions/DOCKER_VERSION))$(DOCKER_VERSION)
+DOCKER_BUILDX_VERSION := $(eval DOCKER_BUILDX_VERSION := $(shell cat versions/DOCKER_BUILDX_VERSION))$(DOCKER_BUILDX_VERSION)
 FAISS_VERSION := $(eval FAISS_VERSION := $(shell cat versions/FAISS_VERSION))$(FAISS_VERSION)
 USEARCH_VERSION := $(eval USEARCH_VERSION := $(shell cat versions/USEARCH_VERSION))$(USEARCH_VERSION)
 GOLANGCILINT_VERSION := $(eval GOLANGCILINT_VERSION := $(shell cat versions/GOLANGCILINT_VERSION))$(GOLANGCILINT_VERSION)
@@ -111,7 +114,9 @@ K3S_VERSION := $(eval K3S_VERSION := $(shell cat versions/K3S_VERSION))$(K3S_VER
 KIND_VERSION := $(eval KIND_VERSION := $(shell cat versions/KIND_VERSION))$(KIND_VERSION)
 KUBECTL_VERSION := $(eval KUBECTL_VERSION := $(shell cat versions/KUBECTL_VERSION))$(KUBECTL_VERSION)
 KUBELINTER_VERSION := $(eval KUBELINTER_VERSION := $(shell cat versions/KUBELINTER_VERSION))$(KUBELINTER_VERSION)
+LLVM_VERSION := $(eval LLVM_VERSION := $(shell cat versions/LLVM_VERSION))$(LLVM_VERSION)
 NGT_VERSION := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VERSION)
+NINJA_VERSION := $(eval NINJA_VERSION := $(shell cat versions/NINJA_VERSION))$(NINJA_VERSION)
 OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 OTEL_OPERATOR_VERSION := $(eval OTEL_OPERATOR_VERSION := $(shell cat versions/OTEL_OPERATOR_VERSION))$(OTEL_OPERATOR_VERSION)
 PROMETHEUS_STACK_VERSION := $(eval PROMETHEUS_STACK_VERSION := $(shell cat versions/PROMETHEUS_STACK_VERSION))$(PROMETHEUS_STACK_VERSION)
@@ -168,17 +173,53 @@ PROTO_VALD_API_DOCS := $(PROTO_VALD_APIS:$(ROOTDIR)/apis/proto/v1/vald/%.proto=$
 PROTO_MIRROR_APIS := $(eval PROTO_MIRROR_APIS := $(filter $(ROOTDIR)/apis/proto/v1/mirror/%.proto,$(PROTOS)))$(PROTO_MIRROR_APIS)
 PROTO_MIRROR_API_DOCS := $(PROTO_MIRROR_APIS:$(ROOTDIR)/apis/proto/v1/mirror/%.proto=$(ROOTDIR)/apis/docs/v1/%.md)
 
-LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -ffat-lto-objects -march=native -mtune=native -fno-plt -O3 -ffast-math -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
+# Prefer the LLVM toolchain when present (containers install clang/lld/llvm
+# via clangLTOBuildDeps); fall back to GCC elsewhere. Mirrors the LLD/NM/RANLIB
+# detection in Makefile.d/functions.mk.
+CC ?= $(shell command -v clang 2>/dev/null || command -v gcc 2>/dev/null || command -v cc)
+CXX ?= $(shell command -v clang++ 2>/dev/null || command -v g++ 2>/dev/null || command -v c++)
+
+# CI-built artifacts must not bake the builder's ISA: with LTO the LINK-stage
+# -march decides the final codegen, so a native build on an AVX-512 builder
+# silently defeats the -mno-avx512* compile guards below and crashes on
+# runners without (or with quirky) AVX-512. The portable per-arch defaults
+# (x86-64-v3 / armv8-a) are set in the GOARCH block below so that a literal
+# x86 target name never leaks onto an arm64 build; -march/-mtune below are
+# emitted only when MARCH/MTUNE are set. Override MARCH=native explicitly
+# for local single-machine performance builds.
+
+# ThinLTO for clang, classic fat-object LTO for GCC (-ffat-lto-objects is a
+# GCC concept; clang's ThinLTO archives rely on llvm-ar instead).
+LTO_FLAGS ?= $(if $(findstring clang,$(notdir $(CC))),-flto=thin,-flto=auto -ffat-lto-objects)
+# lld understands ThinLTO archives natively; only wire it up for clang.
+LLD_FLAGS ?= $(if $(and $(findstring clang,$(notdir $(CC))),$(LLD)),-fuse-ld=lld)
+
+# NOTE: -ffast-math must NOT appear here. On the link line the compiler driver
+# pulls in crtfastmath.o, whose global constructor (set_fast_math, sets the
+# MXCSR FTZ/DAZ bits) runs before main and corrupts libgcc's static C++
+# exception-frame registration in this large statically-linked cgo binary
+# (frame_dummy -> __register_frame_info -> classify_object_over_fdes SIGSEGV,
+# reproduced locally). It buys no optimization at link time; per-TU fast-math
+# for the hot C++ code already comes from NGT/faiss's own -Ofast.
+LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now $(LTO_FLAGS) $(LLD_FLAGS) $(if $(MARCH),-march=$(MARCH)) $(if $(MTUNE),-mtune=$(MTUNE)) -fno-plt -O3 -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
 
 NGT_LDFLAGS = -fopenmp -lopenblas -llapack -lgfortran
 FAISS_LDFLAGS = $(NGT_LDFLAGS)
+# Resolves a shared libomp.so path only to satisfy CMake's find_package(OpenMP)
+# configure-time probe when building NGT/faiss (-DOpenMP_omp_LIBRARY, tools.mk).
+# The .so never reaches the shipped binary: NGT/faiss emit static .a archives
+# with unresolved OpenMP symbols, and the final static cgo link resolves them
+# via NGT_LDFLAGS' -fopenmp, which under clang -static pulls in libomp.a.
+LIBOMP ?= $(shell ldconfig -p 2>/dev/null | awk '/libomp\.so[^.].*=>/{print $$NF; exit}' | grep -v '^$$' || ls /usr/lib/llvm-*/lib/libomp.so 2>/dev/null | sort -V | tail -1)
 HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl -lm
 CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
 # TEST_LDFLAGS without -static to avoid conflicts with CGO and glibc dynamic linking requirements
-TEST_LDFLAGS_BASE = -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -ffat-lto-objects -march=native -mtune=native -fno-plt -O3 -ffast-math -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
+TEST_LDFLAGS_BASE = -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now $(LTO_FLAGS) $(LLD_FLAGS) $(if $(MARCH),-march=$(MARCH)) $(if $(MTUNE),-mtune=$(MTUNE)) -fno-plt -O3 -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
 TEST_LDFLAGS = $(TEST_LDFLAGS_BASE) $(CGO_LDFLAGS)
 
 ifeq ($(GOARCH),amd64)
+MARCH ?= x86-64-v3
+MTUNE ?= generic
 CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
 CXXFLAGS ?= $(CFLAGS)
 ifeq ($(GOOS),darwin)
@@ -187,6 +228,10 @@ else
 EXTLDFLAGS ?= -m64 -Wl,--no-keep-memory
 endif
 else ifeq ($(GOARCH),arm64)
+# armv8-a is the portable arm64 baseline (analogous to x86-64-v3 on amd64);
+# never emit the x86-only x86-64-v3 target name here.
+MARCH ?= armv8-a
+MTUNE ?= generic
 CFLAGS ?=
 ifeq ($(GOOS),darwin)
 HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lz -ldl -lm
@@ -207,6 +252,12 @@ else
 EXTLDFLAGS ?= -Wl,--no-keep-memory
 endif
 endif
+
+# Base compile flags (the arch-gated guards above, without the per-build
+# extras appended via CGO_ENV_VARS' $1). Consumed by libomp/install in
+# Makefile.d/tools.mk; previously referenced but never defined, so that
+# recipe built with empty flags.
+CFLAGS_BASE ?= $(CFLAGS)
 
 BENCH_DATASET_MD5S := $(eval BENCH_DATASET_MD5S := $(shell find $(BENCH_DATASET_MD5_DIR) -type f -regex ".*\.md5"))$(BENCH_DATASET_MD5S)
 BENCH_DATASETS = $(BENCH_DATASET_MD5S:$(BENCH_DATASET_MD5_DIR)/%.md5=$(BENCH_DATASET_HDF5_DIR)/%.hdf5)
@@ -287,10 +338,6 @@ GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 	-not -path '$(ROOTDIR)/internal/db/rdb/mysql/dbr/*' \
 	-not -path '$(ROOTDIR)/internal/test/comparator/*' \
 	-not -path '$(ROOTDIR)/internal/test/mock/*' \
-	-not -path '$(ROOTDIR)/hack/benchmark/internal/client/ngtd/*' \
-	-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/agent/*' \
-	-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/external/*' \
-	-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/gateway/*' \
 	-not -path '$(ROOTDIR)/hack/gorules/*' \
 	-not -path '$(ROOTDIR)/hack/license/*' \
 	-not -path '$(ROOTDIR)/hack/docker/*' \
@@ -319,10 +366,6 @@ GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 	-not -path '$(ROOTDIR)/internal/db/rdb/mysql/dbr/*' \
 	-not -path '$(ROOTDIR)/internal/test/comparator/*' \
 	-not -path '$(ROOTDIR)/internal/test/mock/*' \
-	-not -path '$(ROOTDIR)/hack/benchmark/internal/client/ngtd/*' \
-	-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/agent/*' \
-	-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/external/*' \
-	-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/gateway/*' \
 	-not -path '$(ROOTDIR)/hack/gorules/*' \
 	-not -path '$(ROOTDIR)/hack/license/*' \
 	-not -path '$(ROOTDIR)/hack/docker/*' \
@@ -350,6 +393,7 @@ GO_ALL_TEST_SOURCES = $(GO_TEST_SOURCES) $(GO_OPTION_TEST_SOURCES)
 
 DOCKER ?= docker
 DOCKER_OPTS ?=
+DOCKER_BUILDKIT ?= 1
 BUILDKIT_INLINE_CACHE ?= 1
 
 DISTROLESS_IMAGE ?= gcr.io/distroless/static
@@ -388,6 +432,11 @@ E2E_DATASET_NAME ?= fashion-mnist-784-euclidean.hdf5
 E2E_GET_OBJECT_COUNT ?= 10
 E2E_INSERT_COUNT ?= 60000
 E2E_EXPECTED_INDEX ?= 180000
+E2E_MAX_DIM_BIT ?= 1
+E2E_MAX_DIM_CONFIG_NAME ?= max_vector_dim.yaml
+E2E_MAX_DIM_CONFIG ?= $(E2E_CONFIG_DIR)/$(E2E_MAX_DIM_CONFIG_NAME)
+E2E_MAX_DIM_WAIT ?= 30s
+E2E_MAX_DIM_RETRY_TIMEOUT ?= 5m
 E2E_PARALLELISM ?= 10
 E2E_QPS ?= 3000
 E2E_SEARCH_COUNT ?= 1000
@@ -443,7 +492,7 @@ perm:
 	find $(ROOTDIR) -type d -not -path "$(ROOTDIR)/.git*" -exec chmod 755 {} \;
 	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
 		grep -vE '^\s*#' "$(ROOTDIR)/.gitfiles" | grep -v gitignore \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" chmod 644 "{}"; \
+		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c '[ -f "{}" ] || exit 0; chmod 644 "{}"'; \
 	fi
 	if [ -d "$(ROOTDIR)/.git" ]; then \
 		chmod 750 "$(ROOTDIR)/.git"; \
@@ -514,34 +563,6 @@ files:
 		mv $(TEMP_DIR)/.gitfiles.tmp $(ROOTDIR)/.gitfiles; \
 	fi
 
-.PHONY: license
-## add license to files
-license:
-	$(call gen-license,$(ROOTDIR),$(MAINTAINER))
-
-.PHONY: dockerfile
-## generate dockerfiles
-dockerfile:
-	$(call gen-dockerfile,$(ROOTDIR),$(MAINTAINER))
-
-.PHONY: dashboard
-## generate dashboards
-dashboard: k8s/metrics/grafana/dashboards/00-vald-cluster-overview.yaml
-
-# To cache the generated dashboards, making a generated file target
-k8s/metrics/grafana/dashboards/00-vald-cluster-overview.yaml: $(shell find hack/grafana/gen -type f) versions/GRAFANA_VERSION
-	$(call gen-dashboard,$(ROOTDIR),$(MAINTAINER))
-
-.PHONY: workflow
-## generate workflows
-workflow:
-	$(call gen-dockerfile,$(ROOTDIR),$(MAINTAINER))
-
-.PHONY: deadlink-checker
-## generate deadlink-checker
-deadlink-checker:
-	$(call gen-deadlink-checker,$(ROOTDIR),$(MAINTAINER),$(DEADLINK_CHECK_PATH),$(DEADLINK_IGNORE_PATH),$(DEADLINK_CHECK_FORMAT))
-
 .PHONY: init
 ## initialize development environment
 init: \
@@ -572,188 +593,6 @@ update:
 	- @$(MAKE) rust/deps
 	- @$(MAKE) format
 
-.PHONY: format
-## format go codes
-format:
-	- @$(MAKE) format/proto
-	- @$(MAKE) format/json
-	- @$(MAKE) format/md
-	- @$(MAKE) remove/empty/file
-	- @$(MAKE) replace/busybox
-	- @$(MAKE) license
-	- @$(MAKE) dockerfile
-	- @$(MAKE) format/go
-	- @$(MAKE) format/go/test
-	- @$(MAKE) format/yaml
-	- @$(MAKE) format/make
-	- @$(MAKE) format/rust
-
-.PHONY: format/diff
-## format diff
-format/diff:
-	@$(MAKE) format/go/diff
-	@$(MAKE) format/yaml/diff
-
-.PHONY: remove/empty/file
-## removes empty file such as just includes \r \n space tab
-remove/empty/file: \
-	files
-	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
-		grep -vE '^\s*#' "$(ROOTDIR)/.gitfiles" | grep -v gitkeep \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" -n1 sh -c ' \
-		if [ -f "{}" ] && [ -z "$$(tr -d '\''[:space:]'\'' < "{}")" ]; then rm "{}"; fi'; \
-		fi
-
-.PHONY: format/go
-## run golines, gofumpt, goimports for all go files
-format/go: \
-	crlfmt/install \
-	strictgoimports/install \
-	golangci-lint/install \
-	files
-	@echo "Formatting Go files..."
-	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
-		grep -e "\.go$$" "$(ROOTDIR)/.gitfiles" | grep -v "_test\.go$$" \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
-		echo "Formatting Go file {}" && \
-		$(GOBIN)/strictgoimports -w {} && \
-		$(GOBIN)/crlfmt -w -diff=false {} && \
-		$(BINDIR)/golangci-lint fmt --config $(ROOTDIR)/.golangci.json {}'; \
-	fi
-	go fix $(ROOTDIR)/...
-	@echo "Go formatting complete."
-
-.PHONY: format/go/test
-## run golines, gofumpt, goimports for go test files
-format/go/test: \
-	crlfmt/install \
-	strictgoimports/install \
-	golangci-lint/install \
-	files
-	@echo "Formatting Go Test files..."
-	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
-		grep -e "_test\.go$$" "$(ROOTDIR)/.gitfiles" \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
-		echo "Formatting Go Test file {}" && \
-		$(GOBIN)/strictgoimports -w {} && \
-		$(GOBIN)/crlfmt -w -diff=false {} && \
-		$(BINDIR)/golangci-lint fmt --config $(ROOTDIR)/.golangci.json {}'; \
-	fi
-	@echo "Go test file formatting complete."
-
-.PHONY: format/go/diff
-## run golines, gofumpt, goimports for go diff files
-format/go/diff: \
-	crlfmt/install \
-	strictgoimports/install \
-	golangci-lint/install \
-	files
-	@echo "Formatting Go Diff files..."
-	@git diff --name-only --diff-filter=ACM HEAD | grep -e ".go$$" | xargs -I {} -P$(CORES) bash -c ' \
-	echo "Formatting Go file {}" && \
-	$(GOBIN)/strictgoimports -w {} && \
-	$(GOBIN)/crlfmt -w -diff=false {} && \
-	$(BINDIR)/golangci-lint fmt --config $(ROOTDIR)/.golangci.json {}'
-	@echo "Go file formatting complete."
-
-.PHONY: format/rust
-## format rust codes
-format/rust: \
-	rustfmt/install \
-	files
-	@echo "Formatting Rust files..."
-	@cd $(ROOTDIR)/rust && $(CARGO_HOME)/bin/cargo fmt
-	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
-		grep -e "\.rs$$" "$(ROOTDIR)/.gitfiles" \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
-		echo "Formatting Rust file {}" && \
-		$(CARGO_HOME)/bin/rustfmt --edition 2024 --style-edition 2024 {}'; \
-	fi
-	@echo "Rust formatting complete."
-
-.PHONY: format/yaml
-## format yaml file
-format/yaml:
-	- @$(MAKE) prettier/install
-	- @$(MAKE) yamlfmt/install
-	- @$(MAKE) clean/yaml
-	- @$(MAKE) files
-	@echo "Formatting YAML files..."
-	- @if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
-		grep -E '\.ya?ml\b' "$(ROOTDIR)/.gitfiles" | grep -Ev '(templates|s3)' \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
-		echo "Formatting YAML file {}" && \
-		yamlfmt {} && \
-		bunx prettier --write {}'; \
-	fi
-	@echo "YAML file formatting complete."
-
-.PHONY: clean/yaml
-## cleanup empty yaml file
-clean/yaml:
-	- @$(MAKE) files
-	- @if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
-		grep -E '\.ya?ml\b' "$(ROOTDIR)/.gitfiles" | grep -Ev '(templates|s3)' \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
-		if ! grep -qEv "^(\\s*#|---|\\s*)$$" "{}"; then \
-			echo "Deleting {}"; rm -rf "{}"; \
-		fi'; \
-	fi
-
-.PHONY: format/yaml/diff
-format/yaml/diff:
-	- @$(MAKE) prettier/install
-	- @$(MAKE) yamlfmt/install
-	- @$(MAKE) clean/yaml
-	- @$(MAKE) files
-	@echo "Formatting YAML files..."
-	- @git diff --name-only --diff-filter=ACM HEAD | grep -E '\.ya?ml\b' | grep -Ev '(templates|s3)' | xargs -I {} -P$(CORES) bash -c ' \
-	echo "Formatting YAML file {}" && \
-	yamlfmt {} && \
-	bunx prettier --write {}'
-	@echo "YAML file formatting complete."
-
-.PHONY: format/make
-format/make: \
-	mbake/install \
-	files
-	@echo "Formatting Makefile and Makefile.d/*.mk files..."
-	- @if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
-		grep "Makefile" "$(ROOTDIR)/.gitfiles" \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
-		echo "Formatting Makefile file {}" && mbake format {} '; \
-	fi
-	@echo "Makefile formatting complete."
-
-.PHONY: format/md
-format/md: \
-	prettier/install
-	@echo "Formatting Makrdown files..."
-	- @if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
-		grep -E '\.md\b' "$(ROOTDIR)/.gitfiles" \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
-		echo "Formatting Markdown file {}" && \
-		bunx prettier --write {}'; \
-	fi
-	@echo "Markdown file formatting complete."
-
-.PHONY: format/json
-format/json: \
-	prettier/install
-	@echo "Formatting JSON files..."
-	- @if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
-		grep -E '\.json\b' "$(ROOTDIR)/.gitfiles" \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
-		echo "Formatting JSON file {}" && \
-		bunx prettier --write {}'; \
-	fi
-	@echo "JSON file formatting complete."
-
-.PHONY: format/proto
-format/proto: \
-	buf/install
-	buf format -w
-
 .PHONY: deps
 ## resolve dependencies
 deps: \
@@ -773,277 +612,6 @@ deps/install: \
 	go/example/deps \
 	rust/deps
 
-.PHONY: version
-## print vald version
-version: \
-	version/vald
-
-.PHONY: version/vald
-## print vald version
-version/vald:
-	@echo $(VERSION)
-
-.PHONY: version/go
-## print go version
-version/go:
-	@echo $(GO_VERSION)
-
-.PHONY: version/rust
-## print rust version
-version/rust:
-	@echo $(RUST_VERSION)
-
-.PHONY: version/ngt
-## print NGT version
-version/ngt:
-	@echo $(NGT_VERSION)
-
-.PHONY: version/faiss
-## print Faiss version
-version/faiss:
-	@echo $(FAISS_VERSION)
-
-.PHONY: version/usearch
-## print usearch version
-version/usearch:
-	@echo $(USEARCH_VERSION)
-
-.PHONY: version/docker
-## print Kubernetes version
-version/docker:
-	@echo $(DOCKER_VERSION)
-
-.PHONY: version/k8s
-## print Kubernetes version
-version/k8s:
-	@echo $(KUBECTL_VERSION)
-
-.PHONY: version/kind
-version/kind:
-	@echo $(KIND_VERSION)
-
-.PHONY: version/helm
-version/helm:
-	@echo $(HELM_VERSION)
-
-.PHONY: version/yq
-version/yq:
-	@echo $(YQ_VERSION)
-
-.PHONY: version/telepresence
-version/telepresence:
-	@echo $(TELEPRESENCE_VERSION)
-
-.PHONY: ngt/install
-## install NGT
-ngt/install: $(USR_LOCAL)/include/NGT/Capi.h
-$(USR_LOCAL)/include/NGT/Capi.h:
-	git clone --depth 1 --branch v$(NGT_VERSION) https://github.com/NGT-labs/NGT $(TEMP_DIR)/NGT-$(NGT_VERSION)
-	cd $(TEMP_DIR)/NGT-$(NGT_VERSION) && \
-	cmake -DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
-	-DBUILD_SHARED_LIBS=OFF \
-	-DBUILD_STATIC_EXECS=ON \
-	-DBUILD_TESTING=OFF \
-	-DNGT_LARGE_DATASET=ON \
-	-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
-	-DCMAKE_AR=$$(command -v llvm-ar 2>/dev/null || ls /usr/bin/llvm-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ar 2>/dev/null || ls /usr/bin/gcc-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ar) \
-	-DCMAKE_CXX_COMPILER_AR=$$(command -v llvm-ar 2>/dev/null || ls /usr/bin/llvm-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ar 2>/dev/null || ls /usr/bin/gcc-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ar) \
-	-DCMAKE_RANLIB=$$(command -v llvm-ranlib 2>/dev/null || ls /usr/bin/llvm-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ranlib 2>/dev/null || ls /usr/bin/gcc-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ranlib) \
-	-DCMAKE_C_FLAGS="$(CFLAGS) -flto=auto -ffat-lto-objects" \
-	-DCMAKE_CXX_FLAGS="$(CXXFLAGS) -flto=auto -ffat-lto-objects" \
-	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
-	$(NGT_EXTRA_CMAKE_FLAGS) \
-	-B $(TEMP_DIR)/NGT-$(NGT_VERSION)/build $(TEMP_DIR)/NGT-$(NGT_VERSION)
-	make -C $(TEMP_DIR)/NGT-$(NGT_VERSION)/build -j$(CORES) ngt
-	make -C $(TEMP_DIR)/NGT-$(NGT_VERSION)/build install
-	cd $(ROOTDIR)
-	rm -rf $(TEMP_DIR)/NGT-$(NGT_VERSION)
-	ldconfig
-
-.PHONY: faiss/install
-## install Faiss
-faiss/install: $(LIB_PATH)/libfaiss.a
-$(LIB_PATH)/libfaiss.a:
-	curl -fsSL https://github.com/facebookresearch/faiss/archive/v$(FAISS_VERSION).tar.gz -o $(TEMP_DIR)/v$(FAISS_VERSION).tar.gz
-	tar zxf $(TEMP_DIR)/v$(FAISS_VERSION).tar.gz -C $(TEMP_DIR)/
-	cd $(TEMP_DIR)/faiss-$(FAISS_VERSION) && \
-	cmake -DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
-	-DBUILD_SHARED_LIBS=OFF \
-	-DBUILD_STATIC_EXECS=ON \
-	-DBUILD_TESTING=OFF \
-	-DFAISS_ENABLE_PYTHON=OFF \
-	-DFAISS_ENABLE_GPU=OFF \
-	-DBLA_VENDOR=OpenBLAS \
-	-DCMAKE_C_FLAGS="$(LDFLAGS)" \
-	-DCMAKE_EXE_LINKER_FLAGS="$(FAISS_LDFLAGS)" \
-	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
-	-B $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build $(TEMP_DIR)/faiss-$(FAISS_VERSION)
-	make -C $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build -j$(CORES) faiss
-	make -C $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build install
-	cd $(ROOTDIR)
-	rm -rf $(TEMP_DIR)/v$(FAISS_VERSION).tar.gz $(TEMP_DIR)/faiss-$(FAISS_VERSION)
-	ldconfig
-
-.PHONY: usearch/install
-## install usearch
-usearch/install: $(USR_LOCAL)/include/usearch.h
-$(USR_LOCAL)/include/usearch.h:
-	git clone --depth 1 --recursive --branch v$(USEARCH_VERSION) https://github.com/unum-cloud/usearch $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
-	cd $(TEMP_DIR)/usearch-$(USEARCH_VERSION) && \
-	cmake -DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
-	-DBUILD_SHARED_LIBS=OFF \
-	-DBUILD_TESTING=OFF \
-	-DUSEARCH_BUILD_LIB_C=ON \
-	-DUSEARCH_USE_FP16LIB=ON \
-	-DUSEARCH_USE_OPENMP=ON \
-	-DUSEARCH_USE_SIMSIMD=ON \
-	-DUSEARCH_USE_JEMALLOC=ON \
-	-DCMAKE_C_FLAGS="$(CFLAGS)" \
-	-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
-	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
-	-DCMAKE_INSTALL_LIBDIR=$(LIB_PATH) \
-	-B $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
-	cmake --build $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build -j$(CORES)
-	cmake --install $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build --prefix=$(USR_LOCAL)
-	cd $(ROOTDIR)
-	cp $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build/libusearch_static_c.a $(LIB_PATH)/libusearch_c.a
-	cp $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build/libusearch_static_c.a $(LIB_PATH)/libusearch_static_c.a
-	cp $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build/libusearch_c.so $(LIB_PATH)/libusearch_c.so
-	cp $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/c/usearch.h $(USR_LOCAL)/include/usearch.h
-	rm -rf $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
-	ldconfig
-
-.PHONY: cmake/install
-## install CMAKE
-cmake/install:
-	git clone --depth 1 --branch v$(CMAKE_VERSION) https://github.com/Kitware/CMake.git $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)
-	cd $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION) && \
-	cmake -DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_SHARED_LIBS=OFF \
-	-DBUILD_TESTING=OFF \
-	-DCMAKE_C_FLAGS="$(CFLAGS)" \
-	-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
-	-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
-	-B $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)
-	make -C $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build -j$(CORES) cmake
-	make -C $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build install
-	cd $(ROOTDIR)
-	rm -rf $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)
-	ldconfig
-
-.PHONY: lint
-## run lints
-lint: \
-	docs/lint \
-	files/lint \
-	vet \
-	go/lint \
-	workflow/lint
-
-.PHONY: go/lint
-go/lint:
-	$(call go-lint)
-
-.PHONY: vet
-## run go vet
-vet:
-	$(call go-vet)
-
-.PHONY: docs/lint
-## run lint for document
-docs/lint: \
-	docs/cspell \
-	docs/textlint
-
-.PHONY: files/lint
-## run lint for document
-files/lint: \
-	files/cspell \
-	files/textlint
-
-.PHONY: workflow/lint workflow/fix actionlint/lint ghalint/lint
-## run lint for workflow files
-workflow/lint:
-	@echo "Please run make workflow/fix beforehand"
-	@echo "Linting workflow files..."
-	@printf '%s\0' \
-	"actionlint/lint" \
-	"ghalint/lint" \
-	| xargs -0 -I{} -P$(CORES) $(MAKE) --no-print-directory {}
-	@echo "Workflow linting completed."
-
-## run lint for workflow files
-workflow/fix:
-	@$(MAKE) --no-print-directory pinact/lint
-	@$(MAKE) --no-print-directory ghatm/lint
-
-ACTIONLINT_IGNORES = \
-	-ignore 'when a reusable workflow is called with "uses", "timeout-minutes" is not available' \
-	-ignore 'property "tag" is not defined in object type' \
-	-ignore 'input "file" is not defined in action "codecov/codecov-action@v5"' \
-	-ignore 'label "ubuntu-slim" is unknown.' # TODO: remove this line after https://github.com/rhysd/actionlint/issues/587 is merged
-
-actionlint/lint: actionlint/install
-	@$(GOBIN)/actionlint -shellcheck= $(ACTIONLINT_IGNORES)
-
-ghalint/lint: \
-	ghalint/install
-	@$(GOBIN)/ghalint run .github/workflows
-
-pinact/lint: \
-	pinact/install
-	@GITHUB_TOKEN=$(shell gh auth token 2>/dev/null || :) $(GOBIN)/pinact run
-
-ghatm/lint: \
-	ghatm/install
-	@$(GOBIN)/ghatm set
-
-.PHONY: docs/textlint
-## run textlint for document
-docs/textlint: \
-	textlint/install
-	textlint $(ROOTDIR)/docs/**/*.md $(TEXTLINT_EXTRA_OPTIONS)
-
-.PHONY: files/textlint
-## run textlint for document
-files/textlint: \
-	files \
-	textlint/install
-	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then textlint "$(ROOTDIR)/.gitfiles" $(TEXTLINT_EXTRA_OPTIONS); fi
-
-.PHONY: docs/cspell
-## run cspell for document
-docs/cspell: \
-	cspell/install
-	cspell $(ROOTDIR)/docs/**/*.md --show-suggestions $(CSPELL_EXTRA_OPTIONS)
-
-.PHONY: files/cspell
-## run cspell for document
-files/cspell: \
-	files \
-	cspell/install
-	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then cspell "$(ROOTDIR)/.gitfiles" --show-suggestions $(CSPELL_EXTRA_OPTIONS); fi
-
-.PHONY: changelog/update
-## update changelog
-changelog/update:
-	echo "# CHANGELOG" > $(TEMP_DIR)/CHANGELOG.md
-	echo "" >> $(TEMP_DIR)/CHANGELOG.md
-	$(MAKE) -s changelog/next/print >> $(TEMP_DIR)/CHANGELOG.md
-	echo "" >> $(TEMP_DIR)/CHANGELOG.md
-	tail -n +2 $(ROOTDIR)/CHANGELOG.md >> $(TEMP_DIR)/CHANGELOG.md
-	mv -f $(TEMP_DIR)/CHANGELOG.md $(ROOTDIR)/CHANGELOG.md
-
-.PHONY: changelog/next/print
-## print next changelog entry
-changelog/next/print:
-	@cat $(ROOTDIR)/hack/CHANGELOG.template.md | \
-	sed -e 's/{{ version }}/$(VERSION)/g'
-	@echo "$$BODY"
-
 include Makefile.d/actions.mk
 include Makefile.d/bench.mk
 include Makefile.d/build.mk
@@ -1061,3 +629,7 @@ include Makefile.d/proto.mk
 include Makefile.d/test.mk
 include Makefile.d/tools.mk
 include Makefile.d/tls.mk
+include Makefile.d/format.mk
+include Makefile.d/generate.mk
+include Makefile.d/lint.mk
+include Makefile.d/version.mk

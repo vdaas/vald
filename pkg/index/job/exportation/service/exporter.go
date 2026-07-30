@@ -147,19 +147,26 @@ func (e *export) doExportIndex(ctx context.Context) (err error) {
 		grpc.WaitForReady(true),
 	}
 
-	stream, err := e.gateway.StreamListObject(ctx, emptyReq, grpcCallOpts...)
-	if err != nil || stream == nil {
-		return err
-	}
-
 	eg, egctx := errgroup.WithContext(ctx)
 	eg.SetLimit(e.streamListConcurrency)
 	ctx, cancel := context.WithCancelCause(egctx)
 	defer cancel(nil)
 
+	// The stream MUST be created from the post-errgroup, cancelable ctx (see the
+	// correct ordering in correction/service/corrector.go). If it is bound to the
+	// pre-errgroup ancestor ctx, an eg.Go worker error cancels egctx/this ctx but
+	// never that ancestor, so stream.Recv() below never observes the cancellation
+	// and the early-abort on a receive/store error is silently defeated.
+	stream, err := e.gateway.StreamListObject(ctx, emptyReq, grpcCallOpts...)
+	if err != nil || stream == nil {
+		return err
+	}
+
+	// each stream contributes at most one recv-side and one send-side error.
+	const recvSendOps = 2
 	var (
 		emu  sync.Mutex
-		errs = make([]error, 0, e.streamListConcurrency*2) // concurrency * recv+send
+		errs = make([]error, 0, e.streamListConcurrency*recvSendOps)
 	)
 
 	finalize := func() (err error) {
@@ -169,7 +176,7 @@ func (e *export) doExportIndex(ctx context.Context) (err error) {
 			errs = append(errs, err)
 			emu.Unlock()
 		}
-		errs := errors.RemoveDuplicates(errs)
+		errs = errors.RemoveDuplicates(errs)
 		emu.Lock()
 		err = errors.Join(errs...)
 		emu.Unlock()

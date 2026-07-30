@@ -23,7 +23,9 @@ import (
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/errhandler"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -34,61 +36,17 @@ func (s *server) Update(
 	ctx context.Context, req *payload.Update_Request,
 ) (res *payload.Object_Location, err error) {
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.UpdateRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	vec := req.GetVector()
-	if len(vec.GetVector()) != s.ngt.GetDimensionSize() {
-		err = errors.ErrIncompatibleDimensionSize(len(vec.GetVector()), int(s.ngt.GetDimensionSize()))
-		err = status.WrapWithInvalidArgument("Update API Incompatible Dimension Size detected",
-			err,
-			&errdetails.RequestInfo{
-				RequestId:   vec.GetId(),
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.BadRequest{
-				FieldViolations: []*errdetails.BadRequestFieldViolation{
-					{
-						Field:       "vector dimension size",
-						Description: err.Error(),
-					},
-				},
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.Update",
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			})
-		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+	if err = s.validateVectorDimension(span, vald.UpdateRPCName, ngtResourceType+"/ngt.Update",
+		vec.GetId(), req, len(vec.GetVector()), s.ngt.GetDimensionSize()); err != nil {
 		return nil, err
 	}
 	uuid := vec.GetId()
-	if len(uuid) == 0 {
-		err = errors.ErrInvalidUUID(uuid)
-		err = status.WrapWithInvalidArgument(fmt.Sprintf("Update API invalid argument for uuid \"%s\" detected", uuid), err,
-			&errdetails.RequestInfo{
-				RequestId:   uuid,
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.BadRequest{
-				FieldViolations: []*errdetails.BadRequestFieldViolation{
-					{
-						Field:       "uuid",
-						Description: err.Error(),
-					},
-				},
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.Update",
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			})
-		log.Warn(err)
+	// validateUUID builds the exact same InvalidArgument status this block used
+	// to build inline, and additionally records it on the span (the inline
+	// version never did, leaving these failures invisible in traces).
+	if err = s.validateUUID(span, vald.UpdateRPCName, ngtResourceType+"/ngt.Update", uuid, req); err != nil {
 		return nil, err
 	}
 	err = s.ngt.UpdateWithTime(uuid, vec.GetVector(), req.GetConfig().GetTimestamp())
@@ -100,10 +58,7 @@ func (s *server) Update(
 					RequestId:   req.GetVector().GetId(),
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.Update",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.Update"))
 			log.Warn(err)
 			attrs = trace.StatusCodeAborted(err.Error())
 		} else if errors.Is(err, errors.ErrObjectIDNotFound(vec.GetId())) {
@@ -112,10 +67,7 @@ func (s *server) Update(
 					RequestId:   req.GetVector().GetId(),
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.Update",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.Update"))
 			log.Warn(err)
 			attrs = trace.StatusCodeNotFound(err.Error())
 		} else if errors.Is(err, errors.ErrUUIDNotFound(0)) || errors.Is(err, errors.ErrInvalidDimensionSize(len(vec.GetVector()), s.ngt.GetDimensionSize())) {
@@ -132,10 +84,7 @@ func (s *server) Update(
 						},
 					},
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.Update",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.Update"))
 			log.Warn(err)
 			attrs = trace.StatusCodeInvalidArgument(err.Error())
 		} else if errors.Is(err, errors.ErrUUIDAlreadyExists(vec.GetId())) {
@@ -144,10 +93,7 @@ func (s *server) Update(
 					RequestId:   req.GetVector().GetId(),
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.Update",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.Update"))
 			log.Warn(err)
 			attrs = trace.StatusCodeAlreadyExists(err.Error())
 		} else {
@@ -156,18 +102,11 @@ func (s *server) Update(
 					RequestId:   req.GetVector().GetId(),
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.Update",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
+				s.resourceInfo(ngtResourceType+"/ngt.Update"), info.Get())
 			log.Error(err)
 			attrs = trace.StatusCodeInternal(err.Error())
 		}
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 	return s.newLocation(vec.GetId()), nil
@@ -175,27 +114,15 @@ func (s *server) Update(
 
 func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error) {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamUpdateRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Update_Request) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"/"+vald.StreamUpdateRPCName+"/id-"+req.GetVector().GetId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.Update(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				return &payload.Object_StreamLocation{
 					Payload: &payload.Object_StreamLocation_Status{
 						Status: st.Proto(),
@@ -210,11 +137,7 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 		})
 	if err != nil {
 		st, _ := status.FromError(err)
-		if st != nil && span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanStatus(span, st, err)
 		return err
 	}
 	return nil
@@ -224,11 +147,7 @@ func (s *server) MultiUpdate(
 	ctx context.Context, reqs *payload.Update_MultiRequest,
 ) (res *payload.Object_Locations, err error) {
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiUpdateRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	uuids := make([]string, 0, len(reqs.GetRequests()))
 	vmap := make(map[string][]float32, len(reqs.GetRequests()))
@@ -250,17 +169,9 @@ func (s *server) MultiUpdate(
 						},
 					},
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.MultiUpdate",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.MultiUpdate"))
 			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Object_Locations](span, codes.InvalidArgument, err)
 		}
 		vmap[vec.GetId()] = vec.GetVector()
 		uuids = append(uuids, vec.GetId())
@@ -275,10 +186,7 @@ func (s *server) MultiUpdate(
 					RequestId:   strings.Join(uuids, ", "),
 					ServingData: errdetails.Serialize(reqs),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.MultiUpdate",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.MultiUpdate"))
 			log.Warn(err)
 			attrs = trace.StatusCodeAborted(err.Error())
 		} else if notFoundIDs := func() []string {
@@ -295,10 +203,7 @@ func (s *server) MultiUpdate(
 					RequestId:   strings.Join(uuids, ", "),
 					ServingData: errdetails.Serialize(reqs),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.MultiUpdate",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.MultiUpdate"))
 			log.Warn(err)
 			attrs = trace.StatusCodeNotFound(err.Error())
 		} else if invalidDimensionIDs := func() []string {
@@ -323,10 +228,7 @@ func (s *server) MultiUpdate(
 						},
 					},
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.MultiUpdate",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.MultiUpdate"))
 			log.Warn(err)
 			attrs = trace.StatusCodeInvalidArgument(err.Error())
 		} else if alreadyExistsIDs := func() []string {
@@ -343,10 +245,7 @@ func (s *server) MultiUpdate(
 					RequestId:   strings.Join(uuids, ", "),
 					ServingData: errdetails.Serialize(reqs),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.MultiUpdate",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.MultiUpdate"))
 			log.Warn(err)
 			attrs = trace.StatusCodeAlreadyExists(err.Error())
 		} else {
@@ -355,18 +254,11 @@ func (s *server) MultiUpdate(
 					RequestId:   strings.Join(uuids, ", "),
 					ServingData: errdetails.Serialize(reqs),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.MultiUpdate",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
+				s.resourceInfo(ngtResourceType+"/ngt.MultiUpdate"), info.Get())
 			log.Error(err)
 			attrs = trace.StatusCodeInternal(err.Error())
 		}
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 	return s.newLocations(uuids...), nil
@@ -376,20 +268,13 @@ func (s *server) UpdateTimestamp(
 	ctx context.Context, req *payload.Update_TimestampRequest,
 ) (res *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpdateRPCServiceName+"/"+vald.UpdateTimestampRPCName), apiName+"/"+vald.UpdateTimestampRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	uuid := req.GetId()
 	reqInfo := &errdetails.RequestInfo{
 		RequestId:   uuid,
 		ServingData: errdetails.Serialize(req),
 	}
-	resInfo := &errdetails.ResourceInfo{
-		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateTimestampRPCName + "." + vald.GetObjectRPCName,
-		ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-	}
+	resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateTimestampRPCName + "." + vald.GetObjectRPCName)
 	if len(uuid) == 0 {
 		err = errors.ErrInvalidUUID(uuid)
 		err = status.WrapWithInvalidArgument(vald.UpdateTimestampRPCName+" API invalid uuid", err, reqInfo, resInfo,
@@ -401,12 +286,7 @@ func (s *server) UpdateTimestamp(
 					},
 				},
 			})
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.InvalidArgument, err)
 	}
 	ts := req.GetTimestamp()
 	if !req.GetForce() && ts < 0 {
@@ -420,12 +300,7 @@ func (s *server) UpdateTimestamp(
 					},
 				},
 			}, info.Get())
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.InvalidArgument, err)
 	}
 	err = s.ngt.UpdateTimestamp(uuid, ts, req.GetForce())
 	if err != nil {
@@ -459,11 +334,7 @@ func (s *server) UpdateTimestamp(
 			log.Error(err)
 			attrs = trace.StatusCodeInternal(err.Error())
 		}
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 	return s.newLocation(uuid), nil

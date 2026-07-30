@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package metric
 
@@ -36,7 +34,7 @@ const (
 	gRPCStatus        = "grpc_client_status"
 )
 
-func ClientMetricInterceptors() (grpc.UnaryClientInterceptor, grpc.StreamClientInterceptor, error) {
+func ClientInterceptors() (grpc.UnaryClientInterceptor, grpc.StreamClientInterceptor, error) {
 	meter := metrics.GetMeter()
 
 	latencyHistogram, err := meter.Float64Histogram(
@@ -70,10 +68,14 @@ func ClientMetricInterceptors() (grpc.UnaryClientInterceptor, grpc.StreamClientI
 			return err
 		}, func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 			now := time.Now()
-			_, err := streamer(ctx, desc, cc, method, opts...)
+			stream, err := streamer(ctx, desc, cc, method, opts...)
 			elapsedTime := time.Since(now)
 			record(ctx, method, err, float64(elapsedTime)/float64(time.Millisecond))
-			return nil, nil
+			// Return the real stream and error from streamer: discarding them
+			// (returning nil, nil) hands the caller a nil ClientStream with a
+			// nil error, so its first Send/Recv/CloseSend nil-panics and any
+			// stream-creation error is silently swallowed.
+			return stream, err
 		}, nil
 }
 

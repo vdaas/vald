@@ -23,7 +23,9 @@ import (
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/errhandler"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -36,11 +38,7 @@ func (s *server) Search(
 	ctx context.Context, req *payload.Search_Request,
 ) (res *payload.Search_Response, err error) {
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.SearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	if len(req.GetVector()) != s.ngt.GetDimensionSize() {
 		err = errors.ErrIncompatibleDimensionSize(len(req.GetVector()), int(s.ngt.GetDimensionSize()))
 		err = status.WrapWithInvalidArgument("Search API Incompatible Dimension Size detected",
@@ -61,12 +59,7 @@ func (s *server) Search(
 				ResourceType: ngtResourceType + "/ngt.Search",
 			})
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Search_Response](span, codes.InvalidArgument, err)
 	}
 	res, err = s.ngt.Search(ctx,
 		req.GetVector(),
@@ -86,10 +79,7 @@ func (s *server) Search(
 					RequestId:   req.GetConfig().GetRequestId(),
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.Search",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.Search"))
 			log.Debug(err)
 			attrs = trace.StatusCodeAborted(err.Error())
 		case errors.Is(err, errors.ErrFlushingIsInProgress):
@@ -98,10 +88,7 @@ func (s *server) Search(
 					RequestId:   req.GetConfig().GetRequestId(),
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.Search",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.Search"))
 			log.Debug(err)
 			attrs = trace.StatusCodeAborted(err.Error())
 		case errors.Is(err, errors.ErrEmptySearchResult),
@@ -112,10 +99,7 @@ func (s *server) Search(
 					RequestId:   req.GetConfig().GetRequestId(),
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.Search",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.Search"))
 			log.Debug(err)
 			attrs = trace.StatusCodeNotFound(err.Error())
 		case errors.As(err, &errNGT):
@@ -125,10 +109,7 @@ func (s *server) Search(
 					RequestId:   req.GetConfig().GetRequestId(),
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.Search/core.ngt",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
+				s.resourceInfo(ngtResourceType+"/ngt.Search/core.ngt"), info.Get())
 			log.Error(err)
 			attrs = trace.StatusCodeInternal(err.Error())
 		case errors.Is(err, errors.ErrIncompatibleDimensionSize(len(req.GetVector()), int(s.ngt.GetDimensionSize()))):
@@ -157,18 +138,11 @@ func (s *server) Search(
 					RequestId:   req.GetConfig().GetRequestId(),
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.Search",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
+				s.resourceInfo(ngtResourceType+"/ngt.Search"), info.Get())
 			log.Error(err)
 			attrs = trace.StatusCodeInternal(err.Error())
 		}
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 	res.RequestId = req.GetConfig().GetRequestId()
@@ -179,37 +153,10 @@ func (s *server) SearchByID(
 	ctx context.Context, req *payload.Search_IDRequest,
 ) (res *payload.Search_Response, err error) {
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.SearchByIDRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	uuid := req.GetId()
-	if len(uuid) == 0 {
-		err = errors.ErrInvalidUUID(uuid)
-		err = status.WrapWithInvalidArgument(fmt.Sprintf("SearchByID API invalid argument for uuid \"%s\" detected", uuid), err,
-			&errdetails.RequestInfo{
-				RequestId:   uuid,
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.BadRequest{
-				FieldViolations: []*errdetails.BadRequestFieldViolation{
-					{
-						Field:       "uuid",
-						Description: err.Error(),
-					},
-				},
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.SearchByID",
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			})
-		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+	if err = s.validateUUID(span, vald.SearchByIDRPCName, ngtResourceType+"/ngt.SearchByID",
+		uuid, req); err != nil {
 		return nil, err
 	}
 	vec, res, err := s.ngt.SearchByID(ctx,
@@ -230,10 +177,7 @@ func (s *server) SearchByID(
 					RequestId:   req.GetConfig().GetRequestId(),
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.SearchByID",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.SearchByID"))
 			log.Debug(err)
 			attrs = trace.StatusCodeAborted(err.Error())
 		case errors.Is(err, errors.ErrFlushingIsInProgress):
@@ -242,10 +186,7 @@ func (s *server) SearchByID(
 					RequestId:   req.GetConfig().GetRequestId(),
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.SearchByID",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.SearchByID"))
 			log.Debug(err)
 			attrs = trace.StatusCodeAborted(err.Error())
 		case errors.Is(err, errors.ErrEmptySearchResult),
@@ -256,10 +197,7 @@ func (s *server) SearchByID(
 					RequestId:   req.GetConfig().GetRequestId(),
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.SearchByID",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.SearchByID"))
 			log.Debug(err)
 			attrs = trace.StatusCodeNotFound(err.Error())
 		case errors.Is(err, errors.ErrObjectIDNotFound(req.GetId())),
@@ -269,10 +207,7 @@ func (s *server) SearchByID(
 					RequestId:   req.GetConfig().GetRequestId(),
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.SearchByID",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.SearchByID"))
 			log.Debug(err)
 			attrs = trace.StatusCodeNotFound(err.Error())
 		case errors.As(err, &errNGT):
@@ -282,10 +217,7 @@ func (s *server) SearchByID(
 					RequestId:   req.GetConfig().GetRequestId(),
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.SearchByID/core.ngt",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
+				s.resourceInfo(ngtResourceType+"/ngt.SearchByID/core.ngt"), info.Get())
 			log.Error(err)
 			attrs = trace.StatusCodeInternal(err.Error())
 		case errors.Is(err, errors.ErrIncompatibleDimensionSize(len(vec), int(s.ngt.GetDimensionSize()))):
@@ -314,18 +246,11 @@ func (s *server) SearchByID(
 					RequestId:   req.GetConfig().GetRequestId(),
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.SearchByID",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
+				s.resourceInfo(ngtResourceType+"/ngt.SearchByID"), info.Get())
 			log.Error(err)
 			attrs = trace.StatusCodeInternal(err.Error())
 		}
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 	res.RequestId = req.GetConfig().GetRequestId()
@@ -334,27 +259,15 @@ func (s *server) SearchByID(
 
 func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error) {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamSearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Search_Request) (*payload.Search_StreamResponse, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"/"+vald.StreamSearchRPCName+"/requestID-"+req.GetConfig().GetRequestId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.Search(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				return &payload.Search_StreamResponse{
 					Payload: &payload.Search_StreamResponse_Status{
 						Status: st.Proto(),
@@ -369,11 +282,7 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 		})
 	if err != nil {
 		st, _ := status.FromError(err)
-		if st != nil && span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanStatus(span, st, err)
 		return err
 	}
 	return nil
@@ -381,27 +290,15 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 
 func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (err error) {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamSearchByIDRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Search_IDRequest) (*payload.Search_StreamResponse, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"/"+vald.StreamSearchByIDRPCName+"/id-"+req.GetId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.SearchByID(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				return &payload.Search_StreamResponse{
 					Payload: &payload.Search_StreamResponse_Status{
 						Status: st.Proto(),
@@ -416,11 +313,7 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 		})
 	if err != nil {
 		st, _ := status.FromError(err)
-		if st != nil && span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanStatus(span, st, err)
 		return err
 	}
 	return nil
@@ -430,11 +323,7 @@ func (s *server) MultiSearch(
 	ctx context.Context, reqs *payload.Search_MultiRequest,
 ) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiSearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	res = &payload.Search_Responses{
 		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
@@ -449,19 +338,11 @@ func (s *server) MultiSearch(
 		s.eg.Go(safety.RecoverFunc(func() (err error) {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s/%s/errgroup.Go/id-%d", apiName, vald.MultiSearchRPCName, idx))
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			r, err := s.Search(ctx, query)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				mu.Lock()
 				if errs == nil {
 					errs = err
@@ -478,11 +359,7 @@ func (s *server) MultiSearch(
 	wg.Wait()
 	if errs != nil {
 		st, _ := status.FromError(errs)
-		if st != nil && span != nil {
-			span.RecordError(errs)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, errs.Error())
-		}
+		errhandler.RecordSpanStatus(span, st, errs)
 		return nil, errs
 	}
 	return res, nil
@@ -492,11 +369,7 @@ func (s *server) MultiSearchByID(
 	ctx context.Context, reqs *payload.Search_MultiIDRequest,
 ) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiSearchByIDRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	res = &payload.Search_Responses{
 		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
@@ -510,20 +383,12 @@ func (s *server) MultiSearchByID(
 		wg.Add(1)
 		s.eg.Go(safety.RecoverFunc(func() error {
 			ctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s/%s/errgroup.Go/id-%d", apiName, vald.MultiSearchByIDRPCName, idx))
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			defer wg.Done()
 			r, err := s.SearchByID(ctx, query)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				mu.Lock()
 				if errs == nil {
 					errs = err
@@ -540,11 +405,7 @@ func (s *server) MultiSearchByID(
 	wg.Wait()
 	if errs != nil {
 		st, _ := status.FromError(errs)
-		if st != nil && span != nil {
-			span.RecordError(errs)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, errs.Error())
-		}
+		errhandler.RecordSpanStatus(span, st, errs)
 		return nil, errs
 	}
 	return res, nil

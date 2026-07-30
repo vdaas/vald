@@ -116,8 +116,8 @@ The upgrading steps are below if you use `vald-helm-operator` for the deployment
 1. Upgrade CRDs
 
    ```bash
-   kubectl replace -f https://raw.githubusercontent.com/vdaas/vald/<VERSION>/charts/vald-helm-operator/crds/valdrelease.yaml
-   kubectl replace -f https://raw.githubusercontent.com/vdaas/vald/<VERSION>/charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml
+   kubectl replace -f https://raw.githubusercontent.com/vdaas/vald/<VERSION>/charts/operator/helm/crds/valdrelease.yaml
+   kubectl replace -f https://raw.githubusercontent.com/vdaas/vald/<VERSION>/charts/operator/helm/crds/valdhelmoperatorrelease.yaml
    ```
 
 1. Update `vhor`

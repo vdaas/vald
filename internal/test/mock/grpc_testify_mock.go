@@ -80,14 +80,16 @@ type (
 
 func (c *ClientInternal) StartConnectionMonitor(ctx context.Context) (<-chan error, error) {
 	args := c.Called(ctx)
-	return args.Get(0).(<-chan error), args.Error(1)
+	ch, _ := args.Get(0).(<-chan error)
+	return ch, args.Error(1)
 }
 
 func (c *ClientInternal) Connect(
 	ctx context.Context, addr string, dopts ...DialOption,
 ) (pool.Conn, error) {
 	args := c.Called(ctx, addr, dopts)
-	return args.Get(0).(pool.Conn), args.Error(1)
+	conn, _ := args.Get(0).(pool.Conn)
+	return conn, args.Error(1)
 }
 
 func (c *ClientInternal) IsConnected(ctx context.Context, addr string) bool {

@@ -1,29 +1,27 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 // package config providers configuration type and load configuration logic
 package config
 
 import (
-	"encoding/json"
 	"io/fs"
 	"reflect"
 	"syscall"
 	"testing"
 
+	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
@@ -1766,6 +1764,60 @@ func TestMerge(t *testing.T) {
 			}
 		})
 	}
+
+	// *bool(false) and *int(0) pointer-to-zero-value tests.
+	// These verify that a non-nil pointer with a zero underlying value
+	// (e.g. *bool(false), *int(0)) properly overwrites the dst field.
+	t.Run("pointer zero value override", func(tt *testing.T) {
+		tt.Parallel()
+		type boolConfig struct {
+			Flag  *bool
+			Count *int
+		}
+		ptrBool := func(v bool) *bool { return &v }
+		ptrInt := func(v int) *int { return &v }
+
+		boolTests := []struct {
+			name string
+			dst  boolConfig
+			src  boolConfig
+			want boolConfig
+		}{
+			{
+				name: "dst=ptr(true) src=ptr(false) -> ptr(false)",
+				dst:  boolConfig{Flag: ptrBool(true), Count: ptrInt(1)},
+				src:  boolConfig{Flag: ptrBool(false)},
+				want: boolConfig{Flag: ptrBool(false), Count: ptrInt(1)},
+			},
+			{
+				name: "dst=ptr(42) src=ptr(0) -> ptr(0)",
+				dst:  boolConfig{Flag: ptrBool(true), Count: ptrInt(42)},
+				src:  boolConfig{Count: ptrInt(0)},
+				want: boolConfig{Flag: ptrBool(true), Count: ptrInt(0)},
+			},
+			{
+				name: "dst=nil src=ptr(false) -> ptr(false)",
+				dst:  boolConfig{},
+				src:  boolConfig{Flag: ptrBool(false)},
+				want: boolConfig{Flag: ptrBool(false)},
+			},
+		}
+		for _, btc := range boolTests {
+			tt.Run(btc.name, func(ttt *testing.T) {
+				ttt.Parallel()
+				got, err := Merge(btc.dst, btc.src)
+				if err != nil {
+					ttt.Errorf("unexpected error: %v", err)
+					return
+				}
+				if !reflect.DeepEqual(got, btc.want) {
+					gotJSON, _ := json.Marshal(got)
+					wantJSON, _ := json.Marshal(btc.want)
+					ttt.Errorf("got: %s, want: %s", gotJSON, wantJSON)
+				}
+			})
+		}
+	})
 }
 
 func Test_deepMerge(t *testing.T) {
@@ -1773,6 +1825,11 @@ func Test_deepMerge(t *testing.T) {
 	type config struct {
 		GlobalConfig
 		Slice []int
+	}
+	// boolCfg is used for *bool(false) / *int(0) pointer-zero-value test cases.
+	type boolCfg struct {
+		Flag  *bool
+		Count *int
 	}
 	type args struct {
 		dst       reflect.Value
@@ -1803,6 +1860,8 @@ func Test_deepMerge(t *testing.T) {
 	defaultAfterFunc := func(t *testing.T, _ args) {
 		t.Helper()
 	}
+	ptrBool := func(v bool) *bool { return &v }
+	ptrInt := func(v int) *int { return &v }
 	tests := []test{
 		func() test {
 			dst := &config{
@@ -1863,6 +1922,87 @@ func Test_deepMerge(t *testing.T) {
 				afterFunc:  defaultAfterFunc,
 			}
 		}(),
+		// *bool(false) — dst=ptr(true) src=ptr(false) must yield ptr(false).
+		func() test {
+			dst := &boolCfg{Flag: ptrBool(true)}
+			src := &boolCfg{Flag: ptrBool(false)}
+			visited := make(map[uintptr]bool)
+			return test{
+				name: "*bool(true) merged with *bool(false) yields *bool(false)",
+				args: args{
+					dst:       reflect.ValueOf(dst),
+					src:       reflect.ValueOf(src),
+					visited:   visited,
+					fieldPath: "",
+				},
+				want: want{},
+				checkFunc: func(w want, err error) error {
+					if !errors.Is(err, w.err) {
+						return errors.Errorf("got_error: %#v, want: %#v", err, w.err)
+					}
+					if dst.Flag == nil || *dst.Flag != false {
+						return errors.Errorf("Flag: got %v, want *false", dst.Flag)
+					}
+					return nil
+				},
+				beforeFunc: defaultBeforeFunc,
+				afterFunc:  defaultAfterFunc,
+			}
+		}(),
+		// *int(0) — dst=ptr(42) src=ptr(0) must yield ptr(0).
+		func() test {
+			dst := &boolCfg{Count: ptrInt(42)}
+			src := &boolCfg{Count: ptrInt(0)}
+			visited := make(map[uintptr]bool)
+			return test{
+				name: "*int(42) merged with *int(0) yields *int(0)",
+				args: args{
+					dst:       reflect.ValueOf(dst),
+					src:       reflect.ValueOf(src),
+					visited:   visited,
+					fieldPath: "",
+				},
+				want: want{},
+				checkFunc: func(w want, err error) error {
+					if !errors.Is(err, w.err) {
+						return errors.Errorf("got_error: %#v, want: %#v", err, w.err)
+					}
+					if dst.Count == nil || *dst.Count != 0 {
+						return errors.Errorf("Count: got %v, want *0", dst.Count)
+					}
+					return nil
+				},
+				beforeFunc: defaultBeforeFunc,
+				afterFunc:  defaultAfterFunc,
+			}
+		}(),
+		// nil dst + src=ptr(false) — dst.Flag must become ptr(false).
+		func() test {
+			dst := &boolCfg{}
+			src := &boolCfg{Flag: ptrBool(false)}
+			visited := make(map[uintptr]bool)
+			return test{
+				name: "nil Flag merged with *bool(false) yields *bool(false)",
+				args: args{
+					dst:       reflect.ValueOf(dst),
+					src:       reflect.ValueOf(src),
+					visited:   visited,
+					fieldPath: "",
+				},
+				want: want{},
+				checkFunc: func(w want, err error) error {
+					if !errors.Is(err, w.err) {
+						return errors.Errorf("got_error: %#v, want: %#v", err, w.err)
+					}
+					if dst.Flag == nil || *dst.Flag != false {
+						return errors.Errorf("Flag: got %v, want *false", dst.Flag)
+					}
+					return nil
+				},
+				beforeFunc: defaultBeforeFunc,
+				afterFunc:  defaultAfterFunc,
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -1890,3 +2030,100 @@ func Test_deepMerge(t *testing.T) {
 }
 
 // NOT IMPLEMENTED BELOW
+//
+// func Test_deepMergeExplicit(t *testing.T) {
+// 	type args struct {
+// 		dst       reflect.Value
+// 		src       reflect.Value
+// 		visited   map[uintptr]bool
+// 		fieldPath string
+// 		explicit  bool
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           dst:reflect.Value{},
+// 		           src:reflect.Value{},
+// 		           visited:nil,
+// 		           fieldPath:"",
+// 		           explicit:false,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           dst:reflect.Value{},
+// 		           src:reflect.Value{},
+// 		           visited:nil,
+// 		           fieldPath:"",
+// 		           explicit:false,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			err := deepMergeExplicit(test.args.dst, test.args.src, test.args.visited, test.args.fieldPath, test.args.explicit)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }

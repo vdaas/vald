@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package log
 
@@ -40,17 +38,17 @@ func TestInit(t *testing.T) {
 		opts []Option
 	}
 	type want struct {
-		l logger.Logger
+		l logger.Interface
 	}
 	type test struct {
 		want       want
-		checkFunc  func(want, logger.Logger) error
+		checkFunc  func(want, logger.Interface) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
 		name       string
 		args       args
 	}
-	defaultCheckFunc := func(w want, got logger.Logger) error {
+	defaultCheckFunc := func(w want, got logger.Interface) error {
 		if !reflect.DeepEqual(got, l) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.l)
 		}
@@ -121,17 +119,17 @@ func Test_getLogger(t *testing.T) {
 		o *option
 	}
 	type want struct {
-		want logger.Logger
+		want logger.Interface
 	}
 	type test struct {
 		want       want
 		args       args
-		checkFunc  func(want, logger.Logger) error
+		checkFunc  func(want, logger.Interface) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
 		name       string
 	}
-	defaultCheckFunc := func(w want, got logger.Logger) error {
+	defaultCheckFunc := func(w want, got logger.Interface) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -146,7 +144,7 @@ func Test_getLogger(t *testing.T) {
 						logType: logger.ZAP,
 					},
 				},
-				checkFunc: func(w want, got logger.Logger) error {
+				checkFunc: func(w want, got logger.Interface) error {
 					if got == nil {
 						return errors.New("got object is empty")
 					}
@@ -180,7 +178,7 @@ func Test_getLogger(t *testing.T) {
 					glg.WithLevel(level.Unknown.String()),
 				),
 			},
-			checkFunc: func(w want, got logger.Logger) error {
+			checkFunc: func(w want, got logger.Interface) error {
 				if got == nil {
 					return errors.New("got object is empty")
 				}
@@ -198,7 +196,7 @@ func Test_getLogger(t *testing.T) {
 					glg.WithLevel(level.Unknown.String()),
 				),
 			},
-			checkFunc: func(w want, got logger.Logger) error {
+			checkFunc: func(w want, got logger.Interface) error {
 				if got == nil {
 					return errors.New("got object is empty")
 				}

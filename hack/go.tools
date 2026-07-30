@@ -9,6 +9,7 @@ github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@upgrade
 github.com/josharian/impl@upgrade
 github.com/mfridman/tparse@upgrade
 github.com/momotaro98/strictgoimports/cmd/strictgoimports@upgrade
+github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@upgrade
 github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc@upgrade
 github.com/rhysd/actionlint/cmd/actionlint@upgrade
 github.com/segmentio/golines@upgrade
@@ -17,5 +18,6 @@ github.com/suzuki-shunsuke/ghalint/cmd/ghalint@upgrade
 github.com/suzuki-shunsuke/ghatm/cmd/ghatm@upgrade
 github.com/suzuki-shunsuke/pinact/cmd/pinact@upgrade
 golang.org/x/tools/cmd/goimports@upgrade
+golang.org/x/tools/gopls@upgrade
 honnef.co/go/tools/cmd/staticcheck@upgrade
 mvdan.cc/gofumpt@upgrade

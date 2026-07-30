@@ -15,7 +15,7 @@ package metric
 
 // NOT IMPLEMENTED BELOW
 //
-// func TestClientMetricInterceptors(t *testing.T) {
+// func TestClientInterceptors(t *testing.T) {
 // 	type want struct {
 // 		want  grpc.UnaryClientInterceptor
 // 		want1 grpc.StreamClientInterceptor
@@ -90,7 +90,7 @@ package metric
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got, got1, err := ClientMetricInterceptors()
+// 			got, got1, err := ClientInterceptors()
 // 			if err := checkFunc(test.want, got, got1, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

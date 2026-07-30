@@ -23,6 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/errhandler"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 )
@@ -31,11 +32,7 @@ func (s *server) CreateIndex(
 	ctx context.Context, c *payload.Control_CreateIndexRequest,
 ) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".CreateIndex")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	res = new(payload.Empty)
 	err = s.ngt.CreateIndex(ctx, c.GetPoolSize())
 	if err != nil {
@@ -45,10 +42,7 @@ func (s *server) CreateIndex(
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(c),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.CreateIndex",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				},
+				s.resourceInfo(ngtResourceType + "/ngt.CreateIndex"),
 			}
 		)
 
@@ -78,39 +72,22 @@ func (s *server) CreateIndex(
 			code = codes.Internal
 			log.Error(err)
 		}
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(code, err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Empty](span, code, err)
 	}
 	return res, nil
 }
 
 func (s *server) SaveIndex(ctx context.Context, _ *payload.Empty) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".SaveIndex")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	res = new(payload.Empty)
 	err = s.ngt.SaveIndex(ctx)
 	if err != nil {
 		log.Error(err)
 		err = status.WrapWithInternal("SaveIndex API failed to save indices", err,
-			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.SaveIndex",
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
+			s.resourceInfo(ngtResourceType+"/ngt.SaveIndex"), info.Get())
 		log.Error(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Empty](span, codes.Internal, err)
 	}
 	return res, nil
 }
@@ -119,11 +96,7 @@ func (s *server) CreateAndSaveIndex(
 	ctx context.Context, c *payload.Control_CreateIndexRequest,
 ) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".CreateAndSaveIndex")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	res = new(payload.Empty)
 	err = s.ngt.CreateAndSaveIndex(ctx, c.GetPoolSize())
 	if err != nil {
@@ -133,10 +106,7 @@ func (s *server) CreateAndSaveIndex(
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(c),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.CreateAndSaveIndex",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				},
+				s.resourceInfo(ngtResourceType + "/ngt.CreateAndSaveIndex"),
 			}
 		)
 
@@ -166,11 +136,7 @@ func (s *server) CreateAndSaveIndex(
 			code = codes.Internal
 		}
 		log.Error(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(code, err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanError(span, code, err)
 	}
 	return res, nil
 }
@@ -179,11 +145,7 @@ func (s *server) IndexInfo(
 	ctx context.Context, _ *payload.Empty,
 ) (res *payload.Info_Index_Count, err error) {
 	_, span := trace.StartSpan(ctx, apiName+".IndexInfo")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	return &payload.Info_Index_Count{
 		Stored:      uint32(s.ngt.Len()),
 		Uncommitted: uint32(s.ngt.InsertVQueueBufferLen() + s.ngt.DeleteVQueueBufferLen()),
@@ -196,11 +158,7 @@ func (s *server) IndexDetail(
 	ctx context.Context, _ *payload.Empty,
 ) (res *payload.Info_Index_Detail, err error) {
 	_, span := trace.StartSpan(ctx, apiName+".IndexDetail")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	res = &payload.Info_Index_Detail{
 		Counts:     make(map[string]*payload.Info_Index_Count),
 		Replica:    1,
@@ -219,11 +177,7 @@ func (s *server) IndexStatistics(
 	ctx context.Context, _ *payload.Empty,
 ) (res *payload.Info_Index_Statistics, err error) {
 	_, span := trace.StartSpan(ctx, apiName+".IndexStatistics")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	return s.ngt.IndexStatistics()
 }
 
@@ -231,11 +185,7 @@ func (s *server) IndexStatisticsDetail(
 	ctx context.Context, _ *payload.Empty,
 ) (res *payload.Info_Index_StatisticsDetail, err error) {
 	_, span := trace.StartSpan(ctx, apiName+".IndexStatisticsDetail")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	stats, err := s.ngt.IndexStatistics()
 	if err != nil {
 		return nil, err
@@ -251,11 +201,7 @@ func (s *server) IndexProperty(
 	ctx context.Context, _ *payload.Empty,
 ) (res *payload.Info_Index_PropertyDetail, err error) {
 	_, span := trace.StartSpan(ctx, apiName+".IndexStatisticsDetail")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	prop, err := s.ngt.IndexProperty()
 	if err != nil {
 		return nil, err

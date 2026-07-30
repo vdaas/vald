@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 syntax = "proto3";
 
@@ -327,19 +325,19 @@ message Remove {
     // Operator is enum of each conditional operator.
     enum Operator {
       // The timestamp is equal to the specified value in the request.
-      Eq = 0;
+      EQ = 0;
       // The timestamp is not equal to the specified value in the request.
-      Ne = 1;
+      NE = 1;
       // The timestamp is greater than or equal to the specified value in the
       // request.
-      Ge = 2;
+      GE = 2;
       // The timestamp is greater than the specified value in the request.
-      Gt = 3;
+      GT = 3;
       // The timestamp is less than or equal to the specified value in the
       // request.
-      Le = 4;
+      LE = 4;
       // The timestamp is less than the specified value in the request.
-      Lt = 5;
+      LT = 5;
     }
     // The timestamp.
     int64 timestamp = 1;

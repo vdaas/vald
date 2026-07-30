@@ -24,22 +24,26 @@ edition = "2024"
 algorithm = { version = "0.1.0", path = "../../libs/algorithm" }
 qbg = { version = "0.1.0", path = "../../libs/algorithms/qbg" }
 <<<<<<< HEAD
+<<<<<<< HEAD
 anyhow = "1.0.102"
 cargo = "0.95.0"
 =======
 anyhow = "1.0.103"
 >>>>>>> d50c5e731 (add ADOPTERS.md, MAINTAINERS.md (#3556))
+=======
+anyhow = "1.0.104"
+>>>>>>> 95ced8bfd ([Feature] Add Vald Operator (enabled multiple cluster operation) (#3557))
 chrono = "0.4.45"
 config = "0.15.25"
 flexi_logger = "0.31"
-futures = "0.3.32"
+futures = "0.3.33"
 http = "1.4.2"
 log = "0.4"
 opentelemetry = { version = "0.32.0" }
 prost = "0.14.4"
 prost-types = "0.14.4"
 proto = { version = "0.1.0", path = "../../libs/proto" }
-tokio = { version = "1.52.3", features = ["full"] }
+tokio = { version = "1.53.1", features = ["full"] }
 tokio-stream = { version = "0.1.18", features = ["full"] }
 tonic = "0.14.6"
 tonic-types = "0.14.6"
@@ -50,4 +54,4 @@ cc = "1"
 
 [dev-dependencies]
 bytes = "1.12.1"
-http-body = "1.0.1"
+http-body = "1.1.0"

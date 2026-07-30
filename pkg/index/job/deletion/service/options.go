@@ -20,6 +20,10 @@ import (
 
 type Option func(_ *index) error
 
+var defaultOpts = []Option{
+	WithIndexingConcurrency(1),
+}
+
 // WithDiscoverer returns Option that sets discoverer client.
 func WithDiscoverer(client discoverer.Client) Option {
 	return func(idx *index) error {

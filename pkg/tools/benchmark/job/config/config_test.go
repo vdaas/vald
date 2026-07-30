@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 // Package setting stores all server application settings
 package config
@@ -33,18 +31,18 @@ func TestNewConfig(t *testing.T) {
 		path string
 	}
 	type want struct {
-		wantCfg *Config
+		wantCfg *Data
 		err     error
 	}
 	type test struct {
 		want       want
-		checkFunc  func(want, *Config, error) error
+		checkFunc  func(want, *Data, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
 		name       string
 		args       args
 	}
-	defaultCheckFunc := func(w want, gotCfg *Config, err error) error {
+	defaultCheckFunc := func(w want, gotCfg *Data, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -62,7 +60,7 @@ func TestNewConfig(t *testing.T) {
 				args: args{
 					path: path,
 				},
-				checkFunc: func(w want, gotCfg *Config, err error) error {
+				checkFunc: func(w want, gotCfg *Data, err error) error {
 					if errors.Is(err, fs.ErrPermission) {
 						return nil
 					}
@@ -99,8 +97,8 @@ func TestNewConfig(t *testing.T) {
 			}
 
 			gotCfg, err := NewConfig(tt.Context(), test.args.path)
-			if err := checkFunc(test.want, gotCfg, err); err != nil {
-				tt.Errorf("error = %v, got = %#v", err, gotCfg)
+			if cerr := checkFunc(test.want, gotCfg, err); cerr != nil {
+				tt.Errorf("error = %v, got = %#v", cerr, gotCfg)
 			}
 		})
 	}
