@@ -146,11 +146,13 @@
 .textlintrc
 .whitesource
 .yamlfmt
+ADOPTERS.md
 AGENTS.md
 CHANGELOG.md
 CODE_OF_CONDUCT.md
 CONTRIBUTING.md
 LICENSE
+MAINTAINERS.md
 Makefile
 Makefile.d/actions.mk
 Makefile.d/bench.mk
