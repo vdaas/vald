@@ -592,8 +592,8 @@ operator:
       # operator.controller.leader_election.id -- name of the leader election lease resource
       id: vald-operator
       # @schema {"name": "operator.controller.leader_election.namespace", "type": "string"}
-      # operator.controller.leader_election.namespace -- namespace of the lease resource
-      namespace: default
+      # operator.controller.leader_election.namespace -- namespace of the lease resource (resolved from the MY_POD_NAMESPACE env at startup so the Lease lives in the release namespace, where the chart's Role/RoleBinding grant access)
+      namespace: _MY_POD_NAMESPACE_
       # @schema {"name": "operator.controller.leader_election.lease_duration", "type": "string"}
       # operator.controller.leader_election.lease_duration -- how long non-leader candidates wait before acquiring an expired lease ("" = 15s)
       lease_duration: 30s
@@ -631,9 +631,6 @@ operator:
     # @schema {"name": "operator.vrs.default_vrs_path", "type": "string"}
     # operator.vrs.default_vrs_path -- path of the default ValdRelease template yaml (the default-vrs ConfigMap is mounted on its directory)
     default_vrs_path: /opt/valdoperatorrelease/config/vrs.yaml
-    # @schema {"name": "operator.vrs.internal_host_domain", "type": "string"}
-    # operator.vrs.internal_host_domain -- internal host domain of the cluster
-    internal_host_domain: ""
     # @schema {"name": "operator.vrs.log_level", "type": "string"}
     # operator.vrs.log_level -- log level passed through to the underlying vald deployment
     log_level: warn

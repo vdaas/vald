@@ -1,35 +1,41 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package service
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
 	"github.com/vdaas/vald/internal/k8s"
-	"github.com/vdaas/vald/internal/k8s/client"
+	"github.com/vdaas/vald/internal/k8s/resource"
 	"github.com/vdaas/vald/internal/k8s/vald"
 	mock "github.com/vdaas/vald/internal/test/mock/k8s"
-	"github.com/vdaas/vald/internal/test/testify"
 )
 
+//nolint:maintidx // table-driven test with multiple literal test-case constructors; complexity is inherent to the pattern, not tangled logic
 func Test_operator_podOnReconcile(t *testing.T) {
 	t.Parallel()
+
+	const (
+		readReplicaLabelKey = "app"
+		rotatorName         = "rotator"
+		testDeploymentName  = "deploymentName"
+		testRunningJob1     = "already running job1"
+	)
 
 	type want struct {
 		res          k8s.Result
@@ -84,7 +90,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 				},
 				readReplicaDeployment: &k8s.Deployment{
 					ObjectMeta: k8s.ObjectMeta{
-						Name: "deploymentName",
+						Name:   testDeploymentName,
+						Labels: map[string]string{readReplicaLabelKey: "0"},
 						Annotations: map[string]string{
 							vald.LastTimeSnapshotTimestampAnnotationsKey: rotateTime.Format(vald.TimeFormat),
 						},
@@ -117,7 +124,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 				},
 				readReplicaDeployment: &k8s.Deployment{
 					ObjectMeta: k8s.ObjectMeta{
-						Name: "deploymentName",
+						Name:   testDeploymentName,
+						Labels: map[string]string{readReplicaLabelKey: "0"},
 						Annotations: map[string]string{
 							vald.LastTimeSnapshotTimestampAnnotationsKey: rotateTime.Format(vald.TimeFormat),
 						},
@@ -150,7 +158,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 				},
 				readReplicaDeployment: &k8s.Deployment{
 					ObjectMeta: k8s.ObjectMeta{
-						Name: "deploymentName",
+						Name:   testDeploymentName,
+						Labels: map[string]string{readReplicaLabelKey: "0"},
 						Annotations: map[string]string{
 							vald.LastTimeSnapshotTimestampAnnotationsKey: rotateTime.Format(vald.TimeFormat),
 						},
@@ -159,7 +168,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 				runningJobs: []k8s.Job{
 					{
 						ObjectMeta: k8s.ObjectMeta{
-							Name: "already running job1",
+							Name:   testRunningJob1,
+							Labels: map[string]string{readReplicaLabelKey: rotatorName},
 						},
 						Status: k8s.JobStatus{
 							Active: 1,
@@ -194,7 +204,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 				},
 				readReplicaDeployment: &k8s.Deployment{
 					ObjectMeta: k8s.ObjectMeta{
-						Name: "deploymentName",
+						Name:   testDeploymentName,
+						Labels: map[string]string{readReplicaLabelKey: "0"},
 						Annotations: map[string]string{
 							vald.LastTimeSnapshotTimestampAnnotationsKey: rotateTime.Format(vald.TimeFormat),
 						},
@@ -203,7 +214,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 				runningJobs: []k8s.Job{
 					{
 						ObjectMeta: k8s.ObjectMeta{
-							Name: "already running job1",
+							Name:   testRunningJob1,
+							Labels: map[string]string{readReplicaLabelKey: rotatorName},
 						},
 						Status: k8s.JobStatus{
 							Active: 1,
@@ -238,7 +250,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 				},
 				readReplicaDeployment: &k8s.Deployment{
 					ObjectMeta: k8s.ObjectMeta{
-						Name: "deploymentName",
+						Name:   testDeploymentName,
+						Labels: map[string]string{readReplicaLabelKey: "0"},
 						Annotations: map[string]string{
 							vald.LastTimeSnapshotTimestampAnnotationsKey: rotateTime.Format(vald.TimeFormat),
 						},
@@ -247,7 +260,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 				runningJobs: []k8s.Job{
 					{
 						ObjectMeta: k8s.ObjectMeta{
-							Name: "already running job1",
+							Name:   testRunningJob1,
+							Labels: map[string]string{readReplicaLabelKey: rotatorName},
 						},
 						Status: k8s.JobStatus{
 							Active: 1,
@@ -255,7 +269,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 					},
 					{
 						ObjectMeta: k8s.ObjectMeta{
-							Name: "already running job2",
+							Name:   "already running job2",
+							Labels: map[string]string{readReplicaLabelKey: rotatorName},
 						},
 						Status: k8s.JobStatus{
 							Active: 1,
@@ -279,35 +294,41 @@ func Test_operator_podOnReconcile(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 
-			mock := &mock.ValdK8sClientMock{}
-			mock.On("LabelSelector", testify.Anything, testify.Anything, testify.Anything).Return(client.NewSelector(), nil).Maybe()
-			mock.On("List", testify.Anything, testify.AnythingOfType("*v1.DeploymentList"), testify.Anything).Run(func(args testify.Arguments) {
-				arg, ok := args.Get(1).(*k8s.DeploymentList)
-				require.True(t, ok)
+			mockClient := &mock.ValdK8sClientMock{}
 
-				arg.Items = []k8s.Deployment{*test.readReplicaDeployment}
-			}).Return(nil).Maybe()
-
-			mock.On("List", testify.Anything, testify.AnythingOfType("*v1.JobList"), testify.Anything).Run(func(args testify.Arguments) {
-				arg, ok := args.Get(1).(*k8s.JobList)
-				require.True(t, ok)
-
-				arg.Items = test.runningJobs
-			}).Return(nil).Maybe()
-
-			// testify/mock does not accept to set Times(0) so you cannot do things like .Return(nil).Once(calledTimes)
-			// ref: https://github.com/stretchr/testify/issues/566
-			if test.want.createCalled {
-				mock.On("Create", testify.Anything, testify.Anything, testify.Anything).Return(nil).Once()
+			scheme := k8s.NewScheme()
+			require.NoError(t, k8s.AddClientGoScheme(scheme))
+			var initObjs []k8s.Object
+			if test.readReplicaDeployment != nil {
+				initObjs = append(initObjs, test.readReplicaDeployment)
 			}
-			defer mock.AssertExpectations(tt)
+			for i := range test.runningJobs {
+				initObjs = append(initObjs, &test.runningJobs[i])
+			}
+
+			// testify/mock does not accept to set Times(0), so the call count is
+			// tracked manually via an interceptor instead of a mock expectation.
+			var createCalls int
+			base := mock.NewFakeClientBuilder().WithScheme(scheme).WithObjects(initObjs...).Build()
+			fakeClient := mock.NewInterceptorClient(base, mock.InterceptorFuncs{
+				Create: func(
+					ctx context.Context, c k8s.WithWatch, obj k8s.Object, opts ...k8s.CreateOption,
+				) error {
+					createCalls++
+					return c.Create(ctx, obj, opts...)
+				},
+			})
 
 			concurrency := uint(1)
 			if test.rotationJobConcurrency != 0 {
 				concurrency = test.rotationJobConcurrency
 			}
 			op := operator{
-				client:                 mock,
+				client:                 mockClient,
+				deployments:            resource.NewClient(fakeClient, new(k8s.Deployment), new(k8s.DeploymentList)),
+				jobs:                   resource.NewClient(fakeClient, new(k8s.Job), new(k8s.JobList)),
+				readReplicaLabelKey:    readReplicaLabelKey,
+				rotatorName:            rotatorName,
 				readReplicaEnabled:     test.readReplicaEnabled,
 				rotationJobConcurrency: concurrency,
 			}
@@ -321,6 +342,151 @@ func Test_operator_podOnReconcile(t *testing.T) {
 			res, err := op.podOnReconcile(tt.Context(), test.agentPod)
 			require.Equal(t, test.want.err, err)
 			require.Equal(t, test.want.res, res)
+			wantCreateCalls := 0
+			if test.want.createCalled {
+				wantCreateCalls = 1
+			}
+			require.Equal(t, wantCreateCalls, createCalls)
+		})
+	}
+}
+
+func Test_operator_ensureJobConcurrency(t *testing.T) {
+	t.Parallel()
+
+	const (
+		rotatorName = "rotator"
+		namespace   = "default"
+		targetKey   = "vald.vdaas.org/target-read-replica-id"
+		podIdx      = "0"
+		otherPodIdx = "1"
+	)
+
+	// newJob builds a rotation job fixture that matches the label selector
+	// (app=rotatorName) and namespace used by ensureJobConcurrency. An empty
+	// idx leaves the pod template annotations nil.
+	newJob := func(name string, status k8s.JobStatus, idx string) k8s.Job {
+		job := k8s.Job{
+			ObjectMeta: k8s.ObjectMeta{
+				Name:      name,
+				Namespace: namespace,
+				Labels:    map[string]string{"app": rotatorName},
+			},
+			Status: status,
+		}
+		if idx != "" {
+			job.Spec.Template.Annotations = map[string]string{targetKey: idx}
+		}
+		return job
+	}
+
+	type test struct {
+		name                   string
+		jobs                   []k8s.Job
+		rotationJobConcurrency uint
+		want                   jobReconcileResult
+	}
+
+	tests := []test{
+		{
+			name:                   "returns createRequired when no jobs exist",
+			rotationJobConcurrency: 1,
+			want:                   createRequired,
+		},
+		{
+			// Regression: a just-created job has Active==0 with zero
+			// Succeeded/Failed until the Job controller schedules its pod.
+			// It must stay in the accounting so that a second reconcile in
+			// that window dedups instead of creating a duplicate rotation job.
+			name: "returns createSkipped when a brand-new job (all zero status) has the same podIdx",
+			jobs: []k8s.Job{
+				newJob("brand-new", k8s.JobStatus{}, podIdx),
+			},
+			rotationJobConcurrency: 2,
+			want:                   createSkipped,
+		},
+		{
+			name: "returns requeueRequired when a brand-new job (all zero status) fills the concurrency limit",
+			jobs: []k8s.Job{
+				newJob("brand-new", k8s.JobStatus{}, otherPodIdx),
+			},
+			rotationJobConcurrency: 1,
+			want:                   requeueRequired,
+		},
+		{
+			name: "returns createRequired when a succeeded job is dropped from accounting",
+			jobs: []k8s.Job{
+				newJob("succeeded", k8s.JobStatus{Succeeded: 1}, podIdx),
+			},
+			rotationJobConcurrency: 1,
+			want:                   createRequired,
+		},
+		{
+			name: "returns createRequired when a failed job is dropped from accounting",
+			jobs: []k8s.Job{
+				newJob("failed", k8s.JobStatus{Failed: 1}, podIdx),
+			},
+			rotationJobConcurrency: 1,
+			want:                   createRequired,
+		},
+		{
+			name: "returns requeueRequired when a running job with a different podIdx fills the concurrency limit",
+			jobs: []k8s.Job{
+				newJob("running", k8s.JobStatus{Active: 1}, otherPodIdx),
+			},
+			rotationJobConcurrency: 1,
+			want:                   requeueRequired,
+		},
+		{
+			name: "returns createSkipped when a running job has the same podIdx",
+			jobs: []k8s.Job{
+				newJob("running", k8s.JobStatus{Active: 1}, podIdx),
+			},
+			rotationJobConcurrency: 2,
+			want:                   createSkipped,
+		},
+		{
+			name: "returns createSkipped when a retrying job (Active>0 with Failed>0) has the same podIdx",
+			jobs: []k8s.Job{
+				newJob("retrying", k8s.JobStatus{Active: 1, Failed: 1}, podIdx),
+			},
+			rotationJobConcurrency: 2,
+			want:                   createSkipped,
+		},
+		{
+			name: "returns createRequired when a running job has no target annotation",
+			jobs: []k8s.Job{
+				newJob("running-no-annotation", k8s.JobStatus{Active: 1}, ""),
+			},
+			rotationJobConcurrency: 2,
+			want:                   createRequired,
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+
+			scheme := k8s.NewScheme()
+			require.NoError(tt, k8s.AddClientGoScheme(scheme))
+			var initObjs []k8s.Object
+			for i := range test.jobs {
+				initObjs = append(initObjs, &test.jobs[i])
+			}
+			fakeClient := mock.NewFakeClientBuilder().WithScheme(scheme).WithObjects(initObjs...).Build()
+
+			op := operator{
+				jobs:                              resource.NewClient(fakeClient, new(k8s.Job), new(k8s.JobList)),
+				namespace:                         namespace,
+				rotatorName:                       rotatorName,
+				rotationJobConcurrency:            test.rotationJobConcurrency,
+				targetReadReplicaIDAnnotationsKey: targetKey,
+			}
+
+			got, err := op.ensureJobConcurrency(tt.Context(), podIdx)
+			require.NoError(tt, err)
+			require.Equal(tt, test.want, got)
 		})
 	}
 }
@@ -337,8 +503,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		opts                   []Option
 // 	}
 // 	type want struct {
-// 		wantO Operator
-// 		err   error
+// 		want Operator
+// 		err  error
 // 	}
 // 	type test struct {
 // 		name       string
@@ -348,12 +514,12 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, gotO Operator, err error) error {
+// 	defaultCheckFunc := func(w want, got Operator, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
-// 		if !reflect.DeepEqual(gotO, w.wantO) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotO, w.wantO)
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 // 		}
 // 		return nil
 // 	}
@@ -423,8 +589,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			gotO, err := New(test.args.namespace, test.args.agentName, test.args.rotatorName, test.args.targetReadReplicaIDKey, test.args.rotatorJob, test.args.opts...)
-// 			if err := checkFunc(test.want, gotO, err); err != nil {
+// 			got, err := New(test.args.namespace, test.args.agentName, test.args.rotatorName, test.args.targetReadReplicaIDKey, test.args.rotatorJob, test.args.opts...)
+// 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})
@@ -439,6 +605,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		ctrl                              k8s.Controller
 // 		eg                                errgroup.Group
 // 		client                            client.Client
+// 		deployments                       *resource.Client[*k8s.Deployment, *k8s.DeploymentList]
+// 		jobs                              *resource.Client[*k8s.Job, *k8s.JobList]
 // 		rotatorJob                        *k8s.Job
 // 		namespace                         string
 // 		rotatorName                       string
@@ -481,6 +649,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		           ctrl:nil,
 // 		           eg:nil,
 // 		           client:nil,
+// 		           deployments:nil,
+// 		           jobs:nil,
 // 		           rotatorJob:nil,
 // 		           namespace:"",
 // 		           rotatorName:"",
@@ -512,6 +682,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		           ctrl:nil,
 // 		           eg:nil,
 // 		           client:nil,
+// 		           deployments:nil,
+// 		           jobs:nil,
 // 		           rotatorJob:nil,
 // 		           namespace:"",
 // 		           rotatorName:"",
@@ -552,6 +724,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 				ctrl:                              test.fields.ctrl,
 // 				eg:                                test.fields.eg,
 // 				client:                            test.fields.client,
+// 				deployments:                       test.fields.deployments,
+// 				jobs:                              test.fields.jobs,
 // 				rotatorJob:                        test.fields.rotatorJob,
 // 				namespace:                         test.fields.namespace,
 // 				rotatorName:                       test.fields.rotatorName,
@@ -578,6 +752,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		ctrl                              k8s.Controller
 // 		eg                                errgroup.Group
 // 		client                            client.Client
+// 		deployments                       *resource.Client[*k8s.Deployment, *k8s.DeploymentList]
+// 		jobs                              *resource.Client[*k8s.Job, *k8s.JobList]
 // 		rotatorJob                        *k8s.Job
 // 		namespace                         string
 // 		rotatorName                       string
@@ -621,6 +797,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		           ctrl:nil,
 // 		           eg:nil,
 // 		           client:nil,
+// 		           deployments:nil,
+// 		           jobs:nil,
 // 		           rotatorJob:nil,
 // 		           namespace:"",
 // 		           rotatorName:"",
@@ -653,6 +831,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		           ctrl:nil,
 // 		           eg:nil,
 // 		           client:nil,
+// 		           deployments:nil,
+// 		           jobs:nil,
 // 		           rotatorJob:nil,
 // 		           namespace:"",
 // 		           rotatorName:"",
@@ -693,6 +873,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 				ctrl:                              test.fields.ctrl,
 // 				eg:                                test.fields.eg,
 // 				client:                            test.fields.client,
+// 				deployments:                       test.fields.deployments,
+// 				jobs:                              test.fields.jobs,
 // 				rotatorJob:                        test.fields.rotatorJob,
 // 				namespace:                         test.fields.namespace,
 // 				rotatorName:                       test.fields.rotatorName,
@@ -811,6 +993,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		ctrl                              k8s.Controller
 // 		eg                                errgroup.Group
 // 		client                            client.Client
+// 		deployments                       *resource.Client[*k8s.Deployment, *k8s.DeploymentList]
+// 		jobs                              *resource.Client[*k8s.Job, *k8s.JobList]
 // 		rotatorJob                        *k8s.Job
 // 		namespace                         string
 // 		rotatorName                       string
@@ -854,6 +1038,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		           ctrl:nil,
 // 		           eg:nil,
 // 		           client:nil,
+// 		           deployments:nil,
+// 		           jobs:nil,
 // 		           rotatorJob:nil,
 // 		           namespace:"",
 // 		           rotatorName:"",
@@ -886,6 +1072,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 		           ctrl:nil,
 // 		           eg:nil,
 // 		           client:nil,
+// 		           deployments:nil,
+// 		           jobs:nil,
 // 		           rotatorJob:nil,
 // 		           namespace:"",
 // 		           rotatorName:"",
@@ -926,6 +1114,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 // 				ctrl:                              test.fields.ctrl,
 // 				eg:                                test.fields.eg,
 // 				client:                            test.fields.client,
+// 				deployments:                       test.fields.deployments,
+// 				jobs:                              test.fields.jobs,
 // 				rotatorJob:                        test.fields.rotatorJob,
 // 				namespace:                         test.fields.namespace,
 // 				rotatorName:                       test.fields.rotatorName,
@@ -937,147 +1127,6 @@ func Test_operator_podOnReconcile(t *testing.T) {
 //
 // 			gotRq, err := o.createRotationJobOrRequeue(test.args.ctx, test.args.podIdx)
 // 			if err := checkFunc(test.want, gotRq, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func Test_operator_ensureJobConcurrency(t *testing.T) {
-// 	type args struct {
-// 		ctx    context.Context
-// 		podIdx string
-// 	}
-// 	type fields struct {
-// 		ctrl                              k8s.Controller
-// 		eg                                errgroup.Group
-// 		client                            client.Client
-// 		rotatorJob                        *k8s.Job
-// 		namespace                         string
-// 		rotatorName                       string
-// 		targetReadReplicaIDAnnotationsKey string
-// 		readReplicaLabelKey               string
-// 		rotationJobConcurrency            uint
-// 		readReplicaEnabled                bool
-// 	}
-// 	type want struct {
-// 		want jobReconcileResult
-// 		err  error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, jobReconcileResult, error) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, got jobReconcileResult, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           ctx:nil,
-// 		           podIdx:"",
-// 		       },
-// 		       fields: fields {
-// 		           ctrl:nil,
-// 		           eg:nil,
-// 		           client:nil,
-// 		           rotatorJob:nil,
-// 		           namespace:"",
-// 		           rotatorName:"",
-// 		           targetReadReplicaIDAnnotationsKey:"",
-// 		           readReplicaLabelKey:"",
-// 		           rotationJobConcurrency:0,
-// 		           readReplicaEnabled:false,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           ctx:nil,
-// 		           podIdx:"",
-// 		           },
-// 		           fields: fields {
-// 		           ctrl:nil,
-// 		           eg:nil,
-// 		           client:nil,
-// 		           rotatorJob:nil,
-// 		           namespace:"",
-// 		           rotatorName:"",
-// 		           targetReadReplicaIDAnnotationsKey:"",
-// 		           readReplicaLabelKey:"",
-// 		           rotationJobConcurrency:0,
-// 		           readReplicaEnabled:false,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			o := &operator{
-// 				ctrl:                              test.fields.ctrl,
-// 				eg:                                test.fields.eg,
-// 				client:                            test.fields.client,
-// 				rotatorJob:                        test.fields.rotatorJob,
-// 				namespace:                         test.fields.namespace,
-// 				rotatorName:                       test.fields.rotatorName,
-// 				targetReadReplicaIDAnnotationsKey: test.fields.targetReadReplicaIDAnnotationsKey,
-// 				readReplicaLabelKey:               test.fields.readReplicaLabelKey,
-// 				rotationJobConcurrency:            test.fields.rotationJobConcurrency,
-// 				readReplicaEnabled:                test.fields.readReplicaEnabled,
-// 			}
-//
-// 			got, err := o.ensureJobConcurrency(test.args.ctx, test.args.podIdx)
-// 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})

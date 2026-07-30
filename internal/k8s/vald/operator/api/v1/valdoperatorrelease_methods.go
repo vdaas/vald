@@ -14,6 +14,7 @@
 package v1
 
 import (
+	"github.com/vdaas/vald/internal/log"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
@@ -46,6 +47,7 @@ func (mr *MachineResource) GetResourceList() v1.ResourceList {
 func parseQuantity(s string) resource.Quantity {
 	q, err := resource.ParseQuantity(s)
 	if err != nil {
+		log.Warnf("failed to parse resource quantity %q from ValdOperatorRelease, falling back to zero Quantity: %v", s, err)
 		return resource.Quantity{}
 	}
 	return q

@@ -79,10 +79,22 @@ helm/package/operator/benchmark: \
 helm/package/vald-readreplica:
 	helm package $(ROOTDIR)/charts/vald-readreplica
 
-.PHONY: helm/repo/add
 ## add Helm chart repository
 helm/repo/add:
 	helm repo add vald https://vald.vdaas.org/charts
+
+# Generic per-chart fallbacks (from feature/kpango-prs). The explicit targets
+# above win when defined and keep their chart-specific prerequisites (e.g. the
+# schema/crd steps); these patterns cover ad-hoc lint runs and future charts.
+.PHONY: helm/lint/%
+## run lint for Helm chart (charts/%)
+helm/lint/%:
+	helm lint $(ROOTDIR)/charts/$*
+
+.PHONY: helm/package/%
+## packaging Helm chart (charts/%)
+helm/package/%:
+	helm package $(ROOTDIR)/charts/$*
 
 .PHONY: helm/docs/all
 ## generate README for all Helm charts
@@ -96,12 +108,10 @@ helm/docs/all: \
 .PHONY: helm/docs/vald
 helm/docs/vald: $(ROOTDIR)/charts/vald/README.md
 
-# force to rebuild
-.PHONY: $(ROOTDIR)/charts/vald/README.md
-$(ROOTDIR)/charts/vald/README.md: \
-	$(ROOTDIR)/charts/vald/README.md.gotmpl \
-	$(ROOTDIR)/charts/vald/values.yaml
-	helm-docs
+.PHONY: helm/docs/%
+## generate docs for Helm Chart (charts/%)
+helm/docs/%: $(ROOTDIR)/charts/%/README.md
+	@echo "generated docs for $*"
 
 .PHONY: helm/docs/operator/helm
 helm/docs/operator/helm: $(ROOTDIR)/charts/operator/helm/README.md
@@ -143,6 +153,7 @@ $(ROOTDIR)/charts/vald-readreplica/README.md: \
 	helm-docs
 
 .PHONY: helm/schema/all
+## generate json schemas for all Helm Charts
 helm/schema/all: \
 	helm/schema/vald \
 	helm/schema/operator/helm \
@@ -256,3 +267,8 @@ helm/schema/crd/vald-benchmark-scenario: \
 helm/schema/crd/operator/benchmark: \
 	yq/install
 	$(call gen-vald-crd,operator/benchmark,valdbenchmarkoperatorrelease,operator/benchmark/values)
+
+.PHONY: helm/repo/index
+## index Helm chart repository
+helm/repo/index:
+	helm repo index --url https://vald.vdaas.org/charts charts/

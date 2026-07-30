@@ -24,20 +24,20 @@ type GlobalConfig = config.GlobalConfig
 // Data represents the application configurations.
 type Data struct {
 	// Server represent all server configurations
-	Server *config.Servers `json:"server_config" yaml:"server_config"`
+	Server *config.Servers `json:"server_config" yaml:"server_config"` //nolint:tagliatelle // fixed by the existing config.yaml wire format, not renameable
 
 	// Observability represent observability configurations
 	Observability *config.Observability `json:"observability" yaml:"observability"`
 
 	// ReadReplicaRotate represent read replica rotation configuration
-	ReadReplicaRotate *config.ReadReplicaRotate `json:"rotator" yaml:"rotator"`
+	ReadReplicaRotate *config.ReadReplicaRotate `json:"rotator" yaml:"rotator"` //nolint:tagliatelle // fixed by the existing config.yaml wire format, not renameable
 
 	// GlobalConfig represent the global configuration
 	config.GlobalConfig `json:",inline" yaml:",inline"`
 }
 
-// NewConfig loads configurations from the file path.
-func NewConfig(path string) (cfg *Data, err error) {
+// New loads configurations from the file path.
+func New(path string) (cfg *Data, err error) {
 	cfg = new(Data)
 
 	if err = config.Read(path, &cfg); err != nil {

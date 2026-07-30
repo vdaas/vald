@@ -53,8 +53,8 @@ data:
               max_conn_age: ""
               max_conn_age_grace: ""
               max_conn_idle: ""
-              min_time: 10m
-              permit_without_stream: false
+              min_time: 1s
+              permit_without_stream: true
               time: 3h
               timeout: 60s
             max_concurrent_streams: 0

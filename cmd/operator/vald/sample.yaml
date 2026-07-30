@@ -173,8 +173,8 @@ operator:
       enabled: true
       # name of the leader election lease resource
       id: vald-operator
-      # namespace in which the lease resource is created
-      namespace: default
+      # namespace in which the lease resource is created (resolved from the MY_POD_NAMESPACE env so it follows the release namespace)
+      namespace: _MY_POD_NAMESPACE_
       # how long non-leader candidates wait before acquiring an expired lease ("" = 15s)
       lease_duration: 30s
       # how long the leader retries refreshing its lease before giving up ("" = 10s)
@@ -203,8 +203,6 @@ operator:
   vrs:
     # path of the default ValdRelease template yaml (ConfigMap mount)
     default_vrs_path: /opt/valdoperatorrelease/config/vrs.yaml
-    # internal host domain of the cluster
-    internal_host_domain: ""
     # log level passed through to the underlying vald deployment
     log_level: warn
     # log format passed through to the underlying vald deployment ("" = raw)

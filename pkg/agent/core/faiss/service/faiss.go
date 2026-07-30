@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package service
 
@@ -111,6 +109,7 @@ type (
 		smu               sync.Mutex
 		fmu               sync.Mutex
 		cowmu             sync.Mutex
+		lmu               sync.Mutex
 		enableCopyOnWrite bool
 		isTrained         bool
 		dcd               bool
@@ -419,6 +418,14 @@ func (f *faiss) load(ctx context.Context, path string, opts ...core.Option) erro
 	defer cancel()
 	eg, _ := errgroup.New(ctx)
 	eg.Go(safety.RecoverFunc(func() (err error) {
+		// Serialize the Close/reassign of f.core. On a load timeout load()
+		// returns but leaves this goroutine running (the process is expected to
+		// be killed) while the caller falls back to another load(); without
+		// this lock the abandoned goroutine and the new one would concurrently
+		// Close/reassign the same cgo handle — a data race and a double-Close
+		// (use-after-free) of the FAISS C++ index.
+		f.lmu.Lock()
+		defer f.lmu.Unlock()
 		if f.core != nil {
 			f.core.Close()
 			f.core = nil
@@ -658,7 +665,7 @@ func (f *faiss) Start(ctx context.Context) <-chan error {
 func (f *faiss) Train(nb int, xb []float32) error {
 	err := f.core.Train(nb, xb)
 	if err != nil {
-		log.Errorf("failed to faiss train", err)
+		log.Errorf("failed to faiss train: %v", err)
 		return err
 	}
 
@@ -842,7 +849,7 @@ func (f *faiss) CreateIndex(ctx context.Context) error {
 		log.Debugf("max * minPointsPerCentroid: %d", max*minPointsPerCentroid)
 		err := f.core.Train(len(f.addVecs)/f.dim, f.addVecs)
 		if err != nil {
-			log.Errorf("failed to faiss train", err)
+			log.Errorf("failed to faiss train: %v", err)
 			return err
 		}
 		f.isTrained = true
@@ -853,7 +860,7 @@ func (f *faiss) CreateIndex(ctx context.Context) error {
 		log.Debug("faiss add phase started")
 		ntotal, err := f.core.Add(len(f.addVecs)/f.dim, f.addVecs, f.addIds)
 		if err != nil {
-			log.Errorf("failed to faiss add", err)
+			log.Errorf("failed to faiss add: %v", err)
 			return err
 		}
 		f.addVecs = nil

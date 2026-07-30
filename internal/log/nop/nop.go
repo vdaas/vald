@@ -18,7 +18,7 @@ import "github.com/vdaas/vald/internal/log/logger"
 type nopLogger struct{}
 
 // New returns a new logger instance.
-func New() logger.Logger {
+func New() logger.Interface {
 	return new(nopLogger)
 }
 

@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package grpc
 
@@ -29,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/errhandler"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -36,15 +35,94 @@ import (
 	"github.com/vdaas/vald/pkg/gateway/lb/service"
 )
 
+// handleIndexMethodError wraps a method-level index RPC error with the vald.v1.<rpc>
+// resource context, records it on the span, and returns the wrapped error (the
+// caller returns it alongside a nil payload). Extracted from the verbatim-
+// duplicated method-level handling across the Index* handlers.
+func (s *server) handleIndexMethodError(
+	ctx context.Context, span trace.Span, rpcName string, err error,
+) error {
+	resInfo := &errdetails.ResourceInfo{
+		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + rpcName,
+		ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+	}
+	var attrs trace.Attributes
+	switch {
+	case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
+		err = status.WrapWithInternal(rpcName+" API connection not found", err, resInfo)
+		attrs = trace.StatusCodeInternal(err.Error())
+	case errors.Is(err, context.Canceled):
+		err = status.WrapWithCanceled(rpcName+" API canceled", err, resInfo)
+		attrs = trace.StatusCodeCancelled(err.Error())
+	case errors.Is(err, context.DeadlineExceeded):
+		err = status.WrapWithDeadlineExceeded(rpcName+" API deadline exceeded", err, resInfo)
+		attrs = trace.StatusCodeDeadlineExceeded(err.Error())
+	default:
+		st, _ := status.FromError(err)
+		if st != nil {
+			attrs = trace.FromGRPCStatus(st.Code(), st.Message())
+		}
+	}
+	log.Debug(err)
+	errhandler.RecordSpanAttrs(span, attrs, err)
+	return err
+}
+
+func (s *server) handleIndexBroadCastError(
+	sspan trace.Span, target, rpcName string, err error,
+) error {
+	var (
+		attrs trace.Attributes
+		st    *status.Status
+		msg   string
+		code  codes.Code
+	)
+	switch {
+	case errors.Is(err, context.Canceled),
+		errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
+		attrs = trace.StatusCodeCancelled(
+			errdetails.ValdGRPCResourceTypePrefix +
+				"/vald.v1." + rpcName + ".BroadCast/" +
+				target + " canceled: " + err.Error())
+		code = codes.Canceled
+	case errors.Is(err, context.DeadlineExceeded),
+		errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
+		attrs = trace.StatusCodeDeadlineExceeded(
+			errdetails.ValdGRPCResourceTypePrefix +
+				"/vald.v1." + rpcName + ".BroadCast/" +
+				target + " deadline_exceeded: " + err.Error())
+		code = codes.DeadlineExceeded
+	default:
+		st, msg, err = status.ParseError(err, codes.NotFound, "error "+rpcName+" API",
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + rpcName + ".BroadCase/" + target,
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
+			})
+		if st != nil {
+			code = st.Code()
+		} else {
+			code = codes.NotFound
+		}
+		attrs = trace.FromGRPCStatus(code, msg)
+	}
+	errhandler.RecordSpanAttrs(sspan, attrs, err)
+	if err != nil && st != nil &&
+		code != codes.Canceled &&
+		code != codes.DeadlineExceeded &&
+		code != codes.InvalidArgument &&
+		code != codes.NotFound &&
+		code != codes.OK &&
+		code != codes.Unimplemented {
+		return err
+	}
+	return nil
+}
+
 func (s *server) IndexInfo(
 	ctx context.Context, _ *payload.Empty,
 ) (vec *payload.Info_Index_Count, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.IndexRPCServiceName+"/"+vald.IndexInfoRPCName), apiName+"/"+vald.IndexInfoRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	ech := make(chan error, 1)
 	var (
 		stored, uncommitted atomic.Uint32
@@ -54,62 +132,10 @@ func (s *server) IndexInfo(
 		defer close(ech)
 		ech <- s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.IndexInfoRPCName+"/"+target)
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			info, err := vc.IndexInfo(sctx, new(payload.Empty), copts...)
 			if err != nil {
-				var (
-					attrs trace.Attributes
-					st    *status.Status
-					msg   string
-					code  codes.Code
-				)
-				switch {
-				case errors.Is(err, context.Canceled),
-					errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
-					attrs = trace.StatusCodeCancelled(
-						errdetails.ValdGRPCResourceTypePrefix +
-							"/vald.v1." + vald.IndexInfoRPCName + ".BroadCast/" +
-							target + " canceled: " + err.Error())
-					code = codes.Canceled
-				case errors.Is(err, context.DeadlineExceeded),
-					errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
-					attrs = trace.StatusCodeDeadlineExceeded(
-						errdetails.ValdGRPCResourceTypePrefix +
-							"/vald.v1." + vald.IndexInfoRPCName + ".BroadCast/" +
-							target + " deadline_exceeded: " + err.Error())
-					code = codes.DeadlineExceeded
-				default:
-					st, msg, err = status.ParseError(err, codes.NotFound, "error "+vald.IndexInfoRPCName+" API",
-						&errdetails.ResourceInfo{
-							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.IndexInfoRPCName + ".BroadCase/" + target,
-							ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-						})
-					if st != nil {
-						code = st.Code()
-					} else {
-						code = codes.NotFound
-					}
-					attrs = trace.FromGRPCStatus(code, msg)
-				}
-				if sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(attrs...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
-				if err != nil && st != nil &&
-					code != codes.Canceled &&
-					code != codes.DeadlineExceeded &&
-					code != codes.InvalidArgument &&
-					code != codes.NotFound &&
-					code != codes.OK &&
-					code != codes.Unimplemented {
-					return err
-				}
-				return nil
+				return s.handleIndexBroadCastError(sspan, target, vald.IndexInfoRPCName, err)
 			}
 			if info != nil {
 				stored.Add(info.GetStored())
@@ -131,34 +157,7 @@ func (s *server) IndexInfo(
 	case err = <-ech:
 	}
 	if err != nil {
-		resInfo := &errdetails.ResourceInfo{
-			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.IndexInfoRPCName,
-			ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-		}
-		var attrs trace.Attributes
-		switch {
-		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
-			err = status.WrapWithInternal(vald.IndexInfoRPCName+" API connection not found", err, resInfo)
-			attrs = trace.StatusCodeInternal(err.Error())
-		case errors.Is(err, context.Canceled):
-			err = status.WrapWithCanceled(vald.IndexInfoRPCName+" API canceled", err, resInfo)
-			attrs = trace.StatusCodeCancelled(err.Error())
-		case errors.Is(err, context.DeadlineExceeded):
-			err = status.WrapWithDeadlineExceeded(vald.IndexInfoRPCName+" API deadline exceeded", err, resInfo)
-			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
-		default:
-			st, _ := status.FromError(err)
-			if st != nil {
-				attrs = trace.FromGRPCStatus(st.Code(), st.Message())
-			}
-		}
-		log.Debug(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return nil, s.handleIndexMethodError(ctx, span, vald.IndexInfoRPCName, err)
 	}
 	return &payload.Info_Index_Count{
 		Stored:      stored.Load(),
@@ -172,11 +171,7 @@ func (s *server) IndexDetail(
 	ctx context.Context, _ *payload.Empty,
 ) (vec *payload.Info_Index_Detail, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.IndexRPCServiceName+"/"+vald.IndexDetailRPCName), apiName+"/"+vald.IndexDetailRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	ech := make(chan error, 1)
 	var (
 		mu     sync.Mutex
@@ -190,62 +185,10 @@ func (s *server) IndexDetail(
 		defer close(ech)
 		ech <- s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.IndexDetailRPCName+"/"+target)
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			info, err := vc.IndexInfo(sctx, new(payload.Empty), copts...)
 			if err != nil {
-				var (
-					attrs trace.Attributes
-					st    *status.Status
-					msg   string
-					code  codes.Code
-				)
-				switch {
-				case errors.Is(err, context.Canceled),
-					errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
-					attrs = trace.StatusCodeCancelled(
-						errdetails.ValdGRPCResourceTypePrefix +
-							"/vald.v1." + vald.IndexDetailRPCName + ".BroadCast/" +
-							target + " canceled: " + err.Error())
-					code = codes.Canceled
-				case errors.Is(err, context.DeadlineExceeded),
-					errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
-					attrs = trace.StatusCodeDeadlineExceeded(
-						errdetails.ValdGRPCResourceTypePrefix +
-							"/vald.v1." + vald.IndexDetailRPCName + ".BroadCast/" +
-							target + " deadline_exceeded: " + err.Error())
-					code = codes.DeadlineExceeded
-				default:
-					st, msg, err = status.ParseError(err, codes.NotFound, "error "+vald.IndexDetailRPCName+" API",
-						&errdetails.ResourceInfo{
-							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.IndexDetailRPCName + ".BroadCase/" + target,
-							ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-						})
-					if st != nil {
-						code = st.Code()
-					} else {
-						code = codes.NotFound
-					}
-					attrs = trace.FromGRPCStatus(code, msg)
-				}
-				if sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(attrs...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
-				if err != nil && st != nil &&
-					code != codes.Canceled &&
-					code != codes.DeadlineExceeded &&
-					code != codes.InvalidArgument &&
-					code != codes.NotFound &&
-					code != codes.OK &&
-					code != codes.Unimplemented {
-					return err
-				}
-				return nil
+				return s.handleIndexBroadCastError(sspan, target, vald.IndexDetailRPCName, err)
 			}
 			if info != nil {
 				mu.Lock()
@@ -262,34 +205,7 @@ func (s *server) IndexDetail(
 	case err = <-ech:
 	}
 	if err != nil {
-		resInfo := &errdetails.ResourceInfo{
-			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.IndexDetailRPCName,
-			ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-		}
-		var attrs trace.Attributes
-		switch {
-		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
-			err = status.WrapWithInternal(vald.IndexDetailRPCName+" API connection not found", err, resInfo)
-			attrs = trace.StatusCodeInternal(err.Error())
-		case errors.Is(err, context.Canceled):
-			err = status.WrapWithCanceled(vald.IndexDetailRPCName+" API canceled", err, resInfo)
-			attrs = trace.StatusCodeCancelled(err.Error())
-		case errors.Is(err, context.DeadlineExceeded):
-			err = status.WrapWithDeadlineExceeded(vald.IndexDetailRPCName+" API deadline exceeded", err, resInfo)
-			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
-		default:
-			st, _ := status.FromError(err)
-			if st != nil {
-				attrs = trace.FromGRPCStatus(st.Code(), st.Message())
-			}
-		}
-		log.Debug(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return nil, s.handleIndexMethodError(ctx, span, vald.IndexDetailRPCName, err)
 	}
 	return detail, nil
 }
@@ -298,11 +214,7 @@ func (s *server) IndexStatistics(
 	ctx context.Context, req *payload.Empty,
 ) (vec *payload.Info_Index_Statistics, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.IndexRPCServiceName+"/"+vald.IndexStatisticsRPCName), apiName+"/"+vald.IndexStatisticsRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	details, err := s.IndexStatisticsDetail(ctx, req)
 	if err != nil || details == nil {
 		resInfo := &errdetails.ResourceInfo{
@@ -327,11 +239,7 @@ func (s *server) IndexStatistics(
 			}
 		}
 		log.Debug(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 	return mergeInfoIndexStatistics(details.GetDetails()), nil
@@ -341,11 +249,7 @@ func (s *server) IndexStatisticsDetail(
 	ctx context.Context, _ *payload.Empty,
 ) (vec *payload.Info_Index_StatisticsDetail, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.IndexRPCServiceName+"/"+vald.IndexStatisticsDetailRPCName), apiName+"/"+vald.IndexStatisticsDetailRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	ech := make(chan error, 1)
 	var (
 		mu     sync.Mutex
@@ -357,63 +261,11 @@ func (s *server) IndexStatisticsDetail(
 		defer close(ech)
 		ech <- s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.IndexStatisticsDetailRPCName+"/"+target)
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			var stats *payload.Info_Index_Statistics
 			stats, err = vc.IndexStatistics(sctx, new(payload.Empty), copts...)
 			if err != nil {
-				var (
-					attrs trace.Attributes
-					st    *status.Status
-					msg   string
-					code  codes.Code
-				)
-				switch {
-				case errors.Is(err, context.Canceled),
-					errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
-					attrs = trace.StatusCodeCancelled(
-						errdetails.ValdGRPCResourceTypePrefix +
-							"/vald.v1." + vald.IndexStatisticsDetailRPCName + ".BroadCast/" +
-							target + " canceled: " + err.Error())
-					code = codes.Canceled
-				case errors.Is(err, context.DeadlineExceeded),
-					errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
-					attrs = trace.StatusCodeDeadlineExceeded(
-						errdetails.ValdGRPCResourceTypePrefix +
-							"/vald.v1." + vald.IndexStatisticsDetailRPCName + ".BroadCast/" +
-							target + " deadline_exceeded: " + err.Error())
-					code = codes.DeadlineExceeded
-				default:
-					st, msg, err = status.ParseError(err, codes.NotFound, "error "+vald.IndexStatisticsDetailRPCName+" API",
-						&errdetails.ResourceInfo{
-							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.IndexStatisticsDetailRPCName + ".BroadCase/" + target,
-							ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-						})
-					if st != nil {
-						code = st.Code()
-					} else {
-						code = codes.NotFound
-					}
-					attrs = trace.FromGRPCStatus(code, msg)
-				}
-				if sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(attrs...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
-				if err != nil && st != nil &&
-					code != codes.Canceled &&
-					code != codes.DeadlineExceeded &&
-					code != codes.InvalidArgument &&
-					code != codes.NotFound &&
-					code != codes.OK &&
-					code != codes.Unimplemented {
-					return err
-				}
-				return nil
+				return s.handleIndexBroadCastError(sspan, target, vald.IndexStatisticsDetailRPCName, err)
 			}
 			if stats != nil {
 				mu.Lock()
@@ -430,34 +282,7 @@ func (s *server) IndexStatisticsDetail(
 	case err = <-ech:
 	}
 	if err != nil {
-		resInfo := &errdetails.ResourceInfo{
-			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.IndexStatisticsDetailRPCName,
-			ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-		}
-		var attrs trace.Attributes
-		switch {
-		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
-			err = status.WrapWithInternal(vald.IndexStatisticsDetailRPCName+" API connection not found", err, resInfo)
-			attrs = trace.StatusCodeInternal(err.Error())
-		case errors.Is(err, context.Canceled):
-			err = status.WrapWithCanceled(vald.IndexStatisticsDetailRPCName+" API canceled", err, resInfo)
-			attrs = trace.StatusCodeCancelled(err.Error())
-		case errors.Is(err, context.DeadlineExceeded):
-			err = status.WrapWithDeadlineExceeded(vald.IndexStatisticsDetailRPCName+" API deadline exceeded", err, resInfo)
-			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
-		default:
-			st, _ := status.FromError(err)
-			if st != nil {
-				attrs = trace.FromGRPCStatus(st.Code(), st.Message())
-			}
-		}
-		log.Debug(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return nil, s.handleIndexMethodError(ctx, span, vald.IndexStatisticsDetailRPCName, err)
 	}
 	return detail, nil
 }
@@ -590,11 +415,7 @@ func (s *server) IndexProperty(
 	ctx context.Context, _ *payload.Empty,
 ) (detail *payload.Info_Index_PropertyDetail, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.IndexRPCServiceName+"/"+vald.IndexPropertyRPCName), apiName+"/"+vald.IndexPropertyRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	ech := make(chan error, 1)
 	var mu sync.Mutex
 	detail = &payload.Info_Index_PropertyDetail{
@@ -605,11 +426,7 @@ func (s *server) IndexProperty(
 		defer close(ech)
 		ech <- s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.IndexStatisticsDetailRPCName+"/"+target)
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			var prop *payload.Info_Index_PropertyDetail
 			prop, err = vc.IndexProperty(sctx, new(payload.Empty), copts...)
 			if err != nil {
@@ -641,11 +458,7 @@ func (s *server) IndexProperty(
 					}
 					attrs = trace.FromGRPCStatus(code, msg)
 				}
-				if sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(attrs...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanAttrs(sspan, attrs, err)
 				if err != nil && st != nil && code != codes.Canceled && code != codes.DeadlineExceeded && code != codes.InvalidArgument && code != codes.NotFound && code != codes.OK && code != codes.Unimplemented {
 					return err
 				}
@@ -668,34 +481,7 @@ func (s *server) IndexProperty(
 	case err = <-ech:
 	}
 	if err != nil {
-		resInfo := &errdetails.ResourceInfo{
-			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.IndexPropertyRPCName,
-			ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-		}
-		var attrs trace.Attributes
-		switch {
-		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
-			err = status.WrapWithInternal(vald.IndexPropertyRPCName+" API connection not found", err, resInfo)
-			attrs = trace.StatusCodeInternal(err.Error())
-		case errors.Is(err, context.Canceled):
-			err = status.WrapWithCanceled(vald.IndexPropertyRPCName+" API canceled", err, resInfo)
-			attrs = trace.StatusCodeCancelled(err.Error())
-		case errors.Is(err, context.DeadlineExceeded):
-			err = status.WrapWithDeadlineExceeded(vald.IndexPropertyRPCName+" API deadline exceeded", err, resInfo)
-			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
-		default:
-			st, _ := status.FromError(err)
-			if st != nil {
-				attrs = trace.FromGRPCStatus(st.Code(), st.Message())
-			}
-		}
-		log.Debug(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return nil, s.handleIndexMethodError(ctx, span, vald.IndexPropertyRPCName, err)
 	}
 	return detail, nil
 }

@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package redis
 
@@ -34,11 +32,11 @@ var Nil = redis.Nil
 
 // Connector is an interface to connect to Redis servers.
 type Connector interface {
-	Connect(ctx context.Context) (Redis, error)
+	Connect(ctx context.Context) (Client, error)
 }
 
-// Redis is an interface to communicate with Redis servers.
-type Redis interface {
+// Client is an interface to communicate with Redis servers.
+type Client interface {
 	TxPipeline() redis.Pipeliner
 	Ping(context.Context) *StatusCmd
 	Close() error
@@ -61,7 +59,7 @@ type (
 
 type redisClient struct {
 	dialer               net.Dialer
-	client               Redis
+	client               Client
 	limiter              Limiter
 	tlsConfig            *tls.Config
 	dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
@@ -263,7 +261,7 @@ func (rc *redisClient) newClusterClient(ctx context.Context) (c *redis.ClusterCl
 }
 
 // Connect returns Redis instance that has connection to servers.
-func (rc *redisClient) Connect(ctx context.Context) (Redis, error) {
+func (rc *redisClient) Connect(ctx context.Context) (Client, error) {
 	if rc.dialer != nil {
 		rc.dialer.StartDialerCache(ctx)
 		rc.dialerFunc = rc.dialer.GetDialer()
@@ -276,7 +274,7 @@ func (rc *redisClient) Connect(ctx context.Context) (Redis, error) {
 	return rc.ping(ctx)
 }
 
-func (rc *redisClient) ping(ctx context.Context) (r Redis, err error) {
+func (rc *redisClient) ping(ctx context.Context) (r Client, err error) {
 	pctx, cancel := context.WithTimeout(ctx, rc.initialPingTimeLimit)
 	defer cancel()
 	tick := time.NewTicker(rc.initialPingDuration)

@@ -1,20 +1,18 @@
 //go:build e2e
 
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 // package crud provides end-to-end tests using ann-benchmarks datasets.
 package crud
@@ -31,7 +29,7 @@ import (
 
 // Predefined request builder functions for unary modify requests.
 var (
-	insertRequest newRequest[*payload.Insert_Request] = func(t *testing.T, idx uint64, id string, vec []float32, plan *config.Execution) *payload.Insert_Request {
+	insertRequest newRequest[*payload.Insert_Request] = func(t testing.TB, idx uint64, id string, vec []float32, plan *config.Execution) *payload.Insert_Request {
 		ts, skip := toModificationConfig(plan)
 		return &payload.Insert_Request{
 			Vector: &payload.Object_Vector{
@@ -45,12 +43,12 @@ var (
 			},
 		}
 	}
-	insertMultipleRequest newMultiRequest[*payload.Insert_Request, *payload.Insert_MultiRequest] = func(t *testing.T, reqs ...*payload.Insert_Request) *payload.Insert_MultiRequest {
+	insertMultipleRequest newMultiRequest[*payload.Insert_Request, *payload.Insert_MultiRequest] = func(t testing.TB, reqs ...*payload.Insert_Request) *payload.Insert_MultiRequest {
 		return &payload.Insert_MultiRequest{
 			Requests: reqs,
 		}
 	}
-	updateRequest newRequest[*payload.Update_Request] = func(t *testing.T, idx uint64, id string, vec []float32, plan *config.Execution) *payload.Update_Request {
+	updateRequest newRequest[*payload.Update_Request] = func(t testing.TB, idx uint64, id string, vec []float32, plan *config.Execution) *payload.Update_Request {
 		ts, skip := toModificationConfig(plan)
 		return &payload.Update_Request{
 			Vector: &payload.Object_Vector{
@@ -64,12 +62,12 @@ var (
 			},
 		}
 	}
-	updateMultipleRequest newMultiRequest[*payload.Update_Request, *payload.Update_MultiRequest] = func(t *testing.T, reqs ...*payload.Update_Request) *payload.Update_MultiRequest {
+	updateMultipleRequest newMultiRequest[*payload.Update_Request, *payload.Update_MultiRequest] = func(t testing.TB, reqs ...*payload.Update_Request) *payload.Update_MultiRequest {
 		return &payload.Update_MultiRequest{
 			Requests: reqs,
 		}
 	}
-	upsertRequest newRequest[*payload.Upsert_Request] = func(t *testing.T, idx uint64, id string, vec []float32, plan *config.Execution) *payload.Upsert_Request {
+	upsertRequest newRequest[*payload.Upsert_Request] = func(t testing.TB, idx uint64, id string, vec []float32, plan *config.Execution) *payload.Upsert_Request {
 		ts, skip := toModificationConfig(plan)
 		return &payload.Upsert_Request{
 			Vector: &payload.Object_Vector{
@@ -83,12 +81,12 @@ var (
 			},
 		}
 	}
-	upsertMultipleRequest newMultiRequest[*payload.Upsert_Request, *payload.Upsert_MultiRequest] = func(t *testing.T, reqs ...*payload.Upsert_Request) *payload.Upsert_MultiRequest {
+	upsertMultipleRequest newMultiRequest[*payload.Upsert_Request, *payload.Upsert_MultiRequest] = func(t testing.TB, reqs ...*payload.Upsert_Request) *payload.Upsert_MultiRequest {
 		return &payload.Upsert_MultiRequest{
 			Requests: reqs,
 		}
 	}
-	removeRequest newRequest[*payload.Remove_Request] = func(t *testing.T, idx uint64, id string, vec []float32, plan *config.Execution) *payload.Remove_Request {
+	removeRequest newRequest[*payload.Remove_Request] = func(t testing.TB, idx uint64, id string, vec []float32, plan *config.Execution) *payload.Remove_Request {
 		ts, skip := toModificationConfig(plan)
 		return &payload.Remove_Request{
 			Id: &payload.Object_ID{
@@ -100,12 +98,12 @@ var (
 			},
 		}
 	}
-	removeMultipleRequest newMultiRequest[*payload.Remove_Request, *payload.Remove_MultiRequest] = func(t *testing.T, reqs ...*payload.Remove_Request) *payload.Remove_MultiRequest {
+	removeMultipleRequest newMultiRequest[*payload.Remove_Request, *payload.Remove_MultiRequest] = func(t testing.TB, reqs ...*payload.Remove_Request) *payload.Remove_MultiRequest {
 		return &payload.Remove_MultiRequest{
 			Requests: reqs,
 		}
 	}
-	removeByTimestampRequest newRequest[*payload.Remove_TimestampRequest] = func(t *testing.T, idx uint64, id string, vec []float32, plan *config.Execution) *payload.Remove_TimestampRequest {
+	removeByTimestampRequest newRequest[*payload.Remove_TimestampRequest] = func(t testing.TB, idx uint64, id string, vec []float32, plan *config.Execution) *payload.Remove_TimestampRequest {
 		ts, _ := toModificationConfig(plan)
 		if ts == 0 {
 			ts = time.Now().UnixNano()
@@ -114,7 +112,7 @@ var (
 			Timestamps: []*payload.Remove_Timestamp{
 				{
 					Timestamp: ts,
-					Operator:  payload.Remove_Timestamp_Le,
+					Operator:  payload.Remove_Timestamp_LE,
 				},
 			},
 		}
@@ -122,7 +120,7 @@ var (
 )
 
 func (r *runner) processModification(
-	t *testing.T,
+	t testing.TB,
 	ctx context.Context,
 	train iter.Cycle[[][]float32, []float32],
 	plan *config.Execution,

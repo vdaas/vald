@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package usecase
 
@@ -43,7 +41,7 @@ import (
 
 type run struct {
 	eg            errgroup.Group
-	cfg           *config.Config
+	cfg           *config.Data
 	operator      service.Operator
 	h             handler.Benchmark
 	server        starter.Server
@@ -52,12 +50,12 @@ type run struct {
 
 var JOB_NAMESPACE = os.Getenv("JOB_NAMESPACE")
 
-func New(cfg *config.Config) (r runner.Runner, err error) {
+func New(cfg *config.Data) (r runner.Interface, err error) {
 	log.Info("pkg/operator/benchmark/cmd start")
 
 	eg := errgroup.Get()
 
-	log.Info("pkg/operator/benchmark/cmd success d")
+	log.Info("pkg/operator/benchmark/cmd success")
 
 	operator, err := service.New(
 		service.WithErrGroup(eg),
@@ -70,7 +68,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		return nil, err
 	}
 
-	h, err := handler.New()
+	h, err := handler.New(handler.WithOperator(operator))
 	if err != nil {
 		return nil, err
 	}
@@ -80,8 +78,8 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 			// TODO register grpc server handler here
 		}),
 		server.WithGRPCOption(
-			grpc.ChainUnaryInterceptor(recover.RecoverInterceptor()),
-			grpc.ChainStreamInterceptor(recover.RecoverStreamInterceptor()),
+			grpc.ChainUnaryInterceptor(recover.Interceptor()),
+			grpc.ChainStreamInterceptor(recover.StreamInterceptor()),
 		),
 		server.WithPreStartFunc(func() error {
 			// TODO check unbackupped upstream
@@ -116,7 +114,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 						router.WithErrGroup(eg),
 						router.WithHandler(
 							rest.New(
-							// TODO pass grpc handler to REST option
+								rest.WithBenchmark(h),
 							),
 						),
 					),
@@ -198,11 +196,18 @@ func (*run) PreStop(context.Context) error {
 	return nil
 }
 
-func (r *run) Stop(ctx context.Context) error {
+func (r *run) Stop(ctx context.Context) (errs error) {
 	if r.observability != nil {
-		r.observability.Stop(ctx)
+		if err := r.observability.Stop(ctx); err != nil {
+			errs = errors.Join(errs, err)
+		}
 	}
-	return r.server.Shutdown(ctx)
+	if r.server != nil {
+		if err := r.server.Shutdown(ctx); err != nil {
+			errs = errors.Join(errs, err)
+		}
+	}
+	return errs
 }
 
 func (*run) PostStop(context.Context) error {

@@ -114,7 +114,7 @@ function of `(CR, Config, Capability)` — it makes no Kubernetes API calls.
    - `buildAgent` — NGT settings
    - `buildManager` — Manager mode when `indexer.manager == true`, otherwise Creator/Saver mode
    - `buildDiscoverer` — kind + namespaced RBAC names
-4. **Resolve resources from node pools** — `SetRelationalResources` derives replicas and
+4. **Resolve resources from node pools** — `SetScaledResources` derives replicas and
    per-component CPU/memory from the resolved agent node pool. The general-pool fallback
    rule lives in `resolveAgentNodePool` (`pkg/operator/vald/service/rules.go`).
 5. **Optional settings** — persistent volume and node affinities (both in `builder.go`).
@@ -175,7 +175,6 @@ Loaded once at startup into `config.Config` (`pkg/operator/vald/config/config.go
 | `VRS_LOG_LEVEL`                 | `warn`                                     | Log level passed through to the generated VRS.                    |
 | `DISCOVERER_DS_MAX_SURGE`       | `30%`                                      | Discoverer DaemonSet rolling-update `maxSurge`.                   |
 | `DISCOVERER_DS_MAX_UNAVAILABLE` | `0%`                                       | Discoverer DaemonSet rolling-update `maxUnavailable`.             |
-| `INTERNAL_HOST_DOMAIN`          | `""`                                       | Optional internal host domain (empty by default for OSS).         |
 
 ## Source map
 

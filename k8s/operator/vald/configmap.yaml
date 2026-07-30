@@ -215,7 +215,7 @@ data:
           enabled: true
           id: vald-operator
           lease_duration: 30s
-          namespace: default
+          namespace: _MY_POD_NAMESPACE_
           renew_deadline: 20s
           retry_period: 5s
         max_concurrent_reconciles: 2
@@ -255,7 +255,6 @@ data:
         indexer:
           auto_index_duration_limit: 1h
           auto_save_index_duration_limit: -1h
-        internal_host_domain: ""
         log_format: raw
         log_level: warn
         logger: glg

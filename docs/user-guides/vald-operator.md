@@ -329,7 +329,6 @@ The reconciler-facing settings live under the `operator` key:
 | ---------------------------------------------------------- | ------------------------------------------ | ----------------------------------------------------------------- |
 | `operator.vrs.default_vrs_path`                            | `/opt/valdoperatorrelease/config/vrs.yaml` | Default VRS template merged with the overlay.                     |
 | `operator.vrs.log_level`                                   | `warn`                                     | Log level passed through to the generated VRS.                    |
-| `operator.vrs.internal_host_domain`                        | `""`                                       | Optional internal host domain.                                    |
 | `operator.node_pool.require_match`                         | `false`                                    | Only generate VRS where matching node pools exist.                |
 | `operator.node_pool.label_prefix`                          | `""`                                       | Prefix for the `namespace`/`type`/`role` node labels.             |
 | `operator.node_pool.agent_pods_per_node`                   | `2`                                        | Agent pods packed per node when computing replicas.               |

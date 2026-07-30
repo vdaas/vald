@@ -16,7 +16,6 @@ package service
 import (
 	"context"
 	"reflect"
-	"sync/atomic"
 	"testing"
 	"time"
 
@@ -25,9 +24,9 @@ import (
 	"github.com/vdaas/vald/internal/k8s"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/internal/test/mock"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // mockCtrl is used for mock the request to the Kubernetes API.
@@ -44,6 +43,19 @@ func (m *mockCtrl) GetManager() k8s.Manager {
 	return m.GetManagerFunc()
 }
 
+// storeInto copies the map carried by src (if any) into the operator's
+// value-typed atomic field; test cases keep building *atomic.Pointer carriers
+// while the operator itself owns value-typed fields.
+func storeInto[M any](dst, src *atomic.Pointer[M]) {
+	if src == nil {
+		return
+	}
+	if v := src.Load(); v != nil {
+		dst.Store(v)
+	}
+}
+
+//nolint:goconst
 func Test_operator_getAtomicScenario(t *testing.T) {
 	t.Parallel()
 	type fields struct {
@@ -129,8 +141,8 @@ func Test_operator_getAtomicScenario(t *testing.T) {
 								Status: v1.BenchmarkScenarioHealthy,
 							},
 							BenchJobStatus: map[string]v1.BenchmarkJobStatus{
-								"scneario-insert": v1.BenchmarkJobAvailable,
-								"scneario-search": v1.BenchmarkJobAvailable,
+								"scenario-insert": v1.BenchmarkJobAvailable,
+								"scenario-search": v1.BenchmarkJobAvailable,
 							},
 						},
 					})
@@ -181,8 +193,8 @@ func Test_operator_getAtomicScenario(t *testing.T) {
 							Status: v1.BenchmarkScenarioHealthy,
 						},
 						BenchJobStatus: map[string]v1.BenchmarkJobStatus{
-							"scneario-insert": v1.BenchmarkJobAvailable,
-							"scneario-search": v1.BenchmarkJobAvailable,
+							"scenario-insert": v1.BenchmarkJobAvailable,
+							"scenario-search": v1.BenchmarkJobAvailable,
 						},
 					},
 				},
@@ -212,9 +224,8 @@ func Test_operator_getAtomicScenario(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			o := &operator{
-				scenarios: test.fields.scenarios,
-			}
+			o := new(operator)
+			storeInto(&o.scenarios, test.fields.scenarios)
 
 			got := o.getAtomicScenario()
 			if err := checkFunc(test.want, got); err != nil {
@@ -224,6 +235,7 @@ func Test_operator_getAtomicScenario(t *testing.T) {
 	}
 }
 
+//nolint:goconst
 func Test_operator_getAtomicBenchJob(t *testing.T) {
 	t.Parallel()
 	type fields struct {
@@ -407,9 +419,8 @@ func Test_operator_getAtomicBenchJob(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			o := &operator{
-				benchjobs: test.fields.benchjobs,
-			}
+			o := new(operator)
+			storeInto(&o.benchjobs, test.fields.benchjobs)
 
 			got := o.getAtomicBenchJob()
 			if err := checkFunc(test.want, got); err != nil {
@@ -419,6 +430,7 @@ func Test_operator_getAtomicBenchJob(t *testing.T) {
 	}
 }
 
+//nolint:goconst
 func Test_operator_getAtomicJob(t *testing.T) {
 	t.Parallel()
 	type fields struct {
@@ -500,9 +512,8 @@ func Test_operator_getAtomicJob(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			o := &operator{
-				jobs: test.fields.jobs,
-			}
+			o := new(operator)
+			storeInto(&o.jobs, test.fields.jobs)
 
 			got := o.getAtomicJob()
 			if err := checkFunc(test.want, got); err != nil {
@@ -512,10 +523,11 @@ func Test_operator_getAtomicJob(t *testing.T) {
 	}
 }
 
+//nolint:goconst,maintidx // repeated fixture literals and table volume are inherent to this table-driven test
 func Test_operator_jobReconcile(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx     context.Context
+		ctx     context.Context //nolint:containedctx // table-driven test args struct, ctx passed through to the function under test
 		jobList map[string][]k8s.Job
 	}
 	type fields struct {
@@ -585,7 +597,7 @@ func Test_operator_jobReconcile(t *testing.T) {
 					jobList: map[string][]k8s.Job{
 						"scenario-insert": {
 							{
-								ObjectMeta: metav1.ObjectMeta{
+								ObjectMeta: k8s.ObjectMeta{
 									Name:      "scenario-insert",
 									Namespace: "default",
 								},
@@ -675,15 +687,15 @@ func Test_operator_jobReconcile(t *testing.T) {
 					jobList: map[string][]k8s.Job{
 						"scenario-insert": {
 							{
-								ObjectMeta: metav1.ObjectMeta{
+								ObjectMeta: k8s.ObjectMeta{
 									Name:      "scenario-completed-insert",
 									Namespace: "default",
 								},
 								Status: k8s.JobStatus{
 									Active:    0,
 									Succeeded: 1,
-									CompletionTime: func() *metav1.Time {
-										t := &metav1.Time{
+									CompletionTime: func() *k8s.Time {
+										t := &k8s.Time{
 											Time: time.Now(),
 										}
 										return t
@@ -772,7 +784,7 @@ func Test_operator_jobReconcile(t *testing.T) {
 					jobList: map[string][]k8s.Job{
 						"scenario-insert": {
 							{
-								ObjectMeta: metav1.ObjectMeta{
+								ObjectMeta: k8s.ObjectMeta{
 									Name:      "scenario-insert",
 									Namespace: "benchmark",
 								},
@@ -827,10 +839,10 @@ func Test_operator_jobReconcile(t *testing.T) {
 				jobImageRepository: test.fields.jobImageRepository,
 				jobImageTag:        test.fields.jobImageTag,
 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
-				benchjobs:          test.fields.benchjobs,
-				jobs:               test.fields.jobs,
 				ctrl:               test.fields.ctrl,
 			}
+			storeInto(&o.benchjobs, test.fields.benchjobs)
+			storeInto(&o.jobs, test.fields.jobs)
 
 			o.jobReconcile(test.args.ctx, test.args.jobList)
 			got := o.getAtomicJob()
@@ -841,10 +853,11 @@ func Test_operator_jobReconcile(t *testing.T) {
 	}
 }
 
+//nolint:maintidx // table volume is inherent to this table-driven test
 func Test_operator_benchJobReconcile(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx          context.Context
+		ctx          context.Context //nolint:containedctx // table-driven test args struct, ctx passed through to the function under test
 		benchJobList map[string]v1.ValdBenchmarkJob
 	}
 	type fields struct {
@@ -918,10 +931,10 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 					ctx: ctx,
 					benchJobList: map[string]v1.ValdBenchmarkJob{
 						"scenario-insert": {
-							ObjectMeta: metav1.ObjectMeta{
+							ObjectMeta: k8s.ObjectMeta{
 								Name:      "scenario-insert",
 								Namespace: "default",
-								OwnerReferences: []metav1.OwnerReference{
+								OwnerReferences: []k8s.OwnerReference{
 									{
 										Name: "scenario",
 									},
@@ -961,7 +974,7 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 						m := map[string]*scenario{
 							"scenario": {
 								Crd: &v1.ValdBenchmarkScenario{
-									ObjectMeta: metav1.ObjectMeta{
+									ObjectMeta: k8s.ObjectMeta{
 										Name:       "scenario",
 										Namespace:  "default",
 										Generation: 1,
@@ -1016,7 +1029,7 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 					scenarios: map[string]*scenario{
 						"scenario": {
 							Crd: &v1.ValdBenchmarkScenario{
-								ObjectMeta: metav1.ObjectMeta{
+								ObjectMeta: k8s.ObjectMeta{
 									Name:       "scenario",
 									Namespace:  "default",
 									Generation: 1,
@@ -1055,10 +1068,10 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 					},
 					benchjobs: map[string]*v1.ValdBenchmarkJob{
 						"scenario-insert": {
-							ObjectMeta: metav1.ObjectMeta{
+							ObjectMeta: k8s.ObjectMeta{
 								Name:      "scenario-insert",
 								Namespace: "default",
-								OwnerReferences: []metav1.OwnerReference{
+								OwnerReferences: []k8s.OwnerReference{
 									{
 										Name: "scenario",
 									},
@@ -1108,10 +1121,10 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 					ctx: ctx,
 					benchJobList: map[string]v1.ValdBenchmarkJob{
 						"scenario-insert": {
-							ObjectMeta: metav1.ObjectMeta{
+							ObjectMeta: k8s.ObjectMeta{
 								Name:      "scenario-insert",
 								Namespace: "default",
-								OwnerReferences: []metav1.OwnerReference{
+								OwnerReferences: []k8s.OwnerReference{
 									{
 										Name: "scenario",
 									},
@@ -1152,7 +1165,7 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 						m := map[string]*scenario{
 							"scenario": {
 								Crd: &v1.ValdBenchmarkScenario{
-									ObjectMeta: metav1.ObjectMeta{
+									ObjectMeta: k8s.ObjectMeta{
 										Name:       "scenario",
 										Namespace:  "default",
 										Generation: 2,
@@ -1196,10 +1209,10 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 						ap := atomic.Pointer[map[string]*v1.ValdBenchmarkJob]{}
 						m := map[string]*v1.ValdBenchmarkJob{
 							"scenario-insert": {
-								ObjectMeta: metav1.ObjectMeta{
+								ObjectMeta: k8s.ObjectMeta{
 									Name:      "scenario-insert",
 									Namespace: "default",
-									OwnerReferences: []metav1.OwnerReference{
+									OwnerReferences: []k8s.OwnerReference{
 										{
 											Name: "scenario",
 										},
@@ -1250,7 +1263,7 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 					scenarios: map[string]*scenario{
 						"scenario": {
 							Crd: &v1.ValdBenchmarkScenario{
-								ObjectMeta: metav1.ObjectMeta{
+								ObjectMeta: k8s.ObjectMeta{
 									Name:       "scenario",
 									Namespace:  "default",
 									Generation: 2,
@@ -1289,10 +1302,10 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 					},
 					benchjobs: map[string]*v1.ValdBenchmarkJob{
 						"scenario-insert": {
-							ObjectMeta: metav1.ObjectMeta{
+							ObjectMeta: k8s.ObjectMeta{
 								Name:      "scenario-insert",
 								Namespace: "default",
-								OwnerReferences: []metav1.OwnerReference{
+								OwnerReferences: []k8s.OwnerReference{
 									{
 										Name: "scenario",
 									},
@@ -1342,10 +1355,10 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 					ctx: ctx,
 					benchJobList: map[string]v1.ValdBenchmarkJob{
 						"scenario-insert": {
-							ObjectMeta: metav1.ObjectMeta{
+							ObjectMeta: k8s.ObjectMeta{
 								Name:      "scenario-insert",
 								Namespace: "default",
-								OwnerReferences: []metav1.OwnerReference{
+								OwnerReferences: []k8s.OwnerReference{
 									{
 										Name: "scenario",
 									},
@@ -1386,7 +1399,7 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 						m := map[string]*scenario{
 							"scenario": {
 								Crd: &v1.ValdBenchmarkScenario{
-									ObjectMeta: metav1.ObjectMeta{
+									ObjectMeta: k8s.ObjectMeta{
 										Name:       "scenario",
 										Namespace:  "default",
 										Generation: 1,
@@ -1430,10 +1443,10 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 						ap := atomic.Pointer[map[string]*v1.ValdBenchmarkJob]{}
 						m := map[string]*v1.ValdBenchmarkJob{
 							"scenario-insert": {
-								ObjectMeta: metav1.ObjectMeta{
+								ObjectMeta: k8s.ObjectMeta{
 									Name:      "scenario-insert",
 									Namespace: "default",
-									OwnerReferences: []metav1.OwnerReference{
+									OwnerReferences: []k8s.OwnerReference{
 										{
 											Name: "scenario",
 										},
@@ -1484,7 +1497,7 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 					scenarios: map[string]*scenario{
 						"scenario": {
 							Crd: &v1.ValdBenchmarkScenario{
-								ObjectMeta: metav1.ObjectMeta{
+								ObjectMeta: k8s.ObjectMeta{
 									Name:       "scenario",
 									Namespace:  "default",
 									Generation: 1,
@@ -1523,10 +1536,10 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 					},
 					benchjobs: map[string]*v1.ValdBenchmarkJob{
 						"scenario-insert": {
-							ObjectMeta: metav1.ObjectMeta{
+							ObjectMeta: k8s.ObjectMeta{
 								Name:      "scenario-insert",
 								Namespace: "default",
-								OwnerReferences: []metav1.OwnerReference{
+								OwnerReferences: []k8s.OwnerReference{
 									{
 										Name: "scenario",
 									},
@@ -1576,10 +1589,10 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 					ctx: ctx,
 					benchJobList: map[string]v1.ValdBenchmarkJob{
 						"scenario-insert": {
-							ObjectMeta: metav1.ObjectMeta{
+							ObjectMeta: k8s.ObjectMeta{
 								Name:      "scenario-insert",
 								Namespace: "default",
-								OwnerReferences: []metav1.OwnerReference{
+								OwnerReferences: []k8s.OwnerReference{
 									{
 										Name: "scenario",
 									},
@@ -1620,7 +1633,7 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 						m := map[string]*scenario{
 							"scenario": {
 								Crd: &v1.ValdBenchmarkScenario{
-									ObjectMeta: metav1.ObjectMeta{
+									ObjectMeta: k8s.ObjectMeta{
 										Name:       "scenario",
 										Namespace:  "default",
 										Generation: 1,
@@ -1664,10 +1677,10 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 						ap := atomic.Pointer[map[string]*v1.ValdBenchmarkJob]{}
 						m := map[string]*v1.ValdBenchmarkJob{
 							"scenario-insert": {
-								ObjectMeta: metav1.ObjectMeta{
+								ObjectMeta: k8s.ObjectMeta{
 									Name:      "scenario-insert",
 									Namespace: "default",
-									OwnerReferences: []metav1.OwnerReference{
+									OwnerReferences: []k8s.OwnerReference{
 										{
 											Name: "scenario",
 										},
@@ -1698,10 +1711,10 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 								Status: "",
 							},
 							"scenario-deleted-insert": {
-								ObjectMeta: metav1.ObjectMeta{
+								ObjectMeta: k8s.ObjectMeta{
 									Name:      "scenario-deleted-insert",
 									Namespace: "default",
-									OwnerReferences: []metav1.OwnerReference{
+									OwnerReferences: []k8s.OwnerReference{
 										{
 											Name: "scenario-deleted",
 										},
@@ -1752,7 +1765,7 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 					scenarios: map[string]*scenario{
 						"scenario": {
 							Crd: &v1.ValdBenchmarkScenario{
-								ObjectMeta: metav1.ObjectMeta{
+								ObjectMeta: k8s.ObjectMeta{
 									Name:       "scenario",
 									Namespace:  "default",
 									Generation: 1,
@@ -1791,10 +1804,10 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 					},
 					benchjobs: map[string]*v1.ValdBenchmarkJob{
 						"scenario-insert": {
-							ObjectMeta: metav1.ObjectMeta{
+							ObjectMeta: k8s.ObjectMeta{
 								Name:      "scenario-insert",
 								Namespace: "default",
-								OwnerReferences: []metav1.OwnerReference{
+								OwnerReferences: []k8s.OwnerReference{
 									{
 										Name: "scenario",
 									},
@@ -1858,11 +1871,11 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 				jobImageRepository: test.fields.jobImageRepository,
 				jobImageTag:        test.fields.jobImageTag,
 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
-				scenarios:          test.fields.scenarios,
-				benchjobs:          test.fields.benchjobs,
-				jobs:               test.fields.jobs,
 				ctrl:               test.fields.ctrl,
 			}
+			storeInto(&o.scenarios, test.fields.scenarios)
+			storeInto(&o.benchjobs, test.fields.benchjobs)
+			storeInto(&o.jobs, test.fields.jobs)
 
 			o.benchJobReconcile(test.args.ctx, test.args.benchJobList)
 			gotS := o.getAtomicScenario()
@@ -1874,10 +1887,11 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 	}
 }
 
+//nolint:goconst,maintidx // repeated fixture literals and table volume are inherent to this table-driven test
 func Test_operator_benchScenarioReconcile(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx          context.Context
+		ctx          context.Context //nolint:containedctx // table-driven test args struct, ctx passed through to the function under test
 		scenarioList map[string]v1.ValdBenchmarkScenario
 	}
 	type fields struct {
@@ -1968,7 +1982,7 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 					ctx: ctx,
 					scenarioList: map[string]v1.ValdBenchmarkScenario{
 						"scenario": {
-							ObjectMeta: metav1.ObjectMeta{
+							ObjectMeta: k8s.ObjectMeta{
 								Name:       "scenario",
 								Namespace:  "default",
 								Generation: 1,
@@ -2036,7 +2050,7 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 					want: map[string]*scenario{
 						"scenario": {
 							Crd: &v1.ValdBenchmarkScenario{
-								ObjectMeta: metav1.ObjectMeta{
+								ObjectMeta: k8s.ObjectMeta{
 									Name:       "scenario",
 									Namespace:  "default",
 									Generation: 1,
@@ -2104,7 +2118,7 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 					ctx: ctx,
 					scenarioList: map[string]v1.ValdBenchmarkScenario{
 						"scenario": {
-							ObjectMeta: metav1.ObjectMeta{
+							ObjectMeta: k8s.ObjectMeta{
 								Name:       "scenario",
 								Namespace:  "default",
 								Generation: 1,
@@ -2158,7 +2172,7 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 						m := map[string]*scenario{
 							"scenario": {
 								Crd: &v1.ValdBenchmarkScenario{
-									ObjectMeta: metav1.ObjectMeta{
+									ObjectMeta: k8s.ObjectMeta{
 										Name:       "scenario",
 										Namespace:  "default",
 										Generation: 1,
@@ -2228,7 +2242,7 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 					want: map[string]*scenario{
 						"scenario": {
 							Crd: &v1.ValdBenchmarkScenario{
-								ObjectMeta: metav1.ObjectMeta{
+								ObjectMeta: k8s.ObjectMeta{
 									Name:       "scenario",
 									Namespace:  "default",
 									Generation: 1,
@@ -2296,7 +2310,7 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 					ctx: ctx,
 					scenarioList: map[string]v1.ValdBenchmarkScenario{
 						"scenario": {
-							ObjectMeta: metav1.ObjectMeta{
+							ObjectMeta: k8s.ObjectMeta{
 								Name:       "scenario",
 								Namespace:  "default",
 								Generation: 2,
@@ -2350,7 +2364,7 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 						m := map[string]*scenario{
 							"scenario": {
 								Crd: &v1.ValdBenchmarkScenario{
-									ObjectMeta: metav1.ObjectMeta{
+									ObjectMeta: k8s.ObjectMeta{
 										Name:       "scenario",
 										Namespace:  "default",
 										Generation: 1,
@@ -2420,7 +2434,7 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 					want: map[string]*scenario{
 						"scenario": {
 							Crd: &v1.ValdBenchmarkScenario{
-								ObjectMeta: metav1.ObjectMeta{
+								ObjectMeta: k8s.ObjectMeta{
 									Name:       "scenario",
 									Namespace:  "default",
 									Generation: 2,
@@ -2488,7 +2502,7 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 					ctx: ctx,
 					scenarioList: map[string]v1.ValdBenchmarkScenario{
 						"scenario-v2": {
-							ObjectMeta: metav1.ObjectMeta{
+							ObjectMeta: k8s.ObjectMeta{
 								Name:       "scenario-v2",
 								Namespace:  "default",
 								Generation: 1,
@@ -2542,7 +2556,7 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 						m := map[string]*scenario{
 							"scenario": {
 								Crd: &v1.ValdBenchmarkScenario{
-									ObjectMeta: metav1.ObjectMeta{
+									ObjectMeta: k8s.ObjectMeta{
 										Name:       "scenario",
 										Namespace:  "default",
 										Generation: 1,
@@ -2612,7 +2626,7 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 					want: map[string]*scenario{
 						"scenario-v2": {
 							Crd: &v1.ValdBenchmarkScenario{
-								ObjectMeta: metav1.ObjectMeta{
+								ObjectMeta: k8s.ObjectMeta{
 									Name:       "scenario-v2",
 									Namespace:  "default",
 									Generation: 1,
@@ -2694,11 +2708,11 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 				jobImageRepository: test.fields.jobImageRepository,
 				jobImageTag:        test.fields.jobImageTag,
 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
-				scenarios:          test.fields.scenarios,
-				benchjobs:          test.fields.benchjobs,
-				jobs:               test.fields.jobs,
 				ctrl:               test.fields.ctrl,
 			}
+			storeInto(&o.scenarios, test.fields.scenarios)
+			storeInto(&o.benchjobs, test.fields.benchjobs)
+			storeInto(&o.jobs, test.fields.jobs)
 
 			o.benchScenarioReconcile(test.args.ctx, test.args.scenarioList)
 			got := o.getAtomicScenario()
@@ -2710,6 +2724,7 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 	}
 }
 
+//nolint:goconst,maintidx // repeated fixture literals and table volume are inherent to this table-driven test
 func Test_operator_checkAtomics(t *testing.T) {
 	t.Parallel()
 	type fields struct {
@@ -2737,7 +2752,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 	defaultScenarioMap := map[string]*scenario{
 		"scenario": {
 			Crd: &v1.ValdBenchmarkScenario{
-				ObjectMeta: metav1.ObjectMeta{
+				ObjectMeta: k8s.ObjectMeta{
 					Name:      "scenario",
 					Namespace: "default",
 				},
@@ -2796,10 +2811,10 @@ func Test_operator_checkAtomics(t *testing.T) {
 	}
 	defaultBenchJobMap := map[string]*v1.ValdBenchmarkJob{
 		"scenario-insert": {
-			ObjectMeta: metav1.ObjectMeta{
+			ObjectMeta: k8s.ObjectMeta{
 				Name:      "scenario-insert",
 				Namespace: "default",
-				OwnerReferences: []metav1.OwnerReference{
+				OwnerReferences: []k8s.OwnerReference{
 					{
 						Kind: ScenarioKind,
 						Name: "scenario",
@@ -2830,10 +2845,10 @@ func Test_operator_checkAtomics(t *testing.T) {
 			Status: v1.BenchmarkJobCompleted,
 		},
 		"scenario-search": {
-			ObjectMeta: metav1.ObjectMeta{
+			ObjectMeta: k8s.ObjectMeta{
 				Name:      "scenario-search",
 				Namespace: "default",
-				OwnerReferences: []metav1.OwnerReference{
+				OwnerReferences: []k8s.OwnerReference{
 					{
 						Kind: ScenarioKind,
 						Name: "scenario",
@@ -2869,10 +2884,10 @@ func Test_operator_checkAtomics(t *testing.T) {
 			Status: v1.BenchmarkJobAvailable,
 		},
 		"scenario-update": {
-			ObjectMeta: metav1.ObjectMeta{
+			ObjectMeta: k8s.ObjectMeta{
 				Name:      "scenario-update",
 				Namespace: "default",
-				OwnerReferences: []metav1.OwnerReference{
+				OwnerReferences: []k8s.OwnerReference{
 					{
 						Kind: ScenarioKind,
 						Name: "scenario",
@@ -2941,7 +2956,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name: "return mismatch error when scneario and job has atomic and benchJob has no atomic",
+				name: "return mismatch error when scenario and job has atomic and benchJob has no atomic",
 				fields: fields{
 					scenarios: func() *atomic.Pointer[map[string]*scenario] {
 						ap := atomic.Pointer[map[string]*scenario]{}
@@ -2969,8 +2984,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 		func() test {
 			benchJobMap := map[string]*v1.ValdBenchmarkJob{}
 			for k, v := range defaultBenchJobMap {
-				val := v1.ValdBenchmarkJob{}
-				val = *v
+				val := *v
 				benchJobMap[k] = &val
 			}
 			benchJobMap["scenario-search"].SetNamespace("benchmark")
@@ -3008,8 +3022,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 		func() test {
 			benchJobMap := map[string]*v1.ValdBenchmarkJob{}
 			for k, v := range defaultBenchJobMap {
-				val := v1.ValdBenchmarkJob{}
-				val = *v
+				val := *v
 				benchJobMap[k] = &val
 			}
 			benchJobMap["scenario-search"].Status = v1.BenchmarkJobNotReady
@@ -3047,11 +3060,10 @@ func Test_operator_checkAtomics(t *testing.T) {
 		func() test {
 			benchJobMap := map[string]*v1.ValdBenchmarkJob{}
 			for k, v := range defaultBenchJobMap {
-				val := v1.ValdBenchmarkJob{}
-				val = *v
+				val := *v
 				benchJobMap[k] = &val
 			}
-			var ors []metav1.OwnerReference
+			ors := make([]k8s.OwnerReference, 0, len(benchJobMap["scenario-search"].OwnerReferences))
 			for _, v := range benchJobMap["scenario-search"].OwnerReferences {
 				or := v.DeepCopy()
 				or.Name = "incorrectName"
@@ -3105,16 +3117,2173 @@ func Test_operator_checkAtomics(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			o := &operator{
-				scenarios: test.fields.scenarios,
-				benchjobs: test.fields.benchjobs,
-				jobs:      test.fields.jobs,
-			}
+			o := new(operator)
+			storeInto(&o.scenarios, test.fields.scenarios)
+			storeInto(&o.benchjobs, test.fields.benchjobs)
+			storeInto(&o.jobs, test.fields.jobs)
 
 			err := o.checkAtomics()
-			if err := checkFunc(test.want, err); err != nil {
+			if err = checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW
+//
+// func TestNew(t *testing.T) {
+// 	type args struct {
+// 		opts []Option
+// 	}
+// 	type want struct {
+// 		want Operator
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, Operator, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got Operator, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           opts:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           opts:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got, err := New(test.args.opts...)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_operator_initCtrl(t *testing.T) {
+// 	type fields struct {
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 		scenarios          atomic.Pointer[map[string]*scenario]
+// 		benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               atomic.Pointer[map[string]string]
+// 		jobNamespace       string
+// 		jobImageRepository string
+// 		jobImageTag        string
+// 		jobImagePullPolicy string
+// 		configMapName      string
+// 		rcd                time.Duration
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &operator{
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
+// 				jobNamespace:       test.fields.jobNamespace,
+// 				jobImageRepository: test.fields.jobImageRepository,
+// 				jobImageTag:        test.fields.jobImageTag,
+// 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+// 				configMapName:      test.fields.configMapName,
+// 				rcd:                test.fields.rcd,
+// 			}
+//
+// 			err := o.initCtrl()
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_loadAtomic(t *testing.T) {
+// 	type args struct {
+// 		p *atomic.Pointer[M]
+// 	}
+// 	type want struct {
+// 		want M
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, M) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got M) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           p:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           p:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := loadAtomic(test.args.p)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_operator_k8sClient(t *testing.T) {
+// 	type fields struct {
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 		scenarios          atomic.Pointer[map[string]*scenario]
+// 		benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               atomic.Pointer[map[string]string]
+// 		jobNamespace       string
+// 		jobImageRepository string
+// 		jobImageTag        string
+// 		jobImagePullPolicy string
+// 		configMapName      string
+// 		rcd                time.Duration
+// 	}
+// 	type want struct {
+// 		want k8s.Client
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, k8s.Client) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got k8s.Client) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &operator{
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
+// 				jobNamespace:       test.fields.jobNamespace,
+// 				jobImageRepository: test.fields.jobImageRepository,
+// 				jobImageTag:        test.fields.jobImageTag,
+// 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+// 				configMapName:      test.fields.configMapName,
+// 				rcd:                test.fields.rcd,
+// 			}
+//
+// 			got := o.k8sClient()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_singleOwnerRef(t *testing.T) {
+// 	type args struct {
+// 		apiVersion string
+// 		kind       string
+// 		name       string
+// 		uid        k8s.UID
+// 	}
+// 	type want struct {
+// 		want []k8s.OwnerReference
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, []k8s.OwnerReference) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got []k8s.OwnerReference) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           apiVersion:"",
+// 		           kind:"",
+// 		           name:"",
+// 		           uid:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           apiVersion:"",
+// 		           kind:"",
+// 		           name:"",
+// 		           uid:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := singleOwnerRef(test.args.apiVersion, test.args.kind, test.args.name, test.args.uid)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_operator_deleteBenchmarkJob(t *testing.T) {
+// 	type args struct {
+// 		ctx        context.Context
+// 		name       string
+// 		generation int64
+// 	}
+// 	type fields struct {
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 		scenarios          atomic.Pointer[map[string]*scenario]
+// 		benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               atomic.Pointer[map[string]string]
+// 		jobNamespace       string
+// 		jobImageRepository string
+// 		jobImageTag        string
+// 		jobImagePullPolicy string
+// 		configMapName      string
+// 		rcd                time.Duration
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           name:"",
+// 		           generation:0,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           name:"",
+// 		           generation:0,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &operator{
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
+// 				jobNamespace:       test.fields.jobNamespace,
+// 				jobImageRepository: test.fields.jobImageRepository,
+// 				jobImageTag:        test.fields.jobImageTag,
+// 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+// 				configMapName:      test.fields.configMapName,
+// 				rcd:                test.fields.rcd,
+// 			}
+//
+// 			err := o.deleteBenchmarkJob(test.args.ctx, test.args.name, test.args.generation)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_operator_deleteJob(t *testing.T) {
+// 	type args struct {
+// 		ctx  context.Context
+// 		name string
+// 	}
+// 	type fields struct {
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 		scenarios          atomic.Pointer[map[string]*scenario]
+// 		benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               atomic.Pointer[map[string]string]
+// 		jobNamespace       string
+// 		jobImageRepository string
+// 		jobImageTag        string
+// 		jobImagePullPolicy string
+// 		configMapName      string
+// 		rcd                time.Duration
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           name:"",
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           name:"",
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &operator{
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
+// 				jobNamespace:       test.fields.jobNamespace,
+// 				jobImageRepository: test.fields.jobImageRepository,
+// 				jobImageTag:        test.fields.jobImageTag,
+// 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+// 				configMapName:      test.fields.configMapName,
+// 				rcd:                test.fields.rcd,
+// 			}
+//
+// 			err := o.deleteJob(test.args.ctx, test.args.name)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_operator_createBenchmarkJob(t *testing.T) {
+// 	type args struct {
+// 		ctx      context.Context
+// 		scenario v1.ValdBenchmarkScenario
+// 	}
+// 	type fields struct {
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 		scenarios          atomic.Pointer[map[string]*scenario]
+// 		benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               atomic.Pointer[map[string]string]
+// 		jobNamespace       string
+// 		jobImageRepository string
+// 		jobImageTag        string
+// 		jobImagePullPolicy string
+// 		configMapName      string
+// 		rcd                time.Duration
+// 	}
+// 	type want struct {
+// 		want []string
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, []string, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got []string, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           scenario:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           scenario:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &operator{
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
+// 				jobNamespace:       test.fields.jobNamespace,
+// 				jobImageRepository: test.fields.jobImageRepository,
+// 				jobImageTag:        test.fields.jobImageTag,
+// 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+// 				configMapName:      test.fields.configMapName,
+// 				rcd:                test.fields.rcd,
+// 			}
+//
+// 			got, err := o.createBenchmarkJob(test.args.ctx, test.args.scenario)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_operator_createJob(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		bjr v1.ValdBenchmarkJob
+// 	}
+// 	type fields struct {
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 		scenarios          atomic.Pointer[map[string]*scenario]
+// 		benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               atomic.Pointer[map[string]string]
+// 		jobNamespace       string
+// 		jobImageRepository string
+// 		jobImageTag        string
+// 		jobImagePullPolicy string
+// 		configMapName      string
+// 		rcd                time.Duration
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           bjr:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           bjr:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &operator{
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
+// 				jobNamespace:       test.fields.jobNamespace,
+// 				jobImageRepository: test.fields.jobImageRepository,
+// 				jobImageTag:        test.fields.jobImageTag,
+// 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+// 				configMapName:      test.fields.configMapName,
+// 				rcd:                test.fields.rcd,
+// 			}
+//
+// 			err := o.createJob(test.args.ctx, test.args.bjr)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_updateCachedStatuses(t *testing.T) {
+// 	type args struct {
+// 		ctx     context.Context
+// 		c       k8s.Client
+// 		desired map[string]S
+// 		resolve func(name string, status S) (obj k8s.Object, ok bool)
+// 	}
+// 	type want struct {
+// 		wantUpdated []string
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, []string) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotUpdated []string) error {
+// 		if !reflect.DeepEqual(gotUpdated, w.wantUpdated) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotUpdated, w.wantUpdated)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           c:nil,
+// 		           desired:nil,
+// 		           resolve:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           c:nil,
+// 		           desired:nil,
+// 		           resolve:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			gotUpdated := updateCachedStatuses(test.args.ctx, test.args.c, test.args.desired, test.args.resolve)
+// 			if err := checkFunc(test.want, gotUpdated); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_operator_updateBenchmarkScenarioStatus(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		ss  map[string]v1.ValdBenchmarkScenarioStatus
+// 	}
+// 	type fields struct {
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 		scenarios          atomic.Pointer[map[string]*scenario]
+// 		benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               atomic.Pointer[map[string]string]
+// 		jobNamespace       string
+// 		jobImageRepository string
+// 		jobImageTag        string
+// 		jobImagePullPolicy string
+// 		configMapName      string
+// 		rcd                time.Duration
+// 	}
+// 	type want struct {
+// 		want []string
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, []string, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got []string, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           ss:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           ss:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &operator{
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
+// 				jobNamespace:       test.fields.jobNamespace,
+// 				jobImageRepository: test.fields.jobImageRepository,
+// 				jobImageTag:        test.fields.jobImageTag,
+// 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+// 				configMapName:      test.fields.configMapName,
+// 				rcd:                test.fields.rcd,
+// 			}
+//
+// 			got, err := o.updateBenchmarkScenarioStatus(test.args.ctx, test.args.ss)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_operator_updateBenchmarkJobStatus(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		js  map[string]v1.BenchmarkJobStatus
+// 	}
+// 	type fields struct {
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 		scenarios          atomic.Pointer[map[string]*scenario]
+// 		benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               atomic.Pointer[map[string]string]
+// 		jobNamespace       string
+// 		jobImageRepository string
+// 		jobImageTag        string
+// 		jobImagePullPolicy string
+// 		configMapName      string
+// 		rcd                time.Duration
+// 	}
+// 	type want struct {
+// 		want []string
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, []string, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got []string, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           js:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           js:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &operator{
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
+// 				jobNamespace:       test.fields.jobNamespace,
+// 				jobImageRepository: test.fields.jobImageRepository,
+// 				jobImageTag:        test.fields.jobImageTag,
+// 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+// 				configMapName:      test.fields.configMapName,
+// 				rcd:                test.fields.rcd,
+// 			}
+//
+// 			got, err := o.updateBenchmarkJobStatus(test.args.ctx, test.args.js)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_operator_checkJobsStatus(t *testing.T) {
+// 	type args struct {
+// 		ctx  context.Context
+// 		jobs map[string]string
+// 	}
+// 	type fields struct {
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 		scenarios          atomic.Pointer[map[string]*scenario]
+// 		benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               atomic.Pointer[map[string]string]
+// 		jobNamespace       string
+// 		jobImageRepository string
+// 		jobImageTag        string
+// 		jobImagePullPolicy string
+// 		configMapName      string
+// 		rcd                time.Duration
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           jobs:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           jobs:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &operator{
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
+// 				jobNamespace:       test.fields.jobNamespace,
+// 				jobImageRepository: test.fields.jobImageRepository,
+// 				jobImageTag:        test.fields.jobImageTag,
+// 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+// 				configMapName:      test.fields.configMapName,
+// 				rcd:                test.fields.rcd,
+// 			}
+//
+// 			err := o.checkJobsStatus(test.args.ctx, test.args.jobs)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_operator_GetScenarioStatus(t *testing.T) {
+// 	type fields struct {
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 		scenarios          atomic.Pointer[map[string]*scenario]
+// 		benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               atomic.Pointer[map[string]string]
+// 		jobNamespace       string
+// 		jobImageRepository string
+// 		jobImageTag        string
+// 		jobImagePullPolicy string
+// 		configMapName      string
+// 		rcd                time.Duration
+// 	}
+// 	type want struct {
+// 		want map[v1.ValdBenchmarkScenarioStatus]int64
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, map[v1.ValdBenchmarkScenarioStatus]int64) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got map[v1.ValdBenchmarkScenarioStatus]int64) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &operator{
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
+// 				jobNamespace:       test.fields.jobNamespace,
+// 				jobImageRepository: test.fields.jobImageRepository,
+// 				jobImageTag:        test.fields.jobImageTag,
+// 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+// 				configMapName:      test.fields.configMapName,
+// 				rcd:                test.fields.rcd,
+// 			}
+//
+// 			got := o.GetScenarioStatus()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_operator_GetBenchmarkJobStatus(t *testing.T) {
+// 	type fields struct {
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 		scenarios          atomic.Pointer[map[string]*scenario]
+// 		benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               atomic.Pointer[map[string]string]
+// 		jobNamespace       string
+// 		jobImageRepository string
+// 		jobImageTag        string
+// 		jobImagePullPolicy string
+// 		configMapName      string
+// 		rcd                time.Duration
+// 	}
+// 	type want struct {
+// 		want map[v1.BenchmarkJobStatus]int64
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, map[v1.BenchmarkJobStatus]int64) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got map[v1.BenchmarkJobStatus]int64) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &operator{
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
+// 				jobNamespace:       test.fields.jobNamespace,
+// 				jobImageRepository: test.fields.jobImageRepository,
+// 				jobImageTag:        test.fields.jobImageTag,
+// 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+// 				configMapName:      test.fields.configMapName,
+// 				rcd:                test.fields.rcd,
+// 			}
+//
+// 			got := o.GetBenchmarkJobStatus()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_operator_PreStart(t *testing.T) {
+// 	type args struct {
+// 		in0 context.Context
+// 	}
+// 	type fields struct {
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 		scenarios          atomic.Pointer[map[string]*scenario]
+// 		benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               atomic.Pointer[map[string]string]
+// 		jobNamespace       string
+// 		jobImageRepository string
+// 		jobImageTag        string
+// 		jobImagePullPolicy string
+// 		configMapName      string
+// 		rcd                time.Duration
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           in0:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           in0:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &operator{
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
+// 				jobNamespace:       test.fields.jobNamespace,
+// 				jobImageRepository: test.fields.jobImageRepository,
+// 				jobImageTag:        test.fields.jobImageTag,
+// 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+// 				configMapName:      test.fields.configMapName,
+// 				rcd:                test.fields.rcd,
+// 			}
+//
+// 			err := o.PreStart(test.args.in0)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_operator_Start(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 	}
+// 	type fields struct {
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 		scenarios          atomic.Pointer[map[string]*scenario]
+// 		benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               atomic.Pointer[map[string]string]
+// 		jobNamespace       string
+// 		jobImageRepository string
+// 		jobImageTag        string
+// 		jobImagePullPolicy string
+// 		configMapName      string
+// 		rcd                time.Duration
+// 	}
+// 	type want struct {
+// 		want <-chan error
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, <-chan error, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           rcd:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &operator{
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
+// 				jobNamespace:       test.fields.jobNamespace,
+// 				jobImageRepository: test.fields.jobImageRepository,
+// 				jobImageTag:        test.fields.jobImageTag,
+// 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+// 				configMapName:      test.fields.configMapName,
+// 				rcd:                test.fields.rcd,
+// 			}
+//
+// 			got, err := o.Start(test.args.ctx)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }

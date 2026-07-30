@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package main
 
@@ -20,11 +18,13 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"go/format"
 	"io/fs"
 	"path/filepath"
 	"text/template"
 	"time"
 
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
@@ -34,21 +34,19 @@ import (
 )
 
 var (
-	apache = template.Must(template.New("Apache License").Parse(`{{.Escape}}
-{{.Escape}} Copyright (C) 2019-{{.Year}} {{.Maintainer}}
+	apache = template.Must(template.New("Apache License").Parse(`{{.Escape}} Copyright (C) 2019-{{.Year}} {{.Maintainer}}
 {{.Escape}}
 {{.Escape}} Licensed under the Apache License, Version 2.0 (the "License");
 {{.Escape}} You may not use this file except in compliance with the License.
 {{.Escape}} You may obtain a copy of the License at
 {{.Escape}}
-{{.Escape}}    https://www.apache.org/licenses/LICENSE-2.0
+{{.Escape}}	https://www.apache.org/licenses/LICENSE-2.0
 {{.Escape}}
 {{.Escape}} Unless required by applicable law or agreed to in writing, software
 {{.Escape}} distributed under the License is distributed on an "AS IS" BASIS,
 {{.Escape}} WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 {{.Escape}} See the License for the specific language governing permissions and
 {{.Escape}} limitations under the License.
-{{.Escape}}
 `))
 	docker = template.Must(template.New("Apache License").Parse(`{{.Escape}} syntax = docker/dockerfile:latest
 {{.Escape}} check=error=true
@@ -69,9 +67,8 @@ var (
 {{.Escape}}
 `))
 
-	googleProtoApache = template.Must(template.New("Google Proto Apache License").Parse(`{{.Escape}}
-{{.Escape}} Copyright (C) {{.Year}} Google LLC
-{{.Escape}} Modified by {{.Maintainer}}
+	sharpApache = template.Must(template.New("Apache License Sharp").Parse(`{{.Escape}}
+{{.Escape}} Copyright (C) 2019-{{.Year}} {{.Maintainer}}
 {{.Escape}}
 {{.Escape}} Licensed under the Apache License, Version 2.0 (the "License");
 {{.Escape}} You may not use this file except in compliance with the License.
@@ -87,8 +84,23 @@ var (
 {{.Escape}}
 `))
 
-	goStandard = template.Must(template.New("Go License").Parse(`{{.Escape}}
-{{.Escape}} Copyright (c) 2009-{{.Year}} The Go Authors. All rights resered.
+	googleProtoApache = template.Must(template.New("Google Proto Apache License").Parse(`{{.Escape}} Copyright (C) {{.Year}} Google LLC
+{{.Escape}} Modified by {{.Maintainer}}
+{{.Escape}}
+{{.Escape}} Licensed under the Apache License, Version 2.0 (the "License");
+{{.Escape}} You may not use this file except in compliance with the License.
+{{.Escape}} You may obtain a copy of the License at
+{{.Escape}}
+{{.Escape}}	https://www.apache.org/licenses/LICENSE-2.0
+{{.Escape}}
+{{.Escape}} Unless required by applicable law or agreed to in writing, software
+{{.Escape}} distributed under the License is distributed on an "AS IS" BASIS,
+{{.Escape}} WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+{{.Escape}} See the License for the specific language governing permissions and
+{{.Escape}} limitations under the License.
+`))
+
+	goStandard = template.Must(template.New("Go License").Parse(`{{.Escape}} Copyright (c) 2009-{{.Year}} The Go Authors. All rights resered.
 {{.Escape}} Modified by {{.Maintainer}}
 {{.Escape}}
 {{.Escape}} Redistribution and use in source and binary forms, with or without
@@ -116,7 +128,6 @@ var (
 {{.Escape}} THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 {{.Escape}} (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 {{.Escape}} OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-{{.Escape}}
 `))
 
 	slushEscape = "//"
@@ -160,6 +171,7 @@ func main() {
 	}
 }
 
+// skipcq: GO-R1005
 func dirwalk(dir string) ([]string, error) {
 	for _, sd := range skipDir {
 		if strings.Contains(dir, sd) {
@@ -256,6 +268,7 @@ func isSymlink(path string) (bool, error) {
 	return lst.Mode()&os.ModeSymlink == os.ModeSymlink, nil
 }
 
+// skipcq: GO-R1005
 func readAndRewrite(path string) error {
 	// return if it is a symlink
 	isSym, err := isSymlink(path)
@@ -335,6 +348,8 @@ func readAndRewrite(path string) error {
 		default:
 			if fi.Name() == "Dockerfile" {
 				tmpl = docker
+			} else {
+				tmpl = sharpApache
 			}
 		}
 		lf := true
@@ -423,7 +438,19 @@ func readAndRewrite(path string) error {
 		}
 		return errors.Errorf("filepath %s, could not open", path)
 	}
-	_, err = f.WriteString(strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n"))
+	content := strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n")
+	// Emit Go sources in gofmt's normal form: a license header that directly
+	// precedes the package clause is a doc comment, which go/format (Go
+	// 1.19+) reformats — the leading blank comment line is dropped and
+	// space-indented lines become tab-indented. Writing the template style
+	// verbatim would make this generator and the later format/go pass
+	// ping-pong those headers, so `make license` alone never converged.
+	if filepath.Ext(path) == ".go" {
+		if formatted, ferr := format.Source(conv.Atob(content)); ferr == nil {
+			content = conv.Btoa(formatted)
+		}
+	}
+	_, err = f.WriteString(content)
 	if err != nil {
 		// skipcq: RVV-A0003
 		log.Fatal(err)

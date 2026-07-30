@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package config
 
@@ -42,7 +40,7 @@ const minimalServerYAML = `server_config:
 `
 
 //nolint:maintidx
-func TestNewConfig(t *testing.T) {
+func TestNew(t *testing.T) {
 	t.Parallel()
 
 	type test struct {
@@ -80,7 +78,6 @@ operator:
       not_found: 1s
   vrs:
     default_vrs_path: /opt/valdoperatorrelease/config/vrs.yaml
-    internal_host_domain: ""
     log_level: warn
   node_pool:
     require_match: true
@@ -208,15 +205,15 @@ operator:
 			t.Parallel()
 
 			path := writeTempFile(t, "config.yaml", tc.yaml)
-			cfg, err := NewConfig(path)
+			cfg, err := New(path)
 			if tc.wantErr {
 				if err == nil {
-					t.Error("NewConfig() error = nil, want error")
+					t.Error("New() error = nil, want error")
 				}
 				return
 			}
 			if err != nil {
-				t.Fatalf("NewConfig() error = %v, want nil", err)
+				t.Fatalf("New() error = %v, want nil", err)
 			}
 			if tc.check != nil {
 				tc.check(t, cfg)
@@ -374,3 +371,652 @@ metadata:
 		}
 	})
 }
+
+// NOT IMPLEMENTED BELOW
+//
+// func TestOperator_Bind(t *testing.T) {
+// 	type fields struct {
+// 		Controller       *Controller
+// 		Vrs              *Vrs
+// 		NodePool         *NodePool
+// 		PersistentVolume *PersistentVolume
+// 		Networking       *Networking
+// 		Name             string
+// 		Namespace        string
+// 	}
+// 	type want struct {
+// 		want *Operator
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *Operator) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *Operator) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           Controller:Controller{},
+// 		           Vrs:Vrs{},
+// 		           NodePool:NodePool{},
+// 		           PersistentVolume:PersistentVolume{},
+// 		           Networking:Networking{},
+// 		           Name:"",
+// 		           Namespace:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           Controller:Controller{},
+// 		           Vrs:Vrs{},
+// 		           NodePool:NodePool{},
+// 		           PersistentVolume:PersistentVolume{},
+// 		           Networking:Networking{},
+// 		           Name:"",
+// 		           Namespace:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &Operator{
+// 				Controller:       test.fields.Controller,
+// 				Vrs:              test.fields.Vrs,
+// 				NodePool:         test.fields.NodePool,
+// 				PersistentVolume: test.fields.PersistentVolume,
+// 				Networking:       test.fields.Networking,
+// 				Name:             test.fields.Name,
+// 				Namespace:        test.fields.Namespace,
+// 			}
+//
+// 			got := o.Bind()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func TestOperator_bindController(t *testing.T) {
+// 	type fields struct {
+// 		Controller       *Controller
+// 		Vrs              *Vrs
+// 		NodePool         *NodePool
+// 		PersistentVolume *PersistentVolume
+// 		Networking       *Networking
+// 		Name             string
+// 		Namespace        string
+// 	}
+// 	type want struct{}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want) error {
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           Controller:Controller{},
+// 		           Vrs:Vrs{},
+// 		           NodePool:NodePool{},
+// 		           PersistentVolume:PersistentVolume{},
+// 		           Networking:Networking{},
+// 		           Name:"",
+// 		           Namespace:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           Controller:Controller{},
+// 		           Vrs:Vrs{},
+// 		           NodePool:NodePool{},
+// 		           PersistentVolume:PersistentVolume{},
+// 		           Networking:Networking{},
+// 		           Name:"",
+// 		           Namespace:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &Operator{
+// 				Controller:       test.fields.Controller,
+// 				Vrs:              test.fields.Vrs,
+// 				NodePool:         test.fields.NodePool,
+// 				PersistentVolume: test.fields.PersistentVolume,
+// 				Networking:       test.fields.Networking,
+// 				Name:             test.fields.Name,
+// 				Namespace:        test.fields.Namespace,
+// 			}
+//
+// 			o.bindController()
+// 			if err := checkFunc(test.want); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func TestOperator_bindVrs(t *testing.T) {
+// 	type fields struct {
+// 		Controller       *Controller
+// 		Vrs              *Vrs
+// 		NodePool         *NodePool
+// 		PersistentVolume *PersistentVolume
+// 		Networking       *Networking
+// 		Name             string
+// 		Namespace        string
+// 	}
+// 	type want struct{}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want) error {
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           Controller:Controller{},
+// 		           Vrs:Vrs{},
+// 		           NodePool:NodePool{},
+// 		           PersistentVolume:PersistentVolume{},
+// 		           Networking:Networking{},
+// 		           Name:"",
+// 		           Namespace:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           Controller:Controller{},
+// 		           Vrs:Vrs{},
+// 		           NodePool:NodePool{},
+// 		           PersistentVolume:PersistentVolume{},
+// 		           Networking:Networking{},
+// 		           Name:"",
+// 		           Namespace:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &Operator{
+// 				Controller:       test.fields.Controller,
+// 				Vrs:              test.fields.Vrs,
+// 				NodePool:         test.fields.NodePool,
+// 				PersistentVolume: test.fields.PersistentVolume,
+// 				Networking:       test.fields.Networking,
+// 				Name:             test.fields.Name,
+// 				Namespace:        test.fields.Namespace,
+// 			}
+//
+// 			o.bindVrs()
+// 			if err := checkFunc(test.want); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func TestOperator_bindNodePool(t *testing.T) {
+// 	type fields struct {
+// 		Controller       *Controller
+// 		Vrs              *Vrs
+// 		NodePool         *NodePool
+// 		PersistentVolume *PersistentVolume
+// 		Networking       *Networking
+// 		Name             string
+// 		Namespace        string
+// 	}
+// 	type want struct{}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want) error {
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           Controller:Controller{},
+// 		           Vrs:Vrs{},
+// 		           NodePool:NodePool{},
+// 		           PersistentVolume:PersistentVolume{},
+// 		           Networking:Networking{},
+// 		           Name:"",
+// 		           Namespace:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           Controller:Controller{},
+// 		           Vrs:Vrs{},
+// 		           NodePool:NodePool{},
+// 		           PersistentVolume:PersistentVolume{},
+// 		           Networking:Networking{},
+// 		           Name:"",
+// 		           Namespace:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &Operator{
+// 				Controller:       test.fields.Controller,
+// 				Vrs:              test.fields.Vrs,
+// 				NodePool:         test.fields.NodePool,
+// 				PersistentVolume: test.fields.PersistentVolume,
+// 				Networking:       test.fields.Networking,
+// 				Name:             test.fields.Name,
+// 				Namespace:        test.fields.Namespace,
+// 			}
+//
+// 			o.bindNodePool()
+// 			if err := checkFunc(test.want); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func TestOperator_bindPersistentVolume(t *testing.T) {
+// 	type fields struct {
+// 		Controller       *Controller
+// 		Vrs              *Vrs
+// 		NodePool         *NodePool
+// 		PersistentVolume *PersistentVolume
+// 		Networking       *Networking
+// 		Name             string
+// 		Namespace        string
+// 	}
+// 	type want struct{}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want) error {
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           Controller:Controller{},
+// 		           Vrs:Vrs{},
+// 		           NodePool:NodePool{},
+// 		           PersistentVolume:PersistentVolume{},
+// 		           Networking:Networking{},
+// 		           Name:"",
+// 		           Namespace:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           Controller:Controller{},
+// 		           Vrs:Vrs{},
+// 		           NodePool:NodePool{},
+// 		           PersistentVolume:PersistentVolume{},
+// 		           Networking:Networking{},
+// 		           Name:"",
+// 		           Namespace:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &Operator{
+// 				Controller:       test.fields.Controller,
+// 				Vrs:              test.fields.Vrs,
+// 				NodePool:         test.fields.NodePool,
+// 				PersistentVolume: test.fields.PersistentVolume,
+// 				Networking:       test.fields.Networking,
+// 				Name:             test.fields.Name,
+// 				Namespace:        test.fields.Namespace,
+// 			}
+//
+// 			o.bindPersistentVolume()
+// 			if err := checkFunc(test.want); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func TestOperator_bindNetworking(t *testing.T) {
+// 	type fields struct {
+// 		Controller       *Controller
+// 		Vrs              *Vrs
+// 		NodePool         *NodePool
+// 		PersistentVolume *PersistentVolume
+// 		Networking       *Networking
+// 		Name             string
+// 		Namespace        string
+// 	}
+// 	type want struct{}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want) error {
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           Controller:Controller{},
+// 		           Vrs:Vrs{},
+// 		           NodePool:NodePool{},
+// 		           PersistentVolume:PersistentVolume{},
+// 		           Networking:Networking{},
+// 		           Name:"",
+// 		           Namespace:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           Controller:Controller{},
+// 		           Vrs:Vrs{},
+// 		           NodePool:NodePool{},
+// 		           PersistentVolume:PersistentVolume{},
+// 		           Networking:Networking{},
+// 		           Name:"",
+// 		           Namespace:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &Operator{
+// 				Controller:       test.fields.Controller,
+// 				Vrs:              test.fields.Vrs,
+// 				NodePool:         test.fields.NodePool,
+// 				PersistentVolume: test.fields.PersistentVolume,
+// 				Networking:       test.fields.Networking,
+// 				Name:             test.fields.Name,
+// 				Namespace:        test.fields.Namespace,
+// 			}
+//
+// 			o.bindNetworking()
+// 			if err := checkFunc(test.want); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }

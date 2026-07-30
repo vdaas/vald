@@ -1424,6 +1424,82 @@ func TestIs(t *testing.T) {
 	}
 }
 
+func TestIsNot(t *testing.T) {
+	type args struct {
+		err     error
+		targets []error
+	}
+	type want struct {
+		want bool
+	}
+	type test struct {
+		name string
+		args args
+		want want
+	}
+	tests := []test{
+		{
+			name: "return false when err is nil and targets are given, unlike the negation of Is.",
+			args: args{
+				targets: []error{New("invalid parameter")},
+			},
+			want: want{},
+		},
+		{
+			name: "return false when err is nil and no targets are given.",
+			args: args{},
+			want: want{},
+		},
+		{
+			name: "return true when err is not nil and no targets are given.",
+			args: args{
+				err: New("err is occurred"),
+			},
+			want: want{
+				true,
+			},
+		},
+		{
+			name: "return false when err matches one of the targets.",
+			args: args{
+				err:     New("invalid parameter"),
+				targets: []error{New("err is occurred"), New("invalid parameter")},
+			},
+			want: want{},
+		},
+		{
+			name: "return true when err matches none of the targets.",
+			args: args{
+				err:     New("invalid parameter"),
+				targets: []error{New("err is occurred"), New("connection refused")},
+			},
+			want: want{
+				true,
+			},
+		},
+		{
+			name: "return true when err is not nil and all targets are nil.",
+			args: args{
+				err:     New("invalid parameter"),
+				targets: []error{nil, nil},
+			},
+			want: want{
+				true,
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			got := IsNot(test.args.err, test.args.targets...)
+			if got != test.want.want {
+				tt.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, test.want.want)
+			}
+		})
+	}
+}
+
 func TestAs(t *testing.T) {
 	type args struct {
 		err    error

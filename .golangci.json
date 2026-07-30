@@ -8,7 +8,7 @@
     },
     "exclusions": {
       "generated": "lax",
-      "paths": ["third_party$", "builtin$", "examples$"]
+      "paths": ["third_party$", "builtin$", "examples$", "\\.gen\\.go$"]
     }
   },
   "linters": {
@@ -72,7 +72,7 @@
     ],
     "exclusions": {
       "generated": "lax",
-      "paths": ["third_party$", "builtin$", "examples$"],
+      "paths": ["third_party$", "builtin$", "examples$", "\\.gen\\.go$"],
       "rules": [
         {
           "linters": [
@@ -115,7 +115,7 @@
         },
         {
           "linters": ["depguard"],
-          "path": "hack/benchmark/src/singleflight/singleflight_bench_test\\.go"
+          "path": "^internal/sync/"
         }
       ]
     },
@@ -127,6 +127,10 @@
               {
                 "desc": "sync is allowed only by internal/sync",
                 "pkg": "sync"
+              },
+              {
+                "desc": "sync/atomic is allowed only by internal/sync/atomic",
+                "pkg": "sync/atomic"
               },
               {
                 "desc": "golang.org/x/sync is allowed only by internal/sync",
@@ -163,6 +167,28 @@
               {
                 "desc": "cmpopts is allowed only by internal/test/comparator",
                 "pkg": "github.com/google/go-cmp/cmp/cmpopts"
+              }
+            ]
+          },
+          "k8s-confinement": {
+            "files": ["**/pkg/**", "**/tests/v2/**"],
+            "deny": [
+              {
+                "desc": "k8s.io/sigs.k8s.io is allowed only under internal/k8s — use internal/k8s (or internal/test/mock/k8s for fakes)",
+                "pkg": "k8s.io"
+              },
+              {
+                "desc": "k8s.io/sigs.k8s.io is allowed only under internal/k8s — use internal/k8s (or internal/test/mock/k8s for fakes)",
+                "pkg": "sigs.k8s.io"
+              }
+            ]
+          },
+          "test-confinement": {
+            "files": ["**/pkg/**", "!$test"],
+            "deny": [
+              {
+                "desc": "internal/test (mocks, fakes, comparators) must not be imported from production code",
+                "pkg": "github.com/vdaas/vald/internal/test"
               }
             ]
           }

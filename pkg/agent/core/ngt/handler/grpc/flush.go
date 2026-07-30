@@ -15,7 +15,6 @@ package grpc
 
 import (
 	"context"
-	"fmt"
 	"sync/atomic"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -24,6 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/errhandler"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -34,11 +34,7 @@ func (s *server) Flush(
 	ctx context.Context, req *payload.Flush_Request,
 ) (*payload.Info_Index_Count, error) {
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.FlushRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err := s.ngt.RegenerateIndexes(ctx)
 	if err != nil {
 		var attrs []attribute.KeyValue
@@ -47,10 +43,7 @@ func (s *server) Flush(
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.Flush",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.Flush"))
 			log.Debug(err)
 			attrs = trace.StatusCodeAborted(err.Error())
 		} else if errors.Is(err, errors.ErrWriteOperationToReadReplica) {
@@ -58,10 +51,7 @@ func (s *server) Flush(
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.Flush",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.Flush"))
 			log.Debug(err)
 			attrs = trace.StatusCodeAborted(err.Error())
 
@@ -70,18 +60,11 @@ func (s *server) Flush(
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.Flush",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
+				s.resourceInfo(ngtResourceType+"/ngt.Flush"), info.Get())
 			log.Error(err)
 			attrs = trace.StatusCodeInternal(err.Error())
 		}
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 

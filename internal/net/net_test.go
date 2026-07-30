@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package net
 
@@ -323,9 +321,19 @@ func TestParse(t *testing.T) {
 			want: want{
 				wantHost: "google.com",
 				wantPort: uint16(8080),
-				isV4:     true,
-				isV6:     false,
 				isLocal:  false,
+			},
+			checkFunc: func(w want, gotHost string, gotPort uint16, gotIsLocal bool, gotIsV4 bool, gotIsV6 bool, err error) error {
+				if gotHost != w.wantHost {
+					return errors.Errorf("gotHost: %q, want: %q", gotHost, w.wantHost)
+				}
+				if gotPort != w.wantPort {
+					return errors.Errorf("gotPort: %d, want: %d", gotPort, w.wantPort)
+				}
+				if gotIsLocal != w.isLocal {
+					return errors.Errorf("gotIsLocal: %v, want: %v", gotIsLocal, w.isLocal)
+				}
+				return nil
 			},
 		},
 		{
@@ -1179,6 +1187,107 @@ func TestJoinHostPort(t *testing.T) {
 			}
 
 			got := JoinHostPort(test.args.host, test.args.port)
+			if err := checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestDistinctAddrs(t *testing.T) {
+	t.Parallel()
+	// Named once and referenced by identifier below (rather than repeating the
+	// literals) to avoid tripping goconst across the many test cases that need
+	// to reuse the same addresses to exercise duplicate removal.
+	const (
+		addr1 = "10.0.0.1:8081"
+		addr2 = "10.0.0.2:8081"
+		addr3 = "10.0.0.3:8081"
+	)
+	type args struct {
+		addrs []string
+	}
+	type want struct {
+		want []string
+	}
+	type test struct {
+		checkFunc  func(want, []string) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+		name       string
+		args       args
+		want       want
+	}
+	defaultCheckFunc := func(w want, got []string) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return empty slice when addrs is nil",
+			args: args{
+				addrs: nil,
+			},
+			want: want{
+				want: []string{},
+			},
+		},
+		{
+			name: "return empty slice when addrs is empty",
+			args: args{
+				addrs: []string{},
+			},
+			want: want{
+				want: []string{},
+			},
+		},
+		{
+			name: "return the same addrs when there are no duplicates",
+			args: args{
+				addrs: []string{addr1, addr2, addr3},
+			},
+			want: want{
+				want: []string{addr1, addr2, addr3},
+			},
+		},
+		{
+			name: "remove duplicated addrs while preserving order of first occurrence",
+			args: args{
+				addrs: []string{addr2, addr1, addr2, addr3, addr1},
+			},
+			want: want{
+				want: []string{addr2, addr1, addr3},
+			},
+		},
+		{
+			name: "return single element slice when all addrs are the same",
+			args: args{
+				addrs: []string{addr1, addr1, addr1},
+			},
+			want: want{
+				want: []string{addr1},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			got := DistinctAddrs(test.args.addrs)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

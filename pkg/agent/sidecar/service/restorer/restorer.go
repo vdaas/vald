@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package restorer
 
@@ -251,23 +249,31 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 
 		target := file.Join(r.dir, header.Name)
 		log.Debug("restoring: ", target)
-		if !strings.Contains(target, "..") {
-			switch header.Typeflag {
-			case tar.TypeDir:
-				err = file.MkdirAll(target, fs.ModePerm)
-				if err != nil {
-					log.Warn(err)
-					return err
+		// Guard against tar-slip: file.Join already cleans the path, so a ".."
+		// substring check is ineffective (clean resolves ".." away, e.g.
+		// "../../etc/x" -> "/etc/x"). Require the resolved target to stay within
+		// r.dir and skip any entry that escapes it.
+		cleanDir := file.Join(r.dir)
+		if target != cleanDir && !strings.HasPrefix(target, cleanDir+string(os.PathSeparator)) {
+			log.Warnf("skipping tar entry %q: resolved path %q escapes restore dir %q (possible tar-slip)", header.Name, target, cleanDir)
+			continue
+		}
+		switch header.Typeflag {
+		case tar.TypeDir:
+			err = file.MkdirAll(target, fs.ModePerm)
+			if err != nil {
+				log.Warn(err)
+				return err
+			}
+		case tar.TypeReg:
+			//nolint:gosec // header.Mode is a POSIX file mode within uint32 range; any truncation only affects restored file permissions, not escalation.
+			_, err = file.WriteFile(ctx, target, tr, fs.FileMode(header.Mode))
+			if err != nil {
+				log.Warn(err)
+				if errors.Is(err, errors.ErrFileAlreadyExists(target)) {
+					return nil
 				}
-			case tar.TypeReg:
-				_, err = file.WriteFile(ctx, target, tr, fs.FileMode(header.Mode))
-				if err != nil {
-					log.Warn(err)
-					if errors.Is(err, errors.ErrFileAlreadyExists(target)) {
-						return nil
-					}
-					return err
-				}
+				return err
 			}
 		}
 	}

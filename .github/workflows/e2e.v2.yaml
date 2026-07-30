@@ -34,7 +34,7 @@ jobs:
       contents: read
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
       - uses: ./.github/actions/dump-context
@@ -67,6 +67,7 @@ jobs:
               { scenario: "unary_crud",  deployment: "helm-chart", cluster: "k3d", environment: "null" },
               { scenario: "multi_crud",  deployment: "helm-chart", cluster: "k3d", environment: "null" },
               { scenario: "rollout",     deployment: "helm-chart", cluster: "k3d", environment: "null" },
+              { scenario: "faiss_crud",  deployment: "helm-chart", cluster: "k3d", environment: "faiss" },
               { scenario: "stream_crud", deployment: "helm-operator", cluster: "k3d", environment: "null" },
               { scenario: "index_correction", deployment: "helm-chart", cluster: "k3d", environment: "management" },
               { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "management" },
@@ -113,11 +114,87 @@ jobs:
             const matrix = { include: filtered };
             core.info('Generated matrix:\n' + JSON.stringify(matrix, null, 2));
             return JSON.stringify(matrix);
+  # Freshness gate: block the e2e container start until the dev-container image
+  # that detect-ci-container resolved actually carries the PR head's toolchain
+  # fingerprint. Without this, the e2e job races the (separately triggered)
+  # dev-container rebuild and can pull a stale image built from main's toolchain
+  # (e.g. an older Go), which fails the in-container build with
+  # "compile: version does not match go tool version". Keyed on a toolchain
+  # fingerprint (not the commit sha) so ordinary PRs that do not touch the
+  # toolchain match on the first poll and wait zero time; only a toolchain-
+  # changing PR waits for its rebuild. Fails open when the label is absent (an
+  # image built before this gate existed) so it never blocks e2e spuriously.
+  wait-dev-container:
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    needs: [detect-ci-container]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+          # Match the ref the dev-container build labels the image from
+          # (_docker-image.yaml checks out github.event.pull_request.head.sha),
+          # so the fingerprint computed here equals the image label. The default
+          # pull_request checkout is the merge ref, which would diverge whenever
+          # the base branch changes a toolchain file and the PR does not.
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Wait until the dev-container image matches the PR head toolchain
+        shell: bash
+        env:
+          TAG: ${{ needs.detect-ci-container.outputs.TAG }}
+        run: |
+          # The freshness gate only applies to pull_request events, where a PR
+          # can bump the toolchain and race its own dev-container rebuild. For
+          # tag push / workflow_dispatch the resolved image (release/nightly) is
+          # authoritative and may be a tag the dev-container build never pushes,
+          # so enforcing the gate there would hang until timeout. Run the job
+          # unconditionally (to keep the e2e `needs` satisfied) but no-op here.
+          if [ "${GITHUB_EVENT_NAME}" != "pull_request" ]; then
+            echo "freshness gate applies only to pull_request events; skipping for ${GITHUB_EVENT_NAME}."
+            exit 0
+          fi
+          image="ghcr.io/vdaas/vald/vald-dev-container:${TAG}"
+          label_key="org.vdaas.vald.dev-container.toolchain-fingerprint"
+          expected="$(make -s docker/dev-container/toolchain-fingerprint)"
+          echo "target image:  ${image}"
+          echo "expected fingerprint: ${expected}"
+          deadline=$((SECONDS + 25 * 60))
+          interval=20
+          while :; do
+            # Distinguish "inspect failed" (tag not on ghcr yet / transient) from
+            # "image exists but carries no fingerprint label". Only the latter is
+            # a legitimate fail-open (an image built before this gate existed);
+            # the former must keep waiting so the gate is not defeated at the very
+            # moment a rebuild is still pushing.
+            if raw="$(docker buildx imagetools inspect "${image}" --format '{{json .Image}}' 2>/dev/null)"; then
+              actual="$(printf '%s' "${raw}" | jq -r --arg k "${label_key}" '[.. | objects | (.Labels? // {}) | .[$k]? // empty] | map(select(. != "")) | first // empty' 2>/dev/null || true)"
+              if [ -z "${actual}" ]; then
+                echo "::warning::${image} exists but has no ${label_key} label (image predates this gate); proceeding without freshness enforcement."
+                exit 0
+              fi
+              if [ "${actual}" = "${expected}" ]; then
+                echo "dev-container image matches the PR head toolchain fingerprint; proceeding."
+                exit 0
+              fi
+              echo "dev-container not fresh yet: expected=${expected} actual=${actual}; retrying in ${interval}s"
+            else
+              echo "dev-container image ${image} not resolvable on ghcr yet (rebuild still pushing or transient error); retrying in ${interval}s"
+            fi
+            if [ "${SECONDS}" -ge "${deadline}" ]; then
+              echo "::error::${image} did not converge to the PR head toolchain fingerprint before the timeout."
+              echo "::error::expected=${expected} actual=${actual:-<unresolved>}"
+              echo "::error::A dev-container rebuild from the PR head is required. Confirm the 'Build docker image: dev-container' workflow ran for this PR (actions/e2e-v2 or actions/build label) and finished pushing, then re-run e2e."
+              exit 1
+            fi
+            sleep "${interval}"
+          done
   e2e:
     timeout-minutes: 60
     permissions:
       contents: read
-    needs: [detect-ci-container, build-matrix]
+    needs: [detect-ci-container, build-matrix, wait-dev-container]
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.build-matrix.outputs.result) }}
@@ -129,7 +206,7 @@ jobs:
         password: ${{ secrets.PACKAGE_TOKEN }}
       options: "--add-host host.docker.internal:host-gateway"
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
       - name: Set Git config
@@ -150,8 +227,13 @@ jobs:
         if: ${{ matrix.deployment == 'helm-chart' && matrix.environment != 'mirror' && matrix.scenario != 'readreplica' }}
         uses: ./.github/actions/e2e-deploy-vald
         with:
-          helm_extra_options: "${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}"
-          values: .github/helm/values/values-${{ 'profile' == matrix.environment && matrix.environment || 'lb' }}.yaml
+          # The FAISS scenario needs the Agent image switched from the
+          # default vdaas/vald-agent-ngt to vdaas/vald-agent-faiss; append
+          # that override last so it wins over k8s/vald/manifests' own
+          # `--set agent.image.repository=...-agent-ngt` (see Makefile.d/e2e.mk
+          # e2e/v2/actions/run/faiss for the equivalent local dev target).
+          helm_extra_options: "${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}${{ matrix.environment == 'faiss' && ' --set agent.image.repository=vdaas/vald-agent-faiss' || '' }}"
+          values: .github/helm/values/values-${{ (matrix.environment == 'profile' || matrix.environment == 'faiss') && matrix.environment || 'lb' }}.yaml
           wait_for_selector: "app=vald-lb-gateway"
       - name: Deploy Vald Read Replica
         if: ${{ 'readreplica' == matrix.scenario }}
@@ -231,6 +313,7 @@ jobs:
         run: |
           make k8s/metrics/profefe/deploy
           kubectl patch cronjob kprofefe -p '{"spec": {"schedule": "*/1 * * * *"}}'
+          sleep 3
           kubectl wait --for=condition=ready pod -l app=profefe --timeout=300s
 
       # TODO: correction & skip
@@ -263,6 +346,13 @@ jobs:
           kubectl get pods
           kubectl describe pods
           kubectl describe pvc
+          # Agents have been observed crash-looping with exit code 139
+          # (SIGSEGV); --previous captures the crashed container's Go runtime
+          # stack trace, which describe/get cannot show.
+          for pod in $(kubectl get pods -l app=vald-agent -o name); do
+            echo "=== ${pod} (previous container log tail) ==="
+            kubectl logs "${pod}" --previous --tail=200 || true
+          done
 
   slack-notification:
     timeout-minutes: 30
@@ -274,7 +364,7 @@ jobs:
       - e2e
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
       - uses: ./.github/actions/notify-slack

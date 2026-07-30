@@ -15,7 +15,6 @@ package grpc
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
@@ -24,6 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/errhandler"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -34,61 +34,17 @@ func (s *server) Upsert(
 	ctx context.Context, req *payload.Upsert_Request,
 ) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.UpsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	vec := req.GetVector()
-	if len(vec.GetVector()) != s.ngt.GetDimensionSize() {
-		err = errors.ErrIncompatibleDimensionSize(len(vec.GetVector()), int(s.ngt.GetDimensionSize()))
-		err = status.WrapWithInvalidArgument("Upsert API Incompatible Dimension Size detected",
-			err,
-			&errdetails.RequestInfo{
-				RequestId:   vec.GetId(),
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.BadRequest{
-				FieldViolations: []*errdetails.BadRequestFieldViolation{
-					{
-						Field:       "vector dimension size",
-						Description: err.Error(),
-					},
-				},
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.Upsert",
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			})
-		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+	if err = s.validateVectorDimension(span, vald.UpsertRPCName, ngtResourceType+"/ngt.Upsert",
+		vec.GetId(), req, len(vec.GetVector()), s.ngt.GetDimensionSize()); err != nil {
 		return nil, err
 	}
 	uuid := vec.GetId()
-	if len(uuid) == 0 {
-		err = errors.ErrInvalidUUID(uuid)
-		err = status.WrapWithInvalidArgument(fmt.Sprintf("Upsert API invalid argument for uuid \"%s\" detected", uuid), err,
-			&errdetails.RequestInfo{
-				RequestId:   uuid,
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.BadRequest{
-				FieldViolations: []*errdetails.BadRequestFieldViolation{
-					{
-						Field:       "uuid",
-						Description: err.Error(),
-					},
-				},
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.Upsert",
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			})
-		log.Warn(err)
+	// validateUUID builds the exact same InvalidArgument status this block used
+	// to build inline, and additionally records it on the span (the inline
+	// version never did, leaving these failures invisible in traces).
+	if err = s.validateUUID(span, vald.UpsertRPCName, ngtResourceType+"/ngt.Upsert", uuid, req); err != nil {
 		return nil, err
 	}
 
@@ -119,10 +75,7 @@ func (s *server) Upsert(
 				RequestId:   req.GetVector().GetId(),
 				ServingData: errdetails.Serialize(req),
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + rtName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			})
+			s.resourceInfo(ngtResourceType+rtName))
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -135,27 +88,15 @@ func (s *server) Upsert(
 
 func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error) {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamUpsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Upsert_Request) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"/"+vald.StreamUpsertRPCName+"/id-"+req.GetVector().GetId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.Upsert(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				return &payload.Object_StreamLocation{
 					Payload: &payload.Object_StreamLocation_Status{
 						Status: st.Proto(),
@@ -170,11 +111,7 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 		})
 	if err != nil {
 		st, _ := status.FromError(err)
-		if st != nil && span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanStatus(span, st, err)
 		return err
 	}
 	return nil
@@ -184,11 +121,7 @@ func (s *server) MultiUpsert(
 	ctx context.Context, reqs *payload.Upsert_MultiRequest,
 ) (res *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiUpsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	insertReqs := make([]*payload.Insert_Request, 0, len(reqs.GetRequests()))
 	updateReqs := make([]*payload.Update_Request, 0, len(reqs.GetRequests()))
@@ -212,17 +145,9 @@ func (s *server) MultiUpsert(
 						},
 					},
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.MultiUpsert",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(ngtResourceType+"/ngt.MultiUpsert"))
 			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Object_Locations](span, codes.InvalidArgument, err)
 		}
 		ids = append(ids, vec.GetId())
 		_, exists := s.ngt.Exists(vec.GetId())
@@ -317,11 +242,7 @@ func (s *server) MultiUpsert(
 	}
 	if err != nil {
 		st, _ := status.FromError(err)
-		if st != nil && span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanStatus(span, st, err)
 		return nil, err
 	}
 	return res, nil

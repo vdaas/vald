@@ -45,7 +45,7 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: gateway-mirror
       annotations:
-        checksum/configmap: 990d40213601066b439fe05c27a1d4e57f012097bb0d7e945649fbfde10e65e4
+        checksum/configmap: 00bcf8c640bca86ee6ae98c81a5afb9e6b320b9b6ef6e3d68469149dcd3d9bf6
         pyroscope.io/scrape: "true"
         pyroscope.io/application-name: vald-mirror-gateway
         pyroscope.io/profile-cpu-enabled: "true"
@@ -54,7 +54,7 @@ spec:
     spec:
       initContainers:
         - name: wait-for-gateway-lb
-          image: busybox:1.37.0
+          image: busybox:1.38.0
           imagePullPolicy: Always
           command:
             - /bin/sh

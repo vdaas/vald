@@ -1,27 +1,25 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 // Package service manages the main logic of benchmark job.
 package service
 
 import (
 	"context"
+	"maps"
 	"reflect"
 	"strconv"
-	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -32,6 +30,7 @@ import (
 	benchscenario "github.com/vdaas/vald/internal/k8s/vald/benchmark/scenario"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
@@ -40,7 +39,6 @@ type Operator interface {
 	Start(context.Context) (<-chan error, error)
 	GetScenarioStatus() map[v1.ValdBenchmarkScenarioStatus]int64
 	GetBenchmarkJobStatus() map[v1.BenchmarkJobStatus]int64
-	// GetJobStatus() map[v1.BenchmarkJobStatus]int64
 }
 
 type scenario struct {
@@ -61,9 +59,9 @@ const (
 type operator struct {
 	eg                 errgroup.Group
 	ctrl               k8s.Controller
-	scenarios          *atomic.Pointer[map[string]*scenario]
-	benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-	jobs               *atomic.Pointer[map[string]string]
+	scenarios          atomic.Pointer[map[string]*scenario]
+	benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+	jobs               atomic.Pointer[map[string]string]
 	jobNamespace       string
 	jobImageRepository string
 	jobImageTag        string
@@ -124,16 +122,15 @@ func (o *operator) initCtrl() error {
 	job := reconciler.NewListReconciler(
 		"benchmark job",
 		new(k8s.Job),
-		func() *k8s.JobList { return new(k8s.JobList) },
-		reconciler.WithOnError[*k8s.JobList](func(err error) {
-			log.Errorf("failed to reconcile job resource: %v", err)
-		}),
-		reconciler.WithOnReconcile(func(ctx context.Context, list *k8s.JobList) {
+		func(ctx context.Context, list *k8s.JobList) {
 			jobs := jobsByAppName(list)
 			o.jobReconcile(ctx, jobs)
 			releaseJobsByAppName(jobs)
+		},
+		reconciler.WithOnError(func(err error) {
+			log.Errorf("failed to reconcile job resource: %v", err)
 		}),
-		reconciler.WithNamespace[*k8s.JobList](o.jobNamespace),
+		reconciler.WithNamespace(o.jobNamespace),
 	)
 
 	// create reconcile controller which watches valdbenchmarkscenario resource, valdbenchmarkjob resource, and job resource.
@@ -146,37 +143,48 @@ func (o *operator) initCtrl() error {
 	return err
 }
 
-func (o *operator) getAtomicScenario() map[string]*scenario {
-	if o.scenarios == nil {
-		o.scenarios = &atomic.Pointer[map[string]*scenario]{}
-		return nil
-	}
-	if v := o.scenarios.Load(); v != nil {
+// loadAtomic returns the map stored in p, or M's zero value (nil for the map
+// types used here) when nothing has been stored yet. The atomic fields are
+// value-typed and usable from the operator's zero value, so the former
+// lazy-init nil checks — a data race when reached from multiple goroutines —
+// are unnecessary.
+func loadAtomic[M any](p *atomic.Pointer[M]) M {
+	if v := p.Load(); v != nil {
 		return *v
 	}
-	return nil
+	var zero M
+	return zero
+}
+
+func (o *operator) getAtomicScenario() map[string]*scenario {
+	return loadAtomic(&o.scenarios)
 }
 
 func (o *operator) getAtomicBenchJob() map[string]*v1.ValdBenchmarkJob {
-	if o.benchjobs == nil {
-		o.benchjobs = &atomic.Pointer[map[string]*v1.ValdBenchmarkJob]{}
-		return nil
-	}
-	if v := o.benchjobs.Load(); v != nil {
-		return *v
-	}
-	return nil
+	return loadAtomic(&o.benchjobs)
 }
 
 func (o *operator) getAtomicJob() map[string]string {
-	if o.jobs == nil {
-		o.jobs = &atomic.Pointer[map[string]string]{}
-		return nil
-	}
-	if v := o.jobs.Load(); v != nil {
-		return *v
-	}
-	return nil
+	return loadAtomic(&o.jobs)
+}
+
+// k8sClient returns the controller-runtime client owned by the controller's
+// manager. It is looked up on demand instead of cached in a field because
+// o.ctrl is populated by initCtrl (or injected by tests) after construction.
+func (o *operator) k8sClient() k8s.Client {
+	return o.ctrl.GetManager().GetClient()
+}
+
+// singleOwnerRef returns the sole OwnerReference pointing at the resource
+// identified by the given coordinates, shared by the benchmark-job and
+// k8s-job creation paths that previously spelled the literal out inline.
+func singleOwnerRef(apiVersion, kind, name string, uid k8s.UID) []k8s.OwnerReference {
+	return []k8s.OwnerReference{{
+		APIVersion: apiVersion,
+		Kind:       kind,
+		Name:       name,
+		UID:        uid,
+	}}
 }
 
 // jobReconcile gets k8s job list and watches theirs STATUS.
@@ -187,6 +195,10 @@ func (o *operator) jobReconcile(ctx context.Context, jobList map[string][]k8s.Jo
 	cjobs := o.getAtomicJob()
 	if cjobs == nil {
 		cjobs = map[string]string{}
+	} else {
+		// copy-on-write: mutate a clone so a concurrent reader holding the
+		// previous atomic snapshot never observes an in-progress mutation.
+		cjobs = maps.Clone(cjobs)
 	}
 	if len(jobList) == 0 {
 		log.Info("[reconcile job] no job is founded")
@@ -225,7 +237,7 @@ func (o *operator) jobReconcile(ctx context.Context, jobList map[string][]k8s.Jo
 	if len(benchmarkJobStatus) != 0 {
 		_, err := o.updateBenchmarkJobStatus(ctx, benchmarkJobStatus)
 		if err != nil {
-			log.Error(err.Error)
+			log.Error(err.Error())
 		}
 	}
 	// delete job which is not be in `jobList` from cj.
@@ -247,6 +259,8 @@ func (o *operator) benchJobReconcile(
 	cbjl := o.getAtomicBenchJob()
 	if cbjl == nil {
 		cbjl = make(map[string]*v1.ValdBenchmarkJob, 0)
+	} else {
+		cbjl = maps.Clone(cbjl)
 	}
 	if len(benchJobList) == 0 {
 		log.Info("[reconcile benchmark job resource] job resource not found")
@@ -256,20 +270,38 @@ func (o *operator) benchJobReconcile(
 	}
 	// jobStatus is used for update benchmarkJob CR status if updating is needed.
 	jobStatus := make(map[string]v1.BenchmarkJobStatus)
+	// scenarios is the published scenario snapshot; scenariosCopy is a lazily
+	// created copy-on-write clone of it. Recording a job's status into its
+	// owning scenario must never mutate the live map — nor the nested
+	// BenchJobStatus map — that Start's ticker and checkAtomics range over
+	// concurrently, so we clone the outer map and each touched entry (with its
+	// nested map) once, mutate the clones, and Store the result once below.
+	scenarios := o.getAtomicScenario()
+	var scenariosCopy map[string]*scenario
 	for k := range benchJobList {
 		job := benchJobList[k]
 		// update scenario status
-		if len(job.GetOwnerReferences()) > 0 {
-			if scenarios := o.getAtomicScenario(); scenarios != nil {
-				ownerRefs := job.GetOwnerReferences()
-				ownerName := ownerRefs[0].Name
-				if _, ok := scenarios[ownerName]; ok {
-					if scenarios[ownerName].BenchJobStatus == nil {
-						scenarios[ownerName].BenchJobStatus = map[string]v1.BenchmarkJobStatus{}
-					}
-					scenarios[ownerName].BenchJobStatus[job.Name] = job.Status
+		if refs := job.GetOwnerReferences(); len(refs) > 0 && scenarios != nil {
+			ownerName := refs[0].Name
+			if _, ok := scenarios[ownerName]; ok {
+				if scenariosCopy == nil {
+					scenariosCopy = maps.Clone(scenarios)
 				}
-				o.scenarios.Store(&scenarios)
+				sc := scenariosCopy[ownerName]
+				// Deep-copy this entry (and its nested map) the first time it is
+				// touched this pass: while sc still aliases the published entry
+				// we replace it with an isolated copy we own; later jobs sharing
+				// the same owner then mutate that copy in place.
+				if sc == scenarios[ownerName] {
+					nsc := *sc
+					nsc.BenchJobStatus = maps.Clone(sc.BenchJobStatus)
+					if nsc.BenchJobStatus == nil {
+						nsc.BenchJobStatus = map[string]v1.BenchmarkJobStatus{}
+					}
+					sc = &nsc
+					scenariosCopy[ownerName] = sc
+				}
+				sc.BenchJobStatus[job.Name] = job.Status
 			}
 		}
 		// update benchmark job
@@ -310,6 +342,9 @@ func (o *operator) benchJobReconcile(
 		}
 	}
 	o.benchjobs.Store(&cbjl)
+	if scenariosCopy != nil {
+		o.scenarios.Store(&scenariosCopy)
+	}
 	if len(jobStatus) != 0 {
 		_, err := o.updateBenchmarkJobStatus(ctx, jobStatus)
 		if err != nil {
@@ -327,6 +362,8 @@ func (o *operator) benchScenarioReconcile(
 	cbsl := o.getAtomicScenario()
 	if cbsl == nil {
 		cbsl = map[string]*scenario{}
+	} else {
+		cbsl = maps.Clone(cbsl)
 	}
 	if len(scenarioList) == 0 {
 		log.Info("[reconcile benchmark scenario resource]: scenario not found")
@@ -387,8 +424,14 @@ func (o *operator) benchScenarioReconcile(
 					}(),
 				}
 			} else if oldScenario.Crd.Status != sc.Status {
-				// only update status
-				cbsl[name].Crd.Status = sc.Status
+				// only update status; copy-on-write the scenario and its Crd so a
+				// reader holding the previous atomic snapshot never observes the
+				// in-place field mutation.
+				newSc := *oldScenario
+				newCrd := *oldScenario.Crd
+				newCrd.Status = sc.Status
+				newSc.Crd = &newCrd
+				cbsl[name] = &newSc
 			}
 		}
 	}
@@ -414,13 +457,13 @@ func (o *operator) deleteBenchmarkJob(ctx context.Context, name string, generati
 		Scenario: name + strconv.Itoa(int(generation)),
 	}).ApplyToDeleteAllOf(opts)
 	k8s.InNamespace(o.jobNamespace).ApplyToDeleteAllOf(opts)
-	return o.ctrl.GetManager().GetClient().DeleteAllOf(ctx, &v1.ValdBenchmarkJob{}, opts)
+	return o.k8sClient().DeleteAllOf(ctx, &v1.ValdBenchmarkJob{}, opts)
 }
 
 // deleteJob deletes job resource according to given benchmark job name and generation.
 func (o *operator) deleteJob(ctx context.Context, name string) error {
 	cj := new(k8s.Job)
-	err := o.ctrl.GetManager().GetClient().Get(ctx, k8s.ObjectKey{
+	err := o.k8sClient().Get(ctx, k8s.ObjectKey{
 		Namespace: o.jobNamespace,
 		Name:      name,
 	}, cj)
@@ -430,21 +473,14 @@ func (o *operator) deleteJob(ctx context.Context, name string) error {
 	opts := new(k8s.DeleteOptions)
 	deleteProgation := k8s.DeletePropagationBackground
 	opts.PropagationPolicy = &deleteProgation
-	return o.ctrl.GetManager().GetClient().Delete(ctx, cj, opts)
+	return o.k8sClient().Delete(ctx, cj, opts)
 }
 
 // createBenchmarkJob creates the ValdBenchmarkJob crd for running job.
 func (o *operator) createBenchmarkJob(
 	ctx context.Context, scenario v1.ValdBenchmarkScenario,
 ) ([]string, error) {
-	ownerRef := []k8s.OwnerReference{
-		{
-			APIVersion: scenario.APIVersion,
-			Kind:       scenario.Kind,
-			Name:       scenario.Name,
-			UID:        scenario.UID,
-		},
-	}
+	ownerRef := singleOwnerRef(scenario.APIVersion, scenario.Kind, scenario.Name, scenario.UID)
 	jobNames := make([]string, 0)
 	var beforeJobName string
 	for _, job := range scenario.Spec.Jobs {
@@ -475,8 +511,7 @@ func (o *operator) createBenchmarkJob(
 		// set status
 		bj.Status = v1.BenchmarkJobNotReady
 		// create benchmark job resource
-		c := o.ctrl.GetManager().GetClient()
-		if err := c.Create(ctx, bj); err != nil {
+		if err := o.k8sClient().Create(ctx, bj); err != nil {
 			return nil, errors.ErrFailedToCreateBenchmarkJob(err, bj.GetName())
 		}
 		jobNames = append(jobNames, bj.Name)
@@ -504,77 +539,118 @@ func (o *operator) createJob(ctx context.Context, bjr v1.ValdBenchmarkJob) error
 		benchjob.WithName(bjr.GetName()),
 		benchjob.WithNamespace(bjr.Namespace),
 		benchjob.WithLabel(label),
-		benchjob.WithCompletions(int32(bjr.Spec.Repetition)),
-		benchjob.WithParallelism(int32(bjr.Spec.Replica)),
-		benchjob.WithOwnerRef([]k8s.OwnerReference{
-			{
-				APIVersion: bjr.APIVersion,
-				Kind:       bjr.Kind,
-				Name:       bjr.Name,
-				UID:        bjr.UID,
-			},
-		}),
-		benchjob.WithTTLSecondsAfterFinished(int32(bjr.Spec.TTLSecondsAfterFinished)),
+		benchjob.WithCompletions(int32(bjr.Spec.Repetition)), //nolint:gosec // CRD-validated small config value, no overflow
+		benchjob.WithParallelism(int32(bjr.Spec.Replica)),    //nolint:gosec // CRD-validated small config value, no overflow
+		benchjob.WithOwnerRef(singleOwnerRef(bjr.APIVersion, bjr.Kind, bjr.Name, bjr.UID)),
+		benchjob.WithTTLSecondsAfterFinished(int32(bjr.Spec.TTLSecondsAfterFinished)), //nolint:gosec // CRD-validated small config value, no overflow
 	)
 	if err != nil {
 		return err
 	}
 	// create job
-	c := o.ctrl.GetManager().GetClient()
-	if err = c.Create(ctx, &tpl); err != nil {
+	if err = o.k8sClient().Create(ctx, &tpl); err != nil {
 		return errors.ErrFailedToCreateJob(err, tpl.GetName())
 	}
 	return nil
 }
 
+// updateCachedStatuses walks desired and, for every name where resolve
+// returns a changed cached object (resolve applies the new status and
+// returns the object to persist, or ok=false to skip), issues a status
+// update and collects the names actually updated. Failed updates are
+// logged and skipped, matching the previous per-resource loops this helper
+// replaces. Resolution stays with the caller because the cached shapes
+// differ (scenario wrapper exposing Crd vs raw job object).
+func updateCachedStatuses[S comparable](
+	ctx context.Context,
+	c k8s.Client,
+	desired map[string]S,
+	resolve func(name string, status S) (obj k8s.Object, ok bool),
+) (updated []string) {
+	for name, status := range desired {
+		obj, ok := resolve(name, status)
+		if !ok {
+			continue
+		}
+		if err := c.Status().Update(ctx, obj); err != nil {
+			log.Error(err.Error())
+			continue
+		}
+		updated = append(updated, name)
+	}
+	return updated
+}
+
 // updateBenchmarkScenarioStatus updates status of ValdBenchmarkScenarioResource.
+//
+//nolint:unparam // the updated-name list mirrors updateCachedStatuses for symmetry with updateBenchmarkJobStatus
 func (o *operator) updateBenchmarkScenarioStatus(
 	ctx context.Context, ss map[string]v1.ValdBenchmarkScenarioStatus,
 ) ([]string, error) {
-	var sns []string
-	if cbsl := o.getAtomicScenario(); cbsl != nil {
-		for name, status := range ss {
-			if scenario, ok := cbsl[name]; ok {
-				if scenario.Crd.Status == status {
-					continue
-				}
-				scenario.Crd.Status = status
-				cli := o.ctrl.GetManager().GetClient()
-				err := cli.Status().Update(ctx, scenario.Crd)
-				if err != nil {
-					log.Error(err.Error())
-					continue
-				}
-				sns = append(sns, name)
-			}
-		}
+	cbsl := o.getAtomicScenario()
+	if cbsl == nil {
+		return nil, nil
 	}
-	return sns, nil
+	// copy-on-write: mutating sc.Crd.Status in place would race a concurrent
+	// reader (GetScenarioStatus / Start's ticker) holding the published
+	// snapshot, so clone the outer map plus each mutated entry and its Crd,
+	// then Store the clone once so the cache still reflects the new status.
+	var cbslCopy map[string]*scenario
+	updated := updateCachedStatuses(ctx, o.k8sClient(), ss,
+		func(name string, status v1.ValdBenchmarkScenarioStatus) (k8s.Object, bool) {
+			sc, ok := cbsl[name]
+			if !ok || sc.Crd.Status == status {
+				return nil, false
+			}
+			if cbslCopy == nil {
+				cbslCopy = maps.Clone(cbsl)
+			}
+			newSc := *sc
+			newCrd := *sc.Crd
+			newCrd.Status = status
+			newSc.Crd = &newCrd
+			cbslCopy[name] = &newSc
+			return newSc.Crd, true
+		})
+	if cbslCopy != nil {
+		o.scenarios.Store(&cbslCopy)
+	}
+	return updated, nil
 }
 
 // updateBenchmarkJobStatus updates status of ValdBenchmarkJobResource.
+//
+//nolint:unparam // the updated-name list mirrors updateCachedStatuses for symmetry with updateBenchmarkScenarioStatus
 func (o *operator) updateBenchmarkJobStatus(
 	ctx context.Context, js map[string]v1.BenchmarkJobStatus,
 ) ([]string, error) {
-	var jns []string
-	if cbjl := o.getAtomicBenchJob(); cbjl != nil {
-		for name, status := range js {
-			if bjob, ok := cbjl[name]; ok {
-				if bjob.Status == status {
-					continue
-				}
-				bjob.Status = status
-				cli := o.ctrl.GetManager().GetClient()
-				err := cli.Status().Update(ctx, bjob)
-				if err != nil {
-					log.Error(err.Error())
-					continue
-				}
-				jns = append(jns, name)
-			}
-		}
+	cbjl := o.getAtomicBenchJob()
+	if cbjl == nil {
+		return nil, nil
 	}
-	return jns, nil
+	// copy-on-write: mutating bjob.Status in place would race a concurrent
+	// reader (GetBenchmarkJobStatus / checkAtomics) holding the published
+	// snapshot, so clone the outer map plus each mutated job, then Store the
+	// clone once so the cache still reflects the new status.
+	var cbjlCopy map[string]*v1.ValdBenchmarkJob
+	updated := updateCachedStatuses(ctx, o.k8sClient(), js,
+		func(name string, status v1.BenchmarkJobStatus) (k8s.Object, bool) {
+			bjob, ok := cbjl[name]
+			if !ok || bjob.Status == status {
+				return nil, false
+			}
+			if cbjlCopy == nil {
+				cbjlCopy = maps.Clone(cbjl)
+			}
+			njob := *bjob
+			njob.Status = status
+			cbjlCopy[name] = &njob
+			return &njob, true
+		})
+	if cbjlCopy != nil {
+		o.benchjobs.Store(&cbjlCopy)
+	}
+	return updated, nil
 }
 
 func (o *operator) checkJobsStatus(ctx context.Context, jobs map[string]string) error {
@@ -584,7 +660,7 @@ func (o *operator) checkJobsStatus(ctx context.Context, jobs map[string]string) 
 		return nil
 	}
 	job := new(k8s.Job)
-	c := o.ctrl.GetManager().GetClient()
+	c := o.k8sClient()
 	jobStatus := map[string]v1.BenchmarkJobStatus{}
 	for name, ns := range jobs {
 		err := c.Get(ctx, k8s.ObjectKey{
@@ -703,24 +779,22 @@ func (o *operator) GetBenchmarkJobStatus() map[v1.BenchmarkJobStatus]int64 {
 	return m
 }
 
-// func (o *operator) GetJobStatus() map[job.JobStatus]int64 {
-// 	m := map[job.JobStatus]int64{}
-// 	// if js := o.getAtomicJob()
-// 	return m
-// }
-
 func (*operator) PreStart(context.Context) error {
 	log.Infof("[benchmark scenario operator] start vald benchmark scenario operator")
 	return nil
 }
 
 // skipcq: GO-R1005
+// startErrChanBufferSize buffers the controller error stream plus this
+// goroutine's own terminal error so neither send can block shutdown.
+const startErrChanBufferSize = 2
+
 func (o *operator) Start(ctx context.Context) (<-chan error, error) {
 	scch, err := o.ctrl.Start(ctx)
 	if err != nil {
 		return nil, err
 	}
-	ech := make(chan error, 2)
+	ech := make(chan error, startErrChanBufferSize)
 	o.eg.Go(func() error {
 		defer close(ech)
 		rcticker := time.NewTicker(o.rcd)
@@ -751,8 +825,8 @@ func (o *operator) Start(ctx context.Context) (<-chan error, error) {
 							}
 						}
 					}
-					if _, err := o.updateBenchmarkScenarioStatus(ctx, scenarioStatus); err != nil {
-						log.Errorf("failed to update benchmark scenario to %s\terror: %s", v1.BenchmarkJobCompleted, err.Error())
+					if _, uerr := o.updateBenchmarkScenarioStatus(ctx, scenarioStatus); uerr != nil {
+						log.Errorf("failed to update benchmark scenario to %s\terror: %s", v1.BenchmarkJobCompleted, uerr.Error())
 					}
 
 				}

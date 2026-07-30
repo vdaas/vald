@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package service
 
@@ -22,6 +20,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
+	"github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/k8s/resource"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/operator/api/v1"
 	"github.com/vdaas/vald/internal/k8s/vald/operator/api/valdrelease"
@@ -59,24 +58,38 @@ func (*resourceController) GetName() string {
 
 // NewReconciler returns the reconciler for the ValdOperatorRelease. It registers the
 // ValdOperatorRelease/ValdRelease schemes and the client-go native schemes to the
-// manager's scheme before constructing the reconciler.
+// manager's scheme before constructing the reconciler. Building the vor
+// resource client should not fail in practice (mgr.GetConfig() is already
+// resolved by the time the manager builds this controller), but
+// k8s.ResourceController.NewReconciler has no error return, so a failure is
+// recorded in initErr and surfaced by Reconcile instead of panicking here.
 func (rc *resourceController) NewReconciler(_ context.Context, mgr k8s.Manager) k8s.Reconciler {
 	scheme := mgr.GetScheme()
-	if err := k8s.AddClientGoScheme(scheme); err != nil {
-		log.Errorf("failed to register client-go scheme: %v", err)
+	for _, reg := range []struct {
+		add  func(*k8s.Scheme) error
+		name string
+	}{
+		{k8s.AddClientGoScheme, "client-go"},
+		{v1.AddToScheme, "ValdOperatorRelease"},
+		{valdrelease.AddToScheme, "ValdRelease"},
+	} {
+		if err := reg.add(scheme); err != nil {
+			log.Errorf("failed to register %s scheme: %v", reg.name, err)
+		}
 	}
-	if err := v1.AddToScheme(scheme); err != nil {
-		log.Errorf("failed to register ValdOperatorRelease scheme: %v", err)
-	}
-	if err := valdrelease.AddToScheme(scheme); err != nil {
-		log.Errorf("failed to register ValdRelease scheme: %v", err)
-	}
-	return &reconciler{
+	r := &reconciler{
 		client: mgr.GetClient(),
 		cfg:    rc.cfg,
 		syncer: resource.NewSyncer(mgr.GetClient(), scheme, rc.cfg.ManagedGenerationLabel),
-		vor:    resource.NewObjectClient[v1.ValdOperatorRelease](mgr.GetClient()),
 	}
+	cl, err := client.NewFromManager(mgr)
+	if err != nil {
+		r.initErr = errors.Wrap(err, "failed to build k8s client for ValdOperatorRelease reconciler")
+		log.Error(r.initErr)
+		return r
+	}
+	r.vor = resource.NewClient(cl, new(v1.ValdOperatorRelease), new(v1.ValdOperatorReleaseList))
+	return r
 }
 
 // MaxConcurrentReconciles implements the optional k8s.ConcurrentReconciler
@@ -104,7 +117,11 @@ type reconciler struct {
 	client k8s.Client
 	cfg    *config.Config
 	syncer *resource.Syncer
-	vor    *resource.ObjectClient[v1.ValdOperatorRelease, *v1.ValdOperatorRelease]
+	vor    *resource.Client[*v1.ValdOperatorRelease, *v1.ValdOperatorReleaseList]
+	// initErr records a NewReconciler construction failure (building the vor
+	// resource client) so Reconcile can surface it, since
+	// k8s.ResourceController.NewReconciler has no error return.
+	initErr error
 }
 
 // Reconcile implements the main Kubernetes reconciliation loop for
@@ -118,6 +135,10 @@ type reconciler struct {
 // defaultRequeueAfterWaiting.
 func (r *reconciler) Reconcile(ctx context.Context, req k8s.Request) (k8s.Result, error) {
 	log.Debug("reconciling ValdOperatorRelease")
+
+	if r.initErr != nil {
+		return k8s.Result{}, r.initErr
+	}
 
 	cr, err := r.vor.Get(ctx, req.Name, req.Namespace)
 	if err != nil {
@@ -311,6 +332,16 @@ func (r *reconciler) phases(cr *v1.ValdOperatorRelease, capability nodePoolCapab
 				if err != nil {
 					return nil, err
 				}
+				// Refuse to sync an empty render: Syncer treats an empty desired
+				// set as "prune every owned object", so a pass in which the builder
+				// skipped everything (all Infrastructure entries inactive, or a
+				// require_match node lookup transiently matching nothing) would
+				// tear down the whole running deployment. Intentional teardown goes
+				// through CR deletion (owner-reference GC), not an empty render.
+				if len(items) == 0 {
+					return nil, errors.Wrap(errors.ErrBuiltResourceIsNil,
+						"builder rendered no ValdRelease objects; refusing to sync an empty desired set")
+				}
 				built = items
 				return items, nil
 			},
@@ -333,7 +364,17 @@ func checkClusters(cr *v1.ValdOperatorRelease) result {
 	if len(cr.Spec.Infrastructure) == 0 {
 		return failed(errors.ErrInfrastructureConfigurationIsMissing)
 	}
+	// Only Active entries gate the pipeline: vrsBuilder.Build skips inactive
+	// entries entirely, so requiring provisioned clusters on an inactive entry
+	// would block rendering work that never uses them. Conversely, zero active
+	// entries means the builder would render nothing (and the VRS phase refuses
+	// an empty render), so hold the pipeline here with a clear message instead.
+	active := 0
 	for _, infra := range cr.Spec.Infrastructure {
+		if !infra.Active {
+			continue
+		}
+		active++
 		if len(infra.Clusters) == 0 {
 			return failed(errors.ErrNoClustersDefinedInConfiguration)
 		}
@@ -343,6 +384,9 @@ func checkClusters(cr *v1.ValdOperatorRelease) result {
 			}
 		}
 	}
+	if active == 0 {
+		return pending("waiting for at least one active infrastructure entry")
+	}
 	return succeeded()
 }
 
@@ -350,7 +394,12 @@ func checkClusters(cr *v1.ValdOperatorRelease) result {
 // a missing object keeps the phase progressing, any other fetch error fails
 // it.
 func (r *reconciler) vrsReady(ctx context.Context, built []k8s.Object) result {
-	if built == nil {
+	// An empty (not just nil) built set must not vacuously report success: the
+	// range below would run zero iterations and fall through to succeeded(),
+	// advancing the CR to Completed even though nothing was rendered (e.g. every
+	// Infrastructure entry is inactive, or a require_match node lookup transiently
+	// matched nothing). Treat "no built resources" the same as the nil case.
+	if len(built) == 0 {
 		return failed(errors.ErrBuiltResourceIsNil)
 	}
 	for _, obj := range built {

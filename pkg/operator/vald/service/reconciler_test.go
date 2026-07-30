@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package service
 
@@ -27,12 +25,20 @@ import (
 	"github.com/vdaas/vald/internal/k8s/resource"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/operator/api/v1"
 	"github.com/vdaas/vald/internal/k8s/vald/operator/api/valdrelease"
+	mock "github.com/vdaas/vald/internal/test/mock/k8s"
 	"github.com/vdaas/vald/pkg/operator/vald/config"
-	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
 
-// managerMock is a minimal k8s.Manager stub for NewReconciler: only
-// GetClient and GetScheme are exercised by the resource controller.
+const (
+	testClusterNameA = "cluster-a"
+	testClusterIDABC = "abc-123"
+	testRoleGreen    = "green"
+)
+
+// managerMock is a minimal k8s.Manager stub for NewReconciler: GetClient and
+// GetScheme are exercised by the resource controller directly, and GetConfig
+// is exercised indirectly through client.NewFromManager, which builds the vor
+// resource client.
 type managerMock struct {
 	k8s.Manager
 
@@ -46,6 +52,10 @@ func (m *managerMock) GetClient() k8s.Client {
 
 func (m *managerMock) GetScheme() *k8s.Scheme {
 	return m.scheme
+}
+
+func (*managerMock) GetConfig() *k8s.RESTConfig {
+	return &k8s.RESTConfig{}
 }
 
 func newTestScheme(t *testing.T) *k8s.Scheme {
@@ -107,7 +117,7 @@ func TestResourceController_NewReconciler(t *testing.T) {
 	t.Parallel()
 
 	scheme := k8s.NewScheme()
-	c := fake.NewClientBuilder().WithScheme(newTestScheme(t)).Build()
+	c := mock.NewFakeClientBuilder().WithScheme(newTestScheme(t)).Build()
 	cfg := &config.Config{NodePoolLabelPrefix: "vald.vdaas.org"}
 
 	rc := newResourceController(cfg)
@@ -157,7 +167,7 @@ func TestReconciler_Reconcile(t *testing.T) {
 			t.Parallel()
 
 			scheme := newTestScheme(t)
-			c := fake.NewClientBuilder().WithScheme(scheme).Build()
+			c := mock.NewFakeClientBuilder().WithScheme(scheme).Build()
 			// Build the reconciler through NewReconciler so that the
 			// type-bound ObjectClient is wired exactly as in production.
 			r := newResourceController(&config.Config{}).NewReconciler(
@@ -189,7 +199,7 @@ func TestReconciler_Reconcile_RequeueRules(t *testing.T) {
 		cr.Status.Conditions = []k8s.Condition{{
 			Type:               phaseWaitForClusterCreate,
 			Status:             k8s.ConditionUnknown,
-			Reason:             "Progressing",
+			Reason:             conditionReasonProgressing,
 			Message:            "Waiting for Cluster Creation.",
 			LastTransitionTime: k8s.Now(),
 		}}
@@ -198,7 +208,7 @@ func TestReconciler_Reconcile_RequeueRules(t *testing.T) {
 	// The cluster ID is not provisioned yet: checkClusters reports Pending.
 	waitingCR := func() *v1.ValdOperatorRelease {
 		return seedFirstCondition(newCRWithInfra([]v1.ValdOperatorReleaseInfra{
-			{Role: "green", Clusters: []v1.DestClusters{{ID: "", Name: "cluster-a"}}},
+			{Role: testRoleGreen, Clusters: []v1.DestClusters{{ID: "", Name: testClusterNameA}}},
 		}))
 	}
 	// No infrastructure at all: checkClusters reports Failed.
@@ -247,7 +257,7 @@ func TestReconciler_Reconcile_RequeueRules(t *testing.T) {
 			t.Parallel()
 
 			scheme := newTestScheme(t)
-			c := fake.NewClientBuilder().
+			c := mock.NewFakeClientBuilder().
 				WithScheme(scheme).
 				WithObjects(tt.cr).
 				WithStatusSubresource(tt.cr).
@@ -255,7 +265,7 @@ func TestReconciler_Reconcile_RequeueRules(t *testing.T) {
 			r := &reconciler{
 				client: c,
 				cfg:    tt.cfg,
-				vor:    resource.NewObjectClient[v1.ValdOperatorRelease](c),
+				vor:    resource.NewClient(c, new(v1.ValdOperatorRelease), new(v1.ValdOperatorReleaseList)),
 			}
 
 			res, err := r.Reconcile(context.Background(), k8s.Request{
@@ -444,6 +454,38 @@ func TestPhases_Pipeline(t *testing.T) {
 	assert.True(t, ps[2].terminal(), "Completed is a terminal phase")
 }
 
+// The VRS build closure must refuse an empty render instead of handing an
+// empty desired set to Syncer.Sync (which would prune every owned VRS). This
+// guard is independent of the checkClusters gate: require_match skips are
+// invisible to checkClusters, so the closure is the only defense on that path.
+func TestPhases_VrsBuildRefusesEmptyRender(t *testing.T) {
+	t.Run("all infrastructure inactive", func(t *testing.T) {
+		r := &reconciler{cfg: &config.Config{}}
+		cr := newCR()
+		cr.Spec.Infrastructure = []v1.ValdOperatorReleaseInfra{
+			{Role: testRoleGreen, Active: false, Clusters: []v1.DestClusters{{ID: testClusterIDABC, Name: testClusterNameA}}},
+		}
+
+		items, err := r.phases(cr, alwaysAvailable())[1].build(context.Background())
+
+		assert.Nil(t, items)
+		assert.ErrorIs(t, err, errors.ErrBuiltResourceIsNil)
+	})
+
+	t.Run("require_match skips every active entry", func(t *testing.T) {
+		r := &reconciler{cfg: &config.Config{RequireNodePoolMatch: true}}
+		cr := newCR()
+		cr.Spec.Infrastructure = []v1.ValdOperatorReleaseInfra{
+			{Role: testRoleGreen, Active: true, Clusters: []v1.DestClusters{{ID: testClusterIDABC, Name: testClusterNameA}}},
+		}
+
+		items, err := r.phases(cr, nodePoolCapability{HasGeneralPool: false})[1].build(context.Background())
+
+		assert.Nil(t, items)
+		assert.ErrorIs(t, err, errors.ErrBuiltResourceIsNil)
+	})
+}
+
 // --- advance ---
 
 func makeAdvancePhases() phases {
@@ -524,7 +566,7 @@ func TestCheckClusters(t *testing.T) {
 		{
 			name: "infra with no clusters",
 			cr: newCRWithInfra([]v1.ValdOperatorReleaseInfra{
-				{Role: "green", Clusters: []v1.DestClusters{}},
+				{Role: testRoleGreen, Active: true, Clusters: []v1.DestClusters{}},
 			}),
 			wantStatus: k8s.ConditionFalse,
 			wantReason: conditionReasonFailed,
@@ -532,7 +574,7 @@ func TestCheckClusters(t *testing.T) {
 		{
 			name: "cluster with empty Id",
 			cr: newCRWithInfra([]v1.ValdOperatorReleaseInfra{
-				{Role: "green", Clusters: []v1.DestClusters{{ID: "", Name: "cluster-a"}}},
+				{Role: testRoleGreen, Active: true, Clusters: []v1.DestClusters{{ID: "", Name: testClusterNameA}}},
 			}),
 			wantStatus: k8s.ConditionUnknown,
 			wantReason: conditionReasonPending,
@@ -540,7 +582,7 @@ func TestCheckClusters(t *testing.T) {
 		{
 			name: "cluster with empty Name",
 			cr: newCRWithInfra([]v1.ValdOperatorReleaseInfra{
-				{Role: "green", Clusters: []v1.DestClusters{{ID: "abc-123", Name: ""}}},
+				{Role: testRoleGreen, Active: true, Clusters: []v1.DestClusters{{ID: testClusterIDABC, Name: ""}}},
 			}),
 			wantStatus: k8s.ConditionUnknown,
 			wantReason: conditionReasonPending,
@@ -548,10 +590,31 @@ func TestCheckClusters(t *testing.T) {
 		{
 			name: "valid clusters",
 			cr: newCRWithInfra([]v1.ValdOperatorReleaseInfra{
-				{Role: "green", Clusters: []v1.DestClusters{{ID: "abc-123", Name: "cluster-a"}}},
+				{Role: testRoleGreen, Active: true, Clusters: []v1.DestClusters{{ID: testClusterIDABC, Name: testClusterNameA}}},
 			}),
 			wantStatus: k8s.ConditionTrue,
 			wantReason: conditionReasonSucceeded,
+		},
+		{
+			// An inactive entry must not gate the pipeline: vrsBuilder.Build skips
+			// it, so even its unprovisioned clusters are irrelevant to this pass.
+			name: "inactive infra with unprovisioned clusters does not gate",
+			cr: newCRWithInfra([]v1.ValdOperatorReleaseInfra{
+				{Role: testRoleGreen, Active: false, Clusters: []v1.DestClusters{{ID: "", Name: ""}}},
+				{Role: testRoleGreen, Active: true, Clusters: []v1.DestClusters{{ID: testClusterIDABC, Name: testClusterNameA}}},
+			}),
+			wantStatus: k8s.ConditionTrue,
+			wantReason: conditionReasonSucceeded,
+		},
+		{
+			// Zero active entries would make the builder render nothing (and the
+			// VRS phase refuses an empty render), so hold the pipeline here.
+			name: "all infra inactive",
+			cr: newCRWithInfra([]v1.ValdOperatorReleaseInfra{
+				{Role: testRoleGreen, Active: false, Clusters: []v1.DestClusters{{ID: testClusterIDABC, Name: testClusterNameA}}},
+			}),
+			wantStatus: k8s.ConditionUnknown,
+			wantReason: conditionReasonPending,
 		},
 	}
 
@@ -567,7 +630,7 @@ func TestCheckClusters(t *testing.T) {
 func TestCheckClusters_PendingIsNotFailed(t *testing.T) {
 	// cluster.ID == "" means the external system is still creating the cluster. Should be Pending, not Failed.
 	cr := newCRWithInfra([]v1.ValdOperatorReleaseInfra{
-		{Role: "green", Clusters: []v1.DestClusters{{ID: "", Name: "cluster-a"}}},
+		{Role: testRoleGreen, Active: true, Clusters: []v1.DestClusters{{ID: "", Name: testClusterNameA}}},
 	})
 	got := checkClusters(cr)
 	assert.Equal(t, pending("").status, got.status)
@@ -614,7 +677,7 @@ func TestReconciler_VrsReady(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cm := newUnstructuredConfigMap("test", "default")
-			cb := fake.NewClientBuilder().WithScheme(scheme)
+			cb := mock.NewFakeClientBuilder().WithScheme(scheme)
 			if tt.seed {
 				cb = cb.WithObjects(cm)
 			}
@@ -663,7 +726,7 @@ func TestReconciler_Progress(t *testing.T) {
 			cr.Status.Phase = tt.phase
 
 			scheme := newTestScheme(t)
-			c := fake.NewClientBuilder().
+			c := mock.NewFakeClientBuilder().
 				WithScheme(scheme).
 				WithObjects(cr).
 				WithStatusSubresource(cr).
@@ -671,7 +734,7 @@ func TestReconciler_Progress(t *testing.T) {
 			r := &reconciler{
 				client: c,
 				cfg:    &config.Config{},
-				vor:    resource.NewObjectClient[v1.ValdOperatorRelease](c),
+				vor:    resource.NewClient(c, new(v1.ValdOperatorRelease), new(v1.ValdOperatorReleaseList)),
 			}
 
 			// Conditions are empty, so the reconcile seeds the first
@@ -683,3 +746,1672 @@ func TestReconciler_Progress(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW
+//
+// func Test_newResourceController(t *testing.T) {
+// 	type args struct {
+// 		cfg *config.Config
+// 	}
+// 	type want struct {
+// 		want k8s.ResourceController
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, k8s.ResourceController) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got k8s.ResourceController) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           cfg:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           cfg:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := newResourceController(test.args.cfg)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_resourceController_GetName(t *testing.T) {
+// 	type fields struct {
+// 		cfg *config.Config
+// 	}
+// 	type want struct {
+// 		want string
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, string) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got string) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           cfg:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           cfg:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			r := &resourceController{
+// 				cfg: test.fields.cfg,
+// 			}
+//
+// 			got := r.GetName()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_resourceController_NewReconciler(t *testing.T) {
+// 	type args struct {
+// 		in0 context.Context
+// 		mgr k8s.Manager
+// 	}
+// 	type fields struct {
+// 		cfg *config.Config
+// 	}
+// 	type want struct {
+// 		want k8s.Reconciler
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, k8s.Reconciler) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got k8s.Reconciler) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           in0:nil,
+// 		           mgr:nil,
+// 		       },
+// 		       fields: fields {
+// 		           cfg:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           in0:nil,
+// 		           mgr:nil,
+// 		           },
+// 		           fields: fields {
+// 		           cfg:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			rc := &resourceController{
+// 				cfg: test.fields.cfg,
+// 			}
+//
+// 			got := rc.NewReconciler(test.args.in0, test.args.mgr)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_resourceController_MaxConcurrentReconciles(t *testing.T) {
+// 	type fields struct {
+// 		cfg *config.Config
+// 	}
+// 	type want struct {
+// 		want int
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, int) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got int) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           cfg:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           cfg:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			rc := &resourceController{
+// 				cfg: test.fields.cfg,
+// 			}
+//
+// 			got := rc.MaxConcurrentReconciles()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_resourceController_For(t *testing.T) {
+// 	type fields struct {
+// 		cfg *config.Config
+// 	}
+// 	type want struct {
+// 		want  k8s.Object
+// 		want1 []k8s.ForOption
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, k8s.Object, []k8s.ForOption) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got k8s.Object, got1 []k8s.ForOption) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		if !reflect.DeepEqual(got1, w.want1) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           cfg:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           cfg:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			r := &resourceController{
+// 				cfg: test.fields.cfg,
+// 			}
+//
+// 			got, got1 := r.For()
+// 			if err := checkFunc(test.want, got, got1); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_resourceController_Owns(t *testing.T) {
+// 	type fields struct {
+// 		cfg *config.Config
+// 	}
+// 	type want struct {
+// 		want  k8s.Object
+// 		want1 []k8s.OwnsOption
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, k8s.Object, []k8s.OwnsOption) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got k8s.Object, got1 []k8s.OwnsOption) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		if !reflect.DeepEqual(got1, w.want1) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           cfg:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           cfg:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			r := &resourceController{
+// 				cfg: test.fields.cfg,
+// 			}
+//
+// 			got, got1 := r.Owns()
+// 			if err := checkFunc(test.want, got, got1); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_resourceController_Watches(t *testing.T) {
+// 	type fields struct {
+// 		cfg *config.Config
+// 	}
+// 	type want struct {
+// 		want  k8s.Object
+// 		want1 k8s.EventHandler
+// 		want2 []k8s.WatchesOption
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, k8s.Object, k8s.EventHandler, []k8s.WatchesOption) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got k8s.Object, got1 k8s.EventHandler, got2 []k8s.WatchesOption) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		if !reflect.DeepEqual(got1, w.want1) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
+// 		}
+// 		if !reflect.DeepEqual(got2, w.want2) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got2, w.want2)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           cfg:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           cfg:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			r := &resourceController{
+// 				cfg: test.fields.cfg,
+// 			}
+//
+// 			got, got1, got2 := r.Watches()
+// 			if err := checkFunc(test.want, got, got1, got2); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_reconciler_Reconcile(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		req k8s.Request
+// 	}
+// 	type fields struct {
+// 		client  k8s.Client
+// 		cfg     *config.Config
+// 		syncer  *resource.Syncer
+// 		vor     *resource.Client[*v1.ValdOperatorRelease, *v1.ValdOperatorReleaseList]
+// 		initErr error
+// 	}
+// 	type want struct {
+// 		want k8s.Result
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, k8s.Result, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got k8s.Result, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		       },
+// 		       fields: fields {
+// 		           client:nil,
+// 		           cfg:nil,
+// 		           syncer:nil,
+// 		           vor:nil,
+// 		           initErr:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           },
+// 		           fields: fields {
+// 		           client:nil,
+// 		           cfg:nil,
+// 		           syncer:nil,
+// 		           vor:nil,
+// 		           initErr:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			r := &reconciler{
+// 				client:  test.fields.client,
+// 				cfg:     test.fields.cfg,
+// 				syncer:  test.fields.syncer,
+// 				vor:     test.fields.vor,
+// 				initErr: test.fields.initErr,
+// 			}
+//
+// 			got, err := r.Reconcile(test.args.ctx, test.args.req)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_reconciler_reconcileValdOperatorRelease(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		cr  *v1.ValdOperatorRelease
+// 	}
+// 	type fields struct {
+// 		client  k8s.Client
+// 		cfg     *config.Config
+// 		syncer  *resource.Syncer
+// 		vor     *resource.Client[*v1.ValdOperatorRelease, *v1.ValdOperatorReleaseList]
+// 		initErr error
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           cr:nil,
+// 		       },
+// 		       fields: fields {
+// 		           client:nil,
+// 		           cfg:nil,
+// 		           syncer:nil,
+// 		           vor:nil,
+// 		           initErr:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           cr:nil,
+// 		           },
+// 		           fields: fields {
+// 		           client:nil,
+// 		           cfg:nil,
+// 		           syncer:nil,
+// 		           vor:nil,
+// 		           initErr:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			r := &reconciler{
+// 				client:  test.fields.client,
+// 				cfg:     test.fields.cfg,
+// 				syncer:  test.fields.syncer,
+// 				vor:     test.fields.vor,
+// 				initErr: test.fields.initErr,
+// 			}
+//
+// 			err := r.reconcileValdOperatorRelease(test.args.ctx, test.args.cr)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_reconciler_reconcilePhase(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		p   *phase
+// 		cr  *v1.ValdOperatorRelease
+// 	}
+// 	type fields struct {
+// 		client  k8s.Client
+// 		cfg     *config.Config
+// 		syncer  *resource.Syncer
+// 		vor     *resource.Client[*v1.ValdOperatorRelease, *v1.ValdOperatorReleaseList]
+// 		initErr error
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           p:phase{},
+// 		           cr:nil,
+// 		       },
+// 		       fields: fields {
+// 		           client:nil,
+// 		           cfg:nil,
+// 		           syncer:nil,
+// 		           vor:nil,
+// 		           initErr:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           p:phase{},
+// 		           cr:nil,
+// 		           },
+// 		           fields: fields {
+// 		           client:nil,
+// 		           cfg:nil,
+// 		           syncer:nil,
+// 		           vor:nil,
+// 		           initErr:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			r := &reconciler{
+// 				client:  test.fields.client,
+// 				cfg:     test.fields.cfg,
+// 				syncer:  test.fields.syncer,
+// 				vor:     test.fields.vor,
+// 				initErr: test.fields.initErr,
+// 			}
+//
+// 			err := r.reconcilePhase(test.args.ctx, test.args.p, test.args.cr)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_reconciler_waitingRequeueInterval(t *testing.T) {
+// 	type fields struct {
+// 		client  k8s.Client
+// 		cfg     *config.Config
+// 		syncer  *resource.Syncer
+// 		vor     *resource.Client[*v1.ValdOperatorRelease, *v1.ValdOperatorReleaseList]
+// 		initErr error
+// 	}
+// 	type want struct {
+// 		want time.Duration
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, time.Duration) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got time.Duration) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           client:nil,
+// 		           cfg:nil,
+// 		           syncer:nil,
+// 		           vor:nil,
+// 		           initErr:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           client:nil,
+// 		           cfg:nil,
+// 		           syncer:nil,
+// 		           vor:nil,
+// 		           initErr:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			r := &reconciler{
+// 				client:  test.fields.client,
+// 				cfg:     test.fields.cfg,
+// 				syncer:  test.fields.syncer,
+// 				vor:     test.fields.vor,
+// 				initErr: test.fields.initErr,
+// 			}
+//
+// 			got := r.waitingRequeueInterval()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_reconciler_syncPhase(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		p   *phase
+// 		cr  *v1.ValdOperatorRelease
+// 	}
+// 	type fields struct {
+// 		client  k8s.Client
+// 		cfg     *config.Config
+// 		syncer  *resource.Syncer
+// 		vor     *resource.Client[*v1.ValdOperatorRelease, *v1.ValdOperatorReleaseList]
+// 		initErr error
+// 	}
+// 	type want struct {
+// 		want resource.SyncResults
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, resource.SyncResults, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got resource.SyncResults, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           p:phase{},
+// 		           cr:nil,
+// 		       },
+// 		       fields: fields {
+// 		           client:nil,
+// 		           cfg:nil,
+// 		           syncer:nil,
+// 		           vor:nil,
+// 		           initErr:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           p:phase{},
+// 		           cr:nil,
+// 		           },
+// 		           fields: fields {
+// 		           client:nil,
+// 		           cfg:nil,
+// 		           syncer:nil,
+// 		           vor:nil,
+// 		           initErr:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			r := &reconciler{
+// 				client:  test.fields.client,
+// 				cfg:     test.fields.cfg,
+// 				syncer:  test.fields.syncer,
+// 				vor:     test.fields.vor,
+// 				initErr: test.fields.initErr,
+// 			}
+//
+// 			got, err := r.syncPhase(test.args.ctx, test.args.p, test.args.cr)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_reconciler_advance(t *testing.T) {
+// 	type args struct {
+// 		ps      phases
+// 		current int
+// 		cr      *v1.ValdOperatorRelease
+// 	}
+// 	type fields struct {
+// 		client  k8s.Client
+// 		cfg     *config.Config
+// 		syncer  *resource.Syncer
+// 		vor     *resource.Client[*v1.ValdOperatorRelease, *v1.ValdOperatorReleaseList]
+// 		initErr error
+// 	}
+// 	type want struct {
+// 		want int
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, int) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got int) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ps:nil,
+// 		           current:0,
+// 		           cr:nil,
+// 		       },
+// 		       fields: fields {
+// 		           client:nil,
+// 		           cfg:nil,
+// 		           syncer:nil,
+// 		           vor:nil,
+// 		           initErr:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ps:nil,
+// 		           current:0,
+// 		           cr:nil,
+// 		           },
+// 		           fields: fields {
+// 		           client:nil,
+// 		           cfg:nil,
+// 		           syncer:nil,
+// 		           vor:nil,
+// 		           initErr:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			r := &reconciler{
+// 				client:  test.fields.client,
+// 				cfg:     test.fields.cfg,
+// 				syncer:  test.fields.syncer,
+// 				vor:     test.fields.vor,
+// 				initErr: test.fields.initErr,
+// 			}
+//
+// 			got := r.advance(test.args.ps, test.args.current, test.args.cr)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_reconciler_phases(t *testing.T) {
+// 	type args struct {
+// 		cr         *v1.ValdOperatorRelease
+// 		capability nodePoolCapability
+// 	}
+// 	type fields struct {
+// 		client  k8s.Client
+// 		cfg     *config.Config
+// 		syncer  *resource.Syncer
+// 		vor     *resource.Client[*v1.ValdOperatorRelease, *v1.ValdOperatorReleaseList]
+// 		initErr error
+// 	}
+// 	type want struct {
+// 		want phases
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, phases) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got phases) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           cr:nil,
+// 		           capability:nodePoolCapability{},
+// 		       },
+// 		       fields: fields {
+// 		           client:nil,
+// 		           cfg:nil,
+// 		           syncer:nil,
+// 		           vor:nil,
+// 		           initErr:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           cr:nil,
+// 		           capability:nodePoolCapability{},
+// 		           },
+// 		           fields: fields {
+// 		           client:nil,
+// 		           cfg:nil,
+// 		           syncer:nil,
+// 		           vor:nil,
+// 		           initErr:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			r := &reconciler{
+// 				client:  test.fields.client,
+// 				cfg:     test.fields.cfg,
+// 				syncer:  test.fields.syncer,
+// 				vor:     test.fields.vor,
+// 				initErr: test.fields.initErr,
+// 			}
+//
+// 			got := r.phases(test.args.cr, test.args.capability)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_checkClusters(t *testing.T) {
+// 	type args struct {
+// 		cr *v1.ValdOperatorRelease
+// 	}
+// 	type want struct {
+// 		want result
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, result) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got result) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           cr:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           cr:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := checkClusters(test.args.cr)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_reconciler_vrsReady(t *testing.T) {
+// 	type args struct {
+// 		ctx   context.Context
+// 		built []k8s.Object
+// 	}
+// 	type fields struct {
+// 		client  k8s.Client
+// 		cfg     *config.Config
+// 		syncer  *resource.Syncer
+// 		vor     *resource.Client[*v1.ValdOperatorRelease, *v1.ValdOperatorReleaseList]
+// 		initErr error
+// 	}
+// 	type want struct {
+// 		want result
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, result) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got result) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           built:nil,
+// 		       },
+// 		       fields: fields {
+// 		           client:nil,
+// 		           cfg:nil,
+// 		           syncer:nil,
+// 		           vor:nil,
+// 		           initErr:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           built:nil,
+// 		           },
+// 		           fields: fields {
+// 		           client:nil,
+// 		           cfg:nil,
+// 		           syncer:nil,
+// 		           vor:nil,
+// 		           initErr:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			r := &reconciler{
+// 				client:  test.fields.client,
+// 				cfg:     test.fields.cfg,
+// 				syncer:  test.fields.syncer,
+// 				vor:     test.fields.vor,
+// 				initErr: test.fields.initErr,
+// 			}
+//
+// 			got := r.vrsReady(test.args.ctx, test.args.built)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }

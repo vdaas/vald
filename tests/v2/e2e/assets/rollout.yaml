@@ -117,6 +117,7 @@ metadata:
 metadata_string: key4=value4,key5=value5
 metrics:
   enabled: true
+  detailed_error_tracking: true
   latency_histogram:
     num_shards: 10
   queue_wait_histogram:
@@ -168,6 +169,15 @@ strategies:
           - mode: unary
             name: IndexInfo
             type: index_info
+            # Bounded settle: flush is asynchronous, so retry until IndexInfo
+            # reports an empty index instead of hard-failing a single check on
+            # a slow flush or a warm-up/reused cluster. exit_condition: success
+            # treats reaching the timeout as an accepted outcome (retry.ModeSuccess).
+            timeout: 2m
+            repeats:
+              enabled: true
+              exit_condition: success
+              interval: 5s
             expect:
               - value: {}
           - name: Insert
@@ -176,11 +186,35 @@ strategies:
             parallelism: _E2E_PARALLELISM_
             num: _E2E_INSERT_COUNT_
             qps: _E2E_QPS_
+            # Bound the execution so a stalled cluster surfaces as an explicit
+            # failure instead of eating the 60-minute job timeout
+            # (10000 requests at qps 30 needs ~5m33s when healthy).
+            timeout: 15m
             wait: 2m
           - mode: unary
             name: IndexInfo
             type: index_info
-            retry_until_success_timeout: 5m
+            # retry_until_success_timeout was never a real config key
+            # (unknown keys are silently dropped), so this gate never
+            # actually retried; repeats with exit_condition: success bounded
+            # by the execution timeout is the working construct.
+            timeout: 5m
+            repeats:
+              enabled: true
+              exit_condition: success
+              interval: 5s
+            expect:
+              - status_code: ok
+                path: $.stored
+                value: _E2E_EXPECTED_INDEX_
+          # retry.ModeSuccess treats reaching the timeout above as an accepted
+          # outcome (a bounded wait), so the repeat gate alone cannot fail the
+          # scenario. This one-shot assert is the "verify by other means" step
+          # its contract requires: fail here, before the rollout strategies run
+          # against an index that never became ready.
+          - mode: unary
+            name: IndexInfo
+            type: index_info
             expect:
               - status_code: ok
                 path: $.stored

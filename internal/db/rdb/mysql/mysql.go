@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package mysql
 
@@ -85,6 +83,7 @@ func New(opts ...Option) (MySQL, error) {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
+	m.connected.Store(false)
 
 	return m, nil
 }
@@ -194,7 +193,10 @@ func (m *mySQLClient) Close(context.Context) (err error) {
 			m.connected.Store(false)
 		}
 	}
-	return nil
+	// Return the close error instead of discarding it: on a failed
+	// session.Close() the connection stays marked connected, and the caller
+	// must be able to see that closing failed.
+	return err
 }
 
 // GetVector gets the vector data and podIPs which have index of vector.

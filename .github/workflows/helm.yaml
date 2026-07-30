@@ -28,7 +28,7 @@ jobs:
       contents: read
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
       - uses: ./.github/actions/dump-context
@@ -50,7 +50,7 @@ jobs:
         password: ${{ secrets.PACKAGE_TOKEN }}
       options: "--add-host host.docker.internal:host-gateway"
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -71,7 +71,7 @@ jobs:
           git checkout .
           git checkout gh-pages
           mv -f vald-*.tgz charts/
-          helm repo index --url https://vald.vdaas.org/charts charts/
+          make helm/repo/index
 
           git add charts
           git commit -S --signoff -m ":robot: Automatically update Helm charts"
@@ -94,7 +94,7 @@ jobs:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
       - name: Set Git config
@@ -114,19 +114,16 @@ jobs:
       - name: Run E2E CRUD
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
-          make E2E_BIND_PORT=8081 \
+          make e2e/v2 E2E_CONFIG="$(pwd)/tests/v2/e2e/assets/stream_crud.yaml" \
+            E2E_BIND_PORT=8081 \
             E2E_DATASET_NAME=${DATASET} \
-            E2E_INSERT_COUNT=60000 \
-            E2E_SEARCH_COUNT=10000 \
-            E2E_SEARCH_BY_ID_COUNT=10000 \
-            E2E_GET_OBJECT_COUNT=100 \
-            E2E_UPDATE_COUNT=100 \
-            E2E_UPSERT_COUNT=100 \
-            E2E_REMOVE_COUNT=100 \
-            E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m \
-            E2E_TARGET_POD_NAME=${POD_NAME} \
-            E2E_TARGET_NAMESPACE=default \
-            e2e
+            E2E_PARALLELISM="4" \
+            E2E_INSERT_COUNT="60000" \
+            E2E_EXPECTED_INDEX="180000" \
+            E2E_QPS="30" \
+            E2E_SEARCH_COUNT="10000" \
+            E2E_UPDATE_COUNT="100" \
+            E2E_BULK_SIZE="10" \
+            E2E_TARGET_NAMESPACE=default
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
-          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}

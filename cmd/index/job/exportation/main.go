@@ -15,10 +15,10 @@ package main
 
 import (
 	"context"
-	"log"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/index/job/exportation/config"
@@ -35,22 +35,16 @@ func main() {
 	if err := safety.RecoverFunc(func() error {
 		return runner.Do(
 			context.Background(),
-			runner.WithName(name),
-			runner.WithVersion(info.Version, maxVersion, minVersion),
-			runner.WithConfigLoader(func(path string) (any, *config.GlobalConfig, error) {
-				cfg, err := config.NewConfig(path)
+			runner.WithName[*config.Data](name),
+			runner.WithVersion[*config.Data](info.Version, maxVersion, minVersion),
+			runner.WithConfigLoader(func(path string) (*config.Data, *config.GlobalConfig, error) {
+				cfg, err := config.New(path)
 				if err != nil {
 					return nil, nil, errors.Wrap(err, "failed to load "+name+"'s configuration")
 				}
 				return cfg, &cfg.GlobalConfig, nil
 			}),
-			runner.WithDaemonInitializer(func(cfg any) (runner.Runner, error) {
-				c, ok := cfg.(*config.Data)
-				if !ok {
-					return nil, errors.ErrInvalidConfig
-				}
-				return usecase.New(c)
-			}),
+			runner.WithDaemonInitializer(usecase.New),
 		)
 	})(); err != nil {
 		log.Fatal(err, info.Get())

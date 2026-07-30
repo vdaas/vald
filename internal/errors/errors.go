@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package errors
 
@@ -159,6 +157,7 @@ func Is(err, target error) (same bool) {
 	return is(err, target)
 }
 
+// IsAny reports whether err is non-nil and matches at least one non-nil target.
 func IsAny(err error, targets ...error) (same bool) {
 	if err == nil || len(targets) == 0 {
 		return false
@@ -171,6 +170,12 @@ func IsAny(err error, targets ...error) (same bool) {
 	return false
 }
 
+// IsNot reports whether err is an actionable error that matches none of the
+// targets: it returns true only when err is non-nil and Is(err, target) is
+// false for every non-nil target. It is NOT the negation of Is — for a nil
+// err it always returns false (nil is not an error to act on), so callers can
+// use it directly as a "should this error be reported" filter. Conversely, a
+// non-nil err with an empty target list returns true.
 func IsNot(err error, targets ...error) (same bool) {
 	if err == nil || len(targets) == 0 {
 		return err != nil
@@ -186,9 +191,17 @@ func IsNot(err error, targets ...error) (same bool) {
 func is(err, target error) (same bool) {
 	targetComparable := reflect.TypeOf(target).Comparable()
 	for {
-		if targetComparable && (err == target ||
+		// Only the pointer/value == comparison must be gated on comparability
+		// (comparing an uncomparable target panics); the message comparisons
+		// are always safe. The terminal fallbacks below already gate only ==
+		// via && / || precedence, so mirror that here — otherwise a
+		// non-comparable target never message-matches an intermediate wrap
+		// layer (it did at the innermost layer only), an inconsistency with
+		// how a comparable target of the same message resolves.
+		//nolint:errorlint // is() is the Is primitive itself; the == identity check on a comparable target is intentional (mirrors the terminal fallbacks below and stdlib errors.Is).
+		if (targetComparable && err == target) ||
 			err.Error() == target.Error() ||
-			strings.EqualFold(err.Error(), target.Error())) {
+			strings.EqualFold(err.Error(), target.Error()) {
 			return true
 		}
 
@@ -268,10 +281,14 @@ func Join(errs ...error) error {
 			}
 			switch x := errs[0].(type) {
 			case *joinError:
-				x.errs = RemoveDuplicates(append(x.errs, es...))
-				return x
+				// Copy x.errs into a fresh slice instead of mutating and
+				// returning the existing *joinError: error values are expected
+				// to be immutable once returned, and a retained reference to
+				// errs[0] must not gain the newly joined errors.
+				return &joinError{errs: RemoveDuplicates(append(append(make([]error, 0, len(x.errs)+len(es)), x.errs...), es...))}
 			case interface{ Unwrap() []error }:
-				return &joinError{errs: RemoveDuplicates(append(x.Unwrap(), es...))}
+				u := x.Unwrap()
+				return &joinError{errs: RemoveDuplicates(append(append(make([]error, 0, len(u)+len(es)), u...), es...))}
 			default:
 				return &joinError{errs: []error{errs[0], errs[1]}}
 			}
@@ -285,13 +302,18 @@ func Join(errs ...error) error {
 	var e *joinError
 	switch x := errs[0].(type) {
 	case *joinError:
+		// Copy x.errs into a fresh slice rather than aliasing errs[0]: the
+		// append + in-place RemoveDuplicates below would otherwise mutate the
+		// caller's *joinError.
 		if x != nil && len(x.errs) != 0 {
-			e = x
+			e = &joinError{errs: append(make([]error, 0, len(x.errs)+l), x.errs...)}
 		}
 		errs = errs[1:]
 	case interface{ Unwrap() []error }:
-		if x != nil && len(x.Unwrap()) != 0 {
-			e = &joinError{errs: x.Unwrap()}
+		if x != nil {
+			if u := x.Unwrap(); len(u) != 0 {
+				e = &joinError{errs: append(make([]error, 0, len(u)+l), u...)}
+			}
 		}
 		errs = errs[1:]
 	}
@@ -313,20 +335,12 @@ func RemoveDuplicates(errs []error) []error {
 		return nil
 	case 1:
 		return errs
-	case 2:
-		switch {
-		case errs[0] != nil && errs[1] != nil:
-			if Is(errs[0], errs[1]) {
-				return errs[:1]
-			}
-			return errs
-		case errs[0] != nil:
-			return errs[:1]
-		case errs[1] != nil:
-			return errs[1:]
-		}
-		return nil
 	}
+	// Two and more elements are deduplicated uniformly by their message: the
+	// former length==2 special case used semantic Is() (unwrap + case-insensitive
+	// fold) while length>=3 used an exact-string map, so whether two errors were
+	// treated as duplicates depended on the argument count rather than the errors
+	// themselves. The exact-string map below is the consistent rule.
 	seen := make(map[string]bool, len(errs))
 	defer clear(seen)
 	var idx uint64

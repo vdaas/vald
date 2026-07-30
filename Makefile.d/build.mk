@@ -130,13 +130,23 @@ cmd/operator/benchmark/operator:
 
 example/client/client:
 	$(eval CGO_ENABLED = 1)
-	$(call go-example-build,example/client,-linkmode 'external',$(LDFLAGS) $(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
+	$(call go-example-build,example/client,-linkmode 'external',$(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
 
 rust/target/release/agent:
-	pushd rust && cargo build -p agent --release && popd
+	pushd rust && \
+	$(CC_ENV_VARS) \
+	OPENSSL_STATIC=1 \
+	PKG_CONFIG_ALL_STATIC=1 \
+	cargo build -p agent --release && \
+	popd
 
 rust/target/debug/agent:
-	pushd rust && cargo build -p agent && popd
+	pushd rust && \
+	$(CC_ENV_VARS) \
+	OPENSSL_STATIC=1 \
+	PKG_CONFIG_ALL_STATIC=1 \
+	cargo build -p agent && \
+	popd
 
 tests/v2/e2e/e2e:
 	$(eval CGO_ENABLED = 1)
@@ -163,6 +173,10 @@ binary/build/zip: \
 	artifacts/vald-manager-index-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-mirror-gateway-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-readreplica-rotate-$(GOOS)-$(GOARCH).zip
+
+artifacts/%.zip:
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
 
 artifacts/vald-agent-ngt-$(GOOS)-$(GOARCH).zip: cmd/agent/core/ngt/ngt
 	$(call mkdir, $(dir $@))

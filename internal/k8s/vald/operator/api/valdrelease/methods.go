@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package valdrelease
 
@@ -23,9 +21,9 @@ import (
 )
 
 const (
-	// ResourceRatio is the fraction of a node's resources allocated to agent
+	// AgentResourceRatio is the fraction of a node's resources allocated to agent
 	// pods scheduled on it.
-	ResourceRatio = 0.6
+	AgentResourceRatio = 0.6
 	// DefaultIndexPath is the on-disk index path used for PV-backed agents.
 	DefaultIndexPath = "/var/ngt/index"
 	// DefaultAgentMaxSurge / DefaultAgentMaxUnavailable are the rolling-update
@@ -41,18 +39,37 @@ const (
 
 // ResourceParams carries the configuration-derived knobs needed to populate
 // resource-related fields. The builder fills it from *config.Config and passes
-// it to SetRelationalResources, keeping this package free of config concerns.
+// it to SetScaledResources, keeping this package free of config concerns.
 type ResourceParams struct {
-	AgentPodsPerNode           int
 	DiscovererDSMaxSurge       string
 	DiscovererDSMaxUnavailable string
+	AgentPodsPerNode           int
 }
 
-// ptr returns a pointer to v (the generated types use pointers throughout).
-//
-//go:fix inline
+// setTopologySpreadConstraints returns a single-element TSC spreading pods
+// across nodes by hostname, scoped to the given app.kubernetes.io/component
+// label value.
+func setTopologySpreadConstraints(componentLabel string) *TopologySpreadConstraints {
+	tsc := TopologySpreadConstraints{common.BuildTopologySpreadConstraint(componentLabel)}
+	return &tsc
+}
 
-func ptr[T any](v T) *T { return new(v) }
+// fixedResources builds a Resources value from literal request/limit
+// quantities. It is used by the components whose compute resources are
+// fixed constants rather than derived from node/agent sizing (Agent's
+// SetResources is computed dynamically and does not use this helper).
+func fixedResources(reqCPU, reqMemory, limCPU, limMemory string) *Resources {
+	return &Resources{
+		Requests: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse(reqCPU),
+			corev1.ResourceMemory: resource.MustParse(reqMemory),
+		},
+		Limits: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse(limCPU),
+			corev1.ResourceMemory: resource.MustParse(limMemory),
+		},
+	}
+}
 
 // --- Agent -----------------------------------------------------------------
 
@@ -71,19 +88,18 @@ func (a *Agent) SetResources(mc corev1.ResourceList, podsPerNode int) {
 	memory := mc.Memory().Value()
 	a.Resources = &Resources{
 		Requests: common.NormalizeResourceList(corev1.ResourceList{
-			corev1.ResourceCPU:    common.CalcResource(cpu, ResourceRatio, div),
-			corev1.ResourceMemory: common.CalcResource(memory, ResourceRatio, div),
+			corev1.ResourceCPU:    common.CalcResource(cpu, AgentResourceRatio, div),
+			corev1.ResourceMemory: common.CalcResource(memory, AgentResourceRatio, div),
 		}),
 		Limits: common.NormalizeResourceList(corev1.ResourceList{
-			corev1.ResourceCPU: common.CalcResource(cpu, ResourceRatio),
+			corev1.ResourceCPU: common.CalcResource(cpu, AgentResourceRatio),
 		}),
 	}
 }
 
 // SetTopologySpreadConstraints spreads agent pods across nodes.
 func (a *Agent) SetTopologySpreadConstraints() {
-	tsc := TopologySpreadConstraints{common.BuildTopologySpreadConstraint(componentLabelAgent)}
-	a.TopologySpreadConstraints = &tsc
+	a.TopologySpreadConstraints = setTopologySpreadConstraints(componentLabelAgent)
 }
 
 // SetPvEnable configures the agent for PV-backed operation.
@@ -104,15 +120,19 @@ func (a *Agent) SetPvEnable(sc, am, size string) {
 
 // --- Gateway (LB) ----------------------------------------------------------
 
+// gatewayLbReplicaScale relates LB gateway replicas to the agent replica
+// count: max = agents × scale, min = agents ÷ scale (both floored at 1).
+const gatewayLbReplicaScale = 2
+
 func (l *GatewayLb) getMaxReplica(ar int) int {
-	if r := ar * 2; r >= 1 {
+	if r := ar * gatewayLbReplicaScale; r >= 1 {
 		return r
 	}
 	return 1
 }
 
 func (l *GatewayLb) getMinReplica(ar int) int {
-	if r := ar / 2; r >= 1 {
+	if r := ar / gatewayLbReplicaScale; r >= 1 {
 		return r
 	}
 	return 1
@@ -130,22 +150,12 @@ func (l *GatewayLb) SetReplica(a *Agent) {
 
 // SetResources sets fixed compute resources for the LB gateway.
 func (l *GatewayLb) SetResources() {
-	l.Resources = &Resources{
-		Requests: corev1.ResourceList{
-			corev1.ResourceCPU:    resource.MustParse("200m"),
-			corev1.ResourceMemory: resource.MustParse("150Mi"),
-		},
-		Limits: corev1.ResourceList{
-			corev1.ResourceCPU:    resource.MustParse("2000m"),
-			corev1.ResourceMemory: resource.MustParse("700Mi"),
-		},
-	}
+	l.Resources = fixedResources("200m", "150Mi", "2000m", "700Mi")
 }
 
 // SetTopologySpreadConstraints spreads LB gateway pods across nodes.
 func (l *GatewayLb) SetTopologySpreadConstraints() {
-	tsc := TopologySpreadConstraints{common.BuildTopologySpreadConstraint(componentLabelGatewayLb)}
-	l.TopologySpreadConstraints = &tsc
+	l.TopologySpreadConstraints = setTopologySpreadConstraints(componentLabelGatewayLb)
 }
 
 // --- Discoverer ------------------------------------------------------------
@@ -164,7 +174,7 @@ func (d *Discoverer) ApplyDefaultsByKind(daemonSetMaxSurge, daemonSetMaxUnavaila
 			d.ServiceType = new(DiscovererServiceTypeNodePort)
 		}
 		if d.ExternalTrafficPolicy == nil {
-			d.ExternalTrafficPolicy = ptr(string(corev1.ServiceExternalTrafficPolicyTypeLocal))
+			d.ExternalTrafficPolicy = new(string(corev1.ServiceExternalTrafficPolicyTypeLocal))
 		}
 		d.RollingUpdate = &RollingUpdate{
 			MaxSurge:       new(daemonSetMaxSurge),
@@ -172,58 +182,41 @@ func (d *Discoverer) ApplyDefaultsByKind(daemonSetMaxSurge, daemonSetMaxUnavaila
 		}
 	case common.KindTypeDeployment:
 		d.ServiceType = new(DiscovererServiceTypeClusterIP)
+	case common.KindTypeStatefulSet:
+		// The discoverer is never deployed as a StatefulSet; listed explicitly
+		// so this switch stays exhaustive over common.KindType.
 	}
 }
 
 // SetResources sets fixed compute resources for the discoverer.
 func (d *Discoverer) SetResources() {
-	d.Resources = &Resources{
-		Requests: corev1.ResourceList{
-			corev1.ResourceCPU:    resource.MustParse("200m"),
-			corev1.ResourceMemory: resource.MustParse("65Mi"),
-		},
-		Limits: corev1.ResourceList{
-			corev1.ResourceCPU:    resource.MustParse("600m"),
-			corev1.ResourceMemory: resource.MustParse("200Mi"),
-		},
-	}
+	d.Resources = fixedResources("200m", "65Mi", "600m", "200Mi")
 }
 
 // SetTopologySpreadConstraints spreads discoverer pods across nodes.
 func (d *Discoverer) SetTopologySpreadConstraints() {
-	tsc := TopologySpreadConstraints{common.BuildTopologySpreadConstraint(componentLabelDiscoverer)}
-	d.TopologySpreadConstraints = &tsc
+	d.TopologySpreadConstraints = setTopologySpreadConstraints(componentLabelDiscoverer)
 }
 
 // --- Manager (Index) -------------------------------------------------------
 
 // SetResources sets fixed compute resources for the index manager.
 func (i *ManagerIndex) SetResources() {
-	i.Resources = &Resources{
-		Requests: corev1.ResourceList{
-			corev1.ResourceCPU:    resource.MustParse("200m"),
-			corev1.ResourceMemory: resource.MustParse("80Mi"),
-		},
-		Limits: corev1.ResourceList{
-			corev1.ResourceCPU:    resource.MustParse("1000m"),
-			corev1.ResourceMemory: resource.MustParse("500Mi"),
-		},
-	}
+	i.Resources = fixedResources("200m", "80Mi", "1000m", "500Mi")
 }
 
 // SetTopologySpreadConstraints spreads index-manager pods across nodes.
 func (i *ManagerIndex) SetTopologySpreadConstraints() {
-	tsc := TopologySpreadConstraints{common.BuildTopologySpreadConstraint(componentLabelManagerIndex)}
-	i.TopologySpreadConstraints = &tsc
+	i.TopologySpreadConstraints = setTopologySpreadConstraints(componentLabelManagerIndex)
 }
 
 // --- Orchestrator ----------------------------------------------------------
 
-// SetRelationalResources populates the resource-related fields across every
+// SetScaledResources populates the resource-related fields across every
 // component that depends on the agent replica count or the node machine
 // resources. Nil sub-specs are skipped, so callers only pay for the components
 // they actually declared.
-func (v *ValdRelease) SetRelationalResources(ar int, am corev1.ResourceList, p ResourceParams) {
+func (v *ValdRelease) SetScaledResources(ar int, am corev1.ResourceList, p ResourceParams) {
 	if a := v.Spec.Agent; a != nil {
 		a.SetReplica(ar, p.AgentPodsPerNode)
 		a.SetResources(am, p.AgentPodsPerNode)

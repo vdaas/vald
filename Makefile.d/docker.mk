@@ -45,9 +45,9 @@ docker/build: \
 	docker/build/readreplica-rotate \
 	docker/build/e2e
 
-.PHONY: docker/xpanes/build
+.PHONY: docker/xpanes/build docker/build/xpanes
 ## build all docker images using xpanes
-docker/xpanes/build:
+docker/xpanes/build docker/build/xpanes:
 	@xpanes -s -c "make -f $(ROOTDIR)/Makefile {}" \
 	docker/build/agent \
 	docker/build/agent-faiss \
@@ -111,11 +111,11 @@ ifeq ($(REMOTE),true)
 	--cache-to type=registry,ref=$(GHCRORG)/$(IMAGE):$(TAG)-buildcache,mode=max \
 	--cache-from type=gha,scope=$(TAG)-buildcache \
 	--cache-from type=registry,ref=$(GHCRORG)/$(IMAGE):$(TAG)-buildcache \
-	--build-arg BUILDKIT_INLINE_CACHE=$(BUILDKIT_INLINE_CACHE) \
-	--build-arg GO_VERSION=$(GO_VERSION) \
-	--build-arg RUST_VERSION=$(RUST_VERSION) \
-	--build-arg MAINTAINER=$(MAINTAINER) \
-	--attest type=sbom,generator=$(DEFAULT_BUILDKIT_SYFT_SCANNER_IMAGE) \
+	$(DOCKER_OPTS) \
+	$(DOCKER_BUILD_ARGS) \
+	--allow "network.host" \
+	--network=host \
+	--attest type=sbom,generator=$(DEFAULT_BUILDKIT_SYFT_SCANNER_IMAGE),format=spdx-json \
 	--provenance=mode=max \
 	-t $(CRORG)/$(IMAGE):$(TAG) \
 	-t $(GHCRORG)/$(IMAGE):$(TAG) \
@@ -127,10 +127,7 @@ else
 	DOCKER_BUILDKIT=$(DOCKER_BUILDKIT) $(DOCKER) build \
 	$(DOCKER_OPTS) \
 	--network host \
-	--build-arg BUILDKIT_INLINE_CACHE=$(BUILDKIT_INLINE_CACHE) \
-	--build-arg GO_VERSION=$(GO_VERSION) \
-	--build-arg RUST_VERSION=$(RUST_VERSION) \
-	--build-arg MAINTAINER=$(MAINTAINER) \
+	$(DOCKER_BUILD_ARGS) \
 	$(EXTRA_ARGS) \
 	-t $(CRORG)/$(IMAGE):$(TAG) \
 	-t $(GHCRORG)/$(IMAGE):$(TAG) \
@@ -148,7 +145,7 @@ docker/create/manifest:
 
 .PHONY: docker/create/manifest/alter
 docker/create/manifest/alter:
-	@make ORG=$(GHCRORG) docker/create/manifest
+	@$(MAKE) ORG=$(GHCRORG) docker/create/manifest
 
 .PHONY: docker/inspect/image
 docker/inspect/image:
@@ -157,7 +154,7 @@ docker/inspect/image:
 
 .PHONY: docker/inspect/image/alter
 docker/inspect/image/alter:
-	@make ORG=$(GHCRORG) docker/inspect/image
+	@$(MAKE) ORG=$(GHCRORG) docker/inspect/image
 
 .PHONY: docker/name/agent-ngt
 ## print agent-ngt image name
@@ -167,9 +164,10 @@ docker/name/agent-ngt:
 .PHONY: docker/build/agent-ngt
 ## build agent-ngt image
 docker/build/agent-ngt:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/agent/core/ngt/Dockerfile" \
-	IMAGE=$(AGENT_NGT_IMAGE) \
-	docker/build/image
+	@$(MAKE) \
+		DOCKERFILE="$(ROOTDIR)/dockers/agent/core/ngt/Dockerfile" \
+		IMAGE=$(AGENT_NGT_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/agent-faiss
 ## print agent-faiss image name
@@ -179,9 +177,10 @@ docker/name/agent-faiss:
 .PHONY: docker/build/agent-faiss
 ## build agent-faiss image
 docker/build/agent-faiss:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/agent/core/faiss/Dockerfile" \
-	IMAGE=$(AGENT_FAISS_IMAGE) \
-	docker/build/image
+	@$(MAKE) \
+		DOCKERFILE="$(ROOTDIR)/dockers/agent/core/faiss/Dockerfile" \
+		IMAGE=$(AGENT_FAISS_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/agent-sidecar
 ## print agent-sidecar image name
@@ -191,9 +190,10 @@ docker/name/agent-sidecar:
 .PHONY: docker/build/agent-sidecar
 ## build agent-sidecar image
 docker/build/agent-sidecar:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/agent/sidecar/Dockerfile" \
-	IMAGE=$(AGENT_SIDECAR_IMAGE) \
-	docker/build/image
+	@$(MAKE) \
+		DOCKERFILE="$(ROOTDIR)/dockers/agent/sidecar/Dockerfile" \
+		IMAGE=$(AGENT_SIDECAR_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/agent
 ## print agent image name
@@ -201,10 +201,12 @@ docker/name/agent:
 	@echo "$(ORG)/$(AGENT_IMAGE)"
 
 .PHONY: docker/build/agent
+## build agent image
 docker/build/agent:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/agent/core/agent/Dockerfile" \
-	IMAGE=$(AGENT_IMAGE) \
-	docker/build/image
+	@$(MAKE) \
+		DOCKERFILE="$(ROOTDIR)/dockers/agent/core/agent/Dockerfile" \
+		IMAGE=$(AGENT_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/discoverer-k8s
 ## print discoverer-k8s image name
@@ -214,9 +216,10 @@ docker/name/discoverer-k8s:
 .PHONY: docker/build/discoverer-k8s
 ## build discoverer-k8s image
 docker/build/discoverer-k8s:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/discoverer/k8s/Dockerfile" \
-	IMAGE=$(DISCOVERER_IMAGE) \
-	docker/build/image
+	@$(MAKE) \
+		DOCKERFILE="$(ROOTDIR)/dockers/discoverer/k8s/Dockerfile" \
+		IMAGE=$(DISCOVERER_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/gateway-lb
 ## print gateway-lb image name
@@ -226,9 +229,10 @@ docker/name/gateway-lb:
 .PHONY: docker/build/gateway-lb
 ## build gateway-lb image
 docker/build/gateway-lb:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/gateway/lb/Dockerfile" \
-	IMAGE=$(LB_GATEWAY_IMAGE) \
-	docker/build/image
+	@$(MAKE) \
+		DOCKERFILE="$(ROOTDIR)/dockers/gateway/lb/Dockerfile" \
+		IMAGE=$(LB_GATEWAY_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/gateway-filter
 ## print gateway-filter image name
@@ -238,9 +242,10 @@ docker/name/gateway-filter:
 .PHONY: docker/build/gateway-filter
 ## build gateway-filter image
 docker/build/gateway-filter:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/gateway/filter/Dockerfile" \
-	IMAGE=$(FILTER_GATEWAY_IMAGE) \
-	docker/build/image
+	@$(MAKE) \
+		DOCKERFILE="$(ROOTDIR)/dockers/gateway/filter/Dockerfile" \
+		IMAGE=$(FILTER_GATEWAY_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/gateway-mirror
 ## print gateway-mirror image name
@@ -250,9 +255,10 @@ docker/name/gateway-mirror:
 .PHONY: docker/build/gateway-mirror
 ## build gateway-mirror image
 docker/build/gateway-mirror:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/gateway/mirror/Dockerfile" \
-	IMAGE=$(MIRROR_GATEWAY_IMAGE) \
-	docker/build/image
+	@$(MAKE) \
+		DOCKERFILE="$(ROOTDIR)/dockers/gateway/mirror/Dockerfile" \
+		IMAGE=$(MIRROR_GATEWAY_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/manager-index
 ## print manager-index image name
@@ -262,9 +268,10 @@ docker/name/manager-index:
 .PHONY: docker/build/manager-index
 ## build manager-index image
 docker/build/manager-index:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/manager/index/Dockerfile" \
-	IMAGE=$(MANAGER_INDEX_IMAGE) \
-	docker/build/image
+	@$(MAKE) \
+		DOCKERFILE="$(ROOTDIR)/dockers/manager/index/Dockerfile" \
+		IMAGE=$(MANAGER_INDEX_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/buildbase
 ## print buildbase image name
@@ -274,9 +281,10 @@ docker/name/buildbase:
 .PHONY: docker/build/buildbase
 ## build buildbase image
 docker/build/buildbase:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/buildbase/Dockerfile" \
-	IMAGE=$(BUILDBASE_IMAGE) \
-	docker/build/image
+	@$(MAKE) \
+		DOCKERFILE="$(ROOTDIR)/dockers/buildbase/Dockerfile" \
+		IMAGE=$(BUILDBASE_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/buildkit
 ## print buildkit image name
@@ -286,9 +294,10 @@ docker/name/buildkit:
 .PHONY: docker/build/buildkit
 ## build buildkit image
 docker/build/buildkit:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/buildkit/Dockerfile" \
-	IMAGE=$(BUILDKIT_IMAGE) \
-	docker/build/image
+	@$(MAKE) \
+		DOCKERFILE="$(ROOTDIR)/dockers/buildkit/Dockerfile" \
+		IMAGE=$(BUILDKIT_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/binfmt
 ## print binfmt image name
@@ -298,9 +307,10 @@ docker/name/binfmt:
 .PHONY: docker/build/binfmt
 ## build binfmt image
 docker/build/binfmt:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/binfmt/Dockerfile" \
-	IMAGE=$(BINFMT_IMAGE) \
-	docker/build/image
+	@$(MAKE) \
+		DOCKERFILE="$(ROOTDIR)/dockers/binfmt/Dockerfile" \
+		IMAGE=$(BINFMT_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/buildkit-syft-scanner
 ## print buildkit-syft-scanner image name
@@ -310,10 +320,11 @@ docker/name/buildkit-syft-scanner:
 .PHONY: docker/build/buildkit-syft-scanner
 ## build buildkit-syft-scanner image
 docker/build/buildkit-syft-scanner:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/buildkit/syft/scanner/Dockerfile" \
-	IMAGE=$(BUILDKIT_SYFT_SCANNER_IMAGE) \
-	DEFAULT_BUILDKIT_SYFT_SCANNER_IMAGE="docker/buildkit-syft-scanner:edge" \
-	docker/build/image
+	@$(MAKE) \
+		DOCKERFILE="$(ROOTDIR)/dockers/buildkit/syft/scanner/Dockerfile" \
+		IMAGE=$(BUILDKIT_SYFT_SCANNER_IMAGE) \
+		DEFAULT_BUILDKIT_SYFT_SCANNER_IMAGE="docker/buildkit-syft-scanner:edge" \
+		docker/build/image
 
 .PHONY: docker/name/dev-container
 ## print dev-container image name
@@ -323,9 +334,22 @@ docker/name/dev-container:
 .PHONY: docker/build/dev-container
 ## build dev-container image
 docker/build/dev-container:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/dev/Dockerfile" \
-	IMAGE=$(DEV_CONTAINER_IMAGE) \
-	docker/build/image
+	@$(MAKE) \
+		DOCKERFILE="$(ROOTDIR)/dockers/dev/Dockerfile" \
+		IMAGE=$(DEV_CONTAINER_IMAGE) \
+		docker/build/image
+
+.PHONY: docker/dev-container/toolchain-fingerprint
+## print the dev-container toolchain fingerprint (single source for the build-time image label and the e2e freshness gate).
+## Inputs are deliberately limited to files that ALSO trigger a dev-container rebuild
+## (versions/GO_VERSION and dockers/dev/Dockerfile are in the paths filter of
+## dockers-dev-container-image.yaml). Fingerprinting a toolchain file that does not
+## trigger a rebuild (e.g. versions/RUST_VERSION) would make the e2e freshness gate
+## wait for an image that never gets rebuilt, so the fingerprint set must stay a subset
+## of the rebuild trigger paths. versions/GO_VERSION is what the reported build skew
+## ("compile: version X does not match go tool version Y") hinges on.
+docker/dev-container/toolchain-fingerprint:
+	@cat "$(ROOTDIR)/versions/GO_VERSION" "$(ROOTDIR)/dockers/dev/Dockerfile" | sha256sum | awk '{print $$1}'
 
 .PHONY: docker/name/operator/helm docker/name/helm-operator
 ## print helm-operator image name
@@ -335,7 +359,7 @@ docker/name/operator/helm docker/name/helm-operator:
 .PHONY: docker/build/operator/helm docker/build/helm-operator
 ## build helm-operator image
 docker/build/operator/helm docker/build/helm-operator:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/operator/helm/Dockerfile" \
+	@$(MAKE) DOCKERFILE="$(ROOTDIR)/dockers/operator/helm/Dockerfile" \
 	IMAGE=$(HELM_OPERATOR_IMAGE) \
 	EXTRA_ARGS="--build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION) --build-arg UPX_OPTIONS=$(UPX_OPTIONS) $(EXTRA_ARGS)" \
 	docker/build/image
@@ -352,7 +376,7 @@ docker/name/operator:
 .PHONY: docker/build/operator/vald
 ## build vald-operator image
 docker/build/operator/vald:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/operator/vald/Dockerfile" \
+	@$(MAKE) DOCKERFILE="$(ROOTDIR)/dockers/operator/vald/Dockerfile" \
 	IMAGE=$(OPERATOR_IMAGE) \
 	docker/build/image
 
@@ -364,9 +388,10 @@ docker/name/index-correction:
 .PHONY: docker/build/index-correction
 ## build index-correction image
 docker/build/index-correction:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/index/job/correction/Dockerfile" \
-	IMAGE=$(INDEX_CORRECTION_IMAGE) \
-	docker/build/image
+	@$(MAKE) \
+		DOCKERFILE="$(ROOTDIR)/dockers/index/job/correction/Dockerfile" \
+		IMAGE=$(INDEX_CORRECTION_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/index-creation
 ## print index-creation image name
@@ -376,9 +401,10 @@ docker/name/index-creation:
 .PHONY: docker/build/index-creation
 ## build index-creation image
 docker/build/index-creation:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/index/job/creation/Dockerfile" \
-	IMAGE=$(INDEX_CREATION_IMAGE) \
-	docker/build/image
+	@$(MAKE) \
+		DOCKERFILE="$(ROOTDIR)/dockers/index/job/creation/Dockerfile" \
+		IMAGE=$(INDEX_CREATION_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/index-save
 ## print index-save image name
@@ -388,9 +414,10 @@ docker/name/index-save:
 .PHONY: docker/build/index-save
 ## build index-save image
 docker/build/index-save:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/index/job/save/Dockerfile" \
-	IMAGE=$(INDEX_SAVE_IMAGE) \
-	docker/build/image
+	@$(MAKE) \
+		DOCKERFILE="$(ROOTDIR)/dockers/index/job/save/Dockerfile" \
+		IMAGE=$(INDEX_SAVE_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/index-deletion
 ## print index-deletion image name
@@ -400,9 +427,10 @@ docker/name/index-deletion:
 .PHONY: docker/build/index-deletion
 ## build index-deletion image
 docker/build/index-deletion:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/index/job/deletion/Dockerfile" \
-	IMAGE=$(INDEX_DELETION_IMAGE) \
-	docker/build/image
+	@$(MAKE) \
+		DOCKERFILE="$(ROOTDIR)/dockers/index/job/deletion/Dockerfile" \
+		IMAGE=$(INDEX_DELETION_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/index-exportation
 ## print index-exportation image name
@@ -412,9 +440,10 @@ docker/name/index-exportation:
 .PHONY: docker/build/index-exportation
 ## build index-exportation image
 docker/build/index-exportation:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/index/job/exportation/Dockerfile" \
-	IMAGE=$(INDEX_EXPORTATION_IMAGE) \
-	docker/build/image
+	@$(MAKE) \
+		DOCKERFILE="$(ROOTDIR)/dockers/index/job/exportation/Dockerfile" \
+		IMAGE=$(INDEX_EXPORTATION_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/index-operator
 ## print index-operator image name
@@ -424,9 +453,10 @@ docker/name/index-operator:
 .PHONY: docker/build/index-operator
 ## build index-operator image
 docker/build/index-operator:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/index/operator/Dockerfile" \
-	IMAGE=$(INDEX_OPERATOR_IMAGE) \
-	docker/build/image
+	@$(MAKE) \
+		DOCKERFILE="$(ROOTDIR)/dockers/index/operator/Dockerfile" \
+		IMAGE=$(INDEX_OPERATOR_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/readreplica-rotate
 ## print readreplica-rotate image name
@@ -436,9 +466,10 @@ docker/name/readreplica-rotate:
 .PHONY: docker/build/readreplica-rotate
 ## build readreplica-rotate image
 docker/build/readreplica-rotate:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/index/job/readreplica/rotate/Dockerfile" \
-	IMAGE=$(READREPLICA_ROTATE_IMAGE) \
-	docker/build/image
+	@$(MAKE) \
+		DOCKERFILE="$(ROOTDIR)/dockers/index/job/readreplica/rotate/Dockerfile" \
+		IMAGE=$(READREPLICA_ROTATE_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/benchmark-job
 ## print benchmark-job image name
@@ -448,10 +479,11 @@ docker/name/benchmark-job:
 .PHONY: docker/build/benchmark-job
 ## build benchmark job
 docker/build/benchmark-job:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/tools/benchmark/job/Dockerfile" \
-	IMAGE=$(BENCHMARK_JOB_IMAGE) \
-	DOCKER_OPTS="$${DOCKER_OPTS:+$${DOCKER_OPTS}} --build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF5_VERSION=$(HDF5_VERSION)" \
-	docker/build/image
+	@$(MAKE) \
+		DOCKERFILE="$(ROOTDIR)/dockers/tools/benchmark/job/Dockerfile" \
+		IMAGE=$(BENCHMARK_JOB_IMAGE) \
+		DOCKER_OPTS="$${DOCKER_OPTS:+$${DOCKER_OPTS}} --build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF5_VERSION=$(HDF5_VERSION)" \
+		docker/build/image
 
 .PHONY: docker/name/operator/benchmark docker/name/benchmark-operator
 ## print benchmark-operator image name
@@ -461,7 +493,7 @@ docker/name/operator/benchmark docker/name/benchmark-operator:
 .PHONY: docker/build/operator/benchmark docker/build/benchmark-operator
 ## build benchmark operator
 docker/build/operator/benchmark docker/build/benchmark-operator:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/operator/benchmark/Dockerfile" \
+	@$(MAKE) DOCKERFILE="$(ROOTDIR)/dockers/operator/benchmark/Dockerfile" \
 	IMAGE=$(BENCHMARK_OPERATOR_IMAGE) \
 	docker/build/image
 
@@ -473,10 +505,11 @@ docker/name/example-client:
 .PHONY: docker/build/example-client
 ## build example client docker image
 docker/build/example-client:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/example/client/Dockerfile" \
-	IMAGE=$(EXAMPLE_CLIENT_IMAGE) \
-	DOCKER_OPTS="$${DOCKER_OPTS:+$${DOCKER_OPTS}} --build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF5_VERSION=$(HDF5_VERSION)" \
-	docker/build/image
+	@$(MAKE) \
+		DOCKERFILE="$(ROOTDIR)/dockers/example/client/Dockerfile" \
+		IMAGE=$(EXAMPLE_CLIENT_IMAGE) \
+		DOCKER_OPTS="$${DOCKER_OPTS:+$${DOCKER_OPTS}} --build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF5_VERSION=$(HDF5_VERSION)" \
+		docker/build/image
 
 .PHONY: docker/name/e2e
 ## print e2e image name
@@ -486,6 +519,7 @@ docker/name/e2e:
 .PHONY: docker/build/e2e
 ## build e2e docker image
 docker/build/e2e:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/tests/v2/e2e/Dockerfile" \
-	IMAGE=$(E2E_IMAGE) \
-	docker/build/image
+	@$(MAKE) \
+		DOCKERFILE="$(ROOTDIR)/dockers/tests/v2/e2e/Dockerfile" \
+		IMAGE=$(E2E_IMAGE) \
+		docker/build/image
