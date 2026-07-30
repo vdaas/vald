@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package grpc
 
@@ -30,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/errhandler"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -43,11 +42,7 @@ func (s *server) Remove(
 	ctx context.Context, req *payload.Remove_Request,
 ) (locs *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.RemoveRPCName), apiName+"/"+vald.RemoveRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	id := req.GetId()
 	uuid := id.GetId()
@@ -99,11 +94,7 @@ func (s *server) Remove(
 				}
 			}
 			if err != nil {
-				if span != nil {
-					span.RecordError(err)
-					span.SetAttributes(attrs...)
-					span.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanAttrs(span, attrs, err)
 				return nil, err
 			}
 		}
@@ -131,11 +122,7 @@ func (s *server) Remove(
 	ls := make([]string, 0, s.replica)
 	err = s.gateway.BroadCast(ctx, service.WRITE, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
 		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.RemoveRPCName+"/"+target)
-		defer func() {
-			if span != nil {
-				span.End()
-			}
-		}()
+		defer trace.End(span)
 		loc, err := vc.Remove(ctx, req, copts...)
 		if err != nil {
 			st, msg, err := status.ParseError(err, codes.Internal,
@@ -159,22 +146,13 @@ func (s *server) Remove(
 	})
 	if err != nil {
 		st, _ := status.FromError(err)
-		if st != nil && span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanStatus(span, st, err)
 		return nil, err
 	}
 	if len(locs.Ips) <= 0 {
 		err = errors.ErrIndexNotFound
 		err = status.WrapWithNotFound(vald.RemoveRPCName+" API remove target not found", err, reqInfo, resInfo)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.NotFound, err)
 	}
 	slices.Sort(ls)
 	locs.Name = strings.Join(ls, ",")
@@ -183,27 +161,15 @@ func (s *server) Remove(
 
 func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.StreamRemoveRPCName), apiName+"/"+vald.StreamRemoveRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Remove_Request) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BidirectionalStream"), apiName+"/"+vald.StreamRemoveRPCName+"/id-"+req.GetId().GetId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.Remove(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				return &payload.Object_StreamLocation{
 					Payload: &payload.Object_StreamLocation_Status{
 						Status: st.Proto(),
@@ -218,11 +184,7 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 		})
 	if err != nil {
 		st, _ := status.FromError(err)
-		if st != nil && span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanStatus(span, st, err)
 		return err
 	}
 	return nil
@@ -232,11 +194,7 @@ func (s *server) MultiRemove(
 	ctx context.Context, reqs *payload.Remove_MultiRequest,
 ) (locs *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.MultiRemoveRPCName), apiName+"/"+vald.MultiRemoveRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	var (
 		emu sync.Mutex
 		lmu sync.Mutex
@@ -252,19 +210,11 @@ func (s *server) MultiRemove(
 			req := r
 			eg.Go(safety.RecoverFunc(func() (err error) {
 				ectx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ectx, "eg.Go"), apiName+"/"+vald.MultiRemoveRPCName+"/id-"+req.GetId().GetId())
-				defer func() {
-					if sspan != nil {
-						sspan.End()
-					}
-				}()
+				defer trace.End(sspan)
 				res, err := s.Remove(ectx, req)
 				if err != nil {
 					st, _ := status.FromError(err)
-					if st != nil && sspan != nil {
-						sspan.RecordError(err)
-						sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-						sspan.SetStatus(trace.StatusError, err.Error())
-					}
+					errhandler.RecordSpanStatus(sspan, st, err)
 					emu.Lock()
 					if errs == nil {
 						errs = err
@@ -321,11 +271,7 @@ func (s *server) MultiRemove(
 
 	if errs != nil {
 		st, _ := status.FromError(errs)
-		if st != nil && span != nil {
-			span.RecordError(errs)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, errs.Error())
-		}
+		errhandler.RecordSpanStatus(span, st, errs)
 	}
 
 	return locs, errs
@@ -335,11 +281,7 @@ func (s *server) RemoveByTimestamp(
 	ctx context.Context, req *payload.Remove_TimestampRequest,
 ) (locs *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.RemoveByTimestampRPCName), apiName+"/"+vald.RemoveByTimestampRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	var mu sync.Mutex
 	var emu sync.Mutex
@@ -348,11 +290,7 @@ func (s *server) RemoveByTimestamp(
 
 	err := s.gateway.BroadCast(ctx, service.WRITE, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
 		sctx, sspan := trace.StartSpan(grpc.WithGRPCMethod(ctx, "BroadCast/"+target), apiName+"/removeByTimestamp/BroadCast/"+target)
-		defer func() {
-			if sspan != nil {
-				sspan.End()
-			}
-		}()
+		defer trace.End(sspan)
 
 		res, err := vc.RemoveByTimestamp(sctx, req, copts...)
 		if err != nil {
@@ -360,11 +298,7 @@ func (s *server) RemoveByTimestamp(
 				err = status.WrapWithInternal(
 					vald.RemoveByTimestampRPCName+" API connection not found", err,
 				)
-				if sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanError(sspan, codes.Internal, err)
 				log.Error(err)
 				emu.Lock()
 				errs = errors.Join(errs, err)
@@ -422,11 +356,7 @@ func (s *server) RemoveByTimestamp(
 	if err != nil {
 		st, _ := status.FromError(err)
 		log.Error(err)
-		if st != nil && span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanStatus(span, st, err)
 		return nil, err
 	}
 	if locs == nil || len(locs.GetLocations()) == 0 {
@@ -440,12 +370,7 @@ func (s *server) RemoveByTimestamp(
 			},
 		)
 		log.Error(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Locations](span, codes.NotFound, err)
 	}
 	return locs, nil
 }

@@ -16,6 +16,8 @@ package k8s
 import (
 	"context"
 
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -40,10 +42,21 @@ type ClientMock struct {
 	CreateFunc      func(context.Context, client.Object, ...client.CreateOption) error
 	DeleteFunc      func(context.Context, client.Object, ...client.DeleteOption) error
 	DeleteAllOfFunc func(context.Context, client.Object, ...client.DeleteAllOfOption) error
+	SchemeFunc      func() *runtime.Scheme
 }
 
 func (cm *ClientMock) Status() client.SubResourceWriter {
 	return cm.StatusFunc()
+}
+
+// Scheme returns the configured scheme, or nil when SchemeFunc is unset. A
+// nil scheme makes the resource helpers skip GVK restoration instead of
+// panicking through the embedded nil client.Client.
+func (cm *ClientMock) Scheme() *runtime.Scheme {
+	if cm.SchemeFunc == nil {
+		return nil
+	}
+	return cm.SchemeFunc()
 }
 
 func (cm *ClientMock) Get(
@@ -78,6 +91,12 @@ type ManagerMock struct {
 
 func (mm *ManagerMock) GetClient() client.Client {
 	return mm.GetClientFunc()
+}
+
+// GetConfig returns an empty, non-nil *rest.Config so client.NewFromManager
+// can build a clientset from this mock without dialing any cluster.
+func (*ManagerMock) GetConfig() *rest.Config {
+	return &rest.Config{}
 }
 
 // NewDefaultManagerMock returns default empty mock object.

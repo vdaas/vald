@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package net
 
@@ -356,6 +354,21 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 	log.Debugf("finished to scan available ports %v", ports)
 
 	return ports, nil
+}
+
+// DistinctAddrs returns a new slice containing the unique addresses from addrs,
+// preserving the order of their first occurrence.
+func DistinctAddrs(addrs []string) []string {
+	distinct := make([]string, 0, len(addrs))
+	exist := make(map[string]bool, len(addrs))
+
+	for _, addr := range addrs {
+		if !exist[addr] {
+			distinct = append(distinct, addr)
+			exist[addr] = true
+		}
+	}
+	return distinct
 }
 
 // LoadLocalIP returns local ip address.

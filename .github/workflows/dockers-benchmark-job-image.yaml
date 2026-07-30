@@ -61,6 +61,7 @@ on:
       - go.mod
       - go.sum
       - hack/docker/gen/main.go
+      - internal/algorithm/recall/*.go
       - internal/backoff/*.go
       - internal/cache/*.go
       - internal/cache/cacher/*.go
@@ -80,6 +81,7 @@ on:
       - internal/io/*.go
       - internal/k8s/*.go
       - internal/k8s/client/*.go
+      - internal/k8s/resource/*.go
       - internal/k8s/vald/benchmark/api/v1/*.go
       - internal/log/*.go
       - internal/log/format/*.go
@@ -151,7 +153,6 @@ on:
       - internal/tls/*.go
       - internal/version/*.go
       - pkg/tools/benchmark/job/config/*.go
-      - pkg/tools/benchmark/job/handler/grpc/*.go
       - pkg/tools/benchmark/job/handler/rest/*.go
       - pkg/tools/benchmark/job/router/*.go
       - pkg/tools/benchmark/job/service/*.go
@@ -182,6 +183,7 @@ on:
       - go.mod
       - go.sum
       - hack/docker/gen/main.go
+      - internal/algorithm/recall/*.go
       - internal/backoff/*.go
       - internal/cache/*.go
       - internal/cache/cacher/*.go
@@ -201,6 +203,7 @@ on:
       - internal/io/*.go
       - internal/k8s/*.go
       - internal/k8s/client/*.go
+      - internal/k8s/resource/*.go
       - internal/k8s/vald/benchmark/api/v1/*.go
       - internal/log/*.go
       - internal/log/format/*.go
@@ -272,7 +275,6 @@ on:
       - internal/tls/*.go
       - internal/version/*.go
       - pkg/tools/benchmark/job/config/*.go
-      - pkg/tools/benchmark/job/handler/grpc/*.go
       - pkg/tools/benchmark/job/handler/rest/*.go
       - pkg/tools/benchmark/job/router/*.go
       - pkg/tools/benchmark/job/service/*.go

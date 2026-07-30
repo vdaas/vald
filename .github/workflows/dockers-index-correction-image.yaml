@@ -140,6 +140,7 @@ on:
       - internal/servers/starter/*.go
       - internal/strings/*.go
       - internal/sync/*.go
+      - internal/sync/atomic/*.go
       - internal/sync/errgroup/*.go
       - internal/sync/semaphore/*.go
       - internal/sync/singleflight/*.go
@@ -255,6 +256,7 @@ on:
       - internal/servers/starter/*.go
       - internal/strings/*.go
       - internal/sync/*.go
+      - internal/sync/atomic/*.go
       - internal/sync/errgroup/*.go
       - internal/sync/semaphore/*.go
       - internal/sync/singleflight/*.go

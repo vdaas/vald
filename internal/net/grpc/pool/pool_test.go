@@ -231,6 +231,7 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -267,6 +268,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -302,6 +304,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -349,6 +352,7 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
 // 			p.init()
@@ -378,6 +382,7 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
 // 	type want struct {
 // 		want []atomic.Pointer[poolConn]
@@ -419,6 +424,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -454,6 +460,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -501,6 +508,7 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
 // 			got := p.getSlots()
@@ -533,6 +541,7 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -573,6 +582,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -611,6 +621,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -658,6 +669,7 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
 // 			p.grow(test.args.newSize)
@@ -690,6 +702,7 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
 // 	type want struct {
 // 		wantRidx uint64
@@ -739,6 +752,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -777,6 +791,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -824,6 +839,7 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
 // 			gotRidx, gotPc := p.load(test.args.idx)
@@ -857,6 +873,7 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -898,6 +915,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -937,6 +955,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -984,6 +1003,7 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
 // 			p.store(test.args.idx, test.args.pc)
@@ -1017,6 +1037,7 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -1063,6 +1084,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1102,6 +1124,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1149,6 +1172,7 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
 // 			err := p.loop(test.args.ctx, test.args.fn)
@@ -1178,6 +1202,7 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
 // 	type want struct {
 // 		want uint64
@@ -1219,6 +1244,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1254,6 +1280,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1301,6 +1328,7 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
 // 			got := p.slotCount()
@@ -1330,6 +1358,7 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -1366,6 +1395,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1401,6 +1431,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1448,6 +1479,7 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
 // 			p.flush()
@@ -1461,6 +1493,7 @@ package pool
 // func Test_pool_refreshConn(t *testing.T) {
 // 	type args struct {
 // 		ctx  context.Context
+// 		eg   errgroup.Group
 // 		idx  uint64
 // 		pc   *poolConn
 // 		addr string
@@ -1483,23 +1516,19 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
-// 	type want struct {
-// 		err error
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, error) error
+// 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
+// 	defaultCheckFunc := func(w want) error {
 // 		return nil
 // 	}
 // 	tests := []test{
@@ -1509,6 +1538,7 @@ package pool
 // 		       name: "test_case_1",
 // 		       args: args {
 // 		           ctx:nil,
+// 		           eg:nil,
 // 		           idx:0,
 // 		           pc:poolConn{},
 // 		           addr:"",
@@ -1531,6 +1561,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1550,6 +1581,7 @@ package pool
 // 		           name: "test_case_2",
 // 		           args: args {
 // 		           ctx:nil,
+// 		           eg:nil,
 // 		           idx:0,
 // 		           pc:poolConn{},
 // 		           addr:"",
@@ -1572,6 +1604,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1619,10 +1652,11 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
-// 			err := p.refreshConn(test.args.ctx, test.args.idx, test.args.pc, test.args.addr)
-// 			if err := checkFunc(test.want, err); err != nil {
+// 			p.refreshConn(test.args.ctx, test.args.eg, test.args.idx, test.args.pc, test.args.addr)
+// 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})
@@ -1651,6 +1685,7 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
 // 	type want struct {
 // 		want Conn
@@ -1700,6 +1735,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1738,6 +1774,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1785,6 +1822,7 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
 // 			got, err := p.Connect(test.args.ctx)
@@ -1818,6 +1856,7 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
 // 	type want struct {
 // 		wantC Conn
@@ -1868,6 +1907,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1907,6 +1947,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1954,6 +1995,7 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
 // 			gotC, err := p.connect(test.args.ctx, test.args.ips...)
@@ -1987,6 +2029,7 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
 // 	type want struct {
 // 		want Conn
@@ -2037,6 +2080,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2076,6 +2120,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2123,6 +2168,7 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
 // 			got, err := p.singleTargetConnect(test.args.ctx, test.args.addr)
@@ -2156,6 +2202,7 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
 // 	type want struct {
 // 		want Conn
@@ -2206,6 +2253,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2245,6 +2293,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2292,6 +2341,7 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
 // 			got, err := p.Reconnect(test.args.ctx, test.args.force)
@@ -2324,6 +2374,7 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -2369,6 +2420,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2407,6 +2459,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2454,6 +2507,7 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
 // 			err := p.Disconnect(test.args.ctx)
@@ -2488,6 +2542,7 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
 // 	type want struct {
 // 		want *ClientConn
@@ -2539,6 +2594,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2579,6 +2635,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2626,6 +2683,7 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
 // 			got, err := p.dial(test.args.ctx, test.args.idx, test.args.addr)
@@ -2658,6 +2716,7 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
 // 	type want struct {
 // 		wantPc *poolConn
@@ -2707,6 +2766,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2745,6 +2805,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2792,6 +2853,7 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
 // 			gotPc, gotOk := p.getHealthyConn(test.args.ctx)
@@ -2825,6 +2887,7 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -2871,6 +2934,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2910,6 +2974,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2957,6 +3022,7 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
 // 			err := p.Do(test.args.ctx, test.args.f)
@@ -2989,6 +3055,7 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
 // 	type want struct {
 // 		wantConn *ClientConn
@@ -3038,6 +3105,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3076,6 +3144,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3123,6 +3192,7 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
 // 			gotConn, gotOk := p.Get(test.args.ctx)
@@ -3155,6 +3225,7 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
 // 	type want struct {
 // 		want bool
@@ -3200,6 +3271,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3238,6 +3310,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3285,6 +3358,7 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
 // 			got := p.IsHealthy(test.args.ctx)
@@ -3314,6 +3388,7 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
 // 	type want struct {
 // 		want uint64
@@ -3355,6 +3430,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3390,6 +3466,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3437,6 +3514,7 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
 // 			got := p.Len()
@@ -3466,6 +3544,7 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
 // 	type want struct {
 // 		want uint64
@@ -3507,6 +3586,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3542,6 +3622,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3589,6 +3670,7 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
 // 			got := p.Size()
@@ -3618,6 +3700,7 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
 // 	type want struct {
 // 		want bool
@@ -3659,6 +3742,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3694,6 +3778,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3741,6 +3826,7 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
 // 			got := p.IsIPConn()
@@ -3770,6 +3856,7 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
 // 	type want struct {
 // 		want string
@@ -3811,6 +3898,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3846,6 +3934,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3893,6 +3982,7 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
 // 			got := p.String()
@@ -3925,6 +4015,7 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
 // 	type want struct {
 // 		want []string
@@ -3974,6 +4065,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4012,6 +4104,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4059,6 +4152,7 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
 // 			got, err := p.lookupIPAddr(test.args.ctx)
@@ -4091,6 +4185,7 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
 // 	type want struct {
 // 		wantPort uint16
@@ -4140,6 +4235,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4178,6 +4274,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4225,6 +4322,7 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
 // 			gotPort, err := p.scanGRPCPort(test.args.ctx)
@@ -4343,6 +4441,7 @@ package pool
 // 		startPort         uint16
 // 		enableDNSLookup   bool
 // 		isIPAddr          bool
+// 		enableMetrics     bool
 // 	}
 // 	type want struct {
 // 		wantState   connectivity.State
@@ -4393,6 +4492,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4432,6 +4532,7 @@ package pool
 // 		           startPort:0,
 // 		           enableDNSLookup:false,
 // 		           isIPAddr:false,
+// 		           enableMetrics:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4479,6 +4580,7 @@ package pool
 // 				startPort:         test.fields.startPort,
 // 				enableDNSLookup:   test.fields.enableDNSLookup,
 // 				isIPAddr:          test.fields.isIPAddr,
+// 				enableMetrics:     test.fields.enableMetrics,
 // 			}
 //
 // 			gotState, gotHealthy := p.isHealthy(test.args.idx, test.args.conn)

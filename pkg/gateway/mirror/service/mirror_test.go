@@ -30,7 +30,7 @@ import (
 func Test_mirr_Connect(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx     context.Context
+		ctx     context.Context //nolint:containedctx // table-driven test args struct, ctx passed through to the function under test
 		targets []*payload.Mirror_Target
 	}
 	type fields struct {
@@ -58,19 +58,19 @@ func Test_mirr_Connect(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			gatewayAddr := "192.168.1.2:8081"
-			selfMirrorAddr := "192.168.1.3:8081"
+			gatewayAddr := testMirrorAddr1
+			selfMirrorAddr := testMirrorAddr2
 			return test{
 				name: "Succeeded to connect to other mirror gateways",
 				args: args{
 					ctx: t.Context(),
 					targets: []*payload.Mirror_Target{
 						{
-							Host: "192.168.2.2",
+							Host: testGatewayHost1,
 							Port: 8081,
 						},
 						{
-							Host: "192.168.3.2",
+							Host: testGatewayHost2,
 							Port: 8081,
 						},
 					},
@@ -95,15 +95,15 @@ func Test_mirr_Connect(t *testing.T) {
 			}
 		}(),
 		func() test {
-			gatewayAddr := "192.168.1.2:8081"
-			selfMirrorAddr := "192.168.1.3:8081"
+			gatewayAddr := testMirrorAddr1
+			selfMirrorAddr := testMirrorAddr2
 			return test{
 				name: "Failed to connect to other mirror gateways due to an invalid address",
 				args: args{
 					ctx: t.Context(),
 					targets: []*payload.Mirror_Target{
 						{
-							Host: "192.168.2.2",
+							Host: testGatewayHost1,
 						},
 					},
 				},
@@ -156,8 +156,8 @@ func Test_mirr_Connect(t *testing.T) {
 			}
 
 			err = m.Connect(test.args.ctx, test.args.targets...)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
+			if cerr := checkFunc(test.want, err); cerr != nil {
+				tt.Errorf("error = %v", cerr)
 			}
 		})
 	}
@@ -166,7 +166,7 @@ func Test_mirr_Connect(t *testing.T) {
 func Test_mirr_Disconnect(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx     context.Context
+		ctx     context.Context //nolint:containedctx // table-driven test args struct, ctx passed through to the function under test
 		targets []*payload.Mirror_Target
 	}
 	type fields struct {
@@ -194,19 +194,19 @@ func Test_mirr_Disconnect(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			gatewayAddr := "192.168.1.2:8081"
-			selfMirrorAddr := "192.168.1.3:8081"
+			gatewayAddr := testMirrorAddr1
+			selfMirrorAddr := testMirrorAddr2
 			return test{
 				name: "Succeeded to disconnect to other mirror gateways",
 				args: args{
 					ctx: t.Context(),
 					targets: []*payload.Mirror_Target{
 						{
-							Host: "192.168.2.2",
+							Host: testGatewayHost1,
 							Port: 8081,
 						},
 						{
-							Host: "192.168.3.2",
+							Host: testGatewayHost2,
 							Port: 8081,
 						},
 					},
@@ -231,15 +231,15 @@ func Test_mirr_Disconnect(t *testing.T) {
 			}
 		}(),
 		func() test {
-			gatewayAddr := "192.168.1.2:8081"
-			selfMirrorAddr := "192.168.1.3:8081"
+			gatewayAddr := testMirrorAddr1
+			selfMirrorAddr := testMirrorAddr2
 			return test{
 				name: "Failed to connect to other mirror gateways due to an invalid address",
 				args: args{
 					ctx: t.Context(),
 					targets: []*payload.Mirror_Target{
 						{
-							Host: "192.168.2.2",
+							Host: testGatewayHost1,
 						},
 					},
 				},
@@ -292,8 +292,8 @@ func Test_mirr_Disconnect(t *testing.T) {
 			}
 
 			err = m.Disconnect(test.args.ctx, test.args.targets...)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
+			if cerr := checkFunc(test.want, err); cerr != nil {
+				tt.Errorf("error = %v", cerr)
 			}
 		})
 	}
@@ -302,7 +302,7 @@ func Test_mirr_Disconnect(t *testing.T) {
 func Test_mirr_MirrorTargets(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx context.Context
+		ctx context.Context //nolint:containedctx // table-driven test args struct, ctx passed through to the function under test
 	}
 	type fields struct {
 		gateway      Gateway
@@ -342,19 +342,19 @@ func Test_mirr_MirrorTargets(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			gatewayAddr := "192.168.1.2:8081"
-			selfMirrorAddr := "192.168.1.3:8081"
+			gatewayAddr := testMirrorAddr1
+			selfMirrorAddr := testMirrorAddr2
 			connectTargets := []*payload.Mirror_Target{
 				{
-					Host: "192.168.1.2", // gateway addresses
+					Host: testMirrorHost1, // gateway addresses
 					Port: 8081,
 				},
 				{
-					Host: "192.168.2.2", // other mirror address
+					Host: testGatewayHost1, // other mirror address
 					Port: 8081,
 				},
 				{
-					Host: "192.168.3.2", // other mirror address
+					Host: testGatewayHost2, // other mirror address
 					Port: 8081,
 				},
 			}
@@ -391,15 +391,15 @@ func Test_mirr_MirrorTargets(t *testing.T) {
 				want: want{
 					want: []*payload.Mirror_Target{
 						{
-							Host: "192.168.2.2", // other mirror address
+							Host: testGatewayHost1, // other mirror address
 							Port: 8081,
 						},
 						{
-							Host: "192.168.3.2", // other mirror address
+							Host: testGatewayHost2, // other mirror address
 							Port: 8081,
 						},
 						{
-							Host: "192.168.1.3", // self mirror address
+							Host: testMirrorHost2, // self mirror address
 							Port: 8081,
 						},
 					},
@@ -435,8 +435,8 @@ func Test_mirr_MirrorTargets(t *testing.T) {
 			}
 
 			got, err := m.MirrorTargets(test.args.ctx)
-			if err := checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
+			if cerr := checkFunc(test.want, got, err); cerr != nil {
+				tt.Errorf("error = %v", cerr)
 			}
 		})
 	}
@@ -445,7 +445,7 @@ func Test_mirr_MirrorTargets(t *testing.T) {
 func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx context.Context
+		ctx context.Context //nolint:containedctx // table-driven test args struct, ctx passed through to the function under test
 	}
 	type fields struct {
 		gateway      Gateway
@@ -472,15 +472,15 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			gatewayAddr := "192.168.1.2:8081"
-			selfMirrorAddr := "192.168.1.3:8081"
+			gatewayAddr := testMirrorAddr1
+			selfMirrorAddr := testMirrorAddr2
 			connectTargets := []*payload.Mirror_Target{
 				{
-					Host: "192.168.1.2", // gateway addresses
+					Host: testMirrorHost1, // gateway addresses
 					Port: 8081,
 				},
 				{
-					Host: "192.168.2.2", // other mirror address
+					Host: testGatewayHost1, // other mirror address
 					Port: 8081,
 				},
 			}
@@ -742,10 +742,10 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 	type fields struct {
 // 		eg            errgroup.Group
 // 		gateway       Gateway
+// 		selfMirrTgts  []*payload.Mirror_Target
 // 		addrs         sync.Map[string, any]
 // 		selfMirrAddrs sync.Map[string, any]
 // 		gwAddrs       sync.Map[string, any]
-// 		selfMirrTgts  []*payload.Mirror_Target
 // 		registerDur   time.Duration
 // 	}
 // 	type want struct {
@@ -777,10 +777,10 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 		       fields: fields {
 // 		           eg:nil,
 // 		           gateway:nil,
+// 		           selfMirrTgts:nil,
 // 		           addrs:nil,
 // 		           selfMirrAddrs:nil,
 // 		           gwAddrs:nil,
-// 		           selfMirrTgts:nil,
 // 		           registerDur:nil,
 // 		       },
 // 		       want: want{},
@@ -805,10 +805,10 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 		           fields: fields {
 // 		           eg:nil,
 // 		           gateway:nil,
+// 		           selfMirrTgts:nil,
 // 		           addrs:nil,
 // 		           selfMirrAddrs:nil,
 // 		           gwAddrs:nil,
-// 		           selfMirrTgts:nil,
 // 		           registerDur:nil,
 // 		           },
 // 		           want: want{},
@@ -842,10 +842,10 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 			m := &mirr{
 // 				eg:            test.fields.eg,
 // 				gateway:       test.fields.gateway,
+// 				selfMirrTgts:  test.fields.selfMirrTgts,
 // 				addrs:         test.fields.addrs,
 // 				selfMirrAddrs: test.fields.selfMirrAddrs,
 // 				gwAddrs:       test.fields.gwAddrs,
-// 				selfMirrTgts:  test.fields.selfMirrTgts,
 // 				registerDur:   test.fields.registerDur,
 // 			}
 //
@@ -865,10 +865,10 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 	type fields struct {
 // 		eg            errgroup.Group
 // 		gateway       Gateway
+// 		selfMirrTgts  []*payload.Mirror_Target
 // 		addrs         sync.Map[string, any]
 // 		selfMirrAddrs sync.Map[string, any]
 // 		gwAddrs       sync.Map[string, any]
-// 		selfMirrTgts  []*payload.Mirror_Target
 // 		registerDur   time.Duration
 // 	}
 // 	type want struct {
@@ -905,10 +905,10 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 		       fields: fields {
 // 		           eg:nil,
 // 		           gateway:nil,
+// 		           selfMirrTgts:nil,
 // 		           addrs:nil,
 // 		           selfMirrAddrs:nil,
 // 		           gwAddrs:nil,
-// 		           selfMirrTgts:nil,
 // 		           registerDur:nil,
 // 		       },
 // 		       want: want{},
@@ -934,10 +934,10 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 		           fields: fields {
 // 		           eg:nil,
 // 		           gateway:nil,
+// 		           selfMirrTgts:nil,
 // 		           addrs:nil,
 // 		           selfMirrAddrs:nil,
 // 		           gwAddrs:nil,
-// 		           selfMirrTgts:nil,
 // 		           registerDur:nil,
 // 		           },
 // 		           want: want{},
@@ -971,10 +971,10 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 			m := &mirr{
 // 				eg:            test.fields.eg,
 // 				gateway:       test.fields.gateway,
+// 				selfMirrTgts:  test.fields.selfMirrTgts,
 // 				addrs:         test.fields.addrs,
 // 				selfMirrAddrs: test.fields.selfMirrAddrs,
 // 				gwAddrs:       test.fields.gwAddrs,
-// 				selfMirrTgts:  test.fields.selfMirrTgts,
 // 				registerDur:   test.fields.registerDur,
 // 			}
 //
@@ -994,10 +994,10 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 	type fields struct {
 // 		eg            errgroup.Group
 // 		gateway       Gateway
+// 		selfMirrTgts  []*payload.Mirror_Target
 // 		addrs         sync.Map[string, any]
 // 		selfMirrAddrs sync.Map[string, any]
 // 		gwAddrs       sync.Map[string, any]
-// 		selfMirrTgts  []*payload.Mirror_Target
 // 		registerDur   time.Duration
 // 	}
 // 	type want struct {
@@ -1030,10 +1030,10 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 		       fields: fields {
 // 		           eg:nil,
 // 		           gateway:nil,
+// 		           selfMirrTgts:nil,
 // 		           addrs:nil,
 // 		           selfMirrAddrs:nil,
 // 		           gwAddrs:nil,
-// 		           selfMirrTgts:nil,
 // 		           registerDur:nil,
 // 		       },
 // 		       want: want{},
@@ -1059,10 +1059,10 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 		           fields: fields {
 // 		           eg:nil,
 // 		           gateway:nil,
+// 		           selfMirrTgts:nil,
 // 		           addrs:nil,
 // 		           selfMirrAddrs:nil,
 // 		           gwAddrs:nil,
-// 		           selfMirrTgts:nil,
 // 		           registerDur:nil,
 // 		           },
 // 		           want: want{},
@@ -1096,10 +1096,10 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 			m := &mirr{
 // 				eg:            test.fields.eg,
 // 				gateway:       test.fields.gateway,
+// 				selfMirrTgts:  test.fields.selfMirrTgts,
 // 				addrs:         test.fields.addrs,
 // 				selfMirrAddrs: test.fields.selfMirrAddrs,
 // 				gwAddrs:       test.fields.gwAddrs,
-// 				selfMirrTgts:  test.fields.selfMirrTgts,
 // 				registerDur:   test.fields.registerDur,
 // 			}
 //
@@ -1118,10 +1118,10 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 	type fields struct {
 // 		eg            errgroup.Group
 // 		gateway       Gateway
+// 		selfMirrTgts  []*payload.Mirror_Target
 // 		addrs         sync.Map[string, any]
 // 		selfMirrAddrs sync.Map[string, any]
 // 		gwAddrs       sync.Map[string, any]
-// 		selfMirrTgts  []*payload.Mirror_Target
 // 		registerDur   time.Duration
 // 	}
 // 	type want struct {
@@ -1153,10 +1153,10 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 		       fields: fields {
 // 		           eg:nil,
 // 		           gateway:nil,
+// 		           selfMirrTgts:nil,
 // 		           addrs:nil,
 // 		           selfMirrAddrs:nil,
 // 		           gwAddrs:nil,
-// 		           selfMirrTgts:nil,
 // 		           registerDur:nil,
 // 		       },
 // 		       want: want{},
@@ -1181,10 +1181,10 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 		           fields: fields {
 // 		           eg:nil,
 // 		           gateway:nil,
+// 		           selfMirrTgts:nil,
 // 		           addrs:nil,
 // 		           selfMirrAddrs:nil,
 // 		           gwAddrs:nil,
-// 		           selfMirrTgts:nil,
 // 		           registerDur:nil,
 // 		           },
 // 		           want: want{},
@@ -1218,10 +1218,10 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 			m := &mirr{
 // 				eg:            test.fields.eg,
 // 				gateway:       test.fields.gateway,
+// 				selfMirrTgts:  test.fields.selfMirrTgts,
 // 				addrs:         test.fields.addrs,
 // 				selfMirrAddrs: test.fields.selfMirrAddrs,
 // 				gwAddrs:       test.fields.gwAddrs,
-// 				selfMirrTgts:  test.fields.selfMirrTgts,
 // 				registerDur:   test.fields.registerDur,
 // 			}
 //
@@ -1240,10 +1240,10 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 	type fields struct {
 // 		eg            errgroup.Group
 // 		gateway       Gateway
+// 		selfMirrTgts  []*payload.Mirror_Target
 // 		addrs         sync.Map[string, any]
 // 		selfMirrAddrs sync.Map[string, any]
 // 		gwAddrs       sync.Map[string, any]
-// 		selfMirrTgts  []*payload.Mirror_Target
 // 		registerDur   time.Duration
 // 	}
 // 	type want struct {
@@ -1275,10 +1275,10 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 		       fields: fields {
 // 		           eg:nil,
 // 		           gateway:nil,
+// 		           selfMirrTgts:nil,
 // 		           addrs:nil,
 // 		           selfMirrAddrs:nil,
 // 		           gwAddrs:nil,
-// 		           selfMirrTgts:nil,
 // 		           registerDur:nil,
 // 		       },
 // 		       want: want{},
@@ -1303,10 +1303,10 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 		           fields: fields {
 // 		           eg:nil,
 // 		           gateway:nil,
+// 		           selfMirrTgts:nil,
 // 		           addrs:nil,
 // 		           selfMirrAddrs:nil,
 // 		           gwAddrs:nil,
-// 		           selfMirrTgts:nil,
 // 		           registerDur:nil,
 // 		           },
 // 		           want: want{},
@@ -1340,10 +1340,10 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 			m := &mirr{
 // 				eg:            test.fields.eg,
 // 				gateway:       test.fields.gateway,
+// 				selfMirrTgts:  test.fields.selfMirrTgts,
 // 				addrs:         test.fields.addrs,
 // 				selfMirrAddrs: test.fields.selfMirrAddrs,
 // 				gwAddrs:       test.fields.gwAddrs,
-// 				selfMirrTgts:  test.fields.selfMirrTgts,
 // 				registerDur:   test.fields.registerDur,
 // 			}
 //
@@ -1362,10 +1362,10 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 	type fields struct {
 // 		eg            errgroup.Group
 // 		gateway       Gateway
+// 		selfMirrTgts  []*payload.Mirror_Target
 // 		addrs         sync.Map[string, any]
 // 		selfMirrAddrs sync.Map[string, any]
 // 		gwAddrs       sync.Map[string, any]
-// 		selfMirrTgts  []*payload.Mirror_Target
 // 		registerDur   time.Duration
 // 	}
 // 	type want struct{}
@@ -1392,10 +1392,10 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 		       fields: fields {
 // 		           eg:nil,
 // 		           gateway:nil,
+// 		           selfMirrTgts:nil,
 // 		           addrs:nil,
 // 		           selfMirrAddrs:nil,
 // 		           gwAddrs:nil,
-// 		           selfMirrTgts:nil,
 // 		           registerDur:nil,
 // 		       },
 // 		       want: want{},
@@ -1420,10 +1420,10 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 		           fields: fields {
 // 		           eg:nil,
 // 		           gateway:nil,
+// 		           selfMirrTgts:nil,
 // 		           addrs:nil,
 // 		           selfMirrAddrs:nil,
 // 		           gwAddrs:nil,
-// 		           selfMirrTgts:nil,
 // 		           registerDur:nil,
 // 		           },
 // 		           want: want{},
@@ -1457,10 +1457,10 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 			m := &mirr{
 // 				eg:            test.fields.eg,
 // 				gateway:       test.fields.gateway,
+// 				selfMirrTgts:  test.fields.selfMirrTgts,
 // 				addrs:         test.fields.addrs,
 // 				selfMirrAddrs: test.fields.selfMirrAddrs,
 // 				gwAddrs:       test.fields.gwAddrs,
-// 				selfMirrTgts:  test.fields.selfMirrTgts,
 // 				registerDur:   test.fields.registerDur,
 // 			}
 //

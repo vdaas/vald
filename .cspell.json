@@ -47,7 +47,7 @@
     "**/cmd/index/operator/index-operator",
     "**/cmd/manager/index/index",
     "**/cmd/tools/benchmark/job/job",
-    "**/cmd/tools/benchmark/operator/operator",
+    "**/cmd/operator/benchmark/operator",
     "**/cmd/tools/cli/loadtest/loadtest",
     "**/hack/cspell/**",
     "**/internal/core/algorithm/ngt/assets/index",
@@ -446,6 +446,7 @@
     "dbuild",
     "dbus",
     "dcmake",
+    "deadlink",
     "deafult",
     "debg",
     "debugd",
@@ -489,6 +490,7 @@
     "enim",
     "envkey",
     "envoyproxy",
+    "envtest",
     "eoptions",
     "errcheck",
     "errdetails",
@@ -691,6 +693,7 @@
     "kosuke",
     "kpango",
     "kprofefe",
+    "kubebuilder",
     "kubeconfig",
     "kubelinter",
     "kubeval",
@@ -979,6 +982,7 @@
     "subtests",
     "sunt",
     "svcs",
+    "syncer",
     "syft",
     "tabwriter",
     "tada",
@@ -1045,6 +1049,8 @@
     "valdmirrortarget",
     "valdmirrortargets",
     "valdname",
+    "valdoperatorrelease",
+    "valdoperatorreleases",
     "valdrelease",
     "valdreleases",
     "vals",
@@ -1206,6 +1212,8 @@
       "kosarak",
       "kustomization",
       "lycorp",
+      "LIBCXX",
+      "Lintable",
       "multicluster",
       "networkpolicy",
       "nytimes",
@@ -1213,6 +1221,9 @@
       "promtail",
       "serviceaccount",
       "sidecard",
+      "Streamable",
+      "streamable",
+      "subschema",
       "testdata",
       "textlintrc",
       "tmpl",
@@ -1619,20 +1630,20 @@
     "assets/test/templates/common/function.tmpl": ["Subtests"],
     "assets/test/templates/option/function.tmpl": ["Subtests"],
     "buf.gen.yaml": ["mfridman", "neoeinstein", "openapiv", "pseudomuto"],
-    "charts/vald-benchmark-operator/crds/valdbenchmarkjob.yaml": ["vbjs"],
-    "charts/vald-benchmark-operator/crds/valdbenchmarkoperatorrelease.yaml": [
+    "charts/operator/benchmark/crds/valdbenchmarkjob.yaml": ["vbjs"],
+    "charts/operator/benchmark/crds/valdbenchmarkoperatorrelease.yaml": [
       "valdbenchmarkoperator",
       "valdbenchmarkoperatorreleases",
       "vbor",
       "vbors"
     ],
-    "charts/vald-benchmark-operator/crds/valdbenchmarkscenario.yaml": ["vbss"],
-    "charts/vald-benchmark-operator/templates/clusterrole.yaml": [
+    "charts/operator/benchmark/crds/valdbenchmarkscenario.yaml": ["vbss"],
+    "charts/operator/benchmark/templates/clusterrole.yaml": [
       "deletecollection"
     ],
-    "charts/vald-helm-operator/README.md": ["readyz"],
-    "charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml": ["vhors"],
-    "charts/vald-helm-operator/templates/clusterrole.yaml": [
+    "charts/operator/helm/README.md": ["readyz"],
+    "charts/operator/helm/crds/valdhelmoperatorrelease.yaml": ["vhors"],
+    "charts/operator/helm/templates/clusterrole.yaml": [
       "clusterrolebindings",
       "clusterroles",
       "customresourcedefinitions",
@@ -1644,7 +1655,7 @@
       "serviceaccounts",
       "statefulsets"
     ],
-    "charts/vald-helm-operator/values.yaml": ["readyz"],
+    "charts/operator/helm/values.yaml": ["readyz"],
     "charts/vald-readreplica/Chart.yaml": ["ykadowak"],
     "charts/vald-readreplica/templates/deployment.yaml": [
       "valdchart",
@@ -1735,6 +1746,7 @@
       "valdmirrortargets"
     ],
     "docs/user-guides/deployment.md": ["finalizers", "valdhelmopratorreleases"],
+    "docs/user-guides/vald-operator.md": ["NODEPOOL", "schedulable"],
     "example/helm/values-standalone-agent-ngt.yaml": ["mnist's"],
     "example/helm/values-with-pyroscope.yaml": ["serversscheme"],
     "example/helm/values.yaml": ["Agnet", "mnist's", "serversscheme"],
@@ -1928,97 +1940,6 @@
       "xlab",
       "xxhash",
       "zapr"
-    ],
-    "hack/benchmark/assets/x1b/loader.go": ["fname"],
-    "hack/benchmark/assets/x1b/loader_test.go": ["fname"],
-    "hack/benchmark/internal/db/nosql/cassandra/cassandra_test.go": ["metas"],
-    "hack/benchmark/internal/db/nosql/cassandra/testdata.json": [
-      "Adipisicing",
-      "Aliqua",
-      "Aliquip",
-      "Amet",
-      "Aute",
-      "Cillum",
-      "Commodo",
-      "Consequat",
-      "Cupidatat",
-      "Deserunt",
-      "Dolore",
-      "Duis",
-      "Eiusmod",
-      "Elit",
-      "Enim",
-      "Excepteur",
-      "Fugiat",
-      "Incididunt",
-      "Irure",
-      "Labore",
-      "Laboris",
-      "Laborum",
-      "Mollit",
-      "Nostrud",
-      "Nulla",
-      "Occaecat",
-      "Officia",
-      "Pariatur",
-      "Proident",
-      "Quis",
-      "Reprehenderit",
-      "Sint",
-      "Sunt",
-      "Tempor",
-      "Ullamco",
-      "Velit",
-      "Veniam",
-      "Voluptate",
-      "adipisicing",
-      "aliqua",
-      "aliquip",
-      "amet",
-      "aute",
-      "cillum",
-      "commodo",
-      "consequat",
-      "cupidatat",
-      "deserunt",
-      "dolore",
-      "duis",
-      "eiusmod",
-      "elit",
-      "enim",
-      "excepteur",
-      "fugiat",
-      "incididunt",
-      "irure",
-      "labore",
-      "laboris",
-      "laborum",
-      "mollit",
-      "nostrud",
-      "nulla",
-      "occaecat",
-      "officia",
-      "pariatur",
-      "proident",
-      "quis",
-      "reprehenderit",
-      "sint",
-      "sunt",
-      "tempor",
-      "ullamco",
-      "velit",
-      "veniam",
-      "voluptate"
-    ],
-    "hack/benchmark/internal/starter/agent/core/ngt/option.go": [
-      "dtype",
-      "otype"
-    ],
-    "hack/benchmark/src/singleflight/singleflight_bench_test.go": [
-      "durs",
-      "resultsmap",
-      "singlefligh",
-      "stdsingleflight"
     ],
     "hack/docker/gen/main.go": [
       "Inernal",
@@ -2220,7 +2141,6 @@
       "webp",
       "whitesource"
     ],
-    "hack/tools/metrics/main.go": ["lucasb", "vgsvg"],
     "internal/backoff/backoff_test.go": ["timelimit"],
     "internal/circuitbreaker/breaker_test.go": ["resetted"],
     "internal/client/v1/client/client.go": ["Upsertor"],
@@ -2574,15 +2494,15 @@
     "k8s/operator/helm/operator.yaml": ["readyz"],
     "k8s/tools/benchmark/job/clusterrolebinding.yaml": ["rolebinding"],
     "k8s/tools/benchmark/job/serviceaccount.yaml": ["Versoin"],
-    "k8s/tools/benchmark/operator/clusterrole.yaml": ["deletecollection"],
-    "k8s/tools/benchmark/operator/crds/valdbenchmarkjob.yaml": ["vbjs"],
-    "k8s/tools/benchmark/operator/crds/valdbenchmarkoperatorrelease.yaml": [
+    "k8s/operator/benchmark/clusterrole.yaml": ["deletecollection"],
+    "k8s/operator/benchmark/crds/valdbenchmarkjob.yaml": ["vbjs"],
+    "k8s/operator/benchmark/crds/valdbenchmarkoperatorrelease.yaml": [
       "valdbenchmarkoperator",
       "valdbenchmarkoperatorreleases",
       "vbor",
       "vbors"
     ],
-    "k8s/tools/benchmark/operator/crds/valdbenchmarkscenario.yaml": ["vbss"],
+    "k8s/operator/benchmark/crds/valdbenchmarkscenario.yaml": ["vbss"],
     "pkg/agent/core/faiss/handler/grpc/search.go": ["createing"],
     "pkg/agent/core/faiss/service/faiss.go": [
       "Voronoi",
@@ -2683,7 +2603,7 @@
       "usecases",
       "vcli"
     ],
-    "pkg/tools/benchmark/operator/service/operator.go": [
+    "pkg/operator/benchmark/service/operator.go": [
       "Progation",
       "benchjob",
       "benchjobs",
@@ -2696,12 +2616,12 @@
       "rcticker",
       "wating"
     ],
-    "pkg/tools/benchmark/operator/service/operator_test.go": [
+    "pkg/operator/benchmark/service/operator_test.go": [
       "benchjobs",
       "minsit",
       "scneario"
     ],
-    "pkg/tools/benchmark/operator/usecase/benchmarkd.go": [
+    "pkg/operator/benchmark/usecase/benchmarkd.go": [
       "benchmarkmetrics",
       "unbackupped",
       "usecases"
@@ -2730,20 +2650,6 @@
       "minburst",
       "peakrate"
     ],
-    "tests/chaos/chart/values.yaml": ["kbps", "minburst", "peakrate"],
-    "tests/e2e/crud/crud_test.go": ["ECRUD"],
-    "tests/e2e/kubernetes/client/client.go": [
-      "Clientset",
-      "clientcmd",
-      "clientset"
-    ],
-    "tests/e2e/kubernetes/kubectl/kubectl.go": ["rollouts", "subcmds"],
-    "tests/e2e/kubernetes/portforward/portforward.go": [
-      "genericclioptions",
-      "portforwarder",
-      "spdy",
-      "upgrader"
-    ],
-    "tests/e2e/operation/stream.go": ["evalidator", "svalidator"]
+    "tests/chaos/chart/values.yaml": ["kbps", "minburst", "peakrate"]
   }
 }

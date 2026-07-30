@@ -14,11 +14,14 @@
 package metrics
 
 import (
+	"context"
 	"math/rand/v2"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/test"
 )
 
 // newBenchmarkCollector creates a collector with full features enabled for benchmarking.
@@ -39,10 +42,15 @@ func newBenchmarkCollector(b *testing.B) Collector {
 	return c
 }
 
-// BenchmarkCollector_Record measures the write throughput of the collector.
-// It simulates multiple concurrent writers recording request results.
-func BenchmarkCollector_Record(b *testing.B) {
-	c := newBenchmarkCollector(b)
+// collectorBench is the per-case benchmark body driven by BenchmarkCollector
+// below through the generic test framework (test.BenchmarkCase instantiates
+// internal/test's table-driven runner with *testing.B instead of *testing.T).
+type collectorBench func(b *testing.B, c Collector)
+
+// recordParallel simulates multiple concurrent writers recording request
+// results, measuring the write throughput of the collector.
+func recordParallel(b *testing.B, c Collector) {
+	b.Helper()
 	ctx := b.Context()
 
 	b.ReportAllocs()
@@ -52,29 +60,33 @@ func BenchmarkCollector_Record(b *testing.B) {
 		for pb.Next() {
 			rr := GetRequestResult()
 			// Random latency between 1ms and 101ms
-			rr.Latency = time.Millisecond + time.Duration(rand.N(int64(100*time.Millisecond)))
+			rr.Latency = time.Millisecond + time.Duration(rand.N(int64(100*time.Millisecond))) // skipcq: GSC-G404
 			// Random status code (0-19)
-			rr.Status = codes.Code(rand.N(uint32(MaxGRPCCodes)))
+			rr.Status = codes.Code(rand.N(uint32(MaxGRPCCodes))) // skipcq: GSC-G404
 
 			c.Record(ctx, 0, rr)
 
 			PutRequestResult(rr)
 		}
 	})
+	// Exclude the framework teardown (goroutine-leak verification) from the
+	// measured window; unlike b.Loop, RunParallel does not confine the timer.
+	b.StopTimer()
 }
 
-// BenchmarkCollector_Snapshot measures the read performance of generating a global snapshot.
-// The collector is pre-filled with data to ensure the snapshot calculation is non-trivial.
-func BenchmarkCollector_Snapshot(b *testing.B) {
-	c := newBenchmarkCollector(b)
+// snapshot measures the read performance of generating a global snapshot.
+// The collector is pre-filled with data to ensure the snapshot calculation
+// is non-trivial.
+func snapshot(b *testing.B, c Collector) {
+	b.Helper()
 	ctx := b.Context()
 
 	// Pre-fill with significant data to simulate a running state
 	preFillCount := 100_000
 	for range preFillCount {
 		rr := GetRequestResult()
-		rr.Latency = time.Millisecond + time.Duration(rand.N(int64(100*time.Millisecond)))
-		rr.Status = codes.Code(rand.N(uint32(MaxGRPCCodes)))
+		rr.Latency = time.Millisecond + time.Duration(rand.N(int64(100*time.Millisecond))) // skipcq: GSC-G404
+		rr.Status = codes.Code(rand.N(uint32(MaxGRPCCodes)))                               // skipcq: GSC-G404
 		c.Record(ctx, 0, rr)
 		PutRequestResult(rr)
 	}
@@ -82,20 +94,23 @@ func BenchmarkCollector_Snapshot(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 
+	// b.Loop stops the timer itself after the final iteration, so the
+	// framework teardown is already excluded here (no StopTimer needed).
 	for b.Loop() {
 		_ = c.GlobalSnapshot()
 	}
 }
 
-// BenchmarkCollector_Record_WithBackgroundSnapshot measures write performance while
-// heavy read operations (Snapshots) are occurring in the background.
-// This tests lock contention between Record and Snapshot.
-func BenchmarkCollector_Record_WithBackgroundSnapshot(b *testing.B) {
-	c := newBenchmarkCollector(b)
-	ctx := b.Context()
-
-	// Start a background goroutine that aggressively triggers snapshots
-	go func() {
+// recordWithBackgroundSnapshot measures write performance while heavy read
+// operations (Snapshots) are occurring in the background. This tests lock
+// contention between Record and Snapshot.
+func recordWithBackgroundSnapshot(b *testing.B, c Collector) {
+	b.Helper()
+	// The snapshotter is cancelled and awaited before returning so the
+	// framework's goroutine-leak verification sees a clean state.
+	ctx, cancel := context.WithCancel(b.Context())
+	var wg sync.WaitGroup
+	wg.Go(func() {
 		// High frequency snapshotting
 		ticker := time.NewTicker(10 * time.Millisecond)
 		defer ticker.Stop()
@@ -107,7 +122,7 @@ func BenchmarkCollector_Record_WithBackgroundSnapshot(b *testing.B) {
 				_ = c.GlobalSnapshot()
 			}
 		}
-	}()
+	})
 
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -116,13 +131,34 @@ func BenchmarkCollector_Record_WithBackgroundSnapshot(b *testing.B) {
 		for pb.Next() {
 			rr := GetRequestResult()
 			// Random latency between 1ms and 101ms
-			rr.Latency = time.Millisecond + time.Duration(rand.N(int64(100*time.Millisecond)))
+			rr.Latency = time.Millisecond + time.Duration(rand.N(int64(100*time.Millisecond))) // skipcq: GSC-G404
 			// Random status code (0-19)
-			rr.Status = codes.Code(rand.N(uint32(MaxGRPCCodes)))
+			rr.Status = codes.Code(rand.N(uint32(MaxGRPCCodes))) // skipcq: GSC-G404
 
 			c.Record(ctx, 0, rr)
 
 			PutRequestResult(rr)
 		}
 	})
+	b.StopTimer()
+	cancel()
+	wg.Wait()
+}
+
+// BenchmarkCollector drives the collector benchmarks through the same
+// table-driven framework as the unit tests: test.Run is instantiated with
+// X = *testing.B (via the test.BenchmarkCase alias), so each case becomes a
+// b.Run sub-benchmark with the shared collector setup living in do.
+func BenchmarkCollector(b *testing.B) {
+	if err := test.Run(b.Context(), b, func(b *testing.B, run collectorBench) (struct{}, error) {
+		b.Helper()
+		run(b, newBenchmarkCollector(b))
+		return struct{}{}, nil
+	}, []test.BenchmarkCase[struct{}, collectorBench]{
+		{Name: "record_parallel", Args: recordParallel},
+		{Name: "snapshot", Args: snapshot},
+		{Name: "record_with_background_snapshot", Args: recordWithBackgroundSnapshot},
+	}...); err != nil {
+		b.Error(err)
+	}
 }

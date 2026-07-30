@@ -19,11 +19,11 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-anyhow = "1.0.103"
-cxx = { version = "1.0.197", features = ["c++20"] }
+anyhow = "1.0.104"
+cxx = { version = "1.0.198", features = ["c++20"] }
 
 [build-dependencies]
-cxx-build = "1.0.197"
+cxx-build = "1.0.198"
 miette = { version = "7.6.0", features = ["fancy"] }
 vald-build-utils = { path = "../../build-utils" }
 

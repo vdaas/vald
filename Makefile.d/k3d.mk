@@ -28,10 +28,10 @@ K3D_OPTIONS = --port $(K3D_INGRESS_PORT):80@loadbalancer
 ## install K3D
 k3d/install: $(BINDIR)/k3d
 
-$(BINDIR)/k3d: update/k3d
+$(BINDIR)/k3d: $(ROOTDIR)/versions/K3D_VERSION
 	mkdir -p $(BINDIR)
 	curl -fsSL https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | TAG=v$(K3D_VERSION) K3D_INSTALL_DIR=$(BINDIR) bash
-	chmod a+x $(BINDIR)/$(K3D_COMMAND)
+	-chmod a+x $(BINDIR)/$(K3D_COMMAND)
 
 .PHONY: k3d/start
 ## start k3d (kubernetes in docker) cluster
@@ -45,7 +45,7 @@ k3d/start:
 	--k3s-arg '--kubelet-arg=eviction-hard=imagefs.available<1%,nodefs.available<1%@agent:*' \
 	--k3s-arg '--kubelet-arg=eviction-minimum-reclaim=imagefs.available=1%,nodefs.available=1%@agent:*' \
 	$(K3D_OPTIONS)
-	@make k3d/config
+	@$(MAKE) k3d/config
 
 .PHONY: k3d/vs/start
 ## start k3d cluster with volume snapshot

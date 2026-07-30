@@ -1,20 +1,18 @@
 //go:build e2e
 
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 // Package crud provides end-to-end tests using ann-benchmarks datasets.
 package crud
@@ -40,6 +38,7 @@ import (
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/tests/v2/e2e/config"
 	"github.com/vdaas/vald/tests/v2/e2e/metrics"
+	rpcstatus "google.golang.org/genproto/googleapis/rpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -50,20 +49,20 @@ type (
 	// newStream is a generic type for functions that create a new gRPC stream.
 	newStream[S grpc.ClientStream] func(ctx context.Context, opts ...grpc.CallOption) (S, error)
 	// newRequest is a function type that creates a new request.
-	newRequest[Q proto.Message] func(t *testing.T, idx uint64, id string, vec []float32, e *config.Execution) Q
+	newRequest[Q proto.Message] func(t testing.TB, idx uint64, id string, vec []float32, e *config.Execution) Q
 	// newMultiRequest is a generic type for functions that build bulk search requests.
-	newMultiRequest[R, S proto.Message] func(t *testing.T, reqs ...R) S
+	newMultiRequest[R, S proto.Message] func(t testing.TB, reqs ...R) S
 	// callback is a function type that processes the response and error from a gRPC call.
-	callback[R proto.Message] func(t *testing.T, idx uint64, res R, err error) bool
+	callback[R proto.Message] func(t testing.TB, idx uint64, res R, err error) bool
 )
 
-func passThrough[M proto.Message](t *testing.T, msg M) any {
+func passThrough[M proto.Message](t testing.TB, msg M) any {
 	t.Helper()
 	return msg
 }
 
 func emptyCallback[M proto.Message](name string) callback[M] {
-	return func(t *testing.T, _ uint64, _ M, err error) bool {
+	return func(t testing.TB, _ uint64, _ M, err error) bool {
 		t.Helper()
 		if err != nil {
 			log.Errorf("%s operation returned error: %v", name, err)
@@ -73,8 +72,8 @@ func emptyCallback[M proto.Message](name string) callback[M] {
 	}
 }
 
-func printCallback[M proto.Message](unwrap func(t *testing.T, msg M) any) callback[M] {
-	return func(t *testing.T, idx uint64, msg M, err error) bool {
+func printCallback[M proto.Message](unwrap func(t testing.TB, msg M) any) callback[M] {
+	return func(t testing.TB, idx uint64, msg M, err error) bool {
 		t.Helper()
 		if err != nil {
 			log.Errorf("idx: %d operation returned error: %v", idx, err)
@@ -116,8 +115,17 @@ func compare(a, b any) (float64, float64, bool) {
 	return aT, bT, ok1 && ok2
 }
 
+// handleGRPCWithStatusCode evaluates the RPC's status code and response
+// payload against plan.Expect.
+//
+// The plan.Expect entries are OR'd with first-match-wins semantics: the loop
+// returns nil (pass) on the first entry whose every assertion holds, and only
+// returns the joined error when NO entry fully matches. It is therefore not an
+// "all expectations must hold" (AND) check — a plan listing several expects
+// passes as soon as any one of them is satisfied. When plan.Expect is empty the
+// raw transport error is returned unchanged.
 func handleGRPCWithStatusCode(
-	t *testing.T, err error, code codes.Code, res proto.Message, plan *config.Execution,
+	t testing.TB, err error, code codes.Code, res proto.Message, plan *config.Execution,
 ) error {
 	t.Helper()
 	if len(plan.Expect) == 0 {
@@ -199,9 +207,26 @@ func handleGRPCWithStatusCode(
 		return nil
 	}
 
-	err = errors.Join(errs...)
+	// Attach the execution identity: this error travels up through
+	// single()/stream() and executeWithRepeats to a t.Errorf at the strategy
+	// level, where a bare assertion message no longer identifies which
+	// execution produced it.
+	err = fmt.Errorf("%s (type: %s, mode: %s) expect assertion failed: %w",
+		plan.Name, plan.Type, plan.Mode, errors.Join(errs...))
 	log.Errorf("❌ assert failed, err: %v", err)
 	return err
+}
+
+// streamStatusResponse is implemented by proto messages that embed a
+// google.rpc.Status inside their own oneof payload (e.g.
+// *payload.Search_StreamResponse, *payload.Object_StreamLocation). Vald's
+// streaming gateway handlers report a per-item failure this way without
+// failing the RPC itself (see internal/net/grpc/stream.go
+// BidirectionalStream, which always calls stream.Send(res) even when the
+// per-item handler returned an error), so the transport-level err stays nil
+// and the real per-item outcome is only visible via res's embedded Status.
+type streamStatusResponse interface {
+	GetStatus() *rpcstatus.Status
 }
 
 // handleGRPCCall centralizes the gRPC error handling, logging and assertion.
@@ -209,16 +234,30 @@ func handleGRPCWithStatusCode(
 // If the error is expected, it logs a message; otherwise, it logs an error.
 // If the results do not match, it logs an error.
 func handleGRPCCall(
-	t *testing.T, err error, res proto.Message, plan *config.Execution,
+	t testing.TB, err error, res proto.Message, plan *config.Execution,
 ) (code codes.Code, msg string, rerr error) {
 	t.Helper()
-	if err != nil {
+	switch {
+	case err != nil:
 		if st, ok := status.FromError(err); ok && st != nil {
 			msg = st.String()
 			code = st.Code()
-			rerr = errors.Wrapf(err, "gRPC request received: %s", msg)
 		}
-	} else {
+	case res != nil:
+		code = codes.OK
+		if sg, ok := res.(streamStatusResponse); ok {
+			if st := sg.GetStatus(); st != nil {
+				stCode := codes.Unknown
+				if c := st.GetCode(); c >= 0 {
+					stCode = codes.Code(c)
+				}
+				if stCode != codes.OK {
+					code = stCode
+					msg = st.GetMessage()
+				}
+			}
+		}
+	default:
 		code = codes.OK
 	}
 	rerr = handleGRPCWithStatusCode(t, err, code, res, plan)
@@ -226,7 +265,7 @@ func handleGRPCCall(
 }
 
 func single[Q, R proto.Message](
-	t *testing.T,
+	t testing.TB,
 	ctx context.Context,
 	idx uint64,
 	plan *config.Execution,
@@ -260,8 +299,22 @@ func single[Q, R proto.Message](
 		rr.EndedAt = endedAt
 		plan.Collector.Record(ctx, idx, rr)
 	}
-	if rerr != nil && errors.IsNot(err, rerr) {
-		return rerr
+	// errors.IsNot(err, ...) is always false for err == nil, which used to
+	// swallow assertion failures on successful RPCs here — repeats with
+	// exit_condition: success then exited immediately instead of retrying
+	// until the expect (e.g. $.stored == N) actually held.
+	if rerr != nil && !errors.Is(err, rerr) {
+		return fmt.Errorf("request idx %d: %w", idx, rerr)
+	}
+	if err != nil && rerr == nil {
+		// plan.Expect explicitly lists this status code (handleGRPCCall
+		// accepted the error), so the error IS the expected outcome and
+		// there is no response payload for the callbacks to validate —
+		// without this, a callback treating any non-nil err as failure
+		// would override the expectation (e.g. an Nx benchmark scenario
+		// whose create_index legitimately returns failedprecondition on
+		// re-execution, as documented for E2E_BENCH_TIME in e2e.mk).
+		return nil
 	}
 	for _, cb := range callback {
 		if cb != nil {
@@ -274,7 +327,7 @@ func single[Q, R proto.Message](
 }
 
 func unary[Q, R proto.Message](
-	t *testing.T,
+	t testing.TB,
 	ctx context.Context,
 	data iter.Cycle[[][]float32, []float32],
 	plan *config.Execution,
@@ -285,9 +338,11 @@ func unary[Q, R proto.Message](
 	t.Helper()
 	// Create an error group to manage concurrent requests.
 	eg, ctx := errgroup.New(ctx)
-	// Set the concurrency limit from the plan configuration.
-	if plan != nil && plan.BaseConfig != nil {
-		// Set the concurrency limit from the plan configuration.
+	// Set the concurrency limit from the plan configuration. Parallelism 0
+	// (unset) must not reach SetLimit: it would create a zero-capacity
+	// semaphore that every eg.Go blocks on forever, deadlocking the
+	// execution until its timeout.
+	if plan != nil && plan.BaseConfig != nil && plan.Parallelism > 0 {
 		eg.SetLimit(int(plan.Parallelism))
 	}
 	for i, vec := range data.Seq2(ctx) {
@@ -303,7 +358,7 @@ func unary[Q, R proto.Message](
 }
 
 func multi[Q, M, R proto.Message](
-	t *testing.T,
+	t testing.TB,
 	ctx context.Context,
 	data iter.Cycle[[][]float32, []float32],
 	plan *config.Execution,
@@ -314,9 +369,11 @@ func multi[Q, M, R proto.Message](
 ) error {
 	t.Helper()
 	eg, ctx := errgroup.New(ctx)
-	// Set the concurrency limit from the plan configuration.
-	if plan != nil && plan.BaseConfig != nil {
-		// Set the concurrency limit from the plan configuration.
+	// Set the concurrency limit from the plan configuration. Parallelism 0
+	// (unset) must not reach SetLimit: it would create a zero-capacity
+	// semaphore that every eg.Go blocks on forever, deadlocking the
+	// execution until its timeout.
+	if plan != nil && plan.BaseConfig != nil && plan.Parallelism > 0 {
 		eg.SetLimit(int(plan.Parallelism))
 	}
 	var bulkSize uint64
@@ -351,7 +408,7 @@ func multi[Q, M, R proto.Message](
 }
 
 func stream[Q, R proto.Message, S grpc.TypedClientStream[Q, R]](
-	t *testing.T,
+	t testing.TB,
 	ctx context.Context,
 	data iter.Cycle[[][]float32, []float32],
 	plan *config.Execution,
@@ -372,7 +429,15 @@ func stream[Q, R proto.Message, S grpc.TypedClientStream[Q, R]](
 		t.Error(err)
 		return
 	}
-	rchan := make(chan *metrics.RequestResult, int(plan.Parallelism)*2)
+	// The buffer must be at least 1: with parallelism == 0 (e.g. the rollout
+	// scenario's Remove) plan.Parallelism*2 is 0, i.e. an unbuffered channel, and
+	// the send provider below blocks on `rchan <- rr` *before* the request is sent.
+	// The request is then never sent, so no response ever arrives to drain rchan
+	// on the callback side, deadlocking the whole stream (send waits for a receive
+	// that can never happen). A minimum of 1 lets the first request through and the
+	// send/receive pipeline self-paces from there.
+	//nolint:gosec // G115: plan.Parallelism is a small, config-bounded value, so int(...)*2 cannot realistically overflow int.
+	rchan := make(chan *metrics.RequestResult, max(int(plan.Parallelism)*2, 1))
 	var idx atomic.Uint64
 	// Use a bidirectional stream client to send requests and receive responses.
 	err = grpc.BidirectionalStreamClient(stream, int(plan.Parallelism), func() (query Q, ok bool) {
@@ -406,13 +471,20 @@ func stream[Q, R proto.Message, S grpc.TypedClientStream[Q, R]](
 		case <-ctx.Done():
 		case rr = <-rchan:
 		}
-		if rr == nil {
+		// rr is nil only when the context was cancelled mid-stream or the
+		// request channel was already drained: this response has no send-side
+		// result to pair with, so its RequestID would be empty and the
+		// ParseUint fallbacks below would silently attribute it to idx 0,
+		// corrupting idx 0's real recall/metrics sample. Fabricate a throwaway
+		// result for nil-safety but flag it so it is never scored or recorded.
+		phantom := rr == nil
+		if phantom {
 			rr = new(metrics.RequestResult)
 		}
 		defer metrics.PutRequestResult(rr)
 		var rerr error
 		rr.Status, rr.Msg, rerr = handleGRPCCall(t, err, res, plan)
-		if plan.Metrics != nil && plan.Metrics.Enabled && plan.Collector != nil {
+		if !phantom && plan.Metrics != nil && plan.Metrics.Enabled && plan.Collector != nil {
 			rr.Err = err
 			rr.EndedAt = endedAt
 			id, err := strconv.ParseUint(rr.RequestID, 10, 64)
@@ -421,8 +493,18 @@ func stream[Q, R proto.Message, S grpc.TypedClientStream[Q, R]](
 			}
 			plan.Collector.Record(ctx, id, rr)
 		}
-		if rerr != nil && errors.IsNot(err, rerr) {
+		// Same as single: errors.IsNot(err, ...) never fires for err == nil,
+		// so per-item expect violations on successful stream responses were
+		// silently ignored. Returning false only cancels the stream —
+		// BidirectionalStreamClient filters context.Canceled and returns nil
+		// — so the violation must fail the test here or nowhere.
+		if rerr != nil && !errors.Is(err, rerr) {
+			t.Errorf("assertion failed for stream response idx: %s, err: %v", rr.RequestID, rerr)
 			return false
+		}
+		if phantom {
+			// No real request identity to score a callback against.
+			return true
 		}
 
 		id, err := strconv.ParseUint(rr.RequestID, 10, 0)

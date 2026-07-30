@@ -156,6 +156,12 @@ func (e *exp) Stop(ctx context.Context) error {
 	if err := e.meterProvider.ForceFlush(ctx); err != nil {
 		log.Errorf("failed to flush metrics data: %v", err)
 	}
+	// Shut down the meter provider (mirrors the trace side): this stops the
+	// PeriodicReader's background goroutine, which otherwise runs forever and
+	// keeps calling the already-shut-down metrics exporter.
+	if err := e.meterProvider.Shutdown(ctx); err != nil {
+		log.Errorf("failed to shutdown meter provider: %v", err)
+	}
 	if err := e.metricsExporter.Shutdown(ctx); err != nil {
 		log.Errorf("failed to shutdown metrics exporter: %v", err)
 	}

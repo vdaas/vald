@@ -71,7 +71,7 @@ If you use the default values.yaml, the `nightly` images will be installed.
 
 ### Using Helm-operator
 
-Please refer to [vald-helm-operator](https://github.com/vdaas/vald/blob/main/charts/vald-helm-operator).
+Please refer to [vald-helm-operator](https://github.com/vdaas/vald/blob/main/charts/operator/helm).
 
 ## Components
 

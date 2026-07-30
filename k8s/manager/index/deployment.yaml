@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: manager-index
       annotations:
-        checksum/configmap: 1c683e66199bbfba71ce7963f0de05c081aa80b62e5a2ee1757137316a10487a
+        checksum/configmap: ee5ed2e4fef9e0e2f6610dff22cb4f27e14096d146ae81d9aa01c4560f578af4
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-index
@@ -58,7 +58,7 @@ spec:
     spec:
       initContainers:
         - name: wait-for-agent
-          image: busybox:1.37.0
+          image: busybox:1.38.0
           imagePullPolicy: Always
           command:
             - /bin/sh
@@ -70,7 +70,7 @@ spec:
                 sleep 2;
               done
         - name: wait-for-discoverer
-          image: busybox:1.37.0
+          image: busybox:1.38.0
           imagePullPolicy: Always
           command:
             - /bin/sh

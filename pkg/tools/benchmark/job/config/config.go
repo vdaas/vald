@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 // Package config stores all server application settings for benchmark job
 package config
@@ -23,6 +21,7 @@ import (
 
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/k8s/client"
+	"github.com/vdaas/vald/internal/k8s/resource"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/os"
@@ -31,14 +30,14 @@ import (
 // GlobalConfig is type alias for config.GlobalConfig.
 type GlobalConfig = config.GlobalConfig
 
-// Config represent a application setting data content (config.yaml).
+// Data represents an application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
-type Config struct {
+type Data struct {
 	// K8sClient represent k8s client configuration
 	K8sClient client.Client `json:"k8s_client" yaml:"k8s_client"`
 
 	// Server represent all server configurations
-	Server *config.Servers `json:"server_config" yaml:"server_config"`
+	Server *config.Servers `json:"server_config" yaml:"server_config"` //nolint:tagliatelle // fixed by the existing config.yaml wire format, not renameable
 
 	// Observability represent observability configurations
 	Observability *config.Observability `json:"observability" yaml:"observability"`
@@ -50,16 +49,24 @@ type Config struct {
 	config.GlobalConfig `json:",inline" yaml:",inline"`
 }
 
-var (
-	NAMESPACE               = os.Getenv("CRD_NAMESPACE")
-	NAME                    = os.Getenv("CRD_NAME")
+const (
 	JOBNAME_ANNOTATION      = "before-job-name"
 	JOBNAMESPACE_ANNOTATION = "before-job-namespace"
 	SERVICE_NAME            = "vald-benchmark-job"
 )
 
+// NAMESPACE and NAME are resolved once from the pod's environment at package
+// init time; they identify the benchmark job's own ValdBenchmarkJob CR so
+// NewConfig can load its override settings.
+//
+//nolint:gochecknoglobals
+var (
+	NAMESPACE = os.Getenv("CRD_NAMESPACE")
+	NAME      = os.Getenv("CRD_NAME")
+)
+
 // NewConfig represents the set config from the given setting file path.
-func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
+func NewConfig(ctx context.Context, path string) (cfg *Data, err error) {
 	err = config.Read(path, &cfg)
 	if err != nil {
 		return nil, err
@@ -92,32 +99,34 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 	}
 
 	// Get config from applied ValdBenchmarkJob custom resource
-	var jobResource v1.ValdBenchmarkJob
 	if cfg.K8sClient == nil {
-		c, err := client.New(client.WithSchemeBuilder(*v1.SchemeBuilder))
-		if err != nil {
-			log.Error(err.Error())
-			return nil, err
+		c, cerr := client.New(client.WithSchemeBuilder(v1.SchemeBuilder))
+		if cerr != nil {
+			log.Error(cerr.Error())
+			return nil, cerr
 		}
 		cfg.K8sClient = c
 	}
-	err = cfg.K8sClient.Get(ctx, NAME, NAMESPACE, &jobResource)
+	jobResource, err := resource.
+		NewClientOf(cfg.K8sClient, new(v1.ValdBenchmarkJob), new(v1.ValdBenchmarkJobList)).
+		Get(ctx, NAME, NAMESPACE)
 	if err != nil {
 		log.Warn(err.Error())
 	} else {
-		// create override Config
-		overrideCfg := new(Config)
+		// create override Data
+		overrideCfg := new(Data)
 		if jobResource.Spec.GlobalConfig != nil {
 			overrideCfg.GlobalConfig = *jobResource.Spec.Bind()
 		}
 		if jobResource.Spec.ServerConfig != nil {
 			overrideCfg.Server = (*jobResource.Spec.ServerConfig).Bind()
 		}
-		// jobResource.Spec has another field comparing Config.Job, so json.Marshal and Unmarshal are used for embedding field value of Config.Job from jobResource.Spec
+		// jobResource.Spec's field layout differs from Data.Job's, so json.Marshal and Unmarshal are
+		// used to convert its value into Data.Job.
 		var overrideJobCfg config.BenchmarkJob
 		b, err := json.Marshal(*jobResource.Spec.DeepCopy())
 		if err == nil {
-			err = json.Unmarshal([]byte(b), &overrideJobCfg)
+			err = json.Unmarshal(b, &overrideJobCfg)
 			if err != nil {
 				log.Warn(err.Error())
 			}
@@ -133,7 +142,7 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 }
 
 // func FakeData() {
-// 	d := Config{
+// 	d := Data{
 // 		GlobalConfig: config.GlobalConfig{
 // 			Version: "v0.0.1",
 // 			TZ:      "JST",

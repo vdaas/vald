@@ -134,30 +134,30 @@ This design allows for versatile deletion operations, facilitating tasks such as
   }
 
   enum Remove.Timestamp.Operator {
-    Eq = 0;
-    Ne = 1;
-    Ge = 2;
-    Gt = 3;
-    Le = 4;
-    Lt = 5;
+    EQ = 0;
+    NE = 1;
+    GE = 2;
+    GT = 3;
+    LE = 4;
+    LT = 5;
   }
 
   ```
 
   - Remove.TimestampRequest
 
-        | field | type | label | description |
-        | :---: | :--- | :---- | :---------- |
-        | timestamps | Remove.Timestamp | repeated | The timestamp comparison list. If more than one is specified, the `AND`
+    |   field    | type             | label    | description                                                             |
+    | :--------: | :--------------- | :------- | :---------------------------------------------------------------------- |
+    | timestamps | Remove.Timestamp | repeated | The timestamp comparison list. If more than one is specified, the `AND` |
 
-    search is applied. |
+search is applied. |
 
-  - Remove.Timestamp
+- Remove.Timestamp
 
-    |   field   | type                      | label | description               |
-    | :-------: | :------------------------ | :---- | :------------------------ |
-    | timestamp | int64                     |       | The timestamp.            |
-    | operator  | Remove.Timestamp.Operator |       | The conditional operator. |
+  |   field   | type                      | label | description               |
+  | :-------: | :------------------------ | :---- | :------------------------ |
+  | timestamp | int64                     |       | The timestamp.            |
+  | operator  | Remove.Timestamp.Operator |       | The conditional operator. |
 
 ### Output
 

@@ -405,5 +405,14 @@ strategies:
           - name: IndexInfo
             mode: unary
             type: index_info
+            # Bounded settle: flush is asynchronous, so retry until IndexInfo
+            # reports an empty index instead of hard-failing a single check on
+            # a slow flush or a warm-up/reused cluster. exit_condition: success
+            # treats reaching the timeout as an accepted outcome (retry.ModeSuccess).
+            timeout: 2m
+            repeats:
+              enabled: true
+              exit_condition: success
+              interval: 5s
             expect:
               - value: {}

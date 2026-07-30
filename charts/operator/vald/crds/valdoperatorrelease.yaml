@@ -1,0 +1,334 @@
+#
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.17.3
+  name: valdoperatorreleases.vald.vdaas.org
+spec:
+  group: vald.vdaas.org
+  names:
+    kind: ValdOperatorRelease
+    listKind: ValdOperatorReleaseList
+    plural: valdoperatorreleases
+    shortNames:
+      - vor
+    singular: valdoperatorrelease
+  scope: Namespaced
+  versions:
+    - additionalPrinterColumns:
+        - jsonPath: .status.phase
+          name: Phase
+          type: string
+        - jsonPath: .status.progress.total
+          name: Progress
+          type: integer
+        - jsonPath: .status.conditions[0].status
+          name: Status
+          type: string
+        - jsonPath: .metadata.creationTimestamp
+          name: AGE
+          type: date
+      name: v1
+      schema:
+        openAPIV3Schema:
+          description: ValdOperatorRelease is the Schema for the valdoperatorreleases API.
+          properties:
+            apiVersion:
+              description: |-
+                APIVersion defines the versioned schema of this representation of an object.
+                Servers should convert recognized schemas to the latest internal value, and
+                may reject unrecognized values.
+                More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+              type: string
+            kind:
+              description: |-
+                Kind is a string value representing the REST resource this object represents.
+                Servers may infer this from the endpoint the client submits requests to.
+                Cannot be updated.
+                In CamelCase.
+                More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: ValdOperatorReleaseSpec defines the desired state of ValdOperatorRelease
+              properties:
+                infrastructure:
+                  items:
+                    properties:
+                      active:
+                        type: boolean
+                      clusters:
+                        items:
+                          properties:
+                            id:
+                              type: string
+                            name:
+                              minLength: 1
+                              type: string
+                          required:
+                            - id
+                            - name
+                          type: object
+                        type: array
+                      nodePools:
+                        additionalProperties:
+                          properties:
+                            machineResource:
+                              properties:
+                                cpu:
+                                  minLength: 1
+                                  type: string
+                                memory:
+                                  minLength: 1
+                                  type: string
+                                name:
+                                  type: string
+                                storage:
+                                  type: string
+                              required:
+                                - cpu
+                                - memory
+                                - name
+                              type: object
+                            name:
+                              type: string
+                            replicas:
+                              type: integer
+                          required:
+                            - machineResource
+                            - name
+                            - replicas
+                          type: object
+                        minProperties: 1
+                        type: object
+                      role:
+                        type: string
+                      type:
+                        type: string
+                    required:
+                      - active
+                      - clusters
+                      - nodePools
+                      - role
+                      - type
+                    type: object
+                  type: array
+                vectorEngine:
+                  properties:
+                    name:
+                      type: string
+                    vald:
+                      properties:
+                        agent:
+                          properties:
+                            logLevel:
+                              type: string
+                            ngt:
+                              properties:
+                                creationEdgeSize:
+                                  type: integer
+                                dimension:
+                                  minimum: 2
+                                  type: integer
+                                distanceType:
+                                  type: string
+                                objectType:
+                                  type: string
+                                searchEdgeSize:
+                                  type: integer
+                              required:
+                                - creationEdgeSize
+                                - dimension
+                                - distanceType
+                                - objectType
+                                - searchEdgeSize
+                              type: object
+                            persistentVolume:
+                              properties:
+                                accessMode:
+                                  type: string
+                                enabled:
+                                  type: boolean
+                                storageClass:
+                                  type: string
+                              required:
+                                - enabled
+                              type: object
+                          required:
+                            - ngt
+                          type: object
+                        defaults:
+                          properties:
+                            logLevel:
+                              type: string
+                          type: object
+                        discoverer:
+                          properties:
+                            kind:
+                              enum:
+                                - DaemonSet
+                                - Deployment
+                              type: string
+                            logLevel:
+                              type: string
+                          required:
+                            - kind
+                          type: object
+                        gateway:
+                          properties:
+                            indexReplica:
+                              type: integer
+                            ingress:
+                              properties:
+                                enabled:
+                                  type: boolean
+                                host:
+                                  type: string
+                              type: object
+                            logLevel:
+                              type: string
+                            serviceType:
+                              type: string
+                          required:
+                            - indexReplica
+                          type: object
+                        indexer:
+                          properties:
+                            concurrency:
+                              type: integer
+                            indexDuration:
+                              type: string
+                            indexSchedule:
+                              type: string
+                            indexSuspend:
+                              type: boolean
+                            logLevel:
+                              type: string
+                            manager:
+                              type: boolean
+                            saveDuration:
+                              type: string
+                            saveSchedule:
+                              type: string
+                            saveSuspend:
+                              type: boolean
+                          required:
+                            - concurrency
+                            - indexDuration
+                            - indexSchedule
+                            - indexSuspend
+                            - manager
+                            - saveDuration
+                            - saveSchedule
+                            - saveSuspend
+                          type: object
+                        overlay:
+                          x-kubernetes-preserve-unknown-fields: true
+                      required:
+                        - agent
+                        - defaults
+                        - discoverer
+                        - gateway
+                        - indexer
+                      type: object
+                  required:
+                    - name
+                    - vald
+                  type: object
+              required:
+                - infrastructure
+                - vectorEngine
+              type: object
+            status:
+              description: ValdOperatorReleaseStatus defines the observed state of ValdOperatorRelease.
+              properties:
+                conditions:
+                  description: Define observed state of cluster
+                  items:
+                    description: Condition contains details for one aspect of the current state of this API Resource.
+                    properties:
+                      lastTransitionTime:
+                        description: |-
+                          lastTransitionTime is the last time the condition transitioned from one status to another.
+                          This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                        format: date-time
+                        type: string
+                      message:
+                        description: |-
+                          message is a human readable message indicating details about the transition.
+                          This may be an empty string.
+                        maxLength: 32768
+                        type: string
+                      observedGeneration:
+                        description: |-
+                          observedGeneration represents the .metadata.generation that the condition was set based upon.
+                          For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                          with respect to the current state of the instance.
+                        format: int64
+                        minimum: 0
+                        type: integer
+                      reason:
+                        description: |-
+                          reason contains a programmatic identifier indicating the reason for the condition's last transition.
+                          Producers of specific condition types may define expected values and meanings for this field,
+                          and whether the values are considered a guaranteed API.
+                          The value should be a CamelCase string.
+                          This field may not be empty.
+                        maxLength: 1024
+                        minLength: 1
+                        pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                        type: string
+                      status:
+                        description: status of the condition, one of True, False, Unknown.
+                        enum:
+                          - "True"
+                          - "False"
+                          - Unknown
+                        type: string
+                      type:
+                        description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                        maxLength: 316
+                        pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                        type: string
+                    required:
+                      - lastTransitionTime
+                      - message
+                      - reason
+                      - status
+                      - type
+                    type: object
+                  type: array
+                phase:
+                  type: string
+                progress:
+                  properties:
+                    completed:
+                      type: integer
+                    total:
+                      type: integer
+                  required:
+                    - completed
+                    - total
+                  type: object
+              type: object
+          type: object
+      served: true
+      storage: true
+      subresources:
+        status: {}

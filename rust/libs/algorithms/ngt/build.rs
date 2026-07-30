@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 fn gcc_lib_dir() -> Option<String> {
     let arch = std::env::var("CARGO_CFG_TARGET_ARCH").unwrap_or_default();
     let triple = match arch.as_str() {
@@ -40,6 +38,11 @@ fn main() -> miette::Result<()> {
         .flag_if_supported("-fopenmp")
         .flag_if_supported("-flto=thin")
         .flag_if_supported("-DNGT_BFLOAT_DISABLED")
+        // NGT >= 2.7.3 includes PrimitiveComparatorX86.h on x86_64 even without
+        // __AVX__, whose int8 compareDotProduct references sum128 declared only
+        // under NGT_AVX512/NGT_AVX2. This shim is built without -march flags, so
+        // opt out of SIMD (NoArch comparators, same as the pre-2.7.3 behavior).
+        .flag_if_supported("-DNGT_AVX_DISABLED")
         .compile("ngt-rs");
 
     println!("cargo:rustc-link-search=native=/usr/local/lib");

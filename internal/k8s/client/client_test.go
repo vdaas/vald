@@ -11,9 +11,351 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 package client
 
+import (
+	"testing"
+
+	"github.com/vdaas/vald/internal/errors"
+	"k8s.io/client-go/rest"
+)
+
+// TestFallbackToInCluster runs outside a real Kubernetes pod (as every unit
+// test environment does), so rest.InClusterConfig always fails with
+// rest.ErrNotInCluster; that determinism is what these cases rely on.
+func TestFallbackToInCluster(t *testing.T) {
+	t.Run("returns the in-cluster error alone when there is no preceding error", func(t *testing.T) {
+		c, err := fallbackToInCluster(nil)
+		if c != nil {
+			t.Errorf("fallbackToInCluster(nil) client = %v, want nil", c)
+		}
+		if !errors.Is(err, rest.ErrNotInCluster) {
+			t.Errorf("fallbackToInCluster(nil) error = %v, want to wrap rest.ErrNotInCluster", err)
+		}
+	})
+
+	t.Run("joins the preceding error with the in-cluster error", func(t *testing.T) {
+		origErr := errors.New("kubeconfig load failed")
+		c, err := fallbackToInCluster(origErr)
+		if c != nil {
+			t.Errorf("client = %v, want nil", c)
+		}
+		if !errors.Is(err, origErr) {
+			t.Errorf("error = %v, want to wrap origErr %v", err, origErr)
+		}
+		if !errors.Is(err, rest.ErrNotInCluster) {
+			t.Errorf("error = %v, want to also wrap rest.ErrNotInCluster", err)
+		}
+	})
+}
+
 // NOT IMPLEMENTED BELOW
+//
+// func Test_client_GetClientSet(t *testing.T) {
+// 	type fields struct {
+// 		Client         k8s.Client
+// 		restConfig     *rest.Config
+// 		clientset      kubernetes.Interface
+// 		scheme         *runtime.Scheme
+// 		kubeConfigPath string
+// 		kubeContext    string
+// 	}
+// 	type want struct {
+// 		want kubernetes.Interface
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, kubernetes.Interface) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got kubernetes.Interface) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           Client:nil,
+// 		           restConfig:nil,
+// 		           clientset:nil,
+// 		           scheme:nil,
+// 		           kubeConfigPath:"",
+// 		           kubeContext:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           Client:nil,
+// 		           restConfig:nil,
+// 		           clientset:nil,
+// 		           scheme:nil,
+// 		           kubeConfigPath:"",
+// 		           kubeContext:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			c := &client{
+// 				Client:         test.fields.Client,
+// 				restConfig:     test.fields.restConfig,
+// 				clientset:      test.fields.clientset,
+// 				scheme:         test.fields.scheme,
+// 				kubeConfigPath: test.fields.kubeConfigPath,
+// 				kubeContext:    test.fields.kubeContext,
+// 			}
+//
+// 			got := c.GetClientSet()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_client_GetRESTConfig(t *testing.T) {
+// 	type fields struct {
+// 		Client         k8s.Client
+// 		restConfig     *rest.Config
+// 		clientset      kubernetes.Interface
+// 		scheme         *runtime.Scheme
+// 		kubeConfigPath string
+// 		kubeContext    string
+// 	}
+// 	type want struct {
+// 		want *rest.Config
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *rest.Config) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *rest.Config) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           Client:nil,
+// 		           restConfig:nil,
+// 		           clientset:nil,
+// 		           scheme:nil,
+// 		           kubeConfigPath:"",
+// 		           kubeContext:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           Client:nil,
+// 		           restConfig:nil,
+// 		           clientset:nil,
+// 		           scheme:nil,
+// 		           kubeConfigPath:"",
+// 		           kubeContext:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			c := &client{
+// 				Client:         test.fields.Client,
+// 				restConfig:     test.fields.restConfig,
+// 				clientset:      test.fields.clientset,
+// 				scheme:         test.fields.scheme,
+// 				kubeConfigPath: test.fields.kubeConfigPath,
+// 				kubeContext:    test.fields.kubeContext,
+// 			}
+//
+// 			got := c.GetRESTConfig()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func TestNewFromManager(t *testing.T) {
+// 	type args struct {
+// 		mgr k8s.Manager
+// 	}
+// 	type want struct {
+// 		want Client
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, Client, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got Client, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           mgr:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           mgr:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got, err := NewFromManager(test.args.mgr)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
 //
 // func TestNew(t *testing.T) {
 // 	type args struct {
@@ -104,687 +446,24 @@ package client
 // 	}
 // }
 //
-// func Test_client_Get(t *testing.T) {
+// func Test_resolveRESTConfig(t *testing.T) {
 // 	type args struct {
-// 		ctx       context.Context
-// 		name      string
-// 		namespace string
-// 		obj       cli.Object
-// 		opts      []cli.GetOption
-// 	}
-// 	type fields struct {
-// 		scheme    *runtime.Scheme
-// 		withWatch cli.WithWatch
+// 		kubeConfig     string
+// 		currentContext string
 // 	}
 // 	type want struct {
-// 		err error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, error) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           ctx:nil,
-// 		           name:"",
-// 		           namespace:"",
-// 		           obj:nil,
-// 		           opts:nil,
-// 		       },
-// 		       fields: fields {
-// 		           scheme:nil,
-// 		           withWatch:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           ctx:nil,
-// 		           name:"",
-// 		           namespace:"",
-// 		           obj:nil,
-// 		           opts:nil,
-// 		           },
-// 		           fields: fields {
-// 		           scheme:nil,
-// 		           withWatch:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			c := &client{
-// 				scheme:    test.fields.scheme,
-// 				withWatch: test.fields.withWatch,
-// 			}
-//
-// 			err := c.Get(test.args.ctx, test.args.name, test.args.namespace, test.args.obj, test.args.opts...)
-// 			if err := checkFunc(test.want, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func Test_client_List(t *testing.T) {
-// 	type args struct {
-// 		ctx  context.Context
-// 		list cli.ObjectList
-// 		opts []cli.ListOption
-// 	}
-// 	type fields struct {
-// 		scheme    *runtime.Scheme
-// 		withWatch cli.WithWatch
-// 	}
-// 	type want struct {
-// 		err error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, error) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           ctx:nil,
-// 		           list:nil,
-// 		           opts:nil,
-// 		       },
-// 		       fields: fields {
-// 		           scheme:nil,
-// 		           withWatch:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           ctx:nil,
-// 		           list:nil,
-// 		           opts:nil,
-// 		           },
-// 		           fields: fields {
-// 		           scheme:nil,
-// 		           withWatch:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			c := &client{
-// 				scheme:    test.fields.scheme,
-// 				withWatch: test.fields.withWatch,
-// 			}
-//
-// 			err := c.List(test.args.ctx, test.args.list, test.args.opts...)
-// 			if err := checkFunc(test.want, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func Test_client_Create(t *testing.T) {
-// 	type args struct {
-// 		ctx  context.Context
-// 		obj  k8s.Object
-// 		opts []k8s.CreateOption
-// 	}
-// 	type fields struct {
-// 		scheme    *runtime.Scheme
-// 		withWatch cli.WithWatch
-// 	}
-// 	type want struct {
-// 		err error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, error) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           ctx:nil,
-// 		           obj:nil,
-// 		           opts:nil,
-// 		       },
-// 		       fields: fields {
-// 		           scheme:nil,
-// 		           withWatch:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           ctx:nil,
-// 		           obj:nil,
-// 		           opts:nil,
-// 		           },
-// 		           fields: fields {
-// 		           scheme:nil,
-// 		           withWatch:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			c := &client{
-// 				scheme:    test.fields.scheme,
-// 				withWatch: test.fields.withWatch,
-// 			}
-//
-// 			err := c.Create(test.args.ctx, test.args.obj, test.args.opts...)
-// 			if err := checkFunc(test.want, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func Test_client_Delete(t *testing.T) {
-// 	type args struct {
-// 		ctx  context.Context
-// 		obj  k8s.Object
-// 		opts []cli.DeleteOption
-// 	}
-// 	type fields struct {
-// 		scheme    *runtime.Scheme
-// 		withWatch cli.WithWatch
-// 	}
-// 	type want struct {
-// 		err error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, error) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           ctx:nil,
-// 		           obj:nil,
-// 		           opts:nil,
-// 		       },
-// 		       fields: fields {
-// 		           scheme:nil,
-// 		           withWatch:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           ctx:nil,
-// 		           obj:nil,
-// 		           opts:nil,
-// 		           },
-// 		           fields: fields {
-// 		           scheme:nil,
-// 		           withWatch:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			c := &client{
-// 				scheme:    test.fields.scheme,
-// 				withWatch: test.fields.withWatch,
-// 			}
-//
-// 			err := c.Delete(test.args.ctx, test.args.obj, test.args.opts...)
-// 			if err := checkFunc(test.want, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func Test_client_Update(t *testing.T) {
-// 	type args struct {
-// 		ctx  context.Context
-// 		obj  k8s.Object
-// 		opts []cli.UpdateOption
-// 	}
-// 	type fields struct {
-// 		scheme    *runtime.Scheme
-// 		withWatch cli.WithWatch
-// 	}
-// 	type want struct {
-// 		err error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, error) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           ctx:nil,
-// 		           obj:nil,
-// 		           opts:nil,
-// 		       },
-// 		       fields: fields {
-// 		           scheme:nil,
-// 		           withWatch:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           ctx:nil,
-// 		           obj:nil,
-// 		           opts:nil,
-// 		           },
-// 		           fields: fields {
-// 		           scheme:nil,
-// 		           withWatch:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			c := &client{
-// 				scheme:    test.fields.scheme,
-// 				withWatch: test.fields.withWatch,
-// 			}
-//
-// 			err := c.Update(test.args.ctx, test.args.obj, test.args.opts...)
-// 			if err := checkFunc(test.want, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func Test_client_Patch(t *testing.T) {
-// 	type args struct {
-// 		ctx   context.Context
-// 		obj   k8s.Object
-// 		patch cli.Patch
-// 		opts  []cli.PatchOption
-// 	}
-// 	type fields struct {
-// 		scheme    *runtime.Scheme
-// 		withWatch cli.WithWatch
-// 	}
-// 	type want struct {
-// 		err error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, error) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           ctx:nil,
-// 		           obj:nil,
-// 		           patch:nil,
-// 		           opts:nil,
-// 		       },
-// 		       fields: fields {
-// 		           scheme:nil,
-// 		           withWatch:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           ctx:nil,
-// 		           obj:nil,
-// 		           patch:nil,
-// 		           opts:nil,
-// 		           },
-// 		           fields: fields {
-// 		           scheme:nil,
-// 		           withWatch:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			c := &client{
-// 				scheme:    test.fields.scheme,
-// 				withWatch: test.fields.withWatch,
-// 			}
-//
-// 			err := c.Patch(test.args.ctx, test.args.obj, test.args.patch, test.args.opts...)
-// 			if err := checkFunc(test.want, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func Test_client_Watch(t *testing.T) {
-// 	type args struct {
-// 		ctx  context.Context
-// 		obj  cli.ObjectList
-// 		opts []k8s.ListOption
-// 	}
-// 	type fields struct {
-// 		scheme    *runtime.Scheme
-// 		withWatch cli.WithWatch
-// 	}
-// 	type want struct {
-// 		want watch.Interface
+// 		want *rest.Config
 // 		err  error
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
-// 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, watch.Interface, error) error
+// 		checkFunc  func(want, *rest.Config, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got watch.Interface, err error) error {
+// 	defaultCheckFunc := func(w want, got *rest.Config, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
@@ -799,13 +478,8 @@ package client
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           ctx:nil,
-// 		           obj:nil,
-// 		           opts:nil,
-// 		       },
-// 		       fields: fields {
-// 		           scheme:nil,
-// 		           withWatch:nil,
+// 		           kubeConfig:"",
+// 		           currentContext:"",
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -824,13 +498,8 @@ package client
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           ctx:nil,
-// 		           obj:nil,
-// 		           opts:nil,
-// 		           },
-// 		           fields: fields {
-// 		           scheme:nil,
-// 		           withWatch:nil,
+// 		           kubeConfig:"",
+// 		           currentContext:"",
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -860,12 +529,8 @@ package client
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 			c := &client{
-// 				scheme:    test.fields.scheme,
-// 				withWatch: test.fields.withWatch,
-// 			}
 //
-// 			got, err := c.Watch(test.args.ctx, test.args.obj, test.args.opts...)
+// 			got, err := resolveRESTConfig(test.args.kubeConfig, test.args.currentContext)
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -873,27 +538,26 @@ package client
 // 	}
 // }
 //
-// func Test_client_MatchingLabels(t *testing.T) {
+// func Test_fallbackToInCluster(t *testing.T) {
 // 	type args struct {
-// 		labels map[string]string
-// 	}
-// 	type fields struct {
-// 		scheme    *runtime.Scheme
-// 		withWatch cli.WithWatch
+// 		origErr error
 // 	}
 // 	type want struct {
-// 		want cli.MatchingLabels
+// 		want *rest.Config
+// 		err  error
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
-// 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, cli.MatchingLabels) error
+// 		checkFunc  func(want, *rest.Config, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got cli.MatchingLabels) error {
+// 	defaultCheckFunc := func(w want, got *rest.Config, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
 // 		if !reflect.DeepEqual(got, w.want) {
 // 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 // 		}
@@ -905,11 +569,7 @@ package client
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           labels:nil,
-// 		       },
-// 		       fields: fields {
-// 		           scheme:nil,
-// 		           withWatch:nil,
+// 		           origErr:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -928,11 +588,7 @@ package client
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           labels:nil,
-// 		           },
-// 		           fields: fields {
-// 		           scheme:nil,
-// 		           withWatch:nil,
+// 		           origErr:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -962,28 +618,100 @@ package client
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 			c := &client{
-// 				scheme:    test.fields.scheme,
-// 				withWatch: test.fields.withWatch,
-// 			}
 //
-// 			got := c.MatchingLabels(test.args.labels)
-// 			if err := checkFunc(test.want, got); err != nil {
+// 			got, err := fallbackToInCluster(test.args.origErr)
+// 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})
 // 	}
 // }
 //
-// func Test_client_LabelSelector(t *testing.T) {
+// func Test_applyDefaultRateLimits(t *testing.T) {
+// 	type args struct {
+// 		cfg *rest.Config
+// 	}
+// 	type want struct{}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want) error {
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           cfg:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           cfg:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			applyDefaultRateLimits(test.args.cfg)
+// 			if err := checkFunc(test.want); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func TestNewLabelSelector(t *testing.T) {
 // 	type args struct {
 // 		key  string
 // 		op   selection.Operator
 // 		vals []string
-// 	}
-// 	type fields struct {
-// 		scheme    *runtime.Scheme
-// 		withWatch cli.WithWatch
 // 	}
 // 	type want struct {
 // 		want labels.Selector
@@ -992,7 +720,6 @@ package client
 // 	type test struct {
 // 		name       string
 // 		args       args
-// 		fields     fields
 // 		want       want
 // 		checkFunc  func(want, labels.Selector, error) error
 // 		beforeFunc func(*testing.T, args)
@@ -1017,10 +744,6 @@ package client
 // 		           op:nil,
 // 		           vals:nil,
 // 		       },
-// 		       fields: fields {
-// 		           scheme:nil,
-// 		           withWatch:nil,
-// 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
 // 		       beforeFunc: func(t *testing.T, args args) {
@@ -1041,10 +764,6 @@ package client
 // 		           key:"",
 // 		           op:nil,
 // 		           vals:nil,
-// 		           },
-// 		           fields: fields {
-// 		           scheme:nil,
-// 		           withWatch:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1074,12 +793,8 @@ package client
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 			c := &client{
-// 				scheme:    test.fields.scheme,
-// 				withWatch: test.fields.withWatch,
-// 			}
 //
-// 			got, err := c.LabelSelector(test.args.key, test.args.op, test.args.vals)
+// 			got, err := NewLabelSelector(test.args.key, test.args.op, test.args.vals)
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -1087,9 +802,9 @@ package client
 // 	}
 // }
 //
-// func TestPodPredicates(t *testing.T) {
+// func TestObjectPredicates(t *testing.T) {
 // 	type args struct {
-// 		filter func(pod *corev1.Pod) bool
+// 		filter func(PT) bool
 // 	}
 // 	type want struct {
 // 		want builder.Predicates
@@ -1164,7 +879,7 @@ package client
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got := PodPredicates(test.args.filter)
+// 			got := ObjectPredicates(test.args.filter)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

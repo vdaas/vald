@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package observer
 
@@ -445,8 +443,13 @@ func (o *observer) backup(ctx context.Context) (err error) {
 	o.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer wg.Done()
 		defer func() {
-			e := pw.Close()
-			if e != nil {
+			// Propagate the walk/tar error to the pipe reader (the blob-storage
+			// uploader). A plain Close() surfaces a clean io.EOF, so a truncated
+			// archive from a mid-walk failure would be uploaded and reported as
+			// a successful backup. On success err is nil and this behaves like
+			// Close(). PipeWriter.CloseWithError never returns a non-nil error,
+			// but keep the guard so the result is not silently discarded.
+			if e := pw.CloseWithError(err); e != nil {
 				log.Errorf("error on closing pipe writer: %s", e)
 			}
 		}()

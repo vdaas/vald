@@ -17,23 +17,30 @@ import (
 	"context"
 	"reflect"
 	"strconv"
-	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/hash"
 	"github.com/vdaas/vald/internal/k8s"
+	kclient "github.com/vdaas/vald/internal/k8s/client"
+	"github.com/vdaas/vald/internal/k8s/resource"
+	mirrv1 "github.com/vdaas/vald/internal/k8s/vald/mirror/api/v1"
 	"github.com/vdaas/vald/internal/k8s/vald/mirror/target"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 const (
 	resourcePrefix = "mirror-target"
 	groupKey       = "group"
+
+	// errChanBufferSize covers one error from the sync tick and one from
+	// the controller's error channel without blocking either sender.
+	errChanBufferSize = 2
 )
 
 // Discovery represents an interface for the main logic of service discovery.
@@ -49,7 +56,8 @@ type discovery struct {
 	mirr            Mirror
 	eg              errgroup.Group
 	labels          map[string]string
-	targetsByName   atomic.Pointer[map[string]target.Target]
+	targetsByName   atomic.Pointer[map[string]target.Endpoint]
+	mirrorTargets   *resource.Client[*target.MirrorTarget, *mirrv1.ValdMirrorTargetList]
 	namespace       string
 	colocation      string
 	selfMirrAddrStr string
@@ -59,7 +67,7 @@ type discovery struct {
 
 // NewDiscovery creates the Discovery object with optional configuration options.
 // It returns the initialized Discovery object and an error if the creation process fails.
-func NewDiscovery(opts ...DiscoveryOption) (dsc Discovery, err error) {
+func NewDiscovery(opts ...DiscoveryOption) (Discovery, error) {
 	d := new(discovery)
 	for _, opt := range append(defaultDiscovererOpts, opts...) {
 		if err := opt(d); err != nil {
@@ -72,12 +80,12 @@ func NewDiscovery(opts ...DiscoveryOption) (dsc Discovery, err error) {
 			log.Warn(oerr)
 		}
 	}
-	d.targetsByName.Store(&map[string]target.Target{})
+	d.targetsByName.Store(&map[string]target.Endpoint{})
 	d.selfMirrAddrStr = strings.Join(d.selfMirrAddrs, ",")
 
 	watcher, err := target.New(
 		target.WithControllerName("mirror discovery"),
-		target.WithNamespace(d.namespace),
+		target.WithNamespaces(d.namespace),
 		target.WithLabels(d.labels),
 		target.WithOnErrorFunc(func(err error) {
 			log.Error("failed to reconcile:", err)
@@ -95,11 +103,22 @@ func NewDiscovery(opts ...DiscoveryOption) (dsc Discovery, err error) {
 			k8s.WithLeaderElection(false, "", ""),
 			k8s.WithResourceController(watcher),
 		)
+		if err != nil {
+			return nil, err
+		}
 	}
-	return d, err
+	cl, err := kclient.NewFromManager(d.ctrl.GetManager())
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to build k8s client for mirror discovery")
+	}
+	d.mirrorTargets = resource.NewClient(
+		cl,
+		new(target.MirrorTarget), new(mirrv1.ValdMirrorTargetList),
+	)
+	return d, nil
 }
 
-func (d *discovery) onReconcile(_ context.Context, list map[string]target.Target) {
+func (d *discovery) onReconcile(_ context.Context, list map[string]target.Endpoint) {
 	log.Debugf("mirror reconciled\t%#v", list)
 	d.targetsByName.Store(&list)
 }
@@ -111,7 +130,7 @@ func (d *discovery) Start(ctx context.Context) (<-chan error, error) {
 	if err != nil {
 		return nil, err
 	}
-	ech := make(chan error, 2)
+	ech := make(chan error, errChanBufferSize)
 	d.eg.Go(func() (err error) {
 		defer close(ech)
 		tic := time.NewTicker(d.dur)
@@ -145,40 +164,50 @@ func (d *discovery) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (d *discovery) loadTargets() map[string]target.Target {
+func (d *discovery) loadTargets() map[string]target.Endpoint {
 	if v := d.targetsByName.Load(); v != nil {
 		return *v
 	}
-	return map[string]target.Target{}
+	return map[string]target.Endpoint{}
 }
 
 type createdTarget struct {
 	name string
-	tgt  target.Target
+	tgt  target.Endpoint
 }
 
 type updatedTarget struct {
 	name string
-	old  target.Target
-	new  target.Target
+	old  target.Endpoint
+	new  target.Endpoint
 }
 
 type deletedTarget struct {
 	name string
 	host string
-	port uint32
+	port int
+}
+
+// newMirrorTarget builds a Mirror_Target payload from the given host and port.
+//
+//nolint:gosec // port values come from the MirrorTarget CRD spec, not attacker-controlled input
+func newMirrorTarget(host string, port int) *payload.Mirror_Target {
+	return &payload.Mirror_Target{
+		Host: host,
+		Port: uint32(port),
+	}
 }
 
 func (d *discovery) startSync(
-	ctx context.Context, prev map[string]target.Target,
-) (current map[string]target.Target, errs error) {
+	ctx context.Context, prev map[string]target.Endpoint,
+) (current map[string]target.Endpoint, errs error) {
 	current = d.loadTargets()
 	curAddrs := map[string]string{} // map[addr: metadata.name]
 
-	created := map[string]*createdTarget{} // map[addr: target.Target]
+	created := map[string]*createdTarget{} // map[addr: target.Endpoint]
 	updated := map[string]*updatedTarget{} // map[addr: *updatedTarget]
 	for name, ctgt := range current {
-		addr := net.JoinHostPort(ctgt.Host, uint16(ctgt.Port))
+		addr := net.JoinHostPort(ctgt.Host, uint16(ctgt.Port)) //nolint:gosec // port values come from the MirrorTarget CRD spec, not attacker-controlled input
 		curAddrs[addr] = name
 		if ptgt, ok := prev[name]; !ok {
 			created[addr] = &createdTarget{
@@ -197,11 +226,11 @@ func (d *discovery) startSync(
 	deleted := map[string]*deletedTarget{} // map[addr: *deletedTarget]
 	for name, ptgt := range prev {
 		if _, ok := current[name]; !ok {
-			addr := net.JoinHostPort(ptgt.Host, uint16(ptgt.Port))
+			addr := net.JoinHostPort(ptgt.Host, uint16(ptgt.Port)) //nolint:gosec // port values come from the MirrorTarget CRD spec, not attacker-controlled input
 			deleted[addr] = &deletedTarget{
 				name: name,
 				host: ptgt.Host,
-				port: uint32(ptgt.Port),
+				port: ptgt.Port,
 			}
 		}
 	}
@@ -223,7 +252,7 @@ func (d *discovery) startSync(
 }
 
 func (d *discovery) syncWithAddr(
-	ctx context.Context, current map[string]target.Target, curAddrs map[string]string,
+	ctx context.Context, current map[string]target.Endpoint, curAddrs map[string]string,
 ) (errs error) {
 	for addr, name := range curAddrs {
 		// When the status code of a regularly running Register RPC is Unimplemented, the connection to the target will be disconnected
@@ -265,10 +294,7 @@ func (d *discovery) syncWithAddr(
 func (d *discovery) connectTarget(ctx context.Context, req map[string]*createdTarget) (errs error) {
 	for _, created := range req {
 		phase := target.MirrorTargetPhaseConnected
-		err := d.mirr.Connect(ctx, &payload.Mirror_Target{
-			Host: created.tgt.Host,
-			Port: uint32(created.tgt.Port),
-		})
+		err := d.mirr.Connect(ctx, newMirrorTarget(created.tgt.Host, created.tgt.Port))
 		if err != nil {
 			errs = errors.Join(errs, err)
 			phase = target.MirrorTargetPhaseDisconnected
@@ -295,7 +321,7 @@ func (d *discovery) createMirrorTargetResource(
 	if err != nil {
 		return err
 	}
-	return d.ctrl.GetManager().GetClient().Create(ctx, mt)
+	return d.mirrorTargets.Create(ctx, mt)
 }
 
 func (d *discovery) disconnectTarget(
@@ -303,10 +329,7 @@ func (d *discovery) disconnectTarget(
 ) (errs error) {
 	for _, deleted := range req {
 		phase := target.MirrorTargetPhaseDisconnected
-		err := d.mirr.Disconnect(ctx, &payload.Mirror_Target{
-			Host: deleted.host,
-			Port: deleted.port,
-		})
+		err := d.mirr.Disconnect(ctx, newMirrorTarget(deleted.host, deleted.port))
 		if err != nil {
 			errs = errors.Join(errs, err)
 			phase = target.MirrorTargetPhaseUnknown
@@ -319,12 +342,7 @@ func (d *discovery) disconnectTarget(
 func (d *discovery) updateMirrorTargetPhase(
 	ctx context.Context, name string, phase target.MirrorTargetPhase,
 ) error {
-	c := d.ctrl.GetManager().GetClient()
-	mt := &target.MirrorTarget{}
-	err := c.Get(ctx, k8s.ObjectKey{
-		Namespace: d.namespace,
-		Name:      name,
-	}, mt)
+	mt, err := d.mirrorTargets.Get(ctx, name, d.namespace)
 	if err != nil {
 		return err
 	}
@@ -333,22 +351,16 @@ func (d *discovery) updateMirrorTargetPhase(
 	}
 	mt.Status.Phase = phase
 	mt.Status.LastTransitionTime = k8s.Now()
-	return c.Status().Update(ctx, mt)
+	return d.mirrorTargets.UpdateStatus(ctx, mt)
 }
 
 func (d *discovery) updateTarget(ctx context.Context, req map[string]*updatedTarget) (errs error) {
 	for _, updated := range req {
-		err := d.mirr.Disconnect(ctx, &payload.Mirror_Target{
-			Host: updated.old.Host,
-			Port: uint32(updated.old.Port),
-		})
+		err := d.mirr.Disconnect(ctx, newMirrorTarget(updated.old.Host, updated.old.Port))
 		if err != nil {
 			errs = errors.Join(errs, err, d.updateMirrorTargetPhase(ctx, updated.name, target.MirrorTargetPhaseUnknown))
 		} else {
-			err := d.mirr.Connect(ctx, &payload.Mirror_Target{
-				Host: updated.new.Host,
-				Port: uint32(updated.new.Port),
-			})
+			err := d.mirr.Connect(ctx, newMirrorTarget(updated.new.Host, updated.new.Port))
 			if err != nil {
 				errs = errors.Join(errs, err, d.updateMirrorTargetPhase(ctx, updated.name, target.MirrorTargetPhaseDisconnected))
 			}

@@ -1,0 +1,113 @@
+#
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+time_zone: UTC
+logging:
+  format: raw
+  level: info
+  logger: glg
+kubernetes:
+  kube_config: _KUBECONFIG_
+  port_forward:
+    enabled: true
+    local_port: 6060
+    namespace: _E2E_TARGET_NAMESPACE_
+    service_name: _E2E_TARGET_NAME_
+    target_port: 6060
+strategies:
+  - name: Verify vald-operator deployment
+    concurrency: 1
+    operations:
+      - name: operator readiness
+        executions:
+          - name: wait for vald-operator pod to be available
+            type: kubernetes
+            mode: other
+            timeout: 5m
+            kubernetes:
+              action: wait
+              kind: pod
+              namespace: _E2E_TARGET_NAMESPACE_
+              label_selector: app=vald-operator
+              status: available
+          - name: wait for vald-operator deployment to be available
+            type: kubernetes
+            mode: other
+            timeout: 5m
+            kubernetes:
+              action: wait
+              kind: deployment
+              namespace: _E2E_TARGET_NAMESPACE_
+              name: vald-operator
+              status: available
+  - name: Verify operator process responds
+    concurrency: 1
+    operations:
+      - name: pprof endpoint serves profile index
+        executions:
+          - name: fetch pprof index over portforward
+            type: http
+            mode: other
+            delay: 5s
+            timeout: 2m
+            http:
+              method: GET
+              url: "http://localhost:6060/debug/pprof/"
+            expect:
+              - op: contains
+                value: "profiles"
+  - name: Verify ValdOperatorRelease reconciliation
+    concurrency: 1
+    operations:
+      - name: apply sample custom resource
+        executions:
+          - name: apply valdoperatorrelease sample manifest
+            type: kubernetes
+            mode: other
+            timeout: 1m
+            kubernetes:
+              action: apply
+              namespace: _E2E_TARGET_NAMESPACE_
+              manifest: _E2E_MANIFEST_PATH_
+      - name: wait for reconciliation to complete
+        executions:
+          - name: wait for valdoperatorrelease phase to reach Completed
+            type: kubernetes
+            mode: other
+            timeout: 5m
+            kubernetes:
+              action: wait
+              kind: customresource
+              namespace: _E2E_TARGET_NAMESPACE_
+              name: valdoperatorrelease-sample
+              group: vald.vdaas.org
+              version: v1
+              resource: valdoperatorreleases
+              status_path: "{.status.phase}"
+              status_value: Completed
+      - name: cleanup sample custom resource
+        executions:
+          - name: delete valdoperatorrelease sample
+            type: kubernetes
+            mode: other
+            timeout: 1m
+            kubernetes:
+              action: delete
+              kind: customresource
+              namespace: _E2E_TARGET_NAMESPACE_
+              name: valdoperatorrelease-sample
+              group: vald.vdaas.org
+              version: v1
+              resource: valdoperatorreleases

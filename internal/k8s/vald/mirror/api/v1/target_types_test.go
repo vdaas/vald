@@ -13,6 +13,76 @@
 // limitations under the License.
 package v1
 
+import (
+	"testing"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+func newValdMirrorTargetFixture() *ValdMirrorTarget {
+	return &ValdMirrorTarget{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "target-fixture",
+			Namespace: "default",
+			Labels:    map[string]string{"app": "vald-mirror"},
+		},
+		Spec: MirrorTargetSpec{
+			Colocation: "dc1",
+			Target:     MirrorTarget{Host: "vald-mirror-gateway", Port: 8081},
+		},
+		Status: MirrorTargetStatus{Phase: MirrorTargetConnected},
+	}
+}
+
+func TestValdMirrorTarget_DeepCopy(t *testing.T) {
+	t.Parallel()
+
+	orig := newValdMirrorTargetFixture()
+	cp := orig.DeepCopy()
+	if cp == nil {
+		t.Fatal("DeepCopy() = nil, want copy")
+	}
+
+	cp.Labels["app"] = "mutated"
+	cp.Spec.Target.Host = "mutated"
+	cp.Status.Phase = MirrorTargetDisconnected
+
+	if orig.Labels["app"] != "vald-mirror" {
+		t.Errorf("original labels mutated: %v", orig.Labels)
+	}
+	if orig.Spec.Target.Host != "vald-mirror-gateway" {
+		t.Errorf("original spec mutated: %v", orig.Spec)
+	}
+	if orig.Status.Phase != MirrorTargetConnected {
+		t.Errorf("original status mutated: %v", orig.Status)
+	}
+}
+
+func TestValdMirrorTarget_DeepCopyObject(t *testing.T) {
+	t.Parallel()
+
+	orig := newValdMirrorTargetFixture()
+	obj := orig.DeepCopyObject()
+	cp, ok := obj.(*ValdMirrorTarget)
+	if !ok {
+		t.Fatalf("DeepCopyObject() = %T, want *ValdMirrorTarget", obj)
+	}
+	if cp.GetName() != orig.GetName() {
+		t.Errorf("copied name = %q, want %q", cp.GetName(), orig.GetName())
+	}
+
+	list := &ValdMirrorTargetList{Items: []ValdMirrorTarget{*orig}}
+	lobj := list.DeepCopyObject()
+	lcp, ok := lobj.(*ValdMirrorTargetList)
+	if !ok {
+		t.Fatalf("DeepCopyObject() = %T, want *ValdMirrorTargetList", lobj)
+	}
+	lcp.Items[0].Labels["app"] = "mutated"
+	if orig.Labels["app"] != "vald-mirror" {
+		t.Errorf("original mutated through list copy: %v", orig.Labels)
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestValdMirrorTarget_DeepCopyInto(t *testing.T) {
@@ -20,6 +90,7 @@ package v1
 // 		out *ValdMirrorTarget
 // 	}
 // 	type fields struct {
+// 		Base       resource.Base[ValdMirrorTarget, *ValdMirrorTarget]
 // 		Status     MirrorTargetStatus
 // 		TypeMeta   metav1.TypeMeta
 // 		ObjectMeta metav1.ObjectMeta
@@ -47,6 +118,7 @@ package v1
 // 		           out:ValdMirrorTarget{},
 // 		       },
 // 		       fields: fields {
+// 		           Base:nil,
 // 		           Status:MirrorTargetStatus{},
 // 		           TypeMeta:nil,
 // 		           ObjectMeta:nil,
@@ -72,6 +144,7 @@ package v1
 // 		           out:ValdMirrorTarget{},
 // 		           },
 // 		           fields: fields {
+// 		           Base:nil,
 // 		           Status:MirrorTargetStatus{},
 // 		           TypeMeta:nil,
 // 		           ObjectMeta:nil,
@@ -106,6 +179,7 @@ package v1
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			in := &ValdMirrorTarget{
+// 				Base:       test.fields.Base,
 // 				Status:     test.fields.Status,
 // 				TypeMeta:   test.fields.TypeMeta,
 // 				ObjectMeta: test.fields.ObjectMeta,
@@ -114,877 +188,6 @@ package v1
 //
 // 			in.DeepCopyInto(test.args.out)
 // 			if err := checkFunc(test.want); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func TestValdMirrorTarget_DeepCopy(t *testing.T) {
-// 	type fields struct {
-// 		Status     MirrorTargetStatus
-// 		TypeMeta   metav1.TypeMeta
-// 		ObjectMeta metav1.ObjectMeta
-// 		Spec       MirrorTargetSpec
-// 	}
-// 	type want struct {
-// 		want *ValdMirrorTarget
-// 	}
-// 	type test struct {
-// 		name       string
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, *ValdMirrorTarget) error
-// 		beforeFunc func(*testing.T)
-// 		afterFunc  func(*testing.T)
-// 	}
-// 	defaultCheckFunc := func(w want, got *ValdMirrorTarget) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       fields: fields {
-// 		           Status:MirrorTargetStatus{},
-// 		           TypeMeta:nil,
-// 		           ObjectMeta:nil,
-// 		           Spec:MirrorTargetSpec{},
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           fields: fields {
-// 		           Status:MirrorTargetStatus{},
-// 		           TypeMeta:nil,
-// 		           ObjectMeta:nil,
-// 		           Spec:MirrorTargetSpec{},
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			in := &ValdMirrorTarget{
-// 				Status:     test.fields.Status,
-// 				TypeMeta:   test.fields.TypeMeta,
-// 				ObjectMeta: test.fields.ObjectMeta,
-// 				Spec:       test.fields.Spec,
-// 			}
-//
-// 			got := in.DeepCopy()
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func TestValdMirrorTarget_DeepCopyObject(t *testing.T) {
-// 	type fields struct {
-// 		Status     MirrorTargetStatus
-// 		TypeMeta   metav1.TypeMeta
-// 		ObjectMeta metav1.ObjectMeta
-// 		Spec       MirrorTargetSpec
-// 	}
-// 	type want struct {
-// 		want runtime.Object
-// 	}
-// 	type test struct {
-// 		name       string
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, runtime.Object) error
-// 		beforeFunc func(*testing.T)
-// 		afterFunc  func(*testing.T)
-// 	}
-// 	defaultCheckFunc := func(w want, got runtime.Object) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       fields: fields {
-// 		           Status:MirrorTargetStatus{},
-// 		           TypeMeta:nil,
-// 		           ObjectMeta:nil,
-// 		           Spec:MirrorTargetSpec{},
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           fields: fields {
-// 		           Status:MirrorTargetStatus{},
-// 		           TypeMeta:nil,
-// 		           ObjectMeta:nil,
-// 		           Spec:MirrorTargetSpec{},
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			in := &ValdMirrorTarget{
-// 				Status:     test.fields.Status,
-// 				TypeMeta:   test.fields.TypeMeta,
-// 				ObjectMeta: test.fields.ObjectMeta,
-// 				Spec:       test.fields.Spec,
-// 			}
-//
-// 			got := in.DeepCopyObject()
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func TestMirrorTargetSpec_DeepCopyInto(t *testing.T) {
-// 	type args struct {
-// 		out *MirrorTargetSpec
-// 	}
-// 	type fields struct {
-// 		Colocation string
-// 		Target     MirrorTarget
-// 	}
-// 	type want struct{}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want) error {
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           out:MirrorTargetSpec{},
-// 		       },
-// 		       fields: fields {
-// 		           Colocation:"",
-// 		           Target:MirrorTarget{},
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           out:MirrorTargetSpec{},
-// 		           },
-// 		           fields: fields {
-// 		           Colocation:"",
-// 		           Target:MirrorTarget{},
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			in := &MirrorTargetSpec{
-// 				Colocation: test.fields.Colocation,
-// 				Target:     test.fields.Target,
-// 			}
-//
-// 			in.DeepCopyInto(test.args.out)
-// 			if err := checkFunc(test.want); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func TestMirrorTargetSpec_DeepCopy(t *testing.T) {
-// 	type fields struct {
-// 		Colocation string
-// 		Target     MirrorTarget
-// 	}
-// 	type want struct {
-// 		want *MirrorTargetSpec
-// 	}
-// 	type test struct {
-// 		name       string
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, *MirrorTargetSpec) error
-// 		beforeFunc func(*testing.T)
-// 		afterFunc  func(*testing.T)
-// 	}
-// 	defaultCheckFunc := func(w want, got *MirrorTargetSpec) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       fields: fields {
-// 		           Colocation:"",
-// 		           Target:MirrorTarget{},
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           fields: fields {
-// 		           Colocation:"",
-// 		           Target:MirrorTarget{},
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			in := &MirrorTargetSpec{
-// 				Colocation: test.fields.Colocation,
-// 				Target:     test.fields.Target,
-// 			}
-//
-// 			got := in.DeepCopy()
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func TestMirrorTarget_DeepCopyInto(t *testing.T) {
-// 	type args struct {
-// 		out *MirrorTarget
-// 	}
-// 	type fields struct {
-// 		Host string
-// 		Port int
-// 	}
-// 	type want struct{}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want) error {
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           out:MirrorTarget{},
-// 		       },
-// 		       fields: fields {
-// 		           Host:"",
-// 		           Port:0,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           out:MirrorTarget{},
-// 		           },
-// 		           fields: fields {
-// 		           Host:"",
-// 		           Port:0,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			in := &MirrorTarget{
-// 				Host: test.fields.Host,
-// 				Port: test.fields.Port,
-// 			}
-//
-// 			in.DeepCopyInto(test.args.out)
-// 			if err := checkFunc(test.want); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func TestMirrorTarget_DeepCopy(t *testing.T) {
-// 	type fields struct {
-// 		Host string
-// 		Port int
-// 	}
-// 	type want struct {
-// 		want *MirrorTarget
-// 	}
-// 	type test struct {
-// 		name       string
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, *MirrorTarget) error
-// 		beforeFunc func(*testing.T)
-// 		afterFunc  func(*testing.T)
-// 	}
-// 	defaultCheckFunc := func(w want, got *MirrorTarget) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       fields: fields {
-// 		           Host:"",
-// 		           Port:0,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           fields: fields {
-// 		           Host:"",
-// 		           Port:0,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			in := &MirrorTarget{
-// 				Host: test.fields.Host,
-// 				Port: test.fields.Port,
-// 			}
-//
-// 			got := in.DeepCopy()
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func TestValdMirrorTargetList_DeepCopyInto(t *testing.T) {
-// 	type args struct {
-// 		out *ValdMirrorTargetList
-// 	}
-// 	type fields struct {
-// 		TypeMeta metav1.TypeMeta
-// 		ListMeta metav1.ListMeta
-// 		Items    []ValdMirrorTarget
-// 	}
-// 	type want struct{}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want) error {
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           out:ValdMirrorTargetList{},
-// 		       },
-// 		       fields: fields {
-// 		           TypeMeta:nil,
-// 		           ListMeta:nil,
-// 		           Items:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           out:ValdMirrorTargetList{},
-// 		           },
-// 		           fields: fields {
-// 		           TypeMeta:nil,
-// 		           ListMeta:nil,
-// 		           Items:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			in := &ValdMirrorTargetList{
-// 				TypeMeta: test.fields.TypeMeta,
-// 				ListMeta: test.fields.ListMeta,
-// 				Items:    test.fields.Items,
-// 			}
-//
-// 			in.DeepCopyInto(test.args.out)
-// 			if err := checkFunc(test.want); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func TestValdMirrorTargetList_DeepCopy(t *testing.T) {
-// 	type fields struct {
-// 		TypeMeta metav1.TypeMeta
-// 		ListMeta metav1.ListMeta
-// 		Items    []ValdMirrorTarget
-// 	}
-// 	type want struct {
-// 		want *ValdMirrorTargetList
-// 	}
-// 	type test struct {
-// 		name       string
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, *ValdMirrorTargetList) error
-// 		beforeFunc func(*testing.T)
-// 		afterFunc  func(*testing.T)
-// 	}
-// 	defaultCheckFunc := func(w want, got *ValdMirrorTargetList) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       fields: fields {
-// 		           TypeMeta:nil,
-// 		           ListMeta:nil,
-// 		           Items:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           fields: fields {
-// 		           TypeMeta:nil,
-// 		           ListMeta:nil,
-// 		           Items:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			in := &ValdMirrorTargetList{
-// 				TypeMeta: test.fields.TypeMeta,
-// 				ListMeta: test.fields.ListMeta,
-// 				Items:    test.fields.Items,
-// 			}
-//
-// 			got := in.DeepCopy()
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func TestValdMirrorTargetList_DeepCopyObject(t *testing.T) {
-// 	type fields struct {
-// 		TypeMeta metav1.TypeMeta
-// 		ListMeta metav1.ListMeta
-// 		Items    []ValdMirrorTarget
-// 	}
-// 	type want struct {
-// 		want runtime.Object
-// 	}
-// 	type test struct {
-// 		name       string
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, runtime.Object) error
-// 		beforeFunc func(*testing.T)
-// 		afterFunc  func(*testing.T)
-// 	}
-// 	defaultCheckFunc := func(w want, got runtime.Object) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       fields: fields {
-// 		           TypeMeta:nil,
-// 		           ListMeta:nil,
-// 		           Items:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           fields: fields {
-// 		           TypeMeta:nil,
-// 		           ListMeta:nil,
-// 		           Items:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			in := &ValdMirrorTargetList{
-// 				TypeMeta: test.fields.TypeMeta,
-// 				ListMeta: test.fields.ListMeta,
-// 				Items:    test.fields.Items,
-// 			}
-//
-// 			got := in.DeepCopyObject()
-// 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})

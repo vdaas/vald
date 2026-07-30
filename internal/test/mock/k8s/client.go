@@ -19,77 +19,74 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/k8s/client"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/selection"
-	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	crclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// ValdK8sClientMock is a testify-based mock of client.Client, the unified
+// interface replacing the former StandaloneClient/ClientSet split. The
+// embedded k8s.Client promotes the entire controller-runtime CRUD surface
+// (Get/List/Create/Update/Delete/Patch/DeleteAllOf/Apply/Status/SubResource/
+// Scheme/RESTMapper/GroupVersionKindFor/IsObjectNamespaced): WithRaw backs it
+// with the same fake client Raw() returns, so every promoted call and Raw()
+// agree. Only the client.Client additions (GetClientSet/GetRESTConfig) are
+// overridden below via testify, because callers set expectations on those
+// directly rather than through a fake client.
 type ValdK8sClientMock struct {
+	k8s.Client
 	mock.Mock
 }
 
 var _ client.Client = (*ValdK8sClientMock)(nil)
 
-func (m *ValdK8sClientMock) Get(
-	ctx context.Context, name, namespace string, obj k8s.Object, opts ...crclient.GetOption,
-) error {
-	args := m.Called(ctx, name, namespace, obj, opts)
-	return args.Error(0)
+// GetClientSet returns the value configured via WithClientSet. Tests that
+// exercise code paths reading it must set it via WithClientSet before use.
+func (m *ValdK8sClientMock) GetClientSet() kubernetes.Interface {
+	args := m.Called()
+	cs, _ := args.Get(0).(kubernetes.Interface)
+	return cs
 }
 
-func (m *ValdK8sClientMock) List(
-	ctx context.Context, list crclient.ObjectList, opts ...k8s.ListOption,
-) error {
-	args := m.Called(ctx, list, opts)
-	return args.Error(0)
+// WithClientSet sets the value GetClientSet() returns and returns m for
+// chaining.
+func (m *ValdK8sClientMock) WithClientSet(cs kubernetes.Interface) *ValdK8sClientMock {
+	m.On("GetClientSet").Return(cs)
+	return m
 }
 
-func (m *ValdK8sClientMock) Create(
-	ctx context.Context, obj k8s.Object, opts ...k8s.CreateOption,
-) error {
-	args := m.Called(ctx, obj, opts)
-	return args.Error(0)
+// GetRESTConfig returns the value configured via WithRESTConfig. Tests that
+// exercise code paths reading it must set it via WithRESTConfig before use.
+func (m *ValdK8sClientMock) GetRESTConfig() *rest.Config {
+	args := m.Called()
+	cfg, _ := args.Get(0).(*rest.Config)
+	return cfg
 }
 
-func (m *ValdK8sClientMock) Delete(
-	ctx context.Context, obj k8s.Object, opts ...crclient.DeleteOption,
-) error {
-	args := m.Called(ctx, obj, opts)
-	return args.Error(0)
+// WithRESTConfig sets the value GetRESTConfig() returns and returns m for
+// chaining.
+func (m *ValdK8sClientMock) WithRESTConfig(cfg *rest.Config) *ValdK8sClientMock {
+	m.On("GetRESTConfig").Return(cfg)
+	return m
 }
 
-func (m *ValdK8sClientMock) Update(
-	ctx context.Context, obj k8s.Object, opts ...crclient.UpdateOption,
-) error {
-	args := m.Called(ctx, obj, opts)
-	return args.Error(0)
+// Raw returns the controller-runtime client backing calls made through
+// resource.Client (built via resource.NewClientOf). Tests that exercise those
+// paths must set it via WithRaw before use; other tests that only stub this
+// mock's own methods (Get/List/Apply) never call it.
+func (m *ValdK8sClientMock) Raw() crclient.WithWatch {
+	args := m.Called()
+	raw, _ := args.Get(0).(crclient.WithWatch)
+	return raw
 }
 
-func (m *ValdK8sClientMock) Patch(
-	ctx context.Context, obj k8s.Object, patch crclient.Patch, opts ...crclient.PatchOption,
-) error {
-	args := m.Called(ctx, obj, patch, opts)
-	return args.Error(0)
-}
-
-func (m *ValdK8sClientMock) Watch(
-	ctx context.Context, obj crclient.ObjectList, opts ...k8s.ListOption,
-) (watch.Interface, error) {
-	args := m.Called(ctx, obj, opts)
-	return args.Get(0).(watch.Interface), args.Error(1)
-}
-
-func (m *ValdK8sClientMock) MatchingLabels(labels map[string]string) k8s.MatchingLabels {
-	args := m.Called(labels)
-	return args.Get(0).(k8s.MatchingLabels)
-}
-
-func (m *ValdK8sClientMock) LabelSelector(
-	key string, op selection.Operator, vals []string,
-) (labels.Selector, error) {
-	args := m.Called(key, op, vals)
-	return args.Get(0).(labels.Selector), args.Error(1)
+// WithRaw sets the value Raw() returns, backs the embedded k8s.Client with
+// the same client so promoted methods (Create/Update/Delete/...) agree with
+// Raw(), and returns m for chaining.
+func (m *ValdK8sClientMock) WithRaw(raw crclient.WithWatch) *ValdK8sClientMock {
+	m.On("Raw").Return(raw)
+	m.Client = raw
+	return m
 }
 
 type PatcherMock struct {

@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package grpc
 
@@ -26,6 +24,7 @@ import (
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/errhandler"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -35,39 +34,11 @@ func (s *server) Update(
 	ctx context.Context, req *payload.Update_Request,
 ) (res *payload.Object_Location, err error) {
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.UpdateRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	vec := req.GetVector()
-	if len(vec.GetVector()) != s.faiss.GetDimensionSize() {
-		err = errors.ErrIncompatibleDimensionSize(len(vec.GetVector()), int(s.faiss.GetDimensionSize()))
-		err = status.WrapWithInvalidArgument("Update API Incompatible Dimension Size detected",
-			err,
-			&errdetails.RequestInfo{
-				RequestId:   vec.GetId(),
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.BadRequest{
-				FieldViolations: []*errdetails.BadRequestFieldViolation{
-					{
-						Field:       "vector dimension size",
-						Description: err.Error(),
-					},
-				},
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: faissResourceType + "/faiss.Update",
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			})
-		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+	if err = s.validateVectorDimension(span, vald.UpdateRPCName, faissResourceType+"/faiss.Update",
+		vec.GetId(), req, len(vec.GetVector()), s.faiss.GetDimensionSize()); err != nil {
 		return nil, err
 	}
 
@@ -87,10 +58,7 @@ func (s *server) Update(
 					},
 				},
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: faissResourceType + "/faiss.Update",
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			})
+			s.resourceInfo(faissResourceType+"/faiss.Update"))
 		log.Warn(err)
 		return nil, err
 	}
@@ -104,10 +72,7 @@ func (s *server) Update(
 					RequestId:   req.GetVector().GetId(),
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: faissResourceType + "/faiss.Update",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(faissResourceType+"/faiss.Update"))
 			log.Warn(err)
 			attrs = trace.StatusCodeNotFound(err.Error())
 		} else if errors.Is(err, errors.ErrUUIDNotFound(0)) || errors.Is(err, errors.ErrInvalidDimensionSize(len(vec.GetVector()), s.faiss.GetDimensionSize())) {
@@ -124,10 +89,7 @@ func (s *server) Update(
 						},
 					},
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: faissResourceType + "/faiss.Update",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(faissResourceType+"/faiss.Update"))
 			log.Warn(err)
 			attrs = trace.StatusCodeInvalidArgument(err.Error())
 		} else if errors.Is(err, errors.ErrUUIDAlreadyExists(vec.GetId())) {
@@ -136,10 +98,7 @@ func (s *server) Update(
 					RequestId:   req.GetVector().GetId(),
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: faissResourceType + "/faiss.Update",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(faissResourceType+"/faiss.Update"))
 			log.Warn(err)
 			attrs = trace.StatusCodeAlreadyExists(err.Error())
 		} else {
@@ -148,18 +107,11 @@ func (s *server) Update(
 					RequestId:   req.GetVector().GetId(),
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: faissResourceType + "/faiss.Update",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
+				s.resourceInfo(faissResourceType+"/faiss.Update"), info.Get())
 			log.Error(err)
 			attrs = trace.StatusCodeInternal(err.Error())
 		}
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 

@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package runner
 
@@ -39,7 +37,7 @@ import (
 	"go.uber.org/automaxprocs/maxprocs"
 )
 
-type Runner interface {
+type Interface interface {
 	PreStart(ctx context.Context) error
 	Start(ctx context.Context) (<-chan error, error)
 	PreStop(ctx context.Context) error
@@ -47,19 +45,19 @@ type Runner interface {
 	PostStop(ctx context.Context) error
 }
 
-type runner struct {
-	loadConfig       func(string) (any, *config.GlobalConfig, error)
-	initializeDaemon func(any) (Runner, error)
+type runner[T any] struct {
+	loadConfig       func(string) (T, *config.GlobalConfig, error)
+	initializeDaemon func(T) (Interface, error)
 	version          string
 	maxVersion       string
 	minVersion       string
 	name             string
 }
 
-func Do(ctx context.Context, opts ...Option) error {
-	r := new(runner)
+func Do[T any](ctx context.Context, opts ...Option[T]) error {
+	r := new(runner[T])
 
-	for _, opt := range append(defaultOptions, opts...) {
+	for _, opt := range opts {
 		opt(r)
 	}
 
@@ -138,7 +136,7 @@ func Do(ctx context.Context, opts ...Option) error {
 	return Run(ctx, daemon, r.name)
 }
 
-func Run(ctx context.Context, run Runner, name string) (err error) {
+func Run(ctx context.Context, run Interface, name string) (err error) {
 	sctx, cancel := signal.NotifyContext(ctx,
 		syscall.SIGINT,
 		syscall.SIGQUIT,
