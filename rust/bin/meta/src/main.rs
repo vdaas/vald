@@ -14,12 +14,13 @@
 // limitations under the License.
 //
 
+mod config;
 mod handler;
 
-use observability::{
-    config::{Config, Tracer},
-    observability::{Observability, ObservabilityImpl, SERVICE_NAME},
-};
+use anyhow::Result;
+use clap::Parser;
+use config::Config;
+use observability::observability::{Observability, ObservabilityImpl};
 use opentelemetry::global;
 use opentelemetry::propagation::Extractor;
 use tonic::Request;
@@ -50,40 +51,46 @@ fn intercept(mut req: Request<()>) -> Result<Request<()>, tonic::Status> {
     Ok(req)
 }
 
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+pub struct Args {
+    /// Path to the configuration YAML file.
+    #[arg(short, long, env = "META_CONFIG")]
+    pub config: Option<String>,
+
+    /// Path to the database directory. Overrides the value in the configuration file.
+    #[arg(short, long, env = "META_DATABASE_PATH")]
+    pub database_path: Option<String>,
+
+    /// Address to bind the server to (e.g., "[::1]:8095"). Overrides the value in the configuration file.
+    #[arg(short, long, env = "META_SERVER_ADDR")]
+    pub server_addr: Option<String>,
+}
+
+fn apply_args_to_config(config: &mut Config, args: &Args) {
+    if let Some(db_path) = &args.database_path {
+        config.database_path = db_path.clone();
+    }
+
+    if let Some(addr) = &args.server_addr {
+        config.server_addr = addr.clone();
+    }
+}
+
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // TODO: yaml is given from outside
-    // let config_yaml = r#"enabled: false
-    // endpoint: ""
-    // attributes: []
-    // tracer:
-    //     enabled: false
-    // meter:
-    //     enabled: false
-    //     export_duration:
-    //         secs: 60
-    //         nanos: 0
-    //     export_timeout_duration:
-    //         secs: 30
-    //         nanos: 0
-    // "#;
-    //
-    // decode config yaml
-    // let observability_cfg = serde_yaml::from_str(config_yaml).unwrap();
-    let observability_cfg = Config::new()
-        .enabled(true)
-        .attribute(SERVICE_NAME, "vald-lb-gateway")
-        .attribute("target_pod", "target_pod")
-        .attribute("target_node", "target_node")
-        .attribute("exported_kubernetes_namaspace", "default")
-        .attribute("kubernetes_name", "vald-lb-gateway")
-        .endpoint("http://127.0.0.1:4318")
-        .tracer(Tracer::new().enabled(true));
+async fn main() -> Result<()> {
+    let args = Args::parse();
+
+    let mut cfg = Config::load(args.config.as_deref())?;
+    apply_args_to_config(&mut cfg, &args);
+
+    cfg.validate()?;
+
+    let observability_cfg = cfg.observability.to_observability_config()?;
     let mut observability = ObservabilityImpl::new(observability_cfg)?;
 
-    let addr = "[::1]:8095".parse()?;
-    let cfg_path = "/tmp/meta/database"; // TODO: set the appropriate path
-    let meta = handler::Meta::new(cfg_path)?;
+    let addr = cfg.server_addr.parse()?;
+    let meta = handler::Meta::new(&cfg.database_path)?;
 
     // the interceptor given here is implicitly executed for each request
     Server::builder()
@@ -95,4 +102,36 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     observability.shutdown()?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_args_override() {
+        let mut cfg = Config::default();
+        let default_db = cfg.database_path.clone();
+        let default_addr = cfg.server_addr.clone();
+
+        // No overrides
+        let args = Args {
+            config: None,
+            database_path: None,
+            server_addr: None,
+        };
+        apply_args_to_config(&mut cfg, &args);
+        assert_eq!(cfg.database_path, default_db);
+        assert_eq!(cfg.server_addr, default_addr);
+
+        // With overrides
+        let args = Args {
+            config: None,
+            database_path: Some("/new/db/path".to_string()),
+            server_addr: Some("127.0.0.1:9090".to_string()),
+        };
+        apply_args_to_config(&mut cfg, &args);
+        assert_eq!(cfg.database_path, "/new/db/path");
+        assert_eq!(cfg.server_addr, "127.0.0.1:9090");
+    }
 }
