@@ -237,6 +237,8 @@ ARG TARGETARCH
 ARG TARGETOS
 ARG GO_VERSION
 ARG RUST_VERSION
+ARG BUILDKIT_SBOM_SCAN_STAGE=true
+ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
 {{- range $keyValue := .EnvironmentsSlice }}
 ENV {{$keyValue}}
 {{- end}}
