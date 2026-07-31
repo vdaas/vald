@@ -76,65 +76,65 @@ replace (
 )
 
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v0.0.0-00010101000000-000000000000
-	cloud.google.com/go/storage v1.62.0
-	code.cloudfoundry.org/bytefmt v0.0.0-20190710193110-1eb035ffe2b6
-	github.com/akrylysov/pogreb v0.0.0-00010101000000-000000000000
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.11-20260709200747-435963d16310.1
+	cloud.google.com/go/storage v1.64.0
+	code.cloudfoundry.org/bytefmt v0.83.0
+	github.com/akrylysov/pogreb v0.10.2
 	github.com/aws/aws-sdk-go v1.55.8
-	github.com/felixge/fgprof v0.0.0-00010101000000-000000000000
-	github.com/fsnotify/fsnotify v1.9.0
+	github.com/felixge/fgprof v0.9.5
+	github.com/fsnotify/fsnotify v1.10.1
 	github.com/go-logr/logr v1.4.4
-	github.com/go-redis/redis/v8 v8.0.0-00010101000000-000000000000
-	github.com/go-sql-driver/mysql v1.9.3
+	github.com/go-redis/redis/v8 v8.11.5
+	github.com/go-sql-driver/mysql v1.10.0
 	github.com/goccy/go-json v0.10.6
-	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
-	github.com/gocraft/dbr/v2 v2.0.0-00010101000000-000000000000
+	github.com/gocql/gocql v1.7.0
+	github.com/gocraft/dbr/v2 v2.7.7
 	github.com/google/go-cmp v0.7.0
 	github.com/google/uuid v1.6.0
-	github.com/gorilla/mux v1.7.3
-	github.com/grafana/grafana-foundation-sdk/go v0.0.0-00010101000000-000000000000
-	github.com/grafana/promql-builder/go v0.0.0-00010101000000-000000000000
-	github.com/grafana/pyroscope-go/godeltaprof v0.0.0-00010101000000-000000000000
-	github.com/hashicorp/go-version v1.2.0
+	github.com/gorilla/mux v1.8.1
+	github.com/grafana/grafana-foundation-sdk/go v0.0.18
+	github.com/grafana/promql-builder/go v0.0.6
+	github.com/grafana/pyroscope-go/godeltaprof v0.1.12
+	github.com/hashicorp/go-version v1.9.0
 	github.com/klauspost/compress v1.19.1
 	github.com/kpango/fastime v1.1.10
-	github.com/kpango/gache/v2 v2.0.0-00010101000000-000000000000
+	github.com/kpango/gache/v2 v2.1.10
 	github.com/kpango/glg v1.6.15
-	github.com/kubernetes-csi/external-snapshotter/client/v6 v6.0.0-00010101000000-000000000000
+	github.com/kubernetes-csi/external-snapshotter/client/v6 v6.3.0
 	github.com/leanovate/gopter v0.0.0-00010101000000-000000000000
-	github.com/pierrec/lz4/v3 v3.0.0-00010101000000-000000000000
+	github.com/pierrec/lz4/v3 v3.3.5
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10
 	github.com/quasilyte/go-ruleguard v0.0.0-00010101000000-000000000000
-	github.com/quasilyte/go-ruleguard/dsl v0.3.22
-	github.com/quic-go/quic-go v0.0.0-00010101000000-000000000000
-	github.com/scylladb/gocqlx v0.0.0-00010101000000-000000000000
+	github.com/quasilyte/go-ruleguard/dsl v0.3.23
+	github.com/quic-go/quic-go v0.61.0
+	github.com/scylladb/gocqlx v1.5.0
 	github.com/stretchr/testify v1.11.1
 	github.com/zeebo/xxh3 v1.1.0
-	go.etcd.io/bbolt v1.4.3
-	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.68.0
+	go.etcd.io/bbolt v1.5.0
+	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.69.0
 	go.opentelemetry.io/otel v1.44.0
-	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v1.42.0
+	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v1.44.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.44.0
-	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.42.0
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.44.0
 	go.opentelemetry.io/otel/metric v1.44.0
 	go.opentelemetry.io/otel/sdk v1.44.0
 	go.opentelemetry.io/otel/sdk/metric v1.44.0
 	go.opentelemetry.io/otel/trace v1.44.0
-	go.uber.org/automaxprocs v0.0.0-00010101000000-000000000000
+	go.uber.org/automaxprocs v1.6.0
 	go.uber.org/goleak v1.3.0
-	go.uber.org/ratelimit v0.0.0-00010101000000-000000000000
-	go.uber.org/zap v1.27.1
-	gocloud.dev v0.0.0-00010101000000-000000000000
+	go.uber.org/ratelimit v0.3.1
+	go.uber.org/zap v1.28.0
+	gocloud.dev v0.46.0
 	golang.org/x/net v0.57.0
 	golang.org/x/oauth2 v0.36.0
 	golang.org/x/sys v0.47.0
 	golang.org/x/text v0.40.0
 	golang.org/x/time v0.15.0
 	golang.org/x/tools v0.48.0
-	gonum.org/v1/hdf5 v0.0.0-00010101000000-000000000000
-	google.golang.org/genproto/googleapis/api v0.0.0-20260727163830-6c54dddc4772
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260727163830-6c54dddc4772
-	google.golang.org/grpc v1.82.1
+	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
+	google.golang.org/genproto/googleapis/api v0.0.0-20260729162451-8efbd57d26e0
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260729162451-8efbd57d26e0
+	google.golang.org/grpc v1.83.0
 	google.golang.org/protobuf v1.36.12-0.20260120151049-f2248ac996af
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -142,8 +142,8 @@ require (
 	k8s.io/apiextensions-apiserver v0.36.3
 	k8s.io/apimachinery v0.36.3
 	k8s.io/client-go v0.36.3
-	k8s.io/metrics v0.0.0-00010101000000-000000000000
-	sigs.k8s.io/controller-runtime v0.0.0-00010101000000-000000000000
+	k8s.io/metrics v0.36.3
+	sigs.k8s.io/controller-runtime v0.24.1
 	sigs.k8s.io/yaml v1.6.0
 )
 
