@@ -1,0 +1,106 @@
+#
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: vald.vdaas.org/v1
+kind: ValdRelease
+metadata:
+  name: vald-cluster
+spec:
+  agent:
+    hpa:
+      enabled: false
+    image:
+      pullPolicy: IfNotPresent
+    maxReplicas: 3
+    minReplicas: 3
+    ngt:
+      auto_index_check_duration: -1h
+      auto_index_duration_limit: -1h
+      auto_save_index_duration: -1h
+      bulk_insert_chunk_size: 10
+      dimension: 2
+      distance_type: l2
+      enable_in_memory_mode: true
+      object_type: float
+    podManagementPolicy: Parallel
+    rollingUpdate:
+      maxSurge: "1"
+      maxUnavailable: "1"
+    terminationGracePeriodSeconds: 2400
+  defaults:
+    image:
+      pullPolicy: IfNotPresent
+      tag: nightly
+    logging:
+      format: raw
+      level: info
+      logger: glg
+    observability:
+      enabled: true
+      otlp:
+        collector_endpoint: otel-collector.monitoring.svc.cluster.local:4317
+      trace:
+        enabled: false
+    server_config:
+      servers:
+        grpc:
+          server:
+            grpc:
+              interceptors:
+                - RecoverInterceptor
+                - MetricInterceptor
+    time_zone: Asia/Tokyo
+  discoverer:
+    discoverer:
+      discovery_duration: 200ms
+    image:
+      pullPolicy: IfNotPresent
+    logging:
+      level: warn
+    resources:
+      limits:
+        memory: 300Mi
+      requests:
+        memory: 160Mi
+  gateway:
+    lb:
+      enabled: true
+      gateway_config:
+        index_replica: 1
+      hpa:
+        targetCPUUtilizationPercentage: 50
+      image:
+        pullPolicy: IfNotPresent
+      ingress:
+        defaultBackend:
+          enabled: false
+        enabled: false
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 10%
+  manager:
+    image:
+      pullPolicy: IfNotPresent
+    index:
+      creator:
+        image:
+          pullPolicy: IfNotPresent
+      image:
+        pullPolicy: IfNotPresent
+      logging:
+        level: warn
+      saver:
+        image:
+          pullPolicy: IfNotPresent

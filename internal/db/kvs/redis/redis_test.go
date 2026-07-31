@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package redis
 
@@ -166,24 +164,24 @@ func Test_redisClient_ping(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		client               Redis
+		client               Client
 		initialPingDuration  time.Duration
 		initialPingTimeLimit time.Duration
 	}
 	type want struct {
-		wantR Redis
+		wantR Client
 		err   error
 	}
 	type test struct {
 		want       want
 		args       args
-		checkFunc  func(want, Redis, error) error
+		checkFunc  func(want, Client, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 		name       string
 		fields     fields
 	}
-	defaultCheckFunc := func(w want, gotR Redis, err error) error {
+	defaultCheckFunc := func(w want, gotR Client, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -228,7 +226,7 @@ func Test_redisClient_ping(t *testing.T) {
 				fields: fields{
 					initialPingDuration:  time.Millisecond,
 					initialPingTimeLimit: 3 * time.Millisecond,
-					client: func() Redis {
+					client: func() Client {
 						return &MockRedis{
 							PingFunc: func() (cmd *StatusCmd) {
 								cmd = new(StatusCmd)
@@ -279,7 +277,7 @@ func Test_redisClient_setClient(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		client               Redis
+		client               Client
 		dialer               net.Dialer
 		clusterSlots         func(context.Context) ([]redis.ClusterSlot, error)
 		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
@@ -452,7 +450,7 @@ func Test_redisClient_setClient(t *testing.T) {
 
 func Test_redisClient_newClient(t *testing.T) {
 	type fields struct {
-		client               Redis
+		client               Client
 		dialer               net.Dialer
 		clusterSlots         func(context.Context) ([]redis.ClusterSlot, error)
 		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
@@ -675,7 +673,7 @@ func Test_redisClient_newClusterClient(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		client               Redis
+		client               Client
 		dialer               net.Dialer
 		clusterSlots         func(context.Context) ([]redis.ClusterSlot, error)
 		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
@@ -925,7 +923,7 @@ func Test_redisClient_Connect(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		client               Redis
+		client               Client
 		dialer               net.Dialer
 		clusterSlots         func(ctx context.Context) ([]redis.ClusterSlot, error)
 		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
@@ -956,19 +954,19 @@ func Test_redisClient_Connect(t *testing.T) {
 		readOnly             bool
 	}
 	type want struct {
-		want Redis
+		want Client
 		err  error
 	}
 	type test struct {
 		want       want
 		args       args
-		checkFunc  func(want, Redis, error) error
+		checkFunc  func(want, Client, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 		name       string
 		fields     fields
 	}
-	defaultCheckFunc := func(w want, got Redis, err error) error {
+	defaultCheckFunc := func(w want, got Client, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}

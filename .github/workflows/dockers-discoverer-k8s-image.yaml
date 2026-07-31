@@ -78,11 +78,9 @@ on:
       - internal/info/*.go
       - internal/io/*.go
       - internal/k8s/*.go
-      - internal/k8s/metrics/node/*.go
-      - internal/k8s/metrics/pod/*.go
-      - internal/k8s/node/*.go
-      - internal/k8s/pod/*.go
-      - internal/k8s/service/*.go
+      - internal/k8s/client/*.go
+      - internal/k8s/reconciler/*.go
+      - internal/k8s/resource/*.go
       - internal/log/*.go
       - internal/log/format/*.go
       - internal/log/glg/*.go
@@ -98,6 +96,7 @@ on:
       - internal/net/grpc/codes/*.go
       - internal/net/grpc/credentials/*.go
       - internal/net/grpc/errdetails/*.go
+      - internal/net/grpc/errhandler/*.go
       - internal/net/grpc/health/*.go
       - internal/net/grpc/interceptor/client/metric/*.go
       - internal/net/grpc/interceptor/client/trace/*.go
@@ -142,6 +141,7 @@ on:
       - internal/servers/starter/*.go
       - internal/strings/*.go
       - internal/sync/*.go
+      - internal/sync/atomic/*.go
       - internal/sync/errgroup/*.go
       - internal/sync/semaphore/*.go
       - internal/sync/singleflight/*.go
@@ -198,11 +198,9 @@ on:
       - internal/info/*.go
       - internal/io/*.go
       - internal/k8s/*.go
-      - internal/k8s/metrics/node/*.go
-      - internal/k8s/metrics/pod/*.go
-      - internal/k8s/node/*.go
-      - internal/k8s/pod/*.go
-      - internal/k8s/service/*.go
+      - internal/k8s/client/*.go
+      - internal/k8s/reconciler/*.go
+      - internal/k8s/resource/*.go
       - internal/log/*.go
       - internal/log/format/*.go
       - internal/log/glg/*.go
@@ -218,6 +216,7 @@ on:
       - internal/net/grpc/codes/*.go
       - internal/net/grpc/credentials/*.go
       - internal/net/grpc/errdetails/*.go
+      - internal/net/grpc/errhandler/*.go
       - internal/net/grpc/health/*.go
       - internal/net/grpc/interceptor/client/metric/*.go
       - internal/net/grpc/interceptor/client/trace/*.go
@@ -262,6 +261,7 @@ on:
       - internal/servers/starter/*.go
       - internal/strings/*.go
       - internal/sync/*.go
+      - internal/sync/atomic/*.go
       - internal/sync/errgroup/*.go
       - internal/sync/semaphore/*.go
       - internal/sync/singleflight/*.go

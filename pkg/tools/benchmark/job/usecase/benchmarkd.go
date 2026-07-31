@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package usecase
 
@@ -33,9 +31,8 @@ import (
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
 	"github.com/vdaas/vald/internal/sync/errgroup"
-	"github.com/vdaas/vald/internal/test/data/hdf5"
+	"github.com/vdaas/vald/internal/test/data/hdf5" //nolint:depguard // hdf5 dataset loading is the benchmark job's core input path, not test-only usage
 	"github.com/vdaas/vald/pkg/tools/benchmark/job/config"
-	handler "github.com/vdaas/vald/pkg/tools/benchmark/job/handler/grpc"
 	"github.com/vdaas/vald/pkg/tools/benchmark/job/handler/rest"
 	"github.com/vdaas/vald/pkg/tools/benchmark/job/router"
 	"github.com/vdaas/vald/pkg/tools/benchmark/job/service"
@@ -43,14 +40,13 @@ import (
 
 type run struct {
 	eg            errgroup.Group
-	cfg           *config.Config
+	cfg           *config.Data
 	job           service.Job
-	h             handler.Benchmark
 	server        starter.Server
 	observability observability.Observability
 }
 
-func New(cfg *config.Config) (r runner.Runner, err error) {
+func New(cfg *config.Data) (r runner.Interface, err error) {
 	log.Info("pkg/tools/benchmark/job/cmd start")
 	eg := errgroup.Get()
 
@@ -87,7 +83,8 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		return nil, err
 	}
 	if cfg.Job.ClientConfig.DialOption == nil {
-		copts = append(copts,
+		copts = append(
+			copts,
 			grpc.WithInsecure(true),
 			grpc.WithClientInterceptors(clientInterceptors...),
 		)
@@ -130,18 +127,13 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		return nil, err
 	}
 
-	h, err := handler.New()
-	if err != nil {
-		return nil, err
-	}
-
 	grpcServerOptions := []server.Option{
 		server.WithGRPCRegisterar(func(srv *grpc.Server) {
 			// TODO register grpc server handler here
 		}),
 		server.WithGRPCOption(
-			grpc.ChainUnaryInterceptor(recover.RecoverInterceptor()),
-			grpc.ChainStreamInterceptor(recover.RecoverStreamInterceptor()),
+			grpc.ChainUnaryInterceptor(recover.Interceptor()),
+			grpc.ChainStreamInterceptor(recover.StreamInterceptor()),
 		),
 		server.WithPreStartFunc(func() error {
 			// TODO check unbackupped upstream
@@ -162,11 +154,10 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 						router.WithTimeout(sc.HTTP.HandlerTimeout),
 						router.WithErrGroup(eg),
 						router.WithHandler(
-							rest.New(
-							// TODO pass grpc handler to REST option
-							),
+							rest.New(),
 						),
-					)),
+					),
+				),
 			}
 		}),
 		starter.WithGRPC(func(sc *iconf.Server) []server.Option {
@@ -182,7 +173,6 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		eg:            eg,
 		cfg:           cfg,
 		job:           job,
-		h:             h,
 		server:        srv,
 		observability: obs,
 	}, nil
@@ -201,7 +191,9 @@ func (r *run) PreStart(ctx context.Context) error {
 }
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 3)
+	// buffer one slot per error source forwarded below so no sender blocks.
+	const errChanBufferSize = 3
+	ech := make(chan error, errChanBufferSize)
 	var oech, dech, sech <-chan error
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
@@ -214,8 +206,6 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			ech <- err
 			return err
 		}
-
-		r.h.Start(ctx)
 
 		sech = r.server.ListenAndServe(ctx)
 
@@ -244,14 +234,18 @@ func (r *run) PreStop(ctx context.Context) error {
 	return nil
 }
 
-func (r *run) Stop(ctx context.Context) error {
+func (r *run) Stop(ctx context.Context) (errs error) {
 	if r.observability != nil {
-		r.observability.Stop(ctx)
+		if err := r.observability.Stop(ctx); err != nil {
+			errs = errors.Join(errs, err)
+		}
 	}
 	if r.job != nil {
-		r.job.Stop(ctx)
+		if err := r.job.Stop(ctx); err != nil {
+			errs = errors.Join(errs, err)
+		}
 	}
-	return r.server.Shutdown(ctx)
+	return errors.Join(errs, r.server.Shutdown(ctx))
 }
 
 func (r *run) PostStop(ctx context.Context) error {

@@ -28,7 +28,7 @@ import (
 func TestWithLogger(t *testing.T) {
 	type T = option
 	type args struct {
-		logger logger.Logger
+		logger logger.Interface
 	}
 	type want struct {
 		obj *T

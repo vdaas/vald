@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package grpc
 
@@ -24,7 +22,9 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/errhandler"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/strings"
@@ -79,11 +79,7 @@ func (s *server) Pods(
 	ctx context.Context, req *payload.Discoverer_Request,
 ) (*payload.Info_Pods, error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".Pods")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	key := singleflightKey(podPrefix, req)
 	res, _, err := s.pgroup.Do(ctx, key, func(context.Context) (*payload.Info_Pods, error) {
 		return s.dsc.GetPods(req)
@@ -99,11 +95,7 @@ func (s *server) Pods(
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 			},
 			info.Get())
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanError(span, codes.Internal, err)
 		log.Warnf("GetPods returned error: %v", err)
 		return nil, err
 	}
@@ -118,11 +110,7 @@ func (s *server) Pods(
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 			},
 			info.Get())
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanError(span, codes.NotFound, err)
 		log.Warnf("Pods not found: %#v, error: %v", res, err)
 		return nil, err
 	}
@@ -138,11 +126,7 @@ func (s *server) Pods(
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 			},
 			info.Get())
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanError(span, codes.NotFound, err)
 		log.Warnf("Pods not found: %#v, error: %v", res, err)
 		return nil, err
 	}
@@ -153,11 +137,7 @@ func (s *server) Nodes(
 	ctx context.Context, req *payload.Discoverer_Request,
 ) (*payload.Info_Nodes, error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".Nodes")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	key := singleflightKey(nodePrefix, req)
 	res, _, err := s.ngroup.Do(ctx, key, func(context.Context) (*payload.Info_Nodes, error) {
@@ -174,11 +154,7 @@ func (s *server) Nodes(
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 			},
 			info.Get())
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanError(span, codes.Internal, err)
 		log.Warnf("GetNodes returned error: %v", err)
 		return nil, err
 	}
@@ -193,11 +169,7 @@ func (s *server) Nodes(
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 			},
 			info.Get())
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanError(span, codes.NotFound, err)
 		log.Warnf("Nodes not found: %#v, error: %v", res, err)
 		return nil, err
 	}
@@ -216,11 +188,7 @@ func (s *server) Nodes(
 			},
 			info.Get(),
 		)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanError(span, codes.NotFound, err)
 		log.Warnf("Nodes not found: %#v, error: %v", res, err)
 		return nil, err
 	}
@@ -232,11 +200,7 @@ func (s *server) Services(
 	ctx context.Context, req *payload.Discoverer_Request,
 ) (*payload.Info_Services, error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".Services")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	key := singleflightKeyForSvcs(svcPrefix, req)
 	res, _, err := s.sgroup.Do(ctx, key, func(context.Context) (*payload.Info_Services, error) {
@@ -253,11 +217,7 @@ func (s *server) Services(
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 			},
 			info.Get())
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanError(span, codes.Internal, err)
 		log.Warnf("GetSvcs returned error: %v", err)
 		return nil, err
 	}
@@ -272,11 +232,7 @@ func (s *server) Services(
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 			},
 			info.Get())
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanError(span, codes.NotFound, err)
 		log.Warnf("Nodes not found: %#v, error: %v", res, err)
 		return nil, err
 	}
@@ -295,11 +251,7 @@ func (s *server) Services(
 			},
 			info.Get(),
 		)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanError(span, codes.NotFound, err)
 		log.Warnf("Svcs not found: %#v, error: %v", res, err)
 		return nil, err
 	}

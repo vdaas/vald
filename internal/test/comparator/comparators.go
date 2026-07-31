@@ -15,46 +15,43 @@ package comparator
 
 import (
 	"reflect"
-	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 )
 
+// deepEqualComparer builds a cmp.Option comparing two T values with
+// reflect.DeepEqual. Test comparators for synchronization primitives
+// (Mutex, Once, WaitGroup, atomic values) deliberately compare snapshots of
+// the internal state by value; the copy is confined to the comparison and
+// never handed back, so the usual copylocks hazard (mutating a copied lock)
+// does not apply.
+func deepEqualComparer[T any]() Option {
+	return Comparer(func(x, y T) bool {
+		return reflect.DeepEqual(x, y)
+	})
+}
+
+// The comparers are package-level shared cmp.Options for tests; they are
+// immutable after init, so the accidental mutation gochecknoglobals guards
+// against cannot occur.
+//
+//nolint:gochecknoglobals
 var (
-	RWMutexComparer = Comparer(func(x, y *sync.RWMutex) bool {
-		return reflect.DeepEqual(x, y)
-	})
+	RWMutexComparer = deepEqualComparer[*sync.RWMutex]()
 
-	// skipcq: VET-V0008
-	MutexComparer = Comparer(func(x, y sync.Mutex) bool {
-		// skipcq: VET-V0008
-		return reflect.DeepEqual(x, y)
-	})
+	MutexComparer = deepEqualComparer[sync.Mutex]()
 
-	CondComparer = Comparer(func(x, y *sync.Cond) bool {
-		return reflect.DeepEqual(x, y)
-	})
+	CondComparer = deepEqualComparer[*sync.Cond]()
 
 	ErrorComparer = Comparer(func(x, y error) bool {
 		return errors.Is(x, y)
 	})
 
-	// skipcq: VET-V0008
-	OnceComparer = Comparer(func(x, y sync.Once) bool {
-		// skipcq: VET-V0008
-		return reflect.DeepEqual(x, y)
-	})
+	OnceComparer = deepEqualComparer[sync.Once]()
 
-	// skipcq: VET-V0008
-	WaitGroupComparer = Comparer(func(x, y sync.WaitGroup) bool {
-		// skipcq: VET-V0008
-		return reflect.DeepEqual(x, y)
-	})
+	WaitGroupComparer = deepEqualComparer[sync.WaitGroup]()
 
-	// skipcq: VET-V0008
-	AtomicUint64Comparator = Comparer(func(x, y atomic.Uint64) bool {
-		// skipcq: VET-V0008
-		return reflect.DeepEqual(x, y)
-	})
+	AtomicUint64Comparator = deepEqualComparer[atomic.Uint64]()
 )

@@ -42,7 +42,7 @@ type run struct {
 }
 
 // New returns Runner instance.
-func New(cfg *config.Data) (_ runner.Runner, err error) {
+func New(cfg *config.Data) (_ runner.Interface, err error) {
 	eg := errgroup.Get()
 
 	rotator, err := service.New(
@@ -60,8 +60,8 @@ func New(cfg *config.Data) (_ runner.Runner, err error) {
 		starter.WithGRPC(func(cfg *iconfig.Server) []server.Option {
 			return []server.Option{
 				server.WithGRPCOption(
-					grpc.ChainUnaryInterceptor(recover.RecoverInterceptor()),
-					grpc.ChainStreamInterceptor(recover.RecoverStreamInterceptor()),
+					grpc.ChainUnaryInterceptor(recover.Interceptor()),
+					grpc.ChainStreamInterceptor(recover.StreamInterceptor()),
 				),
 			}
 		}),
@@ -100,7 +100,9 @@ func (r *run) PreStart(ctx context.Context) error {
 // Start is a method used to initiate an operation in the run, and it returns a channel for receiving errors
 // during the operation and an error representing any initialization errors.
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 4) //nolint:gomnd
+	// buffer one slot per error source forwarded below so no sender blocks.
+	const errChanBufferSize = 4
+	ech := make(chan error, errChanBufferSize)
 	var sech, oech <-chan error
 	if r.observability != nil {
 		oech = r.observability.Start(ctx)

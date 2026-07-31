@@ -108,23 +108,31 @@
   - [Upsert.MultiRequest](#payload-v1-Upsert-MultiRequest)
   - [Upsert.ObjectRequest](#payload-v1-Upsert-ObjectRequest)
   - [Upsert.Request](#payload-v1-Upsert-Request)
+
   - [Remove.Timestamp.Operator](#payload-v1-Remove-Timestamp-Operator)
   - [Search.AggregationAlgorithm](#payload-v1-Search-AggregationAlgorithm)
 
 - [v1/agent/core/agent.proto](#v1_agent_core_agent-proto)
   - [Agent](#core-v1-Agent)
+
 - [v1/agent/sidecar/sidecar.proto](#v1_agent_sidecar_sidecar-proto)
   - [Sidecar](#sidecar-v1-Sidecar)
+
 - [v1/discoverer/discoverer.proto](#v1_discoverer_discoverer-proto)
   - [Discoverer](#discoverer-v1-Discoverer)
+
 - [v1/filter/egress/egress_filter.proto](#v1_filter_egress_egress_filter-proto)
   - [Filter](#filter-egress-v1-Filter)
+
 - [v1/filter/ingress/ingress_filter.proto](#v1_filter_ingress_ingress_filter-proto)
   - [Filter](#filter-ingress-v1-Filter)
+
 - [v1/meta/meta.proto](#v1_meta_meta-proto)
   - [Meta](#meta-v1-Meta)
+
 - [v1/mirror/mirror.proto](#v1_mirror_mirror-proto)
   - [Mirror](#mirror-v1-Mirror)
+
 - [v1/rpc/errdetails/error_details.proto](#v1_rpc_errdetails_error_details-proto)
   - [BadRequest](#rpc-v1-BadRequest)
   - [BadRequest.FieldViolation](#rpc-v1-BadRequest-FieldViolation)
@@ -141,30 +149,40 @@
   - [RequestInfo](#rpc-v1-RequestInfo)
   - [ResourceInfo](#rpc-v1-ResourceInfo)
   - [RetryInfo](#rpc-v1-RetryInfo)
+
 - [v1/rpc/stats/stats.proto](#v1_rpc_stats_stats-proto)
   - [Stats](#rpc-v1-Stats)
+
 - [v1/vald/filter.proto](#v1_vald_filter-proto)
   - [Filter](#vald-v1-Filter)
+
 - [v1/vald/flush.proto](#v1_vald_flush-proto)
   - [Flush](#vald-v1-Flush)
+
 - [v1/vald/index.proto](#v1_vald_index-proto)
   - [Index](#vald-v1-Index)
+
 - [v1/vald/insert.proto](#v1_vald_insert-proto)
   - [Insert](#vald-v1-Insert)
+
 - [v1/vald/object.proto](#v1_vald_object-proto)
   - [Object](#vald-v1-Object)
+
 - [v1/vald/remove.proto](#v1_vald_remove-proto)
   - [Remove](#vald-v1-Remove)
+
 - [v1/vald/search.proto](#v1_vald_search-proto)
   - [Search](#vald-v1-Search)
+
 - [v1/vald/update.proto](#v1_vald_update-proto)
   - [Update](#vald-v1-Update)
+
 - [v1/vald/upsert.proto](#v1_vald_upsert-proto)
   - [Upsert](#vald-v1-Upsert)
+
 - [Scalar Value Types](#scalar-value-types)
 
 <a name="v1_payload_payload-proto"></a>
-
 <p align="right"><a href="#top">Top</a></p>
 
 ## v1/payload/payload.proto
@@ -1265,12 +1283,12 @@ Operator is enum of each conditional operator.
 
 | Name | Number | Description                                                                   |
 | ---- | ------ | ----------------------------------------------------------------------------- |
-| Eq   | 0      | The timestamp is equal to the specified value in the request.                 |
-| Ne   | 1      | The timestamp is not equal to the specified value in the request.             |
-| Ge   | 2      | The timestamp is greater than or equal to the specified value in the request. |
-| Gt   | 3      | The timestamp is greater than the specified value in the request.             |
-| Le   | 4      | The timestamp is less than or equal to the specified value in the request.    |
-| Lt   | 5      | The timestamp is less than the specified value in the request.                |
+| EQ   | 0      | The timestamp is equal to the specified value in the request.                 |
+| NE   | 1      | The timestamp is not equal to the specified value in the request.             |
+| GE   | 2      | The timestamp is greater than or equal to the specified value in the request. |
+| GT   | 3      | The timestamp is greater than the specified value in the request.             |
+| LE   | 4      | The timestamp is less than or equal to the specified value in the request.    |
+| LT   | 5      | The timestamp is less than the specified value in the request.                |
 
 <a name="payload-v1-Search-AggregationAlgorithm"></a>
 
@@ -1287,7 +1305,6 @@ AggregationAlgorithm is enum of each aggregation algorithms
 | PairingHeap     | 4      |             |
 
 <a name="v1_agent_core_agent-proto"></a>
-
 <p align="right"><a href="#top">Top</a></p>
 
 ## v1/agent/core/agent.proto
@@ -1305,7 +1322,6 @@ Represent the agent service.
 | CreateAndSaveIndex | [.payload.v1.Control.CreateIndexRequest](#payload-v1-Control-CreateIndexRequest) | [.payload.v1.Empty](#payload-v1-Empty) | Represent the creating and saving index RPC. |
 
 <a name="v1_agent_sidecar_sidecar-proto"></a>
-
 <p align="right"><a href="#top">Top</a></p>
 
 ## v1/agent/sidecar/sidecar.proto
@@ -1320,7 +1336,6 @@ Represent the agent sidecar service.
 | ----------- | ------------ | ------------- | ----------- |
 
 <a name="v1_discoverer_discoverer-proto"></a>
-
 <p align="right"><a href="#top">Top</a></p>
 
 ## v1/discoverer/discoverer.proto
@@ -1338,7 +1353,6 @@ Represent the discoverer service.
 | Services    | [.payload.v1.Discoverer.Request](#payload-v1-Discoverer-Request) | [.payload.v1.Info.Services](#payload-v1-Info-Services) | Represent the RPC to get the readreplica svc information. |
 
 <a name="v1_filter_egress_egress_filter-proto"></a>
-
 <p align="right"><a href="#top">Top</a></p>
 
 ## v1/filter/egress/egress_filter.proto
@@ -1355,7 +1369,6 @@ Represent the egress filter service.
 | FilterVector   | [.payload.v1.Object.Vector](#payload-v1-Object-Vector)     | [.payload.v1.Object.Vector](#payload-v1-Object-Vector)     | Represent the RPC to filter the vector.   |
 
 <a name="v1_filter_ingress_ingress_filter-proto"></a>
-
 <p align="right"><a href="#top">Top</a></p>
 
 ## v1/filter/ingress/ingress_filter.proto
@@ -1372,7 +1385,6 @@ Represent the ingress filter service.
 | FilterVector | [.payload.v1.Object.Vector](#payload-v1-Object-Vector) | [.payload.v1.Object.Vector](#payload-v1-Object-Vector) | Represent the RPC to filter the vector.   |
 
 <a name="v1_meta_meta-proto"></a>
-
 <p align="right"><a href="#top">Top</a></p>
 
 ## v1/meta/meta.proto
@@ -1388,7 +1400,6 @@ Represent the ingress filter service.
 | Delete      | [.payload.v1.Meta.Key](#payload-v1-Meta-Key)           | [.payload.v1.Empty](#payload-v1-Empty)           |             |
 
 <a name="v1_mirror_mirror-proto"></a>
-
 <p align="right"><a href="#top">Top</a></p>
 
 ## v1/mirror/mirror.proto
@@ -1401,11 +1412,10 @@ Overview
 Mirror Service is responsible for providing the `Register` interface for the Vald Mirror Gateway.
 
 | Method Name | Request Type                                             | Response Type                                            | Description                                                                                        |
-| ----------- | -------------------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | --- | --- | --- | --- | --------- | --- | --- | ---------------- | --- | --- | ----------------- | --- | --- | -------- | --- |
+| ----------- | -------------------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | Register    | [.payload.v1.Mirror.Targets](#payload-v1-Mirror-Targets) | [.payload.v1.Mirror.Targets](#payload-v1-Mirror-Targets) | Overview Register RPC is the method to register other Vald Mirror Gateway targets. --- Status Code | 0   | OK  |     | 1   | CANCELLED |     | 3   | INVALID_ARGUMENT |     | 4   | DEADLINE_EXCEEDED |     | 13  | INTERNAL |     |
 
 <a name="v1_rpc_errdetails_error_details-proto"></a>
-
 <p align="right"><a href="#top">Top</a></p>
 
 ## v1/rpc/errdetails/error_details.proto
@@ -1441,11 +1451,11 @@ string full_name = 1; repeated EmailAddress email_addresses = 2; }
 
 In this example, in proto `field` could take one of the following values:
 
-- `full_name` for a violation in the `full_name` value _ `email_addresses[1].email` for a violation in the `email` field of the first `email_addresses` message _ `email_addresses[3].type[2]` for a violation in the second `type` value in the third `email_addresses` message.
+- `full_name` for a violation in the `full_name` value * `email_addresses[1].email` for a violation in the `email` field of the first `email_addresses` message * `email_addresses[3].type[2]` for a violation in the second `type` value in the third `email_addresses` message.
 
 In JSON, the same values are represented as:
 
-- `fullName` for a violation in the `fullName` value _ `emailAddresses[1].email` for a violation in the `email` field of the first `emailAddresses` message _ `emailAddresses[3].type[2]` for a violation in the second `type` value in the third `emailAddresses` message. |
+- `fullName` for a violation in the `fullName` value * `emailAddresses[1].email` for a violation in the `email` field of the first `emailAddresses` message * `emailAddresses[3].type[2]` for a violation in the second `type` value in the third `emailAddresses` message. |
   | description | [string](#string) | | A description of why the request element is bad. |
 
 <a name="rpc-v1-DebugInfo"></a>
@@ -1652,7 +1662,6 @@ reached.
 | retry_delay | [google.protobuf.Duration](#google-protobuf-Duration) |       | Clients should wait at least this long between retrying the same request. |
 
 <a name="v1_rpc_stats_stats-proto"></a>
-
 <p align="right"><a href="#top">Top</a></p>
 
 ## v1/rpc/stats/stats.proto
@@ -1669,7 +1678,6 @@ Represent the resource stats service.
 | ResourceStats | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.ResourceStats](#payload-v1-Info-ResourceStats) | Overview Represent the RPC to get the resource stats. |
 
 <a name="v1_vald_filter-proto"></a>
-
 <p align="right"><a href="#top">Top</a></p>
 
 ## v1/vald/filter.proto
@@ -1684,7 +1692,7 @@ Filter Server is responsible for providing insert, update, upsert and search int
 Vald Filter Gateway forward user request to user-defined ingress/egress filter components allowing user to run custom logic.
 
 | Method Name        | Request Type                                                                   | Response Type                                                                 | Description                                                                                                                                                                                                                                                                                                                                                                                                             |
-| ------------------ | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | --- | --- | --- | --------- | --- | --- | ---------------- | --- | --- | ----------------- | --- | --- | -------------- | --- | --- | -------- | --- |
+| ------------------ | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | SearchObject       | [.payload.v1.Search.ObjectRequest](#payload-v1-Search-ObjectRequest)           | [.payload.v1.Search.Response](#payload-v1-Search-Response)                    | Overview SearchObject RPC is the method to search object(s) similar to request object. --- Status Code                                                                                                                                                                                                                                                                                                                  | 0   | OK  |     | 1   | CANCELLED |     | 3   | INVALID_ARGUMENT |     | 4   | DEADLINE_EXCEEDED |     | 6   | ALREADY_EXISTS |     | 13  | INTERNAL |     |
 | MultiSearchObject  | [.payload.v1.Search.MultiObjectRequest](#payload-v1-Search-MultiObjectRequest) | [.payload.v1.Search.Responses](#payload-v1-Search-Responses)                  | Overview StreamSearchObject RPC is the method to search vectors with multi queries(objects) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).&lt;br&gt; By using the bidirectional streaming RPC, the search request can be communicated in any order between client and server. Each Search request and response are independent. --- Status Code | 0   | OK  |     | 1   | CANCELLED |     | 3   | INVALID_ARGUMENT |     | 4   | DEADLINE_EXCEEDED |     | 6   | ALREADY_EXISTS |     | 13  | INTERNAL |     |
 | StreamSearchObject | [.payload.v1.Search.ObjectRequest](#payload-v1-Search-ObjectRequest) stream    | [.payload.v1.Search.StreamResponse](#payload-v1-Search-StreamResponse) stream | Overview MultiSearchObject RPC is the method to search objects with multiple objects in **1** request.                                                                                                                                                                                                                                                                                                                  |
@@ -1709,7 +1717,6 @@ By using the bidirectional streaming RPC, the insert request can be communicated
 &lt;div class=&#34;notice&#34;&gt; gRPC has a message size limitation.&lt;br&gt; Please be careful that the size of the request exceeds the limit. &lt;/div&gt; --- Status Code | 0 | OK | | 1 | CANCELLED | | 3 | INVALID_ARGUMENT | | 4 | DEADLINE_EXCEEDED | | 6 | ALREADY_EXISTS | | 13 | INTERNAL | |
 
 <a name="v1_vald_flush-proto"></a>
-
 <p align="right"><a href="#top">Top</a></p>
 
 ## v1/vald/flush.proto
@@ -1722,11 +1729,10 @@ Overview
 Flush Service is responsible for removing all vectors that are indexed and uncommitted in the `vald-agent`.
 
 | Method Name | Request Type                                           | Response Type                                                | Description                                                             |
-| ----------- | ------------------------------------------------------ | ------------------------------------------------------------ | ----------------------------------------------------------------------- | --- | --- | --- | --- | --------- | --- | --- | ---------------- | --- | --- | ----------------- | --- | --- | --------- | --- | --- | -------- | --- |
+| ----------- | ------------------------------------------------------ | ------------------------------------------------------------ | ----------------------------------------------------------------------- |
 | Flush       | [.payload.v1.Flush.Request](#payload-v1-Flush-Request) | [.payload.v1.Info.Index.Count](#payload-v1-Info-Index-Count) | Overview Flush RPC is the method to remove all vectors. --- Status Code | 0   | OK  |     | 1   | CANCELLED |     | 3   | INVALID_ARGUMENT |     | 4   | DEADLINE_EXCEEDED |     | 5   | NOT_FOUND |     | 13  | INTERNAL |     |
 
 <a name="v1_vald_index-proto"></a>
-
 <p align="right"><a href="#top">Top</a></p>
 
 ## v1/vald/index.proto
@@ -1747,7 +1753,6 @@ Represent the index manager service.
 | IndexProperty         | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.PropertyDetail](#payload-v1-Info-Index-PropertyDetail)     | Overview Represent the RPC to get the index property.                    |
 
 <a name="v1_vald_insert-proto"></a>
-
 <p align="right"><a href="#top">Top</a></p>
 
 ## v1/vald/insert.proto
@@ -1760,7 +1765,7 @@ Overview
 Insert Service is responsible for inserting new vectors into the `vald-agent`.
 
 | Method Name | Request Type                                             | Response Type                                              | Description                                                                   |
-| ----------- | -------------------------------------------------------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------- | --- | --- | --- | --- | --------- | --- | --- | ---------------- | --- | --- | ----------------- | --- | --- | --------- | --- | --- | -------- | ---------------------------------------------------------------------------------------------------- |
+| ----------- | -------------------------------------------------------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | Insert      | [.payload.v1.Insert.Request](#payload-v1-Insert-Request) | [.payload.v1.Object.Location](#payload-v1-Object-Location) | Overview Insert RPC is the method to add a new single vector. --- Status Code | 0   | OK  |     | 1   | CANCELLED |     | 3   | INVALID_ARGUMENT |     | 4   | DEADLINE_EXCEEDED |     | 5   | NOT_FOUND |     | 13  | INTERNAL | --- Troubleshooting The request process may not be completed when the response code is NOT `0 (OK)`. |
 
 Here are some common reasons and how to resolve each error.
@@ -1780,7 +1785,6 @@ Here are some common reasons and how to resolve each error.
 | name | common reason | how to resolve | | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- | | CANCELLED | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed. | | INVALID_ARGUMENT | The Dimension of the request vector is NOT the same as Vald Agent&#39;s config, the requested vector&#39;s ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config. | | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side. | Check the gRPC timeout setting on both the client and server sides and fix it if needed. | | ALREADY_EXISTS | Request ID is already inserted. | Change request ID. | | INTERNAL | Target Vald cluster or network route has some critical error. | Check target Vald cluster first and check network route including ingress as second. | |
 
 <a name="v1_vald_object-proto"></a>
-
 <p align="right"><a href="#top">Top</a></p>
 
 ## v1/vald/object.proto
@@ -1793,7 +1797,7 @@ Overview
 Object Service is responsible for getting inserted vectors and checking whether vectors are inserted into the `vald-agent`.
 
 | Method Name | Request Type                                   | Response Type                                  | Description                                                                                          |
-| ----------- | ---------------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------- | --- | --- | --- | --- | --------- | --- | --- | ---------------- | --- | --- | ----------------- | --- | --- | --------- | --- | --- | -------- | ---------------------------------------------------------------------------------------------------- |
+| ----------- | ---------------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | Exists      | [.payload.v1.Object.ID](#payload-v1-Object-ID) | [.payload.v1.Object.ID](#payload-v1-Object-ID) | Overview Exists RPC is the method to check that a vector exists in the `vald-agent`. --- Status Code | 0   | OK  |     | 1   | CANCELLED |     | 3   | INVALID_ARGUMENT |     | 4   | DEADLINE_EXCEEDED |     | 5   | NOT_FOUND |     | 13  | INTERNAL | --- Troubleshooting The request process may not be completed when the response code is NOT `0 (OK)`. |
 
 Here are some common reasons and how to resolve each error.
@@ -1813,7 +1817,6 @@ Here are some common reasons and how to resolve each error.
 | GetTimestamp | [.payload.v1.Object.TimestampRequest](#payload-v1-Object-TimestampRequest) | [.payload.v1.Object.Timestamp](#payload-v1-Object-Timestamp) | Overview Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process --- Status Code TODO --- Troubleshooting TODO |
 
 <a name="v1_vald_remove-proto"></a>
-
 <p align="right"><a href="#top">Top</a></p>
 
 ## v1/vald/remove.proto
@@ -1826,7 +1829,7 @@ Overview
 Remove Service is responsible for removing vectors indexed in the `vald-agent`.
 
 | Method Name | Request Type                                             | Response Type                                              | Description                                                                  |
-| ----------- | -------------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------- | --- | --- | --- | --- | --------- | --- | --- | ---------------- | --- | --- | ----------------- | --- | --- | --------- | --- | --- | ------- | --- | --- | -------- | ---------------------------------------------------------------------------------------------------- |
+| ----------- | -------------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | Remove      | [.payload.v1.Remove.Request](#payload-v1-Remove-Request) | [.payload.v1.Object.Location](#payload-v1-Object-Location) | Overview Remove RPC is the method to remove a single vector. --- Status Code | 0   | OK  |     | 1   | CANCELLED |     | 3   | INVALID_ARGUMENT |     | 4   | DEADLINE_EXCEEDED |     | 5   | NOT_FOUND |     | 10  | ABORTED |     | 13  | INTERNAL | --- Troubleshooting The request process may not be completed when the response code is NOT `0 (OK)`. |
 
 Here are some common reasons and how to resolve each error.
@@ -1855,7 +1858,6 @@ Here are some common reasons and how to resolve each error.
 | name | common reason | how to resolve | | :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- | | CANCELLED | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed. | | INVALID_ARGUMENT | The Requested vector&#39;s ID is empty, or some request payload is invalid. | Check request payload and fix request payload. | | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side. | Check the gRPC timeout setting on both the client and server sides and fix it if needed. | | NOT_FOUND | Requested ID is NOT inserted. | Send a request with an ID that is already inserted. | | INTERNAL | Target Vald cluster or network route has some critical error. | Check target Vald cluster first and check network route including ingress as second. | |
 
 <a name="v1_vald_search-proto"></a>
-
 <p align="right"><a href="#top">Top</a></p>
 
 ## v1/vald/search.proto
@@ -1868,7 +1870,7 @@ Overview
 Search Service is responsible for searching vectors similar to the user request vector from `vald-agent`.
 
 | Method Name | Request Type                                             | Response Type                                              | Description                                                                                          |
-| ----------- | -------------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | --- | --- | --- | --- | --------- | --- | --- | ---------------- | --- | --- | ----------------- | --- | --- | --------- | --- | --- | ------- | --- | --- | -------- | ---------------------------------------------------------------------------------------------------- |
+| ----------- | -------------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | Search      | [.payload.v1.Search.Request](#payload-v1-Search-Request) | [.payload.v1.Search.Response](#payload-v1-Search-Response) | Overview Search RPC is the method to search vector(s) similar to the request vector. --- Status Code | 0   | OK  |     | 1   | CANCELLED |     | 3   | INVALID_ARGUMENT |     | 4   | DEADLINE_EXCEEDED |     | 5   | NOT_FOUND |     | 10  | ABORTED |     | 13  | INTERNAL | --- Troubleshooting The request process may not be completed when the response code is NOT `0 (OK)`. |
 
 Here are some common reasons and how to resolve each error.
@@ -1939,7 +1941,6 @@ Here are some common reasons and how to resolve each error.
 | name | common reason | how to resolve | | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- | | CANCELLED | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed. | | INVALID_ARGUMENT | The Requested vector&#39;s ID is empty, or some request payload is invalid. | Check request payload and fix request payload. | | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side. | Check the gRPC timeout setting on both the client and server sides and fix it if needed. | | NOT_FOUND | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value. | | INTERNAL | Target Vald cluster or network route has some critical error. | Check target Vald cluster first and check network route including ingress as second. | |
 
 <a name="v1_vald_update-proto"></a>
-
 <p align="right"><a href="#top">Top</a></p>
 
 ## v1/vald/update.proto
@@ -1952,7 +1953,7 @@ Overview
 Update Service updates to new vector from inserted vector in the `vald-agent` components.
 
 | Method Name | Request Type                                             | Response Type                                              | Description                                                                  |
-| ----------- | -------------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------- | --- | --- | --- | --- | --------- | --- | --- | ---------------- | --- | --- | ----------------- | --- | --- | --------- | --- | --- | -------------- | --- | --- | ------- | --- | --- | -------- | ---------------------------------------------------------------------------------------------------- |
+| ----------- | -------------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | Update      | [.payload.v1.Update.Request](#payload-v1-Update-Request) | [.payload.v1.Object.Location](#payload-v1-Object-Location) | Overview Update RPC is the method to update a single vector. --- Status Code | 0   | OK  |     | 1   | CANCELLED |     | 3   | INVALID_ARGUMENT |     | 4   | DEADLINE_EXCEEDED |     | 5   | NOT_FOUND |     | 6   | ALREADY_EXISTS |     | 10  | ABORTED |     | 13  | INTERNAL | --- Troubleshooting The request process may not be completed when the response code is NOT `0 (OK)`. |
 
 Here are some common reasons and how to resolve each error.
@@ -1973,7 +1974,6 @@ Here are some common reasons and how to resolve each error.
 | UpdateTimestamp | [.payload.v1.Update.TimestampRequest](#payload-v1-Update-TimestampRequest) | [.payload.v1.Object.Location](#payload-v1-Object-Location) | Overview A method to update timestamp an indexed vector. --- Status Code TODO --- Troubleshooting TODO |
 
 <a name="v1_vald_upsert-proto"></a>
-
 <p align="right"><a href="#top">Top</a></p>
 
 ## v1/vald/upsert.proto
@@ -1986,7 +1986,7 @@ Overview
 Upsert Service is responsible for updating existing vectors in the `vald-agent` or inserting new vectors into the `vald-agent` if the vector does not exist.
 
 | Method Name | Request Type                                             | Response Type                                              | Description                                                                                                                                               |
-| ----------- | -------------------------------------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | --- | --- | --- | --------- | --- | --- | ---------------- | --- | --- | ----------------- | --- | --- | --------- | --- | --- | -------------- | --- | --- | ------- | --- | --- | -------- | ---------------------------------------------------------------------------------------------------- |
+| ----------- | -------------------------------------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Upsert      | [.payload.v1.Upsert.Request](#payload-v1-Upsert-Request) | [.payload.v1.Object.Location](#payload-v1-Object-Location) | Overview Upsert RPC is the method to update the inserted vector to a new single vector or add a new single vector if not inserted before. --- Status Code | 0   | OK  |     | 1   | CANCELLED |     | 3   | INVALID_ARGUMENT |     | 4   | DEADLINE_EXCEEDED |     | 5   | NOT_FOUND |     | 6   | ALREADY_EXISTS |     | 10  | ABORTED |     | 13  | INTERNAL | --- Troubleshooting The request process may not be completed when the response code is NOT `0 (OK)`. |
 
 Here are some common reasons and how to resolve each error.

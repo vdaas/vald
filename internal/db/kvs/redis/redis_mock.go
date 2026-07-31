@@ -28,7 +28,7 @@ type MockRedis struct {
 	DelFunc        func(keys ...string) *redis.IntCmd
 }
 
-var _ Redis = (*MockRedis)(nil)
+var _ Client = (*MockRedis)(nil)
 
 func (m *MockRedis) TxPipeline() redis.Pipeliner {
 	return m.TxPipelineFunc()

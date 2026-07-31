@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"reflect"
 	"slices"
-	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -37,6 +36,7 @@ import (
 	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
@@ -70,11 +70,11 @@ type correct struct {
 func New(opts ...Option) (_ Corrector, err error) {
 	c := new(correct)
 	for _, opt := range append(defaultOpts, opts...) {
-		if err := opt(c); err != nil {
-			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+		if werr := opt(c); werr != nil {
+			oerr := errors.ErrOptionFailed(werr, reflect.ValueOf(opt))
 			e := &errors.ErrCriticalOption{}
 			if errors.As(oerr, &e) {
-				log.Error(err)
+				log.Error(werr)
 				return nil, oerr
 			}
 			log.Warn(oerr)
@@ -100,7 +100,10 @@ func New(opts ...Option) (_ Corrector, err error) {
 }
 
 func (c *correct) StartClient(ctx context.Context) (_ <-chan error, err error) {
-	ech := make(chan error, 2)
+	// one slot for the gateway error stream and one for the discoverer error
+	// stream, so neither forwarder blocks.
+	const errChanBufferSize = 2
+	ech := make(chan error, errChanBufferSize)
 	gch, err := c.gateway.Start(ctx)
 	if err != nil {
 		return nil, err
@@ -130,6 +133,7 @@ func (c *correct) StartClient(ctx context.Context) (_ <-chan error, err error) {
 	return ech, nil
 }
 
+//nolint:maintidx // the agent-by-agent stream-and-correct pipeline is one long-lived sequential flow; splitting it would scatter the shared cursor state
 func (c *correct) Start(ctx context.Context) (err error) {
 	detail, err := c.gateway.IndexDetail(ctx, new(payload.Empty))
 	if err != nil {
@@ -215,7 +219,10 @@ func (c *correct) Start(ctx context.Context) (err error) {
 		eg, egctx := errgroup.WithContext(ctx)
 		eg.SetLimit(c.streamListConcurrency)
 		ctx, cancel := context.WithCancelCause(egctx)
-		stream, err := vc.NewValdClient(conn).StreamListObject(ctx, emptyReq, copts...)
+		// cancel with nil cause is a no-op when the context has already been
+		// canceled with a specific cause (e.g. io.EOF on stream completion).
+		defer cancel(nil)
+		stream, err := vc.NewFromConn(conn).StreamListObject(ctx, emptyReq, copts...)
 		if err != nil || stream == nil {
 			return err
 		}
@@ -261,7 +268,9 @@ func (c *correct) Start(ctx context.Context) (err error) {
 							return nil
 						}
 						defer func() {
-							c.checkedList.Set(id, emptyByte)
+							if serr := c.checkedList.Set(id, emptyByte); serr != nil {
+								log.Errorf("failed to record id %s into the checked list: %v", id, serr)
+							}
 							c.checkedIndexCount.Add(1)
 						}()
 
@@ -353,7 +362,8 @@ func (c *correct) loadReplicaInfo(
 	skipped = make([]string, 0, len(replicas))
 	found = make(map[string]*payload.Object_Timestamp, c.indexReplica-1)
 	tss := time.Unix(0, start.UnixNano()).Format(time.RFC3339Nano)
-	err = c.discoverer.GetClient().OrderedRangeConcurrent(ctx, replicas, len(replicas),
+	err = c.discoverer.GetClient().OrderedRangeConcurrent(
+		ctx, replicas, len(replicas),
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 			if originAddr == addr {
 				return nil
@@ -366,15 +376,15 @@ func (c *correct) loadReplicaInfo(
 				return nil
 			}
 
-			ots, err := vc.NewValdClient(conn).GetTimestamp(ctx, &payload.Object_TimestampRequest{
+			ots, gerr := vc.NewFromConn(conn).GetTimestamp(ctx, &payload.Object_TimestampRequest{
 				Id: &payload.Object_ID{
 					Id: id,
 				},
 			})
-			if err != nil {
-				if st, ok := status.FromError(err); !ok || st == nil {
-					log.Errorf("gRPC call GetTimestamp to agent: %s, id: %s returned not a gRPC status error: %v", addr, id, err)
-					return err
+			if gerr != nil {
+				if st, ok := status.FromError(gerr); !ok || st == nil {
+					log.Errorf("gRPC call GetTimestamp to agent: %s, id: %s returned not a gRPC status error: %v", addr, id, gerr)
+					return gerr
 				} else if st.Code() == codes.NotFound {
 					// when replica of agent > index replica, this happens
 					return nil
@@ -382,7 +392,7 @@ func (c *correct) loadReplicaInfo(
 					return nil
 				} else {
 					log.Errorf("failed to GetTimestamp with unexpected error. agent: %s, id: %s, code: %v, message: %s", addr, id, st.Code(), st.Message())
-					return err
+					return gerr
 				}
 			}
 
@@ -393,7 +403,8 @@ func (c *correct) loadReplicaInfo(
 
 			// skip if the vector is inserted after correction start
 			if ots.GetTimestamp() > start.UnixNano() {
-				log.Debugf("timestamp of vector(id: %s, timestamp: %s) is newer than correction start time(%s). skipping...",
+				log.Debugf(
+					"timestamp of vector(id: %s, timestamp: %s) is newer than correction start time(%s). skipping...",
 					ots.GetId(),
 					time.Unix(0, ots.GetTimestamp()).Format(time.RFC3339Nano),
 					tss,
@@ -415,6 +426,7 @@ func (c *correct) loadReplicaInfo(
 	return found, skipped, latest, latestAgent, err
 }
 
+//nolint:nilnil // the grpc round-robin callback contract treats (nil, nil) as "skip this replica"; a sentinel error would abort the whole range
 func (c *correct) getLatestObject(
 	ctx context.Context, id, addr, latestAgent string, latest int64,
 ) (latestObject *payload.Object_Vector) {
@@ -422,7 +434,7 @@ func (c *correct) getLatestObject(
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (any, error) {
-		obj, err := vc.NewValdClient(conn).GetObject(ctx, &payload.Object_VectorRequest{
+		obj, err := vc.NewFromConn(conn).GetObject(ctx, &payload.Object_VectorRequest{
 			Id: &payload.Object_ID{
 				Id: id,
 			},
@@ -456,6 +468,7 @@ func (c *correct) getLatestObject(
 	return latestObject
 }
 
+//nolint:nilnil // the grpc round-robin callback contract treats (nil, nil) as "skip this replica"; a sentinel error would abort the whole range
 func (c *correct) correctTimestamp(
 	ctx context.Context,
 	id string,
@@ -465,7 +478,8 @@ func (c *correct) correctTimestamp(
 	tss := time.Unix(0, latestObject.GetTimestamp()).Format(time.RFC3339Nano) // timestamp string
 	for addr, ots := range found {                                            // correct timestamp inconsistency
 		if latestObject.GetTimestamp() > ots.GetTimestamp() {
-			log.Infof("timestamp inconsistency detected with vector(id: %s, timestamp: %s). updating with the latest vector(id: %s, timestamp: %s)",
+			log.Infof(
+				"timestamp inconsistency detected with vector(id: %s, timestamp: %s). updating with the latest vector(id: %s, timestamp: %s)",
 				ots.GetId(),
 				time.Unix(0, ots.GetTimestamp()).Format(time.RFC3339Nano),
 				latestObject.GetId(),
@@ -475,7 +489,7 @@ func (c *correct) correctTimestamp(
 				conn *grpc.ClientConn,
 				copts ...grpc.CallOption,
 			) (any, error) {
-				client := vc.NewValdClient(conn)
+				client := vc.NewFromConn(conn)
 				_, err := client.UpdateTimestamp(ctx, &payload.Update_TimestampRequest{
 					Id:        latestObject.GetId(),
 					Timestamp: latestObject.GetTimestamp(),
@@ -503,6 +517,7 @@ func (c *correct) correctTimestamp(
 	}
 }
 
+//nolint:nilnil // the grpc round-robin callback contract treats (nil, nil) as "skip this replica"; a sentinel error would abort the whole range
 func (c *correct) correctOversupply(
 	ctx context.Context,
 	id, selfAddr, debugMsg string,
@@ -527,7 +542,7 @@ func (c *correct) correctOversupply(
 					conn *grpc.ClientConn,
 					copts ...grpc.CallOption,
 				) (any, error) {
-					_, err := vc.NewValdClient(conn).Remove(ctx, req, copts...)
+					_, err := vc.NewFromConn(conn).Remove(ctx, req, copts...)
 					if err != nil {
 						if st, ok := status.FromError(err); !ok || st == nil {
 							log.Errorf("gRPC call returned not a gRPC status error: %v", err)
@@ -554,6 +569,7 @@ func (c *correct) correctOversupply(
 	return nil
 }
 
+//nolint:nilnil // the grpc round-robin callback contract treats (nil, nil) as "skip this replica"; a sentinel error would abort the whole range
 func (c *correct) correctShortage(
 	ctx context.Context,
 	id, selfAddr, debugMsg string,
@@ -581,7 +597,7 @@ func (c *correct) correctShortage(
 					conn *grpc.ClientConn,
 					copts ...grpc.CallOption,
 				) (any, error) {
-					client := vc.NewValdClient(conn)
+					client := vc.NewFromConn(conn)
 					_, err := client.Insert(ctx, req, copts...)
 					if err != nil {
 						if st, ok := status.FromError(err); !ok || st == nil {

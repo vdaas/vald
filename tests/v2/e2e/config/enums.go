@@ -1,20 +1,18 @@
 //go:build e2e
 
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 // Package config provides configuration types and logic for loading and binding configuration values.
 // This file includes detailed Bind methods for all configuration types with extensive comments.
@@ -53,6 +51,7 @@ const (
 	OpKubernetes OperationType = "kubernetes"
 	OpClient     OperationType = "client"
 	OpWait       OperationType = "wait"
+	OpHTTP       OperationType = "http"
 )
 
 type StatusCode string
@@ -103,15 +102,18 @@ const (
 type KubernetesKind string
 
 const (
-	ConfigMap   KubernetesKind = "configmap"
-	CronJob     KubernetesKind = "cronjob"
-	DaemonSet   KubernetesKind = "daemonset"
-	Deployment  KubernetesKind = "deployment"
-	Job         KubernetesKind = "job"
-	Pod         KubernetesKind = "pod"
-	Secret      KubernetesKind = "secret"
-	Service     KubernetesKind = "service"
-	StatefulSet KubernetesKind = "statefulset"
+	ConfigMap                      KubernetesKind = "configmap"
+	CronJob                        KubernetesKind = "cronjob"
+	CustomResource                 KubernetesKind = "customresource"
+	DaemonSet                      KubernetesKind = "daemonset"
+	Deployment                     KubernetesKind = "deployment"
+	Job                            KubernetesKind = "job"
+	MutatingWebhookConfiguration   KubernetesKind = "mutatingwebhookconfiguration"
+	Pod                            KubernetesKind = "pod"
+	Secret                         KubernetesKind = "secret"
+	Service                        KubernetesKind = "service"
+	StatefulSet                    KubernetesKind = "statefulset"
+	ValidatingWebhookConfiguration KubernetesKind = "validatingwebhookconfiguration"
 )
 
 type KubernetesStatus string
@@ -129,19 +131,20 @@ const (
 	KubernetesStatusPaused        KubernetesStatus = "paused"
 	KubernetesStatusTerminating   KubernetesStatus = "terminating"
 	KubernetesStatusNotReady      KubernetesStatus = "notready"
-	KubernetesStatusBound         KubernetesStatus = "bound"
 	KubernetesStatusLoadBalancing KubernetesStatus = "loadbalancing"
 )
 
 type Operator string
 
 const (
-	Eq Operator = "eq"
-	Ne Operator = "ne"
-	Ge Operator = "ge"
-	Gt Operator = "gt"
-	Le Operator = "le"
-	Lt Operator = "lt"
+	Eq          Operator = "eq"
+	Ne          Operator = "ne"
+	Ge          Operator = "ge"
+	Gt          Operator = "gt"
+	Le          Operator = "le"
+	Lt          Operator = "lt"
+	Contains    Operator = "contains"
+	NotContains Operator = "not_contains"
 )
 
 type ExitCondition string

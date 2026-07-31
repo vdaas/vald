@@ -69,27 +69,27 @@ Upsert RPC is the method to update the inserted vector to a new single vector or
 
   - Upsert.Config
 
-        | field | type | label | description |
-        | :---: | :--- | :---- | :---------- |
-        | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
-        | filters | Filter.Config |  | Filter configuration. |
-        | timestamp | int64 |  | Upsert timestamp. |
-        | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
+    |          field          | type          | label | description                                                          |
+    | :---------------------: | :------------ | :---- | :------------------------------------------------------------------- |
+    | skip_strict_exist_check | bool          |       | A flag to skip exist check during upsert operation.                  |
+    |         filters         | Filter.Config |       | Filter configuration.                                                |
+    |        timestamp        | int64         |       | Upsert timestamp.                                                    |
+    | disable_balanced_update | bool          |       | A flag to disable balanced update (split remove -> insert operation) |
 
-    during update operation. |
+during update operation. |
 
-  - Filter.Config
+- Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+  |  field  | type          | label    | description                                |
+  | :-----: | :------------ | :------- | :----------------------------------------- |
+  | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
-  - Filter.Target
+- Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
+  | field | type   | label | description          |
+  | :---: | :----- | :---- | :------------------- |
+  | host  | string |       | The target hostname. |
+  | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -199,27 +199,27 @@ It’s the recommended method to upsert a large number of vectors.
 
   - Upsert.Config
 
-        | field | type | label | description |
-        | :---: | :--- | :---- | :---------- |
-        | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
-        | filters | Filter.Config |  | Filter configuration. |
-        | timestamp | int64 |  | Upsert timestamp. |
-        | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
+    |          field          | type          | label | description                                                          |
+    | :---------------------: | :------------ | :---- | :------------------------------------------------------------------- |
+    | skip_strict_exist_check | bool          |       | A flag to skip exist check during upsert operation.                  |
+    |         filters         | Filter.Config |       | Filter configuration.                                                |
+    |        timestamp        | int64         |       | Upsert timestamp.                                                    |
+    | disable_balanced_update | bool          |       | A flag to disable balanced update (split remove -> insert operation) |
 
-    during update operation. |
+during update operation. |
 
-  - Filter.Config
+- Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+  |  field  | type          | label    | description                                |
+  | :-----: | :------------ | :------- | :----------------------------------------- |
+  | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
-  - Filter.Target
+- Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
+  | field | type   | label | description          |
+  | :---: | :----- | :---- | :------------------- |
+  | host  | string |       | The target hostname. |
+  | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -353,27 +353,27 @@ Please be careful that the size of the request exceeds the limit.
 
   - Upsert.Config
 
-        | field | type | label | description |
-        | :---: | :--- | :---- | :---------- |
-        | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
-        | filters | Filter.Config |  | Filter configuration. |
-        | timestamp | int64 |  | Upsert timestamp. |
-        | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
+    |          field          | type          | label | description                                                          |
+    | :---------------------: | :------------ | :---- | :------------------------------------------------------------------- |
+    | skip_strict_exist_check | bool          |       | A flag to skip exist check during upsert operation.                  |
+    |         filters         | Filter.Config |       | Filter configuration.                                                |
+    |        timestamp        | int64         |       | Upsert timestamp.                                                    |
+    | disable_balanced_update | bool          |       | A flag to disable balanced update (split remove -> insert operation) |
 
-    during update operation. |
+during update operation. |
 
-  - Filter.Config
+- Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+  |  field  | type          | label    | description                                |
+  | :-----: | :------------ | :------- | :----------------------------------------- |
+  | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
-  - Filter.Target
+- Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
+  | field | type   | label | description          |
+  | :---: | :----- | :---- | :------------------- |
+  | host  | string |       | The target hostname. |
+  | port  | uint32 |       | The target port.     |
 
 ### Output
 

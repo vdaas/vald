@@ -1,24 +1,23 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package main
 
 import (
 	"bufio"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/fs"
 	"regexp"
@@ -42,11 +41,45 @@ var (
 	aliases      map[string]Schema
 	descriptions map[string]string
 
+	// refsMode, when true, makes anchors emit as JSON Schema $defs and aliases
+	// as $ref (instead of inlining). This yields named, reusable Go types when
+	// the schema is fed to a code generator. defs collects the $defs entries.
+	refsMode bool
+	defs     map[string]*Schema
+
 	descriptionRegexp   = regexp.MustCompile(`^\s*#\s*(.*)\s+--\s*(.*)$`)
 	continuedLineRegexp = regexp.MustCompile(`^\s*#\s+(.*)$`)
 )
 
+// defName sanitizes an anchor/alias name into a $defs key (ASCII identifier).
+func defName(anchor string) string {
+	b := make([]byte, 0, len(anchor))
+	for i := 0; i < len(anchor); i++ {
+		c := anchor[i]
+		switch {
+		case c >= 'a' && c <= 'z', c >= 'A' && c <= 'Z', c >= '0' && c <= '9':
+			b = append(b, c)
+		default:
+			b = append(b, '_')
+		}
+	}
+	return string(b)
+}
+
+// GoTypeImport describes the Go import backing an x-go-type mapping.
+type GoTypeImport struct {
+	Path string `json:"path,omitempty"`
+	Name string `json:"name,omitempty"`
+}
+
 type SchemaBase struct {
+	// XGoType / XGoTypeImport carry a Go type identity for a node so that
+	// downstream code generators (e.g. oapi-codegen) can map k8s-native
+	// subtrees (affinity, resources, ...) to their real Go types instead of
+	// emitting anonymous structs. They are passed through untouched into the
+	// generated JSON Schema.
+	XGoType           string            `json:"x-go-type,omitempty"`
+	XGoTypeImport     *GoTypeImport     `json:"x-go-type-import,omitempty"`
 	MaxContains       *uint64           `json:"maxContains,omitempty"`
 	MinContains       *uint64           `json:"minContains,omitempty"`
 	MinProperties     *uint64           `json:"minProperties,omitempty"`
@@ -77,13 +110,15 @@ type VSchema struct {
 }
 
 type Root struct {
-	SchemaKeyword string `json:"$schema"`
-	Title         string `json:"title"`
+	SchemaKeyword string             `json:"$schema"`
+	Title         string             `json:"title"`
+	Defs          map[string]*Schema `json:"$defs,omitempty"`
 	Schema
 }
 
 type Schema struct {
-	Type        string             `json:"type"`
+	Ref         string             `json:"$ref,omitempty"`
+	Type        string             `json:"type,omitempty"`
 	Description string             `json:"description,omitempty"`
 	Properties  map[string]*Schema `json:"properties,omitempty"`
 
@@ -92,11 +127,13 @@ type Schema struct {
 
 func main() {
 	log.Init()
-	if len(os.Args) < minimumArgumentLength {
+	refs := flag.Bool("refs", false, "emit $defs/$ref for anchors instead of inlining (for Go type generation)")
+	flag.Parse()
+	if flag.NArg() < 1 {
 		log.Fatal(errors.New("invalid argument: must be specify path to the values.yaml"))
 	}
-	err := genJSONSchema(os.Args[1])
-	if err != nil {
+	refsMode = *refs
+	if err := genJSONSchema(flag.Arg(0)); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -117,6 +154,7 @@ func genJSONSchema(path string) error {
 
 	aliases = make(map[string]Schema)
 	descriptions = make(map[string]string)
+	defs = make(map[string]*Schema)
 
 	ls := make([]*VSchema, 0)
 
@@ -168,7 +206,11 @@ func genJSONSchema(path string) error {
 		return errors.Errorf("error: %s", err)
 	}
 
-	json, err := json.Marshal(newRoot(schemas))
+	root := newRoot(schemas)
+	if refsMode {
+		root.Defs = defs
+	}
+	json, err := json.MarshalIndent(root, "", "  ")
 	if err != nil {
 		return errors.Errorf("error: %s", err)
 	}
@@ -213,6 +255,9 @@ func genNode(prefix []string, ls []*VSchema) (*Schema, error) {
 	l := ls[0]
 
 	if l.Alias != "" {
+		if refsMode {
+			return &Schema{Ref: "#/$defs/" + defName(l.Alias)}, nil
+		}
 		schema, ok := aliases[l.Alias]
 		if !ok {
 			return nil, errors.Errorf("unknown alias %s", l.Alias)
@@ -260,7 +305,25 @@ func genNode(prefix []string, ls []*VSchema) (*Schema, error) {
 	}
 
 	if l.Anchor != "" {
+		if refsMode {
+			s := schema
+			defs[defName(l.Anchor)] = &s
+			return &Schema{Ref: "#/$defs/" + defName(l.Anchor)}, nil
+		}
 		aliases[l.Anchor] = schema
+	}
+
+	// In refsMode, hoist every object-with-properties into $defs (named by its
+	// path) so the code generator emits named Go types for all nested objects,
+	// not anonymous structs. This is required for controller-gen deepcopy.
+	if refsMode && schema.Type == objectType && len(schema.Properties) > 0 {
+		segs := make([]string, 0, len(prefix)+1)
+		segs = append(segs, prefix...)
+		segs = append(segs, l.Name)
+		name := defName(strings.Join(segs, "_"))
+		s := schema
+		defs[name] = &s
+		return &Schema{Ref: "#/$defs/" + name}, nil
 	}
 
 	return &schema, nil

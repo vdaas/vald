@@ -95,8 +95,9 @@ RUN --mount=type=bind,target=.,rw \
         echo "  chart: /opt/helm/charts/vald-helm-operator"; \
     } > /opt/helm/watches.yaml \
     && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} helm/schema/vald \
-    && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} helm/schema/vald-helm-operator \
-    && cp -r charts/* /opt/helm/charts/ \
+    && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} helm/schema/operator/helm \
+    && cp -r charts/vald /opt/helm/charts/vald \
+    && cp -r charts/operator/helm /opt/helm/charts/vald-helm-operator \
     && upx "/usr/bin/${APP_NAME}"
 # skipcq: DOK-DL3026,DOK-DL3007
 FROM gcr.io/distroless/static:nonroot

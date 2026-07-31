@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package main
 
@@ -97,8 +95,12 @@ const (
 	goWorkdir   = "${GOPATH}/src/github.com"
 	rustWorkdir = "${HOME}/rust/src/github.com"
 
-	ngtPreprocess         = "make ngt/install"
-	ngtClangLTOPreprocess = `CC=clang CXX=clang++ make CFLAGS="-flto=thin" CXXFLAGS="-flto=thin" NGT_EXTRA_CMAKE_FLAGS="-DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld" ngt/install`
+	ngtPreprocess = "make ngt/install"
+	// CC=clang selects ThinLTO + lld automatically (LTO_FLAGS/LLD_FLAGS in the
+	// root Makefile, and the ngt/install recipe's own -fuse-ld=lld). Do NOT set
+	// CFLAGS/CXXFLAGS here: env-set CFLAGS defeats the Makefile's `?=` AVX-512
+	// guard (the exact class of bug fixed in a9f79519f).
+	ngtClangLTOPreprocess = `CC=clang CXX=clang++ make ngt/install`
 	faissPreprocess       = "make faiss/install"
 	usearchPreprocess     = "make usearch/install"
 
@@ -111,7 +113,7 @@ const (
 	hackPath = "hack/**"
 
 	chartsValdPath            = "charts/" + vald
-	helmOperatorPath          = chartsValdPath + "-helm-operator"
+	helmOperatorPath          = "charts/operator/helm"
 	chartPath                 = chartsValdPath + "/Chart.yaml"
 	valuesPath                = chartsValdPath + "/values.yaml"
 	templatesPath             = chartsValdPath + "/templates/**"
@@ -684,15 +686,23 @@ func main() {
 			AppName:    "ngt",
 			PackageDir: agent + "/core/ngt",
 			// RuntimeImage:  "gcr.io/distroless/cc-debian12",
-			ExtraPackages: append(clangBuildDeps, ngtBuildDeps...),
-			Preprocess:    []string{ngtPreprocess},
+			// clang/lld/llvm (clangLTOBuildDeps) so CC auto-detect builds the
+			// agent with clang + ThinLTO + lld, statically linked against LLVM
+			// libomp. This is safe once -ffast-math is off the link line (its
+			// crtfastmath.o constructor, not the toolchain, was what crashed
+			// the static binary at startup); libomp-dev in ngtBuildDeps lets
+			// NGT's FindOpenMP resolve -lomp for the clang build.
+			ExtraPackages: append(clangBuildDeps,
+				append(ngtBuildDeps, clangLTOBuildDeps...)...),
+			Preprocess: []string{ngtPreprocess},
 		},
 		vald + "-" + agentFaiss: {
 			AppName:    "faiss",
 			PackageDir: agent + "/core/faiss",
 			// RuntimeImage:  "gcr.io/distroless/cc-debian12",
-			ExtraPackages: append(clangBuildDeps, ngtBuildDeps...),
-			Preprocess:    []string{faissPreprocess},
+			ExtraPackages: append(clangBuildDeps,
+				append(ngtBuildDeps, clangLTOBuildDeps...)...),
+			Preprocess: []string{faissPreprocess},
 		},
 		vald + "-" + agent: {
 			AppName:       agent,
@@ -759,6 +769,10 @@ func main() {
 			AppName:    indexOperator,
 			PackageDir: "index/operator",
 		},
+		vald + "-operator": {
+			AppName:    vald + "-operator",
+			PackageDir: "operator/vald",
+		},
 		vald + "-" + benchJob: {
 			AppName:       "job",
 			PackageDir:    "tools/benchmark/job",
@@ -769,7 +783,7 @@ func main() {
 		},
 		vald + "-" + benchOperator: {
 			AppName:    "operator",
-			PackageDir: "tools/benchmark/operator",
+			PackageDir: "operator/benchmark",
 		},
 		vald + "-" + helmOperator: {
 			AppName:       "helm-operator",
@@ -799,8 +813,9 @@ func main() {
         echo "  chart: ` + helmOperatorChartsDir + `/` + vald + `-helm-operator"; \
     } > ` + helmOperatorWatchFile,
 				"make GOARCH=${TARGETARCH} GOOS=${TARGETOS} helm/schema/" + vald,
-				"make GOARCH=${TARGETARCH} GOOS=${TARGETOS} helm/schema/" + vald + "-helm-operator",
-				"cp -r charts/* " + helmOperatorChartsDir + "/",
+				"make GOARCH=${TARGETARCH} GOOS=${TARGETOS} helm/schema/operator/helm",
+				"cp -r " + chartsValdPath + " " + helmOperatorChartsDir + "/" + vald,
+				"cp -r " + helmOperatorPath + " " + helmOperatorChartsDir + "/" + vald + "-helm-operator",
 				"upx \"{{$.BinDir}}/${APP_NAME}\"",
 			},
 			StageFiles: []string{
@@ -880,7 +895,8 @@ func main() {
 			data.Name = strings.TrimPrefix(name, vald+"-")
 			switch data.ContainerType {
 			case HelmOperator:
-				data.PullRequestPaths = append(data.PullRequestPaths,
+				data.PullRequestPaths = append(
+					data.PullRequestPaths,
 					chartPath,
 					valuesPath,
 					templatesPath,
@@ -890,7 +906,8 @@ func main() {
 					operatorSDKVersionPath,
 				)
 			case DevContainer:
-				data.PullRequestPaths = append(data.PullRequestPaths,
+				data.PullRequestPaths = append(
+					data.PullRequestPaths,
 					apisProtoPath,
 					hackPath,
 					goModPath,
@@ -898,7 +915,8 @@ func main() {
 					goVersionPath,
 				)
 			case Go:
-				data.PullRequestPaths = append(data.PullRequestPaths,
+				data.PullRequestPaths = append(
+					data.PullRequestPaths,
 					apisProtoPath,
 					goModPath,
 					goSumPath,
@@ -941,7 +959,8 @@ func main() {
 					data.PullRequestPaths = append(data.PullRequestPaths, pkgs...)
 				}
 			case Rust:
-				data.PullRequestPaths = append(data.PullRequestPaths,
+				data.PullRequestPaths = append(
+					data.PullRequestPaths,
 					apisProtoPath,
 					cargoLockPath,
 					cargoTomlPath,
@@ -1059,7 +1078,9 @@ jobs:
 			if err != nil {
 				return errors.Wrap(err, "failed to execute template")
 			}
-			buf.WriteString("\r\n")
+			// A bare LF here: CRLF would poison every generated workflow with
+			// carriage returns that git then has to normalize on checkin.
+			buf.WriteString("\n")
 			buf.WriteString(workflowYaml)
 			fileName := file.Join(os.Args[1], ".github/workflows", "dockers-"+data.Name+"-image.yaml")
 			_, err = file.OverWriteFile(egctx, fileName, buf, fs.ModePerm)
@@ -1185,6 +1206,10 @@ jobs:
 			tpl := buf.String()
 			buf.Reset()
 			template.Must(template.New("Dockerfile").Parse(tpl)).Execute(buf, data)
+			// End the file with a newline: POSIX text files end with one, and
+			// the license generator appends it anyway — without this the two
+			// generators ping-pong the final line of every Dockerfile.
+			buf.WriteString("\n")
 			fileName := file.Join(os.Args[1], "dockers", data.PackageDir, "Dockerfile")
 			_, err := file.OverWriteFile(egctx, fileName, buf, fs.ModePerm)
 			if err != nil {
@@ -1216,13 +1241,13 @@ func (n PackageNode) ToSlice() (pkgs []string) {
 
 // String returns string of the dependency tree in a readable format.
 func (n PackageNode) String() string {
-	return n.string(0)
+	return n.render(0)
 }
 
-func (n PackageNode) string(depth int) (tree string) {
+func (n PackageNode) render(depth int) (tree string) {
 	tree = fmt.Sprintf("%s- %s\n", strings.Repeat("  ", depth), n.Name)
 	for _, node := range n.Imports {
-		tree += node.string(depth + 1)
+		tree += node.render(depth + 1)
 	}
 	return tree
 }

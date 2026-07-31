@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 // Package service manages the main logic of benchmark job.
 package service
@@ -26,17 +24,19 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/internal/algorithm/recall"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s/client"
+	"github.com/vdaas/vald/internal/k8s/resource"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync/errgroup"
-	"github.com/vdaas/vald/internal/test/data/hdf5"
+	"github.com/vdaas/vald/internal/test/data/hdf5" //nolint:depguard // hdf5 dataset loading is the benchmark job's core input path, not test-only usage
 	"github.com/vdaas/vald/internal/timeutil/rate"
 )
 
@@ -204,7 +204,7 @@ func (j *job) PreStart(ctx context.Context) error {
 		}
 		log.Infof("[benchmark job] success download dataset of %s", j.hdf5.GetName().String())
 		log.Infof("[benchmark job] start load dataset of %s", j.hdf5.GetName().String())
-		var key hdf5.Hdf5Key
+		var key hdf5.Key
 		switch j.dataset.Group {
 		case "train":
 			key = hdf5.Train
@@ -221,7 +221,11 @@ func (j *job) PreStart(ctx context.Context) error {
 	}
 	// Wait for beforeJob completed if exists
 	if len(j.beforeJobName) != 0 {
-		var jobResource v1.ValdBenchmarkJob
+		// The configurable poll interval (beforeJobDur), the unbounded wait and
+		// the propagation of NotFound as an error all differ from
+		// resource.Client.Wait's fixed 5s/5m NotFound-tolerant semantics, so
+		// the loop polls Get directly instead of delegating to Wait.
+		benchJobs := resource.NewClientOf(j.k8sClient, new(v1.ValdBenchmarkJob), new(v1.ValdBenchmarkJobList))
 		log.Info("[benchmark job] check before benchjob is completed or not...")
 		j.eg.Go(safety.RecoverFunc(func() error {
 			dt := time.NewTicker(j.beforeJobDur)
@@ -231,7 +235,7 @@ func (j *job) PreStart(ctx context.Context) error {
 				case <-ctx.Done():
 					return nil
 				case <-dt.C:
-					err := j.k8sClient.Get(ctx, j.beforeJobName, j.beforeJobNamespace, &jobResource)
+					jobResource, err := benchJobs.Get(ctx, j.beforeJobName, j.beforeJobNamespace)
 					if err != nil {
 						return err
 					}
@@ -251,7 +255,11 @@ func (j *job) PreStart(ctx context.Context) error {
 }
 
 func (j *job) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 3)
+	// one slot for the connection-monitor error, one for the job's own error,
+	// and one for that error joined with ctx.Err() on shutdown, so no sender
+	// blocks.
+	const errChanBufferSize = 3
+	ech := make(chan error, errChanBufferSize)
 	cech, err := j.client.Start(ctx)
 	if err != nil {
 		log.Error("[benchmark job] failed to start connection monitor")
@@ -283,8 +291,8 @@ func (j *job) Start(ctx context.Context) (<-chan error, error) {
 				case ech <- err:
 				}
 			}
-			if err := p.Signal(syscall.SIGTERM); err != nil {
-				log.Error(err)
+			if serr := p.Signal(syscall.SIGTERM); serr != nil {
+				log.Error(serr)
 			}
 		}()
 		jctx := ctx
@@ -306,33 +314,37 @@ func (j *job) Stop(ctx context.Context) (err error) {
 	return err
 }
 
-func calcRecall(linearRes, searchRes *payload.Search_Response) (recall float64) {
+// calcRecall extracts the result IDs and delegates to the repository's
+// shared recall implementation, with the linear (exhaustive) search results
+// as the ground truth. Passing k = len(linear IDs) keeps the reported
+// values identical to the historical local implementation, whose
+// denominator was the linear result count. The equivalence assumes
+// len(search results) <= len(linear results), which holds because both
+// requests are built from the same search config Num; if the search ever
+// returned more, matches beyond that position would now be excluded per
+// the normalized recall@k definition, where the old code counted a match
+// anywhere in the list (see the regression test pinning both sides).
+func calcRecall(linearRes, searchRes *payload.Search_Response) float64 {
 	if linearRes == nil || searchRes == nil {
-		return recall
+		return 0
 	}
-	lres := linearRes.Results
-	sres := searchRes.Results
-	if len(lres) == 0 || len(sres) == 0 {
-		return recall
+	lids := make([]string, 0, len(linearRes.GetResults()))
+	for _, v := range linearRes.GetResults() {
+		lids = append(lids, v.GetId())
 	}
-	linearIds := map[string]struct{}{}
-	for _, v := range lres {
-		linearIds[v.Id] = struct{}{}
+	sids := make([]string, 0, len(searchRes.GetResults()))
+	for _, v := range searchRes.GetResults() {
+		sids = append(sids, v.GetId())
 	}
-	for _, v := range sres {
-		if _, ok := linearIds[v.Id]; ok {
-			recall++
-		}
-	}
-	return recall / float64(len(lres))
+	return recall.Calc(sids, lids, len(lids))
 }
 
 // TODO: apply many object type.
 func addNoiseToVec(oVec []float32) []float32 {
-	noise := rand.Float32()
+	noise := rand.Float32() //nolint:gosec // benchmark input jitter, no cryptographic strength needed
 	vec := oVec
 	if len(oVec) > 1 {
-		idx := rand.N(uint32(len(oVec) - 1))
+		idx := rand.N(uint32(len(oVec) - 1)) //nolint:gosec // benchmark input jitter, no cryptographic strength needed
 		vec[idx] += noise
 	} else if len(oVec) == 1 {
 		vec[0] += noise

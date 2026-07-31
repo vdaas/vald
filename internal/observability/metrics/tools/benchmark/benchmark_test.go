@@ -20,7 +20,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/internal/test/goleak"
-	"github.com/vdaas/vald/pkg/tools/benchmark/operator/service"
+	"github.com/vdaas/vald/pkg/operator/benchmark/service"
 )
 
 func TestNew(t *testing.T) {

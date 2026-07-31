@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 // Package service manages the main logic of server.
 package service
@@ -162,12 +160,6 @@ const (
 	oldIndexDirName    = "backup"
 	originIndexDirName = "origin"
 	brokenIndexDirName = "broken"
-
-	uncommittedAnnotationsKey                    = "vald.vdaas.org/uncommitted"
-	unsavedProcessedVqAnnotationsKey             = "vald.vdaas.org/unsaved-processed-vq"
-	unsavedCreateIndexExecutionNumAnnotationsKey = "vald.vdaas.org/unsaved-create-index-execution"
-	lastTimeSaveIndexTimestampAnnotationsKey     = "vald.vdaas.org/last-time-save-index-timestamp"
-	indexCountAnnotationsKey                     = "vald.vdaas.org/index-count"
 
 	// use this only for tests. usually just leave the ctx value empty and let time.Now() be used.
 	saveIndexTimeKey contextSaveIndexTimeKey = "saveIndexTimeKey"
@@ -2091,71 +2083,59 @@ func (n *ngt) toSearchResponse(
 }
 
 func (n *ngt) uncommittedEntry() (k, v string) {
-	return uncommittedAnnotationsKey, strconv.FormatUint(n.InsertVQueueBufferLen()+n.DeleteVQueueBufferLen(), 10)
+	return vald.UncommittedAnnotationsKey, strconv.FormatUint(n.InsertVQueueBufferLen()+n.DeleteVQueueBufferLen(), 10)
 }
 
 func (n *ngt) processedVqEntries() (k, v string) {
-	return unsavedProcessedVqAnnotationsKey, strconv.FormatUint(n.nopvq.Load(), 10)
+	return vald.UnsavedProcessedVQAnnotationsKey, strconv.FormatUint(n.nopvq.Load(), 10)
 }
 
 func (n *ngt) unsavedNumberOfCreateIndexExecutionEntry() (k, v string) {
 	num := n.NumberOfCreateIndexExecution() - n.lastNumberOfCreateIndexExecution()
-	return unsavedCreateIndexExecutionNumAnnotationsKey, strconv.FormatUint(num, 10)
+	return vald.UnsavedCreateIndexExecutionNumAnnotationsKey, strconv.FormatUint(num, 10)
 }
 
 func (n *ngt) lastTimeSaveIndexTimestampEntry(timestamp time.Time) (k, v string) {
-	return lastTimeSaveIndexTimestampAnnotationsKey, timestamp.UTC().Format(vald.TimeFormat)
+	return vald.LastTimeSaveIndexTimestampAnnotationsKey, timestamp.UTC().Format(vald.TimeFormat)
 }
 
 func (n *ngt) indexCountEntry() (k, v string) {
-	return indexCountAnnotationsKey, strconv.FormatUint(n.Len(), 10)
+	return vald.IndexCountAnnotationsKey, strconv.FormatUint(n.Len(), 10)
+}
+
+func (n *ngt) exportMetrics(ctx context.Context, entryFuncs ...func() (k, v string)) error {
+	entries := make(map[string]string, len(entryFuncs))
+	for _, entry := range entryFuncs {
+		k, v := entry()
+		entries[k] = v
+	}
+	return n.patcher.ApplyPodAnnotations(ctx, n.podName, n.podNamespace, entries)
 }
 
 func (n *ngt) exportMetricsOnTick(ctx context.Context) error {
-	entries := make(map[string]string)
-	k, v := n.uncommittedEntry()
-	entries[k] = v
-
-	k, v = n.indexCountEntry()
-	entries[k] = v
-
-	return n.patcher.ApplyPodAnnotations(ctx, n.podName, n.podNamespace, entries)
+	return n.exportMetrics(ctx,
+		n.uncommittedEntry,
+		n.indexCountEntry,
+	)
 }
 
 func (n *ngt) exportMetricsOnCreateIndex(ctx context.Context) error {
-	entries := make(map[string]string)
-	k, v := n.uncommittedEntry()
-	entries[k] = v
-
-	k, v = n.processedVqEntries()
-	entries[k] = v
-
-	k, v = n.unsavedNumberOfCreateIndexExecutionEntry()
-	entries[k] = v
-
-	k, v = n.indexCountEntry()
-	entries[k] = v
-
-	return n.patcher.ApplyPodAnnotations(ctx, n.podName, n.podNamespace, entries)
+	return n.exportMetrics(ctx,
+		n.uncommittedEntry,
+		n.processedVqEntries,
+		n.unsavedNumberOfCreateIndexExecutionEntry,
+		n.indexCountEntry,
+	)
 }
 
 func (n *ngt) exportMetricsOnSaveIndex(ctx context.Context) error {
-	entries := make(map[string]string)
-
-	val := ctx.Value(saveIndexTimeKey)
-	t, ok := val.(time.Time)
+	t, ok := ctx.Value(saveIndexTimeKey).(time.Time)
 	if !ok {
 		t = time.Now()
 	}
-
-	k, v := n.lastTimeSaveIndexTimestampEntry(t)
-	entries[k] = v
-
-	k, v = n.unsavedNumberOfCreateIndexExecutionEntry()
-	entries[k] = v
-
-	k, v = n.processedVqEntries()
-	entries[k] = v
-
-	return n.patcher.ApplyPodAnnotations(ctx, n.podName, n.podNamespace, entries)
+	return n.exportMetrics(ctx,
+		func() (k, v string) { return n.lastTimeSaveIndexTimestampEntry(t) },
+		n.unsavedNumberOfCreateIndexExecutionEntry,
+		n.processedVqEntries,
+	)
 }

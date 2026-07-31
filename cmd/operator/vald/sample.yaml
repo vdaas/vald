@@ -1,0 +1,262 @@
+#
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+version: v0.0.0
+time_zone: UTC
+logging:
+  format: raw
+  level: debug
+  logger: glg
+server_config:
+  servers:
+    - name: grpc
+      host: 0.0.0.0
+      port: 8081
+      grpc:
+        bidirectional_stream_concurrency: 20
+        connection_timeout: ""
+        enable_admin: false
+        enable_reflection: true
+        header_table_size: 0
+        initial_conn_window_size: 2097152
+        initial_window_size: 1048576
+        interceptors:
+          - RecoverInterceptor
+          - TraceInterceptor
+          - MetricInterceptor
+        keepalive:
+          max_conn_age: ""
+          max_conn_age_grace: ""
+          max_conn_idle: ""
+          min_time: 10m
+          permit_without_stream: false
+          time: 3h
+          timeout: 60s
+        max_header_list_size: 0
+        max_receive_message_size: 0
+        max_send_message_size: 0
+        read_buffer_size: 0
+        write_buffer_size: 0
+      mode: GRPC
+      network: tcp
+      probe_wait_time: 3s
+      restart: true
+      socket_option:
+        ip_recover_destination_addr: false
+        ip_transparent: false
+        reuse_addr: true
+        reuse_port: true
+        tcp_cork: false
+        tcp_defer_accept: false
+        tcp_fast_open: false
+        tcp_no_delay: false
+        tcp_quick_ack: false
+      socket_path: ""
+  health_check_servers:
+    - name: liveness
+      host: 0.0.0.0
+      port: 3000
+      http:
+        handler_timeout: ""
+        idle_timeout: ""
+        read_header_timeout: ""
+        read_timeout: ""
+        shutdown_duration: 5s
+        write_timeout: ""
+      mode: ""
+      network: tcp
+      probe_wait_time: 3s
+      socket_option:
+        ip_recover_destination_addr: false
+        ip_transparent: false
+        reuse_addr: true
+        reuse_port: true
+        tcp_cork: false
+        tcp_defer_accept: false
+        tcp_fast_open: true
+        tcp_no_delay: true
+        tcp_quick_ack: true
+      socket_path: ""
+    - name: readiness
+      host: 0.0.0.0
+      port: 3001
+      http:
+        handler_timeout: ""
+        idle_timeout: ""
+        read_header_timeout: ""
+        read_timeout: ""
+        shutdown_duration: 0s
+        write_timeout: ""
+      mode: ""
+      network: tcp
+      probe_wait_time: 3s
+      socket_option:
+        ip_recover_destination_addr: false
+        ip_transparent: false
+        reuse_addr: true
+        reuse_port: true
+        tcp_cork: false
+        tcp_defer_accept: false
+        tcp_fast_open: true
+        tcp_no_delay: true
+        tcp_quick_ack: true
+      socket_path: ""
+  metrics_servers:
+  startup_strategy:
+    - liveness
+    - grpc
+    - readiness
+  shutdown_strategy:
+    - readiness
+    - grpc
+    - liveness
+  full_shutdown_duration: 600s
+  tls:
+    ca: /path/to/ca
+    cert: /path/to/cert
+    enabled: false
+    insecure_skip_verify: false
+    key: /path/to/key
+observability:
+  enabled: false
+  otlp:
+    collector_endpoint: "opentelemetry-collector-collector.default.svc.cluster.local:4317"
+    trace_batch_timeout: "1s"
+    trace_export_timeout: "1m"
+    trace_max_export_batch_size: 1024
+    trace_max_queue_size: 256
+    metrics_export_interval: "1s"
+    metrics_export_timeout: "1m"
+    attribute:
+      namespace: "_MY_POD_NAMESPACE_"
+      pod_name: "_MY_POD_NAME_"
+      node_name: "_MY_NODE_NAME_"
+      service_name: "vald-operator"
+  metrics:
+    enable_cgo: true
+    enable_goroutine: true
+    enable_memory: true
+    enable_version_info: true
+    version_info_labels:
+      - vald_version
+      - server_name
+      - git_commit
+      - build_time
+      - go_version
+      - go_os
+      - go_arch
+      - algorithm_info
+  trace:
+    enabled: false
+operator:
+  # name of the controller (used as the controller-runtime manager name)
+  name: vald-operator
+  # namespace the operator is deployed in
+  namespace: default
+  # controller manager / reconcile loop behavior
+  controller:
+    # leader election settings of the controller-runtime manager
+    leader_election:
+      # enable leader election (required for HA deployments)
+      enabled: true
+      # name of the leader election lease resource
+      id: vald-operator
+      # namespace in which the lease resource is created (resolved from the MY_POD_NAMESPACE env so it follows the release namespace)
+      namespace: _MY_POD_NAMESPACE_
+      # how long non-leader candidates wait before acquiring an expired lease ("" = 15s)
+      lease_duration: 30s
+      # how long the leader retries refreshing its lease before giving up ("" = 10s)
+      renew_deadline: 20s
+      # wait between leader election actions ("" = 2s)
+      retry_period: 5s
+    # bind address of the manager metrics server ("" = :8080, "0" disables it)
+    metrics_address: ""
+    # reconcile worker count of the ValdOperatorRelease controller (0 = 1)
+    max_concurrent_reconciles: 2
+    # informer cache resync interval ("" = manager default, ~10h)
+    sync_period: ""
+    # restrict the manager cache to these namespaces ([] = whole cluster)
+    cache_namespaces: []
+    # requeue intervals of the ValdOperatorRelease reconcile loop
+    requeue:
+      # periodic requeue after a successful reconcile ("" disables it)
+      success: ""
+      # fixed retry interval on reconcile failure ("" = exponential backoff)
+      on_error: 100ms
+      # retry interval when the reconciled object is not found ("" disables it)
+      not_found: 1s
+  # values the operator injects into the generated ValdRelease.
+  # component-level VRS contents (image, resources, ...) belong to the
+  # default VRS template referenced by default_vrs_path.
+  vrs:
+    # path of the default ValdRelease template yaml (ConfigMap mount)
+    default_vrs_path: /opt/valdoperatorrelease/config/vrs.yaml
+    # log level passed through to the underlying vald deployment
+    log_level: warn
+    # log format passed through to the underlying vald deployment ("" = raw)
+    log_format: raw
+    # logger passed through to the underlying vald deployment ("" = glg)
+    logger: glg
+    # label key recording the owner generation on managed resources ("" = managed-generation)
+    managed_generation_label: managed-generation
+    agent:
+      # agent StatefulSet rolling-update max surge ("" = "1")
+      max_surge: "1"
+      # agent StatefulSet rolling-update max unavailable ("" = "1")
+      max_unavailable: "1"
+      # enable the NGT in-memory mode (omitted = true)
+      enable_in_memory_mode: true
+    gateway:
+      # gateway lb HPA target CPU utilization percentage (0 = 80)
+      hpa_target_cpu_utilization: 80
+      # service port name referenced by the gateway ingress ("" = grpc)
+      ingress_service_port: grpc
+      # ingress path type, one of Prefix, Exact or ImplementationSpecific ("" = Prefix)
+      ingress_path_type: Prefix
+    indexer:
+      # index manager auto index duration limit ("" = 1h)
+      auto_index_duration_limit: 1h
+      # index manager auto save index duration limit ("" = -1h)
+      auto_save_index_duration_limit: -1h
+  # node-pool matching behavior
+  node_pool:
+    # generate VRS only when matching nodepools exist in the cluster
+    require_match: false
+    # optional prefix for nodepool-related label keys (e.g. vald.vdaas.org)
+    label_prefix: ""
+    # number of agent pods per node
+    agent_pods_per_node: 2
+  # Agent.PersistentVolume fallback and sizing
+  persistent_volume:
+    # fallback StorageClass when the CR omits it
+    default_storage_class: standard
+    # fallback AccessMode when the CR omits it
+    default_access_mode: ReadWriteOnce
+    # PV sizing buffer ratio: max(memoryRequest * buffer_ratio, min_size_bytes)
+    buffer_ratio: 1.5
+    # minimum PV size in bytes
+    min_size_bytes: 1073741824
+  # gateway / discoverer networking
+  networking:
+    # enable the ingress for the gateway
+    enable_ingress: true
+    # annotations applied to the gateway ingress
+    gateway_ingress_annotations: {}
+    # service type of the gateway, one of NodePort, ClusterIP or LoadBalancer
+    gateway_service_type: NodePort
+    # discoverer DaemonSet rolling-update max surge (intstr percent string)
+    discoverer_daemonset_max_surge: 30%
+    # discoverer DaemonSet rolling-update max unavailable (intstr percent string)
+    discoverer_daemonset_max_unavailable: 0%

@@ -36,8 +36,9 @@ binary/build/go: \
 	cmd/index/job/save/index-save \
 	cmd/index/operator/index-operator \
 	cmd/manager/index/index \
+	cmd/operator/vald/vald-operator \
 	cmd/tools/benchmark/job/job \
-	cmd/tools/benchmark/operator/operator \
+	cmd/operator/benchmark/operator \
 	example/client/client \
 	cmd/agent/core/ngt/ngt \
 	cmd/agent/core/faiss/faiss
@@ -115,23 +116,37 @@ cmd/index/operator/index-operator:
 	$(eval CGO_ENABLED = 0)
 	$(call go-build,index/operator,,-static,,,$@)
 
+cmd/operator/vald/vald-operator:
+	$(eval CGO_ENABLED = 0)
+	$(call go-build,operator/vald,,-static,,,$@)
+
 cmd/tools/benchmark/job/job:
 	$(eval CGO_ENABLED = 1)
 	$(call go-build,tools/benchmark/job,-linkmode 'external',$(LDFLAGS) $(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
 
-cmd/tools/benchmark/operator/operator:
+cmd/operator/benchmark/operator:
 	$(eval CGO_ENABLED = 0)
-	$(call go-build,tools/benchmark/operator,,-static,,,$@)
+	$(call go-build,operator/benchmark,,-static,,,$@)
 
 example/client/client:
 	$(eval CGO_ENABLED = 1)
-	$(call go-example-build,example/client,-linkmode 'external',$(LDFLAGS) $(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
+	$(call go-example-build,example/client,-linkmode 'external',$(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
 
 rust/target/release/agent:
-	pushd rust && cargo build -p agent --release && popd
+	pushd rust && \
+	$(CC_ENV_VARS) \
+	OPENSSL_STATIC=1 \
+	PKG_CONFIG_ALL_STATIC=1 \
+	cargo build -p agent --release && \
+	popd
 
 rust/target/debug/agent:
-	pushd rust && cargo build -p agent && popd
+	pushd rust && \
+	$(CC_ENV_VARS) \
+	OPENSSL_STATIC=1 \
+	PKG_CONFIG_ALL_STATIC=1 \
+	cargo build -p agent && \
+	popd
 
 tests/v2/e2e/e2e:
 	$(eval CGO_ENABLED = 1)
@@ -158,6 +173,10 @@ binary/build/zip: \
 	artifacts/vald-manager-index-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-mirror-gateway-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-readreplica-rotate-$(GOOS)-$(GOARCH).zip
+
+artifacts/%.zip:
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
 
 artifacts/vald-agent-ngt-$(GOOS)-$(GOARCH).zip: cmd/agent/core/ngt/ngt
 	$(call mkdir, $(dir $@))
@@ -191,7 +210,7 @@ artifacts/vald-benchmark-job-$(GOOS)-$(GOARCH).zip: cmd/tools/benchmark/job/job
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
 
-artifacts/vald-benchmark-operator-$(GOOS)-$(GOARCH).zip: cmd/tools/benchmark/operator/operator
+artifacts/vald-benchmark-operator-$(GOOS)-$(GOARCH).zip: cmd/operator/benchmark/operator
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
 

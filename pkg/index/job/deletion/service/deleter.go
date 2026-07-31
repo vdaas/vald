@@ -22,6 +22,7 @@ import (
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
@@ -39,10 +40,6 @@ const (
 type Deleter interface {
 	StartClient(ctx context.Context) (<-chan error, error)
 	Start(ctx context.Context) error
-}
-
-var defaultOpts = []Option{
-	WithIndexingConcurrency(1),
 }
 
 type index struct {
@@ -66,21 +63,8 @@ func New(opts ...Option) (Deleter, error) {
 			log.Warn(oerr)
 		}
 	}
-	idx.targetAddrs = delDuplicateAddrs(idx.targetAddrs)
+	idx.targetAddrs = net.DistinctAddrs(idx.targetAddrs)
 	return idx, nil
-}
-
-func delDuplicateAddrs(targetAddrs []string) []string {
-	addrs := make([]string, 0, len(targetAddrs))
-	exist := make(map[string]bool)
-
-	for _, addr := range targetAddrs {
-		if !exist[addr] {
-			addrs = append(addrs, addr)
-			exist[addr] = true
-		}
-	}
-	return addrs
 }
 
 // StartClient starts the gRPC client.
@@ -96,7 +80,8 @@ func (idx *index) Start(ctx context.Context) error {
 		}
 	}()
 
-	err := idx.doDeleteIndex(ctx,
+	err := idx.doDeleteIndex(
+		ctx,
 		func(ctx context.Context, rc vald.RemoveClient, copts ...grpc.CallOption) (*payload.Object_Location, error) {
 			return rc.Remove(ctx, &payload.Remove_Request{
 				Id: &payload.Object_ID{
@@ -123,7 +108,8 @@ func (idx *index) Start(ctx context.Context) error {
 				st  *status.Status
 				msg string
 			)
-			st, msg, err = status.ParseError(err, codes.Internal,
+			st, msg, err = status.ParseError(
+				err, codes.Internal,
 				"failed to parse "+vald.RemoveRPCName+" gRPC error response",
 			)
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
@@ -164,7 +150,8 @@ func (idx *index) doDeleteIndex(
 	log.Infof("target agent addrs: %v", targetAddrs)
 
 	var emu sync.Mutex
-	err := idx.client.GetClient().OrderedRangeConcurrent(ctx, targetAddrs, idx.concurrency,
+	err := idx.client.GetClient().OrderedRangeConcurrent(
+		ctx, targetAddrs, idx.concurrency,
 		func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "OrderedRangeConcurrent/"+target), vald.RemoveRPCName+"/"+target)
 			defer func() {
@@ -201,7 +188,8 @@ func (idx *index) doDeleteIndex(
 						st  *status.Status
 						msg string
 					)
-					st, msg, err = status.ParseError(err, codes.Internal,
+					st, msg, err = status.ParseError(
+						err, codes.Internal,
 						"failed to parse "+vald.RemoveRPCName+" gRPC error response",
 					)
 					if st != nil && err != nil && st.Code() == codes.FailedPrecondition {

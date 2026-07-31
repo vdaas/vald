@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package net
 
@@ -435,8 +433,23 @@ func (d *dialer) tlsHandshake(
 		err = errors.ErrFailedToHandshakeTLSConnection(network, addr)
 	}
 	if err != nil {
-		tctx, tcancel := context.WithTimeout(ctx, d.der.Timeout)
-		defer tcancel()
+		// The in-place handshake on the passed-in conn failed; close it so its
+		// socket is not leaked before we re-dial a fresh connection below.
+		if tconn != nil {
+			if cerr := tconn.Close(); cerr != nil {
+				log.Debugf("failed to close failed-handshake tls conn for %s: %v", addr, cerr)
+			}
+			tconn = nil
+		}
+		// Only bound the re-dial when a positive timeout is configured: a zero
+		// d.der.Timeout means "no timeout", and WithTimeout(ctx, 0) would hand
+		// DialContext an already-expired context (mirrors the primary attempt).
+		tctx := ctx
+		if d.der.Timeout > 0 {
+			var tcancel context.CancelFunc
+			tctx, tcancel = context.WithTimeout(ctx, d.der.Timeout)
+			defer tcancel()
+		}
 		err = safety.RecoverWithoutPanicFunc(func() error {
 			d.tmu.RLock()
 			tder := &tls.Dialer{
@@ -448,8 +461,12 @@ func (d *dialer) tlsHandshake(
 			return err
 		})()
 		if err != nil || conn == nil {
-			ttctx, ttcancel := context.WithTimeout(ctx, d.der.Timeout)
-			defer ttcancel()
+			ttctx := ctx
+			if d.der.Timeout > 0 {
+				var ttcancel context.CancelFunc
+				ttctx, ttcancel = context.WithTimeout(ctx, d.der.Timeout)
+				defer ttcancel()
+			}
 			err = safety.RecoverWithoutPanicFunc(func() error {
 				d.tmu.RLock()
 				tder := &tls.Dialer{
@@ -469,7 +486,11 @@ func (d *dialer) tlsHandshake(
 			}
 			return nil, err
 		}
-		tconn, ok := conn.(*tls.Conn)
+		// Assign to the named return tconn instead of shadowing it with :=, so
+		// the successfully re-dialed connection (not the original failed one
+		// from the top of the function) is what gets returned below.
+		var ok bool
+		tconn, ok = conn.(*tls.Conn)
 		if !ok || tconn == nil || !tconn.ConnectionState().HandshakeComplete {
 			return nil, errors.ErrFailedToHandshakeTLSConnection(network, addr)
 		}

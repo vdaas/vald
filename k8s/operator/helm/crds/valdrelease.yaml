@@ -2454,6 +2454,8 @@ spec:
                       type: object
                     image:
                       properties:
+                        registry:
+                          type: string
                         tag:
                           type: string
                       type: object
@@ -6657,6 +6659,8 @@ spec:
                                 - Always
                                 - Never
                                 - IfNotPresent
+                              type: string
+                            registry:
                               type: string
                             repository:
                               type: string

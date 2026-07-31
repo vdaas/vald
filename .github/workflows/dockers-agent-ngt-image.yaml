@@ -82,6 +82,8 @@ on:
       - internal/io/*.go
       - internal/k8s/*.go
       - internal/k8s/client/*.go
+      - internal/k8s/reconciler/*.go
+      - internal/k8s/resource/*.go
       - internal/k8s/vald/*.go
       - internal/log/*.go
       - internal/log/format/*.go
@@ -98,6 +100,7 @@ on:
       - internal/net/grpc/codes/*.go
       - internal/net/grpc/credentials/*.go
       - internal/net/grpc/errdetails/*.go
+      - internal/net/grpc/errhandler/*.go
       - internal/net/grpc/health/*.go
       - internal/net/grpc/interceptor/client/metric/*.go
       - internal/net/grpc/interceptor/client/trace/*.go
@@ -207,6 +210,8 @@ on:
       - internal/io/*.go
       - internal/k8s/*.go
       - internal/k8s/client/*.go
+      - internal/k8s/reconciler/*.go
+      - internal/k8s/resource/*.go
       - internal/k8s/vald/*.go
       - internal/log/*.go
       - internal/log/format/*.go
@@ -223,6 +228,7 @@ on:
       - internal/net/grpc/codes/*.go
       - internal/net/grpc/credentials/*.go
       - internal/net/grpc/errdetails/*.go
+      - internal/net/grpc/errhandler/*.go
       - internal/net/grpc/health/*.go
       - internal/net/grpc/interceptor/client/metric/*.go
       - internal/net/grpc/interceptor/client/trace/*.go

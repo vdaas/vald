@@ -19,11 +19,11 @@ We appreciate your help!
 
 ## Contributing Issue
 
-We use [Github Issues](https://github.com/vdaas/vald/issues) to track issues within this repository.
-If you can determine the problem you are facing is a bug or issue, you can easily submit the issues.
+We use [GitHub Issues](https://github.com/vdaas/vald/issues) to track issues within this repository.
+If you can determine the problem you are facing is a bug or issue, you can submit the issue.
 
-If you are unsure whether you have found a bug or security-related issues, please consider asking in the [Vald Slack](https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA) first.
-If the behavior you are seeing is confirmed as a bug or issue, it can easily be re-raised in the issue tracker.
+When unsure whether you have found a bug or security-related issue, please consider asking in the [Vald Slack](https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA) first.
+If the behavior you are seeing is confirmed as a bug or issue, it can be re-raised in the issue tracker.
 
 ### Bug Report
 
@@ -35,7 +35,7 @@ Please try to write as detailed as possible in your bug report.
 
 When filing an issue, make sure to answer these five questions:
 
-1. What version of Vald are you using (vald docker image version)?
+1. What version of Vald are you using (Vald Docker image version)?
 2. What operating system and processor architecture are you using?
 3. What did you do?
 4. What did you expect to see?
@@ -49,7 +49,7 @@ The Vald is being developed based on the design-driven process.<br>
 The significant change to the library or the architecture should be discussed first.
 
 We may ask for detailed documentation before your proposal is accepted.<br>
-Your proposal will be reviewed, discussed, and decided whether it is accepted or declined.
+Your proposal will be reviewed, discussed, and accepted or declined.
 
 Please submit the proposal [here](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Ffeature%2C+priority%2Flow%2C+team%2Fcore&template=feature_request.md&title=)
 
@@ -91,7 +91,7 @@ Follow these steps to make a contribution to any of our open source repositories
 2. Set your name and email (these should match the information on your submitted CLA)
 
    ```bash
-   git config --global user.name "Firstname Lastname"
+   git config --global user.name "Your Name"
    git config --global user.email "your_email@example.com"
    ```
 
@@ -104,9 +104,9 @@ Follow these steps to make a contribution to any of our open source repositories
 5. Push to the forked branch (git push origin my-new-feature)
 6. Create new Pull Request
 
-Each pull request and commit should be small enough to contain only one purpose.
+Each pull request and commit should be small enough to address a single purpose.
 
-Your pull request is much more likely to be accepted if:
+Your pull request has a higher chance of being accepted if:
 
 - Your pull request includes tests
 
@@ -116,14 +116,14 @@ Your pull request is much more likely to be accepted if:
 
 ### How to contribute unit test code
 
-To contribute unit test code, the steps are almost the same as [contribute source code](#how-to-contribute-source-code), but there are some extra steps when implementing a test function which is not implemented before:
+To contribute unit test code, the steps are almost the same as [contribute source code](#how-to-contribute-source-code), but there are some extra steps when adding a test function that has not been added before:
 
 1. Execute `make gotests/gen` command under Vald repository
-1. Move the test function which you would like to implement above the placeholder `// NOT IMPLEMENTED BELOW`
-1. Uncomment and implement the test function
+1. Move the test function which you would like to write above the placeholder `// NOT IMPLEMENTED BELOW`
+1. Remove the comment markers and write the test function
 
-Vald implmentes unit test code to ensure the quality of Vald.
-Each implementation file comes with its unit test file, with `*_test.go` postfix.
+Vald implements unit test code to ensure the quality of Vald.
+Each implementation file comes with its unit test file, with `*_test.go` suffix.
 In Vald, unit test files are looks like:
 
 ```go
@@ -186,10 +186,10 @@ Name your branches with prefixes: `[type]/[area]/[description]`
 
 | Field       | Explanation                           | Naming Rule                                                                                                               |
 | :---------- | :------------------------------------ | :------------------------------------------------------------------------------------------------------------------------ |
-| type        | The PR type                           | The type of PR can be feature, bug, refactoring, benchmark, security, documentation, dependencies, ci, test, or etc...    |
+| type        | The PR type                           | Accepted PR types: feature, bug, refactoring, benchmark, security, documentation, dependencies, ci, test, etc.            |
 | area        | Area of context                       | The area of PR can be gateway, agent, agent-sidecar, lb-gateway, or etc...                                                |
 | description | Summarized description of your branch | The description must be hyphenated. Please use [a-zA-Z0-9] and hyphen as characters, and do not use any other characters. |
 
-(\*) If you changed multiple areas, please list each area with "-".
+(\*) If you changed more than one area, please list each area with `-`.
 
-For example, when you add a new feature for internal/servers, the name of the branch will be `feature/internal/add-newfeature-for-servers`.
+For example, when you add a new feature for internal/servers, the name of the branch will be `feature/internal/add-new-feature-for-servers`.

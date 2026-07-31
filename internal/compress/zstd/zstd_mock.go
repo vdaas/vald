@@ -62,7 +62,7 @@ func (m *MockDecoder) WriteTo(w io.Writer) (int64, error) {
 	return m.WriteToFunc(w)
 }
 
-// MockZstd represents mock struct of Zstd.
+// MockZstd represents mock struct of Compressor.
 type MockZstd struct {
 	NewWriterFunc func(w io.Writer, opts ...zstd.EOption) (Encoder, error)
 	NewReaderFunc func(r io.Reader, opts ...zstd.DOption) (Decoder, error)

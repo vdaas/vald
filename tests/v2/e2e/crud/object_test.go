@@ -1,20 +1,18 @@
 //go:build e2e
 
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 // package crud provides end-to-end tests using ann-benchmarks datasets.
 package crud
@@ -31,19 +29,19 @@ import (
 )
 
 var (
-	objectRequest newRequest[*payload.Object_VectorRequest] = func(t *testing.T, _ uint64, id string, _ []float32, _ *config.Execution) *payload.Object_VectorRequest {
+	objectRequest newRequest[*payload.Object_VectorRequest] = func(t testing.TB, _ uint64, id string, _ []float32, _ *config.Execution) *payload.Object_VectorRequest {
 		return &payload.Object_VectorRequest{
 			Id: existsRequest(t, 0, id, nil, nil),
 		}
 	}
 
-	existsRequest newRequest[*payload.Object_ID] = func(t *testing.T, _ uint64, id string, _ []float32, _ *config.Execution) *payload.Object_ID {
+	existsRequest newRequest[*payload.Object_ID] = func(t testing.TB, _ uint64, id string, _ []float32, _ *config.Execution) *payload.Object_ID {
 		return &payload.Object_ID{
 			Id: id,
 		}
 	}
 
-	timestampRequest newRequest[*payload.Object_TimestampRequest] = func(t *testing.T, _ uint64, id string, _ []float32, _ *config.Execution) *payload.Object_TimestampRequest {
+	timestampRequest newRequest[*payload.Object_TimestampRequest] = func(t testing.TB, _ uint64, id string, _ []float32, _ *config.Execution) *payload.Object_TimestampRequest {
 		return &payload.Object_TimestampRequest{
 			Id: existsRequest(t, 0, id, nil, nil),
 		}
@@ -51,7 +49,7 @@ var (
 )
 
 func (r *runner) processObject(
-	t *testing.T,
+	t testing.TB,
 	ctx context.Context,
 	train iter.Cycle[[][]float32, []float32],
 	plan *config.Execution,

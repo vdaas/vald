@@ -1,18 +1,16 @@
-//
 // Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package grpc
 
@@ -33,6 +31,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/errhandler"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -63,6 +62,16 @@ type server struct {
 
 const apiName = "vald/gateway-filter"
 
+// resourceInfo builds the errdetails.ResourceInfo shared by every handler error
+// path: the resourceType is caller-specific, the resource name is always this
+// server's apiName/name/ip triple.
+func (s *server) resourceInfo(resourceType string) *errdetails.ResourceInfo {
+	return &errdetails.ResourceInfo{
+		ResourceType: resourceType,
+		ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+	}
+}
+
 func New(opts ...Option) vald.ServerWithFilter {
 	s := new(server)
 
@@ -76,11 +85,7 @@ func (s *server) SearchObject(
 	ctx context.Context, req *payload.Search_ObjectRequest,
 ) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.SearchObjectRPCName), apiName+"/"+vald.SearchObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	vr := req.GetVectorizer()
 	if vr == nil || vr.GetPort() == 0 {
 		err = errors.ErrFilterNotFound
@@ -97,17 +102,9 @@ func (s *server) SearchObject(
 					},
 				},
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchObjectRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			})
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.SearchObjectRPCName))
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Search_Response](span, codes.InvalidArgument, err)
 	}
 	if vr.GetHost() == "" {
 		vr.Host = "localhost"
@@ -129,17 +126,9 @@ func (s *server) SearchObject(
 						},
 					},
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchObjectRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.SearchObjectRPCName))
 			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Search_Response](span, codes.InvalidArgument, err)
 		}
 		target = s.Vectorizer
 	}
@@ -160,17 +149,9 @@ func (s *server) SearchObject(
 					},
 				},
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchObjectRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.SearchObjectRPCName), info.Get())
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Search_Response](span, codes.Unavailable, err)
 	}
 	vec, err := c.GenVector(ctx, &payload.Object_Blob{
 		Object: req.GetObject(),
@@ -189,17 +170,9 @@ func (s *server) SearchObject(
 					},
 				},
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchObjectRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.SearchObjectRPCName), info.Get())
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Search_Response](span, codes.Internal, err)
 	}
 	return s.Search(ctx, &payload.Search_Request{
 		Vector: vec.GetVector(),
@@ -211,11 +184,7 @@ func (s *server) MultiSearchObject(
 	ctx context.Context, reqs *payload.Search_MultiObjectRequest,
 ) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.MultiSearchObjectRPCName), apiName+"/"+vald.MultiSearchObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	res = &payload.Search_Responses{
 		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
@@ -228,19 +197,11 @@ func (s *server) MultiSearchObject(
 		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s.%s/errgroup.Go/id-%d", apiName, vald.MultiSearchObjectRPCName, idx))
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			r, err := s.SearchObject(ctx, query)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				mu.Lock()
 				if errs == nil {
 					errs = status.WrapWithNotFound(
@@ -265,28 +226,16 @@ func (s *server) MultiSearchObject(
 
 func (s *server) StreamSearchObject(stream vald.Filter_StreamSearchObjectServer) error {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.StreamSearchObjectRPCName), apiName+"/"+vald.StreamSearchObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	return grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Search_ObjectRequest) (*payload.Search_StreamResponse, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamSearchObjectRPCName+"/requestID-"+req.GetConfig().GetRequestId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 
 			res, err := s.SearchObject(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				return &payload.Search_StreamResponse{
 					Payload: &payload.Search_StreamResponse_Status{
 						Status: st.Proto(),
@@ -305,11 +254,7 @@ func (s *server) LinearSearchObject(
 	ctx context.Context, req *payload.Search_ObjectRequest,
 ) (*payload.Search_Response, error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.LinearSearchObjectRPCName), apiName+"/"+vald.LinearSearchObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	vr := req.GetVectorizer()
 	if vr == nil || vr.GetPort() == 0 {
 		err := errors.ErrInvalidAPIConfig
@@ -326,17 +271,9 @@ func (s *server) LinearSearchObject(
 					},
 				},
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchObjectRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			})
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.LinearSearchObjectRPCName))
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Search_Response](span, codes.InvalidArgument, err)
 	}
 	if vr.GetHost() == "" {
 		vr.Host = "localhost"
@@ -358,17 +295,9 @@ func (s *server) LinearSearchObject(
 						},
 					},
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchObjectRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.LinearSearchObjectRPCName))
 			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Search_Response](span, codes.InvalidArgument, err)
 		}
 		target = s.Vectorizer
 	}
@@ -387,17 +316,9 @@ func (s *server) LinearSearchObject(
 					},
 				},
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchObjectRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.LinearSearchObjectRPCName), info.Get())
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Search_Response](span, codes.Unavailable, err)
 	}
 	vec, err := c.GenVector(ctx, &payload.Object_Blob{
 		Object: req.GetObject(),
@@ -416,17 +337,9 @@ func (s *server) LinearSearchObject(
 					},
 				},
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchObjectRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.LinearSearchObjectRPCName), info.Get())
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Search_Response](span, codes.Internal, err)
 	}
 	return s.LinearSearch(ctx, &payload.Search_Request{
 		Vector: vec.GetVector(),
@@ -438,11 +351,7 @@ func (s *server) MultiLinearSearchObject(
 	ctx context.Context, reqs *payload.Search_MultiObjectRequest,
 ) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.MultiLinearSearchObjectRPCName), apiName+"/"+vald.MultiLinearSearchObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	res = &payload.Search_Responses{
 		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
@@ -455,20 +364,12 @@ func (s *server) MultiLinearSearchObject(
 		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiLinearSearchObjectRPCName+"/requestID-"+query.GetConfig().GetRequestId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 
 			r, err := s.LinearSearchObject(ctx, query)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 
 				mu.Lock()
 				if errs == nil {
@@ -497,28 +398,16 @@ func (s *server) StreamLinearSearchObject(stream vald.Filter_StreamSearchObjectS
 		grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.StreamLinearSearchObjectRPCName),
 		apiName+"/"+vald.StreamLinearSearchObjectRPCName,
 	)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err := grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Search_ObjectRequest) (*payload.Search_StreamResponse, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamLinearSearchObjectRPCName+"/requestID-"+req.GetConfig().GetRequestId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 
 			res, err := s.LinearSearchObject(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				return &payload.Search_StreamResponse{
 					Payload: &payload.Search_StreamResponse_Status{
 						Status: st.Proto(),
@@ -532,11 +421,7 @@ func (s *server) StreamLinearSearchObject(stream vald.Filter_StreamSearchObjectS
 			}, nil
 		})
 	if err != nil {
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanError(span, codes.Internal, err)
 		log.Error(err)
 		return err
 	}
@@ -547,11 +432,7 @@ func (s *server) InsertObject(
 	ctx context.Context, req *payload.Insert_ObjectRequest,
 ) (*payload.Object_Location, error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.InsertObjectRPCName), apiName+"/"+vald.InsertObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	vr := req.GetVectorizer()
 	if vr == nil || vr.GetPort() == 0 {
 		err := errors.ErrFilterNotFound
@@ -568,17 +449,9 @@ func (s *server) InsertObject(
 					},
 				},
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertObjectRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			})
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.InsertObjectRPCName))
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.InvalidArgument, err)
 	}
 	if vr.GetHost() == "" {
 		vr.Host = "localhost"
@@ -600,17 +473,9 @@ func (s *server) InsertObject(
 						},
 					},
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertObjectRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.InsertObjectRPCName))
 			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Object_Location](span, codes.InvalidArgument, err)
 		}
 		target = s.Vectorizer
 	}
@@ -629,17 +494,9 @@ func (s *server) InsertObject(
 					},
 				},
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertObjectRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.InsertObjectRPCName), info.Get())
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.Unavailable, err)
 	}
 	vec, err := c.GenVector(ctx, req.GetObject())
 	if err != nil {
@@ -656,17 +513,9 @@ func (s *server) InsertObject(
 					},
 				},
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertObjectRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.InsertObjectRPCName), info.Get())
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.Internal, err)
 	}
 	return s.Insert(ctx, &payload.Insert_Request{
 		Vector: &payload.Object_Vector{
@@ -679,28 +528,16 @@ func (s *server) InsertObject(
 
 func (s *server) StreamInsertObject(stream vald.Filter_StreamInsertObjectServer) error {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.StreamInsertObjectRPCName), apiName+"/"+vald.StreamInsertObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err := grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Insert_ObjectRequest) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamInsertObjectRPCName+"/requestID-"+req.GetObject().GetId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 
 			loc, err := s.InsertObject(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				return &payload.Object_StreamLocation{
 					Payload: &payload.Object_StreamLocation_Status{
 						Status: st.Proto(),
@@ -714,11 +551,7 @@ func (s *server) StreamInsertObject(stream vald.Filter_StreamInsertObjectServer)
 			}, nil
 		})
 	if err != nil {
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanError(span, codes.Internal, err)
 		log.Error(err)
 		return err
 	}
@@ -729,11 +562,7 @@ func (s *server) MultiInsertObject(
 	ctx context.Context, reqs *payload.Insert_MultiObjectRequest,
 ) (locs *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.MultiInsertObjectRPCName), apiName+"/"+vald.MultiInsertObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	locs = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
@@ -746,20 +575,12 @@ func (s *server) MultiInsertObject(
 		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiInsertObjectRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 
 			loc, err := s.InsertObject(ctx, query)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 
 				mu.Lock()
 				if errs == nil {
@@ -787,11 +608,7 @@ func (s *server) UpdateObject(
 	ctx context.Context, req *payload.Update_ObjectRequest,
 ) (*payload.Object_Location, error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.UpdateObjectRPCName), apiName+"/"+vald.UpdateObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	vr := req.GetVectorizer()
 	if vr == nil || vr.GetPort() == 0 {
 		err := errors.ErrFilterNotFound
@@ -808,17 +625,9 @@ func (s *server) UpdateObject(
 					},
 				},
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateObjectRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			})
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.UpdateObjectRPCName))
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.InvalidArgument, err)
 	}
 	if vr.GetHost() == "" {
 		vr.Host = "localhost"
@@ -841,17 +650,9 @@ func (s *server) UpdateObject(
 						},
 					},
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateObjectRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.UpdateObjectRPCName))
 			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Object_Location](span, codes.InvalidArgument, err)
 		}
 		target = s.Vectorizer
 	}
@@ -870,17 +671,9 @@ func (s *server) UpdateObject(
 					},
 				},
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateObjectRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.UpdateObjectRPCName), info.Get())
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.Unavailable, err)
 	}
 	vec, err := c.GenVector(ctx, req.GetObject())
 	if err != nil {
@@ -897,17 +690,9 @@ func (s *server) UpdateObject(
 					},
 				},
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateObjectRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.UpdateObjectRPCName), info.Get())
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.Internal, err)
 	}
 	return s.Update(ctx, &payload.Update_Request{
 		Vector: &payload.Object_Vector{
@@ -920,27 +705,15 @@ func (s *server) UpdateObject(
 
 func (s *server) StreamUpdateObject(stream vald.Filter_StreamUpdateObjectServer) error {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.StreamUpdateObjectRPCName), apiName+"/"+vald.StreamUpdateObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err := grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Update_ObjectRequest) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamUpdateObjectRPCName+"/id-"+req.GetObject().GetId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			loc, err := s.UpdateObject(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				return &payload.Object_StreamLocation{
 					Payload: &payload.Object_StreamLocation_Status{
 						Status: st.Proto(),
@@ -954,11 +727,7 @@ func (s *server) StreamUpdateObject(stream vald.Filter_StreamUpdateObjectServer)
 			}, nil
 		})
 	if err != nil {
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanError(span, codes.Internal, err)
 		log.Error(err)
 		return err
 	}
@@ -969,11 +738,7 @@ func (s *server) MultiUpdateObject(
 	ctx context.Context, reqs *payload.Update_MultiObjectRequest,
 ) (locs *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.MultiUpdateObjectRPCName), apiName+"/"+vald.MultiUpdateObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	locs = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
@@ -986,19 +751,11 @@ func (s *server) MultiUpdateObject(
 		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiUpdateObjectRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			loc, err := s.UpdateObject(ctx, query)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				log.Warn(err)
 				mu.Lock()
 				if errs == nil {
@@ -1026,11 +783,7 @@ func (s *server) UpsertObject(
 	ctx context.Context, req *payload.Upsert_ObjectRequest,
 ) (*payload.Object_Location, error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.UpsertObjectRPCName), apiName+"/"+vald.UpsertObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	vr := req.GetVectorizer()
 	if vr == nil || vr.GetPort() == 0 {
 		err := errors.ErrFilterNotFound
@@ -1047,17 +800,9 @@ func (s *server) UpsertObject(
 					},
 				},
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertObjectRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			})
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.UpsertObjectRPCName))
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.InvalidArgument, err)
 	}
 	if vr.GetHost() == "" {
 		vr.Host = "localhost"
@@ -1079,17 +824,9 @@ func (s *server) UpsertObject(
 						},
 					},
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertObjectRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+				s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.UpsertObjectRPCName))
 			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Object_Location](span, codes.InvalidArgument, err)
 		}
 		target = s.Vectorizer
 	}
@@ -1116,17 +853,9 @@ func (s *server) UpsertObject(
 					},
 				},
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertObjectRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.UpsertObjectRPCName), info.Get())
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.Unavailable, err)
 	}
 	vec, err := c.GenVector(ctx, req.GetObject())
 	if err != nil {
@@ -1143,17 +872,9 @@ func (s *server) UpsertObject(
 					},
 				},
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertObjectRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.UpsertObjectRPCName), info.Get())
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.Internal, err)
 	}
 	return s.Upsert(ctx, &payload.Upsert_Request{
 		Vector: &payload.Object_Vector{
@@ -1166,28 +887,16 @@ func (s *server) UpsertObject(
 
 func (s *server) StreamUpsertObject(stream vald.Filter_StreamUpsertObjectServer) error {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.StreamUpsertObjectRPCName), apiName+"/"+vald.StreamUpsertObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err := grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Upsert_ObjectRequest) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamUpdateObjectRPCName+"/id-"+req.GetObject().GetId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 
 			loc, err := s.UpsertObject(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				return &payload.Object_StreamLocation{
 					Payload: &payload.Object_StreamLocation_Status{
 						Status: st.Proto(),
@@ -1201,11 +910,7 @@ func (s *server) StreamUpsertObject(stream vald.Filter_StreamUpsertObjectServer)
 			}, nil
 		})
 	if err != nil {
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanError(span, codes.Internal, err)
 		log.Error(err)
 		return err
 	}
@@ -1216,11 +921,7 @@ func (s *server) MultiUpsertObject(
 	ctx context.Context, reqs *payload.Upsert_MultiObjectRequest,
 ) (locs *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.MultiUpsertObjectRPCName), apiName+"/"+vald.MultiUpsertObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 
 	locs = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
@@ -1233,19 +934,11 @@ func (s *server) MultiUpsertObject(
 		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiUpsertObjectRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			loc, err := s.UpsertObject(ctx, query)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				mu.Lock()
 				if errs == nil {
 					errs = status.WrapWithNotFound(
@@ -1270,11 +963,7 @@ func (s *server) MultiUpsertObject(
 
 func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (*payload.Object_ID, error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.ExistsRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	return s.gateway.Exists(ctx, meta, s.copts...)
 }
 
@@ -1282,11 +971,7 @@ func (s *server) Search(
 	ctx context.Context, req *payload.Search_Request,
 ) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.SearchRPCName), apiName+"/"+vald.SearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	targets := req.GetConfig().GetIngressFilters().GetTargets()
 	if targets != nil || s.SearchFilters != nil {
 		addrs := make([]string, 0, len(targets)+len(s.SearchFilters))
@@ -1311,17 +996,9 @@ func (s *server) Search(
 						},
 					},
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
+				s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.SearchRPCName), info.Get())
 			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Search_Response](span, codes.Unavailable, err)
 		}
 		vec, err := c.FilterVector(ctx, &payload.Object_Vector{
 			Vector: req.GetVector(),
@@ -1334,28 +1011,16 @@ func (s *server) Search(
 					RequestId:   req.GetConfig().GetRequestId(),
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
+				s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.SearchRPCName), info.Get())
 			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Search_Response](span, codes.Internal, err)
 		}
 		req.Vector = vec.GetVector()
 	}
 	res, err = s.gateway.Search(ctx, req, s.copts...)
 	if err != nil {
 		st, _ := status.FromError(err)
-		if st != nil && span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanStatus(span, st, err)
 		return nil, err
 	}
 	targets = req.GetConfig().GetEgressFilters().GetTargets()
@@ -1382,17 +1047,9 @@ func (s *server) Search(
 						},
 					},
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
+				s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.SearchRPCName), info.Get())
 			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Search_Response](span, codes.Unavailable, err)
 		}
 		for i, dist := range res.GetResults() {
 			d, err := c.FilterDistance(ctx, dist)
@@ -1404,17 +1061,9 @@ func (s *server) Search(
 						RequestId:   req.GetConfig().GetRequestId(),
 						ServingData: errdetails.Serialize(req),
 					},
-					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchRPCName,
-						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-					}, info.Get())
+					s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.SearchRPCName), info.Get())
 				log.Warn(err)
-				if span != nil {
-					span.RecordError(err)
-					span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-					span.SetStatus(trace.StatusError, err.Error())
-				}
-				return nil, err
+				return errhandler.HandleError[payload.Search_Response](span, codes.Internal, err)
 			}
 			res.Results[i] = d
 		}
@@ -1426,19 +1075,11 @@ func (s *server) SearchByID(
 	ctx context.Context, req *payload.Search_IDRequest,
 ) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.SearchByIDRPCName), apiName+"/"+vald.SearchByIDRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	res, err = s.gateway.SearchByID(ctx, req, s.copts...)
 	if err != nil {
 		st, _ := status.FromError(err)
-		if st != nil && span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanStatus(span, st, err)
 		return nil, err
 	}
 	targets := req.GetConfig().GetEgressFilters().GetTargets()
@@ -1465,17 +1106,9 @@ func (s *server) SearchByID(
 						},
 					},
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchByIDRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
+				s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.SearchByIDRPCName), info.Get())
 			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Search_Response](span, codes.Unavailable, err)
 		}
 		for i, dist := range res.GetResults() {
 			d, err := c.FilterDistance(ctx, dist)
@@ -1487,17 +1120,9 @@ func (s *server) SearchByID(
 						RequestId:   req.GetConfig().GetRequestId(),
 						ServingData: errdetails.Serialize(req),
 					},
-					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchByIDRPCName,
-						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-					}, info.Get())
+					s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.SearchByIDRPCName), info.Get())
 				log.Warn(err)
-				if span != nil {
-					span.RecordError(err)
-					span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-					span.SetStatus(trace.StatusError, err.Error())
-				}
-				return nil, err
+				return errhandler.HandleError[payload.Search_Response](span, codes.Internal, err)
 			}
 			res.Results[i] = d
 		}
@@ -1507,27 +1132,15 @@ func (s *server) SearchByID(
 
 func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.StreamSearchRPCName), apiName+"/"+vald.StreamSearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Search_Request) (*payload.Search_StreamResponse, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamSearchRPCName+"/id-"+req.GetConfig().GetRequestId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.Search(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				return &payload.Search_StreamResponse{
 					Payload: &payload.Search_StreamResponse_Status{
 						Status: st.Proto(),
@@ -1541,11 +1154,7 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 			}, nil
 		})
 	if err != nil {
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanError(span, codes.Internal, err)
 		log.Error(err)
 		return err
 	}
@@ -1554,27 +1163,15 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 
 func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.StreamSearchByIDRPCName), apiName+"/"+vald.StreamSearchByIDRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Search_IDRequest) (*payload.Search_StreamResponse, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamSearchByIDRPCName+"/id-"+req.GetId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.SearchByID(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				return &payload.Search_StreamResponse{
 					Payload: &payload.Search_StreamResponse_Status{
 						Status: st.Proto(),
@@ -1588,11 +1185,7 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 			}, nil
 		})
 	if err != nil {
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanError(span, codes.Internal, err)
 		log.Error(err)
 		return err
 	}
@@ -1603,11 +1196,7 @@ func (s *server) MultiSearch(
 	ctx context.Context, reqs *payload.Search_MultiRequest,
 ) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.MultiSearchRPCName), apiName+"/"+vald.MultiSearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	res = &payload.Search_Responses{
 		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
 	}
@@ -1619,19 +1208,11 @@ func (s *server) MultiSearch(
 		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiSearchRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			r, err := s.Search(ctx, query)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				mu.Lock()
 				if errs == nil {
 					errs = status.WrapWithNotFound(
@@ -1658,11 +1239,7 @@ func (s *server) MultiSearchByID(
 	ctx context.Context, reqs *payload.Search_MultiIDRequest,
 ) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.MultiSearchByIDRPCName), apiName+"/"+vald.MultiSearchByIDRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	res = &payload.Search_Responses{
 		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
 	}
@@ -1674,19 +1251,11 @@ func (s *server) MultiSearchByID(
 		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiSearchByIDRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			r, err := s.SearchByID(ctx, query)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				mu.Lock()
 				if errs == nil {
 					errs = status.WrapWithNotFound(
@@ -1713,11 +1282,7 @@ func (s *server) LinearSearch(
 	ctx context.Context, req *payload.Search_Request,
 ) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.LinearSearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	targets := req.GetConfig().GetIngressFilters().GetTargets()
 	if targets != nil || s.SearchFilters != nil {
 		addrs := make([]string, 0, len(targets)+len(s.SearchFilters))
@@ -1742,17 +1307,9 @@ func (s *server) LinearSearch(
 						},
 					},
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
+				s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.LinearSearchRPCName), info.Get())
 			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Search_Response](span, codes.Unavailable, err)
 		}
 		vec, err := c.FilterVector(ctx, &payload.Object_Vector{
 			Vector: req.GetVector(),
@@ -1765,17 +1322,9 @@ func (s *server) LinearSearch(
 					RequestId:   req.GetConfig().GetRequestId(),
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
+				s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.LinearSearchRPCName), info.Get())
 			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Search_Response](span, codes.Internal, err)
 		}
 		req.Vector = vec.GetVector()
 	}
@@ -1807,17 +1356,9 @@ func (s *server) LinearSearch(
 						},
 					},
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
+				s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.LinearSearchRPCName), info.Get())
 			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Search_Response](span, codes.Unavailable, err)
 		}
 		for i, dist := range res.GetResults() {
 			d, err := c.FilterDistance(ctx, dist)
@@ -1829,17 +1370,9 @@ func (s *server) LinearSearch(
 						RequestId:   req.GetConfig().GetRequestId(),
 						ServingData: errdetails.Serialize(req),
 					},
-					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchRPCName,
-						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-					}, info.Get())
+					s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.LinearSearchRPCName), info.Get())
 				log.Warn(err)
-				if span != nil {
-					span.RecordError(err)
-					span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-					span.SetStatus(trace.StatusError, err.Error())
-				}
-				return nil, err
+				return errhandler.HandleError[payload.Search_Response](span, codes.Internal, err)
 			}
 			res.Results[i] = d
 		}
@@ -1851,11 +1384,7 @@ func (s *server) LinearSearchByID(
 	ctx context.Context, req *payload.Search_IDRequest,
 ) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.LinearSearchByIDRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	res, err = s.gateway.LinearSearchByID(ctx, req, s.copts...)
 	if err != nil {
 		return nil, err
@@ -1884,17 +1413,9 @@ func (s *server) LinearSearchByID(
 						},
 					},
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchByIDRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
+				s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.LinearSearchByIDRPCName), info.Get())
 			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Search_Response](span, codes.Unavailable, err)
 		}
 		for i, dist := range res.GetResults() {
 			d, err := c.FilterDistance(ctx, dist)
@@ -1906,17 +1427,9 @@ func (s *server) LinearSearchByID(
 						RequestId:   dist.GetId(),
 						ServingData: errdetails.Serialize(req),
 					},
-					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchByIDRPCName,
-						ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-					}, info.Get())
+					s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.LinearSearchByIDRPCName), info.Get())
 				log.Warn(err)
-				if span != nil {
-					span.RecordError(err)
-					span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-					span.SetStatus(trace.StatusError, err.Error())
-				}
-				return nil, err
+				return errhandler.HandleError[payload.Search_Response](span, codes.Internal, err)
 			}
 			res.Results[i] = d
 		}
@@ -1926,27 +1439,15 @@ func (s *server) LinearSearchByID(
 
 func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer) (err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.StreamLinearSearchRPCName), apiName+"/"+vald.StreamLinearSearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Search_Request) (*payload.Search_StreamResponse, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamLinearSearchRPCName+"/id-"+req.Config.RequestId)
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.LinearSearch(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				return &payload.Search_StreamResponse{
 					Payload: &payload.Search_StreamResponse_Status{
 						Status: st.Proto(),
@@ -1960,11 +1461,7 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 			}, nil
 		})
 	if err != nil {
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanError(span, codes.Internal, err)
 		log.Error(err)
 		return err
 	}
@@ -1978,27 +1475,15 @@ func (s *server) StreamLinearSearchByID(
 		grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.StreamLinearSearchByIDRPCName),
 		apiName+"/"+vald.StreamLinearSearchByIDRPCName,
 	)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Search_IDRequest) (*payload.Search_StreamResponse, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamLinearSearchByIDRPCName+"/id-"+req.GetId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.LinearSearchByID(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				return &payload.Search_StreamResponse{
 					Payload: &payload.Search_StreamResponse_Status{
 						Status: st.Proto(),
@@ -2013,11 +1498,7 @@ func (s *server) StreamLinearSearchByID(
 		})
 	if err != nil {
 		st, _ := status.FromError(err)
-		if st != nil && span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanStatus(span, st, err)
 		log.Error(err)
 		return err
 	}
@@ -2028,11 +1509,7 @@ func (s *server) MultiLinearSearch(
 	ctx context.Context, reqs *payload.Search_MultiRequest,
 ) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiLinearSearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	res = &payload.Search_Responses{
 		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
 	}
@@ -2044,19 +1521,11 @@ func (s *server) MultiLinearSearch(
 		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiLinearSearchRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			r, err := s.LinearSearch(ctx, query)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				mu.Lock()
 				if errs == nil {
 					errs = status.WrapWithNotFound(
@@ -2083,11 +1552,7 @@ func (s *server) MultiLinearSearchByID(
 	ctx context.Context, reqs *payload.Search_MultiIDRequest,
 ) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.MultiLinearSearchByIDRPCName), apiName+"/"+vald.MultiLinearSearchByIDRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	res = &payload.Search_Responses{
 		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
 	}
@@ -2099,19 +1564,11 @@ func (s *server) MultiLinearSearchByID(
 		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiLinearSearchByIDRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			r, err := s.LinearSearchByID(ctx, query)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				mu.Lock()
 				if errs == nil {
 					errs = status.WrapWithNotFound(
@@ -2138,11 +1595,7 @@ func (s *server) Insert(
 	ctx context.Context, req *payload.Insert_Request,
 ) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.InsertRPCName), apiName+"/"+vald.InsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	vec := req.GetVector()
 	uuid := vec.GetId()
 	if len(vec.GetVector()) < algorithm.MinimumVectorDimensionSize {
@@ -2160,17 +1613,9 @@ func (s *server) Insert(
 					},
 				},
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			},
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.InsertRPCName),
 		)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.InvalidArgument, err)
 	}
 	if !req.GetConfig().GetSkipStrictExistCheck() {
 		id, _ := s.Exists(ctx, &payload.Object_ID{
@@ -2183,16 +1628,8 @@ func (s *server) Insert(
 					RequestId:   uuid,
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName + "." + vald.ExistsRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeAlreadyExists(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+				s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.InsertRPCName+"."+vald.ExistsRPCName), info.Get())
+			return errhandler.HandleError[payload.Object_Location](span, codes.AlreadyExists, err)
 		}
 		if req.GetConfig() != nil {
 			req.GetConfig().SkipStrictExistCheck = true
@@ -2217,16 +1654,9 @@ func (s *server) Insert(
 				RequestId:   req.GetVector().GetId(),
 				ServingData: errdetails.Serialize(req),
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.InsertRPCName), info.Get())
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanError(span, codes.Unavailable, err)
 	}
 	vec, err = c.FilterVector(ctx, req.GetVector())
 	if err != nil {
@@ -2236,17 +1666,9 @@ func (s *server) Insert(
 				RequestId:   req.GetVector().GetId(),
 				ServingData: errdetails.Serialize(req),
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.InsertRPCName), info.Get())
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.Internal, err)
 	}
 	if vec.GetId() == "" {
 		vec.Id = req.GetVector().GetId()
@@ -2260,45 +1682,25 @@ func (s *server) Insert(
 				RequestId:   req.GetVector().GetId(),
 				ServingData: errdetails.Serialize(req),
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get(),
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.InsertRPCName), info.Get(),
 		)
 		log.Error(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.Internal, err)
 	}
 	return loc, nil
 }
 
 func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.StreamInsertRPCName), apiName+"/"+vald.StreamInsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Insert_Request) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamInsertRPCName+"/id-"+req.GetVector().GetId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.Insert(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				return &payload.Object_StreamLocation{
 					Payload: &payload.Object_StreamLocation_Status{
 						Status: st.Proto(),
@@ -2312,11 +1714,7 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 			}, nil
 		})
 	if err != nil {
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanError(span, codes.Internal, err)
 		log.Error(err)
 		return err
 	}
@@ -2327,11 +1725,7 @@ func (s *server) MultiInsert(
 	ctx context.Context, reqs *payload.Insert_MultiRequest,
 ) (locs *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.MultiInsertRPCName), apiName+"/"+vald.MultiInsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	locs = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
@@ -2343,19 +1737,11 @@ func (s *server) MultiInsert(
 		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiInsertRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			r, err := s.Insert(ctx, query)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				mu.Lock()
 				if errs == nil {
 					errs = status.WrapWithNotFound(
@@ -2382,11 +1768,7 @@ func (s *server) Update(
 	ctx context.Context, req *payload.Update_Request,
 ) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.UpdateRPCName), apiName+"/"+vald.UpdateRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	vec := req.GetVector()
 	uuid := vec.GetId()
 	if len(vec.GetVector()) < algorithm.MinimumVectorDimensionSize {
@@ -2404,12 +1786,7 @@ func (s *server) Update(
 					},
 				},
 			}, info.Get())
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.InvalidArgument, err)
 	}
 	if !req.GetConfig().GetSkipStrictExistCheck() {
 		id, _ := s.Exists(ctx, &payload.Object_ID{
@@ -2421,16 +1798,8 @@ func (s *server) Update(
 					RequestId:   uuid,
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName + "." + vald.ExistsRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeAlreadyExists(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+				s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.UpdateRPCName+"."+vald.ExistsRPCName), info.Get())
+			return errhandler.HandleError[payload.Object_Location](span, codes.AlreadyExists, err)
 		}
 		if req.GetConfig() != nil {
 			req.GetConfig().SkipStrictExistCheck = true
@@ -2455,17 +1824,9 @@ func (s *server) Update(
 				RequestId:   req.GetVector().GetId(),
 				ServingData: errdetails.Serialize(req),
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.UpdateRPCName), info.Get())
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.Unavailable, err)
 	}
 	vec, err = c.FilterVector(ctx, req.GetVector())
 	if err != nil {
@@ -2475,17 +1836,9 @@ func (s *server) Update(
 				RequestId:   req.GetVector().GetId(),
 				ServingData: errdetails.Serialize(req),
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.UpdateRPCName), info.Get())
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.Internal, err)
 	}
 	if vec.GetId() == "" {
 		vec.Id = req.GetVector().GetId()
@@ -2499,44 +1852,24 @@ func (s *server) Update(
 				RequestId:   req.GetVector().GetId(),
 				ServingData: errdetails.Serialize(req),
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.UpdateRPCName), info.Get())
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.Internal, err)
 	}
 	return loc, nil
 }
 
 func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.StreamUpdateRPCName), apiName+"/"+vald.StreamUpdateRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Update_Request) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamUpdateRPCName+"/id-"+req.GetVector().GetId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.Update(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				return &payload.Object_StreamLocation{
 					Payload: &payload.Object_StreamLocation_Status{
 						Status: st.Proto(),
@@ -2559,11 +1892,7 @@ func (s *server) MultiUpdate(
 	ctx context.Context, reqs *payload.Update_MultiRequest,
 ) (locs *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.MultiUpdateRPCName), apiName+"/"+vald.MultiUpdateRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	locs = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
@@ -2575,19 +1904,11 @@ func (s *server) MultiUpdate(
 		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiUpdateRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			r, err := s.Update(ctx, query)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				mu.Lock()
 				if errs == nil {
 					errs = status.WrapWithNotFound(
@@ -2614,11 +1935,7 @@ func (s *server) Upsert(
 	ctx context.Context, req *payload.Upsert_Request,
 ) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.UpsertRPCName), apiName+"/"+vald.UpsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	vec := req.GetVector()
 	uuid := vec.GetId()
 	if len(vec.GetVector()) < algorithm.MinimumVectorDimensionSize {
@@ -2636,12 +1953,7 @@ func (s *server) Upsert(
 					},
 				},
 			}, info.Get())
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.InvalidArgument, err)
 	}
 	if !req.GetConfig().GetSkipStrictExistCheck() {
 		id, _ := s.Exists(ctx, &payload.Object_ID{
@@ -2653,16 +1965,8 @@ func (s *server) Upsert(
 					RequestId:   uuid,
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertRPCName + "." + vald.ExistsRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeAlreadyExists(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+				s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.UpsertRPCName+"."+vald.ExistsRPCName), info.Get())
+			return errhandler.HandleError[payload.Object_Location](span, codes.AlreadyExists, err)
 		}
 		if req.GetConfig() != nil {
 			req.GetConfig().SkipStrictExistCheck = true
@@ -2687,17 +1991,9 @@ func (s *server) Upsert(
 				RequestId:   req.GetVector().GetId(),
 				ServingData: errdetails.Serialize(req),
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertObjectRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.UpsertObjectRPCName), info.Get())
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.Unavailable, err)
 	}
 	vec, err = c.FilterVector(ctx, req.GetVector())
 	if err != nil {
@@ -2707,17 +2003,9 @@ func (s *server) Upsert(
 				RequestId:   req.GetVector().GetId(),
 				ServingData: errdetails.Serialize(req),
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertObjectRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.UpsertObjectRPCName), info.Get())
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.Internal, err)
 	}
 	if vec.GetId() == "" {
 		vec.Id = req.GetVector().GetId()
@@ -2730,46 +2018,26 @@ func (s *server) Upsert(
 				RequestId:   req.GetVector().GetId(),
 				ServingData: errdetails.Serialize(req),
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertObjectRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get(),
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.UpsertObjectRPCName), info.Get(),
 		)
 
 		log.Error(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Location](span, codes.Internal, err)
 	}
 	return loc, nil
 }
 
 func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.StreamUpsertRPCName), apiName+"/"+vald.StreamUpsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Upsert_Request) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamUpsertRPCName+"/id-"+req.GetVector().GetId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.Upsert(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				return &payload.Object_StreamLocation{
 					Payload: &payload.Object_StreamLocation_Status{
 						Status: st.Proto(),
@@ -2784,11 +2052,7 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 		})
 	if err != nil {
 		st, _ := status.FromError(err)
-		if st != nil && span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanStatus(span, st, err)
 		log.Error(err)
 		return err
 	}
@@ -2799,11 +2063,7 @@ func (s *server) MultiUpsert(
 	ctx context.Context, reqs *payload.Upsert_MultiRequest,
 ) (locs *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.MultiUpsertRPCName), apiName+"/"+vald.MultiUpsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	locs = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
@@ -2815,20 +2075,12 @@ func (s *server) MultiUpsert(
 		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiUpsertRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 
 			r, err := s.Upsert(ctx, query)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				mu.Lock()
 				if errs == nil {
 					errs = status.WrapWithNotFound(
@@ -2855,31 +2107,20 @@ func (s *server) Remove(
 	ctx context.Context, req *payload.Remove_Request,
 ) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.RemoveRPCName), apiName+"/"+vald.RemoveRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	loc, err = s.gateway.Remove(ctx, req, s.copts...)
 	if err != nil {
 		reqInfo := &errdetails.RequestInfo{
 			RequestId: req.GetId().GetId(),
 		}
-		resInfo := &errdetails.ResourceInfo{
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-		}
+		resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName)
 		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
 			err = status.WrapWithInternal(
 				vald.RemoveRPCName+" API connection not found", err,
 				reqInfo,
 				resInfo,
 			)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Object_Location](span, codes.Internal, err)
 		}
 		st, msg, err := status.ParseError(err, codes.Internal,
 			vald.RemoveRPCName+" gRPC error response",
@@ -2898,27 +2139,15 @@ func (s *server) Remove(
 
 func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.StreamRemoveRPCName), apiName+"/"+vald.StreamRemoveRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Remove_Request) (*payload.Object_StreamLocation, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.StreamRemoveRPCName+"/id-"+req.GetId().GetId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.Remove(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				return &payload.Object_StreamLocation{
 					Payload: &payload.Object_StreamLocation_Status{
 						Status: st.Proto(),
@@ -2933,11 +2162,7 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 		})
 	if err != nil {
 		st, _ := status.FromError(err)
-		if st != nil && span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanStatus(span, st, err)
 		log.Error(err)
 		return err
 	}
@@ -2948,11 +2173,7 @@ func (s *server) MultiRemove(
 	ctx context.Context, reqs *payload.Remove_MultiRequest,
 ) (locs *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.MultiRemoveRPCName), apiName+"/"+vald.MultiRemoveRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	locs = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
@@ -2964,19 +2185,11 @@ func (s *server) MultiRemove(
 		s.eg.Go(safety.RecoverFunc(func() error {
 			defer wg.Done()
 			ctx, sspan := trace.StartSpan(ctx, apiName+"."+vald.MultiRemoveRPCName+"/errgroup.Go/id-"+strconv.Itoa(idx))
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			r, err := s.Remove(ctx, query)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 
 				mu.Lock()
 				if errs == nil {
@@ -3004,11 +2217,7 @@ func (s *server) Flush(
 	ctx context.Context, req *payload.Flush_Request,
 ) (loc *payload.Info_Index_Count, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.FlushRPCName), apiName+"/"+vald.FlushRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	return s.gateway.Flush(ctx, req, s.copts...)
 }
 
@@ -3016,31 +2225,20 @@ func (s *server) RemoveByTimestamp(
 	ctx context.Context, req *payload.Remove_TimestampRequest,
 ) (*payload.Object_Locations, error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.RemoveByTimestampRPCName), apiName+"/"+vald.RemoveByTimestampRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	locs, err := s.gateway.RemoveByTimestamp(ctx, req, s.copts...)
 	if err != nil {
 		reqInfo := &errdetails.RequestInfo{
 			ServingData: errdetails.Serialize(req),
 		}
-		resInfo := &errdetails.ResourceInfo{
-			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-		}
+		resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveByTimestampRPCName)
 		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
 			err = status.WrapWithInternal(
 				vald.RemoveByTimestampRPCName+" API connection not found", err,
 				reqInfo,
 				resInfo,
 			)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Object_Locations](span, codes.Internal, err)
 		}
 		st, msg, err := status.ParseError(err, codes.Internal,
 			vald.RemoveByTimestampRPCName+" gRPC error response",
@@ -3061,11 +2259,7 @@ func (s *server) GetObject(
 	ctx context.Context, req *payload.Object_VectorRequest,
 ) (vec *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.GetObjectRPCName), apiName+"/"+vald.GetObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	vec, err = s.gateway.GetObject(ctx, req)
 	if err != nil {
 		err = status.WrapWithNotFound(vald.GetObjectRPCName+" API failed to extract vector from filter", err,
@@ -3073,17 +2267,9 @@ func (s *server) GetObject(
 				RequestId:   req.GetId().GetId(),
 				ServingData: errdetails.Serialize(req),
 			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetObjectRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
+			s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.GetObjectRPCName), info.Get())
 		log.Warn(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+		return errhandler.HandleError[payload.Object_Vector](span, codes.NotFound, err)
 	}
 	targets := req.GetFilters().GetTargets()
 	if targets != nil || s.ObjectFilters != nil {
@@ -3107,17 +2293,9 @@ func (s *server) GetObject(
 						},
 					},
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetObjectRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
+				s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.GetObjectRPCName), info.Get())
 			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeUnavailable(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Object_Vector](span, codes.Unavailable, err)
 		}
 		vec, err = c.FilterVector(ctx, vec)
 		if err != nil {
@@ -3126,17 +2304,9 @@ func (s *server) GetObject(
 					RequestId:   req.GetId().GetId(),
 					ServingData: errdetails.Serialize(req),
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetObjectRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
+				s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.GetObjectRPCName), info.Get())
 			log.Warn(err)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			return nil, err
+			return errhandler.HandleError[payload.Object_Vector](span, codes.Internal, err)
 		}
 	}
 	return vec, nil
@@ -3144,27 +2314,15 @@ func (s *server) GetObject(
 
 func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.StreamSearchObjectRPCName), apiName+"/"+vald.StreamGetObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	defer trace.End(span)
 	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
 		func(ctx context.Context, req *payload.Object_VectorRequest) (*payload.Object_StreamVector, error) {
 			ctx, sspan := trace.StartSpan(ctx, apiName+".StreamGetObject/id-"+req.GetId().GetId())
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
+			defer trace.End(sspan)
 			res, err := s.GetObject(ctx, req)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st != nil && sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
+				errhandler.RecordSpanStatus(sspan, st, err)
 				return &payload.Object_StreamVector{
 					Payload: &payload.Object_StreamVector_Status{
 						Status: st.Proto(),
@@ -3178,11 +2336,7 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 			}, nil
 		})
 	if err != nil {
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
+		errhandler.RecordSpanError(span, codes.Internal, err)
 		log.Error(err)
 		return err
 	}
