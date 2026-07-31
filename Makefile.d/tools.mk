@@ -413,7 +413,7 @@ ngt/install: $(USR_LOCAL)/include/NGT/Capi.h
 $(USR_LOCAL)/include/NGT/Capi.h: | ninja/install $(if $(findstring clang,$(notdir $(CC))),$(LIB_PATH)/libomp.a)
 	$(call cmake-install,https://github.com/NGT-labs/NGT.git,ngt, \
 		-DNGT_LARGE_DATASET=ON \
-		-DNGT_AVX2=ON \
+		$(if $(filter amd64,$(GOARCH)),-DNGT_AVX2=ON) \
 		-DBUILD_STATIC_EXECS=OFF \
 		-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
 		-DCMAKE_AR=$$(command -v llvm-ar 2>/dev/null || ls /usr/bin/llvm-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ar 2>/dev/null || ls /usr/bin/gcc-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ar) \
