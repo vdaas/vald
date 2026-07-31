@@ -58,6 +58,7 @@ type Data struct {
 	Dataset             *Dataset           `json:"dataset,omitempty"         yaml:"dataset,omitempty"`
 	Kubernetes          *Kubernetes        `json:"kubernetes,omitempty"      yaml:"kubernetes,omitempty"`
 	Metrics             *Metrics           `json:"metrics,omitempty"         yaml:"metrics,omitempty"`
+	Observability       *config.Observability `json:"observability,omitempty"   yaml:"observability,omitempty"`
 	Metadata            map[string]string  `json:"metadata,omitempty"        yaml:"metadata,omitempty"`
 	MetaString          string             `json:"metadata_string,omitempty" yaml:"metadata_string,omitempty"`
 	FilePath            string             `json:"-"                         yaml:"-"`
@@ -275,6 +276,10 @@ func (d *Data) Bind() (bound *Data, err error) {
 				return nil, errors.Wrap(err, "failed to create metrics collector")
 			}
 		}
+	}
+	// Bind Observability.
+	if d.Observability != nil {
+		d.Observability.Bind()
 	}
 	// Bind Dataset.
 	if d.Dataset != nil {
