@@ -930,6 +930,60 @@
 {{ template "_field:payload.v1.Filter.Config" }}
 {{ template "_field:payload.v1.Filter.Target" }}
 {{- end -}}
+{{- define "scheme:payload.v1.ZVec" -}}
+{{ template "_scheme:payload.v1.ZVec" }}
+{{- end -}}
+{{- define "field:payload.v1.ZVec" -}}
+{{ template "_field:payload.v1.ZVec" }}
+{{- end -}}
+{{- define "scheme:payload.v1.ZVec.DocumentOptions" -}}
+{{ template "_scheme:payload.v1.ZVec.DocumentOptions" }}
+{{ template "_scheme:payload.v1.ZVec.DocumentOptions.FieldsEntry" }}
+{{- end -}}
+{{- define "field:payload.v1.ZVec.DocumentOptions" -}}
+{{ template "_field:payload.v1.ZVec.DocumentOptions" }}
+{{ template "_field:payload.v1.ZVec.DocumentOptions.FieldsEntry" }}
+{{- end -}}
+{{- define "scheme:payload.v1.ZVec.DocumentOptions.FieldsEntry" -}}
+{{ template "_scheme:payload.v1.ZVec.DocumentOptions.FieldsEntry" }}
+{{- end -}}
+{{- define "field:payload.v1.ZVec.DocumentOptions.FieldsEntry" -}}
+{{ template "_field:payload.v1.ZVec.DocumentOptions.FieldsEntry" }}
+{{- end -}}
+{{- define "scheme:payload.v1.ZVec.FTS" -}}
+{{ template "_scheme:payload.v1.ZVec.FTS" }}
+{{- end -}}
+{{- define "field:payload.v1.ZVec.FTS" -}}
+{{ template "_field:payload.v1.ZVec.FTS" }}
+{{- end -}}
+{{- define "scheme:payload.v1.ZVec.Query" -}}
+{{ template "_scheme:payload.v1.ZVec.Query" }}
+{{ template "_scheme:payload.v1.ZVec.Vector" }}
+{{ template "_scheme:payload.v1.ZVec.FTS" }}
+{{- end -}}
+{{- define "field:payload.v1.ZVec.Query" -}}
+{{ template "_field:payload.v1.ZVec.Query" }}
+{{ template "_field:payload.v1.ZVec.Vector" }}
+{{ template "_field:payload.v1.ZVec.FTS" }}
+{{- end -}}
+{{- define "scheme:payload.v1.ZVec.SearchOptions" -}}
+{{ template "_scheme:payload.v1.ZVec.SearchOptions" }}
+{{ template "_scheme:payload.v1.ZVec.Query" }}
+{{ template "_scheme:payload.v1.ZVec.Vector" }}
+{{ template "_scheme:payload.v1.ZVec.FTS" }}
+{{- end -}}
+{{- define "field:payload.v1.ZVec.SearchOptions" -}}
+{{ template "_field:payload.v1.ZVec.SearchOptions" }}
+{{ template "_field:payload.v1.ZVec.Query" }}
+{{ template "_field:payload.v1.ZVec.Vector" }}
+{{ template "_field:payload.v1.ZVec.FTS" }}
+{{- end -}}
+{{- define "scheme:payload.v1.ZVec.Vector" -}}
+{{ template "_scheme:payload.v1.ZVec.Vector" }}
+{{- end -}}
+{{- define "field:payload.v1.ZVec.Vector" -}}
+{{ template "_field:payload.v1.ZVec.Vector" }}
+{{- end -}}
 {{- define "_scheme:payload.v1.Control" }}
   message Control {
     // empty
@@ -1699,6 +1753,7 @@
     bool skip_strict_exist_check = 1;
     Filter.Config filters = 2;
     int64 timestamp = 3;
+    repeated google.protobuf.Any options = 4;
   }
 {{- end -}}
 
@@ -1710,6 +1765,7 @@
     | skip_strict_exist_check | bool |  | A flag to skip exist check during insert operation. |
     | filters | Filter.Config |  | Filter configurations. |
     | timestamp | int64 |  | Insert timestamp. |
+    | options | google.protobuf.Any | repeated | Algorithm-specific insert options. |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Insert.MultiObjectRequest" }}
@@ -2289,6 +2345,7 @@ search is applied. |
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
     int32 edge_size = 12;
+    repeated google.protobuf.Any options = 13;
   }
 {{- end -}}
 
@@ -2309,6 +2366,7 @@ search is applied. |
     | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
     | nprobe | uint32 |  | Search nprobe. |
     | edge_size | int32 |  | Search edge size |
+    | options | google.protobuf.Any | repeated | Algorithm-specific search options. |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Search.IDRequest" }}
@@ -2657,14 +2715,122 @@ during update operation. |
     | config | Upsert.Config |  | The configuration of the upsert request. |
 {{- end -}}
 
+{{- define "_scheme:payload.v1.ZVec" }}
+  message ZVec {
+    // empty
+  }
+{{- end -}}
+
+{{- define "_field:payload.v1.ZVec" }}
+  - ZVec
+
+    empty
+{{- end -}}
+
+{{- define "_scheme:payload.v1.ZVec.DocumentOptions" }}
+  message ZVec.DocumentOptions {
+    repeated ZVec.DocumentOptions.FieldsEntry fields = 1;
+  }
+{{- end -}}
+
+{{- define "_field:payload.v1.ZVec.DocumentOptions" }}
+  - ZVec.DocumentOptions
+
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | fields | ZVec.DocumentOptions.FieldsEntry | repeated | Scalar or text fields stored with the vector. |
+{{- end -}}
+
+{{- define "_scheme:payload.v1.ZVec.DocumentOptions.FieldsEntry" }}
+  message ZVec.DocumentOptions.FieldsEntry {
+    string key = 1;
+    string value = 2;
+  }
+{{- end -}}
+
+{{- define "_field:payload.v1.ZVec.DocumentOptions.FieldsEntry" }}
+  - ZVec.DocumentOptions.FieldsEntry
+
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | key | string |  |  |
+    | value | string |  |  |
+{{- end -}}
+
+{{- define "_scheme:payload.v1.ZVec.FTS" }}
+  message ZVec.FTS {
+    string match_string = 1;
+    string query_string = 2;
+  }
+{{- end -}}
+
+{{- define "_field:payload.v1.ZVec.FTS" }}
+  - ZVec.FTS
+
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | match_string | string |  | Natural-language match string. |
+    | query_string | string |  | Explicit full-text query string. |
+{{- end -}}
+
+{{- define "_scheme:payload.v1.ZVec.Query" }}
+  message ZVec.Query {
+    string field_name = 1;
+    ZVec.Vector vector = 2;
+    ZVec.FTS fts = 3;
+  }
+{{- end -}}
+
+{{- define "_field:payload.v1.ZVec.Query" }}
+  - ZVec.Query
+
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | field_name | string |  | Target field name. |
+    | vector | ZVec.Vector |  | Vector recall query. |
+    | fts | ZVec.FTS |  | Full-text recall query. |
+{{- end -}}
+
+{{- define "_scheme:payload.v1.ZVec.SearchOptions" }}
+  message ZVec.SearchOptions {
+    string pre_filter = 1;
+    repeated ZVec.Query hybrid_queries = 2;
+    repeated float hybrid_weights = 3;
+  }
+{{- end -}}
+
+{{- define "_field:payload.v1.ZVec.SearchOptions" }}
+  - ZVec.SearchOptions
+
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | pre_filter | string |  | Scalar pre-filter expression. |
+    | hybrid_queries | ZVec.Query | repeated | Hybrid recall queries. |
+    | hybrid_weights | float | repeated | Per-query weights used by weighted hybrid reranking. |
+{{- end -}}
+
+{{- define "_scheme:payload.v1.ZVec.Vector" }}
+  message ZVec.Vector {
+    repeated float values = 1;
+  }
+{{- end -}}
+
+{{- define "_field:payload.v1.ZVec.Vector" }}
+  - ZVec.Vector
+
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | values | float | repeated |  |
+{{- end -}}
+
 {{ define "_scheme:payload.v1.Remove.Timestamp.Operator" }}
   enum Remove.Timestamp.Operator {
-    EQ = 0;
-    NE = 1;
-    GE = 2;
-    GT = 3;
-    LE = 4;
-    LT = 5;
+    Eq = 0;
+    Ne = 1;
+    Ge = 2;
+    Gt = 3;
+    Le = 4;
+    Lt = 5;
   }
 {{- end -}}
 
