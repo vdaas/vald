@@ -485,8 +485,8 @@ $(LIB_PATH)/libfaiss.a: | ninja/install $(if $(findstring clang,$(notdir $(CC)))
 		-DTHREADS_PREFER_PTHREAD_FLAG=OFF \
 		-DCMAKE_EXE_LINKER_FLAGS="$(LDFLAGS) $(FAISS_LDFLAGS)$(if $(and $(filter-out darwin,$(GOOS)),$(filter ld.lld lld,$(notdir $(LLD)))), -fuse-ld=lld)" \
 		-DCMAKE_SHARED_LINKER_FLAGS="$(LDFLAGS) $(FAISS_LDFLAGS)$(if $(and $(filter-out darwin,$(GOOS)),$(filter ld.lld lld,$(notdir $(LLD)))), -fuse-ld=lld)" \
-		-DCMAKE_MODULE_LINKER_FLAGS="$(LDFLAGS) $(FAISS_LDFLAGS)$(if $(and $(filter-out darwin,$(GOOS)),$(filter ld.lld lld,$(notdir $(LLD)))), -fuse-ld=lld)",  \
-		cd $(TEMP_DIR)/faiss && $(SUDO) find faiss -name '*.h' -exec install -D -m 0644 {} $(USR_LOCAL)/include/{} \;, \
+		-DCMAKE_MODULE_LINKER_FLAGS="$(LDFLAGS) $(FAISS_LDFLAGS)$(if $(and $(filter-out darwin,$(GOOS)),$(filter ld.lld lld,$(notdir $(LLD)))), -fuse-ld=lld)", \
+		cd $(TEMP_DIR)/faiss && find faiss -name '*.h' -exec sh -c 'for src do dst="$(USR_LOCAL)/include/$$src"; $(SUDO) mkdir -p "$$(dirname "$$dst")" && $(SUDO) install -m 0644 "$$src" "$$dst" || exit 1; done' sh {} +, \
 		, \
 		, \
 		faiss)
