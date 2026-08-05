@@ -10,8 +10,12 @@
       "description": "Overview\nMirror Service is responsible for providing the `Register` interface for the Vald Mirror Gateway."
     }
   ],
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/mirror/register": {
       "post": {
@@ -42,7 +46,9 @@
             }
           }
         ],
-        "tags": ["Mirror"]
+        "tags": [
+          "Mirror"
+        ]
       }
     }
   },

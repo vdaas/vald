@@ -10,8 +10,12 @@
       "description": "Overview\nInsert Service is responsible for inserting new vectors into the `vald-agent`."
     }
   ],
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/insert": {
       "post": {
@@ -43,7 +47,9 @@
             }
           }
         ],
-        "tags": ["Insert"]
+        "tags": [
+          "Insert"
+        ]
       }
     },
     "/insert/multiple": {
@@ -76,7 +82,9 @@
             }
           }
         ],
-        "tags": ["Insert"]
+        "tags": [
+          "Insert"
+        ]
       }
     }
   },
@@ -223,6 +231,14 @@
           "type": "string",
           "format": "int64",
           "description": "Insert timestamp."
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          },
+          "description": "Algorithm-specific insert options."
         }
       },
       "description": "Represent insert configurations."

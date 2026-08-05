@@ -10,8 +10,12 @@
       "description": "Overview\nFilter Server is responsible for providing insert, update, upsert and search interface for `Vald Filter Gateway`.\n\nVald Filter Gateway forward user request to user-defined ingress/egress filter components allowing user to run custom logic."
     }
   ],
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/insert/object": {
       "post": {
@@ -42,7 +46,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/insert/object/multiple": {
@@ -74,7 +80,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/search/object": {
@@ -106,7 +114,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/search/object/multiple": {
@@ -138,7 +148,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/update/object": {
@@ -170,7 +182,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/update/object/multiple": {
@@ -203,7 +217,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/upsert/object": {
@@ -235,7 +251,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/upsert/object/multiple": {
@@ -268,7 +286,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     }
   },
@@ -438,6 +458,14 @@
           "type": "string",
           "format": "int64",
           "description": "Insert timestamp."
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          },
+          "description": "Algorithm-specific insert options."
         }
       },
       "description": "Represent insert configurations."
@@ -553,6 +581,14 @@
           "type": "integer",
           "format": "int32",
           "title": "Search edge size"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          },
+          "description": "Algorithm-specific search options."
         }
       },
       "description": "Represent search configuration."
