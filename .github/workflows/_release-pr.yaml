@@ -59,7 +59,7 @@ jobs:
     needs:
       - dump-contexts-to-log
       - detect-ci-container
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-dev-container:${{ needs.detect-ci-container.outputs.TAG }}
       credentials:
