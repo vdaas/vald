@@ -9,8 +9,12 @@
       "name": "Mirror"
     }
   ],
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/mirror/register": {
       "post": {
@@ -41,7 +45,9 @@
             }
           }
         ],
-        "tags": ["Mirror"]
+        "tags": [
+          "Mirror"
+        ]
       }
     }
   },
