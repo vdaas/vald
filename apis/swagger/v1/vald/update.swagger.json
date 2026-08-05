@@ -10,8 +10,12 @@
       "description": "Overview\nUpdate Service updates to new vector from inserted vector in the `vald-agent` components."
     }
   ],
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/update": {
       "post": {
@@ -43,7 +47,9 @@
             }
           }
         ],
-        "tags": ["Update"]
+        "tags": [
+          "Update"
+        ]
       }
     },
     "/update/multiple": {
@@ -76,7 +82,9 @@
             }
           }
         ],
-        "tags": ["Update"]
+        "tags": [
+          "Update"
+        ]
       }
     },
     "/update/timestamp": {
@@ -108,7 +116,9 @@
             }
           }
         ],
-        "tags": ["Update"]
+        "tags": [
+          "Update"
+        ]
       }
     }
   },

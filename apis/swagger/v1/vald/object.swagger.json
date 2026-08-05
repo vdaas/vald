@@ -10,8 +10,12 @@
       "description": "Overview\nObject Service is responsible for getting inserted vectors and checking whether vectors are inserted into the `vald-agent`."
     }
   ],
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/exists/{id}": {
       "get": {
@@ -40,7 +44,9 @@
             "type": "string"
           }
         ],
-        "tags": ["Object"]
+        "tags": [
+          "Object"
+        ]
       }
     },
     "/object/list": {
@@ -70,7 +76,9 @@
             }
           }
         },
-        "tags": ["Object"]
+        "tags": [
+          "Object"
+        ]
       }
     },
     "/object/meta/{id.id}": {
@@ -99,7 +107,9 @@
             "type": "string"
           }
         ],
-        "tags": ["Object"]
+        "tags": [
+          "Object"
+        ]
       }
     },
     "/object/{id.id}": {
@@ -129,7 +139,9 @@
             "type": "string"
           }
         ],
-        "tags": ["Object"]
+        "tags": [
+          "Object"
+        ]
       }
     }
   },
