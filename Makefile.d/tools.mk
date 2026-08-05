@@ -442,6 +442,12 @@ $(USR_LOCAL)/include/NGT/Capi.h: | ninja/install $(if $(findstring clang,$(notdi
 		, \
 		ngt)
 
+# Discover and install Faiss headers under $(USR_LOCAL)/include while
+# preserving failures without relying on GNU install -D.
+define FAISS_HEADER_INSTALL
+cd $(TEMP_DIR)/faiss && find faiss -name '*.h' -exec sh -c 'for src do dst="$(USR_LOCAL)/include/$$src"; $(SUDO) mkdir -p "$$(dirname "$$dst")" && $(SUDO) install -m 0644 "$$src" "$$dst" || exit 1; done' sh {} +
+endef
+
 .PHONY: faiss/install
 ## install Faiss
 faiss/install: $(LIB_PATH)/libfaiss.a
@@ -486,7 +492,7 @@ $(LIB_PATH)/libfaiss.a: | ninja/install $(if $(findstring clang,$(notdir $(CC)))
 		-DCMAKE_EXE_LINKER_FLAGS="$(LDFLAGS) $(FAISS_LDFLAGS)$(if $(and $(filter-out darwin,$(GOOS)),$(filter ld.lld lld,$(notdir $(LLD)))), -fuse-ld=lld)" \
 		-DCMAKE_SHARED_LINKER_FLAGS="$(LDFLAGS) $(FAISS_LDFLAGS)$(if $(and $(filter-out darwin,$(GOOS)),$(filter ld.lld lld,$(notdir $(LLD)))), -fuse-ld=lld)" \
 		-DCMAKE_MODULE_LINKER_FLAGS="$(LDFLAGS) $(FAISS_LDFLAGS)$(if $(and $(filter-out darwin,$(GOOS)),$(filter ld.lld lld,$(notdir $(LLD)))), -fuse-ld=lld)", \
-		cd $(TEMP_DIR)/faiss && find faiss -name '*.h' -exec sh -c 'for src do dst="$(USR_LOCAL)/include/$$src"; $(SUDO) mkdir -p "$$(dirname "$$dst")" && $(SUDO) install -m 0644 "$$src" "$$dst" || exit 1; done' sh {} +, \
+		$(FAISS_HEADER_INSTALL), \
 		, \
 		, \
 		faiss)
