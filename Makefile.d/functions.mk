@@ -48,8 +48,8 @@ GO_ENV_VARS = \
 CGO_ENV_VARS = \
 	CGO_ENABLED=$(CGO_ENABLED) \
 	CGO_CFLAGS_ALLOW=".*" \
-	CGO_CFLAGS="$(CFLAGS) $1" \
-	CGO_CXXFLAGS="$(CXXFLAGS) $1" \
+	CGO_CFLAGS="$(CFLAGS) $(OPENMP_CFLAGS) $(NATIVE_LTO_FLAGS) $1" \
+	CGO_CXXFLAGS="$(CXXFLAGS) $(OPENMP_CFLAGS) $(NATIVE_LTO_FLAGS) $1" \
 	CGO_FFLAGS="$(CFLAGS) $1" \
 	CGO_LDFLAGS="$2"
 
@@ -224,7 +224,7 @@ define go-example-build
 	$(call go-base,build, \
 	$(call CGO_ENV_VARS,-DNGT_LARGE_DATASET,$3), \
 	, \
-	$(GO_LDFLAGS) $2 -extldflags '-static $3', \
+	$(GO_LDFLAGS) $2 -extldflags '$(if $(filter darwin,$(GOOS)),$3,-static $3)', \
 	osusergo netgo static_build$4, \
 	$(ROOTDIR)/$6, \
 	$(ROOTDIR)/example/client/main.go)
@@ -235,7 +235,7 @@ define go-e2e-build
 		$(call CGO_ENV_VARS,,$2), \
 		-c -v -race -mod=readonly, \
 		$(GO_LDFLAGS) -linkmode=external \
-		-extldflags '-static $2', \
+		-extldflags '$(if $(filter darwin,$(GOOS)),$2,-static $2)', \
 		e2e, \
 		$(ROOTDIR)/$3, \
 		$(ROOTDIR)/$1)
@@ -601,7 +601,7 @@ define cmake-install
 	$(SUDO) cmake --install $(TEMP_DIR)/$2/build $8
 	cd $(ROOTDIR)
 	rm -rf $(TEMP_DIR)/$2 $(TEMP_DIR)/$2-archive
-	$(SUDO) ldconfig
+	if command -v ldconfig >/dev/null 2>&1; then $(SUDO) ldconfig; fi
 endef
 
 # --- Others ---
