@@ -1,5 +1,225 @@
 # CHANGELOG
 
+## v1.8.0
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.8.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.8.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.8.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.8.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.8.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.8.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.8.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.8.0</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.8.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.8.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.8.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.8.0</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.8.0</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.8.0</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.8.0)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.8.0/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.8.0/charts/operator/helm/README.md)
+
+### Changes
+
+<!--- Provide a general summary of your changes in the Title above -->
+
+### Description
+
+:sparkle: New feature
+
+- [Feature] Add Vald Operator (enabled multiple cluster operation) [#3557]
+- feat(helm): add configurable image registry for all images [#3538]
+- Support dynamic edge size parameter for Search API [#3480]
+- add creator.creation_pool_size [#3443]
+- Add TiKV client for Metadata API [#3401]
+- Apply default epsilon to index creation as well on local branch [#3320]
+- hot-reload (minimal test impl, opt-in) [#3247]
+- add txnkv [#3311]
+- Add resource stats gRPC API [#3243]
+- add internal kvs [#3281]
+- add metadata manifest [#3260]
+- Add optional tls support for gateway ingress [#3226]
+- add executeRPC function for gRPC client [#3079]
+- [Feature] Add Persistent VQueue [#3058]
+- [Feature] Add Production Bidirectional KVS [#3057]
+
+:zap: Improve performance
+
+- resolve broadcast concurrency and tune connection pool [#3518]
+- improve rangeConns's performance for Release v1.7.17 [#3039]
+
+:recycle: Refactor
+
+- Refactor gRPC codes and update libs & feat: Migrate from npm to bun [#3264]
+- ♻️ Refactor: bidirectional map module structure [#3218]
+- refactor: add missing k8s type aliases to types.go [#3439]
+- Migrate from bincode to wincode [#3448]
+- Omit usearch implementation from Go [#3319]
+- Update default parameters for gRPC [#3239]
+- Migrate go tool [#3209]
+- Add strings.TrimForCompare func [#3064]
+- check port-forward enabled/disabled [#3061]
+- Add RBAC permissions for DaemonSet access [#3059]
+
+:bug: Bugfix
+
+- hotfix: Remove stray ci-container in release workflow [#3584]
+- fix: skip NGT AVX2 on arm64 [#3580]
+- fix SBOM [#3565]
+- [Bugfix] fix SIGABRT problem for Agent NGT [#3531]
+- fix typo [#3453]
+- fix(rust/proto): resolve build errors by correcting prost_types usage [#3403]
+- :bug: fix grpc benchmark [#3342]
+- hotfix: Use init instead of once.Do to prevent data race [#3328]
+- fix docker build condition [#3289]
+- fix tag [#3277]
+- fix extra tag process [#3275]
+- [Bugfix] unknown serviceAccount use for serviceAccountName [#3252]
+- fix faiss_create_index_ivfpq [#3249]
+- Added serviceAccountName to lb/filter gateways and bugfix [#3230]
+- Fix dashboard variables in overview board [#3030]
+
+:pencil2: Document
+
+- add ADOPTERS.md, MAINTAINERS.md [#3556]
+- Add AGENTS.md for AI Co-Worker standardization [#3473]
+- restore loadtest.md [#3187]
+
+:white_check_mark: Testing
+
+- feat(e2e): Implement and refactor metrics collection for E2E tests [#3418]
+- Add support for patial execution of e2e v2 [#3297]
+- Unified E2E V2 YAML setttings using envvars [#3105]
+- [VALD-350] Add retry_until_success_timeout and use it in readreplica CI [#3104]
+- Run E2E Test as a Kubernetes Job [#3073]
+- [VALD-326] E2E with Kind & Support readreplica/rollout case [#3054]
+- Add Agent Execution for E2E V2 [#3074]
+- Added Loop test case [#3063]
+
+:green_heart: CI
+
+- Use ubuntu-latest in release workflow [#3590]
+- hotfix: Install chaos-mesh using Helm [#3521]
+- chore(coderabbit): add coderabbit configuration [#3464]
+- Merge dev and ci container [#3425]
+- Use golangci-lint as a formatter [#3405]
+- Use ubuntu-slim for lightweight jobs [#3312]
+- Add wait --for=create [#3303]
+- hotfix: Support workflow_dispatch images for e2e v2 [#3295]
+- hotfix: build target architecture for main branch [#3268]
+- Fix joining architectures [#3262]
+- hotfix: docker build failure on GitHub Actions [#3258]
+- Multi platform build with native amd64/arm64 GitHub hosted runner [#3251]
+- Add GitHub actions workflow linter [#3213]
+- hotfix: ARM64 dev-container build [#3229]
+- hotfix: Unify image tag by nightly for format [#3214]
+- Use --retry for get.helm.sh [#3195]
+- revert: Platform Separation [#3192]
+- hotfix: Use extra tags to push nightly [#3189]
+- hotfix: separated unification job [#3186]
+- Avoid overwrite for ghcr.io [#3182]
+- Try to separate amd64/arm64 builds [#3178]
+- hotfix: Support debugging for ChatOps [#3055]
+- hotfix: Handle cherrypick without diff [#3047]
+- [VALD-361] Backport changes into release v1.7 by default [#3050]
+- [VALD-359] Support Mac C flags [#3040]
+
+:chart_with_upwards_trend: metrics/tracing
+
+- Add opentelemetry collector dashboard [#3208]
+- [VALD-147] Implement MetricMiddleware [#3010]
+- hotfix: Support prometheus without container label [#3043]
+
+:arrow_up: Update dependencies
+
+- update dependencies and modules [#3440]
+- update rust dependencies and migration [#3436]
+
+:lock: Security
+
+:art: Design
+
+:handshake: Contributor
+
+- add new chatops permissions for contributor [#3548]
+- docs: add nac-39 as a contributor for infra [#3234]
+- docs: add Sh1ragami as a contributor for tool, and code [#3210]
+- docs: add jumpei527 as a contributor for code, and maintenance [#3205]
+
+### Related Issue
+
+<!-- This project mainly accepts pull requests related to open issues -->
+<!-- NOTE: If suggesting a new feature or change, please discuss it in an issue first -->
+<!-- NOTE: If fixing a bug, there should be an issue describing it with steps to reproduce -->
+<!-- Please link to the issue here: -->
+
+### Versions
+
+<!--- Please change the versions below along with your environment -->
+
+- Vald Version: v1.7.17
+- Go Version: v1.26.5
+- Rust Version: v1.97.1
+- Docker Version: v29.6.2
+- Kubernetes Version: v1.36.3
+- Helm Version: v4.2.3
+- NGT Version: v2.7.4
+- Faiss Version: v1.14.3
+
+### Checklist
+
+<!-- For completed items, change [ ] to [x]. -->
+<!-- NOTE: these things are not required to open a PR and can be done afterwards / while the PR is open. -->
+
+- [x] I have read the [CONTRIBUTING](https://github.com/vdaas/vald/blob/main/CONTRIBUTING.md) document and completed [our CLA agreement](https://cla-assistant.io/vdaas/vald).
+- [x] I have checked open [Pull Requests](https://github.com/vdaas/vald/pulls) for the similar feature or fixes?
+
+### Special notes for your reviewer
+
+<!-- Please tell us anything you would like to share with reviewers related to this PR. Your thoughts and feedback are highly valued -->
+
 ## v1.7.17
 
 ### Docker images
