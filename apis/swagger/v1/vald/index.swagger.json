@@ -10,12 +10,8 @@
       "description": "Overview\nRepresent the index manager service."
     }
   ],
-  "consumes": [
-    "application/json"
-  ],
-  "produces": [
-    "application/json"
-  ],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
   "paths": {
     "/index/detail": {
       "get": {
@@ -35,9 +31,7 @@
             }
           }
         },
-        "tags": [
-          "Index"
-        ]
+        "tags": ["Index"]
       }
     },
     "/index/info": {
@@ -58,9 +52,7 @@
             }
           }
         },
-        "tags": [
-          "Index"
-        ]
+        "tags": ["Index"]
       }
     },
     "/index/property": {
@@ -81,9 +73,7 @@
             }
           }
         },
-        "tags": [
-          "Index"
-        ]
+        "tags": ["Index"]
       }
     },
     "/index/statistics": {
@@ -104,9 +94,7 @@
             }
           }
         },
-        "tags": [
-          "Index"
-        ]
+        "tags": ["Index"]
       }
     },
     "/index/statistics/detail": {
@@ -127,9 +115,7 @@
             }
           }
         },
-        "tags": [
-          "Index"
-        ]
+        "tags": ["Index"]
       }
     }
   },

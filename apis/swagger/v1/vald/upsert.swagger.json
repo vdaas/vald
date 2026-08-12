@@ -10,12 +10,8 @@
       "description": "Overview\nUpsert Service is responsible for updating existing vectors in the `vald-agent` or inserting new vectors into the `vald-agent` if the vector does not exist."
     }
   ],
-  "consumes": [
-    "application/json"
-  ],
-  "produces": [
-    "application/json"
-  ],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
   "paths": {
     "/upsert": {
       "post": {
@@ -47,9 +43,7 @@
             }
           }
         ],
-        "tags": [
-          "Upsert"
-        ]
+        "tags": ["Upsert"]
       }
     },
     "/upsert/multiple": {
@@ -82,9 +76,7 @@
             }
           }
         ],
-        "tags": [
-          "Upsert"
-        ]
+        "tags": ["Upsert"]
       }
     }
   },

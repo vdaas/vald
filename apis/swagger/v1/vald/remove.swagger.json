@@ -10,12 +10,8 @@
       "description": "Overview\nRemove Service is responsible for removing vectors indexed in the `vald-agent`."
     }
   ],
-  "consumes": [
-    "application/json"
-  ],
-  "produces": [
-    "application/json"
-  ],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
   "paths": {
     "/remove": {
       "post": {
@@ -47,9 +43,7 @@
             }
           }
         ],
-        "tags": [
-          "Remove"
-        ]
+        "tags": ["Remove"]
       }
     },
     "/remove/multiple": {
@@ -82,9 +76,7 @@
             }
           }
         ],
-        "tags": [
-          "Remove"
-        ]
+        "tags": ["Remove"]
       }
     },
     "/remove/timestamp": {
@@ -117,9 +109,7 @@
             }
           }
         ],
-        "tags": [
-          "Remove"
-        ]
+        "tags": ["Remove"]
       }
     }
   },
@@ -205,14 +195,7 @@
     },
     "TimestampOperator": {
       "type": "string",
-      "enum": [
-        "EQ",
-        "NE",
-        "GE",
-        "GT",
-        "LE",
-        "LT"
-      ],
+      "enum": ["EQ", "NE", "GE", "GT", "LE", "LT"],
       "default": "EQ",
       "description": "Operator is enum of each conditional operator.\n\n - EQ: The timestamp is equal to the specified value in the request.\n - NE: The timestamp is not equal to the specified value in the request.\n - GE: The timestamp is greater than or equal to the specified value in the\nrequest.\n - GT: The timestamp is greater than the specified value in the request.\n - LE: The timestamp is less than or equal to the specified value in the\nrequest.\n - LT: The timestamp is less than the specified value in the request."
     },
