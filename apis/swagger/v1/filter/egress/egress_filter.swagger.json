@@ -10,12 +10,8 @@
       "description": "Represent the egress filter service."
     }
   ],
-  "consumes": [
-    "application/json"
-  ],
-  "produces": [
-    "application/json"
-  ],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
   "paths": {
     "/filter/egress/distance": {
       "post": {
@@ -46,9 +42,7 @@
             }
           }
         ],
-        "tags": [
-          "Filter"
-        ]
+        "tags": ["Filter"]
       }
     },
     "/filter/egress/vector": {
@@ -80,9 +74,7 @@
             }
           }
         ],
-        "tags": [
-          "Filter"
-        ]
+        "tags": ["Filter"]
       }
     }
   },

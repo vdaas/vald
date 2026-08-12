@@ -10,12 +10,8 @@
       "description": "Overview\nRepresent the resource stats service."
     }
   ],
-  "consumes": [
-    "application/json"
-  ],
-  "produces": [
-    "application/json"
-  ],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
   "paths": {
     "/resource/stats": {
       "get": {
@@ -35,9 +31,7 @@
             }
           }
         },
-        "tags": [
-          "Stats"
-        ]
+        "tags": ["Stats"]
       }
     }
   },
