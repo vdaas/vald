@@ -10,12 +10,8 @@
       "description": "Represent the discoverer service."
     }
   ],
-  "consumes": [
-    "application/json"
-  ],
-  "produces": [
-    "application/json"
-  ],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
   "paths": {
     "/discover/nodes": {
       "post": {
@@ -46,9 +42,7 @@
             }
           }
         ],
-        "tags": [
-          "Discoverer"
-        ]
+        "tags": ["Discoverer"]
       }
     },
     "/discover/pods": {
@@ -80,9 +74,7 @@
             }
           }
         ],
-        "tags": [
-          "Discoverer"
-        ]
+        "tags": ["Discoverer"]
       }
     },
     "/discover/services": {
@@ -114,9 +106,7 @@
             }
           }
         ],
-        "tags": [
-          "Discoverer"
-        ]
+        "tags": ["Discoverer"]
       }
     }
   },
