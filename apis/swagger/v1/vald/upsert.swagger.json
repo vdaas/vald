@@ -9,12 +9,8 @@
       "name": "Upsert"
     }
   ],
-  "consumes": [
-    "application/json"
-  ],
-  "produces": [
-    "application/json"
-  ],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
   "paths": {
     "/upsert": {
       "post": {
@@ -46,9 +42,7 @@
             }
           }
         ],
-        "tags": [
-          "Upsert"
-        ]
+        "tags": ["Upsert"]
       }
     },
     "/upsert/multiple": {
@@ -81,9 +75,7 @@
             }
           }
         ],
-        "tags": [
-          "Upsert"
-        ]
+        "tags": ["Upsert"]
       }
     }
   },
