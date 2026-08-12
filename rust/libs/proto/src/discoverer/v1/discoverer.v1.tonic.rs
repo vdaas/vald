@@ -118,7 +118,7 @@ pub mod discoverer_client {
             self.inner.unary(req, path, codec).await
         }
         /** Represent the RPC to get the node information.
-        */
+         */
         pub async fn nodes(
             &mut self,
             request: impl tonic::IntoRequest<super::super::super::payload::v1::discoverer::Request>,
@@ -137,7 +137,7 @@ pub mod discoverer_client {
             self.inner.unary(req, path, codec).await
         }
         /** Represent the RPC to get the readreplica svc information.
-        */
+         */
         pub async fn services(
             &mut self,
             request: impl tonic::IntoRequest<super::super::super::payload::v1::discoverer::Request>,
@@ -178,7 +178,7 @@ pub mod discoverer_server {
             tonic::Status,
         >;
         /** Represent the RPC to get the node information.
-        */
+         */
         async fn nodes(
             &self,
             request: tonic::Request<super::super::super::payload::v1::discoverer::Request>,
@@ -187,7 +187,7 @@ pub mod discoverer_server {
             tonic::Status,
         >;
         /** Represent the RPC to get the readreplica svc information.
-        */
+         */
         async fn services(
             &self,
             request: tonic::Request<super::super::super::payload::v1::discoverer::Request>,

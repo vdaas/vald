@@ -101,7 +101,7 @@ pub mod filter_client {
             self
         }
         /** Represent the RPC to filter the distance.
-        */
+         */
         pub async fn filter_distance(
             &mut self,
             request: impl tonic::IntoRequest<super::super::super::super::payload::v1::object::Distance>,
@@ -121,7 +121,7 @@ pub mod filter_client {
             self.inner.unary(req, path, codec).await
         }
         /** Represent the RPC to filter the vector.
-        */
+         */
         pub async fn filter_vector(
             &mut self,
             request: impl tonic::IntoRequest<super::super::super::super::payload::v1::object::Vector>,
@@ -156,7 +156,7 @@ pub mod filter_server {
     #[async_trait]
     pub trait Filter: std::marker::Send + std::marker::Sync + 'static {
         /** Represent the RPC to filter the distance.
-        */
+         */
         async fn filter_distance(
             &self,
             request: tonic::Request<super::super::super::super::payload::v1::object::Distance>,
@@ -165,7 +165,7 @@ pub mod filter_server {
             tonic::Status,
         >;
         /** Represent the RPC to filter the vector.
-        */
+         */
         async fn filter_vector(
             &self,
             request: tonic::Request<super::super::super::super::payload::v1::object::Vector>,
