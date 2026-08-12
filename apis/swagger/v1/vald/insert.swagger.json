@@ -10,12 +10,8 @@
       "description": "Overview\nInsert Service is responsible for inserting new vectors into the `vald-agent`."
     }
   ],
-  "consumes": [
-    "application/json"
-  ],
-  "produces": [
-    "application/json"
-  ],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
   "paths": {
     "/insert": {
       "post": {
@@ -47,9 +43,7 @@
             }
           }
         ],
-        "tags": [
-          "Insert"
-        ]
+        "tags": ["Insert"]
       }
     },
     "/insert/multiple": {
@@ -82,9 +76,7 @@
             }
           }
         ],
-        "tags": [
-          "Insert"
-        ]
+        "tags": ["Insert"]
       }
     }
   },
