@@ -144,6 +144,7 @@ jobs:
     timeout-minutes: 90
     permissions:
       contents: read
+      security-events: write # For the step: Scan the Docker image
     needs: prepare
     if: ${{ needs.prepare.outputs.matrix != '' }}
     strategy:
