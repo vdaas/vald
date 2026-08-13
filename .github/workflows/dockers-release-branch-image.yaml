@@ -71,11 +71,11 @@ jobs:
       SLACK_NOTIFY_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}
     permissions:
       contents: read
-  ci-container:
+  dev-container:
     needs: [dump-contexts-to-log]
     uses: ./.github/workflows/_docker-image.yaml
     with:
-      target: ci-container
+      target: dev-container
       platforms: linux/amd64
     secrets:
       DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
