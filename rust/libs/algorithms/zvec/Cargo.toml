@@ -14,11 +14,12 @@
 # limitations under the License.
 #
 [package]
-name = "algorithm"
+name = "zvec"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-anyhow = "1.0.104"
-proto = { version = "0.1.0", path = "../proto" }
-tonic = "0.14.6"
+algorithm = { version = "0.1.0", path = "../../algorithm" }
+prost = "0.14.4"
+proto = { version = "0.1.0", path = "../../proto" }
+zvec-rust = "0.6.0"

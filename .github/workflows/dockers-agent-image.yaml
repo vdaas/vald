@@ -56,6 +56,7 @@ on:
       - rust/Cargo.lock
       - rust/Cargo.toml
       - rust/bin/agent
+      - rust/libs/algorithms/zvec/**
       - rust/libs/ngt-rs/**
       - rust/libs/ngt/**
       - rust/libs/proto/**
@@ -81,6 +82,7 @@ on:
       - rust/Cargo.lock
       - rust/Cargo.toml
       - rust/bin/agent
+      - rust/libs/algorithms/zvec/**
       - rust/libs/ngt-rs/**
       - rust/libs/ngt/**
       - rust/libs/proto/**

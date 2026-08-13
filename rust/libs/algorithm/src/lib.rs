@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 use anyhow::Result;
+use proto::google::protobuf::Any;
 use proto::payload::v1::search;
 use std::{collections::HashMap, error, fmt, i64};
 
@@ -55,6 +56,9 @@ pub enum Error {
         uuid: String,
     },
     Unknown {},
+    Backend {
+        message: String,
+    },
 }
 
 impl MultiError for Error {
@@ -137,6 +141,7 @@ impl fmt::Display for Error {
             }
             Error::ObjectIDNotFound { uuid } => write!(f, "uuid {}'s object id not found", uuid),
             Error::Unknown {} => write!(f, "unknown error"),
+            Error::Backend { message } => write!(f, "algorithm backend error: {}", message),
         }
     }
 }
@@ -146,6 +151,15 @@ pub trait ANN: Send + Sync {
     fn create_index(&mut self) -> Result<(), Error>;
     fn save_index(&mut self) -> Result<(), Error>;
     fn insert(&mut self, uuid: String, vector: Vec<f32>, ts: i64) -> Result<(), Error>;
+    fn insert_with_options(
+        &mut self,
+        uuid: String,
+        vector: Vec<f32>,
+        ts: i64,
+        _options: &[Any],
+    ) -> Result<(), Error> {
+        self.insert(uuid, vector, ts)
+    }
     fn insert_multiple(&mut self, vectors: HashMap<String, Vec<f32>>) -> Result<(), Error>;
     fn update(&mut self, uuid: String, vector: Vec<f32>, ts: i64) -> Result<(), Error>;
     fn update_multiple(&mut self, vectors: HashMap<String, Vec<f32>>) -> Result<(), Error>;
@@ -159,6 +173,16 @@ pub trait ANN: Send + Sync {
         epsilon: f32,
         radius: f32,
     ) -> Result<search::Response, Error>;
+    fn search_with_options(
+        &self,
+        vector: Vec<f32>,
+        k: u32,
+        epsilon: f32,
+        radius: f32,
+        _options: &[Any],
+    ) -> Result<search::Response, Error> {
+        self.search(vector, k, epsilon, radius)
+    }
     fn get_object(&self, uuid: String) -> Result<(Vec<f32>, i64), Error>;
     fn get_dimension_size(&self) -> usize;
     fn len(&self) -> u32;

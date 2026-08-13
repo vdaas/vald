@@ -26,7 +26,7 @@ use tonic_types::StatusExt;
 use super::common::{bidirectional_stream, build_error_details};
 
 pub(crate) async fn update(
-    s: Arc<RwLock<dyn algorithm::ANN>>,
+    s: Arc<RwLock<Box<dyn algorithm::ANN>>>,
     resource_type: &str,
     api_name: &str,
     name: &str,

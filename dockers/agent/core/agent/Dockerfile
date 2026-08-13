@@ -94,12 +94,14 @@ RUN --mount=type=bind,target=.,rw \
     && CC=clang CXX=clang++ make ngt/install \
     && make faiss/install \
     && make rust/target/release/${APP_NAME} \
+    && find rust/target/release/build -name libzvec_c_api.so -exec cp {} /usr/lib/libzvec_c_api.so \; \
     && mv "rust/target/release/${APP_NAME}" "/usr/bin/${APP_NAME}" \
     && rm -rf rust/target
 # skipcq: DOK-DL3026,DOK-DL3007
 FROM gcr.io/distroless/cc-debian12:nonroot
 LABEL maintainer="vdaas.org vald team <vald@vdaas.org>"
 COPY --from=builder /usr/bin/agent /usr/bin/agent
+COPY --from=builder /usr/lib/libzvec_c_api.so /usr/lib/libzvec_c_api.so
 # skipcq: DOK-DL3002
 USER nonroot:nonroot
 ENTRYPOINT ["/usr/bin/agent"]
