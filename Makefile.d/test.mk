@@ -203,6 +203,7 @@ test/cmd: \
 ## run tests for rust
 test/rust: \
 	test/rust/qbg \
+	test/rust/zvec \
 	test/rust/agent
 
 .PHONY: test/rust/qbg
@@ -219,11 +220,17 @@ test/rust/qbg:
 	cargo test --manifest-path rust/Cargo.toml --package qbg --lib -- tests::test_index --exact --show-output
 	rm -rf rust/libs/algorithms/qbg/index/
 
+.PHONY: test/rust/zvec
+## run tests for zvec
+test/rust/zvec:
+	$(CC_ENV_VARS) \
+	cargo test --manifest-path rust/Cargo.toml --package zvec --lib -- --show-output
+
 .PHONY: test/rust/agent
 ## run tests for agent
 test/rust/agent:
 	$(CC_ENV_VARS) \
-	cargo test --manifest-path rust/Cargo.toml --package agent -- handler::common::tests --show-output
+	cargo test --manifest-path rust/Cargo.toml --package agent --no-default-features --features "$(RUST_AGENT_FEATURES)" -- handler::common::tests --show-output
 
 .PHONY: test/hack
 ## run tests for hack

@@ -42,6 +42,7 @@ dependencies = [
  "tonic",
  "tonic-types",
  "tower",
+ "zvec",
 ]
 
 [[package]]
@@ -58,10 +59,7 @@ name = "algorithm"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "faiss",
- "ngt",
  "proto",
- "qbg",
  "tonic",
 ]
 
@@ -3113,3 +3111,28 @@ name = "zmij"
 version = "1.0.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "29666d0abbfad1e3dc4dcf6144730dd3a3ab225bbbdac83319345b1b44ccfc1b"
+
+[[package]]
+name = "zvec"
+version = "0.1.0"
+dependencies = [
+ "algorithm",
+ "prost",
+ "proto",
+ "zvec-rust",
+]
+
+[[package]]
+name = "zvec-rust"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "68005391d2debdee9dcdd295830f7ca4f6bfba2f4f2e3cadfb8f1cc6c7929987"
+dependencies = [
+ "zvec-rust-sys",
+]
+
+[[package]]
+name = "zvec-rust-sys"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f89deb26358085908592b89a97af9155e8f91b88d78006289589a394931b7664"
