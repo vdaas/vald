@@ -108,12 +108,6 @@
 .github/workflows/dockers-index-save-image.yaml
 .github/workflows/dockers-manager-index-image.yaml
 .github/workflows/dockers-readreplica-rotate-image.yaml
-<<<<<<< HEAD
-.github/workflows/dockers-release-branch-image.yaml
-.github/workflows/e2e-chaos.yaml
-.github/workflows/e2e-code-bench-agent.yaml
-=======
->>>>>>> ac447e94f (fix release workflow (#3594))
 .github/workflows/e2e-max-dim.yaml
 .github/workflows/e2e-profiling.yaml
 .github/workflows/e2e.v2.yaml
