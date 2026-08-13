@@ -23,7 +23,7 @@ use tonic_types::StatusExt;
 use super::common::{bidirectional_stream, build_error_details};
 
 async fn search(
-    s: Arc<RwLock<dyn algorithm::ANN>>,
+    s: Arc<RwLock<Box<dyn algorithm::ANN>>>,
     resource_type: &str,
     api_name: &str,
     name: &str,
@@ -62,11 +62,12 @@ async fn search(
             warn!("{:?}", status);
             return Err(status);
         }
-        let result = s.search(
+        let result = s.search_with_options(
             request.vector.clone(),
             config.num,
             config.epsilon,
             config.radius,
+            &config.options,
         );
         match result {
             Err(err) => {

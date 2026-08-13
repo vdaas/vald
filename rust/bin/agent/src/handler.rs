@@ -23,7 +23,7 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 
 pub struct Agent {
-    s: Arc<RwLock<dyn algorithm::ANN>>,
+    s: Arc<RwLock<Box<dyn algorithm::ANN>>>,
     name: String,
     ip: String,
     resource_type: String,
@@ -33,7 +33,7 @@ pub struct Agent {
 
 impl Agent {
     pub fn new(
-        s: impl algorithm::ANN + 'static,
+        s: Box<dyn algorithm::ANN>,
         name: &str,
         ip: &str,
         resource_type: &str,
