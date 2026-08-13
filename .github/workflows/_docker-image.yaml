@@ -186,6 +186,8 @@ jobs:
       - name: Scan the Docker image
         if: startsWith(github.ref, 'refs/tags/')
         uses: ./.github/actions/scan-docker-image
+        env:
+          TRIVY_PLATFORM: linux/${{ matrix.arch }}
         with:
           image_ref: "${{ needs.prepare.outputs.image_name }}:${{ needs.prepare.outputs.primary_tag }}-${{ matrix.arch }}"
   merge:
