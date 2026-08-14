@@ -1,6 +1,10 @@
 module github.com/vdaas/vald/example/client
 
+<<<<<<< HEAD
 go 1.26.1
+=======
+go 1.26.6
+>>>>>>> 710eb8059 (Update dependencies (#3606))
 
 replace (
 	github.com/kpango/fuid => github.com/kpango/fuid v0.0.0-20221203053508-503b5ad89aa1
@@ -19,6 +23,7 @@ require (
 )
 
 require (
+<<<<<<< HEAD
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.11-20260209202127-80ab13bee0bf.1 // indirect
 	github.com/goccy/go-json v0.10.6 // indirect
 	github.com/kpango/fastime v1.1.10 // indirect
@@ -29,4 +34,16 @@ require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20260401024825-9d38bb4040a9 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260401024825-9d38bb4040a9 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
+=======
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.12-20260709200747-435963d16310.1 // indirect
+	github.com/goccy/go-json v0.10.6 // indirect
+	github.com/kpango/fastime v1.1.10 // indirect
+	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
+	golang.org/x/net v0.58.0 // indirect
+	golang.org/x/sys v0.47.0 // indirect
+	golang.org/x/text v0.41.0 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20260810153831-ec0a7760b754 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260810153831-ec0a7760b754 // indirect
+	google.golang.org/protobuf v1.36.12 // indirect
+>>>>>>> 710eb8059 (Update dependencies (#3606))
 )
