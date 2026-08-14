@@ -28,9 +28,9 @@ jobs:
       contents: read
       security-events: write
     with:
-      target: index-save
+      target: operator
     uses: ./.github/workflows/_docker-image.yaml
-name: "Build docker image: index-save"
+name: "Build docker image: operator"
 on:
   push:
     branches:
@@ -49,17 +49,15 @@ on:
       - .github/actions/docker-build/action.yaml
       - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
-      - .github/workflows/dockers-index-save-image.yaml
+      - .github/workflows/dockers-operator-image.yaml
       - Makefile
       - Makefile.d/**
-      - apis/grpc/v1/agent/core/*.go
-      - apis/grpc/v1/discoverer/*.go
       - apis/grpc/v1/payload/*.go
       - apis/grpc/v1/rpc/errdetails/*.go
       - apis/grpc/v1/rpc/stats/*.go
       - apis/proto/**
-      - cmd/index/job/save/*.go
-      - dockers/index/job/save/Dockerfile
+      - cmd/operator/vald/*.go
+      - dockers/operator/vald/Dockerfile
       - go.mod
       - go.sum
       - hack/docker/gen/main.go
@@ -68,7 +66,6 @@ on:
       - internal/cache/cacher/*.go
       - internal/cache/gache/*.go
       - internal/circuitbreaker/*.go
-      - internal/client/v1/client/discoverer/*.go
       - internal/config/*.go
       - internal/conv/*.go
       - internal/db/kvs/redis/*.go
@@ -81,6 +78,12 @@ on:
       - internal/info/*.go
       - internal/io/*.go
       - internal/k8s/*.go
+      - internal/k8s/client/*.go
+      - internal/k8s/resource/*.go
+      - internal/k8s/vald/operator/api/metadata/*.go
+      - internal/k8s/vald/operator/api/v1/*.go
+      - internal/k8s/vald/operator/api/valdrelease/*.go
+      - internal/k8s/vald/operator/api/valdrelease/common/*.go
       - internal/log/*.go
       - internal/log/format/*.go
       - internal/log/glg/*.go
@@ -145,9 +148,9 @@ on:
       - internal/timeutil/location/*.go
       - internal/tls/*.go
       - internal/version/*.go
-      - pkg/index/job/save/config/*.go
-      - pkg/index/job/save/service/*.go
-      - pkg/index/job/save/usecase/*.go
+      - pkg/operator/vald/config/*.go
+      - pkg/operator/vald/service/*.go
+      - pkg/operator/vald/usecase/*.go
       - versions/GO_VERSION
   pull_request_target:
     types:
@@ -161,17 +164,15 @@ on:
       - .github/actions/docker-build/action.yaml
       - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
-      - .github/workflows/dockers-index-save-image.yaml
+      - .github/workflows/dockers-operator-image.yaml
       - Makefile
       - Makefile.d/**
-      - apis/grpc/v1/agent/core/*.go
-      - apis/grpc/v1/discoverer/*.go
       - apis/grpc/v1/payload/*.go
       - apis/grpc/v1/rpc/errdetails/*.go
       - apis/grpc/v1/rpc/stats/*.go
       - apis/proto/**
-      - cmd/index/job/save/*.go
-      - dockers/index/job/save/Dockerfile
+      - cmd/operator/vald/*.go
+      - dockers/operator/vald/Dockerfile
       - go.mod
       - go.sum
       - hack/docker/gen/main.go
@@ -180,7 +181,6 @@ on:
       - internal/cache/cacher/*.go
       - internal/cache/gache/*.go
       - internal/circuitbreaker/*.go
-      - internal/client/v1/client/discoverer/*.go
       - internal/config/*.go
       - internal/conv/*.go
       - internal/db/kvs/redis/*.go
@@ -193,6 +193,12 @@ on:
       - internal/info/*.go
       - internal/io/*.go
       - internal/k8s/*.go
+      - internal/k8s/client/*.go
+      - internal/k8s/resource/*.go
+      - internal/k8s/vald/operator/api/metadata/*.go
+      - internal/k8s/vald/operator/api/v1/*.go
+      - internal/k8s/vald/operator/api/valdrelease/*.go
+      - internal/k8s/vald/operator/api/valdrelease/common/*.go
       - internal/log/*.go
       - internal/log/format/*.go
       - internal/log/glg/*.go
@@ -257,7 +263,7 @@ on:
       - internal/timeutil/location/*.go
       - internal/tls/*.go
       - internal/version/*.go
-      - pkg/index/job/save/config/*.go
-      - pkg/index/job/save/service/*.go
-      - pkg/index/job/save/usecase/*.go
+      - pkg/operator/vald/config/*.go
+      - pkg/operator/vald/service/*.go
+      - pkg/operator/vald/usecase/*.go
       - versions/GO_VERSION
