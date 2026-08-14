@@ -28,7 +28,7 @@ runs:
   using: "composite"
   steps:
     - name: Run vulnerability scanner (table)
-      uses: aquasecurity/trivy-action@2736533278103862a861f4a35ebac3e97854d956
+      uses: aquasecurity/trivy-action@master
       with:
         image-ref: ${{ inputs.image_ref }}
         format: "table"
@@ -36,7 +36,7 @@ runs:
         severity: ${{ inputs.severity }}
         timeout: 30m
     - name: Run vulnerability scanner (sarif)
-      uses: aquasecurity/trivy-action@2736533278103862a861f4a35ebac3e97854d956
+      uses: aquasecurity/trivy-action@master
       with:
         image-ref: ${{ inputs.image_ref }}
         format: "sarif"
@@ -45,6 +45,6 @@ runs:
         severity: ${{ inputs.severity }}
         timeout: 30m
     - name: Upload Trivy scan results to Security tab
-      uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
+      uses: github/codeql-action/upload-sarif@v4
       with:
         sarif_file: "trivy-results.sarif"
