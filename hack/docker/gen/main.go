@@ -1051,7 +1051,8 @@ jobs:
 			workflow.Jobs.Build.With.Platforms = data.BuildPlatforms
 
 			workflow.Jobs.Build.Permissions = map[string]string{
-				"contents": "read",
+				"contents":        "read",
+				"security-events": "write",
 			}
 
 			workflow.Jobs.Build.Secrets = map[string]string{
