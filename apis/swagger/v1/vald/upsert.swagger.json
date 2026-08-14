@@ -6,7 +6,8 @@
   },
   "tags": [
     {
-      "name": "Upsert"
+      "name": "Upsert",
+      "description": "Overview\nUpsert Service is responsible for updating existing vectors in the `vald-agent` or inserting new vectors into the `vald-agent` if the vector does not exist."
     }
   ],
   "consumes": ["application/json"],

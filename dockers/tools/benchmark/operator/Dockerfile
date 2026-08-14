@@ -27,7 +27,13 @@ ARG TARGETARCH
 ARG TARGETOS
 ARG GO_VERSION
 ARG RUST_VERSION
+<<<<<<< HEAD:dockers/tools/benchmark/operator/Dockerfile
 ENV APP_NAME=operator
+=======
+ARG BUILDKIT_SBOM_SCAN_STAGE=true
+ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
+ENV APP_NAME=vald-operator
+>>>>>>> 710eb8059 (Update dependencies (#3606)):dockers/operator/vald/Dockerfile
 ENV DEBIAN_FRONTEND=noninteractive
 ENV GO111MODULE=on
 ENV GOPATH=/go
