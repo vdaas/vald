@@ -26,6 +26,7 @@ jobs:
       SLACK_NOTIFY_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}
     permissions:
       contents: read
+      security-events: write
     with:
       target: agent-sidecar
     uses: ./.github/workflows/_docker-image.yaml
