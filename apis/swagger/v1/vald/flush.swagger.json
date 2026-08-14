@@ -6,7 +6,8 @@
   },
   "tags": [
     {
-      "name": "Flush"
+      "name": "Flush",
+      "description": "Overview\nFlush Service is responsible for removing all vectors that are indexed and uncommitted in the `vald-agent`."
     }
   ],
   "consumes": ["application/json"],

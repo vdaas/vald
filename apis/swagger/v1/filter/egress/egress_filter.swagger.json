@@ -6,7 +6,8 @@
   },
   "tags": [
     {
-      "name": "Filter"
+      "name": "Filter",
+      "description": "Represent the egress filter service."
     }
   ],
   "consumes": ["application/json"],
