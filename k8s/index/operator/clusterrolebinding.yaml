@@ -20,11 +20,11 @@ metadata:
   labels:
     app: vald-index-operator
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.7.17
+    helm.sh/chart: vald-v1.8.0
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
     app.kubernetes.io/component: vald-index-operator
-    app.kubernetes.io/version: v1.7.17
+    app.kubernetes.io/version: v1.8.0
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
