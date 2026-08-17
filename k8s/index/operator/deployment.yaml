@@ -20,10 +20,10 @@ metadata:
   labels:
     app: vald-index-operator
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.7.17
+    helm.sh/chart: vald-v1.8.0
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.17
+    app.kubernetes.io/version: v1.8.0
     app.kubernetes.io/component: index-operator
 spec:
   progressDeadlineSeconds: 600
@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: operator
       annotations:
-        checksum/configmap: 1e35f2680dbce54b8383c1a3d55879a554c1e16635578e438311b9e86a3ccf8e
+        checksum/configmap: 5cb76f657bb898363304347f60f1a83ed13e706ac0e178f3c8c43b66dc81014c
         pyroscope.io/scrape: "true"
         pyroscope.io/application-name: vald-index-operator
         pyroscope.io/profile-cpu-enabled: "true"
