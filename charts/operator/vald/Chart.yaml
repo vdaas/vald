@@ -15,7 +15,7 @@
 #
 apiVersion: v2
 name: vald-operator
-version: v1.7.17
+version: v1.8.0
 appVersion: latest
 description: A Helm chart for Vald Operator
 type: application
