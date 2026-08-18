@@ -108,6 +108,13 @@
   - [Upsert.MultiRequest](#payload-v1-Upsert-MultiRequest)
   - [Upsert.ObjectRequest](#payload-v1-Upsert-ObjectRequest)
   - [Upsert.Request](#payload-v1-Upsert-Request)
+  - [ZVec](#payload-v1-ZVec)
+  - [ZVec.DocumentOptions](#payload-v1-ZVec-DocumentOptions)
+  - [ZVec.DocumentOptions.FieldsEntry](#payload-v1-ZVec-DocumentOptions-FieldsEntry)
+  - [ZVec.FTS](#payload-v1-ZVec-FTS)
+  - [ZVec.Query](#payload-v1-ZVec-Query)
+  - [ZVec.SearchOptions](#payload-v1-ZVec-SearchOptions)
+  - [ZVec.Vector](#payload-v1-ZVec-Vector)
 
   - [Remove.Timestamp.Operator](#payload-v1-Remove-Timestamp-Operator)
   - [Search.AggregationAlgorithm](#payload-v1-Search-AggregationAlgorithm)
@@ -654,11 +661,12 @@ Insert related messages.
 
 Represent insert configurations.
 
-| Field                   | Type                                       | Label | Description                                         |
-| ----------------------- | ------------------------------------------ | ----- | --------------------------------------------------- |
-| skip_strict_exist_check | [bool](#bool)                              |       | A flag to skip exist check during insert operation. |
-| filters                 | [Filter.Config](#payload-v1-Filter-Config) |       | Filter configurations.                              |
-| timestamp               | [int64](#int64)                            |       | Insert timestamp.                                   |
+| Field                   | Type                                        | Label    | Description                                         |
+| ----------------------- | ------------------------------------------- | -------- | --------------------------------------------------- |
+| skip_strict_exist_check | [bool](#bool)                               |          | A flag to skip exist check during insert operation. |
+| filters                 | [Filter.Config](#payload-v1-Filter-Config)  |          | Filter configurations.                              |
+| timestamp               | [int64](#int64)                             |          | Insert timestamp.                                   |
+| options                 | [google.protobuf.Any](#google-protobuf-Any) | repeated | Algorithm-specific insert options.                  |
 
 <a name="payload-v1-Insert-MultiObjectRequest"></a>
 
@@ -1028,20 +1036,21 @@ Search related messages.
 
 Represent search configuration.
 
-| Field                 | Type                                                                   | Label | Description                                  |
-| --------------------- | ---------------------------------------------------------------------- | ----- | -------------------------------------------- |
-| request_id            | [string](#string)                                                      |       | Unique request ID.                           |
-| num                   | [uint32](#uint32)                                                      |       | Maximum number of result to be returned.     |
-| radius                | [float](#float)                                                        |       | Search radius.                               |
-| epsilon               | [float](#float)                                                        |       | Search coefficient.                          |
-| timeout               | [int64](#int64)                                                        |       | Search timeout in nanoseconds.               |
-| ingress_filters       | [Filter.Config](#payload-v1-Filter-Config)                             |       | Ingress filter configurations.               |
-| egress_filters        | [Filter.Config](#payload-v1-Filter-Config)                             |       | Egress filter configurations.                |
-| min_num               | [uint32](#uint32)                                                      |       | Minimum number of result to be returned.     |
-| aggregation_algorithm | [Search.AggregationAlgorithm](#payload-v1-Search-AggregationAlgorithm) |       | Aggregation Algorithm                        |
-| ratio                 | [google.protobuf.FloatValue](#google-protobuf-FloatValue)              |       | Search ratio for agent return result number. |
-| nprobe                | [uint32](#uint32)                                                      |       | Search nprobe.                               |
-| edge_size             | [int32](#int32)                                                        |       | Search edge size                             |
+| Field                 | Type                                                                   | Label    | Description                                  |
+| --------------------- | ---------------------------------------------------------------------- | -------- | -------------------------------------------- |
+| request_id            | [string](#string)                                                      |          | Unique request ID.                           |
+| num                   | [uint32](#uint32)                                                      |          | Maximum number of result to be returned.     |
+| radius                | [float](#float)                                                        |          | Search radius.                               |
+| epsilon               | [float](#float)                                                        |          | Search coefficient.                          |
+| timeout               | [int64](#int64)                                                        |          | Search timeout in nanoseconds.               |
+| ingress_filters       | [Filter.Config](#payload-v1-Filter-Config)                             |          | Ingress filter configurations.               |
+| egress_filters        | [Filter.Config](#payload-v1-Filter-Config)                             |          | Egress filter configurations.                |
+| min_num               | [uint32](#uint32)                                                      |          | Minimum number of result to be returned.     |
+| aggregation_algorithm | [Search.AggregationAlgorithm](#payload-v1-Search-AggregationAlgorithm) |          | Aggregation Algorithm                        |
+| ratio                 | [google.protobuf.FloatValue](#google-protobuf-FloatValue)              |          | Search ratio for agent return result number. |
+| nprobe                | [uint32](#uint32)                                                      |          | Search nprobe.                               |
+| edge_size             | [int32](#int32)                                                        |          | Search edge size                             |
+| options               | [google.protobuf.Any](#google-protobuf-Any)                            | repeated | Algorithm-specific search options.           |
 
 <a name="payload-v1-Search-IDRequest"></a>
 
@@ -1274,6 +1283,76 @@ Represent the upsert request.
 | ------ | ------------------------------------------ | ----- | ---------------------------------------- |
 | vector | [Object.Vector](#payload-v1-Object-Vector) |       | The vector to be upserted.               |
 | config | [Upsert.Config](#payload-v1-Upsert-Config) |       | The configuration of the upsert request. |
+
+<a name="payload-v1-ZVec"></a>
+
+### ZVec
+
+ZVec related messages.
+
+<a name="payload-v1-ZVec-DocumentOptions"></a>
+
+### ZVec.DocumentOptions
+
+Represent ZVec document options.
+
+| Field  | Type                                                                             | Label    | Description                                   |
+| ------ | -------------------------------------------------------------------------------- | -------- | --------------------------------------------- |
+| fields | [ZVec.DocumentOptions.FieldsEntry](#payload-v1-ZVec-DocumentOptions-FieldsEntry) | repeated | Scalar or text fields stored with the vector. |
+
+<a name="payload-v1-ZVec-DocumentOptions-FieldsEntry"></a>
+
+### ZVec.DocumentOptions.FieldsEntry
+
+| Field | Type              | Label | Description |
+| ----- | ----------------- | ----- | ----------- |
+| key   | [string](#string) |       |             |
+| value | [string](#string) |       |             |
+
+<a name="payload-v1-ZVec-FTS"></a>
+
+### ZVec.FTS
+
+Represent a ZVec full-text recall query.
+
+| Field        | Type              | Label | Description                      |
+| ------------ | ----------------- | ----- | -------------------------------- |
+| match_string | [string](#string) |       | Natural-language match string.   |
+| query_string | [string](#string) |       | Explicit full-text query string. |
+
+<a name="payload-v1-ZVec-Query"></a>
+
+### ZVec.Query
+
+Represent a ZVec hybrid recall query.
+
+| Field      | Type                                   | Label | Description             |
+| ---------- | -------------------------------------- | ----- | ----------------------- |
+| field_name | [string](#string)                      |       | Target field name.      |
+| vector     | [ZVec.Vector](#payload-v1-ZVec-Vector) |       | Vector recall query.    |
+| fts        | [ZVec.FTS](#payload-v1-ZVec-FTS)       |       | Full-text recall query. |
+
+<a name="payload-v1-ZVec-SearchOptions"></a>
+
+### ZVec.SearchOptions
+
+Represent ZVec search options.
+
+| Field          | Type                                 | Label    | Description                                          |
+| -------------- | ------------------------------------ | -------- | ---------------------------------------------------- |
+| pre_filter     | [string](#string)                    |          | Scalar pre-filter expression.                        |
+| hybrid_queries | [ZVec.Query](#payload-v1-ZVec-Query) | repeated | Hybrid recall queries.                               |
+| hybrid_weights | [float](#float)                      | repeated | Per-query weights used by weighted hybrid reranking. |
+
+<a name="payload-v1-ZVec-Vector"></a>
+
+### ZVec.Vector
+
+Represent a ZVec vector recall query.
+
+| Field  | Type            | Label    | Description |
+| ------ | --------------- | -------- | ----------- |
+| values | [float](#float) | repeated |             |
 
 <a name="payload-v1-Remove-Timestamp-Operator"></a>
 
