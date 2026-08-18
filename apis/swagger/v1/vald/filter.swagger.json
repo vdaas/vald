@@ -6,7 +6,8 @@
   },
   "tags": [
     {
-      "name": "Filter"
+      "name": "Filter",
+      "description": "Overview\nFilter Server is responsible for providing insert, update, upsert and search interface for `Vald Filter Gateway`.\n\nVald Filter Gateway forward user request to user-defined ingress/egress filter components allowing user to run custom logic."
     }
   ],
   "consumes": ["application/json"],
@@ -340,7 +341,7 @@
         "PairingHeap"
       ],
       "default": "Unknown",
-      "title": "AggregationAlgorithm is enum of each aggregation algorithms"
+      "description": "AggregationAlgorithm is enum of each aggregation algorithms"
     },
     "SearchResponse": {
       "type": "object",

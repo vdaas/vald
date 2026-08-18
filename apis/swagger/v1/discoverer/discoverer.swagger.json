@@ -6,7 +6,8 @@
   },
   "tags": [
     {
-      "name": "Discoverer"
+      "name": "Discoverer",
+      "description": "Represent the discoverer service."
     }
   ],
   "consumes": ["application/json"],
