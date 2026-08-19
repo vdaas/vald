@@ -17,3 +17,29 @@
 # Reason: BuildKit v0.32.2 embeds github.com/moby/go-archive v0.2.0. The fixed
 # module version is not independently replaceable in the upstream binary.
 CVE-2026-17106 exp:2027-02-19
+
+# Reason: these Go standard-library findings are embedded in the official
+# BuildKit v0.32.2 binaries. Vald cannot replace them independently; remove
+# these exceptions when upstream publishes binaries built with a fixed Go.
+CVE-2026-25679 exp:2027-02-19
+CVE-2026-25681 exp:2027-02-19
+CVE-2026-27136 exp:2027-02-19
+CVE-2026-27145 exp:2027-02-19
+CVE-2026-32280 exp:2027-02-19
+CVE-2026-32281 exp:2027-02-19
+CVE-2026-32283 exp:2027-02-19
+CVE-2026-33811 exp:2027-02-19
+CVE-2026-33814 exp:2027-02-19
+CVE-2026-33818 exp:2027-02-19
+CVE-2026-39820 exp:2027-02-19
+CVE-2026-39821 exp:2027-02-19
+CVE-2026-39822 exp:2027-02-19
+CVE-2026-39836 exp:2027-02-19
+CVE-2026-42499 exp:2027-02-19
+CVE-2026-42504 exp:2027-02-19
+CVE-2026-46600 exp:2027-02-19
+CVE-2026-56853 exp:2027-02-19
+CVE-2026-56858 exp:2027-02-19
+CVE-2026-56859 exp:2027-02-19
+CVE-2026-56860 exp:2027-02-19
+CVE-2026-56862 exp:2027-02-19
