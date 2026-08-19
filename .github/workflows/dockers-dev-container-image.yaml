@@ -48,6 +48,7 @@ on:
       - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-dev-container-image.yaml
+      - .trivyignore
       - Makefile
       - Makefile.d/**
       - apis/proto/**
@@ -56,6 +57,7 @@ on:
       - go.sum
       - hack/**
       - hack/docker/gen/main.go
+      - trivy.yaml
       - versions/GO_VERSION
       - versions/YQ_VERSION
   pull_request_target:
@@ -69,6 +71,7 @@ on:
       - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-dev-container-image.yaml
+      - .trivyignore
       - Makefile
       - Makefile.d/**
       - apis/proto/**
@@ -77,5 +80,6 @@ on:
       - go.sum
       - hack/**
       - hack/docker/gen/main.go
+      - trivy.yaml
       - versions/GO_VERSION
       - versions/YQ_VERSION

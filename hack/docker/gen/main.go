@@ -125,6 +125,8 @@ const (
 
 	goModPath = "go.mod"
 	goSumPath = "go.sum"
+	trivyConfigPath = "trivy.yaml"
+	trivyIgnorePath = ".trivyignore"
 
 	cargoLockPath       = "rust/Cargo.lock"
 	cargoTomlPath       = "rust/Cargo.toml"
@@ -716,7 +718,8 @@ func setPullRequestPaths(rootDir string, data *Data) {
 			helmOperatorValuesPath, helmOperatorTemplatesPath, operatorSDKVersionPath)
 	case DevContainer:
 		data.PullRequestPaths = append(data.PullRequestPaths,
-			apisProtoPath, hackPath, goModPath, goSumPath, goVersionPath, yqVersionPath)
+			apisProtoPath, hackPath, goModPath, goSumPath, goVersionPath, yqVersionPath,
+			trivyConfigPath, trivyIgnorePath)
 	case Go:
 		data.PullRequestPaths = append(data.PullRequestPaths,
 			apisProtoPath, goModPath, goSumPath, goVersionPath,

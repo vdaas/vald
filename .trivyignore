@@ -1,9 +1,11 @@
 # Temporary exceptions for the release/v1.8 container scan findings.
 # Every exception expires six months after review and must be reassessed before renewal.
 
-# Reason: these CVEs remain in the newest upstream-published build and development tools.
+# Reason: these findings remain in the newest upstream-published build and development tools.
 # Vald does not ship these tools in its runtime images and cannot upgrade their embedded
 # components or Go modules independently. Remove each exception when upstream publishes rebuilt binaries.
+GHSA-hrxh-6v49-42gf exp:2027-02-19
+GHSA-r277-6w6q-xmqw exp:2027-02-19
 CVE-2019-13509 exp:2027-02-19
 CVE-2019-16884 exp:2027-02-19
 CVE-2020-29652 exp:2027-02-19
@@ -182,4 +184,15 @@ CVE-2026-53266 exp:2027-02-19
 CVE-2026-53269 exp:2027-02-19
 CVE-2026-53270 exp:2027-02-19
 CVE-2026-53275 exp:2027-02-19
+CVE-2026-53398 exp:2027-02-19
+CVE-2026-53399 exp:2027-02-19
+CVE-2026-64091 exp:2027-02-19
+CVE-2026-64383 exp:2027-02-19
+CVE-2026-64385 exp:2027-02-19
+CVE-2026-64386 exp:2027-02-19
+CVE-2026-64387 exp:2027-02-19
 CVE-2026-64531 exp:2027-02-19
+CVE-2026-64535 exp:2027-02-19
+CVE-2026-64564 exp:2027-02-19
+CVE-2026-64597 exp:2027-02-19
+CVE-2026-68117 exp:2027-02-19
