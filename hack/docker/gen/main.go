@@ -900,7 +900,8 @@ func setContainerBuild(rootDir string, data *Data) {
 		commands = append(commands, goInstallCommands...)
 		commands = append(commands, rustInstallCommands...)
 		commands = append(commands, data.Preprocess...)
-		data.RunCommands = append(commands, "rm -rf {{.RootDir}}/${ORG}/${REPO}/*")
+		commands = append(commands, "rm -rf {{.RootDir}}/${ORG}/${REPO}/*")
+		data.RunCommands = commands
 		data.RunMounts = append(append(make([]string, 0, len(defaultMounts)+len(goDefaultMounts)), defaultMounts...), goDefaultMounts...)
 	case HelmOperator:
 		data.Environments = appendM(data.Environments, goDefaultEnvironments)
