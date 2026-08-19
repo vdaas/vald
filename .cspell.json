@@ -1219,6 +1219,7 @@
       "nytimes",
       "priorityclass",
       "promtail",
+      "semgrepignore",
       "serviceaccount",
       "sidecard",
       "Streamable",
@@ -1227,6 +1228,7 @@
       "testdata",
       "textlintrc",
       "tmpl",
+      "trivyignore",
       "valdmirrortarget",
       "vdctl",
       "whitesource"

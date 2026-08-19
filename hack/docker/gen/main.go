@@ -729,6 +729,7 @@ func setPullRequestPaths(rootDir string, data *Data) {
 		data.PullRequestPaths = append(data.PullRequestPaths,
 			apisProtoPath, cargoLockPath, cargoTomlPath, rustBinAgentDirPath,
 			rustNgtRsPath, rustNgtPath, rustProtoPath, rustVersionPath)
+	case Other:
 	}
 	trivyIgnorePath := file.Join(trivyIgnoreDirPath, data.Name)
 	if file.Exists(file.Join(rootDir, trivyIgnorePath)) {
@@ -811,6 +812,7 @@ jobs:
 	workflow.Jobs.Build.Permissions = map[string]string{
 		"contents": "read", "security-events": "write",
 	}
+	//nolint:gosec // GitHub Actions expressions, not credential values.
 	workflow.Jobs.Build.Secrets = map[string]string{
 		"PACKAGE_USER": "${{ secrets.PACKAGE_USER }}", "PACKAGE_TOKEN": "${{ secrets.PACKAGE_TOKEN }}",
 		"DOCKERHUB_USER": "${{ secrets.DOCKERHUB_USER }}", "DOCKERHUB_PASS": "${{ secrets.DOCKERHUB_PASS }}",
@@ -914,7 +916,7 @@ func setContainerBuild(rootDir string, data *Data) {
 		data.RootDir = goWorkdir
 		data.RunCommands = append(append(make([]string, 0, len(goInstallCommands)+len(data.Preprocess)), goInstallCommands...), data.Preprocess...)
 		data.RunMounts = append(append(make([]string, 0, len(defaultMounts)+len(goDefaultMounts)), defaultMounts...), goDefaultMounts...)
-	default:
+	case Other:
 		data.RootDir = "${HOME}"
 		data.Environments["ROOTDIR"] = rootDir
 	}
