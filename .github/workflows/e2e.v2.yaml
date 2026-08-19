@@ -34,7 +34,7 @@ jobs:
       contents: read
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - uses: ./.github/actions/dump-context
@@ -51,7 +51,7 @@ jobs:
     outputs:
       result: ${{ steps.build-matrix.outputs.result }}
     steps:
-      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+      - uses: actions/github-script@v9
         id: build-matrix
         with:
           result-encoding: string
@@ -131,7 +131,7 @@ jobs:
     needs: [detect-ci-container]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
           # Match the ref the dev-container build labels the image from
@@ -206,7 +206,7 @@ jobs:
         password: ${{ secrets.PACKAGE_TOKEN }}
       options: "--add-host host.docker.internal:host-gateway"
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Set Git config
@@ -364,7 +364,7 @@ jobs:
       - e2e
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - uses: ./.github/actions/notify-slack
