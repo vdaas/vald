@@ -88,7 +88,7 @@ const (
 	defaultBuildStageName = "builder"
 	maintainerKey         = "MAINTAINER"
 	minimumArgumentLength = 2
-	ubuntuVersion         = "24.04"
+	ubuntuVersion         = "26.04"
 
 	yearKey = "YEAR"
 
