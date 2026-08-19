@@ -27,6 +27,7 @@ ARG TARGETARCH
 ARG TARGETOS
 ARG GO_VERSION
 ARG RUST_VERSION
+ARG YQ_VERSION
 ARG BUILDKIT_SBOM_SCAN_STAGE=true
 ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
 ENV APP_NAME=dev-container
@@ -126,7 +127,7 @@ RUN --mount=type=bind,target=.,rw \
     && make minikube/install \
     && make reviewdog/install \
     && make telepresence/install \
-    && make yq/install \
+    && make YQ_VERSION="${YQ_VERSION}" yq/install \
     && make docker-cli/install \
     && make ngt/install \
     && make faiss/install \

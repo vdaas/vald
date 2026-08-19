@@ -88,6 +88,8 @@ const (
 	defaultBuildStageName = "builder"
 	maintainerKey         = "MAINTAINER"
 	minimumArgumentLength = 2
+	buildkitVersion       = "v0.32.2"
+	syftScannerVersion    = "1.12.0"
 	ubuntuVersion         = "24.04"
 
 	yearKey = "YEAR"
@@ -140,6 +142,7 @@ const (
 	operatorSDKVersionPath = versionsPath + "/OPERATOR_SDK_VERSION"
 	goVersionPath          = versionsPath + "/GO_VERSION"
 	rustVersionPath        = versionsPath + "/RUST_VERSION"
+	yqVersionPath          = versionsPath + "/YQ_VERSION"
 	faissVersionPath       = versionsPath + "/FAISS_VERSION"
 	ngtVersionPath         = versionsPath + "/NGT_VERSION"
 	// usearchVersionPath     = versionsPath + "/USEARCH_VERSION" // TODO Future work.
@@ -239,6 +242,9 @@ ARG TARGETARCH
 ARG TARGETOS
 ARG GO_VERSION
 ARG RUST_VERSION
+{{- if eq (ContainerName .ContainerType) "%s"}}
+ARG YQ_VERSION
+{{- end}}
 ARG BUILDKIT_SBOM_SCAN_STAGE=true
 ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
 {{- range $keyValue := .EnvironmentsSlice }}
@@ -300,6 +306,7 @@ ENTRYPOINT [{{Entrypoint .Entrypoints}}]
 ENTRYPOINT ["{{.BinDir}}/{{.AppName}}"]
 {{- end}}
 {{- end}}`, header, DevContainer.String(),
+	DevContainer.String(),
 	DevContainer.String(),
 	DevContainer.String(),
 	DevContainer.String())))
@@ -530,7 +537,7 @@ var (
 		"make minikube/install",
 		"make reviewdog/install",
 		"make telepresence/install",
-		"make yq/install",
+		"make YQ_VERSION=\"${YQ_VERSION}\" yq/install",
 		"make docker-cli/install",
 	}
 )
@@ -872,7 +879,7 @@ func main() {
 			AliasImage:   true,
 			PackageDir:   buildkit,
 			BuilderImage: "moby/" + buildkit,
-			BuilderTag:   "master",
+			BuilderTag:   buildkitVersion,
 		},
 		vald + "-" + binfmt: {
 			AppName:      binfmt,
@@ -886,7 +893,7 @@ func main() {
 			AliasImage:     true,
 			PackageDir:     buildkit + "/syft/scanner",
 			BuilderImage:   "docker/" + buildkitSyftScanner,
-			BuilderTag:     "edge",
+			BuilderTag:     syftScannerVersion,
 			BuildStageName: "scanner",
 		},
 	} {
@@ -915,6 +922,7 @@ func main() {
 					goModPath,
 					goSumPath,
 					goVersionPath,
+					yqVersionPath,
 				)
 			case Go:
 				data.PullRequestPaths = append(

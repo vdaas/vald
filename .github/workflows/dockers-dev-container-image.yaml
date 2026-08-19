@@ -57,6 +57,7 @@ on:
       - hack/**
       - hack/docker/gen/main.go
       - versions/GO_VERSION
+      - versions/YQ_VERSION
   pull_request_target:
     types:
       - opened
@@ -77,3 +78,4 @@ on:
       - hack/**
       - hack/docker/gen/main.go
       - versions/GO_VERSION
+      - versions/YQ_VERSION
