@@ -1998,9 +1998,9 @@ agent:
   # @schema {"name": "agent.version", "alias": "version"}
   # agent.version -- version of agent config
   version: v0.0.0
-  # @schema {"name": "agent.algorithm", "type": "string", "enum": ["ngt", "faiss"]}
+  # @schema {"name": "agent.algorithm", "type": "string", "enum": ["ngt", "faiss", "zvec"]}
   # agent.algorithm -- agent algorithm type.
-  # it should be `ngt` or `faiss`.
+  # it should be `ngt`, `faiss` or `zvec`.
   algorithm: ngt
   # @schema {"name": "agent.time_zone", "type": "string"}
   # agent.time_zone -- Time zone
@@ -2468,6 +2468,22 @@ agent:
       # @schema {"name": "agent.faiss.kvsdb.concurrency", "type": "integer"}
       # agent.faiss.kvsdb.concurrency -- kvsdb processing concurrency
       concurrency: 6
+  # @schema {"name": "agent.zvec", "type": "object"}
+  zvec:
+    # @schema {"name": "agent.zvec.dimension", "type": "integer", "minimum": 1}
+    # agent.zvec.dimension -- vector dimension
+    dimension: 4096
+    # @schema {"name": "agent.zvec.index_path", "type": "string"}
+    # agent.zvec.index_path -- Zvec collection storage path
+    index_path: /var/lib/vald/zvec
+    # @schema {"name": "agent.zvec.fields", "type": "array", "items": {"type": "string"}}
+    # agent.zvec.fields -- string fields stored in the Zvec collection
+    fields:
+      - category
+    # @schema {"name": "agent.zvec.fts_fields", "type": "array", "items": {"type": "string"}}
+    # agent.zvec.fts_fields -- full-text indexed string fields stored in the Zvec collection
+    fts_fields:
+      - content
   # @schema {"name": "agent.sidecar", "type": "object"}
   sidecar:
     # @schema {"name": "agent.sidecar.enabled", "type": "boolean"}

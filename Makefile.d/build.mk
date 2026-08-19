@@ -132,12 +132,14 @@ example/client/client:
 	$(eval CGO_ENABLED = 1)
 	$(call go-example-build,example/client,-linkmode 'external',$(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
 
+RUST_AGENT_FEATURES ?= qbg,zvec
+
 rust/target/release/agent:
 	pushd rust && \
 	$(CC_ENV_VARS) \
 	OPENSSL_STATIC=1 \
 	PKG_CONFIG_ALL_STATIC=1 \
-	cargo build -p agent --release && \
+	cargo build -p agent --no-default-features --features "$(RUST_AGENT_FEATURES)" --release && \
 	popd
 
 rust/target/debug/agent:
@@ -145,7 +147,7 @@ rust/target/debug/agent:
 	$(CC_ENV_VARS) \
 	OPENSSL_STATIC=1 \
 	PKG_CONFIG_ALL_STATIC=1 \
-	cargo build -p agent && \
+	cargo build -p agent --no-default-features --features "$(RUST_AGENT_FEATURES)" && \
 	popd
 
 tests/v2/e2e/e2e:

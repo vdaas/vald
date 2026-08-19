@@ -64,6 +64,7 @@
 .github/helm/values/values-mirror-02.yaml
 .github/helm/values/values-profile.yaml
 .github/helm/values/values-readreplica.yaml
+.github/helm/values/values-zvec.yaml
 .github/issue_label_bot.yaml
 .github/kubelinter.yaml
 .github/labeler.yaml
@@ -460,6 +461,7 @@ charts/vald/templates/agent/sidecar/configmap.yaml
 charts/vald/templates/agent/sidecar/svc.yaml
 charts/vald/templates/agent/statefulset.yaml
 charts/vald/templates/agent/svc.yaml
+charts/vald/templates/agent/zvec/configmap.yaml
 charts/vald/templates/discoverer/clusterrole.yaml
 charts/vald/templates/discoverer/clusterrolebinding.yaml
 charts/vald/templates/discoverer/configmap.yaml
@@ -2295,6 +2297,8 @@ rust/libs/algorithms/qbg/build.rs
 rust/libs/algorithms/qbg/src/input.cpp
 rust/libs/algorithms/qbg/src/input.h
 rust/libs/algorithms/qbg/src/lib.rs
+rust/libs/algorithms/zvec/Cargo.toml
+rust/libs/algorithms/zvec/src/lib.rs
 rust/libs/build-utils/Cargo.toml
 rust/libs/build-utils/src/lib.rs
 rust/libs/kvs/Cargo.toml
@@ -2380,6 +2384,7 @@ tests/v2/e2e/assets/readreplica.yaml
 tests/v2/e2e/assets/rollout.yaml
 tests/v2/e2e/assets/stream_crud.yaml
 tests/v2/e2e/assets/unary_crud.yaml
+tests/v2/e2e/assets/zvec_crud.yaml
 tests/v2/e2e/config/config.go
 tests/v2/e2e/config/enums.go
 tests/v2/e2e/config/enums_test.go

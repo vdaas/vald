@@ -42,6 +42,7 @@ const (
 	agent               = "agent"
 	agentFaiss          = agent + "-faiss"
 	agentNGT            = agent + "-ngt"
+	agentZVec           = agent + "-zvec"
 	agentSidecar        = agent + "-sidecar"
 	bench               = "benchmark"
 	benchJob            = bench + "-job"
@@ -130,6 +131,7 @@ const (
 	rustNgtRsPath       = "rust/libs/ngt-rs/**"
 	rustNgtPath         = "rust/libs/ngt/**"
 	rustProtoPath       = "rust/libs/proto/**"
+	rustZVecPath        = "rust/libs/algorithms/zvec/**"
 
 	excludeTestFilesPath = "!**/*_test.go"
 	excludeMockFilesPath = "!**/*_mock.go"
@@ -456,6 +458,7 @@ var (
 	}
 	rustBuildCommands = []string{
 		"make rust/target/release/${APP_NAME}",
+		"find rust/target/release/build -name libzvec_c_api.so -exec cp {} /usr/lib/libzvec_c_api.so \\;",
 		"mv \"rust/target/release/${APP_NAME}\" \"{{$.BinDir}}/${APP_NAME}\"",
 		"rm -rf rust/target",
 	}
@@ -718,6 +721,7 @@ func main() {
 				ngtClangLTOPreprocess,
 				faissPreprocess,
 			},
+			StageFiles: []string{"/usr/lib/libzvec_c_api.so"},
 		},
 		vald + "-" + agentSidecar: {
 			AppName:    "sidecar",
@@ -970,6 +974,7 @@ func main() {
 					rustNgtRsPath,
 					rustNgtPath,
 					rustProtoPath,
+					rustZVecPath,
 					rustVersionPath,
 				)
 			}
