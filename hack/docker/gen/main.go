@@ -123,8 +123,8 @@ const (
 	helmOperatorValuesPath    = helmOperatorPath + "/values.yaml"
 	helmOperatorTemplatesPath = helmOperatorPath + "/templates/**"
 
-	goModPath = "go.mod"
-	goSumPath = "go.sum"
+	goModPath       = "go.mod"
+	goSumPath       = "go.sum"
 	trivyConfigPath = "trivy.yaml"
 	trivyIgnorePath = ".trivyignore"
 
@@ -742,10 +742,7 @@ func setPullRequestPaths(rootDir string, data *Data) {
 }
 
 func generateWorkflow(
-	ctx context.Context,
-	rootDir, name, maintainer string,
-	year int,
-	data Data,
+	ctx context.Context, rootDir, name, maintainer string, year int, data Data,
 ) error {
 	data.Name = strings.TrimPrefix(name, vald+"-")
 	setPullRequestPaths(rootDir, &data)
@@ -894,7 +891,9 @@ func setContainerBuild(rootDir string, data *Data) {
 	case Rust:
 		data.Environments = appendM(data.Environments, rustDefaultEnvironments, clangLTOEnvironments)
 		data.RootDir = rustWorkdir
-		data.RunCommands = append(append(append(make([]string, 0, len(rustInstallCommands)+len(data.Preprocess)+len(rustBuildCommands)), rustInstallCommands...), data.Preprocess...), rustBuildCommands...)
+		data.RunCommands = append(
+			append(append(make([]string, 0, len(rustInstallCommands)+len(data.Preprocess)+len(rustBuildCommands)), rustInstallCommands...), data.Preprocess...),
+			rustBuildCommands...)
 		data.RunMounts = defaultMounts
 	case DevContainer:
 		data.Environments = appendM(data.Environments, goDefaultEnvironments, rustDefaultEnvironments, clangDefaultEnvironments)
@@ -926,10 +925,7 @@ func setContainerBuild(rootDir string, data *Data) {
 }
 
 func generateDockerfile(
-	ctx context.Context,
-	rootDir, name, maintainer string,
-	year int,
-	data Data,
+	ctx context.Context, rootDir, name, maintainer string, year int, data Data,
 ) error {
 	setContainerDefaults(&data, maintainer, year)
 	setContainerBuild(rootDir, &data)

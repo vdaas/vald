@@ -140,6 +140,7 @@
 .prh.yaml
 .semgrepignore
 .textlintrc
+.trivyignore
 .whitesource
 .yamlfmt
 ADOPTERS.md
