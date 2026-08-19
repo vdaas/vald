@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+.trivyignore.d/agent
+.trivyignore.d/buildkit
+.trivyignore.d/dev-container
 .all-contributorsrc
 .coderabbit.yaml
 .commit_template

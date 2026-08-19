@@ -219,6 +219,7 @@ jobs:
         env:
           TRIVY_PLATFORM: linux/${{ matrix.arch }}
         with:
+          target: ${{ inputs.target }}
           image_ref: "${{ needs.prepare.outputs.image_name }}:${{ needs.prepare.outputs.primary_tag }}-${{ matrix.arch }}"
   merge:
     timeout-minutes: 60

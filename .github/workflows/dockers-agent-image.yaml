@@ -48,6 +48,7 @@ on:
       - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-agent-image.yaml
+      - .trivyignore.d/agent
       - Makefile
       - Makefile.d/**
       - apis/proto/**
@@ -73,6 +74,7 @@ on:
       - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-agent-image.yaml
+      - .trivyignore.d/agent
       - Makefile
       - Makefile.d/**
       - apis/proto/**

@@ -14,6 +14,9 @@
 # limitations under the License.
 #
 
+# Temporary exceptions for the dev-container scan. Every exception expires six
+# months after review and must be reassessed before renewal.
+
 # Reason: these findings remain in the newest upstream-published build and development tools.
 # Vald does not ship these tools in its runtime images and cannot upgrade their embedded
 # components or Go modules independently. Remove each exception when upstream publishes rebuilt binaries.
@@ -98,7 +101,6 @@ CVE-2025-61726 exp:2027-02-19
 CVE-2025-61729 exp:2027-02-19
 CVE-2025-65637 exp:2027-02-19
 CVE-2025-68121 exp:2027-02-19
-CVE-2026-14456 exp:2027-02-19
 CVE-2026-17106 exp:2027-02-19
 CVE-2026-25679 exp:2027-02-19
 CVE-2026-25681 exp:2027-02-19

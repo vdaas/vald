@@ -126,7 +126,7 @@ const (
 	goModPath       = "go.mod"
 	goSumPath       = "go.sum"
 	trivyConfigPath = "trivy.yaml"
-	trivyIgnorePath = ".trivyignore"
+	trivyIgnoreDirPath = ".trivyignore.d"
 
 	cargoLockPath       = "rust/Cargo.lock"
 	cargoTomlPath       = "rust/Cargo.toml"
@@ -719,7 +719,7 @@ func setPullRequestPaths(rootDir string, data *Data) {
 	case DevContainer:
 		data.PullRequestPaths = append(data.PullRequestPaths,
 			apisProtoPath, hackPath, goModPath, goSumPath, goVersionPath, yqVersionPath,
-			trivyConfigPath, trivyIgnorePath)
+			trivyConfigPath)
 	case Go:
 		data.PullRequestPaths = append(data.PullRequestPaths,
 			apisProtoPath, goModPath, goSumPath, goVersionPath,
@@ -729,6 +729,10 @@ func setPullRequestPaths(rootDir string, data *Data) {
 		data.PullRequestPaths = append(data.PullRequestPaths,
 			apisProtoPath, cargoLockPath, cargoTomlPath, rustBinAgentDirPath,
 			rustNgtRsPath, rustNgtPath, rustProtoPath, rustVersionPath)
+	}
+	trivyIgnorePath := file.Join(trivyIgnoreDirPath, data.Name)
+	if file.Exists(file.Join(rootDir, trivyIgnorePath)) {
+		data.PullRequestPaths = append(data.PullRequestPaths, trivyIgnorePath)
 	}
 	if strings.EqualFold(data.Name, agentFaiss) || data.ContainerType == Rust {
 		data.PullRequestPaths = append(data.PullRequestPaths, faissVersionPath)
