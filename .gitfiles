@@ -14,7 +14,10 @@
 # limitations under the License.
 #
 .trivyignore.d/agent
+.trivyignore.d/binfmt
+.trivyignore.d/buildbase
 .trivyignore.d/buildkit
+.trivyignore.d/buildkit-syft-scanner
 .trivyignore.d/dev-container
 .all-contributorsrc
 .coderabbit.yaml
