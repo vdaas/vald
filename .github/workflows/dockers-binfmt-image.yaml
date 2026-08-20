@@ -53,7 +53,6 @@ on:
       - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-binfmt-image.yaml
-      - .trivyignore.d/binfmt
       - apis/proto/**
       - dockers/binfmt/Dockerfile
       - go.mod
@@ -73,7 +72,6 @@ on:
       - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-binfmt-image.yaml
-      - .trivyignore.d/binfmt
       - apis/proto/**
       - dockers/binfmt/Dockerfile
       - go.mod

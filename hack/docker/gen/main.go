@@ -123,9 +123,9 @@ const (
 	helmOperatorValuesPath    = helmOperatorPath + "/values.yaml"
 	helmOperatorTemplatesPath = helmOperatorPath + "/templates/**"
 
-	goModPath       = "go.mod"
-	goSumPath       = "go.sum"
-	trivyConfigPath = "trivy.yaml"
+	goModPath          = "go.mod"
+	goSumPath          = "go.sum"
+	trivyConfigPath    = "trivy.yaml"
 	trivyIgnoreDirPath = ".trivyignore.d"
 
 	cargoLockPath       = "rust/Cargo.lock"
