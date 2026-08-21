@@ -323,7 +323,7 @@ docker/build/buildkit-syft-scanner:
 	@$(MAKE) \
 		DOCKERFILE="$(ROOTDIR)/dockers/buildkit/syft/scanner/Dockerfile" \
 		IMAGE=$(BUILDKIT_SYFT_SCANNER_IMAGE) \
-		DEFAULT_BUILDKIT_SYFT_SCANNER_IMAGE="docker/buildkit-syft-scanner:edge" \
+		DEFAULT_BUILDKIT_SYFT_SCANNER_IMAGE="docker/buildkit-syft-scanner:1.12.0" \
 		docker/build/image
 
 .PHONY: docker/name/dev-container
