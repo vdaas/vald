@@ -144,7 +144,6 @@ const (
 	operatorSDKVersionPath = versionsPath + "/OPERATOR_SDK_VERSION"
 	goVersionPath          = versionsPath + "/GO_VERSION"
 	rustVersionPath        = versionsPath + "/RUST_VERSION"
-	yqVersionPath          = versionsPath + "/YQ_VERSION"
 	faissVersionPath       = versionsPath + "/FAISS_VERSION"
 	ngtVersionPath         = versionsPath + "/NGT_VERSION"
 	// usearchVersionPath     = versionsPath + "/USEARCH_VERSION" // TODO Future work.
@@ -244,9 +243,6 @@ ARG TARGETARCH
 ARG TARGETOS
 ARG GO_VERSION
 ARG RUST_VERSION
-{{- if eq (ContainerName .ContainerType) "%s"}}
-ARG YQ_VERSION
-{{- end}}
 ARG BUILDKIT_SBOM_SCAN_STAGE=true
 ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
 {{- range $keyValue := .EnvironmentsSlice }}
@@ -308,7 +304,6 @@ ENTRYPOINT [{{Entrypoint .Entrypoints}}]
 ENTRYPOINT ["{{.BinDir}}/{{.AppName}}"]
 {{- end}}
 {{- end}}`, header, DevContainer.String(),
-	DevContainer.String(),
 	DevContainer.String(),
 	DevContainer.String(),
 	DevContainer.String())))
@@ -539,7 +534,7 @@ var (
 		"make minikube/install",
 		"make reviewdog/install",
 		"make telepresence/install",
-		"make YQ_VERSION=\"${YQ_VERSION}\" yq/install",
+		"make yq/install",
 		"make docker-cli/install",
 	}
 )
@@ -718,7 +713,7 @@ func setPullRequestPaths(rootDir string, data *Data) {
 			helmOperatorValuesPath, helmOperatorTemplatesPath, operatorSDKVersionPath)
 	case DevContainer:
 		data.PullRequestPaths = append(data.PullRequestPaths,
-			apisProtoPath, hackPath, goModPath, goSumPath, goVersionPath, yqVersionPath,
+			apisProtoPath, hackPath, goModPath, goSumPath, goVersionPath,
 			trivyConfigPath)
 	case Go:
 		data.PullRequestPaths = append(data.PullRequestPaths,
@@ -1140,8 +1135,8 @@ func run() error {
 		},
 		vald + "-" + devContainer: {
 			AppName:       devContainer,
-			BuilderImage:  "mcr.microsoft.com/devcontainers/base",
-			BuilderTag:    "ubuntu" + ubuntuVersion,
+			BuilderImage:  "ubuntu",
+			BuilderTag:    ubuntuVersion,
 			BuildUser:     defaultBuildUser,
 			RuntimeUser:   defaultBuildUser,
 			ContainerType: DevContainer,

@@ -58,7 +58,6 @@ on:
       - hack/docker/gen/main.go
       - trivy.yaml
       - versions/GO_VERSION
-      - versions/YQ_VERSION
   pull_request_target:
     types:
       - opened
@@ -80,4 +79,3 @@ on:
       - hack/docker/gen/main.go
       - trivy.yaml
       - versions/GO_VERSION
-      - versions/YQ_VERSION

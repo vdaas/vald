@@ -337,19 +337,19 @@ docker/build/dev-container:
 	@$(MAKE) \
 		DOCKERFILE="$(ROOTDIR)/dockers/dev/Dockerfile" \
 		IMAGE=$(DEV_CONTAINER_IMAGE) \
-		EXTRA_ARGS="--build-arg YQ_VERSION=$(YQ_VERSION) $(EXTRA_ARGS)" \
 		docker/build/image
 
 .PHONY: docker/dev-container/toolchain-fingerprint
 ## print the dev-container toolchain fingerprint (single source for the build-time image label and the e2e freshness gate).
 ## Inputs are deliberately limited to files that ALSO trigger a dev-container rebuild
-## (versions/GO_VERSION, versions/YQ_VERSION, and dockers/dev/Dockerfile are in the paths filter of
+## (versions/GO_VERSION and dockers/dev/Dockerfile are in the paths filter of
 ## dockers-dev-container-image.yaml). Fingerprinting a toolchain file that does not
 ## trigger a rebuild (e.g. versions/RUST_VERSION) would make the e2e freshness gate
 ## wait for an image that never gets rebuilt, so the fingerprint set must stay a subset
-## of the rebuild trigger paths. These versions also invalidate the cached tool install layer.
+## of the rebuild trigger paths. versions/GO_VERSION is what the reported build skew
+## ("compile: version X does not match go tool version Y") hinges on.
 docker/dev-container/toolchain-fingerprint:
-	@cat "$(ROOTDIR)/versions/GO_VERSION" "$(ROOTDIR)/versions/YQ_VERSION" "$(ROOTDIR)/dockers/dev/Dockerfile" | sha256sum | awk '{print $$1}'
+	@cat "$(ROOTDIR)/versions/GO_VERSION" "$(ROOTDIR)/dockers/dev/Dockerfile" | sha256sum | awk '{print $$1}'
 
 .PHONY: docker/name/operator/helm docker/name/helm-operator
 ## print helm-operator image name
