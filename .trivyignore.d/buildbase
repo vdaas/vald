@@ -17,11 +17,11 @@
 # Reason: these Go standard-library findings are embedded in /usr/bin/pebble
 # from the latest Ubuntu base image. Vald cannot replace that binary
 # independently; remove these exceptions when Ubuntu publishes a rebuild.
-CVE-2026-33818 exp:2027-02-19
-CVE-2026-39821 exp:2027-02-19
-CVE-2026-46600 exp:2027-02-19
-CVE-2026-56853 exp:2027-02-19
-CVE-2026-56858 exp:2027-02-19
-CVE-2026-56859 exp:2027-02-19
-CVE-2026-56860 exp:2027-02-19
-CVE-2026-56862 exp:2027-02-19
+CVE-2026-33818 exp:2026-11-19
+CVE-2026-39821 exp:2026-11-19
+CVE-2026-46600 exp:2026-11-19
+CVE-2026-56853 exp:2026-11-19
+CVE-2026-56858 exp:2026-11-19
+CVE-2026-56859 exp:2026-11-19
+CVE-2026-56860 exp:2026-11-19
+CVE-2026-56862 exp:2026-11-19

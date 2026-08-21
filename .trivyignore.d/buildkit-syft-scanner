@@ -17,13 +17,13 @@
 # Reason: these Go standard-library findings are embedded in the official
 # docker/buildkit-syft-scanner 1.12.0 binary. Vald cannot replace them
 # independently; remove these exceptions when upstream publishes a rebuild.
-CVE-2026-33818 exp:2027-02-19
-CVE-2026-39821 exp:2027-02-19
-CVE-2026-46600 exp:2027-02-19
-CVE-2026-56853 exp:2027-02-19
-CVE-2026-56858 exp:2027-02-19
-CVE-2026-56859 exp:2027-02-19
-CVE-2026-56860 exp:2027-02-19
-CVE-2026-56862 exp:2027-02-19
-CVE-2026-56864 exp:2027-02-19
-CVE-2026-56865 exp:2027-02-19
+CVE-2026-33818 exp:2026-11-19
+CVE-2026-39821 exp:2026-11-19
+CVE-2026-46600 exp:2026-11-19
+CVE-2026-56853 exp:2026-11-19
+CVE-2026-56858 exp:2026-11-19
+CVE-2026-56859 exp:2026-11-19
+CVE-2026-56860 exp:2026-11-19
+CVE-2026-56862 exp:2026-11-19
+CVE-2026-56864 exp:2026-11-19
+CVE-2026-56865 exp:2026-11-19
