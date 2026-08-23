@@ -95,7 +95,19 @@ node_modules/
 /bun.lock
 /bun.lockb
 .codegraph/
-graphify-out/
+# Shared knowledge-graph index (committed so contributors don't have to
+# rebuild/re-label from scratch; graph.json has a graphify-provided git merge
+# driver — see .gitattributes + `graphify hook install`).
+graphify-out/*
+!graphify-out/graph.json
+!graphify-out/GRAPH_REPORT.md
+!graphify-out/manifest.json
+!graphify-out/.graphify_labels.json
+!graphify-out/.graphify_labels.json.sig
+# Deliberately still local-only: graph.html (large regenerable viewer, no
+# merge driver), cost.json (personal API spend), .graphify_root (records an
+# absolute path — not portable across contributors' clones), cache/ (churns
+# every build with no merge driver, would conflict across contributor branches).
 .claude/
 CLAUDE.md
 .mcp.json

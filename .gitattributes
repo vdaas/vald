@@ -61,3 +61,4 @@ vendor/**    linguist-vendored
 .DS_Store    export-ignore
 .~lock.*     export-ignore
 Thumbs.db    export-ignore
+graphify-out/graph.json merge=graphify
