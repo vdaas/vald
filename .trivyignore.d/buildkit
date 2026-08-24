@@ -45,3 +45,13 @@ CVE-2026-56860 exp:2026-11-19
 CVE-2026-56862 exp:2026-11-19
 CVE-2026-56864 exp:2026-11-19
 CVE-2026-56865 exp:2026-11-19
+
+# Reason: Trivy compares BuildKit's 2026-08-21 pseudo-version as older than
+# fixed SemVer releases even though the embedded source is newer. These are
+# scanner version-comparison false positives; remove when Trivy recognizes
+# BuildKit pseudo-versions correctly.
+CVE-2024-23651 exp:2026-11-24
+CVE-2024-23652 exp:2026-11-24
+CVE-2024-23653 exp:2026-11-24
+CVE-2026-33747 exp:2026-11-24
+CVE-2026-33748 exp:2026-11-24

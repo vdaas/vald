@@ -140,6 +140,7 @@
 .prh.yaml
 .semgrepignore
 .textlintrc
+.trivyignore.d/agent
 .trivyignore.d/binfmt
 .trivyignore.d/buildbase
 .trivyignore.d/buildkit
