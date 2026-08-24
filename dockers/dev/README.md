@@ -4,7 +4,7 @@
 
 `vald-dev-container` is designed for the development of Vald on Docker.
 
-This image includes the libraries required to develop Vald and uses the official minimal Ubuntu base image. VS Code Dev Containers connects as `root` and installs its server at startup, so no Microsoft dev-container base image is required.
+This image includes the libraries required to develop Vald and uses the official minimal Ubuntu base image.
 
 <div align="center">
     <img src="https://github.com/vdaas/vald/blob/main/assets/image/readme.svg?raw=true" width="50%" />
