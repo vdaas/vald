@@ -6,7 +6,8 @@
   },
   "tags": [
     {
-      "name": "Index"
+      "name": "Index",
+      "description": "Overview\nRepresent the index manager service."
     }
   ],
   "consumes": ["application/json"],
