@@ -1,10 +1,6 @@
 module github.com/vdaas/vald/example/client
 
-<<<<<<< HEAD
-go 1.26.4
-=======
 go 1.26.6
->>>>>>> 710eb8059 (Update dependencies (#3606))
 
 replace (
 	github.com/kpango/fuid => github.com/kpango/fuid upgrade
