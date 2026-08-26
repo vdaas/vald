@@ -23,14 +23,6 @@
 //!
 //! The implementation uses `sled` as its underlying persistent storage engine to leverage
 //! its robust transactional capabilities, ensuring data consistency for bidirectional mappings.
-<<<<<<< HEAD
-use bincode::{Decode, Encode, config::standard as bincode_standard};
-use futures::{Stream, StreamExt};
-use serde::{Serialize, de::DeserializeOwned};
-use sled::{
-    Db, IVec, Tree,
-    transaction::{ConflictableTransactionError, TransactionError, Transactional},
-=======
 
 use std::{path::Path, sync::Arc};
 
@@ -40,7 +32,6 @@ use crate::map::{
     base::MapBase,
     codec::{Codec, WincodeCodec},
     error::Error,
->>>>>>> eb66fdc3e (Migrate from bincode to wincode (#3448))
 };
 use std::borrow::Borrow;
 use std::fmt::Debug;
@@ -54,106 +45,6 @@ use tracing::instrument;
 
 /// Custom error type for all operations within the `BidiMap`.
 ///
-<<<<<<< HEAD
-/// This enum consolidates errors from various sources into a single, well-defined
-/// error type, making error handling for the library's users more straightforward.
-#[derive(Error, Debug)]
-pub enum BidiError {
-    #[error("item not found")]
-    NotFound,
-    /// Errors from the underlying `sled` database.
-    #[error("sled db error")]
-    Sled(#[from] sled::Error),
-    /// I/O errors.
-    #[error("I/O error")]
-    Io(#[from] std::io::Error),
-    /// Errors that occur during a `sled` transaction, including conflicts or custom aborts.
-    #[error("sled transaction error")]
-    SledTransaction {
-        #[source]
-        source: Box<dyn std::error::Error + Send + Sync>,
-    },
-    /// Error during serialization or deserialization.
-    #[error("codec error")]
-    Codec {
-        #[source]
-        source: Box<dyn std::error::Error + Send + Sync>,
-    },
-    /// Error related to internal Tokio task management, typically from `spawn_blocking`.
-    #[error("internal task error")]
-    Internal(#[from] tokio::task::JoinError),
-}
-
-/// A trait for defining custom serialization and deserialization logic.
-///
-/// This allows `BidiMap` to be generic over the data format, enabling users to
-/// plug in their preferred serialization framework (e.g., Bincode, JSON, Protobuf).
-pub trait Codec: Send + Sync + 'static {
-    /// Serializes a given value into a byte vector.
-    fn encode<T: Serialize + Encode + ?Sized>(&self, v: &T) -> Result<Vec<u8>, BidiError>;
-    /// Deserializes a byte slice into a value of a specific type.
-    fn decode<T: DeserializeOwned + Decode<()>>(&self, bytes: &[u8]) -> Result<T, BidiError>;
-}
-
-/// The default codec implementation using `bincode`.
-#[derive(Clone, Debug, Default)]
-pub struct BincodeCodec;
-
-impl Codec for BincodeCodec {
-    fn encode<T: Serialize + Encode + ?Sized>(&self, v: &T) -> Result<Vec<u8>, BidiError> {
-        bincode::encode_to_vec(v, bincode_standard()).map_err(|e| BidiError::Codec {
-            source: Box::new(e),
-        })
-    }
-
-    fn decode<T: DeserializeOwned + Decode<()>>(&self, bytes: &[u8]) -> Result<T, BidiError> {
-        bincode::decode_from_slice(bytes, bincode_standard())
-            .map(|(decoded, _)| decoded)
-            .map_err(|e| BidiError::Codec {
-                source: Box::new(e),
-            })
-    }
-}
-
-/// A builder for constructing a `BidiMap` instance with custom configurations.
-pub struct BidiBuilder<K, V, C: Codec = BincodeCodec> {
-    path: String,
-    codec: C,
-    scan_on_startup: bool,
-    _marker: std::marker::PhantomData<(K, V)>,
-}
-
-impl<K, V> BidiBuilder<K, V, BincodeCodec>
-where
-    K: Serialize
-        + DeserializeOwned
-        + Encode
-        + Decode<()>
-        + Eq
-        + Hash
-        + Clone
-        + Send
-        + Sync
-        + Debug
-        + 'static,
-    V: Serialize
-        + DeserializeOwned
-        + Encode
-        + Decode<()>
-        + Eq
-        + Hash
-        + Clone
-        + Send
-        + Sync
-        + Debug
-        + 'static,
-{
-    /// Creates a new `BidiBuilder` with a specified database path and the default `BincodeCodec`.
-    pub fn new(path: impl AsRef<str>) -> Self {
-        Self {
-            path: path.as_ref().to_string(),
-            codec: BincodeCodec::default(),
-=======
 /// This builder allows for configuration of the map before it is created,
 /// such as setting the path, codec, and startup behavior.
 pub struct MapBuilder<M: MapBase, C: Codec = WincodeCodec> {
@@ -177,7 +68,6 @@ impl<M: MapBase<C = WincodeCodec>> MapBuilder<M, WincodeCodec> {
             path: path.as_ref().to_string(),
             codec: WincodeCodec::default(),
             config: Config::default(),
->>>>>>> eb66fdc3e (Migrate from bincode to wincode (#3448))
             scan_on_startup: true,
             _marker: std::marker::PhantomData,
         }
@@ -558,17 +448,10 @@ mod integration_tests {
         (path, guard)
     }
 
-<<<<<<< HEAD
-    #[tokio::test]
-    async fn test_crud_and_len() {
-        let (path, _guard) = setup("crud_and_len");
-        let map = BidiBuilder::new(&path).build().await.unwrap();
-=======
     async fn test_crud_and_len<M: MapBase<K = String, V = String, C = WincodeCodec>>(
         path: &str,
     ) -> Arc<M> {
         let map = MapBuilder::<M>::new(path).build().await.unwrap();
->>>>>>> eb66fdc3e (Migrate from bincode to wincode (#3448))
         assert_eq!(map.len(), 0);
 
         map.set("alpha".to_string(), "one".to_string(), 123)
@@ -597,11 +480,6 @@ mod integration_tests {
     }
 
     #[tokio::test]
-<<<<<<< HEAD
-    async fn test_delete_inverse() {
-        let (path, _guard) = setup("delete_inverse");
-        let map = BidiBuilder::new(&path).build().await.unwrap();
-=======
     async fn test_bidirectional_map_crud_and_len() {
         let (path, _guard) = setup("bidirectional_map_crud_and_len");
 
@@ -624,7 +502,6 @@ mod integration_tests {
             .build()
             .await
             .unwrap();
->>>>>>> eb66fdc3e (Migrate from bincode to wincode (#3448))
         map.set("a".to_string(), "1".to_string(), 1).await.unwrap();
         assert_eq!(map.len(), 1);
 
@@ -635,15 +512,8 @@ mod integration_tests {
         assert!(map.get_inverse("1").await.is_err());
     }
 
-<<<<<<< HEAD
-    #[tokio::test]
-    async fn test_range_callback() {
-        let (path, _guard) = setup("range_callback");
-        let map = BidiBuilder::new(&path).build().await.unwrap();
-=======
     async fn test_range_callback<M: MapBase<K = String, V = String, C = WincodeCodec>>(path: &str) {
         let map = MapBuilder::<M>::new(&path).build().await.unwrap();
->>>>>>> eb66fdc3e (Migrate from bincode to wincode (#3448))
         let mut expected = HashMap::new();
         for i in 0..10 {
             let k = format!("key{}", i);
@@ -667,11 +537,6 @@ mod integration_tests {
     }
 
     #[tokio::test]
-<<<<<<< HEAD
-    async fn test_range_stream() {
-        let (path, _guard) = setup("range_stream");
-        let map = BidiBuilder::new(&path).build().await.unwrap();
-=======
     async fn test_bidirectional_map_range_callback() {
         let (path, _guard) = setup("bidirectional_map_range_callback");
         test_range_callback::<BidirectionalMap<String, String, WincodeCodec>>(&path).await;
@@ -685,7 +550,6 @@ mod integration_tests {
 
     async fn test_range_stream<M: MapBase<K = String, V = String, C = WincodeCodec>>(path: &str) {
         let map = MapBuilder::<M>::new(path).build().await.unwrap();
->>>>>>> eb66fdc3e (Migrate from bincode to wincode (#3448))
         let mut expected = HashMap::new();
         for i in 0..10 {
             let k = format!("key{}", i);
@@ -707,10 +571,6 @@ mod integration_tests {
     }
 
     #[tokio::test]
-<<<<<<< HEAD
-    async fn test_disable_scan_on_startup() {
-        let (path, _guard) = setup("disable_scan_on_startup");
-=======
     async fn test_bidirectional_map_range_stream() {
         let (path, _guard) = setup("bidirectional_map_range_stream");
         test_range_stream::<BidirectionalMap<String, String, WincodeCodec>>(&path).await;
@@ -725,7 +585,6 @@ mod integration_tests {
     async fn test_disable_scan_on_startup<M: MapBase<K = String, V = String, C = WincodeCodec>>(
         path: &str,
     ) {
->>>>>>> eb66fdc3e (Migrate from bincode to wincode (#3448))
         {
             let map = BidiBuilder::<String, String>::new(&path)
                 .build()
@@ -749,11 +608,6 @@ mod integration_tests {
     }
 
     #[tokio::test]
-<<<<<<< HEAD
-    async fn test_concurrent_access() {
-        let (path, _guard) = setup("concurrent_access");
-        let map = BidiBuilder::new(&path).build().await.unwrap();
-=======
     async fn test_bidirectional_map_disable_scan_on_startup() {
         let (path, _guard) = setup("bidirectional_map_disable_scan_on_startup");
         test_disable_scan_on_startup::<BidirectionalMap<String, String, WincodeCodec>>(&path).await;
@@ -775,7 +629,6 @@ mod integration_tests {
         Fut2: Future<Output = ()> + Send,
     {
         let map = MapBuilder::<M>::new(&path).build().await.unwrap();
->>>>>>> eb66fdc3e (Migrate from bincode to wincode (#3448))
 
         let num_items = 100;
         let items: Vec<_> = (0..num_items)
@@ -832,8 +685,6 @@ mod integration_tests {
 
         assert_eq!(map.len(), 0);
     }
-<<<<<<< HEAD
-=======
 
     #[tokio::test]
     async fn test_bidirectional_map_concurrent_access() {
@@ -884,5 +735,4 @@ mod integration_tests {
         };
         test_concurrent_access(&path, f1, f2).await;
     }
->>>>>>> eb66fdc3e (Migrate from bincode to wincode (#3448))
 }
