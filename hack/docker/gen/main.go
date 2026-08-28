@@ -88,6 +88,7 @@ const (
 	defaultBuildStageName = "builder"
 	maintainerKey         = "MAINTAINER"
 	minimumArgumentLength = 2
+	ubuntuVersion         = "24.04"
 
 	yearKey = "YEAR"
 
@@ -831,7 +832,7 @@ func main() {
 		vald + "-" + devContainer: {
 			AppName:       devContainer,
 			BuilderImage:  "ubuntu",
-			BuilderTag:    "latest",
+			BuilderTag:    ubuntuVersion,
 			BuildUser:     defaultBuildUser,
 			RuntimeUser:   defaultBuildUser,
 			ContainerType: DevContainer,
