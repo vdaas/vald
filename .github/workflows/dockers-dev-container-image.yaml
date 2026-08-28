@@ -48,6 +48,7 @@ on:
       - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-dev-container-image.yaml
+      - .trivyignore.d/dev-container
       - Makefile
       - Makefile.d/**
       - apis/proto/**
@@ -69,6 +70,7 @@ on:
       - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-dev-container-image.yaml
+      - .trivyignore.d/dev-container
       - Makefile
       - Makefile.d/**
       - apis/proto/**
