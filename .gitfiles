@@ -145,6 +145,7 @@
 .trivyignore.d/buildbase
 .trivyignore.d/buildkit
 .trivyignore.d/buildkit-syft-scanner
+.trivyignore.d/dev-container
 .whitesource
 .yamlfmt
 ADOPTERS.md
