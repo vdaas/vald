@@ -24,7 +24,7 @@ edition = "2024"
 path = "src/lib.rs"
 
 [dependencies]
-futures-core = "0.3.32"
+futures-core = "0.3.34"
 prost = "0.14.4"
 prost-types = "0.14.4"
 tonic = "0.14.6"

@@ -11107,13 +11107,10 @@
                   "type": "string",
                   "description": "image pull policy",
                   "enum": ["Always", "Never", "IfNotPresent"]
-<<<<<<< HEAD
-=======
                 },
                 "registry": {
                   "type": "string",
                   "description": "image registry (overrides defaults.image.registry)"
->>>>>>> d50c5e731 (add ADOPTERS.md, MAINTAINERS.md (#3556))
                 },
                 "repository": {
                   "type": "string",
