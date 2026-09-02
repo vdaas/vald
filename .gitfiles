@@ -140,6 +140,12 @@
 .prh.yaml
 .semgrepignore
 .textlintrc
+.trivyignore.d/agent
+.trivyignore.d/binfmt
+.trivyignore.d/buildbase
+.trivyignore.d/buildkit
+.trivyignore.d/buildkit-syft-scanner
+.trivyignore.d/dev-container
 .whitesource
 .yamlfmt
 ADOPTERS.md
