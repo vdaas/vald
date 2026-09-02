@@ -143,6 +143,7 @@
 .trivyignore.d/agent
 .trivyignore.d/binfmt
 .trivyignore.d/buildbase
+.trivyignore.d/dev-container
 .trivyignore.d/buildkit
 .trivyignore.d/buildkit-syft-scanner
 .whitesource
