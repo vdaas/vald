@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 0.31.0
+=======
+0.33.0
+>>>>>>> 1afc0f4a4 (fix: scan release images with .trivyignore (#3615))

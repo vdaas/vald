@@ -13,25 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-timeout: 5m
-format: table
-exit-code: 1
-severity:
-  - HIGH
-  - CRITICAL
-scanners:
-  - vuln
-  - secret
-  - misconfig
-  - license
-scan:
-  skip-files:
-    # Go's standard-library x509 test fixture, not a deployable credential.
-    - /opt/go/src/crypto/x509/platform_root_key.pem
-  skip-dirs:
-    - vendor
-    - .git
-    - .vscode
-    - .idea
-    - versions
-    - assets
+
+# Reason: these Go standard-library findings are embedded in the official
+# tonistiigi/binfmt image. Vald cannot replace them independently; remove
+# these exceptions when upstream publishes a rebuild.
+CVE-2026-33818 exp:2026-11-19
+CVE-2026-39821 exp:2026-11-19
+CVE-2026-46600 exp:2026-11-19
+CVE-2026-56853 exp:2026-11-19
+CVE-2026-56858 exp:2026-11-19
+CVE-2026-56859 exp:2026-11-19
+CVE-2026-56860 exp:2026-11-19
+CVE-2026-56862 exp:2026-11-19

@@ -90,6 +90,8 @@ const (
 	defaultBuildStageName = "builder"
 	maintainerKey         = "MAINTAINER"
 	minimumArgumentLength = 2
+	buildkitVersion       = "v0.32.2"
+	syftScannerVersion    = "1.12.0"
 	ubuntuVersion         = "24.04"
 
 	yearKey = "YEAR"
@@ -119,8 +121,10 @@ const (
 	helmOperatorValuesPath    = helmOperatorPath + "/values.yaml"
 	helmOperatorTemplatesPath = helmOperatorPath + "/templates/**"
 
-	goModPath = "go.mod"
-	goSumPath = "go.sum"
+	goModPath          = "go.mod"
+	goSumPath          = "go.sum"
+	trivyConfigPath    = "trivy.yaml"
+	trivyIgnoreDirPath = ".trivyignore.d"
 
 	cargoLockPath       = "rust/Cargo.lock"
 	cargoTomlPath       = "rust/Cargo.toml"
@@ -566,22 +570,34 @@ func extractVariables(value string) []string {
 	var vars []string
 	start := -1
 	for i := 0; i < len(value); i++ {
-		if value[i] == '$' && i+1 < len(value) && value[i+1] == '{' {
+		switch {
+		case strings.HasPrefix(value[i:], "${"):
 			start = i + 2
-		} else if start != -1 && value[i] == '}' {
+		case start != -1 && value[i] == '}':
 			vars = append(vars, value[start:i])
 			start = -1
-		} else if value[i] == '$' && start == -1 {
-			start = i + 1
-			for start < len(value) && (('a' <= value[start] && value[start] <= 'z') || ('A' <= value[start] && value[start] <= 'Z') || ('0' <= value[start] && value[start] <= '9') || value[start] == '_') {
-				start++
-			}
-			vars = append(vars, value[i+1:start])
-			i = start - 1
+		case value[i] == '$' && start == -1:
+			end := variableNameEnd(value, i+1)
+			vars = append(vars, value[i+1:end])
+			i = end - 1
 			start = -1
 		}
 	}
 	return vars
+}
+
+func variableNameEnd(value string, start int) int {
+	for start < len(value) && isVariableCharacter(value[start]) {
+		start++
+	}
+	return start
+}
+
+func isVariableCharacter(char byte) bool {
+	return ('a' <= char && char <= 'z') ||
+		('A' <= char && char <= 'Z') ||
+		('0' <= char && char <= '9') ||
+		char == '_'
 }
 
 // topologicalSort sorts the elements topologically and ensures that equal-level nodes are sorted by name.
@@ -647,11 +663,303 @@ func topologicalSort(envMap map[string]string) []string {
 	return result
 }
 
+func appendGoPullRequestPaths(rootDir string, data *Data) {
+	mainFile := file.Join(rootDir, "cmd", data.PackageDir, "main.go")
+	if !file.Exists(mainFile) {
+		return
+	}
+	ns, err := buildDependencyTree(rootDir, mainFile)
+	if err != nil {
+		log.Error(err)
+	}
+	pkgs := make([]string, 0, len(ns)+1)
+	pkgs = append(pkgs, file.Join("cmd", data.PackageDir))
+	for _, pnode := range ns {
+		pkgs = append(pkgs, pnode.ToSlice()...)
+	}
+	slices.Sort(pkgs)
+	pkgs = slices.Compact(pkgs)
+	root, err := os.Getwd()
+	if err != nil {
+		root = os.Getenv("HOME")
+	}
+	if root != "" && !strings.HasSuffix(root, string(os.PathSeparator)) {
+		root += string(os.PathSeparator)
+	}
+	for i, pkg := range pkgs {
+		const splitWord = "/" + repository + "/"
+		pkg = file.Join(pkg, "*.go")
+		index := strings.LastIndex(pkg, splitWord)
+		if index != -1 {
+			pkg = pkg[index+len(splitWord):]
+		}
+		if root != "" {
+			pkg = strings.TrimPrefix(pkg, root)
+		}
+		pkgs[i] = pkg
+	}
+	data.PullRequestPaths = append(data.PullRequestPaths, pkgs...)
+}
+
+func setPullRequestPaths(rootDir string, data *Data) {
+	switch data.ContainerType {
+	case HelmOperator:
+		data.PullRequestPaths = append(data.PullRequestPaths,
+			chartPath, valuesPath, templatesPath, helmOperatorChartPath,
+			helmOperatorValuesPath, helmOperatorTemplatesPath, operatorSDKVersionPath)
+	case DevContainer:
+		data.PullRequestPaths = append(data.PullRequestPaths,
+			apisProtoPath, hackPath, goModPath, goSumPath, goVersionPath,
+			trivyConfigPath)
+	case Go:
+		data.PullRequestPaths = append(data.PullRequestPaths,
+			apisProtoPath, goModPath, goSumPath, goVersionPath,
+			excludeTestFilesPath, excludeMockFilesPath)
+		appendGoPullRequestPaths(rootDir, data)
+	case Rust:
+		data.PullRequestPaths = append(data.PullRequestPaths,
+			apisProtoPath, cargoLockPath, cargoTomlPath, rustBinAgentDirPath,
+			rustNgtRsPath, rustNgtPath, rustProtoPath, rustVersionPath)
+	case Other:
+	}
+	trivyIgnorePath := file.Join(trivyIgnoreDirPath, data.Name)
+	if file.Exists(file.Join(rootDir, trivyIgnorePath)) {
+		data.PullRequestPaths = append(data.PullRequestPaths, trivyIgnorePath)
+	}
+	if strings.EqualFold(data.Name, agentFaiss) || data.ContainerType == Rust {
+		data.PullRequestPaths = append(data.PullRequestPaths, faissVersionPath)
+	}
+	if strings.EqualFold(data.Name, agentNGT) || data.ContainerType == Rust {
+		data.PullRequestPaths = append(data.PullRequestPaths, ngtVersionPath)
+	}
+	if !data.AliasImage {
+		data.PullRequestPaths = append(data.PullRequestPaths, makefilePath, makefileDirPath)
+	}
+}
+
+func generateWorkflow(
+	ctx context.Context, rootDir, name, maintainer string, year int, data Data,
+) error {
+	data.Name = strings.TrimPrefix(name, vald+"-")
+	setPullRequestPaths(rootDir, &data)
+	if data.AliasImage {
+		data.BuildPlatforms = multiPlatforms
+	}
+	data.Year = year
+	data.Maintainer = maintainer
+
+	log.Infof("Generating %s's workflow", data.Name)
+	workflow := new(Workflow)
+	err := yaml.Unmarshal(conv.Atob(`name: "Build docker image: `+data.Name+`"
+on:
+  schedule:
+    - cron: "0 * * * *"
+  push:
+    branches:
+      - "main"
+      - "release/v*.*"
+      - "!release/v*.*.*"
+    tags:
+      - "*.*.*"
+      - "*.*.*-*"
+      - "v*.*.*"
+      - "v*.*.*-*"
+  pull_request:
+    paths:
+      - ".github/actions/docker-build/action.yaml"
+      - ".github/actions/prepare-docker-build/action.yaml"
+      - ".github/workflows/_docker-image.yaml"
+      - ".github/workflows/dockers-`+data.Name+`-image.yaml"
+      - "dockers/`+data.PackageDir+`/Dockerfile"
+      - "hack/docker/gen/main.go"
+  pull_request_target:
+    types: [opened, reopened, synchronize, labeled]
+    paths: []
+
+jobs:
+  build:
+    uses: "./.github/workflows/_docker-image.yaml"
+    with:
+      target: "`+data.Name+`"
+      platforms: ""
+`), &workflow)
+	if err != nil {
+		return errors.Wrap(err, "failed to decode YAML")
+	}
+	if !data.AliasImage {
+		workflow.On.Schedule = nil
+	}
+	workflow.On.PullRequest.Paths = append(workflow.On.PullRequest.Paths, data.PullRequestPaths...)
+	if strings.EqualFold(data.Name, exampleContainer) {
+		workflow.On.PullRequest.Paths = slices.DeleteFunc(workflow.On.PullRequest.Paths, func(path string) bool {
+			return strings.HasPrefix(path, "cmd") || strings.HasPrefix(path, "pkg")
+		})
+		workflow.On.PullRequest.Paths = append(workflow.On.PullRequest.Paths, data.PackageDir+"/**")
+	}
+	slices.Sort(workflow.On.PullRequest.Paths)
+	workflow.On.PullRequest.Paths = slices.Compact(workflow.On.PullRequest.Paths)
+	workflow.On.PullRequestTarget.Paths = workflow.On.PullRequest.Paths
+	workflow.Jobs.Build.With.Platforms = data.BuildPlatforms
+	workflow.Jobs.Build.Permissions = map[string]string{
+		"contents": "read", "security-events": "write",
+	}
+	//nolint:gosec // GitHub Actions expressions, not credential values.
+	workflow.Jobs.Build.Secrets = map[string]string{
+		"PACKAGE_USER": "${{ secrets.PACKAGE_USER }}", "PACKAGE_TOKEN": "${{ secrets.PACKAGE_TOKEN }}",
+		"DOCKERHUB_USER": "${{ secrets.DOCKERHUB_USER }}", "DOCKERHUB_PASS": "${{ secrets.DOCKERHUB_PASS }}",
+		"SLACK_NOTIFY_WEBHOOK_URL": "${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}",
+	}
+	workflowYAML, err := yaml.Marshal(workflow)
+	if err != nil {
+		return errors.Wrap(err, "failed to marshal workflow struct to YAML")
+	}
+	workflowYAML = conv.Atob(strings.Replace(string(workflowYAML), "\"on\":", "on:", 1))
+	if len(header) > int(^uint(0)>>1)-len(workflowYAML) {
+		return errors.New("size computation for allocation may overflow")
+	}
+	buf := bytes.NewBuffer(make([]byte, 0, len(header)+len(workflowYAML)))
+	if err = license.Execute(buf, data); err != nil {
+		return errors.Wrap(err, "failed to execute template")
+	}
+	buf.WriteString("\n")
+	buf.Write(workflowYAML)
+	fileName := file.Join(rootDir, ".github/workflows", "dockers-"+data.Name+"-image.yaml")
+	if _, err = file.OverWriteFile(ctx, fileName, buf, fs.ModePerm); err != nil {
+		return errors.Wrapf(err, "failed to writing workflow file for %s", fileName)
+	}
+	return nil
+}
+
+func setContainerDefaults(data *Data, maintainer string, year int) {
+	data.Maintainer = maintainer
+	data.Year = year
+	if data.BinDir == "" {
+		data.BinDir = defaultBinaryDir
+	}
+	if data.RuntimeImage == "" {
+		data.RuntimeImage = defaultRuntimeImage
+	}
+	if data.RuntimeTag == "" {
+		data.RuntimeTag = defaultRuntimeTag
+	}
+	if data.BuilderImage == "" {
+		data.BuilderImage = defaultBuilderImage
+	}
+	if data.BuilderTag == "" {
+		data.BuilderTag = defaultBuilderTag
+	}
+	if data.RuntimeUser == "" {
+		data.RuntimeUser = defaultRuntimeUser
+	}
+	if data.BuildUser == "" {
+		data.BuildUser = defaultBuildUser
+	}
+	if data.BuildStageName == "" {
+		data.BuildStageName = defaultBuildStageName
+	}
+	if data.Environments == nil {
+		data.Environments = make(map[string]string, len(defaultEnvironments))
+	}
+	data.Environments = appendM(data.Environments, defaultEnvironments)
+}
+
+func setGoContainerBuild(rootDir string, data *Data) {
+	data.Environments = appendM(data.Environments, goDefaultEnvironments)
+	data.RootDir = goWorkdir
+	commands := make([]string, 0, len(goInstallCommands)+len(data.Preprocess)+len(goBuildCommands))
+	commands = append(commands, goInstallCommands...)
+	commands = append(commands, data.Preprocess...)
+	switch {
+	case file.Exists(file.Join(rootDir, "cmd", data.PackageDir)):
+		commands = append(commands, goBuildCommands...)
+	case strings.HasPrefix(data.PackageDir, "example") && file.Exists(file.Join(rootDir, data.PackageDir)):
+		commands = append(commands, goExampleBuildCommands...)
+	case strings.HasPrefix(data.PackageDir, e2eV2TestPath+"/"+e2e) && file.Exists(file.Join(rootDir, data.PackageDir)):
+		commands = append(commands, e2eBuildCommands...)
+	}
+	data.RunCommands = commands
+	data.RunMounts = append(append(make([]string, 0, len(defaultMounts)+len(goDefaultMounts)), defaultMounts...), goDefaultMounts...)
+}
+
+func setContainerBuild(rootDir string, data *Data) {
+	switch data.ContainerType {
+	case Go:
+		setGoContainerBuild(rootDir, data)
+	case Rust:
+		data.Environments = appendM(data.Environments, rustDefaultEnvironments, clangLTOEnvironments)
+		data.RootDir = rustWorkdir
+		data.RunCommands = append(
+			append(append(make([]string, 0, len(rustInstallCommands)+len(data.Preprocess)+len(rustBuildCommands)), rustInstallCommands...), data.Preprocess...),
+			rustBuildCommands...)
+		data.RunMounts = defaultMounts
+	case DevContainer:
+		data.Environments = appendM(data.Environments, goDefaultEnvironments, rustDefaultEnvironments, clangDefaultEnvironments)
+		data.RootDir = goWorkdir
+		commands := make([]string, 0, len(goInstallCommands)+len(rustInstallCommands)+len(data.Preprocess)+1)
+		commands = append(commands, goInstallCommands...)
+		commands = append(commands, rustInstallCommands...)
+		commands = append(commands, data.Preprocess...)
+		commands = append(commands, "rm -rf {{.RootDir}}/${ORG}/${REPO}/*")
+		data.RunCommands = commands
+		data.RunMounts = append(append(make([]string, 0, len(defaultMounts)+len(goDefaultMounts)), defaultMounts...), goDefaultMounts...)
+	case HelmOperator:
+		data.Environments = appendM(data.Environments, goDefaultEnvironments)
+		data.RootDir = goWorkdir
+		data.RunCommands = append(append(make([]string, 0, len(goInstallCommands)+len(data.Preprocess)), goInstallCommands...), data.Preprocess...)
+		data.RunMounts = append(append(make([]string, 0, len(defaultMounts)+len(goDefaultMounts)), defaultMounts...), goDefaultMounts...)
+	case Other:
+		data.RootDir = "${HOME}"
+		data.Environments["ROOTDIR"] = rootDir
+	}
+	if strings.Contains(data.BuildUser, rootUser) {
+		data.Environments["HOME"] = "/" + rootUser
+		data.Environments["USER"] = rootUser
+	} else {
+		user, _, _ := strings.Cut(data.BuildUser, ":")
+		data.Environments["HOME"] = "/home/" + user
+		data.Environments["USER"] = user
+	}
+}
+
+func generateDockerfile(
+	ctx context.Context, rootDir, name, maintainer string, year int, data Data,
+) error {
+	setContainerDefaults(&data, maintainer, year)
+	setContainerBuild(rootDir, &data)
+	data.Environments["APP_NAME"] = data.AppName
+	data.Environments["PKG"] = data.PackageDir
+	data.EnvironmentsSlice = topologicalSort(data.Environments)
+	data.ConfigExists = file.Exists(file.Join(rootDir, "cmd", data.PackageDir, "sample.yaml"))
+
+	buf := bytes.NewBuffer(make([]byte, 0, 1024))
+	log.Infof("Generating %s's Dockerfile", name)
+	if err := docker.Execute(buf, data); err != nil {
+		return errors.Wrap(err, "failed to execute Dockerfile template")
+	}
+	tpl := buf.String()
+	buf.Reset()
+	if err := template.Must(template.New("Dockerfile").Parse(tpl)).Execute(buf, data); err != nil {
+		return errors.Wrap(err, "failed to execute rendered Dockerfile template")
+	}
+	buf.WriteString("\n")
+	fileName := file.Join(rootDir, "dockers", data.PackageDir, "Dockerfile")
+	if _, err := file.OverWriteFile(ctx, fileName, buf, fs.ModePerm); err != nil {
+		return errors.Wrapf(err, "failed to writing Dockerfile for %s", fileName)
+	}
+	return nil
+}
+
 func main() {
 	log.Init()
+	if err := run(); err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+}
+
+func run() error {
 	if len(os.Args) < minimumArgumentLength {
-		// skipcq: RVV-A0003
-		log.Fatal(errors.New("invalid argument"))
+		return errors.New("invalid argument")
 	}
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT,
@@ -672,9 +980,7 @@ func main() {
 	} else {
 		y, err := time.Parse("2006", yearString)
 		if err != nil {
-			cancel()
-			// skipcq: RVV-A0003
-			log.Fatal(err)
+			return err
 		}
 		year = y.Year()
 	}
@@ -812,8 +1118,8 @@ func main() {
 		},
 		vald + "-" + devContainer: {
 			AppName:       devContainer,
-			BuilderImage:  "mcr.microsoft.com/devcontainers/base",
-			BuilderTag:    "ubuntu" + ubuntuVersion,
+			BuilderImage:  "ubuntu",
+			BuilderTag:    ubuntuVersion,
 			BuildUser:     defaultBuildUser,
 			RuntimeUser:   defaultBuildUser,
 			ContainerType: DevContainer,
@@ -855,7 +1161,7 @@ func main() {
 			AliasImage:   true,
 			PackageDir:   buildkit,
 			BuilderImage: "moby/" + buildkit,
-			BuilderTag:   "master",
+			BuilderTag:   buildkitVersion,
 		},
 		vald + "-" + binfmt: {
 			AppName:      binfmt,
@@ -869,7 +1175,7 @@ func main() {
 			AliasImage:     true,
 			PackageDir:     buildkit + "/syft/scanner",
 			BuilderImage:   "docker/" + buildkitSyftScanner,
-			BuilderTag:     "edge",
+			BuilderTag:     syftScannerVersion,
 			BuildStageName: "scanner",
 		},
 	} {
@@ -877,6 +1183,7 @@ func main() {
 		data := d
 
 		eg.Go(safety.RecoverFunc(func() error {
+<<<<<<< HEAD
 			data.Name = strings.TrimPrefix(name, vald+"-")
 			switch data.ContainerType {
 			case HelmOperator:
@@ -1192,9 +1499,16 @@ jobs:
 				return errors.Wrapf(err, "failed to writing Dockerfile for %s", fileName)
 			}
 			return nil
+=======
+			return generateWorkflow(egctx, os.Args[1], name, maintainer, year, data)
+		}))
+
+		eg.Go(safety.RecoverFunc(func() error {
+			return generateDockerfile(egctx, os.Args[1], name, maintainer, year, data)
+>>>>>>> 1afc0f4a4 (fix: scan release images with .trivyignore (#3615))
 		}))
 	}
-	eg.Wait()
+	return eg.Wait()
 }
 
 // PackageNode represents a node in the dependency tree.

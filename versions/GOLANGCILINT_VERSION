@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 v2.11.4
+=======
+v2.13.2
+>>>>>>> 1afc0f4a4 (fix: scan release images with .trivyignore (#3615))

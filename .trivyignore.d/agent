@@ -13,25 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-timeout: 5m
-format: table
-exit-code: 1
-severity:
-  - HIGH
-  - CRITICAL
-scanners:
-  - vuln
-  - secret
-  - misconfig
-  - license
-scan:
-  skip-files:
-    # Go's standard-library x509 test fixture, not a deployable credential.
-    - /opt/go/src/crypto/x509/platform_root_key.pem
-  skip-dirs:
-    - vendor
-    - .git
-    - .vscode
-    - .idea
-    - versions
-    - assets
+
+# Reason: Debian 12 currently provides no fixed libssl3 package for this
+# OpenSSL denial-of-service issue. The agent image already runs apt upgrade;
+# remove this exception when Debian publishes a security update.
+CVE-2026-14456 exp:2026-11-24
