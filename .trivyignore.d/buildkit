@@ -1,0 +1,57 @@
+#
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# Reason: BuildKit v0.32.2 embeds github.com/moby/go-archive v0.2.0. The fixed
+# module version is not independently replaceable in the upstream binary.
+CVE-2026-17106 exp:2026-11-19
+
+# Reason: these Go standard-library findings are embedded in the official
+# BuildKit v0.32.2 binaries. Vald cannot replace them independently; remove
+# these exceptions when upstream publishes binaries built with a fixed Go.
+CVE-2026-25679 exp:2026-11-19
+CVE-2026-25681 exp:2026-11-19
+CVE-2026-27136 exp:2026-11-19
+CVE-2026-27145 exp:2026-11-19
+CVE-2026-32280 exp:2026-11-19
+CVE-2026-32281 exp:2026-11-19
+CVE-2026-32283 exp:2026-11-19
+CVE-2026-33811 exp:2026-11-19
+CVE-2026-33814 exp:2026-11-19
+CVE-2026-33818 exp:2026-11-19
+CVE-2026-39820 exp:2026-11-19
+CVE-2026-39821 exp:2026-11-19
+CVE-2026-39822 exp:2026-11-19
+CVE-2026-39836 exp:2026-11-19
+CVE-2026-42499 exp:2026-11-19
+CVE-2026-42504 exp:2026-11-19
+CVE-2026-46600 exp:2026-11-19
+CVE-2026-56853 exp:2026-11-19
+CVE-2026-56858 exp:2026-11-19
+CVE-2026-56859 exp:2026-11-19
+CVE-2026-56860 exp:2026-11-19
+CVE-2026-56862 exp:2026-11-19
+CVE-2026-56864 exp:2026-11-19
+CVE-2026-56865 exp:2026-11-19
+
+# Reason: Trivy compares BuildKit's 2026-08-21 pseudo-version as older than
+# fixed SemVer releases even though the embedded source is newer. These are
+# scanner version-comparison false positives; remove when Trivy recognizes
+# BuildKit pseudo-versions correctly.
+CVE-2024-23651 exp:2026-11-24
+CVE-2024-23652 exp:2026-11-24
+CVE-2024-23653 exp:2026-11-24
+CVE-2026-33747 exp:2026-11-24
+CVE-2026-33748 exp:2026-11-24

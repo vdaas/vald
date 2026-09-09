@@ -13,19 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-[package]
-name = "ngt"
-version = "0.1.0"
-edition = "2024"
 
-[dependencies]
-anyhow = "1.0.104"
-cxx = { version = "1.0.200", features = ["c++20"] }
-
-[build-dependencies]
-cxx-build = "1.0.200"
-miette = { version = "7.6.0", features = ["fancy"] }
-vald-build-utils = { path = "../../build-utils" }
-
-[dev-dependencies]
-rand = "0.10.2"
+# Reason: these Go standard-library findings are embedded in /usr/bin/pebble
+# from the latest Ubuntu base image. Vald cannot replace that binary
+# independently; remove these exceptions when Ubuntu publishes a rebuild.
+CVE-2026-33818 exp:2026-11-19
+CVE-2026-39821 exp:2026-11-19
+CVE-2026-46600 exp:2026-11-19
+CVE-2026-56853 exp:2026-11-19
+CVE-2026-56858 exp:2026-11-19
+CVE-2026-56859 exp:2026-11-19
+CVE-2026-56860 exp:2026-11-19
+CVE-2026-56862 exp:2026-11-19

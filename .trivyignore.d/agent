@@ -13,19 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-[package]
-name = "ngt"
-version = "0.1.0"
-edition = "2024"
 
-[dependencies]
-anyhow = "1.0.104"
-cxx = { version = "1.0.200", features = ["c++20"] }
-
-[build-dependencies]
-cxx-build = "1.0.200"
-miette = { version = "7.6.0", features = ["fancy"] }
-vald-build-utils = { path = "../../build-utils" }
-
-[dev-dependencies]
-rand = "0.10.2"
+# Reason: Debian 12 currently provides no fixed libssl3 package for this
+# OpenSSL denial-of-service issue. The agent image already runs apt upgrade;
+# remove this exception when Debian publishes a security update.
+CVE-2026-14456 exp:2026-11-24
