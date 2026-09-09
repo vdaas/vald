@@ -358,7 +358,7 @@ $(LIB_PATH)/libomp.a: | ninja/install
 	# installs that do package a static libomp.a, avoiding the multi-minute build.
 	@SYSTEM_LIBOMP="$$(ls /usr/lib/llvm-*/lib/libomp.a /usr/lib/x86_64-linux-gnu/libomp.a /usr/lib/aarch64-linux-gnu/libomp.a 2>/dev/null | head -1 || true)"; \
 	if [ -n "$$SYSTEM_LIBOMP" ]; then \
-		$(SUDO) cp "$$SYSTEM_LIBOMP" "$(LIB_PATH)/libomp.a" && $(SUDO) ldconfig; \
+		$(SUDO) cp "$$SYSTEM_LIBOMP" "$(LIB_PATH)/libomp.a" && if command -v ldconfig >/dev/null 2>&1; then $(SUDO) ldconfig; fi; \
 	else \
 		command -v python3 >/dev/null 2>&1 || { command -v apt-get >/dev/null 2>&1 \
 		&& $(SUDO) apt-get update -qq \
@@ -397,7 +397,7 @@ $(LIB_PATH)/libomp.a: | ninja/install
 		&& cmake --build $(TEMP_DIR)/libomp/openmp/build --parallel $(CORES) \
 		&& $(SUDO) cmake --install $(TEMP_DIR)/libomp/openmp/build \
 		&& rm -rf $(TEMP_DIR)/libomp $(TEMP_DIR)/libomp-archive \
-		&& $(SUDO) ldconfig; \
+		&& if command -v ldconfig >/dev/null 2>&1; then $(SUDO) ldconfig; fi; \
 	fi
 
 .PHONY: ngt/install
@@ -419,8 +419,9 @@ $(USR_LOCAL)/include/NGT/Capi.h: | ninja/install $(if $(findstring clang,$(notdi
 		-DCMAKE_AR=$$(command -v llvm-ar 2>/dev/null || ls /usr/bin/llvm-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ar 2>/dev/null || ls /usr/bin/gcc-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ar) \
 		-DCMAKE_CXX_COMPILER_AR=$$(command -v llvm-ar 2>/dev/null || ls /usr/bin/llvm-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ar 2>/dev/null || ls /usr/bin/gcc-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ar) \
 		-DCMAKE_RANLIB=$$(command -v llvm-ranlib 2>/dev/null || ls /usr/bin/llvm-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ranlib 2>/dev/null || ls /usr/bin/gcc-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ranlib) \
-		-DCMAKE_C_FLAGS="$(CFLAGS) $(LTO_FLAGS) $(if $(filter Linux,$(UNAME)),-fopenmp)" \
-		-DCMAKE_CXX_FLAGS="$(CXXFLAGS) $(LTO_FLAGS) $(if $(filter Linux,$(UNAME)),-fopenmp)" \
+		-DCMAKE_C_FLAGS="$(CFLAGS) $(NATIVE_LTO_FLAGS) $(OPENMP_CFLAGS)" \
+		-DCMAKE_CXX_FLAGS="$(CXXFLAGS) $(NATIVE_LTO_FLAGS) $(OPENMP_CFLAGS)" \
+		$(if $(filter darwin,$(GOOS)),-DOpenMP_ROOT="$(OPENMP_PREFIX)" -DCMAKE_INSTALL_RPATH="@loader_path/../lib",) \
 		$(if $(and $(findstring clang,$(notdir $(CC))),$(filter Linux,$(UNAME))), \
 		-DOpenMP_CXX_FLAGS="-fopenmp" \
 		-DOpenMP_C_FLAGS="-fopenmp" \
@@ -432,14 +433,20 @@ $(USR_LOCAL)/include/NGT/Capi.h: | ninja/install $(if $(findstring clang,$(notdi
 		-DCMAKE_USE_PTHREADS_INIT=1 \
 		-DTHREADS_PREFER_PTHREAD_FLAG=OFF \
 		$(if $(OPENBLAS_PATH),-DBLAS_LIBRARIES="$(OPENBLAS_PATH)" -DLAPACK_LIBRARIES="$(OPENBLAS_PATH)",) \
-		-DCMAKE_EXE_LINKER_FLAGS="$(NGT_LDFLAGS)$(if $(filter ld.lld lld,$(notdir $(LLD))), -fuse-ld=lld)" \
-		-DCMAKE_SHARED_LINKER_FLAGS="$(NGT_LDFLAGS)$(if $(filter ld.lld lld,$(notdir $(LLD))), -fuse-ld=lld)" \
-		-DCMAKE_MODULE_LINKER_FLAGS="$(NGT_LDFLAGS)$(if $(filter ld.lld lld,$(notdir $(LLD))), -fuse-ld=lld)" \
+		-DCMAKE_EXE_LINKER_FLAGS="$(LDFLAGS) $(NGT_LDFLAGS)$(if $(and $(filter-out darwin,$(GOOS)),$(filter ld.lld lld,$(notdir $(LLD)))), -fuse-ld=lld)" \
+		-DCMAKE_SHARED_LINKER_FLAGS="$(LDFLAGS) $(NGT_LDFLAGS)$(if $(and $(filter-out darwin,$(GOOS)),$(filter ld.lld lld,$(notdir $(LLD)))), -fuse-ld=lld)" \
+		-DCMAKE_MODULE_LINKER_FLAGS="$(LDFLAGS) $(NGT_LDFLAGS)$(if $(and $(filter-out darwin,$(GOOS)),$(filter ld.lld lld,$(notdir $(LLD)))), -fuse-ld=lld)" \
 		$(NGT_EXTRA_CMAKE_FLAGS), \
 		mkdir -p $(TEMP_DIR)/ngt/build/bin/ngt $(TEMP_DIR)/ngt/build/bin/qbg && touch $(TEMP_DIR)/ngt/build/bin/ngt/ngt $(TEMP_DIR)/ngt/build/bin/qbg/qbg, \
 		v$(NGT_VERSION), \
 		, \
 		ngt)
+
+# Discover and install Faiss headers under $(USR_LOCAL)/include while
+# preserving failures without relying on GNU install -D.
+define FAISS_HEADER_INSTALL
+cd $(TEMP_DIR)/faiss && find faiss -name '*.h' -exec sh -c 'for src do dst="$(USR_LOCAL)/include/$$src"; $(SUDO) mkdir -p "$$(dirname "$$dst")" && $(SUDO) install -m 0644 "$$src" "$$dst" || exit 1; done' sh {} +
+endef
 
 .PHONY: faiss/install
 ## install Faiss
@@ -466,25 +473,26 @@ $(LIB_PATH)/libfaiss.a: | ninja/install $(if $(findstring clang,$(notdir $(CC)))
 	$(call cmake-install,https://github.com/facebookresearch/faiss/archive/v$(FAISS_VERSION).tar.gz,faiss, \
 		-DFAISS_ENABLE_PYTHON=OFF \
 		-DFAISS_ENABLE_GPU=OFF \
-		$(if $(OPENBLAS_PATH),-DBLAS_PREFER_THREADED="$(OPENBLAS_PATH)" -DBLAS_LIBRARIES="$(OPENBLAS_PATH)" -DLAPACK_LIBRARIES="$(OPENBLAS_PATH)",) \
+		$(if $(filter-out darwin,$(GOOS)),$(if $(OPENBLAS_PATH),-DBLAS_PREFER_THREADED="$(OPENBLAS_PATH)" -DBLAS_LIBRARIES="$(OPENBLAS_PATH)" -DLAPACK_LIBRARIES="$(OPENBLAS_PATH)",),) \
 		-DCMAKE_CXX_SCAN_FOR_MODULES=OFF \
 		-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
-		-DCMAKE_C_FLAGS="$(CFLAGS) $(LTO_FLAGS) $(if $(MARCH),-march=$(MARCH)) $(if $(MTUNE),-mtune=$(MTUNE)) $(if $(filter Linux,$(UNAME)),-fopenmp)" \
-		-DCMAKE_CXX_FLAGS="$(CXXFLAGS) $(LTO_FLAGS) $(if $(MARCH),-march=$(MARCH)) $(if $(MTUNE),-mtune=$(MTUNE)) $(if $(filter Linux,$(UNAME)),-fopenmp)" \
+		-DCMAKE_C_FLAGS="$(FAISS_CMAKE_C_FLAGS)" \
+		-DCMAKE_CXX_FLAGS="$(FAISS_CMAKE_CXX_FLAGS)" \
 		$(if $(and $(findstring clang,$(notdir $(CC))),$(filter Linux,$(UNAME))), \
 		-DOpenMP_CXX_FLAGS="-fopenmp" \
 		-DOpenMP_C_FLAGS="-fopenmp" \
 		-DOpenMP_CXX_LIB_NAMES="omp" \
 		-DOpenMP_C_LIB_NAMES="omp" \
 		$(if $(LIBOMP),-DOpenMP_omp_LIBRARY="$(LIBOMP)")) \
+		$(FAISS_CMAKE_EXTRA_FLAGS) \
 		-DCMAKE_THREAD_LIBS_INIT="-lpthread" \
 		-DCMAKE_HAVE_THREADS_LIBRARY=1 \
 		-DCMAKE_USE_PTHREADS_INIT=1 \
 		-DTHREADS_PREFER_PTHREAD_FLAG=OFF \
-		-DCMAKE_EXE_LINKER_FLAGS="$(FAISS_LDFLAGS)$(if $(filter ld.lld lld,$(notdir $(LLD))), -fuse-ld=lld)" \
-		-DCMAKE_SHARED_LINKER_FLAGS="$(FAISS_LDFLAGS)$(if $(filter ld.lld lld,$(notdir $(LLD))), -fuse-ld=lld)" \
-		-DCMAKE_MODULE_LINKER_FLAGS="$(FAISS_LDFLAGS)$(if $(filter ld.lld lld,$(notdir $(LLD))), -fuse-ld=lld)", \
-		cd $(TEMP_DIR)/faiss && $(SUDO) find faiss -name '*.h' -exec install -D -m 0644 {} $(USR_LOCAL)/include/{} \;, \
+		-DCMAKE_EXE_LINKER_FLAGS="$(LDFLAGS) $(FAISS_LDFLAGS)$(if $(and $(filter-out darwin,$(GOOS)),$(filter ld.lld lld,$(notdir $(LLD)))), -fuse-ld=lld)" \
+		-DCMAKE_SHARED_LINKER_FLAGS="$(LDFLAGS) $(FAISS_LDFLAGS)$(if $(and $(filter-out darwin,$(GOOS)),$(filter ld.lld lld,$(notdir $(LLD)))), -fuse-ld=lld)" \
+		-DCMAKE_MODULE_LINKER_FLAGS="$(LDFLAGS) $(FAISS_LDFLAGS)$(if $(and $(filter-out darwin,$(GOOS)),$(filter ld.lld lld,$(notdir $(LLD)))), -fuse-ld=lld)", \
+		$(FAISS_HEADER_INSTALL), \
 		, \
 		, \
 		faiss)
