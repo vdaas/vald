@@ -6,7 +6,8 @@
   },
   "tags": [
     {
-      "name": "Search"
+      "name": "Search",
+      "description": "Overview\nSearch Service is responsible for searching vectors similar to the user request vector from `vald-agent`."
     }
   ],
   "consumes": ["application/json"],
@@ -318,7 +319,7 @@
         "PairingHeap"
       ],
       "default": "Unknown",
-      "title": "AggregationAlgorithm is enum of each aggregation algorithms"
+      "description": "AggregationAlgorithm is enum of each aggregation algorithms"
     },
     "SearchIDRequest": {
       "type": "object",

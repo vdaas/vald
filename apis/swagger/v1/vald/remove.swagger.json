@@ -6,7 +6,8 @@
   },
   "tags": [
     {
-      "name": "Remove"
+      "name": "Remove",
+      "description": "Overview\nRemove Service is responsible for removing vectors indexed in the `vald-agent`."
     }
   ],
   "consumes": ["application/json"],

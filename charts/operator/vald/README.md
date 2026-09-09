@@ -3,7 +3,7 @@ vald-operator
 
 This is a Helm chart to install vald-operator.
 
-Current chart version is `v1.7.17`
+Current chart version is `v1.8.0`
 
 Table of Contents
 ---

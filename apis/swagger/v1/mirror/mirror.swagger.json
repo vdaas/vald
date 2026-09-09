@@ -6,7 +6,8 @@
   },
   "tags": [
     {
-      "name": "Mirror"
+      "name": "Mirror",
+      "description": "Overview\nMirror Service is responsible for providing the `Register` interface for the Vald Mirror Gateway."
     }
   ],
   "consumes": ["application/json"],

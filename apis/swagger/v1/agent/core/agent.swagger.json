@@ -6,7 +6,8 @@
   },
   "tags": [
     {
-      "name": "Agent"
+      "name": "Agent",
+      "description": "Represent the agent service."
     }
   ],
   "consumes": ["application/json"],

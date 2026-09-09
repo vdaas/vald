@@ -6,7 +6,8 @@
   },
   "tags": [
     {
-      "name": "Update"
+      "name": "Update",
+      "description": "Overview\nUpdate Service updates to new vector from inserted vector in the `vald-agent` components."
     }
   ],
   "consumes": ["application/json"],

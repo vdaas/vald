@@ -6,7 +6,8 @@
   },
   "tags": [
     {
-      "name": "Stats"
+      "name": "Stats",
+      "description": "Overview\nRepresent the resource stats service."
     }
   ],
   "consumes": ["application/json"],

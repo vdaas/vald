@@ -6,7 +6,8 @@
   },
   "tags": [
     {
-      "name": "Insert"
+      "name": "Insert",
+      "description": "Overview\nInsert Service is responsible for inserting new vectors into the `vald-agent`."
     }
   ],
   "consumes": ["application/json"],

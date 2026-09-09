@@ -38,7 +38,7 @@ defaults:
   image:
     # @schema {"name": "defaults.image.tag", "type": "string"}
     # defaults.image.tag -- docker image tag
-    tag: v1.7.17
+    tag: v1.8.0
     # @schema {"name": "defaults.image.registry", "type": "string"}
     # defaults.image.registry -- default docker image registry (applied to all images; override per-component via image.registry)
     registry: ""

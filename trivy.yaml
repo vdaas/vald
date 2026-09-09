@@ -25,6 +25,9 @@ scanners:
   - misconfig
   - license
 scan:
+  skip-files:
+    # Go's standard-library x509 test fixture, not a deployable credential.
+    - /opt/go/src/crypto/x509/platform_root_key.pem
   skip-dirs:
     - vendor
     - .git

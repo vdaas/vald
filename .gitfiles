@@ -110,7 +110,6 @@
 .github/workflows/dockers-manager-index-image.yaml
 .github/workflows/dockers-operator-image.yaml
 .github/workflows/dockers-readreplica-rotate-image.yaml
-.github/workflows/dockers-release-branch-image.yaml
 .github/workflows/e2e-max-dim.yaml
 .github/workflows/e2e.v2.yaml
 .github/workflows/format.yaml
@@ -141,6 +140,12 @@
 .prh.yaml
 .semgrepignore
 .textlintrc
+.trivyignore.d/agent
+.trivyignore.d/binfmt
+.trivyignore.d/buildbase
+.trivyignore.d/buildkit
+.trivyignore.d/buildkit-syft-scanner
+.trivyignore.d/dev-container
 .whitesource
 .yamlfmt
 ADOPTERS.md

@@ -26,6 +26,7 @@ jobs:
       SLACK_NOTIFY_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}
     permissions:
       contents: read
+      security-events: write
     with:
       target: dev-container
     uses: ./.github/workflows/_docker-image.yaml
@@ -55,6 +56,7 @@ on:
       - go.sum
       - hack/**
       - hack/docker/gen/main.go
+      - trivy.yaml
       - versions/GO_VERSION
   pull_request_target:
     types:
@@ -75,4 +77,5 @@ on:
       - go.sum
       - hack/**
       - hack/docker/gen/main.go
+      - trivy.yaml
       - versions/GO_VERSION

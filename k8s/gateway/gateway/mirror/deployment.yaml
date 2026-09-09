@@ -20,10 +20,10 @@ metadata:
   labels:
     app: vald-mirror-gateway
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.7.17
+    helm.sh/chart: vald-v1.8.0
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.17
+    app.kubernetes.io/version: v1.8.0
     app.kubernetes.io/component: gateway-mirror
 spec:
   progressDeadlineSeconds: 600
@@ -45,7 +45,7 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: gateway-mirror
       annotations:
-        checksum/configmap: 00bcf8c640bca86ee6ae98c81a5afb9e6b320b9b6ef6e3d68469149dcd3d9bf6
+        checksum/configmap: 0bbf41cb92affe1105ef4225df088ac81a25fa0df29fe793b4a11439dcc9c31a
         pyroscope.io/scrape: "true"
         pyroscope.io/application-name: vald-mirror-gateway
         pyroscope.io/profile-cpu-enabled: "true"
