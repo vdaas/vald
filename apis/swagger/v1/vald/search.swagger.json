@@ -519,6 +519,14 @@
           "type": "integer",
           "format": "int32",
           "title": "Search edge size"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          },
+          "description": "Algorithm-specific search options."
         }
       },
       "description": "Represent search configuration."
