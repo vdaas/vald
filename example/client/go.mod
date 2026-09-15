@@ -7,7 +7,7 @@ replace (
 	github.com/kpango/glg => github.com/kpango/glg v1.6.15
 	github.com/vdaas/vald-client-go => github.com/vdaas/vald-client-go v1.7.17
 	gonum.org/v1/hdf5 => gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
-	google.golang.org/grpc => google.golang.org/grpc v1.83.0
+	google.golang.org/grpc => google.golang.org/grpc v1.83.2
 )
 
 require (
