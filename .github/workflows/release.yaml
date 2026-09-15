@@ -71,9 +71,8 @@ jobs:
           echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
       - name: Create release
         uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
         with:
+          token: ${{ secrets.DISPATCH_TOKEN }}
           tag_name: ${{ steps.create_release_tag.outputs.VERSION }}
           name: Release ${{ steps.create_release_tag.outputs.VERSION }}
           body: |
