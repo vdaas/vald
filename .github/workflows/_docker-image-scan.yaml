@@ -54,5 +54,6 @@ jobs:
       - name: Scan the Docker image
         uses: ./.github/actions/scan-docker-image
         with:
+          target: ${{ inputs.target }}
           image_ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
           severity: "HIGH,CRITICAL"

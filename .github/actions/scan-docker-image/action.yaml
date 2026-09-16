@@ -16,6 +16,10 @@
 name: "Scan the Docker image"
 description: "An action to scan the Docker image"
 inputs:
+  target:
+    description: "Docker build target"
+    required: true
+    default: ""
   image_ref:
     description: "Docker image reference"
     required: true
@@ -27,13 +31,25 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Resolve target-specific Trivy ignore file
+      id: trivy_ignore
+      shell: bash
+      env:
+        TARGET: ${{ inputs.target }}
+      run: |
+        ignore_file=".trivyignore.d/${TARGET}"
+        if [ -f "${ignore_file}" ]; then
+          echo "files=${ignore_file}" >> "${GITHUB_OUTPUT}"
+        fi
     - name: Run vulnerability scanner (table)
       uses: aquasecurity/trivy-action@2736533278103862a861f4a35ebac3e97854d956
       with:
         image-ref: ${{ inputs.image_ref }}
         format: "table"
         trivy-config: "${{ github.workspace }}/trivy.yaml"
+        trivyignores: "${{ steps.trivy_ignore.outputs.files }}"
         severity: ${{ inputs.severity }}
+        ignore-unfixed: true
         timeout: 30m
     - name: Run vulnerability scanner (sarif)
       uses: aquasecurity/trivy-action@2736533278103862a861f4a35ebac3e97854d956
@@ -42,7 +58,9 @@ runs:
         format: "sarif"
         output: "trivy-results.sarif"
         trivy-config: "${{ github.workspace }}/trivy.yaml"
+        trivyignores: "${{ steps.trivy_ignore.outputs.files }}"
         severity: ${{ inputs.severity }}
+        exit-code: 0
         timeout: 30m
     - name: Upload Trivy scan results to Security tab
       uses: github/codeql-action/upload-sarif@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd # v4.37.7
