@@ -18,7 +18,7 @@ use proto::{
     payload::v1::{insert, object},
     vald::v1::insert_server,
 };
-use std::{collections::HashMap, string::String, sync::Arc};
+use std::{string::String, sync::Arc};
 use tokio::sync::RwLock;
 use tonic::{Code, Status};
 use tonic_types::StatusExt;
@@ -26,7 +26,7 @@ use tonic_types::StatusExt;
 use super::common::{bidirectional_stream, build_error_details};
 
 pub(super) async fn insert(
-    s: Arc<RwLock<dyn algorithm::ANN>>,
+    s: Arc<RwLock<Box<dyn algorithm::ANN>>>,
     resource_type: &str,
     api_name: &str,
     name: &str,
@@ -69,7 +69,12 @@ pub(super) async fn insert(
             warn!("{:?}", status);
             return Err(status);
         }
-        let result = s.insert(vec.id.clone(), vec.vector.clone(), config.timestamp);
+        let result = s.insert_with_options(
+            vec.id.clone(),
+            vec.vector.clone(),
+            config.timestamp,
+            &config.options,
+        );
         match result {
             Err(err) => {
                 let resource_type = format!("{}/qbg.Insert", resource_type);
@@ -227,7 +232,7 @@ impl insert_server::Insert for super::Agent {
         let hostname = super::common::get_hostname();
         let domain = hostname.as_str();
         let mut uuids: Vec<String> = Vec::new();
-        let mut vmap = HashMap::new();
+        let mut vectors = Vec::with_capacity(mreq.requests.len());
         {
             let mut s = self.s.write().await;
             for req in mreq.requests.clone() {
@@ -259,10 +264,28 @@ impl insert_server::Insert for super::Agent {
                     warn!("{:?}", status);
                     return Err(status);
                 }
+                let config = req
+                    .config
+                    .ok_or_else(|| Status::invalid_argument("Missing configuration in request"))?;
                 uuids.push(vec.id.clone());
-                vmap.insert(vec.id, vec.vector);
+                vectors.push((vec.id, vec.vector, config.timestamp, config.options));
             }
-            let result = s.insert_multiple(vmap);
+            let mut duplicated = Vec::new();
+            let mut result = Ok(());
+            for (uuid, vector, timestamp, options) in vectors {
+                if let Err(err) = s.insert_with_options(uuid.clone(), vector, timestamp, &options) {
+                    match err {
+                        Error::UUIDAlreadyExists { uuid } => duplicated.push(uuid),
+                        _ => {
+                            result = Err(err);
+                            break;
+                        }
+                    }
+                }
+            }
+            if result.is_ok() && !duplicated.is_empty() {
+                result = Err(Error::new_uuid_already_exists(duplicated));
+            }
             match result {
                 Err(err) => {
                     let resource_type = format!("{}/qbg.MultiInsert", self.resource_type);

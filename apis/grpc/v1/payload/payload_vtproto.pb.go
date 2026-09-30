@@ -17,6 +17,10 @@ package payload
 import (
 	binary "encoding/binary"
 	fmt "fmt"
+	"maps"
+	math "math"
+	unsafe "unsafe"
+
 	protohelpers "github.com/planetscale/vtprotobuf/protohelpers"
 	anypb1 "github.com/planetscale/vtprotobuf/types/known/anypb"
 	wrapperspb1 "github.com/planetscale/vtprotobuf/types/known/wrapperspb"
@@ -26,8 +30,6 @@ import (
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	anypb "google.golang.org/protobuf/types/known/anypb"
 	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
-	math "math"
-	unsafe "unsafe"
 )
 
 const (
@@ -366,6 +368,149 @@ func (m *Filter) CloneVT() *Filter {
 }
 
 func (m *Filter) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *ZVec_DocumentOptions) CloneVT() *ZVec_DocumentOptions {
+	if m == nil {
+		return (*ZVec_DocumentOptions)(nil)
+	}
+	r := new(ZVec_DocumentOptions)
+	if rhs := m.Fields; rhs != nil {
+		tmpContainer := make(map[string]string, len(rhs))
+		maps.Copy(tmpContainer, rhs)
+		r.Fields = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *ZVec_DocumentOptions) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *ZVec_SearchOptions) CloneVT() *ZVec_SearchOptions {
+	if m == nil {
+		return (*ZVec_SearchOptions)(nil)
+	}
+	r := new(ZVec_SearchOptions)
+	r.PreFilter = m.PreFilter
+	if rhs := m.HybridQueries; rhs != nil {
+		tmpContainer := make([]*ZVec_Query, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.HybridQueries = tmpContainer
+	}
+	if rhs := m.HybridWeights; rhs != nil {
+		tmpContainer := make([]float32, len(rhs))
+		copy(tmpContainer, rhs)
+		r.HybridWeights = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *ZVec_SearchOptions) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *ZVec_Query) CloneVT() *ZVec_Query {
+	if m == nil {
+		return (*ZVec_Query)(nil)
+	}
+	r := new(ZVec_Query)
+	r.FieldName = m.FieldName
+	if m.Query != nil {
+		r.Query = m.Query.(interface{ CloneVT() isZVec_Query_Query }).CloneVT()
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *ZVec_Query) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *ZVec_Query_Vector) CloneVT() isZVec_Query_Query {
+	if m == nil {
+		return (*ZVec_Query_Vector)(nil)
+	}
+	r := new(ZVec_Query_Vector)
+	r.Vector = m.Vector.CloneVT()
+	return r
+}
+
+func (m *ZVec_Query_Fts) CloneVT() isZVec_Query_Query {
+	if m == nil {
+		return (*ZVec_Query_Fts)(nil)
+	}
+	r := new(ZVec_Query_Fts)
+	r.Fts = m.Fts.CloneVT()
+	return r
+}
+
+func (m *ZVec_Vector) CloneVT() *ZVec_Vector {
+	if m == nil {
+		return (*ZVec_Vector)(nil)
+	}
+	r := new(ZVec_Vector)
+	if rhs := m.Values; rhs != nil {
+		tmpContainer := make([]float32, len(rhs))
+		copy(tmpContainer, rhs)
+		r.Values = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *ZVec_Vector) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *ZVec_FTS) CloneVT() *ZVec_FTS {
+	if m == nil {
+		return (*ZVec_FTS)(nil)
+	}
+	r := new(ZVec_FTS)
+	r.MatchString = m.MatchString
+	r.QueryString = m.QueryString
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *ZVec_FTS) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *ZVec) CloneVT() *ZVec {
+	if m == nil {
+		return (*ZVec)(nil)
+	}
+	r := new(ZVec)
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *ZVec) CloneMessageVT() proto.Message {
 	return m.CloneVT()
 }
 
@@ -1899,9 +2044,7 @@ func (m *Info_Labels) CloneVT() *Info_Labels {
 	r := new(Info_Labels)
 	if rhs := m.Labels; rhs != nil {
 		tmpContainer := make(map[string]string, len(rhs))
-		for k, v := range rhs {
-			tmpContainer[k] = v
-		}
+		maps.Copy(tmpContainer, rhs)
 		r.Labels = tmpContainer
 	}
 	if len(m.unknownFields) > 0 {
@@ -1922,9 +2065,7 @@ func (m *Info_Annotations) CloneVT() *Info_Annotations {
 	r := new(Info_Annotations)
 	if rhs := m.Annotations; rhs != nil {
 		tmpContainer := make(map[string]string, len(rhs))
-		for k, v := range rhs {
-			tmpContainer[k] = v
-		}
+		maps.Copy(tmpContainer, rhs)
 		r.Annotations = tmpContainer
 	}
 	if len(m.unknownFields) > 0 {
@@ -2251,6 +2392,7 @@ func (this *Search_Request) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Search_MultiRequest) EqualVT(that *Search_MultiRequest) bool {
 	if this == that {
 		return true
@@ -2284,6 +2426,7 @@ func (this *Search_MultiRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Search_IDRequest) EqualVT(that *Search_IDRequest) bool {
 	if this == that {
 		return true
@@ -2306,6 +2449,7 @@ func (this *Search_IDRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Search_MultiIDRequest) EqualVT(that *Search_MultiIDRequest) bool {
 	if this == that {
 		return true
@@ -2339,6 +2483,7 @@ func (this *Search_MultiIDRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Search_ObjectRequest) EqualVT(that *Search_ObjectRequest) bool {
 	if this == that {
 		return true
@@ -2364,6 +2509,7 @@ func (this *Search_ObjectRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Search_MultiObjectRequest) EqualVT(that *Search_MultiObjectRequest) bool {
 	if this == that {
 		return true
@@ -2397,6 +2543,7 @@ func (this *Search_MultiObjectRequest) EqualMessageVT(thatMsg proto.Message) boo
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Search_Config) EqualVT(that *Search_Config) bool {
 	if this == that {
 		return true
@@ -2466,6 +2613,7 @@ func (this *Search_Config) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Search_Response) EqualVT(that *Search_Response) bool {
 	if this == that {
 		return true
@@ -2502,6 +2650,7 @@ func (this *Search_Response) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Search_Responses) EqualVT(that *Search_Responses) bool {
 	if this == that {
 		return true
@@ -2535,6 +2684,7 @@ func (this *Search_Responses) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Search_StreamResponse) EqualVT(that *Search_StreamResponse) bool {
 	if this == that {
 		return true
@@ -2563,7 +2713,10 @@ func (this *Search_StreamResponse) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
-func (this *Search_StreamResponse_Response) EqualVT(thatIface isSearch_StreamResponse_Payload) bool {
+
+func (this *Search_StreamResponse_Response) EqualVT(
+	thatIface isSearch_StreamResponse_Payload,
+) bool {
 	that, ok := thatIface.(*Search_StreamResponse_Response)
 	if !ok {
 		return false
@@ -2633,6 +2786,7 @@ func (this *Search) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Filter_Target) EqualVT(that *Filter_Target) bool {
 	if this == that {
 		return true
@@ -2655,6 +2809,7 @@ func (this *Filter_Target) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Filter_Config) EqualVT(that *Filter_Config) bool {
 	if this == that {
 		return true
@@ -2688,6 +2843,7 @@ func (this *Filter_Config) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Filter) EqualVT(that *Filter) bool {
 	if this == that {
 		return true
@@ -2704,6 +2860,228 @@ func (this *Filter) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
+func (this *ZVec_DocumentOptions) EqualVT(that *ZVec_DocumentOptions) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Fields) != len(that.Fields) {
+		return false
+	}
+	for i, vx := range this.Fields {
+		vy, ok := that.Fields[i]
+		if !ok {
+			return false
+		}
+		if vx != vy {
+			return false
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *ZVec_DocumentOptions) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*ZVec_DocumentOptions)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+
+func (this *ZVec_SearchOptions) EqualVT(that *ZVec_SearchOptions) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.PreFilter != that.PreFilter {
+		return false
+	}
+	if len(this.HybridQueries) != len(that.HybridQueries) {
+		return false
+	}
+	for i, vx := range this.HybridQueries {
+		vy := that.HybridQueries[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &ZVec_Query{}
+			}
+			if q == nil {
+				q = &ZVec_Query{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
+	if len(this.HybridWeights) != len(that.HybridWeights) {
+		return false
+	}
+	for i, vx := range this.HybridWeights {
+		vy := that.HybridWeights[i]
+		if vx != vy {
+			return false
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *ZVec_SearchOptions) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*ZVec_SearchOptions)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+
+func (this *ZVec_Query) EqualVT(that *ZVec_Query) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.Query == nil && that.Query != nil {
+		return false
+	} else if this.Query != nil {
+		if that.Query == nil {
+			return false
+		}
+		if !this.Query.(interface{ EqualVT(isZVec_Query_Query) bool }).EqualVT(that.Query) {
+			return false
+		}
+	}
+	if this.FieldName != that.FieldName {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *ZVec_Query) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*ZVec_Query)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+
+func (this *ZVec_Query_Vector) EqualVT(thatIface isZVec_Query_Query) bool {
+	that, ok := thatIface.(*ZVec_Query_Vector)
+	if !ok {
+		return false
+	}
+	if this == that {
+		return true
+	}
+	if this == nil && that != nil || this != nil && that == nil {
+		return false
+	}
+	if p, q := this.Vector, that.Vector; p != q {
+		if p == nil {
+			p = &ZVec_Vector{}
+		}
+		if q == nil {
+			q = &ZVec_Vector{}
+		}
+		if !p.EqualVT(q) {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *ZVec_Query_Fts) EqualVT(thatIface isZVec_Query_Query) bool {
+	that, ok := thatIface.(*ZVec_Query_Fts)
+	if !ok {
+		return false
+	}
+	if this == that {
+		return true
+	}
+	if this == nil && that != nil || this != nil && that == nil {
+		return false
+	}
+	if p, q := this.Fts, that.Fts; p != q {
+		if p == nil {
+			p = &ZVec_FTS{}
+		}
+		if q == nil {
+			q = &ZVec_FTS{}
+		}
+		if !p.EqualVT(q) {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *ZVec_Vector) EqualVT(that *ZVec_Vector) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Values) != len(that.Values) {
+		return false
+	}
+	for i, vx := range this.Values {
+		vy := that.Values[i]
+		if vx != vy {
+			return false
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *ZVec_Vector) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*ZVec_Vector)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+
+func (this *ZVec_FTS) EqualVT(that *ZVec_FTS) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.MatchString != that.MatchString {
+		return false
+	}
+	if this.QueryString != that.QueryString {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *ZVec_FTS) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*ZVec_FTS)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+
+func (this *ZVec) EqualVT(that *ZVec) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *ZVec) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*ZVec)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+
 func (this *Insert_Request) EqualVT(that *Insert_Request) bool {
 	if this == that {
 		return true
@@ -2726,6 +3104,7 @@ func (this *Insert_Request) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Insert_MultiRequest) EqualVT(that *Insert_MultiRequest) bool {
 	if this == that {
 		return true
@@ -2759,6 +3138,7 @@ func (this *Insert_MultiRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Insert_ObjectRequest) EqualVT(that *Insert_ObjectRequest) bool {
 	if this == that {
 		return true
@@ -2784,6 +3164,7 @@ func (this *Insert_ObjectRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Insert_MultiObjectRequest) EqualVT(that *Insert_MultiObjectRequest) bool {
 	if this == that {
 		return true
@@ -2817,6 +3198,7 @@ func (this *Insert_MultiObjectRequest) EqualMessageVT(thatMsg proto.Message) boo
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Insert_Config) EqualVT(that *Insert_Config) bool {
 	if this == that {
 		return true
@@ -2859,6 +3241,7 @@ func (this *Insert_Config) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Insert) EqualVT(that *Insert) bool {
 	if this == that {
 		return true
@@ -2875,6 +3258,7 @@ func (this *Insert) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Update_Request) EqualVT(that *Update_Request) bool {
 	if this == that {
 		return true
@@ -2897,6 +3281,7 @@ func (this *Update_Request) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Update_MultiRequest) EqualVT(that *Update_MultiRequest) bool {
 	if this == that {
 		return true
@@ -2930,6 +3315,7 @@ func (this *Update_MultiRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Update_ObjectRequest) EqualVT(that *Update_ObjectRequest) bool {
 	if this == that {
 		return true
@@ -2955,6 +3341,7 @@ func (this *Update_ObjectRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Update_MultiObjectRequest) EqualVT(that *Update_MultiObjectRequest) bool {
 	if this == that {
 		return true
@@ -2988,6 +3375,7 @@ func (this *Update_MultiObjectRequest) EqualMessageVT(thatMsg proto.Message) boo
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Update_TimestampRequest) EqualVT(that *Update_TimestampRequest) bool {
 	if this == that {
 		return true
@@ -3013,6 +3401,7 @@ func (this *Update_TimestampRequest) EqualMessageVT(thatMsg proto.Message) bool 
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Update_Config) EqualVT(that *Update_Config) bool {
 	if this == that {
 		return true
@@ -3041,6 +3430,7 @@ func (this *Update_Config) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Update) EqualVT(that *Update) bool {
 	if this == that {
 		return true
@@ -3057,6 +3447,7 @@ func (this *Update) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Upsert_Request) EqualVT(that *Upsert_Request) bool {
 	if this == that {
 		return true
@@ -3079,6 +3470,7 @@ func (this *Upsert_Request) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Upsert_MultiRequest) EqualVT(that *Upsert_MultiRequest) bool {
 	if this == that {
 		return true
@@ -3112,6 +3504,7 @@ func (this *Upsert_MultiRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Upsert_ObjectRequest) EqualVT(that *Upsert_ObjectRequest) bool {
 	if this == that {
 		return true
@@ -3137,6 +3530,7 @@ func (this *Upsert_ObjectRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Upsert_MultiObjectRequest) EqualVT(that *Upsert_MultiObjectRequest) bool {
 	if this == that {
 		return true
@@ -3170,6 +3564,7 @@ func (this *Upsert_MultiObjectRequest) EqualMessageVT(thatMsg proto.Message) boo
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Upsert_Config) EqualVT(that *Upsert_Config) bool {
 	if this == that {
 		return true
@@ -3198,6 +3593,7 @@ func (this *Upsert_Config) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Upsert) EqualVT(that *Upsert) bool {
 	if this == that {
 		return true
@@ -3214,6 +3610,7 @@ func (this *Upsert) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Remove_Request) EqualVT(that *Remove_Request) bool {
 	if this == that {
 		return true
@@ -3236,6 +3633,7 @@ func (this *Remove_Request) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Remove_MultiRequest) EqualVT(that *Remove_MultiRequest) bool {
 	if this == that {
 		return true
@@ -3269,6 +3667,7 @@ func (this *Remove_MultiRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Remove_TimestampRequest) EqualVT(that *Remove_TimestampRequest) bool {
 	if this == that {
 		return true
@@ -3302,6 +3701,7 @@ func (this *Remove_TimestampRequest) EqualMessageVT(thatMsg proto.Message) bool 
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Remove_Timestamp) EqualVT(that *Remove_Timestamp) bool {
 	if this == that {
 		return true
@@ -3324,6 +3724,7 @@ func (this *Remove_Timestamp) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Remove_Config) EqualVT(that *Remove_Config) bool {
 	if this == that {
 		return true
@@ -3346,6 +3747,7 @@ func (this *Remove_Config) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Remove) EqualVT(that *Remove) bool {
 	if this == that {
 		return true
@@ -3362,6 +3764,7 @@ func (this *Remove) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Flush_Request) EqualVT(that *Flush_Request) bool {
 	if this == that {
 		return true
@@ -3378,6 +3781,7 @@ func (this *Flush_Request) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Flush) EqualVT(that *Flush) bool {
 	if this == that {
 		return true
@@ -3394,6 +3798,7 @@ func (this *Flush) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_VectorRequest) EqualVT(that *Object_VectorRequest) bool {
 	if this == that {
 		return true
@@ -3416,6 +3821,7 @@ func (this *Object_VectorRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_Distance) EqualVT(that *Object_Distance) bool {
 	if this == that {
 		return true
@@ -3438,6 +3844,7 @@ func (this *Object_Distance) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_StreamDistance) EqualVT(that *Object_StreamDistance) bool {
 	if this == that {
 		return true
@@ -3466,7 +3873,10 @@ func (this *Object_StreamDistance) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
-func (this *Object_StreamDistance_Distance) EqualVT(thatIface isObject_StreamDistance_Payload) bool {
+
+func (this *Object_StreamDistance_Distance) EqualVT(
+	thatIface isObject_StreamDistance_Payload,
+) bool {
 	that, ok := thatIface.(*Object_StreamDistance_Distance)
 	if !ok {
 		return false
@@ -3539,6 +3949,7 @@ func (this *Object_ID) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_IDs) EqualVT(that *Object_IDs) bool {
 	if this == that {
 		return true
@@ -3564,6 +3975,7 @@ func (this *Object_IDs) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_Vector) EqualVT(that *Object_Vector) bool {
 	if this == that {
 		return true
@@ -3595,6 +4007,7 @@ func (this *Object_Vector) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_TimestampRequest) EqualVT(that *Object_TimestampRequest) bool {
 	if this == that {
 		return true
@@ -3614,6 +4027,7 @@ func (this *Object_TimestampRequest) EqualMessageVT(thatMsg proto.Message) bool 
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_Timestamp) EqualVT(that *Object_Timestamp) bool {
 	if this == that {
 		return true
@@ -3636,6 +4050,7 @@ func (this *Object_Timestamp) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_Vectors) EqualVT(that *Object_Vectors) bool {
 	if this == that {
 		return true
@@ -3669,6 +4084,7 @@ func (this *Object_Vectors) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_StreamVector) EqualVT(that *Object_StreamVector) bool {
 	if this == that {
 		return true
@@ -3697,6 +4113,7 @@ func (this *Object_StreamVector) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_StreamVector_Vector) EqualVT(thatIface isObject_StreamVector_Payload) bool {
 	that, ok := thatIface.(*Object_StreamVector_Vector)
 	if !ok {
@@ -3779,6 +4196,7 @@ func (this *Object_ReshapeVector) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_Blob) EqualVT(that *Object_Blob) bool {
 	if this == that {
 		return true
@@ -3801,6 +4219,7 @@ func (this *Object_Blob) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_StreamBlob) EqualVT(that *Object_StreamBlob) bool {
 	if this == that {
 		return true
@@ -3829,6 +4248,7 @@ func (this *Object_StreamBlob) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_StreamBlob_Blob) EqualVT(thatIface isObject_StreamBlob_Payload) bool {
 	that, ok := thatIface.(*Object_StreamBlob_Blob)
 	if !ok {
@@ -3914,6 +4334,7 @@ func (this *Object_Location) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_StreamLocation) EqualVT(that *Object_StreamLocation) bool {
 	if this == that {
 		return true
@@ -3942,7 +4363,10 @@ func (this *Object_StreamLocation) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
-func (this *Object_StreamLocation_Location) EqualVT(thatIface isObject_StreamLocation_Payload) bool {
+
+func (this *Object_StreamLocation_Location) EqualVT(
+	thatIface isObject_StreamLocation_Payload,
+) bool {
 	that, ok := thatIface.(*Object_StreamLocation_Location)
 	if !ok {
 		return false
@@ -4029,6 +4453,7 @@ func (this *Object_Locations) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_List_Request) EqualVT(that *Object_List_Request) bool {
 	if this == that {
 		return true
@@ -4045,6 +4470,7 @@ func (this *Object_List_Request) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_List_Response) EqualVT(that *Object_List_Response) bool {
 	if this == that {
 		return true
@@ -4073,6 +4499,7 @@ func (this *Object_List_Response) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_List_Response_Vector) EqualVT(thatIface isObject_List_Response_Payload) bool {
 	that, ok := thatIface.(*Object_List_Response_Vector)
 	if !ok {
@@ -4143,6 +4570,7 @@ func (this *Object_List) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object) EqualVT(that *Object) bool {
 	if this == that {
 		return true
@@ -4159,6 +4587,7 @@ func (this *Object) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Control_CreateIndexRequest) EqualVT(that *Control_CreateIndexRequest) bool {
 	if this == that {
 		return true
@@ -4178,6 +4607,7 @@ func (this *Control_CreateIndexRequest) EqualMessageVT(thatMsg proto.Message) bo
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Control) EqualVT(that *Control) bool {
 	if this == that {
 		return true
@@ -4194,6 +4624,7 @@ func (this *Control) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Discoverer_Request) EqualVT(that *Discoverer_Request) bool {
 	if this == that {
 		return true
@@ -4219,6 +4650,7 @@ func (this *Discoverer_Request) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Discoverer) EqualVT(that *Discoverer) bool {
 	if this == that {
 		return true
@@ -4235,6 +4667,7 @@ func (this *Discoverer) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Index_Count) EqualVT(that *Info_Index_Count) bool {
 	if this == that {
 		return true
@@ -4263,6 +4696,7 @@ func (this *Info_Index_Count) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Index_Detail) EqualVT(that *Info_Index_Detail) bool {
 	if this == that {
 		return true
@@ -4305,6 +4739,7 @@ func (this *Info_Index_Detail) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Index_UUID_Committed) EqualVT(that *Info_Index_UUID_Committed) bool {
 	if this == that {
 		return true
@@ -4324,6 +4759,7 @@ func (this *Info_Index_UUID_Committed) EqualMessageVT(thatMsg proto.Message) boo
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Index_UUID_Uncommitted) EqualVT(that *Info_Index_UUID_Uncommitted) bool {
 	if this == that {
 		return true
@@ -4343,6 +4779,7 @@ func (this *Info_Index_UUID_Uncommitted) EqualMessageVT(thatMsg proto.Message) b
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Index_UUID) EqualVT(that *Info_Index_UUID) bool {
 	if this == that {
 		return true
@@ -4359,6 +4796,7 @@ func (this *Info_Index_UUID) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Index_Statistics) EqualVT(that *Info_Index_Statistics) bool {
 	if this == that {
 		return true
@@ -4492,6 +4930,7 @@ func (this *Info_Index_Statistics) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Index_StatisticsDetail) EqualVT(that *Info_Index_StatisticsDetail) bool {
 	if this == that {
 		return true
@@ -4528,6 +4967,7 @@ func (this *Info_Index_StatisticsDetail) EqualMessageVT(thatMsg proto.Message) b
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Index_Property) EqualVT(that *Info_Index_Property) bool {
 	if this == that {
 		return true
@@ -4649,6 +5089,7 @@ func (this *Info_Index_Property) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Index_PropertyDetail) EqualVT(that *Info_Index_PropertyDetail) bool {
 	if this == that {
 		return true
@@ -4685,6 +5126,7 @@ func (this *Info_Index_PropertyDetail) EqualMessageVT(thatMsg proto.Message) boo
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Index) EqualVT(that *Info_Index) bool {
 	if this == that {
 		return true
@@ -4701,6 +5143,7 @@ func (this *Info_Index) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_ResourceStats) EqualVT(that *Info_ResourceStats) bool {
 	if this == that {
 		return true
@@ -4726,6 +5169,7 @@ func (this *Info_ResourceStats) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_CgroupStats) EqualVT(that *Info_CgroupStats) bool {
 	if this == that {
 		return true
@@ -4754,6 +5198,7 @@ func (this *Info_CgroupStats) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Pod) EqualVT(that *Info_Pod) bool {
 	if this == that {
 		return true
@@ -4791,6 +5236,7 @@ func (this *Info_Pod) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Node) EqualVT(that *Info_Node) bool {
 	if this == that {
 		return true
@@ -4825,6 +5271,7 @@ func (this *Info_Node) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Service) EqualVT(that *Info_Service) bool {
 	if this == that {
 		return true
@@ -4879,6 +5326,7 @@ func (this *Info_Service) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_ServicePort) EqualVT(that *Info_ServicePort) bool {
 	if this == that {
 		return true
@@ -4901,6 +5349,7 @@ func (this *Info_ServicePort) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Labels) EqualVT(that *Info_Labels) bool {
 	if this == that {
 		return true
@@ -4929,6 +5378,7 @@ func (this *Info_Labels) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Annotations) EqualVT(that *Info_Annotations) bool {
 	if this == that {
 		return true
@@ -4957,6 +5407,7 @@ func (this *Info_Annotations) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_CPU) EqualVT(that *Info_CPU) bool {
 	if this == that {
 		return true
@@ -4982,6 +5433,7 @@ func (this *Info_CPU) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Memory) EqualVT(that *Info_Memory) bool {
 	if this == that {
 		return true
@@ -5007,6 +5459,7 @@ func (this *Info_Memory) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Pods) EqualVT(that *Info_Pods) bool {
 	if this == that {
 		return true
@@ -5040,6 +5493,7 @@ func (this *Info_Pods) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Nodes) EqualVT(that *Info_Nodes) bool {
 	if this == that {
 		return true
@@ -5073,6 +5527,7 @@ func (this *Info_Nodes) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Services) EqualVT(that *Info_Services) bool {
 	if this == that {
 		return true
@@ -5106,6 +5561,7 @@ func (this *Info_Services) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_IPs) EqualVT(that *Info_IPs) bool {
 	if this == that {
 		return true
@@ -5131,6 +5587,7 @@ func (this *Info_IPs) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info) EqualVT(that *Info) bool {
 	if this == that {
 		return true
@@ -5147,6 +5604,7 @@ func (this *Info) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Mirror_Target) EqualVT(that *Mirror_Target) bool {
 	if this == that {
 		return true
@@ -5169,6 +5627,7 @@ func (this *Mirror_Target) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Mirror_Targets) EqualVT(that *Mirror_Targets) bool {
 	if this == that {
 		return true
@@ -5202,6 +5661,7 @@ func (this *Mirror_Targets) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Mirror) EqualVT(that *Mirror) bool {
 	if this == that {
 		return true
@@ -5218,6 +5678,7 @@ func (this *Mirror) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Meta_Key) EqualVT(that *Meta_Key) bool {
 	if this == that {
 		return true
@@ -5237,6 +5698,7 @@ func (this *Meta_Key) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Meta_Value) EqualVT(that *Meta_Value) bool {
 	if this == that {
 		return true
@@ -5256,6 +5718,7 @@ func (this *Meta_Value) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Meta_KeyValue) EqualVT(that *Meta_KeyValue) bool {
 	if this == that {
 		return true
@@ -5278,6 +5741,7 @@ func (this *Meta_KeyValue) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Meta) EqualVT(that *Meta) bool {
 	if this == that {
 		return true
@@ -5294,6 +5758,7 @@ func (this *Meta) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Empty) EqualVT(that *Empty) bool {
 	if this == that {
 		return true
@@ -5310,6 +5775,7 @@ func (this *Empty) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (m *Search_Request) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -5890,6 +6356,7 @@ func (m *Search_StreamResponse_Response) MarshalToSizedBufferVT(dAtA []byte) (in
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Search_StreamResponse_Status) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
@@ -5921,6 +6388,7 @@ func (m *Search_StreamResponse_Status) MarshalToSizedBufferVT(dAtA []byte) (int,
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Search) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -6063,6 +6531,332 @@ func (m *Filter) MarshalToVT(dAtA []byte) (int, error) {
 }
 
 func (m *Filter) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ZVec_DocumentOptions) MarshalVT() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ZVec_DocumentOptions) MarshalToVT(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVT(dAtA[:size])
+}
+
+func (m *ZVec_DocumentOptions) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if len(m.Fields) > 0 {
+		for k := range m.Fields {
+			v := m.Fields[k]
+			baseI := i
+			i -= len(v)
+			copy(dAtA[i:], v)
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v)))
+			i--
+			dAtA[i] = 0x12
+			i -= len(k)
+			copy(dAtA[i:], k)
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(k)))
+			i--
+			dAtA[i] = 0xa
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ZVec_SearchOptions) MarshalVT() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ZVec_SearchOptions) MarshalToVT(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVT(dAtA[:size])
+}
+
+func (m *ZVec_SearchOptions) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if len(m.HybridWeights) > 0 {
+		for iNdEx := len(m.HybridWeights) - 1; iNdEx >= 0; iNdEx-- {
+			f1 := math.Float32bits(float32(m.HybridWeights[iNdEx]))
+			i -= 4
+			binary.LittleEndian.PutUint32(dAtA[i:], uint32(f1))
+		}
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.HybridWeights)*4))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.HybridQueries) > 0 {
+		for iNdEx := len(m.HybridQueries) - 1; iNdEx >= 0; iNdEx-- {
+			size, err := m.HybridQueries[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	if len(m.PreFilter) > 0 {
+		i -= len(m.PreFilter)
+		copy(dAtA[i:], m.PreFilter)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PreFilter)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ZVec_Query) MarshalVT() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ZVec_Query) MarshalToVT(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVT(dAtA[:size])
+}
+
+func (m *ZVec_Query) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if vtmsg, ok := m.Query.(interface {
+		MarshalToSizedBufferVT([]byte) (int, error)
+	}); ok {
+		size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+	}
+	if len(m.FieldName) > 0 {
+		i -= len(m.FieldName)
+		copy(dAtA[i:], m.FieldName)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.FieldName)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ZVec_Query_Vector) MarshalToVT(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVT(dAtA[:size])
+}
+
+func (m *ZVec_Query_Vector) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.Vector != nil {
+		size, err := m.Vector.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0x12
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ZVec_Query_Fts) MarshalToVT(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVT(dAtA[:size])
+}
+
+func (m *ZVec_Query_Fts) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.Fts != nil {
+		size, err := m.Fts.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0x1a
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ZVec_Vector) MarshalVT() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ZVec_Vector) MarshalToVT(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVT(dAtA[:size])
+}
+
+func (m *ZVec_Vector) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if len(m.Values) > 0 {
+		for iNdEx := len(m.Values) - 1; iNdEx >= 0; iNdEx-- {
+			f1 := math.Float32bits(float32(m.Values[iNdEx]))
+			i -= 4
+			binary.LittleEndian.PutUint32(dAtA[i:], uint32(f1))
+		}
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Values)*4))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ZVec_FTS) MarshalVT() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ZVec_FTS) MarshalToVT(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVT(dAtA[:size])
+}
+
+func (m *ZVec_FTS) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if len(m.QueryString) > 0 {
+		i -= len(m.QueryString)
+		copy(dAtA[i:], m.QueryString)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.QueryString)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.MatchString) > 0 {
+		i -= len(m.MatchString)
+		copy(dAtA[i:], m.MatchString)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.MatchString)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ZVec) MarshalVT() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ZVec) MarshalToVT(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVT(dAtA[:size])
+}
+
+func (m *ZVec) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -7548,6 +8342,7 @@ func (m *Object_StreamDistance_Distance) MarshalToSizedBufferVT(dAtA []byte) (in
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_StreamDistance_Status) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
@@ -7579,6 +8374,7 @@ func (m *Object_StreamDistance_Status) MarshalToSizedBufferVT(dAtA []byte) (int,
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_ID) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -7910,6 +8706,7 @@ func (m *Object_StreamVector_Vector) MarshalToSizedBufferVT(dAtA []byte) (int, e
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_StreamVector_Status) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
@@ -7941,6 +8738,7 @@ func (m *Object_StreamVector_Status) MarshalToSizedBufferVT(dAtA []byte) (int, e
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_ReshapeVector) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -8110,6 +8908,7 @@ func (m *Object_StreamBlob_Blob) MarshalToSizedBufferVT(dAtA []byte) (int, error
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_StreamBlob_Status) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
@@ -8141,6 +8940,7 @@ func (m *Object_StreamBlob_Status) MarshalToSizedBufferVT(dAtA []byte) (int, err
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_Location) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -8258,6 +9058,7 @@ func (m *Object_StreamLocation_Location) MarshalToSizedBufferVT(dAtA []byte) (in
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_StreamLocation_Status) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
@@ -8289,6 +9090,7 @@ func (m *Object_StreamLocation_Status) MarshalToSizedBufferVT(dAtA []byte) (int,
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_Locations) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -8428,6 +9230,7 @@ func (m *Object_List_Response_Vector) MarshalToSizedBufferVT(dAtA []byte) (int, 
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_List_Response_Status) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
@@ -8459,6 +9262,7 @@ func (m *Object_List_Response_Status) MarshalToSizedBufferVT(dAtA []byte) (int, 
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_List) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -11381,6 +12185,7 @@ func (m *Search_StreamResponse_Response) MarshalToSizedBufferVTStrict(dAtA []byt
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Search_StreamResponse_Status) MarshalToVTStrict(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVTStrict(dAtA[:size])
@@ -11412,6 +12217,7 @@ func (m *Search_StreamResponse_Status) MarshalToSizedBufferVTStrict(dAtA []byte)
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Search) MarshalVTStrict() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -11554,6 +12360,337 @@ func (m *Filter) MarshalToVTStrict(dAtA []byte) (int, error) {
 }
 
 func (m *Filter) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ZVec_DocumentOptions) MarshalVTStrict() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVTStrict(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ZVec_DocumentOptions) MarshalToVTStrict(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVTStrict(dAtA[:size])
+}
+
+func (m *ZVec_DocumentOptions) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if len(m.Fields) > 0 {
+		for k := range m.Fields {
+			v := m.Fields[k]
+			baseI := i
+			i -= len(v)
+			copy(dAtA[i:], v)
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v)))
+			i--
+			dAtA[i] = 0x12
+			i -= len(k)
+			copy(dAtA[i:], k)
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(k)))
+			i--
+			dAtA[i] = 0xa
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ZVec_SearchOptions) MarshalVTStrict() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVTStrict(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ZVec_SearchOptions) MarshalToVTStrict(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVTStrict(dAtA[:size])
+}
+
+func (m *ZVec_SearchOptions) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if len(m.HybridWeights) > 0 {
+		for iNdEx := len(m.HybridWeights) - 1; iNdEx >= 0; iNdEx-- {
+			f1 := math.Float32bits(float32(m.HybridWeights[iNdEx]))
+			i -= 4
+			binary.LittleEndian.PutUint32(dAtA[i:], uint32(f1))
+		}
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.HybridWeights)*4))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.HybridQueries) > 0 {
+		for iNdEx := len(m.HybridQueries) - 1; iNdEx >= 0; iNdEx-- {
+			size, err := m.HybridQueries[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	if len(m.PreFilter) > 0 {
+		i -= len(m.PreFilter)
+		copy(dAtA[i:], m.PreFilter)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.PreFilter)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ZVec_Query) MarshalVTStrict() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVTStrict(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ZVec_Query) MarshalToVTStrict(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVTStrict(dAtA[:size])
+}
+
+func (m *ZVec_Query) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if msg, ok := m.Query.(*ZVec_Query_Fts); ok {
+		size, err := msg.MarshalToSizedBufferVTStrict(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+	}
+	if msg, ok := m.Query.(*ZVec_Query_Vector); ok {
+		size, err := msg.MarshalToSizedBufferVTStrict(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+	}
+	if len(m.FieldName) > 0 {
+		i -= len(m.FieldName)
+		copy(dAtA[i:], m.FieldName)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.FieldName)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ZVec_Query_Vector) MarshalToVTStrict(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVTStrict(dAtA[:size])
+}
+
+func (m *ZVec_Query_Vector) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.Vector != nil {
+		size, err := m.Vector.MarshalToSizedBufferVTStrict(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0x12
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ZVec_Query_Fts) MarshalToVTStrict(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVTStrict(dAtA[:size])
+}
+
+func (m *ZVec_Query_Fts) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.Fts != nil {
+		size, err := m.Fts.MarshalToSizedBufferVTStrict(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0x1a
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ZVec_Vector) MarshalVTStrict() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVTStrict(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ZVec_Vector) MarshalToVTStrict(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVTStrict(dAtA[:size])
+}
+
+func (m *ZVec_Vector) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if len(m.Values) > 0 {
+		for iNdEx := len(m.Values) - 1; iNdEx >= 0; iNdEx-- {
+			f1 := math.Float32bits(float32(m.Values[iNdEx]))
+			i -= 4
+			binary.LittleEndian.PutUint32(dAtA[i:], uint32(f1))
+		}
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Values)*4))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ZVec_FTS) MarshalVTStrict() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVTStrict(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ZVec_FTS) MarshalToVTStrict(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVTStrict(dAtA[:size])
+}
+
+func (m *ZVec_FTS) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if len(m.QueryString) > 0 {
+		i -= len(m.QueryString)
+		copy(dAtA[i:], m.QueryString)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.QueryString)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.MatchString) > 0 {
+		i -= len(m.MatchString)
+		copy(dAtA[i:], m.MatchString)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.MatchString)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ZVec) MarshalVTStrict() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVTStrict(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ZVec) MarshalToVTStrict(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVTStrict(dAtA[:size])
+}
+
+func (m *ZVec) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -13044,6 +14181,7 @@ func (m *Object_StreamDistance_Distance) MarshalToSizedBufferVTStrict(dAtA []byt
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_StreamDistance_Status) MarshalToVTStrict(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVTStrict(dAtA[:size])
@@ -13075,6 +14213,7 @@ func (m *Object_StreamDistance_Status) MarshalToSizedBufferVTStrict(dAtA []byte)
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_ID) MarshalVTStrict() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -13411,6 +14550,7 @@ func (m *Object_StreamVector_Vector) MarshalToSizedBufferVTStrict(dAtA []byte) (
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_StreamVector_Status) MarshalToVTStrict(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVTStrict(dAtA[:size])
@@ -13442,6 +14582,7 @@ func (m *Object_StreamVector_Status) MarshalToSizedBufferVTStrict(dAtA []byte) (
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_ReshapeVector) MarshalVTStrict() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -13616,6 +14757,7 @@ func (m *Object_StreamBlob_Blob) MarshalToSizedBufferVTStrict(dAtA []byte) (int,
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_StreamBlob_Status) MarshalToVTStrict(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVTStrict(dAtA[:size])
@@ -13647,6 +14789,7 @@ func (m *Object_StreamBlob_Status) MarshalToSizedBufferVTStrict(dAtA []byte) (in
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_Location) MarshalVTStrict() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -13769,6 +14912,7 @@ func (m *Object_StreamLocation_Location) MarshalToSizedBufferVTStrict(dAtA []byt
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_StreamLocation_Status) MarshalToVTStrict(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVTStrict(dAtA[:size])
@@ -13800,6 +14944,7 @@ func (m *Object_StreamLocation_Status) MarshalToSizedBufferVTStrict(dAtA []byte)
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_Locations) MarshalVTStrict() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -13944,6 +15089,7 @@ func (m *Object_List_Response_Vector) MarshalToSizedBufferVTStrict(dAtA []byte) 
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_List_Response_Status) MarshalToVTStrict(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVTStrict(dAtA[:size])
@@ -13975,6 +15121,7 @@ func (m *Object_List_Response_Status) MarshalToSizedBufferVTStrict(dAtA []byte) 
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_List) MarshalVTStrict() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -16534,6 +17681,7 @@ func (m *Search_StreamResponse_Response) SizeVT() (n int) {
 	}
 	return n
 }
+
 func (m *Search_StreamResponse_Status) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -16552,6 +17700,7 @@ func (m *Search_StreamResponse_Status) SizeVT() (n int) {
 	}
 	return n
 }
+
 func (m *Search) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -16596,6 +17745,131 @@ func (m *Filter_Config) SizeVT() (n int) {
 }
 
 func (m *Filter) SizeVT() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	n += len(m.unknownFields)
+	return n
+}
+
+func (m *ZVec_DocumentOptions) SizeVT() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Fields) > 0 {
+		for k, v := range m.Fields {
+			_ = k
+			_ = v
+			mapEntrySize := 1 + len(k) + protohelpers.SizeOfVarint(uint64(len(k))) + 1 + len(v) + protohelpers.SizeOfVarint(uint64(len(v)))
+			n += mapEntrySize + 1 + protohelpers.SizeOfVarint(uint64(mapEntrySize))
+		}
+	}
+	n += len(m.unknownFields)
+	return n
+}
+
+func (m *ZVec_SearchOptions) SizeVT() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.PreFilter)
+	if l > 0 {
+		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
+	}
+	if len(m.HybridQueries) > 0 {
+		for _, e := range m.HybridQueries {
+			l = e.SizeVT()
+			n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
+		}
+	}
+	if len(m.HybridWeights) > 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(len(m.HybridWeights)*4)) + len(m.HybridWeights)*4
+	}
+	n += len(m.unknownFields)
+	return n
+}
+
+func (m *ZVec_Query) SizeVT() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.FieldName)
+	if l > 0 {
+		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
+	}
+	if vtmsg, ok := m.Query.(interface{ SizeVT() int }); ok {
+		n += vtmsg.SizeVT()
+	}
+	n += len(m.unknownFields)
+	return n
+}
+
+func (m *ZVec_Query_Vector) SizeVT() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Vector != nil {
+		l = m.Vector.SizeVT()
+		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
+	}
+	return n
+}
+
+func (m *ZVec_Query_Fts) SizeVT() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Fts != nil {
+		l = m.Fts.SizeVT()
+		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
+	}
+	return n
+}
+
+func (m *ZVec_Vector) SizeVT() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Values) > 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(len(m.Values)*4)) + len(m.Values)*4
+	}
+	n += len(m.unknownFields)
+	return n
+}
+
+func (m *ZVec_FTS) SizeVT() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.MatchString)
+	if l > 0 {
+		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
+	}
+	l = len(m.QueryString)
+	if l > 0 {
+		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
+	}
+	n += len(m.unknownFields)
+	return n
+}
+
+func (m *ZVec) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -17115,6 +18389,7 @@ func (m *Object_StreamDistance_Distance) SizeVT() (n int) {
 	}
 	return n
 }
+
 func (m *Object_StreamDistance_Status) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -17133,6 +18408,7 @@ func (m *Object_StreamDistance_Status) SizeVT() (n int) {
 	}
 	return n
 }
+
 func (m *Object_ID) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -17255,6 +18531,7 @@ func (m *Object_StreamVector_Vector) SizeVT() (n int) {
 	}
 	return n
 }
+
 func (m *Object_StreamVector_Status) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -17273,6 +18550,7 @@ func (m *Object_StreamVector_Status) SizeVT() (n int) {
 	}
 	return n
 }
+
 func (m *Object_ReshapeVector) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -17337,6 +18615,7 @@ func (m *Object_StreamBlob_Blob) SizeVT() (n int) {
 	}
 	return n
 }
+
 func (m *Object_StreamBlob_Status) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -17355,6 +18634,7 @@ func (m *Object_StreamBlob_Status) SizeVT() (n int) {
 	}
 	return n
 }
+
 func (m *Object_Location) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -17404,6 +18684,7 @@ func (m *Object_StreamLocation_Location) SizeVT() (n int) {
 	}
 	return n
 }
+
 func (m *Object_StreamLocation_Status) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -17422,6 +18703,7 @@ func (m *Object_StreamLocation_Status) SizeVT() (n int) {
 	}
 	return n
 }
+
 func (m *Object_Locations) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -17473,6 +18755,7 @@ func (m *Object_List_Response_Vector) SizeVT() (n int) {
 	}
 	return n
 }
+
 func (m *Object_List_Response_Status) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -17491,6 +18774,7 @@ func (m *Object_List_Response_Status) SizeVT() (n int) {
 	}
 	return n
 }
+
 func (m *Object_List) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -18526,6 +19810,7 @@ func (m *Search_Request) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_MultiRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -18611,6 +19896,7 @@ func (m *Search_MultiRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_IDRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -18730,6 +20016,7 @@ func (m *Search_IDRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_MultiIDRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -18815,6 +20102,7 @@ func (m *Search_MultiIDRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -18972,6 +20260,7 @@ func (m *Search_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_MultiObjectRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -19057,6 +20346,7 @@ func (m *Search_MultiObjectRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_Config) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -19418,6 +20708,7 @@ func (m *Search_Config) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_Response) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -19535,6 +20826,7 @@ func (m *Search_Response) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_Responses) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -19620,6 +20912,7 @@ func (m *Search_Responses) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_StreamResponse) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -19769,6 +21062,7 @@ func (m *Search_StreamResponse) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -19820,6 +21114,7 @@ func (m *Search) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Filter_Target) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -19922,6 +21217,7 @@ func (m *Filter_Target) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Filter_Config) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -20007,6 +21303,7 @@ func (m *Filter_Config) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Filter) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -20058,6 +21355,798 @@ func (m *Filter) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
+func (m *ZVec_DocumentOptions) UnmarshalVT(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return protohelpers.ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ZVec_DocumentOptions: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ZVec_DocumentOptions: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Fields", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Fields == nil {
+				m.Fields = make(map[string]string)
+			}
+			var mapkey string
+			var mapvalue string
+			for iNdEx < postIndex {
+				entryPreIndex := iNdEx
+				var wire uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protohelpers.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					wire |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				fieldNum := int32(wire >> 3)
+				if fieldNum == 1 {
+					var stringLenmapkey uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return protohelpers.ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						stringLenmapkey |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					intStringLenmapkey := int(stringLenmapkey)
+					if intStringLenmapkey < 0 {
+						return protohelpers.ErrInvalidLength
+					}
+					postStringIndexmapkey := iNdEx + intStringLenmapkey
+					if postStringIndexmapkey < 0 {
+						return protohelpers.ErrInvalidLength
+					}
+					if postStringIndexmapkey > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapkey = string(dAtA[iNdEx:postStringIndexmapkey])
+					iNdEx = postStringIndexmapkey
+				} else if fieldNum == 2 {
+					var stringLenmapvalue uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return protohelpers.ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						stringLenmapvalue |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					intStringLenmapvalue := int(stringLenmapvalue)
+					if intStringLenmapvalue < 0 {
+						return protohelpers.ErrInvalidLength
+					}
+					postStringIndexmapvalue := iNdEx + intStringLenmapvalue
+					if postStringIndexmapvalue < 0 {
+						return protohelpers.ErrInvalidLength
+					}
+					if postStringIndexmapvalue > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapvalue = string(dAtA[iNdEx:postStringIndexmapvalue])
+					iNdEx = postStringIndexmapvalue
+				} else {
+					iNdEx = entryPreIndex
+					skippy, err := protohelpers.Skip(dAtA[iNdEx:])
+					if err != nil {
+						return err
+					}
+					if (skippy < 0) || (iNdEx+skippy) < 0 {
+						return protohelpers.ErrInvalidLength
+					}
+					if (iNdEx + skippy) > postIndex {
+						return io.ErrUnexpectedEOF
+					}
+					iNdEx += skippy
+				}
+			}
+			m.Fields[mapkey] = mapvalue
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *ZVec_SearchOptions) UnmarshalVT(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return protohelpers.ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ZVec_SearchOptions: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ZVec_SearchOptions: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PreFilter", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.PreFilter = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field HybridQueries", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.HybridQueries = append(m.HybridQueries, &ZVec_Query{})
+			if err := m.HybridQueries[len(m.HybridQueries)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType == 5 {
+				var v uint32
+				if (iNdEx + 4) > l {
+					return io.ErrUnexpectedEOF
+				}
+				v = uint32(binary.LittleEndian.Uint32(dAtA[iNdEx:]))
+				iNdEx += 4
+				v2 := float32(math.Float32frombits(v))
+				m.HybridWeights = append(m.HybridWeights, v2)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protohelpers.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return protohelpers.ErrInvalidLength
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return protohelpers.ErrInvalidLength
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				elementCount = packedLen / 4
+				if elementCount != 0 && len(m.HybridWeights) == 0 {
+					m.HybridWeights = make([]float32, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v uint32
+					if (iNdEx + 4) > l {
+						return io.ErrUnexpectedEOF
+					}
+					v = uint32(binary.LittleEndian.Uint32(dAtA[iNdEx:]))
+					iNdEx += 4
+					v2 := float32(math.Float32frombits(v))
+					m.HybridWeights = append(m.HybridWeights, v2)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field HybridWeights", wireType)
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *ZVec_Query) UnmarshalVT(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return protohelpers.ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ZVec_Query: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ZVec_Query: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field FieldName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.FieldName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Vector", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if oneof, ok := m.Query.(*ZVec_Query_Vector); ok {
+				if err := oneof.Vector.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+					return err
+				}
+			} else {
+				v := &ZVec_Vector{}
+				if err := v.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+					return err
+				}
+				m.Query = &ZVec_Query_Vector{Vector: v}
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Fts", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if oneof, ok := m.Query.(*ZVec_Query_Fts); ok {
+				if err := oneof.Fts.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+					return err
+				}
+			} else {
+				v := &ZVec_FTS{}
+				if err := v.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+					return err
+				}
+				m.Query = &ZVec_Query_Fts{Fts: v}
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *ZVec_Vector) UnmarshalVT(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return protohelpers.ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ZVec_Vector: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ZVec_Vector: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType == 5 {
+				var v uint32
+				if (iNdEx + 4) > l {
+					return io.ErrUnexpectedEOF
+				}
+				v = uint32(binary.LittleEndian.Uint32(dAtA[iNdEx:]))
+				iNdEx += 4
+				v2 := float32(math.Float32frombits(v))
+				m.Values = append(m.Values, v2)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protohelpers.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return protohelpers.ErrInvalidLength
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return protohelpers.ErrInvalidLength
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				elementCount = packedLen / 4
+				if elementCount != 0 && len(m.Values) == 0 {
+					m.Values = make([]float32, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v uint32
+					if (iNdEx + 4) > l {
+						return io.ErrUnexpectedEOF
+					}
+					v = uint32(binary.LittleEndian.Uint32(dAtA[iNdEx:]))
+					iNdEx += 4
+					v2 := float32(math.Float32frombits(v))
+					m.Values = append(m.Values, v2)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field Values", wireType)
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *ZVec_FTS) UnmarshalVT(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return protohelpers.ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ZVec_FTS: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ZVec_FTS: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MatchString", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.MatchString = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field QueryString", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.QueryString = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *ZVec) UnmarshalVT(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return protohelpers.ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ZVec: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ZVec: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
 func (m *Insert_Request) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -20181,6 +22270,7 @@ func (m *Insert_Request) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Insert_MultiRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -20266,6 +22356,7 @@ func (m *Insert_MultiRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Insert_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -20425,6 +22516,7 @@ func (m *Insert_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Insert_MultiObjectRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -20510,6 +22602,7 @@ func (m *Insert_MultiObjectRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Insert_Config) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -20670,6 +22763,7 @@ func (m *Insert_Config) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Insert) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -20721,6 +22815,7 @@ func (m *Insert) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Update_Request) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -20844,6 +22939,7 @@ func (m *Update_Request) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Update_MultiRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -20929,6 +23025,7 @@ func (m *Update_MultiRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Update_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -21088,6 +23185,7 @@ func (m *Update_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Update_MultiObjectRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -21173,6 +23271,7 @@ func (m *Update_MultiObjectRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Update_TimestampRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -21295,6 +23394,7 @@ func (m *Update_TimestampRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Update_Config) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -21441,6 +23541,7 @@ func (m *Update_Config) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Update) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -21492,6 +23593,7 @@ func (m *Update) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Upsert_Request) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -21615,6 +23717,7 @@ func (m *Upsert_Request) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Upsert_MultiRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -21700,6 +23803,7 @@ func (m *Upsert_MultiRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Upsert_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -21859,6 +23963,7 @@ func (m *Upsert_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Upsert_MultiObjectRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -21944,6 +24049,7 @@ func (m *Upsert_MultiObjectRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Upsert_Config) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -22090,6 +24196,7 @@ func (m *Upsert_Config) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Upsert) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -22141,6 +24248,7 @@ func (m *Upsert) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Remove_Request) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -22264,6 +24372,7 @@ func (m *Remove_Request) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Remove_MultiRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -22349,6 +24458,7 @@ func (m *Remove_MultiRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Remove_TimestampRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -22434,6 +24544,7 @@ func (m *Remove_TimestampRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Remove_Timestamp) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -22523,6 +24634,7 @@ func (m *Remove_Timestamp) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Remove_Config) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -22613,6 +24725,7 @@ func (m *Remove_Config) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Remove) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -22664,6 +24777,7 @@ func (m *Remove) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Flush_Request) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -22715,6 +24829,7 @@ func (m *Flush_Request) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Flush) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -22766,6 +24881,7 @@ func (m *Flush) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_VectorRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -22889,6 +25005,7 @@ func (m *Object_VectorRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_Distance) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -22983,6 +25100,7 @@ func (m *Object_Distance) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_StreamDistance) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -23132,6 +25250,7 @@ func (m *Object_StreamDistance) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_ID) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -23215,6 +25334,7 @@ func (m *Object_ID) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_IDs) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -23298,6 +25418,7 @@ func (m *Object_IDs) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_Vector) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -23454,6 +25575,7 @@ func (m *Object_Vector) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_TimestampRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -23541,6 +25663,7 @@ func (m *Object_TimestampRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_Timestamp) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -23643,6 +25766,7 @@ func (m *Object_Timestamp) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_Vectors) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -23728,6 +25852,7 @@ func (m *Object_Vectors) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_StreamVector) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -23877,6 +26002,7 @@ func (m *Object_StreamVector) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_ReshapeVector) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -24038,6 +26164,7 @@ func (m *Object_ReshapeVector) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_Blob) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -24155,6 +26282,7 @@ func (m *Object_Blob) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_StreamBlob) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -24304,6 +26432,7 @@ func (m *Object_StreamBlob) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_Location) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -24451,6 +26580,7 @@ func (m *Object_Location) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_StreamLocation) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -24600,6 +26730,7 @@ func (m *Object_StreamLocation) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_Locations) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -24685,6 +26816,7 @@ func (m *Object_Locations) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_List_Request) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -24736,6 +26868,7 @@ func (m *Object_List_Request) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_List_Response) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -24885,6 +27018,7 @@ func (m *Object_List_Response) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_List) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -24936,6 +27070,7 @@ func (m *Object_List) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -24987,6 +27122,7 @@ func (m *Object) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Control_CreateIndexRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -25057,6 +27193,7 @@ func (m *Control_CreateIndexRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Control) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -25108,6 +27245,7 @@ func (m *Control) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Discoverer_Request) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -25255,6 +27393,7 @@ func (m *Discoverer_Request) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Discoverer) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -25306,6 +27445,7 @@ func (m *Discoverer) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Index_Count) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -25435,6 +27575,7 @@ func (m *Info_Index_Count) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Index_Detail) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -25653,6 +27794,7 @@ func (m *Info_Index_Detail) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Index_UUID_Committed) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -25736,6 +27878,7 @@ func (m *Info_Index_UUID_Committed) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Index_UUID_Uncommitted) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -25819,6 +27962,7 @@ func (m *Info_Index_UUID_Uncommitted) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Index_UUID) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -25870,6 +28014,7 @@ func (m *Info_Index_UUID) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Index_Statistics) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -26640,6 +28785,7 @@ func (m *Info_Index_Statistics) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Index_StatisticsDetail) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -26820,6 +28966,7 @@ func (m *Info_Index_StatisticsDetail) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Index_Property) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -27626,6 +29773,7 @@ func (m *Info_Index_Property) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Index_PropertyDetail) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -27806,6 +29954,7 @@ func (m *Info_Index_PropertyDetail) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Index) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -27857,6 +30006,7 @@ func (m *Info_Index) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_ResourceStats) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -28008,6 +30158,7 @@ func (m *Info_ResourceStats) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_CgroupStats) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -28119,6 +30270,7 @@ func (m *Info_CgroupStats) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Pod) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -28406,6 +30558,7 @@ func (m *Info_Pod) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Node) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -28661,6 +30814,7 @@ func (m *Info_Node) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Service) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -28914,6 +31068,7 @@ func (m *Info_Service) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_ServicePort) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -29016,6 +31171,7 @@ func (m *Info_ServicePort) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Labels) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -29194,6 +31350,7 @@ func (m *Info_Labels) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Annotations) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -29372,6 +31529,7 @@ func (m *Info_Annotations) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_CPU) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -29456,6 +31614,7 @@ func (m *Info_CPU) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Memory) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -29540,6 +31699,7 @@ func (m *Info_Memory) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Pods) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -29625,6 +31785,7 @@ func (m *Info_Pods) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Nodes) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -29710,6 +31871,7 @@ func (m *Info_Nodes) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Services) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -29795,6 +31957,7 @@ func (m *Info_Services) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_IPs) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -29878,6 +32041,7 @@ func (m *Info_IPs) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -29929,6 +32093,7 @@ func (m *Info) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Mirror_Target) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -30031,6 +32196,7 @@ func (m *Mirror_Target) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Mirror_Targets) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -30116,6 +32282,7 @@ func (m *Mirror_Targets) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Mirror) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -30167,6 +32334,7 @@ func (m *Mirror) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Meta_Key) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -30250,6 +32418,7 @@ func (m *Meta_Key) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Meta_Value) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -30337,6 +32506,7 @@ func (m *Meta_Value) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Meta_KeyValue) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -30460,6 +32630,7 @@ func (m *Meta_KeyValue) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Meta) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -30511,6 +32682,7 @@ func (m *Meta) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Empty) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -30562,6 +32734,7 @@ func (m *Empty) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_Request) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -30703,6 +32876,7 @@ func (m *Search_Request) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_MultiRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -30788,6 +32962,7 @@ func (m *Search_MultiRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_IDRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -30911,6 +33086,7 @@ func (m *Search_IDRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_MultiIDRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -30996,6 +33172,7 @@ func (m *Search_MultiIDRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_ObjectRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -31150,6 +33327,7 @@ func (m *Search_ObjectRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_MultiObjectRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -31235,6 +33413,7 @@ func (m *Search_MultiObjectRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_Config) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -31600,6 +33779,7 @@ func (m *Search_Config) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_Response) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -31721,6 +33901,7 @@ func (m *Search_Response) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_Responses) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -31806,6 +33987,7 @@ func (m *Search_Responses) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_StreamResponse) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -31955,6 +34137,7 @@ func (m *Search_StreamResponse) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -32006,6 +34189,7 @@ func (m *Search) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Filter_Target) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -32112,6 +34296,7 @@ func (m *Filter_Target) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Filter_Config) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -32197,6 +34382,7 @@ func (m *Filter_Config) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Filter) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -32248,6 +34434,822 @@ func (m *Filter) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
+func (m *ZVec_DocumentOptions) UnmarshalVTUnsafe(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return protohelpers.ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ZVec_DocumentOptions: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ZVec_DocumentOptions: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Fields", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Fields == nil {
+				m.Fields = make(map[string]string)
+			}
+			var mapkey string
+			var mapvalue string
+			for iNdEx < postIndex {
+				entryPreIndex := iNdEx
+				var wire uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protohelpers.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					wire |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				fieldNum := int32(wire >> 3)
+				if fieldNum == 1 {
+					var stringLenmapkey uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return protohelpers.ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						stringLenmapkey |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					intStringLenmapkey := int(stringLenmapkey)
+					if intStringLenmapkey < 0 {
+						return protohelpers.ErrInvalidLength
+					}
+					postStringIndexmapkey := iNdEx + intStringLenmapkey
+					if postStringIndexmapkey < 0 {
+						return protohelpers.ErrInvalidLength
+					}
+					if postStringIndexmapkey > l {
+						return io.ErrUnexpectedEOF
+					}
+					if intStringLenmapkey == 0 {
+						mapkey = ""
+					} else {
+						mapkey = unsafe.String(&dAtA[iNdEx], intStringLenmapkey)
+					}
+					iNdEx = postStringIndexmapkey
+				} else if fieldNum == 2 {
+					var stringLenmapvalue uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return protohelpers.ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						stringLenmapvalue |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					intStringLenmapvalue := int(stringLenmapvalue)
+					if intStringLenmapvalue < 0 {
+						return protohelpers.ErrInvalidLength
+					}
+					postStringIndexmapvalue := iNdEx + intStringLenmapvalue
+					if postStringIndexmapvalue < 0 {
+						return protohelpers.ErrInvalidLength
+					}
+					if postStringIndexmapvalue > l {
+						return io.ErrUnexpectedEOF
+					}
+					if intStringLenmapvalue == 0 {
+						mapvalue = ""
+					} else {
+						mapvalue = unsafe.String(&dAtA[iNdEx], intStringLenmapvalue)
+					}
+					iNdEx = postStringIndexmapvalue
+				} else {
+					iNdEx = entryPreIndex
+					skippy, err := protohelpers.Skip(dAtA[iNdEx:])
+					if err != nil {
+						return err
+					}
+					if (skippy < 0) || (iNdEx+skippy) < 0 {
+						return protohelpers.ErrInvalidLength
+					}
+					if (iNdEx + skippy) > postIndex {
+						return io.ErrUnexpectedEOF
+					}
+					iNdEx += skippy
+				}
+			}
+			m.Fields[mapkey] = mapvalue
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *ZVec_SearchOptions) UnmarshalVTUnsafe(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return protohelpers.ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ZVec_SearchOptions: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ZVec_SearchOptions: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PreFilter", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			var stringValue string
+			if intStringLen > 0 {
+				stringValue = unsafe.String(&dAtA[iNdEx], intStringLen)
+			}
+			m.PreFilter = stringValue
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field HybridQueries", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.HybridQueries = append(m.HybridQueries, &ZVec_Query{})
+			if err := m.HybridQueries[len(m.HybridQueries)-1].UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType == 5 {
+				var v uint32
+				if (iNdEx + 4) > l {
+					return io.ErrUnexpectedEOF
+				}
+				v = uint32(binary.LittleEndian.Uint32(dAtA[iNdEx:]))
+				iNdEx += 4
+				v2 := float32(math.Float32frombits(v))
+				m.HybridWeights = append(m.HybridWeights, v2)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protohelpers.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return protohelpers.ErrInvalidLength
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return protohelpers.ErrInvalidLength
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				elementCount = packedLen / 4
+				if elementCount != 0 && len(m.HybridWeights) == 0 {
+					m.HybridWeights = make([]float32, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v uint32
+					if (iNdEx + 4) > l {
+						return io.ErrUnexpectedEOF
+					}
+					v = uint32(binary.LittleEndian.Uint32(dAtA[iNdEx:]))
+					iNdEx += 4
+					v2 := float32(math.Float32frombits(v))
+					m.HybridWeights = append(m.HybridWeights, v2)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field HybridWeights", wireType)
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *ZVec_Query) UnmarshalVTUnsafe(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return protohelpers.ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ZVec_Query: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ZVec_Query: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field FieldName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			var stringValue string
+			if intStringLen > 0 {
+				stringValue = unsafe.String(&dAtA[iNdEx], intStringLen)
+			}
+			m.FieldName = stringValue
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Vector", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if oneof, ok := m.Query.(*ZVec_Query_Vector); ok {
+				if err := oneof.Vector.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
+					return err
+				}
+			} else {
+				v := &ZVec_Vector{}
+				if err := v.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
+					return err
+				}
+				m.Query = &ZVec_Query_Vector{Vector: v}
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Fts", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if oneof, ok := m.Query.(*ZVec_Query_Fts); ok {
+				if err := oneof.Fts.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
+					return err
+				}
+			} else {
+				v := &ZVec_FTS{}
+				if err := v.UnmarshalVTUnsafe(dAtA[iNdEx:postIndex]); err != nil {
+					return err
+				}
+				m.Query = &ZVec_Query_Fts{Fts: v}
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *ZVec_Vector) UnmarshalVTUnsafe(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return protohelpers.ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ZVec_Vector: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ZVec_Vector: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType == 5 {
+				var v uint32
+				if (iNdEx + 4) > l {
+					return io.ErrUnexpectedEOF
+				}
+				v = uint32(binary.LittleEndian.Uint32(dAtA[iNdEx:]))
+				iNdEx += 4
+				v2 := float32(math.Float32frombits(v))
+				m.Values = append(m.Values, v2)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protohelpers.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return protohelpers.ErrInvalidLength
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return protohelpers.ErrInvalidLength
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				elementCount = packedLen / 4
+				if elementCount != 0 && len(m.Values) == 0 {
+					m.Values = make([]float32, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v uint32
+					if (iNdEx + 4) > l {
+						return io.ErrUnexpectedEOF
+					}
+					v = uint32(binary.LittleEndian.Uint32(dAtA[iNdEx:]))
+					iNdEx += 4
+					v2 := float32(math.Float32frombits(v))
+					m.Values = append(m.Values, v2)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field Values", wireType)
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *ZVec_FTS) UnmarshalVTUnsafe(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return protohelpers.ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ZVec_FTS: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ZVec_FTS: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MatchString", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			var stringValue string
+			if intStringLen > 0 {
+				stringValue = unsafe.String(&dAtA[iNdEx], intStringLen)
+			}
+			m.MatchString = stringValue
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field QueryString", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			var stringValue string
+			if intStringLen > 0 {
+				stringValue = unsafe.String(&dAtA[iNdEx], intStringLen)
+			}
+			m.QueryString = stringValue
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *ZVec) UnmarshalVTUnsafe(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return protohelpers.ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ZVec: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ZVec: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
 func (m *Insert_Request) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -32371,6 +35373,7 @@ func (m *Insert_Request) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Insert_MultiRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -32456,6 +35459,7 @@ func (m *Insert_MultiRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Insert_ObjectRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -32615,6 +35619,7 @@ func (m *Insert_ObjectRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Insert_MultiObjectRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -32700,6 +35705,7 @@ func (m *Insert_MultiObjectRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Insert_Config) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -32860,6 +35866,7 @@ func (m *Insert_Config) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Insert) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -32911,6 +35918,7 @@ func (m *Insert) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Update_Request) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -33034,6 +36042,7 @@ func (m *Update_Request) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Update_MultiRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -33119,6 +36128,7 @@ func (m *Update_MultiRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Update_ObjectRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -33278,6 +36288,7 @@ func (m *Update_ObjectRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Update_MultiObjectRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -33363,6 +36374,7 @@ func (m *Update_MultiObjectRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Update_TimestampRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -33489,6 +36501,7 @@ func (m *Update_TimestampRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Update_Config) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -33635,6 +36648,7 @@ func (m *Update_Config) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Update) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -33686,6 +36700,7 @@ func (m *Update) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Upsert_Request) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -33809,6 +36824,7 @@ func (m *Upsert_Request) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Upsert_MultiRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -33894,6 +36910,7 @@ func (m *Upsert_MultiRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Upsert_ObjectRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -34053,6 +37070,7 @@ func (m *Upsert_ObjectRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Upsert_MultiObjectRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -34138,6 +37156,7 @@ func (m *Upsert_MultiObjectRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Upsert_Config) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -34284,6 +37303,7 @@ func (m *Upsert_Config) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Upsert) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -34335,6 +37355,7 @@ func (m *Upsert) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Remove_Request) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -34458,6 +37479,7 @@ func (m *Remove_Request) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Remove_MultiRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -34543,6 +37565,7 @@ func (m *Remove_MultiRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Remove_TimestampRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -34628,6 +37651,7 @@ func (m *Remove_TimestampRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Remove_Timestamp) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -34717,6 +37741,7 @@ func (m *Remove_Timestamp) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Remove_Config) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -34807,6 +37832,7 @@ func (m *Remove_Config) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Remove) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -34858,6 +37884,7 @@ func (m *Remove) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Flush_Request) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -34909,6 +37936,7 @@ func (m *Flush_Request) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Flush) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -34960,6 +37988,7 @@ func (m *Flush) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_VectorRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -35083,6 +38112,7 @@ func (m *Object_VectorRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_Distance) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -35181,6 +38211,7 @@ func (m *Object_Distance) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_StreamDistance) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -35330,6 +38361,7 @@ func (m *Object_StreamDistance) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_ID) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -35417,6 +38449,7 @@ func (m *Object_ID) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_IDs) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -35504,6 +38537,7 @@ func (m *Object_IDs) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_Vector) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -35664,6 +38698,7 @@ func (m *Object_Vector) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_TimestampRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -35751,6 +38786,7 @@ func (m *Object_TimestampRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_Timestamp) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -35857,6 +38893,7 @@ func (m *Object_Timestamp) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_Vectors) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -35942,6 +38979,7 @@ func (m *Object_Vectors) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_StreamVector) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -36091,6 +39129,7 @@ func (m *Object_StreamVector) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_ReshapeVector) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -36249,6 +39288,7 @@ func (m *Object_ReshapeVector) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_Blob) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -36367,6 +39407,7 @@ func (m *Object_Blob) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_StreamBlob) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -36516,6 +39557,7 @@ func (m *Object_StreamBlob) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_Location) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -36675,6 +39717,7 @@ func (m *Object_Location) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_StreamLocation) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -36824,6 +39867,7 @@ func (m *Object_StreamLocation) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_Locations) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -36909,6 +39953,7 @@ func (m *Object_Locations) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_List_Request) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -36960,6 +40005,7 @@ func (m *Object_List_Request) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_List_Response) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -37109,6 +40155,7 @@ func (m *Object_List_Response) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_List) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -37160,6 +40207,7 @@ func (m *Object_List) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -37211,6 +40259,7 @@ func (m *Object) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Control_CreateIndexRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -37281,6 +40330,7 @@ func (m *Control_CreateIndexRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Control) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -37332,6 +40382,7 @@ func (m *Control) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Discoverer_Request) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -37491,6 +40542,7 @@ func (m *Discoverer_Request) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Discoverer) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -37542,6 +40594,7 @@ func (m *Discoverer) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Index_Count) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -37671,6 +40724,7 @@ func (m *Info_Index_Count) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Index_Detail) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -37893,6 +40947,7 @@ func (m *Info_Index_Detail) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Index_UUID_Committed) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -37980,6 +41035,7 @@ func (m *Info_Index_UUID_Committed) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Index_UUID_Uncommitted) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -38067,6 +41123,7 @@ func (m *Info_Index_UUID_Uncommitted) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Index_UUID) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -38118,6 +41175,7 @@ func (m *Info_Index_UUID) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Index_Statistics) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -38888,6 +41946,7 @@ func (m *Info_Index_Statistics) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Index_StatisticsDetail) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -39072,6 +42131,7 @@ func (m *Info_Index_StatisticsDetail) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Index_Property) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -39918,6 +42978,7 @@ func (m *Info_Index_Property) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Index_PropertyDetail) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -40102,6 +43163,7 @@ func (m *Info_Index_PropertyDetail) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Index) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -40153,6 +43215,7 @@ func (m *Info_Index) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_ResourceStats) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -40312,6 +43375,7 @@ func (m *Info_ResourceStats) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_CgroupStats) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -40423,6 +43487,7 @@ func (m *Info_CgroupStats) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Pod) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -40726,6 +43791,7 @@ func (m *Info_Pod) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Node) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -40993,6 +44059,7 @@ func (m *Info_Node) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Service) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -41258,6 +44325,7 @@ func (m *Info_Service) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_ServicePort) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -41364,6 +44432,7 @@ func (m *Info_ServicePort) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Labels) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -41550,6 +44619,7 @@ func (m *Info_Labels) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Annotations) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -41736,6 +44806,7 @@ func (m *Info_Annotations) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_CPU) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -41820,6 +44891,7 @@ func (m *Info_CPU) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Memory) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -41904,6 +44976,7 @@ func (m *Info_Memory) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Pods) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -41989,6 +45062,7 @@ func (m *Info_Pods) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Nodes) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -42074,6 +45148,7 @@ func (m *Info_Nodes) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Services) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -42159,6 +45234,7 @@ func (m *Info_Services) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_IPs) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -42246,6 +45322,7 @@ func (m *Info_IPs) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -42297,6 +45374,7 @@ func (m *Info) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Mirror_Target) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -42403,6 +45481,7 @@ func (m *Mirror_Target) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Mirror_Targets) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -42488,6 +45567,7 @@ func (m *Mirror_Targets) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Mirror) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -42539,6 +45619,7 @@ func (m *Mirror) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Meta_Key) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -42626,6 +45707,7 @@ func (m *Meta_Key) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Meta_Value) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -42713,6 +45795,7 @@ func (m *Meta_Value) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Meta_KeyValue) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -42836,6 +45919,7 @@ func (m *Meta_KeyValue) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Meta) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -42887,6 +45971,7 @@ func (m *Meta) UnmarshalVTUnsafe(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Empty) UnmarshalVTUnsafe(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
