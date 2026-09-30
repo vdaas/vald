@@ -537,6 +537,18 @@ mod tests {
                 false,
             ),
             (
+                "matching type after unrelated option",
+                vec![
+                    Any {
+                        type_url: "type.googleapis.com/example.Unrelated".to_string(),
+                        value: Vec::new(),
+                    },
+                    document_options(&[("category", "sports")]),
+                ],
+                Some("sports"),
+                false,
+            ),
+            (
                 "malformed payload",
                 vec![Any {
                     type_url: format!(
