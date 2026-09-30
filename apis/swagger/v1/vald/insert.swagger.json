@@ -223,6 +223,14 @@
           "type": "string",
           "format": "int64",
           "description": "Insert timestamp."
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          },
+          "description": "Algorithm-specific insert options."
         }
       },
       "description": "Represent insert configurations."

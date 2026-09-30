@@ -168,6 +168,9 @@ pub mod search {
         /// Search edge size
         #[prost(int32, tag = "12")]
         pub edge_size: i32,
+        /// Algorithm-specific search options.
+        #[prost(message, repeated, tag = "13")]
+        pub options: ::prost::alloc::vec::Vec<crate::google::protobuf::Any>,
     }
     impl ::prost::Name for Config {
         const NAME: &'static str = "Config";
@@ -438,6 +441,9 @@ pub mod insert {
         /// Insert timestamp.
         #[prost(int64, tag = "3")]
         pub timestamp: i64,
+        /// Algorithm-specific insert options.
+        #[prost(message, repeated, tag = "4")]
+        pub options: ::prost::alloc::vec::Vec<crate::google::protobuf::Any>,
     }
     impl ::prost::Name for Config {
         const NAME: &'static str = "Config";

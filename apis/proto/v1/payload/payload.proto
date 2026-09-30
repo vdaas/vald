@@ -99,6 +99,8 @@ message Search {
     uint32 nprobe = 11;
     // Search edge size
     int32 edge_size = 12;
+    // Algorithm-specific search options.
+    repeated google.protobuf.Any options = 13;
   }
 
   // AggregationAlgorithm is enum of each aggregation algorithms
@@ -192,6 +194,8 @@ message Insert {
     Filter.Config filters = 2;
     // Insert timestamp.
     int64 timestamp = 3;
+    // Algorithm-specific insert options.
+    repeated google.protobuf.Any options = 4;
   }
 }
 
