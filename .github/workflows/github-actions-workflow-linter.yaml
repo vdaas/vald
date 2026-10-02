@@ -51,3 +51,4 @@ jobs:
         run: make -k workflow/lint
         env:
           BINDIR: ${{ runner.temp }}/bin
+          GOTOOLCHAIN: auto
