@@ -92,10 +92,16 @@ jobs:
           if [ ${#send_labels[@]} -gt 0 ]; then
             str="$(IFS=,; echo "${send_labels[*]}")"
             data="{\"labels\": [$str]}"
-            # If target branch is main, add "actions/backport/release/v1.8" label
+            # If target branch is main, backport to the latest minor release branch.
             base_name=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.base.ref"`
             if [[ "${base_name}" == "main" && "${branch_name}" != backport/* ]]; then
-              data="{\"labels\": [$str, \"actions/backport/release/v1.8\"]}"
+              release_branch=$(git ls-remote --heads --sort=v:refname origin 'refs/heads/release/v*' | \
+                awk '$2 ~ /^refs\/heads\/release\/v[0-9]+\.[0-9]+$/ {sub("^refs/heads/", "", $2); branch=$2} END {print branch}')
+              if [ -z "${release_branch}" ]; then
+                echo "No minor release branch found" >&2
+                exit 1
+              fi
+              data="{\"labels\": [$str, \"actions/backport/${release_branch}\"]}"
             fi
             echo "send data: " $data
             curl --request POST \
