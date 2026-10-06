@@ -97,10 +97,7 @@ jobs:
             if [[ "${base_name}" == "main" && "${branch_name}" != backport/* ]]; then
               release_branch=$(git ls-remote --heads --sort=v:refname origin 'refs/heads/release/v*' | \
                 awk '$2 ~ /^refs\/heads\/release\/v[0-9]+\.[0-9]+$/ {sub("^refs/heads/", "", $2); branch=$2} END {print branch}')
-              if [ -z "${release_branch}" ]; then
-                echo "No minor release branch found" >&2
-                exit 1
-              fi
+              : "${release_branch:?No minor release branch found}"
               data="{\"labels\": [$str, \"actions/backport/${release_branch}\"]}"
             fi
             echo "send data: " $data
