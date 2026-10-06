@@ -49,19 +49,6 @@ jobs:
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           configuration-path: ".github/labeler.yaml"
-      - name: Get latest minor release branch
-        id: latest-release
-        if: github.base_ref == 'main' && !startsWith(github.head_ref, 'backport/')
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
-        with:
-          result-encoding: string
-          script: |
-            const branches = await github.paginate(github.rest.repos.listBranches, context.repo);
-            const latest = branches.map(({ name }) => name)
-              .filter(name => /^release\/v\d+\.\d+$/.test(name))
-              .sort((a, b) => b.localeCompare(a, "en", { numeric: true }))[0];
-            if (!latest) throw new Error("No minor release branch found");
-            return latest;
       - name: Add labels
         run: |
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
@@ -105,8 +92,10 @@ jobs:
           if [ ${#send_labels[@]} -gt 0 ]; then
             str="$(IFS=,; echo "${send_labels[*]}")"
             data="{\"labels\": [$str]}"
-            if [ -n "${RELEASE_BRANCH}" ]; then
-              data="{\"labels\": [$str, \"actions/backport/${RELEASE_BRANCH}\"]}"
+            base_name=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.base.ref"`
+            if [[ "${base_name}" == "main" && "${branch_name}" != backport/* ]]; then
+              version=$(cut -d. -f1,2 versions/VALD_VERSION)
+              data="{\"labels\": [$str, \"actions/backport/release/${version}\"]}"
             fi
             echo "send data: " $data
             curl --request POST \
@@ -118,7 +107,6 @@ jobs:
         env:
           REPOSITORY: ${{ github.repository }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_BRANCH: ${{ steps.latest-release.outputs.result }}
   remove-duplication:
     timeout-minutes: 30
     permissions:
