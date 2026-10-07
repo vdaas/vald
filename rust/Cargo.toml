@@ -23,6 +23,7 @@ members = [
 	"libs/algorithms/ngt",
 	"libs/algorithms/qbg",
 	"libs/algorithms/faiss",
+	"libs/algorithms/zvec",
 	"libs/kvs",
 	"libs/observability",
 	"libs/proto",
