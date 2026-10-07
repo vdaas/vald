@@ -20,7 +20,7 @@ minikube/install: $(BINDIR)/minikube
 
 $(BINDIR)/minikube:
 	mkdir -p $(BINDIR)
-	curl -fsSL https://storage.googleapis.com/minikube/releases/latest/minikube-$(OS)-$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]')) -o $(BINDIR)/minikube
+	curl -fsSL https://storage.googleapis.com/minikube/releases/latest/minikube-$(OS)-$(subst x86_64,amd64,$(subst aarch64,arm64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]'))) -o $(BINDIR)/minikube
 	chmod a+x $(BINDIR)/minikube
 
 # Start minikube with CSI Driver and Volume Snapshots support
