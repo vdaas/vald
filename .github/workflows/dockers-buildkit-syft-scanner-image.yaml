@@ -53,6 +53,7 @@ on:
       - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-buildkit-syft-scanner-image.yaml
+      - .trivyignore.d/buildkit-syft-scanner
       - apis/proto/**
       - dockers/buildkit/syft/scanner/Dockerfile
       - go.mod
@@ -72,6 +73,7 @@ on:
       - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-buildkit-syft-scanner-image.yaml
+      - .trivyignore.d/buildkit-syft-scanner
       - apis/proto/**
       - dockers/buildkit/syft/scanner/Dockerfile
       - go.mod

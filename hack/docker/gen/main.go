@@ -726,7 +726,7 @@ func setPullRequestPaths(rootDir string, data *Data) {
 			rustNgtRsPath, rustNgtPath, rustProtoPath, rustVersionPath)
 	case Other:
 	}
-	trivyIgnorePath := file.Join(trivyIgnoreDirPath, data.Name)
+	trivyIgnorePath := trivyIgnoreDirPath + "/" + data.Name
 	if file.Exists(file.Join(rootDir, trivyIgnorePath)) {
 		data.PullRequestPaths = append(data.PullRequestPaths, trivyIgnorePath)
 	}
