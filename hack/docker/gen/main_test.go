@@ -117,10 +117,10 @@ func TestWorkflowTrivyIgnorePaths(t *testing.T) {
 		target       string
 		ignoreExists bool
 	}{
-		{name: "dev-container", target: "dev-container", ignoreExists: true},
-		{name: "buildbase", target: "buildbase", ignoreExists: true},
-		{name: "scanner", target: "buildkit-syft-scanner", ignoreExists: true},
-		{name: "missing ignore", target: "dev-container", ignoreExists: false},
+		{name: devContainer, target: devContainer, ignoreExists: true},
+		{name: buildbase, target: buildbase, ignoreExists: true},
+		{name: "scanner", target: buildkitSyftScanner, ignoreExists: true},
+		{name: "missing ignore", target: devContainer, ignoreExists: false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
