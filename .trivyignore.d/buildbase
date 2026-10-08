@@ -25,3 +25,8 @@ CVE-2026-56858 exp:2026-11-19
 CVE-2026-56859 exp:2026-11-19
 CVE-2026-56860 exp:2026-11-19
 CVE-2026-56862 exp:2026-11-19
+
+# Reason: the Ubuntu build-stage libssl3t64 package is flagged by the
+# current Trivy database. Temporarily accept this buildbase-only finding
+# to unblock image builds; review when the base package is updated.
+CVE-2026-84782 exp:2026-12-06

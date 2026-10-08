@@ -53,6 +53,7 @@ on:
       - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-buildbase-image.yaml
+      - .trivyignore.d/buildbase
       - apis/proto/**
       - dockers/buildbase/Dockerfile
       - go.mod
@@ -72,6 +73,7 @@ on:
       - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-buildbase-image.yaml
+      - .trivyignore.d/buildbase
       - apis/proto/**
       - dockers/buildbase/Dockerfile
       - go.mod

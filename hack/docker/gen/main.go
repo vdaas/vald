@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os/signal"
+	"path"
 	"slices"
 	"syscall"
 	"text/template"
@@ -726,7 +727,7 @@ func setPullRequestPaths(rootDir string, data *Data) {
 			rustNgtRsPath, rustNgtPath, rustProtoPath, rustVersionPath)
 	case Other:
 	}
-	trivyIgnorePath := file.Join(trivyIgnoreDirPath, data.Name)
+	trivyIgnorePath := path.Join(trivyIgnoreDirPath, data.Name)
 	if file.Exists(file.Join(rootDir, trivyIgnorePath)) {
 		data.PullRequestPaths = append(data.PullRequestPaths, trivyIgnorePath)
 	}
