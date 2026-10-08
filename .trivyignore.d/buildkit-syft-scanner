@@ -29,3 +29,8 @@ CVE-2026-56862 exp:2026-11-19
 CVE-2026-56864 exp:2026-11-19
 CVE-2026-56865 exp:2026-11-19
 CVE-2026-84304 exp:2026-11-28
+
+# Reason: the upstream syft-scanner binary embeds a gRPC-Go release
+# affected by this denial-of-service finding. Temporarily accept it only
+# in the BuildKit scanner image; remove after updating the scanner binary.
+CVE-2026-84445 exp:2026-12-06

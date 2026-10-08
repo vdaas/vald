@@ -14,6 +14,7 @@
 package main
 
 import (
+	"context"
 	"path/filepath"
 	"testing"
 
@@ -107,5 +108,57 @@ func TestTopologicalSortOrder(t *testing.T) {
 	}
 	if ia >= ib || ib >= ic {
 		t.Fatalf("unexpected order: %v (want A < B < C)", got)
+	}
+}
+
+func TestWorkflowTrivyIgnorePaths(t *testing.T) {
+	tests := []struct {
+		name         string
+		target       string
+		ignoreExists bool
+	}{
+		{name: devContainer, target: devContainer, ignoreExists: true},
+		{name: buildbase, target: buildbase, ignoreExists: true},
+		{name: "scanner", target: buildkitSyftScanner, ignoreExists: true},
+		{name: "missing ignore", target: devContainer, ignoreExists: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			root := t.TempDir()
+			relative := ".trivyignore.d/" + tt.target
+			if tt.ignoreExists {
+				if err := os.MkdirAll(filepath.Join(root, ".trivyignore.d"), 0o755); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.WriteFile(filepath.Join(root, relative), []byte("CVE-2026-84445 exp:2026-12-06\n"), 0o600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if err := generateWorkflow(context.Background(), root, "vald-"+tt.target, "vald team", 2026, Data{ContainerType: Other}); err != nil {
+				t.Fatal(err)
+			}
+			data, err := os.ReadFile(filepath.Join(root, ".github/workflows/dockers-"+tt.target+"-image.yaml"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			var workflow Workflow
+			if err := yaml.Unmarshal(data, &workflow); err != nil {
+				t.Fatal(err)
+			}
+			for name, paths := range map[string][]string{
+				"pull_request":        workflow.On.PullRequest.Paths,
+				"pull_request_target": workflow.On.PullRequestTarget.Paths,
+			} {
+				found := false
+				for _, path := range paths {
+					if path == relative {
+						found = true
+					}
+				}
+				if found != tt.ignoreExists {
+					t.Errorf("%s paths contain %q = %t, want %t: %v", name, relative, found, tt.ignoreExists, paths)
+				}
+			}
+		})
 	}
 }
