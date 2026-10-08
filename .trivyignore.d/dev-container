@@ -87,3 +87,9 @@ CVE-2026-71556 exp:2026-11-28
 GHSA-hrxh-6v49-42gf exp:2026-11-28
 GHSA-r277-6w6q-xmqw exp:2026-11-28
 CVE-2026-84304 exp:2026-11-28
+
+# Reason: bundled CI tool binaries (k9s, k3d, kube-linter, helm, minikube
+# and telepresence) embed vulnerable gRPC-Go or oras-go releases. These
+# exceptions apply only to dev-container; review after updating the tools.
+CVE-2026-84445 exp:2026-12-06
+CVE-2026-85731 exp:2026-12-06
