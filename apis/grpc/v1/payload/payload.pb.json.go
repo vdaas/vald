@@ -17,7 +17,9 @@
 
 package payload
 
-import "google.golang.org/protobuf/encoding/protojson"
+import (
+	"google.golang.org/protobuf/encoding/protojson"
+)
 
 // MarshalJSON implements json.Marshaler
 func (msg *Search) MarshalJSON() ([]byte, error) {

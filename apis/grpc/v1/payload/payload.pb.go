@@ -21,9 +21,6 @@
 package payload
 
 import (
-	reflect "reflect"
-	unsafe "unsafe"
-
 	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	sync "github.com/vdaas/vald/internal/sync"
 	status "google.golang.org/genproto/googleapis/rpc/status"
@@ -31,6 +28,8 @@ import (
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	anypb "google.golang.org/protobuf/types/known/anypb"
 	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
+	reflect "reflect"
+	unsafe "unsafe"
 )
 
 const (
@@ -1018,7 +1017,9 @@ type Search_Config struct {
 	// Search nprobe.
 	Nprobe uint32 `protobuf:"varint,11,opt,name=nprobe,proto3" json:"nprobe,omitempty"`
 	// Search edge size
-	EdgeSize      int32 `protobuf:"varint,12,opt,name=edge_size,json=edgeSize,proto3" json:"edge_size,omitempty"`
+	EdgeSize int32 `protobuf:"varint,12,opt,name=edge_size,json=edgeSize,proto3" json:"edge_size,omitempty"`
+	// Algorithm-specific search options.
+	Options       []*anypb.Any `protobuf:"bytes,13,rep,name=options,proto3" json:"options,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1135,6 +1136,13 @@ func (x *Search_Config) GetEdgeSize() int32 {
 		return x.EdgeSize
 	}
 	return 0
+}
+
+func (x *Search_Config) GetOptions() []*anypb.Any {
+	if x != nil {
+		return x.Options
+	}
+	return nil
 }
 
 // Represent a search response.
@@ -1643,7 +1651,9 @@ type Insert_Config struct {
 	// Filter configurations.
 	Filters *Filter_Config `protobuf:"bytes,2,opt,name=filters,proto3" json:"filters,omitempty"`
 	// Insert timestamp.
-	Timestamp     int64 `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Timestamp int64 `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	// Algorithm-specific insert options.
+	Options       []*anypb.Any `protobuf:"bytes,4,rep,name=options,proto3" json:"options,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1697,6 +1707,13 @@ func (x *Insert_Config) GetTimestamp() int64 {
 		return x.Timestamp
 	}
 	return 0
+}
+
+func (x *Insert_Config) GetOptions() []*anypb.Any {
+	if x != nil {
+		return x.Options
+	}
+	return nil
 }
 
 // Represent the update request.
@@ -5991,7 +6008,7 @@ var File_v1_payload_payload_proto protoreflect.FileDescriptor
 const file_v1_payload_payload_proto_rawDesc = "" +
 	"\n" +
 	"\x18v1/payload/payload.proto\x12\n" +
-	"payload.v1\x1a\x1bbuf/validate/validate.proto\x1a\x19google/protobuf/any.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x17google/rpc/status.proto\"\xd5\v\n" +
+	"payload.v1\x1a\x1bbuf/validate/validate.proto\x1a\x19google/protobuf/any.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x17google/rpc/status.proto\"\x85\f\n" +
 	"\x06Search\x1a^\n" +
 	"\aRequest\x12 \n" +
 	"\x06vector\x18\x01 \x03(\x02B\b\xbaH\x05\x92\x01\x02\b\x02R\x06vector\x121\n" +
@@ -6010,7 +6027,7 @@ const file_v1_payload_payload_proto_rawDesc = "" +
 	"vectorizer\x18\x03 \x01(\v2\x19.payload.v1.Filter.TargetR\n" +
 	"vectorizer\x1aR\n" +
 	"\x12MultiObjectRequest\x12<\n" +
-	"\brequests\x18\x01 \x03(\v2 .payload.v1.Search.ObjectRequestR\brequests\x1a\xfc\x03\n" +
+	"\brequests\x18\x01 \x03(\v2 .payload.v1.Search.ObjectRequestR\brequests\x1a\xac\x04\n" +
 	"\x06Config\x12\x1d\n" +
 	"\n" +
 	"request_id\x18\x01 \x01(\tR\trequestId\x12\x19\n" +
@@ -6025,7 +6042,8 @@ const file_v1_payload_payload_proto_rawDesc = "" +
 	"\x05ratio\x18\n" +
 	" \x01(\v2\x1b.google.protobuf.FloatValueR\x05ratio\x12\x16\n" +
 	"\x06nprobe\x18\v \x01(\rR\x06nprobe\x12\x1b\n" +
-	"\tedge_size\x18\f \x01(\x05R\bedgeSize\x1a`\n" +
+	"\tedge_size\x18\f \x01(\x05R\bedgeSize\x12.\n" +
+	"\aoptions\x18\r \x03(\v2\x14.google.protobuf.AnyR\aoptions\x1a`\n" +
 	"\bResponse\x12\x1d\n" +
 	"\n" +
 	"request_id\x18\x01 \x01(\tR\trequestId\x125\n" +
@@ -6047,7 +6065,7 @@ const file_v1_payload_payload_proto_rawDesc = "" +
 	"\x04host\x18\x01 \x01(\tR\x04host\x12\x12\n" +
 	"\x04port\x18\x02 \x01(\rR\x04port\x1a=\n" +
 	"\x06Config\x123\n" +
-	"\atargets\x18\x01 \x03(\v2\x19.payload.v1.Filter.TargetR\atargets\"\xe5\x04\n" +
+	"\atargets\x18\x01 \x03(\v2\x19.payload.v1.Filter.TargetR\atargets\"\x95\x05\n" +
 	"\x06Insert\x1ay\n" +
 	"\aRequest\x12;\n" +
 	"\x06vector\x18\x01 \x01(\v2\x19.payload.v1.Object.VectorB\b\xbaH\x05\x92\x01\x02\b\x02R\x06vector\x121\n" +
@@ -6061,11 +6079,12 @@ const file_v1_payload_payload_proto_rawDesc = "" +
 	"vectorizer\x18\x03 \x01(\v2\x19.payload.v1.Filter.TargetR\n" +
 	"vectorizer\x1aR\n" +
 	"\x12MultiObjectRequest\x12<\n" +
-	"\brequests\x18\x01 \x03(\v2 .payload.v1.Insert.ObjectRequestR\brequests\x1a\x92\x01\n" +
+	"\brequests\x18\x01 \x03(\v2 .payload.v1.Insert.ObjectRequestR\brequests\x1a\xc2\x01\n" +
 	"\x06Config\x125\n" +
 	"\x17skip_strict_exist_check\x18\x01 \x01(\bR\x14skipStrictExistCheck\x123\n" +
 	"\afilters\x18\x02 \x01(\v2\x19.payload.v1.Filter.ConfigR\afilters\x12\x1c\n" +
-	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\"\xfe\x05\n" +
+	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\x12.\n" +
+	"\aoptions\x18\x04 \x03(\v2\x14.google.protobuf.AnyR\aoptions\"\xfe\x05\n" +
 	"\x06Update\x1ay\n" +
 	"\aRequest\x12;\n" +
 	"\x06vector\x18\x01 \x01(\v2\x19.payload.v1.Object.VectorB\b\xbaH\x05\x92\x01\x02\b\x02R\x06vector\x121\n" +
@@ -6508,8 +6527,8 @@ var file_v1_payload_payload_proto_goTypes = []any{
 	(*Meta_Value)(nil),                  // 103: payload.v1.Meta.Value
 	(*Meta_KeyValue)(nil),               // 104: payload.v1.Meta.KeyValue
 	(*wrapperspb.FloatValue)(nil),       // 105: google.protobuf.FloatValue
-	(*status.Status)(nil),               // 106: google.rpc.Status
-	(*anypb.Any)(nil),                   // 107: google.protobuf.Any
+	(*anypb.Any)(nil),                   // 106: google.protobuf.Any
+	(*status.Status)(nil),               // 107: google.rpc.Status
 }
 var file_v1_payload_payload_proto_depIdxs = []int32{
 	22,  // 0: payload.v1.Search.Request.config:type_name -> payload.v1.Search.Config
@@ -6523,85 +6542,87 @@ var file_v1_payload_payload_proto_depIdxs = []int32{
 	27,  // 8: payload.v1.Search.Config.egress_filters:type_name -> payload.v1.Filter.Config
 	0,   // 9: payload.v1.Search.Config.aggregation_algorithm:type_name -> payload.v1.Search.AggregationAlgorithm
 	105, // 10: payload.v1.Search.Config.ratio:type_name -> google.protobuf.FloatValue
-	51,  // 11: payload.v1.Search.Response.results:type_name -> payload.v1.Object.Distance
-	23,  // 12: payload.v1.Search.Responses.responses:type_name -> payload.v1.Search.Response
-	23,  // 13: payload.v1.Search.StreamResponse.response:type_name -> payload.v1.Search.Response
-	106, // 14: payload.v1.Search.StreamResponse.status:type_name -> google.rpc.Status
-	26,  // 15: payload.v1.Filter.Config.targets:type_name -> payload.v1.Filter.Target
-	55,  // 16: payload.v1.Insert.Request.vector:type_name -> payload.v1.Object.Vector
-	32,  // 17: payload.v1.Insert.Request.config:type_name -> payload.v1.Insert.Config
-	28,  // 18: payload.v1.Insert.MultiRequest.requests:type_name -> payload.v1.Insert.Request
-	61,  // 19: payload.v1.Insert.ObjectRequest.object:type_name -> payload.v1.Object.Blob
-	32,  // 20: payload.v1.Insert.ObjectRequest.config:type_name -> payload.v1.Insert.Config
-	26,  // 21: payload.v1.Insert.ObjectRequest.vectorizer:type_name -> payload.v1.Filter.Target
-	30,  // 22: payload.v1.Insert.MultiObjectRequest.requests:type_name -> payload.v1.Insert.ObjectRequest
-	27,  // 23: payload.v1.Insert.Config.filters:type_name -> payload.v1.Filter.Config
-	55,  // 24: payload.v1.Update.Request.vector:type_name -> payload.v1.Object.Vector
-	38,  // 25: payload.v1.Update.Request.config:type_name -> payload.v1.Update.Config
-	33,  // 26: payload.v1.Update.MultiRequest.requests:type_name -> payload.v1.Update.Request
-	61,  // 27: payload.v1.Update.ObjectRequest.object:type_name -> payload.v1.Object.Blob
-	38,  // 28: payload.v1.Update.ObjectRequest.config:type_name -> payload.v1.Update.Config
-	26,  // 29: payload.v1.Update.ObjectRequest.vectorizer:type_name -> payload.v1.Filter.Target
-	35,  // 30: payload.v1.Update.MultiObjectRequest.requests:type_name -> payload.v1.Update.ObjectRequest
-	27,  // 31: payload.v1.Update.Config.filters:type_name -> payload.v1.Filter.Config
-	55,  // 32: payload.v1.Upsert.Request.vector:type_name -> payload.v1.Object.Vector
-	43,  // 33: payload.v1.Upsert.Request.config:type_name -> payload.v1.Upsert.Config
-	39,  // 34: payload.v1.Upsert.MultiRequest.requests:type_name -> payload.v1.Upsert.Request
-	61,  // 35: payload.v1.Upsert.ObjectRequest.object:type_name -> payload.v1.Object.Blob
-	43,  // 36: payload.v1.Upsert.ObjectRequest.config:type_name -> payload.v1.Upsert.Config
-	26,  // 37: payload.v1.Upsert.ObjectRequest.vectorizer:type_name -> payload.v1.Filter.Target
-	41,  // 38: payload.v1.Upsert.MultiObjectRequest.requests:type_name -> payload.v1.Upsert.ObjectRequest
-	27,  // 39: payload.v1.Upsert.Config.filters:type_name -> payload.v1.Filter.Config
-	53,  // 40: payload.v1.Remove.Request.id:type_name -> payload.v1.Object.ID
-	48,  // 41: payload.v1.Remove.Request.config:type_name -> payload.v1.Remove.Config
-	44,  // 42: payload.v1.Remove.MultiRequest.requests:type_name -> payload.v1.Remove.Request
-	47,  // 43: payload.v1.Remove.TimestampRequest.timestamps:type_name -> payload.v1.Remove.Timestamp
-	1,   // 44: payload.v1.Remove.Timestamp.operator:type_name -> payload.v1.Remove.Timestamp.Operator
-	53,  // 45: payload.v1.Object.VectorRequest.id:type_name -> payload.v1.Object.ID
-	27,  // 46: payload.v1.Object.VectorRequest.filters:type_name -> payload.v1.Filter.Config
-	51,  // 47: payload.v1.Object.StreamDistance.distance:type_name -> payload.v1.Object.Distance
-	106, // 48: payload.v1.Object.StreamDistance.status:type_name -> google.rpc.Status
-	53,  // 49: payload.v1.Object.TimestampRequest.id:type_name -> payload.v1.Object.ID
-	55,  // 50: payload.v1.Object.Vectors.vectors:type_name -> payload.v1.Object.Vector
-	55,  // 51: payload.v1.Object.StreamVector.vector:type_name -> payload.v1.Object.Vector
-	106, // 52: payload.v1.Object.StreamVector.status:type_name -> google.rpc.Status
-	61,  // 53: payload.v1.Object.StreamBlob.blob:type_name -> payload.v1.Object.Blob
-	106, // 54: payload.v1.Object.StreamBlob.status:type_name -> google.rpc.Status
-	63,  // 55: payload.v1.Object.StreamLocation.location:type_name -> payload.v1.Object.Location
-	106, // 56: payload.v1.Object.StreamLocation.status:type_name -> google.rpc.Status
-	63,  // 57: payload.v1.Object.Locations.locations:type_name -> payload.v1.Object.Location
-	55,  // 58: payload.v1.Object.List.Response.vector:type_name -> payload.v1.Object.Vector
-	106, // 59: payload.v1.Object.List.Response.status:type_name -> google.rpc.Status
-	73,  // 60: payload.v1.Info.ResourceStats.cgroup_stats:type_name -> payload.v1.Info.CgroupStats
-	80,  // 61: payload.v1.Info.Pod.cpu:type_name -> payload.v1.Info.CPU
-	81,  // 62: payload.v1.Info.Pod.memory:type_name -> payload.v1.Info.Memory
-	75,  // 63: payload.v1.Info.Pod.node:type_name -> payload.v1.Info.Node
-	80,  // 64: payload.v1.Info.Node.cpu:type_name -> payload.v1.Info.CPU
-	81,  // 65: payload.v1.Info.Node.memory:type_name -> payload.v1.Info.Memory
-	82,  // 66: payload.v1.Info.Node.Pods:type_name -> payload.v1.Info.Pods
-	77,  // 67: payload.v1.Info.Service.ports:type_name -> payload.v1.Info.ServicePort
-	78,  // 68: payload.v1.Info.Service.labels:type_name -> payload.v1.Info.Labels
-	79,  // 69: payload.v1.Info.Service.annotations:type_name -> payload.v1.Info.Annotations
-	98,  // 70: payload.v1.Info.Labels.labels:type_name -> payload.v1.Info.Labels.LabelsEntry
-	99,  // 71: payload.v1.Info.Annotations.annotations:type_name -> payload.v1.Info.Annotations.AnnotationsEntry
-	74,  // 72: payload.v1.Info.Pods.pods:type_name -> payload.v1.Info.Pod
-	75,  // 73: payload.v1.Info.Nodes.nodes:type_name -> payload.v1.Info.Node
-	76,  // 74: payload.v1.Info.Services.services:type_name -> payload.v1.Info.Service
-	93,  // 75: payload.v1.Info.Index.Detail.counts:type_name -> payload.v1.Info.Index.Detail.CountsEntry
-	96,  // 76: payload.v1.Info.Index.StatisticsDetail.details:type_name -> payload.v1.Info.Index.StatisticsDetail.DetailsEntry
-	97,  // 77: payload.v1.Info.Index.PropertyDetail.details:type_name -> payload.v1.Info.Index.PropertyDetail.DetailsEntry
-	86,  // 78: payload.v1.Info.Index.Detail.CountsEntry.value:type_name -> payload.v1.Info.Index.Count
-	89,  // 79: payload.v1.Info.Index.StatisticsDetail.DetailsEntry.value:type_name -> payload.v1.Info.Index.Statistics
-	91,  // 80: payload.v1.Info.Index.PropertyDetail.DetailsEntry.value:type_name -> payload.v1.Info.Index.Property
-	100, // 81: payload.v1.Mirror.Targets.targets:type_name -> payload.v1.Mirror.Target
-	107, // 82: payload.v1.Meta.Value.value:type_name -> google.protobuf.Any
-	102, // 83: payload.v1.Meta.KeyValue.key:type_name -> payload.v1.Meta.Key
-	103, // 84: payload.v1.Meta.KeyValue.value:type_name -> payload.v1.Meta.Value
-	85,  // [85:85] is the sub-list for method output_type
-	85,  // [85:85] is the sub-list for method input_type
-	85,  // [85:85] is the sub-list for extension type_name
-	85,  // [85:85] is the sub-list for extension extendee
-	0,   // [0:85] is the sub-list for field type_name
+	106, // 11: payload.v1.Search.Config.options:type_name -> google.protobuf.Any
+	51,  // 12: payload.v1.Search.Response.results:type_name -> payload.v1.Object.Distance
+	23,  // 13: payload.v1.Search.Responses.responses:type_name -> payload.v1.Search.Response
+	23,  // 14: payload.v1.Search.StreamResponse.response:type_name -> payload.v1.Search.Response
+	107, // 15: payload.v1.Search.StreamResponse.status:type_name -> google.rpc.Status
+	26,  // 16: payload.v1.Filter.Config.targets:type_name -> payload.v1.Filter.Target
+	55,  // 17: payload.v1.Insert.Request.vector:type_name -> payload.v1.Object.Vector
+	32,  // 18: payload.v1.Insert.Request.config:type_name -> payload.v1.Insert.Config
+	28,  // 19: payload.v1.Insert.MultiRequest.requests:type_name -> payload.v1.Insert.Request
+	61,  // 20: payload.v1.Insert.ObjectRequest.object:type_name -> payload.v1.Object.Blob
+	32,  // 21: payload.v1.Insert.ObjectRequest.config:type_name -> payload.v1.Insert.Config
+	26,  // 22: payload.v1.Insert.ObjectRequest.vectorizer:type_name -> payload.v1.Filter.Target
+	30,  // 23: payload.v1.Insert.MultiObjectRequest.requests:type_name -> payload.v1.Insert.ObjectRequest
+	27,  // 24: payload.v1.Insert.Config.filters:type_name -> payload.v1.Filter.Config
+	106, // 25: payload.v1.Insert.Config.options:type_name -> google.protobuf.Any
+	55,  // 26: payload.v1.Update.Request.vector:type_name -> payload.v1.Object.Vector
+	38,  // 27: payload.v1.Update.Request.config:type_name -> payload.v1.Update.Config
+	33,  // 28: payload.v1.Update.MultiRequest.requests:type_name -> payload.v1.Update.Request
+	61,  // 29: payload.v1.Update.ObjectRequest.object:type_name -> payload.v1.Object.Blob
+	38,  // 30: payload.v1.Update.ObjectRequest.config:type_name -> payload.v1.Update.Config
+	26,  // 31: payload.v1.Update.ObjectRequest.vectorizer:type_name -> payload.v1.Filter.Target
+	35,  // 32: payload.v1.Update.MultiObjectRequest.requests:type_name -> payload.v1.Update.ObjectRequest
+	27,  // 33: payload.v1.Update.Config.filters:type_name -> payload.v1.Filter.Config
+	55,  // 34: payload.v1.Upsert.Request.vector:type_name -> payload.v1.Object.Vector
+	43,  // 35: payload.v1.Upsert.Request.config:type_name -> payload.v1.Upsert.Config
+	39,  // 36: payload.v1.Upsert.MultiRequest.requests:type_name -> payload.v1.Upsert.Request
+	61,  // 37: payload.v1.Upsert.ObjectRequest.object:type_name -> payload.v1.Object.Blob
+	43,  // 38: payload.v1.Upsert.ObjectRequest.config:type_name -> payload.v1.Upsert.Config
+	26,  // 39: payload.v1.Upsert.ObjectRequest.vectorizer:type_name -> payload.v1.Filter.Target
+	41,  // 40: payload.v1.Upsert.MultiObjectRequest.requests:type_name -> payload.v1.Upsert.ObjectRequest
+	27,  // 41: payload.v1.Upsert.Config.filters:type_name -> payload.v1.Filter.Config
+	53,  // 42: payload.v1.Remove.Request.id:type_name -> payload.v1.Object.ID
+	48,  // 43: payload.v1.Remove.Request.config:type_name -> payload.v1.Remove.Config
+	44,  // 44: payload.v1.Remove.MultiRequest.requests:type_name -> payload.v1.Remove.Request
+	47,  // 45: payload.v1.Remove.TimestampRequest.timestamps:type_name -> payload.v1.Remove.Timestamp
+	1,   // 46: payload.v1.Remove.Timestamp.operator:type_name -> payload.v1.Remove.Timestamp.Operator
+	53,  // 47: payload.v1.Object.VectorRequest.id:type_name -> payload.v1.Object.ID
+	27,  // 48: payload.v1.Object.VectorRequest.filters:type_name -> payload.v1.Filter.Config
+	51,  // 49: payload.v1.Object.StreamDistance.distance:type_name -> payload.v1.Object.Distance
+	107, // 50: payload.v1.Object.StreamDistance.status:type_name -> google.rpc.Status
+	53,  // 51: payload.v1.Object.TimestampRequest.id:type_name -> payload.v1.Object.ID
+	55,  // 52: payload.v1.Object.Vectors.vectors:type_name -> payload.v1.Object.Vector
+	55,  // 53: payload.v1.Object.StreamVector.vector:type_name -> payload.v1.Object.Vector
+	107, // 54: payload.v1.Object.StreamVector.status:type_name -> google.rpc.Status
+	61,  // 55: payload.v1.Object.StreamBlob.blob:type_name -> payload.v1.Object.Blob
+	107, // 56: payload.v1.Object.StreamBlob.status:type_name -> google.rpc.Status
+	63,  // 57: payload.v1.Object.StreamLocation.location:type_name -> payload.v1.Object.Location
+	107, // 58: payload.v1.Object.StreamLocation.status:type_name -> google.rpc.Status
+	63,  // 59: payload.v1.Object.Locations.locations:type_name -> payload.v1.Object.Location
+	55,  // 60: payload.v1.Object.List.Response.vector:type_name -> payload.v1.Object.Vector
+	107, // 61: payload.v1.Object.List.Response.status:type_name -> google.rpc.Status
+	73,  // 62: payload.v1.Info.ResourceStats.cgroup_stats:type_name -> payload.v1.Info.CgroupStats
+	80,  // 63: payload.v1.Info.Pod.cpu:type_name -> payload.v1.Info.CPU
+	81,  // 64: payload.v1.Info.Pod.memory:type_name -> payload.v1.Info.Memory
+	75,  // 65: payload.v1.Info.Pod.node:type_name -> payload.v1.Info.Node
+	80,  // 66: payload.v1.Info.Node.cpu:type_name -> payload.v1.Info.CPU
+	81,  // 67: payload.v1.Info.Node.memory:type_name -> payload.v1.Info.Memory
+	82,  // 68: payload.v1.Info.Node.Pods:type_name -> payload.v1.Info.Pods
+	77,  // 69: payload.v1.Info.Service.ports:type_name -> payload.v1.Info.ServicePort
+	78,  // 70: payload.v1.Info.Service.labels:type_name -> payload.v1.Info.Labels
+	79,  // 71: payload.v1.Info.Service.annotations:type_name -> payload.v1.Info.Annotations
+	98,  // 72: payload.v1.Info.Labels.labels:type_name -> payload.v1.Info.Labels.LabelsEntry
+	99,  // 73: payload.v1.Info.Annotations.annotations:type_name -> payload.v1.Info.Annotations.AnnotationsEntry
+	74,  // 74: payload.v1.Info.Pods.pods:type_name -> payload.v1.Info.Pod
+	75,  // 75: payload.v1.Info.Nodes.nodes:type_name -> payload.v1.Info.Node
+	76,  // 76: payload.v1.Info.Services.services:type_name -> payload.v1.Info.Service
+	93,  // 77: payload.v1.Info.Index.Detail.counts:type_name -> payload.v1.Info.Index.Detail.CountsEntry
+	96,  // 78: payload.v1.Info.Index.StatisticsDetail.details:type_name -> payload.v1.Info.Index.StatisticsDetail.DetailsEntry
+	97,  // 79: payload.v1.Info.Index.PropertyDetail.details:type_name -> payload.v1.Info.Index.PropertyDetail.DetailsEntry
+	86,  // 80: payload.v1.Info.Index.Detail.CountsEntry.value:type_name -> payload.v1.Info.Index.Count
+	89,  // 81: payload.v1.Info.Index.StatisticsDetail.DetailsEntry.value:type_name -> payload.v1.Info.Index.Statistics
+	91,  // 82: payload.v1.Info.Index.PropertyDetail.DetailsEntry.value:type_name -> payload.v1.Info.Index.Property
+	100, // 83: payload.v1.Mirror.Targets.targets:type_name -> payload.v1.Mirror.Target
+	106, // 84: payload.v1.Meta.Value.value:type_name -> google.protobuf.Any
+	102, // 85: payload.v1.Meta.KeyValue.key:type_name -> payload.v1.Meta.Key
+	103, // 86: payload.v1.Meta.KeyValue.value:type_name -> payload.v1.Meta.Value
+	87,  // [87:87] is the sub-list for method output_type
+	87,  // [87:87] is the sub-list for method input_type
+	87,  // [87:87] is the sub-list for extension type_name
+	87,  // [87:87] is the sub-list for extension extendee
+	0,   // [0:87] is the sub-list for field type_name
 }
 
 func init() { file_v1_payload_payload_proto_init() }
