@@ -94,6 +94,10 @@
           "path": "options?\\.go"
         },
         {
+          "linters": ["mnd"],
+          "path": "_vtproto\\.pb\\.go$"
+        },
+        {
           "linters": ["gochecknoglobals"],
           "path": "main\\.go"
         },
