@@ -72,7 +72,13 @@
     ],
     "exclusions": {
       "generated": "lax",
-      "paths": ["third_party$", "builtin$", "examples$", "\\.gen\\.go$"],
+      "paths": [
+        "third_party$",
+        "builtin$",
+        "examples$",
+        "\\.gen\\.go$",
+        "_vtproto\\.pb\\.go$"
+      ],
       "rules": [
         {
           "linters": [
@@ -92,10 +98,6 @@
         {
           "linters": ["gochecknoglobals", "mnd"],
           "path": "options?\\.go"
-        },
-        {
-          "linters": ["mnd"],
-          "path": "_vtproto\\.pb\\.go$"
         },
         {
           "linters": ["gochecknoglobals"],
