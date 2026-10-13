@@ -38,6 +38,7 @@ Insert RPC is the method to add a new single vector.
     bool skip_strict_exist_check = 1;
     Filter.Config filters = 2;
     int64 timestamp = 3;
+    repeated google.protobuf.Any options = 4;
   }
 
   message Filter.Config {
@@ -68,11 +69,12 @@ Insert RPC is the method to add a new single vector.
 
   - Insert.Config
 
-    |          field          | type          | label | description                                         |
-    | :---------------------: | :------------ | :---- | :-------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       | A flag to skip exist check during insert operation. |
-    |         filters         | Filter.Config |       | Filter configurations.                              |
-    |        timestamp        | int64         |       | Insert timestamp.                                   |
+    |          field          | type                | label    | description                                         |
+    | :---------------------: | :------------------ | :------- | :-------------------------------------------------- |
+    | skip_strict_exist_check | bool                |          | A flag to skip exist check during insert operation. |
+    |         filters         | Filter.Config       |          | Filter configurations.                              |
+    |        timestamp        | int64               |          | Insert timestamp.                                   |
+    |         options         | google.protobuf.Any | repeated | Algorithm-specific insert options.                  |
 
   - Filter.Config
 
@@ -162,6 +164,7 @@ It's the recommended method to insert a large number of vectors.
     bool skip_strict_exist_check = 1;
     Filter.Config filters = 2;
     int64 timestamp = 3;
+    repeated google.protobuf.Any options = 4;
   }
 
   message Filter.Config {
@@ -192,11 +195,12 @@ It's the recommended method to insert a large number of vectors.
 
   - Insert.Config
 
-    |          field          | type          | label | description                                         |
-    | :---------------------: | :------------ | :---- | :-------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       | A flag to skip exist check during insert operation. |
-    |         filters         | Filter.Config |       | Filter configurations.                              |
-    |        timestamp        | int64         |       | Insert timestamp.                                   |
+    |          field          | type                | label    | description                                         |
+    | :---------------------: | :------------------ | :------- | :-------------------------------------------------- |
+    | skip_strict_exist_check | bool                |          | A flag to skip exist check during insert operation. |
+    |         filters         | Filter.Config       |          | Filter configurations.                              |
+    |        timestamp        | int64               |          | Insert timestamp.                                   |
+    |         options         | google.protobuf.Any | repeated | Algorithm-specific insert options.                  |
 
   - Filter.Config
 
@@ -305,6 +309,7 @@ Please be careful that the size of the request exceeds the limit.
     bool skip_strict_exist_check = 1;
     Filter.Config filters = 2;
     int64 timestamp = 3;
+    repeated google.protobuf.Any options = 4;
   }
 
   message Filter.Config {
@@ -341,11 +346,12 @@ Please be careful that the size of the request exceeds the limit.
 
   - Insert.Config
 
-    |          field          | type          | label | description                                         |
-    | :---------------------: | :------------ | :---- | :-------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       | A flag to skip exist check during insert operation. |
-    |         filters         | Filter.Config |       | Filter configurations.                              |
-    |        timestamp        | int64         |       | Insert timestamp.                                   |
+    |          field          | type                | label    | description                                         |
+    | :---------------------: | :------------------ | :------- | :-------------------------------------------------- |
+    | skip_strict_exist_check | bool                |          | A flag to skip exist check during insert operation. |
+    |         filters         | Filter.Config       |          | Filter configurations.                              |
+    |        timestamp        | int64               |          | Insert timestamp.                                   |
+    |         options         | google.protobuf.Any | repeated | Algorithm-specific insert options.                  |
 
   - Filter.Config
 

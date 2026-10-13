@@ -654,11 +654,12 @@ Insert related messages.
 
 Represent insert configurations.
 
-| Field                   | Type                                       | Label | Description                                         |
-| ----------------------- | ------------------------------------------ | ----- | --------------------------------------------------- |
-| skip_strict_exist_check | [bool](#bool)                              |       | A flag to skip exist check during insert operation. |
-| filters                 | [Filter.Config](#payload-v1-Filter-Config) |       | Filter configurations.                              |
-| timestamp               | [int64](#int64)                            |       | Insert timestamp.                                   |
+| Field                   | Type                                        | Label    | Description                                         |
+| ----------------------- | ------------------------------------------- | -------- | --------------------------------------------------- |
+| skip_strict_exist_check | [bool](#bool)                               |          | A flag to skip exist check during insert operation. |
+| filters                 | [Filter.Config](#payload-v1-Filter-Config)  |          | Filter configurations.                              |
+| timestamp               | [int64](#int64)                             |          | Insert timestamp.                                   |
+| options                 | [google.protobuf.Any](#google-protobuf-Any) | repeated | Algorithm-specific insert options.                  |
 
 <a name="payload-v1-Insert-MultiObjectRequest"></a>
 
@@ -1028,20 +1029,21 @@ Search related messages.
 
 Represent search configuration.
 
-| Field                 | Type                                                                   | Label | Description                                  |
-| --------------------- | ---------------------------------------------------------------------- | ----- | -------------------------------------------- |
-| request_id            | [string](#string)                                                      |       | Unique request ID.                           |
-| num                   | [uint32](#uint32)                                                      |       | Maximum number of result to be returned.     |
-| radius                | [float](#float)                                                        |       | Search radius.                               |
-| epsilon               | [float](#float)                                                        |       | Search coefficient.                          |
-| timeout               | [int64](#int64)                                                        |       | Search timeout in nanoseconds.               |
-| ingress_filters       | [Filter.Config](#payload-v1-Filter-Config)                             |       | Ingress filter configurations.               |
-| egress_filters        | [Filter.Config](#payload-v1-Filter-Config)                             |       | Egress filter configurations.                |
-| min_num               | [uint32](#uint32)                                                      |       | Minimum number of result to be returned.     |
-| aggregation_algorithm | [Search.AggregationAlgorithm](#payload-v1-Search-AggregationAlgorithm) |       | Aggregation Algorithm                        |
-| ratio                 | [google.protobuf.FloatValue](#google-protobuf-FloatValue)              |       | Search ratio for agent return result number. |
-| nprobe                | [uint32](#uint32)                                                      |       | Search nprobe.                               |
-| edge_size             | [int32](#int32)                                                        |       | Search edge size                             |
+| Field                 | Type                                                                   | Label    | Description                                  |
+| --------------------- | ---------------------------------------------------------------------- | -------- | -------------------------------------------- |
+| request_id            | [string](#string)                                                      |          | Unique request ID.                           |
+| num                   | [uint32](#uint32)                                                      |          | Maximum number of result to be returned.     |
+| radius                | [float](#float)                                                        |          | Search radius.                               |
+| epsilon               | [float](#float)                                                        |          | Search coefficient.                          |
+| timeout               | [int64](#int64)                                                        |          | Search timeout in nanoseconds.               |
+| ingress_filters       | [Filter.Config](#payload-v1-Filter-Config)                             |          | Ingress filter configurations.               |
+| egress_filters        | [Filter.Config](#payload-v1-Filter-Config)                             |          | Egress filter configurations.                |
+| min_num               | [uint32](#uint32)                                                      |          | Minimum number of result to be returned.     |
+| aggregation_algorithm | [Search.AggregationAlgorithm](#payload-v1-Search-AggregationAlgorithm) |          | Aggregation Algorithm                        |
+| ratio                 | [google.protobuf.FloatValue](#google-protobuf-FloatValue)              |          | Search ratio for agent return result number. |
+| nprobe                | [uint32](#uint32)                                                      |          | Search nprobe.                               |
+| edge_size             | [int32](#int32)                                                        |          | Search edge size                             |
+| options               | [google.protobuf.Any](#google-protobuf-Any)                            | repeated | Algorithm-specific search options.           |
 
 <a name="payload-v1-Search-IDRequest"></a>
 

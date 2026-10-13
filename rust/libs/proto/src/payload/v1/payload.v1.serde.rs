@@ -5505,6 +5505,9 @@ impl serde::Serialize for insert::Config {
         if self.timestamp != 0 {
             len += 1;
         }
+        if !self.options.is_empty() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("payload.v1.Insert.Config", len)?;
         if self.skip_strict_exist_check {
             struct_ser.serialize_field("skipStrictExistCheck", &self.skip_strict_exist_check)?;
@@ -5517,6 +5520,9 @@ impl serde::Serialize for insert::Config {
             #[allow(clippy::needless_borrows_for_generic_args)]
             struct_ser
                 .serialize_field("timestamp", ToString::to_string(&self.timestamp).as_str())?;
+        }
+        if !self.options.is_empty() {
+            struct_ser.serialize_field("options", &self.options)?;
         }
         struct_ser.end()
     }
@@ -5532,6 +5538,7 @@ impl<'de> serde::Deserialize<'de> for insert::Config {
             "skipStrictExistCheck",
             "filters",
             "timestamp",
+            "options",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -5539,6 +5546,7 @@ impl<'de> serde::Deserialize<'de> for insert::Config {
             SkipStrictExistCheck,
             Filters,
             Timestamp,
+            Options,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -5568,6 +5576,7 @@ impl<'de> serde::Deserialize<'de> for insert::Config {
                             }
                             "filters" => Ok(GeneratedField::Filters),
                             "timestamp" => Ok(GeneratedField::Timestamp),
+                            "options" => Ok(GeneratedField::Options),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -5590,6 +5599,7 @@ impl<'de> serde::Deserialize<'de> for insert::Config {
                 let mut skip_strict_exist_check__ = None;
                 let mut filters__ = None;
                 let mut timestamp__ = None;
+                let mut options__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::SkipStrictExistCheck => {
@@ -5615,12 +5625,19 @@ impl<'de> serde::Deserialize<'de> for insert::Config {
                                     .0,
                             );
                         }
+                        GeneratedField::Options => {
+                            if options__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("options"));
+                            }
+                            options__ = Some(map_.next_value()?);
+                        }
                     }
                 }
                 Ok(insert::Config {
                     skip_strict_exist_check: skip_strict_exist_check__.unwrap_or_default(),
                     filters: filters__,
                     timestamp: timestamp__.unwrap_or_default(),
+                    options: options__.unwrap_or_default(),
                 })
             }
         }
@@ -9661,6 +9678,9 @@ impl serde::Serialize for search::Config {
         if self.edge_size != 0 {
             len += 1;
         }
+        if !self.options.is_empty() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("payload.v1.Search.Config", len)?;
         if !self.request_id.is_empty() {
             struct_ser.serialize_field("requestId", &self.request_id)?;
@@ -9708,6 +9728,9 @@ impl serde::Serialize for search::Config {
         if self.edge_size != 0 {
             struct_ser.serialize_field("edgeSize", &self.edge_size)?;
         }
+        if !self.options.is_empty() {
+            struct_ser.serialize_field("options", &self.options)?;
+        }
         struct_ser.end()
     }
 }
@@ -9736,6 +9759,7 @@ impl<'de> serde::Deserialize<'de> for search::Config {
             "nprobe",
             "edge_size",
             "edgeSize",
+            "options",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -9752,6 +9776,7 @@ impl<'de> serde::Deserialize<'de> for search::Config {
             Ratio,
             Nprobe,
             EdgeSize,
+            Options,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -9792,6 +9817,7 @@ impl<'de> serde::Deserialize<'de> for search::Config {
                             "ratio" => Ok(GeneratedField::Ratio),
                             "nprobe" => Ok(GeneratedField::Nprobe),
                             "edgeSize" | "edge_size" => Ok(GeneratedField::EdgeSize),
+                            "options" => Ok(GeneratedField::Options),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -9823,6 +9849,7 @@ impl<'de> serde::Deserialize<'de> for search::Config {
                 let mut ratio__ = None;
                 let mut nprobe__ = None;
                 let mut edge_size__ = None;
+                let mut options__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::RequestId => {
@@ -9921,6 +9948,12 @@ impl<'de> serde::Deserialize<'de> for search::Config {
                                     .0,
                             );
                         }
+                        GeneratedField::Options => {
+                            if options__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("options"));
+                            }
+                            options__ = Some(map_.next_value()?);
+                        }
                     }
                 }
                 Ok(search::Config {
@@ -9936,6 +9969,7 @@ impl<'de> serde::Deserialize<'de> for search::Config {
                     ratio: ratio__,
                     nprobe: nprobe__.unwrap_or_default(),
                     edge_size: edge_size__.unwrap_or_default(),
+                    options: options__.unwrap_or_default(),
                 })
             }
         }

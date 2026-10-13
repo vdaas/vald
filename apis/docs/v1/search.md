@@ -50,6 +50,7 @@ Search RPC is the method to search vector(s) similar to the request vector.
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
     int32 edge_size = 12;
+    repeated google.protobuf.Any options = 13;
   }
 
   message Filter.Config {
@@ -80,20 +81,21 @@ Search RPC is the method to search vector(s) similar to the request vector.
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    |         field         | type                        | label    | description                                  |
+    | :-------------------: | :-------------------------- | :------- | :------------------------------------------- |
+    |      request_id       | string                      |          | Unique request ID.                           |
+    |          num          | uint32                      |          | Maximum number of result to be returned.     |
+    |        radius         | float                       |          | Search radius.                               |
+    |        epsilon        | float                       |          | Search coefficient.                          |
+    |        timeout        | int64                       |          | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |          | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |          | Egress filter configurations.                |
+    |        min_num        | uint32                      |          | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |          | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |          | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |          | Search nprobe.                               |
+    |       edge_size       | int32                       |          | Search edge size                             |
+    |        options        | google.protobuf.Any         | repeated | Algorithm-specific search options.           |
 
   - Filter.Config
 
@@ -195,6 +197,7 @@ The vector with the same requested ID should be indexed into the `vald-agent` be
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
     int32 edge_size = 12;
+    repeated google.protobuf.Any options = 13;
   }
 
   message Filter.Config {
@@ -225,20 +228,21 @@ The vector with the same requested ID should be indexed into the `vald-agent` be
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    |         field         | type                        | label    | description                                  |
+    | :-------------------: | :-------------------------- | :------- | :------------------------------------------- |
+    |      request_id       | string                      |          | Unique request ID.                           |
+    |          num          | uint32                      |          | Maximum number of result to be returned.     |
+    |        radius         | float                       |          | Search radius.                               |
+    |        epsilon        | float                       |          | Search coefficient.                          |
+    |        timeout        | int64                       |          | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |          | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |          | Egress filter configurations.                |
+    |        min_num        | uint32                      |          | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |          | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |          | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |          | Search nprobe.                               |
+    |       edge_size       | int32                       |          | Search edge size                             |
+    |        options        | google.protobuf.Any         | repeated | Algorithm-specific search options.           |
 
   - Filter.Config
 
@@ -341,6 +345,7 @@ Each Search request and response are independent.
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
     int32 edge_size = 12;
+    repeated google.protobuf.Any options = 13;
   }
 
   message Filter.Config {
@@ -371,20 +376,21 @@ Each Search request and response are independent.
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    |         field         | type                        | label    | description                                  |
+    | :-------------------: | :-------------------------- | :------- | :------------------------------------------- |
+    |      request_id       | string                      |          | Unique request ID.                           |
+    |          num          | uint32                      |          | Maximum number of result to be returned.     |
+    |        radius         | float                       |          | Search radius.                               |
+    |        epsilon        | float                       |          | Search coefficient.                          |
+    |        timeout        | int64                       |          | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |          | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |          | Egress filter configurations.                |
+    |        min_num        | uint32                      |          | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |          | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |          | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |          | Search nprobe.                               |
+    |       edge_size       | int32                       |          | Search edge size                             |
+    |        options        | google.protobuf.Any         | repeated | Algorithm-specific search options.           |
 
   - Filter.Config
 
@@ -499,6 +505,7 @@ Each SearchByID request and response are independent.
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
     int32 edge_size = 12;
+    repeated google.protobuf.Any options = 13;
   }
 
   message Filter.Config {
@@ -529,20 +536,21 @@ Each SearchByID request and response are independent.
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    |         field         | type                        | label    | description                                  |
+    | :-------------------: | :-------------------------- | :------- | :------------------------------------------- |
+    |      request_id       | string                      |          | Unique request ID.                           |
+    |          num          | uint32                      |          | Maximum number of result to be returned.     |
+    |        radius         | float                       |          | Search radius.                               |
+    |        epsilon        | float                       |          | Search coefficient.                          |
+    |        timeout        | int64                       |          | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |          | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |          | Egress filter configurations.                |
+    |        min_num        | uint32                      |          | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |          | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |          | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |          | Search nprobe.                               |
+    |       edge_size       | int32                       |          | Search edge size                             |
+    |        options        | google.protobuf.Any         | repeated | Algorithm-specific search options.           |
 
   - Filter.Config
 
@@ -664,6 +672,7 @@ Please be careful that the size of the request exceeds the limit.
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
     int32 edge_size = 12;
+    repeated google.protobuf.Any options = 13;
   }
 
   message Filter.Config {
@@ -700,20 +709,21 @@ Please be careful that the size of the request exceeds the limit.
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    |         field         | type                        | label    | description                                  |
+    | :-------------------: | :-------------------------- | :------- | :------------------------------------------- |
+    |      request_id       | string                      |          | Unique request ID.                           |
+    |          num          | uint32                      |          | Maximum number of result to be returned.     |
+    |        radius         | float                       |          | Search radius.                               |
+    |        epsilon        | float                       |          | Search coefficient.                          |
+    |        timeout        | int64                       |          | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |          | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |          | Egress filter configurations.                |
+    |        min_num        | uint32                      |          | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |          | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |          | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |          | Search nprobe.                               |
+    |       edge_size       | int32                       |          | Search edge size                             |
+    |        options        | google.protobuf.Any         | repeated | Algorithm-specific search options.           |
 
   - Filter.Config
 
@@ -833,6 +843,7 @@ Please be careful that the size of the request exceeds the limit.
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
     int32 edge_size = 12;
+    repeated google.protobuf.Any options = 13;
   }
 
   message Filter.Config {
@@ -869,20 +880,21 @@ Please be careful that the size of the request exceeds the limit.
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    |         field         | type                        | label    | description                                  |
+    | :-------------------: | :-------------------------- | :------- | :------------------------------------------- |
+    |      request_id       | string                      |          | Unique request ID.                           |
+    |          num          | uint32                      |          | Maximum number of result to be returned.     |
+    |        radius         | float                       |          | Search radius.                               |
+    |        epsilon        | float                       |          | Search coefficient.                          |
+    |        timeout        | int64                       |          | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |          | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |          | Egress filter configurations.                |
+    |        min_num        | uint32                      |          | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |          | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |          | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |          | Search nprobe.                               |
+    |       edge_size       | int32                       |          | Search edge size                             |
+    |        options        | google.protobuf.Any         | repeated | Algorithm-specific search options.           |
 
   - Filter.Config
 
@@ -993,6 +1005,7 @@ LinearSearch RPC is the method to linear search vector(s) similar to the request
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
     int32 edge_size = 12;
+    repeated google.protobuf.Any options = 13;
   }
 
   message Filter.Config {
@@ -1023,20 +1036,21 @@ LinearSearch RPC is the method to linear search vector(s) similar to the request
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    |         field         | type                        | label    | description                                  |
+    | :-------------------: | :-------------------------- | :------- | :------------------------------------------- |
+    |      request_id       | string                      |          | Unique request ID.                           |
+    |          num          | uint32                      |          | Maximum number of result to be returned.     |
+    |        radius         | float                       |          | Search radius.                               |
+    |        epsilon        | float                       |          | Search coefficient.                          |
+    |        timeout        | int64                       |          | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |          | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |          | Egress filter configurations.                |
+    |        min_num        | uint32                      |          | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |          | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |          | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |          | Search nprobe.                               |
+    |       edge_size       | int32                       |          | Search edge size                             |
+    |        options        | google.protobuf.Any         | repeated | Algorithm-specific search options.           |
 
   - Filter.Config
 
@@ -1139,6 +1153,7 @@ You will get a `NOT_FOUND` error if the vector isn't stored.
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
     int32 edge_size = 12;
+    repeated google.protobuf.Any options = 13;
   }
 
   message Filter.Config {
@@ -1169,20 +1184,21 @@ You will get a `NOT_FOUND` error if the vector isn't stored.
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    |         field         | type                        | label    | description                                  |
+    | :-------------------: | :-------------------------- | :------- | :------------------------------------------- |
+    |      request_id       | string                      |          | Unique request ID.                           |
+    |          num          | uint32                      |          | Maximum number of result to be returned.     |
+    |        radius         | float                       |          | Search radius.                               |
+    |        epsilon        | float                       |          | Search coefficient.                          |
+    |        timeout        | int64                       |          | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |          | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |          | Egress filter configurations.                |
+    |        min_num        | uint32                      |          | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |          | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |          | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |          | Search nprobe.                               |
+    |       edge_size       | int32                       |          | Search edge size                             |
+    |        options        | google.protobuf.Any         | repeated | Algorithm-specific search options.           |
 
   - Filter.Config
 
@@ -1285,6 +1301,7 @@ Each LinearSearch request and response are independent.
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
     int32 edge_size = 12;
+    repeated google.protobuf.Any options = 13;
   }
 
   message Filter.Config {
@@ -1315,20 +1332,21 @@ Each LinearSearch request and response are independent.
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    |         field         | type                        | label    | description                                  |
+    | :-------------------: | :-------------------------- | :------- | :------------------------------------------- |
+    |      request_id       | string                      |          | Unique request ID.                           |
+    |          num          | uint32                      |          | Maximum number of result to be returned.     |
+    |        radius         | float                       |          | Search radius.                               |
+    |        epsilon        | float                       |          | Search coefficient.                          |
+    |        timeout        | int64                       |          | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |          | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |          | Egress filter configurations.                |
+    |        min_num        | uint32                      |          | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |          | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |          | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |          | Search nprobe.                               |
+    |       edge_size       | int32                       |          | Search edge size                             |
+    |        options        | google.protobuf.Any         | repeated | Algorithm-specific search options.           |
 
   - Filter.Config
 
@@ -1443,6 +1461,7 @@ Each LinearSearchByID request and response are independent.
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
     int32 edge_size = 12;
+    repeated google.protobuf.Any options = 13;
   }
 
   message Filter.Config {
@@ -1473,20 +1492,21 @@ Each LinearSearchByID request and response are independent.
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    |         field         | type                        | label    | description                                  |
+    | :-------------------: | :-------------------------- | :------- | :------------------------------------------- |
+    |      request_id       | string                      |          | Unique request ID.                           |
+    |          num          | uint32                      |          | Maximum number of result to be returned.     |
+    |        radius         | float                       |          | Search radius.                               |
+    |        epsilon        | float                       |          | Search coefficient.                          |
+    |        timeout        | int64                       |          | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |          | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |          | Egress filter configurations.                |
+    |        min_num        | uint32                      |          | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |          | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |          | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |          | Search nprobe.                               |
+    |       edge_size       | int32                       |          | Search edge size                             |
+    |        options        | google.protobuf.Any         | repeated | Algorithm-specific search options.           |
 
   - Filter.Config
 
@@ -1608,6 +1628,7 @@ Please be careful that the size of the request exceeds the limit.
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
     int32 edge_size = 12;
+    repeated google.protobuf.Any options = 13;
   }
 
   message Filter.Config {
@@ -1644,20 +1665,21 @@ Please be careful that the size of the request exceeds the limit.
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    |         field         | type                        | label    | description                                  |
+    | :-------------------: | :-------------------------- | :------- | :------------------------------------------- |
+    |      request_id       | string                      |          | Unique request ID.                           |
+    |          num          | uint32                      |          | Maximum number of result to be returned.     |
+    |        radius         | float                       |          | Search radius.                               |
+    |        epsilon        | float                       |          | Search coefficient.                          |
+    |        timeout        | int64                       |          | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |          | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |          | Egress filter configurations.                |
+    |        min_num        | uint32                      |          | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |          | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |          | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |          | Search nprobe.                               |
+    |       edge_size       | int32                       |          | Search edge size                             |
+    |        options        | google.protobuf.Any         | repeated | Algorithm-specific search options.           |
 
   - Filter.Config
 
@@ -1778,6 +1800,7 @@ Please be careful that the size of the request exceeds the limit.
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
     int32 edge_size = 12;
+    repeated google.protobuf.Any options = 13;
   }
 
   message Filter.Config {
@@ -1814,20 +1837,21 @@ Please be careful that the size of the request exceeds the limit.
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    |         field         | type                        | label    | description                                  |
+    | :-------------------: | :-------------------------- | :------- | :------------------------------------------- |
+    |      request_id       | string                      |          | Unique request ID.                           |
+    |          num          | uint32                      |          | Maximum number of result to be returned.     |
+    |        radius         | float                       |          | Search radius.                               |
+    |        epsilon        | float                       |          | Search coefficient.                          |
+    |        timeout        | int64                       |          | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |          | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |          | Egress filter configurations.                |
+    |        min_num        | uint32                      |          | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |          | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |          | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |          | Search nprobe.                               |
+    |       edge_size       | int32                       |          | Search edge size                             |
+    |        options        | google.protobuf.Any         | repeated | Algorithm-specific search options.           |
 
   - Filter.Config
 
