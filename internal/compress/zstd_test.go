@@ -178,7 +178,7 @@ func Test_zstdCompressor_CompressVector(t *testing.T) {
 			fields: fields{
 				gobc: &MockCompressor{
 					CompressVectorFunc: func(vector []float32) (bytes []byte, err error) {
-						return ([]byte("vdaas/vald")), nil
+						return []byte("vdaas/vald"), nil
 					},
 				},
 				zstd: &zstd.MockZstd{
@@ -225,7 +225,7 @@ func Test_zstdCompressor_CompressVector(t *testing.T) {
 			fields: fields{
 				gobc: &MockCompressor{
 					CompressVectorFunc: func(vector []float32) (bytes []byte, err error) {
-						return ([]byte("vdaas/vald")), nil
+						return []byte("vdaas/vald"), nil
 					},
 				},
 				zstd: &zstd.MockZstd{
@@ -246,7 +246,7 @@ func Test_zstdCompressor_CompressVector(t *testing.T) {
 			fields: fields{
 				gobc: &MockCompressor{
 					CompressVectorFunc: func(vector []float32) (bytes []byte, err error) {
-						return ([]byte("vdaas/vald")), nil
+						return []byte("vdaas/vald"), nil
 					},
 				},
 				zstd: &zstd.MockZstd{
@@ -274,7 +274,7 @@ func Test_zstdCompressor_CompressVector(t *testing.T) {
 			fields: fields{
 				gobc: &MockCompressor{
 					CompressVectorFunc: func(vector []float32) (bytes []byte, err error) {
-						return ([]byte("vdaas/vald")), nil
+						return []byte("vdaas/vald"), nil
 					},
 				},
 				zstd: &zstd.MockZstd{
