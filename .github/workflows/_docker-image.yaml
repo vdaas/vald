@@ -214,7 +214,7 @@ jobs:
           primary_tag: ${{ needs.prepare.outputs.primary_tag }}
           extra_tags: ${{ needs.prepare.outputs.extra_tags }}
   scan:
-    timeout-minutes: 10
+    timeout-minutes: 60
     permissions:
       contents: read
       security-events: write
