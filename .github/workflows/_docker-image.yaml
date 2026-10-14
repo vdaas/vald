@@ -144,7 +144,6 @@ jobs:
     timeout-minutes: 90
     permissions:
       contents: read
-      security-events: write # For the step: Scan the Docker image
     needs: prepare
     if: ${{ needs.prepare.outputs.matrix != '' }}
     strategy:
@@ -214,6 +213,22 @@ jobs:
           alter_image_name: ${{ needs.prepare.outputs.alter_image_name }}
           primary_tag: ${{ needs.prepare.outputs.primary_tag }}
           extra_tags: ${{ needs.prepare.outputs.extra_tags }}
+  scan:
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      security-events: write
+    needs: [build, prepare]
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.prepare.outputs.matrix) }}
+    runs-on: ${{ matrix.runs-on }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ needs.prepare.outputs.ref }}
       - name: Scan the Docker image
         uses: ./.github/actions/scan-docker-image
         env:
