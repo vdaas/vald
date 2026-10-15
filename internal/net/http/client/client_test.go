@@ -42,7 +42,9 @@ var (
 	transportComparator = []comparator.Option{
 		comparator.AllowUnexported(transport{}),
 		comparator.AllowUnexported(http.Transport{}),
-		comparator.IgnoreFields(http.Transport{}, "idleLRU", "altProto", "TLSNextProto", "dialsInProgress"),
+		comparator.AllowUnexported(http.Protocols{}),
+		// HTTP/2 registration state contains private fields and references back to the transport.
+		comparator.IgnoreFields(http.Transport{}, "idleLRU", "altProto", "TLSNextProto", "dialsInProgress", "h2Config"),
 		comparator.Exporter(func(t reflect.Type) bool {
 			if t.Name() == "ert" || t.Name() == "backoff" {
 				return true
