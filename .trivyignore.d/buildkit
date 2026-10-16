@@ -55,3 +55,11 @@ CVE-2024-23652 exp:2026-11-24
 CVE-2024-23653 exp:2026-11-24
 CVE-2026-33747 exp:2026-11-24
 CVE-2026-33748 exp:2026-11-24
+
+# Upstream BuildKit/runc embed x/net < v0.60.0 and the bundled CNI plugins
+# use Go 1.25.7. Temporarily accept these DoS findings in this build tool
+# pending upstream rebuilds with x/net v0.60.0 and Go 1.26.9/1.27.2.
+# Remove after those binaries are updated; review by 2026-10-21.
+CVE-2026-78667 exp:2026-10-21
+CVE-2026-78669 exp:2026-10-21
+CVE-2026-97031 exp:2026-10-21

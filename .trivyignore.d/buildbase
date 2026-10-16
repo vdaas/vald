@@ -30,3 +30,10 @@ CVE-2026-56862 exp:2026-11-19
 # current Trivy database. Temporarily accept this buildbase-only finding
 # to unblock image builds; review when the base package is updated.
 CVE-2026-84782 exp:2026-12-06
+
+# Ubuntu's /usr/bin/pebble still uses Go 1.26.7. Temporarily accept these
+# DoS findings in the build base pending a Go 1.26.9/1.27.2 rebuild.
+# Remove after Ubuntu updates the binary; review by 2026-10-21.
+CVE-2026-78667 exp:2026-10-21
+CVE-2026-78669 exp:2026-10-21
+CVE-2026-97031 exp:2026-10-21

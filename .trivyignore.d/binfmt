@@ -25,3 +25,10 @@ CVE-2026-56858 exp:2026-11-19
 CVE-2026-56859 exp:2026-11-19
 CVE-2026-56860 exp:2026-11-19
 CVE-2026-56862 exp:2026-11-19
+
+# The upstream /usr/bin/binfmt still uses Go 1.26.8. Temporarily accept
+# these DoS findings in this build tool pending a Go 1.26.9/1.27.2 rebuild.
+# Remove after the upstream binary is rebuilt; review by 2026-10-21.
+CVE-2026-78667 exp:2026-10-21
+CVE-2026-78669 exp:2026-10-21
+CVE-2026-97031 exp:2026-10-21

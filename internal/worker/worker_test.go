@@ -59,7 +59,7 @@ func TestNew(t *testing.T) {
 		want := w.want.(*worker)
 
 		queueOpts := []comparator.Option{
-			comparator.AllowUnexported(*(want.queue.(*queue))),
+			comparator.AllowUnexported(*want.queue.(*queue)),
 			comparator.Comparer(func(x, y chan JobFunc) bool {
 				return len(x) == len(y)
 			}),
