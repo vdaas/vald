@@ -34,3 +34,10 @@ CVE-2026-84304 exp:2026-11-28
 # affected by this denial-of-service finding. Temporarily accept it only
 # in the BuildKit scanner image; remove after updating the scanner binary.
 CVE-2026-84445 exp:2026-12-06
+
+# Upstream syft-scanner embeds Go 1.26.7 and x/net v0.57.0. Temporarily
+# accept these DoS findings in the scanner pending an upstream rebuild
+# with Go 1.26.9/1.27.2 and x/net v0.60.0. Review by 2026-10-21.
+CVE-2026-78667 exp:2026-10-21
+CVE-2026-78669 exp:2026-10-21
+CVE-2026-97031 exp:2026-10-21

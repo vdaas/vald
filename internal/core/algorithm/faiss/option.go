@@ -46,7 +46,7 @@ func WithDimension(dim int) Option {
 			return errors.NewErrCriticalOption("dimension", dim, err)
 		}
 
-		f.dimension = (C.int)(dim)
+		f.dimension = C.int(dim)
 		return nil
 	}
 }
@@ -58,7 +58,7 @@ func WithNlist(nlist int) Option {
 			return errors.NewErrInvalidOption("nlist", nlist)
 		}
 
-		f.nlist = (C.int)(nlist)
+		f.nlist = C.int(nlist)
 		return nil
 	}
 }
@@ -70,7 +70,7 @@ func WithM(m int) Option {
 			return errors.NewErrInvalidOption("m", m)
 		}
 
-		f.m = (C.int)(m)
+		f.m = C.int(m)
 		return nil
 	}
 }
@@ -82,7 +82,7 @@ func WithNbitsPerIdx(nbitsPerIdx int) Option {
 			return errors.NewErrInvalidOption("nbitsPerIdx", nbitsPerIdx)
 		}
 
-		f.nbitsPerIdx = (C.int)(nbitsPerIdx)
+		f.nbitsPerIdx = C.int(nbitsPerIdx)
 		return nil
 	}
 }

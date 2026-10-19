@@ -185,7 +185,7 @@ func (f *faiss) SaveIndexWithPath(idxPath string) error {
 // Train trains faiss index.
 func (f *faiss) Train(nb int, xb []float32) error {
 	f.mu.Lock()
-	ret := C.faiss_train(f.st, (C.int)(nb), (*C.float)(&xb[0]), C.int(f.methodType))
+	ret := C.faiss_train(f.st, C.int(nb), (*C.float)(&xb[0]), C.int(f.methodType))
 	f.mu.Unlock()
 	if ret == ErrorCode {
 		return errors.NewFaissError("failed to faiss_train")
@@ -202,7 +202,7 @@ func (f *faiss) Add(nb int, xb []float32, xids []int64) (int, error) {
 	}
 
 	f.mu.Lock()
-	ntotal := int(C.faiss_add(f.st, (C.int)(nb), (*C.float)(&xb[0]), (*C.long)(&xids[0]), C.int(f.methodType)))
+	ntotal := int(C.faiss_add(f.st, C.int(nb), (*C.float)(&xb[0]), (*C.long)(&xids[0]), C.int(f.methodType)))
 	f.mu.Unlock()
 	if ntotal < 0 {
 		return ntotal, errors.NewFaissError("failed to faiss_add")
@@ -220,7 +220,7 @@ func (f *faiss) Search(k, nprobe, nq int, xq []float32) ([]algorithm.SearchResul
 	I := make([]int64, k*nq)
 	D := make([]float32, k*nq)
 	f.mu.RLock()
-	ret := C.faiss_search(f.st, (C.int)(k), (C.int)(nprobe), (C.int)(nq), (*C.float)(&xq[0]), (*C.long)(&I[0]), (*C.float)(&D[0]), C.int(f.methodType))
+	ret := C.faiss_search(f.st, C.int(k), C.int(nprobe), C.int(nq), (*C.float)(&xq[0]), (*C.long)(&I[0]), (*C.float)(&D[0]), C.int(f.methodType))
 	f.mu.RUnlock()
 	if ret == ErrorCode {
 		return nil, errors.NewFaissError("failed to faiss_search")
@@ -245,7 +245,7 @@ func (f *faiss) Search(k, nprobe, nq int, xq []float32) ([]algorithm.SearchResul
 // Remove removes from faiss index.
 func (f *faiss) Remove(size int, ids []int64) (int, error) {
 	f.mu.Lock()
-	ntotal := int(C.faiss_remove(f.st, (C.int)(size), (*C.long)(&ids[0]), C.int(f.methodType)))
+	ntotal := int(C.faiss_remove(f.st, C.int(size), (*C.long)(&ids[0]), C.int(f.methodType)))
 	f.mu.Unlock()
 	if ntotal < 0 {
 		return ntotal, errors.NewFaissError("failed to faiss_remove")
