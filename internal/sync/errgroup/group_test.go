@@ -282,13 +282,13 @@ func TestGo(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			var calledCnt int32
+			var calledCnt atomic.Int32
 
 			return test{
 				name: "instance.Go is called when instance is not nil",
 				args: args{
 					f: func() error {
-						atomic.AddInt32(&calledCnt, 1)
+						calledCnt.Add(1)
 						return nil
 					},
 				},
@@ -302,7 +302,7 @@ func TestGo(t *testing.T) {
 						return err
 					}
 
-					if got, want := int(atomic.LoadInt32(&calledCnt)), 1; got != want {
+					if got, want := int(calledCnt.Load()), 1; got != want {
 						return errors.Errorf("calledCnt = %v, want: %v", got, want)
 					}
 					return nil
@@ -457,7 +457,7 @@ func Test_group_Go(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			var calledCnt int32
+			var calledCnt atomic.Int32
 
 			egctx, cancel := context.WithCancelCause(t.Context())
 
@@ -467,7 +467,7 @@ func Test_group_Go(t *testing.T) {
 				name: "f is not called when reached limit and cancel g.egctx",
 				args: args{
 					f: func() error {
-						atomic.AddInt32(&calledCnt, 1)
+						calledCnt.Add(1)
 						return nil
 					},
 				},
@@ -491,7 +491,7 @@ func Test_group_Go(t *testing.T) {
 						return err
 					}
 
-					if got, want := int(atomic.LoadInt32(&calledCnt)), 0; got != want {
+					if got, want := int(calledCnt.Load()), 0; got != want {
 						return errors.Errorf("calledCnt = %v, want: %v", got, want)
 					}
 					return nil
@@ -500,7 +500,7 @@ func Test_group_Go(t *testing.T) {
 		}(),
 
 		func() test {
-			var calledCnt int32
+			var calledCnt atomic.Int32
 
 			egctx, cancel := context.WithCancelCause(t.Context())
 
@@ -508,7 +508,7 @@ func Test_group_Go(t *testing.T) {
 				name: "f is called but f returns error and previous process also returns error",
 				args: args{
 					f: func() error {
-						atomic.AddInt32(&calledCnt, 1)
+						calledCnt.Add(1)
 						return errors.New("err")
 					},
 				},
@@ -538,7 +538,7 @@ func Test_group_Go(t *testing.T) {
 						}
 					}
 
-					if got, want := int(atomic.LoadInt32(&calledCnt)), 1; got != want {
+					if got, want := int(calledCnt.Load()), 1; got != want {
 						return errors.Errorf("calledCnt = %v, want: %v", got, want)
 					}
 					return nil
@@ -715,14 +715,14 @@ func Test_group_Wait(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			var num int32
+			var num atomic.Int32
 			return test{
 				name:   "returns nil after all goroutne returns",
 				fields: fields{},
 				beforeFunc: func(t *testing.T, g Group) {
 					t.Helper()
 					g.Go(func() error {
-						atomic.StoreInt32(&num, int32(runtime.NumGoroutine()))
+						num.Store(int32(runtime.NumGoroutine()))
 						time.Sleep(time.Second)
 						return nil
 					})
@@ -732,7 +732,7 @@ func Test_group_Wait(t *testing.T) {
 						return err
 					}
 
-					if got, want := int(atomic.LoadInt32(&num)), runtime.NumGoroutine(); got <= want {
+					if got, want := int(num.Load()), runtime.NumGoroutine(); got <= want {
 						return errors.New("all goroutine not returns")
 					}
 					return nil
