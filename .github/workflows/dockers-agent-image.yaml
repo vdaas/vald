@@ -48,7 +48,6 @@ on:
       - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-agent-image.yaml
-      - .trivyignore.d/agent
       - Makefile
       - Makefile.d/**
       - apis/proto/**
@@ -57,6 +56,7 @@ on:
       - rust/Cargo.lock
       - rust/Cargo.toml
       - rust/bin/agent
+      - rust/libs/algorithms/zvec/**
       - rust/libs/ngt-rs/**
       - rust/libs/ngt/**
       - rust/libs/proto/**
@@ -74,7 +74,6 @@ on:
       - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-agent-image.yaml
-      - .trivyignore.d/agent
       - Makefile
       - Makefile.d/**
       - apis/proto/**
@@ -83,6 +82,7 @@ on:
       - rust/Cargo.lock
       - rust/Cargo.toml
       - rust/bin/agent
+      - rust/libs/algorithms/zvec/**
       - rust/libs/ngt-rs/**
       - rust/libs/ngt/**
       - rust/libs/proto/**

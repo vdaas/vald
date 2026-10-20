@@ -19,7 +19,9 @@ fn main() {
         .file("src/glibc_compat.c")
         .compile("glibc_compat");
 
-    println!("cargo:rustc-link-lib=static=stdc++");
+    if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("linux") {
+        println!("cargo:rustc-link-lib=static=stdc++");
+    }
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=src/glibc_compat.c");
 }

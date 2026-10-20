@@ -91,6 +91,25 @@ format: {{ default .default.format .Values.format | quote }}
 {{- end -}}
 
 {{/*
+The Rust Zvec agent serves gRPC without the Go agents' HTTP health servers.
+*/}}
+{{- define "vald.agentContainerPorts" -}}
+{{- if eq (lower .algorithm) "zvec" -}}
+{{- $config := include "vald.containerPorts" . | fromYaml -}}
+{{- range $name := list "livenessProbe" "readinessProbe" "startupProbe" -}}
+{{- if hasKey $config $name -}}
+{{- $probe := index $config $name -}}
+{{- $_ := unset $probe "httpGet" -}}
+{{- $_ := set $probe "tcpSocket" (dict "port" "grpc") -}}
+{{- end -}}
+{{- end -}}
+{{- toYaml $config -}}
+{{- else -}}
+{{- include "vald.containerPorts" . -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Container ports
 */}}
 {{- define "vald.containerPorts" -}}
@@ -730,9 +749,14 @@ initContainers
       {{- $discovererReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
       until [ "$(wget --server-response --spider --quiet http://{{ $.Values.discoverer.name }}.{{ $.namespace }}.svc.cluster.local:{{ $discovererReadinessPort }}{{ $discovererReadinessPath }} 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
       {{- else if eq .target "agent" }}
+      {{- if eq (lower $.Values.agent.algorithm) "zvec" }}
+      {{- $agentGRPCPort := default $.Values.defaults.server_config.servers.grpc.servicePort $.Values.agent.server_config.servers.grpc.servicePort }}
+      until nc -z -w 2 {{ $.Values.agent.name }}.{{ $.namespace }}.svc.cluster.local {{ $agentGRPCPort }}; do
+      {{- else }}
       {{- $agentReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.agent.server_config.healths.readiness.port }}
       {{- $agentReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
       until [ "$(wget --server-response --spider --quiet http://{{ $.Values.agent.name }}.{{ $.namespace }}.svc.cluster.local:{{ $agentReadinessPort }}{{ $agentReadinessPath }} 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+      {{- end }}
       {{- else if eq .target "agent-readreplica" }}
       {{- $agentReadReplicaReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.agent.server_config.healths.readiness.port }}
       {{- $agentReadReplicaReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}

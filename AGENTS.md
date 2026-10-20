@@ -102,12 +102,14 @@ Vald uses Rust for high-performance indexing and strictly typed logic (`rust/`).
 
 - **Base Images:** Use `distroless` or `alpine` for production images to minimize attack surface.
 - **Multi-Stage Builds:** Always separate `builder` stage from `runner` stage.
+- **Rust Agent Runtime:** Bundle the builder's dynamic loader and complete shared-library dependencies (including BLAS/LAPACK and Zvec) together; invoke the bundled loader to keep glibc versions consistent. Smoke-test the published image with the E2E memory limit.
 - **Architecture:** Changes must support both `amd64` (AVX2 required for NGT) and `arm64`.
 
 ### Makefiles
 
 - **Phony Targets:** Ensure `.PHONY` is used for non-file targets.
 - **Portability:** Use POSIX-compliant shell commands (avoid bash-isms).
+- **Backend ConfigMaps:** When adding an algorithm directory under `charts/vald/templates/agent/`, include it in `Makefile.d/k8s.mk` deployment and cleanup targets. `kubectl apply -f` does not recurse into subdirectories.
 
 ### GitHub Actions
 

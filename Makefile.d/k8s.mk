@@ -183,6 +183,7 @@ k8s/vald/deploy: k8s/vald/manifests
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent/ngt || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent/faiss || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/agent/zvec || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent/readreplica || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway || true
@@ -201,7 +202,7 @@ k8s/vald/deploy: k8s/vald/manifests
 .PHONY: k8s/vald/delete
 ## delete vald sample cluster from k8s
 k8s/vald/delete: k8s/vald/manifests
-	@echo "gateway/mirror index/operator index/job/readreplica/rotate index/job/save index/job/creation index/job/correction gateway gateway/lb manager/index discoverer agent/readreplica agent/faiss agent/ngt agent" | tr ' ' '\n' | \
+	@echo "gateway/mirror index/operator index/job/readreplica/rotate index/job/save index/job/creation index/job/correction gateway gateway/lb manager/index discoverer agent/readreplica agent/zvec agent/faiss agent/ngt agent" | tr ' ' '\n' | \
 	xargs -I {} -P $(CORES) bash -c 'kubectl delete -f $(TEMP_DIR)/vald/templates/{} || true'
 	kubectl delete -f $(TEMP_DIR)/vald/crds || true
 

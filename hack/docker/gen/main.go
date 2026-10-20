@@ -43,6 +43,7 @@ const (
 	agent               = "agent"
 	agentFaiss          = agent + "-faiss"
 	agentNGT            = agent + "-ngt"
+	agentZVec           = agent + "-zvec"
 	agentSidecar        = agent + "-sidecar"
 	bench               = "benchmark"
 	benchJob            = bench + "-job"
@@ -135,6 +136,7 @@ const (
 	rustNgtRsPath       = "rust/libs/ngt-rs/**"
 	rustNgtPath         = "rust/libs/ngt/**"
 	rustProtoPath       = "rust/libs/proto/**"
+	rustZVecPath        = "rust/libs/algorithms/zvec/**"
 
 	excludeTestFilesPath = "!**/*_test.go"
 	excludeMockFilesPath = "!**/*_mock.go"
@@ -461,7 +463,14 @@ var (
 	}
 	rustBuildCommands = []string{
 		"make rust/target/release/${APP_NAME}",
+		"find rust/target/release/build -name libzvec_c_api.so -exec cp {} /usr/lib/libzvec_c_api.so \\;",
 		"mv \"rust/target/release/${APP_NAME}\" \"{{$.BinDir}}/${APP_NAME}\"",
+		"mkdir -p /usr/local/lib/vald",
+		"ldconfig",
+		"ldd {{$.BinDir}}/${APP_NAME} > /tmp/vald-runtime-libs",
+		"! grep -q 'not found' /tmp/vald-runtime-libs",
+		"awk '$2 == \"=>\" && $3 ~ /^\\// {print $3} $1 ~ /^\\// {print $1}' /tmp/vald-runtime-libs | sort -u | xargs -r -I {} cp -L {} /usr/local/lib/vald/",
+		"cp -L \"$(awk '$1 ~ /^\\// {print $1; exit}' /tmp/vald-runtime-libs)\" /usr/local/lib/vald/ld.so",
 		"rm -rf rust/target",
 	}
 	e2eBuildCommands = []string{
@@ -1025,6 +1034,13 @@ func run() error {
 				ngtClangLTOPreprocess,
 				faissPreprocess,
 			},
+			// Bundle the loader with its complete dependency closure so the
+			// Rust agent and BLAS use the builder's matching glibc at runtime.
+			StageFiles: []string{"/usr/local/lib/vald"},
+			Entrypoints: []string{
+				"/usr/local/lib/vald/ld.so", "--library-path", "/usr/local/lib/vald",
+				"{{$.BinDir}}/{{.AppName}}",
+			},
 		},
 		vald + "-" + agentSidecar: {
 			AppName:    "sidecar",
@@ -1201,7 +1217,204 @@ func run() error {
 		data := d
 
 		eg.Go(safety.RecoverFunc(func() error {
-			return generateWorkflow(egctx, os.Args[1], name, maintainer, year, data)
+			data.Name = strings.TrimPrefix(name, vald+"-")
+			switch data.ContainerType {
+			case HelmOperator:
+				data.PullRequestPaths = append(
+					data.PullRequestPaths,
+					chartPath,
+					valuesPath,
+					templatesPath,
+					helmOperatorChartPath,
+					helmOperatorValuesPath,
+					helmOperatorTemplatesPath,
+					operatorSDKVersionPath,
+				)
+			case DevContainer:
+				data.PullRequestPaths = append(
+					data.PullRequestPaths,
+					apisProtoPath,
+					hackPath,
+					goModPath,
+					goSumPath,
+					goVersionPath,
+				)
+			case Go:
+				data.PullRequestPaths = append(
+					data.PullRequestPaths,
+					apisProtoPath,
+					goModPath,
+					goSumPath,
+					goVersionPath,
+					excludeTestFilesPath,
+					excludeMockFilesPath,
+				)
+				mainFile := file.Join(os.Args[1], "cmd", data.PackageDir, "main.go")
+				if file.Exists(mainFile) {
+					ns, err := buildDependencyTree(os.Args[1], mainFile)
+					if err != nil {
+						log.Error(err)
+					}
+					pkgs := make([]string, 0, len(ns)+1)
+					pkgs = append(pkgs, file.Join("cmd", data.PackageDir))
+					for _, pnode := range ns {
+						pkgs = append(pkgs, pnode.ToSlice()...)
+					}
+					slices.Sort(pkgs)
+					pkgs = slices.Compact(pkgs)
+					root, err := os.Getwd()
+					if err != nil {
+						root = os.Getenv("HOME")
+					}
+					if root != "" && !strings.HasSuffix(root, string(os.PathSeparator)) {
+						root += string(os.PathSeparator)
+					}
+					for i, pkg := range pkgs {
+						const splitWord = "/" + repository + "/"
+						pkg = file.Join(pkg, "*.go")
+						index := strings.LastIndex(pkg, splitWord)
+						if index != -1 {
+							pkg = pkg[index+len(splitWord):]
+						}
+						if root != "" {
+							pkg = strings.TrimPrefix(pkg, root)
+						}
+						pkgs[i] = pkg
+					}
+					data.PullRequestPaths = append(data.PullRequestPaths, pkgs...)
+				}
+			case Rust:
+				data.PullRequestPaths = append(
+					data.PullRequestPaths,
+					apisProtoPath,
+					cargoLockPath,
+					cargoTomlPath,
+					rustBinAgentDirPath,
+					rustNgtRsPath,
+					rustNgtPath,
+					rustProtoPath,
+					rustZVecPath,
+					rustVersionPath,
+				)
+			}
+			if strings.EqualFold(data.Name, agentFaiss) || data.ContainerType == Rust {
+				data.PullRequestPaths = append(data.PullRequestPaths, faissVersionPath)
+			}
+			if strings.EqualFold(data.Name, agentNGT) || data.ContainerType == Rust {
+				data.PullRequestPaths = append(data.PullRequestPaths, ngtVersionPath)
+			}
+
+			if !data.AliasImage {
+				data.PullRequestPaths = append(data.PullRequestPaths, makefilePath, makefileDirPath)
+			}
+
+			if data.AliasImage {
+				data.BuildPlatforms = multiPlatforms
+			}
+
+			data.Year = year
+			if maintainer := os.Getenv(maintainerKey); maintainer != "" {
+				data.Maintainer = maintainer
+			} else {
+				data.Maintainer = defaultMaintainer
+			}
+
+			log.Infof("Generating %s's workflow", data.Name)
+			workflow := new(Workflow)
+			err := yaml.Unmarshal(conv.Atob(`name: "Build docker image: `+data.Name+`"
+on:
+  schedule:
+    - cron: "0 * * * *"
+  push:
+    branches:
+      - "main"
+      - "release/v*.*"
+      - "!release/v*.*.*"
+    tags:
+      - "*.*.*"
+      - "*.*.*-*"
+      - "v*.*.*"
+      - "v*.*.*-*"
+  pull_request:
+    paths:
+      - ".github/actions/docker-build/action.yaml"
+      - ".github/actions/prepare-docker-build/action.yaml"
+      - ".github/workflows/_docker-image.yaml"
+      - ".github/workflows/dockers-`+data.Name+`-image.yaml"
+      - "dockers/`+data.PackageDir+`/Dockerfile"
+      - "hack/docker/gen/main.go"
+  pull_request_target:
+    types: [opened, reopened, synchronize, labeled]
+    paths: []
+
+jobs:
+  build:
+    uses: "./.github/workflows/_docker-image.yaml"
+    with:
+      target: "`+data.Name+`"
+      platforms: ""
+`), &workflow)
+			if err != nil {
+				return errors.Wrap(err, "failed to decode YAML")
+			}
+
+			if !data.AliasImage {
+				workflow.On.Schedule = nil
+			}
+			workflow.On.PullRequest.Paths = append(workflow.On.PullRequest.Paths, data.PullRequestPaths...)
+			if strings.EqualFold(data.Name, exampleContainer) {
+				workflow.On.PullRequest.Paths = slices.DeleteFunc(workflow.On.PullRequest.Paths, func(path string) bool {
+					return strings.HasPrefix(path, "cmd") || strings.HasPrefix(path, "pkg")
+				})
+				workflow.On.PullRequest.Paths = append(workflow.On.PullRequest.Paths, data.PackageDir+"/**")
+			}
+			slices.Sort(workflow.On.PullRequest.Paths)
+			workflow.On.PullRequest.Paths = slices.Compact(workflow.On.PullRequest.Paths)
+
+			workflow.On.PullRequestTarget.Paths = workflow.On.PullRequest.Paths
+			workflow.Jobs.Build.With.Platforms = data.BuildPlatforms
+
+			workflow.Jobs.Build.Permissions = map[string]string{
+				"contents":        "read",
+				"security-events": "write",
+			}
+
+			workflow.Jobs.Build.Secrets = map[string]string{
+				"PACKAGE_USER":             "${{ secrets.PACKAGE_USER }}",
+				"PACKAGE_TOKEN":            "${{ secrets.PACKAGE_TOKEN }}",
+				"DOCKERHUB_USER":           "${{ secrets.DOCKERHUB_USER }}",
+				"DOCKERHUB_PASS":           "${{ secrets.DOCKERHUB_PASS }}",
+				"SLACK_NOTIFY_WEBHOOK_URL": "${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}",
+			}
+
+			workflowYamlTmp, err := yaml.Marshal(workflow)
+			if err != nil {
+				return errors.Wrap(err, "failed to marshal workflow struct to YAML")
+			}
+
+			// remove the double quotation marks from the generated key "on": (note that the word "on" is a reserved word in sigs.k8s.io/yaml)
+			workflowYaml := strings.Replace(string(workflowYamlTmp), "\"on\":", "on:", 1)
+
+			if len(header) > (int(^uint(0)>>1) - len(workflowYaml)) {
+				return errors.New("size computation for allocation may overflow")
+			}
+			totalLen := len(header) + len(workflowYaml)
+
+			buf := bytes.NewBuffer(make([]byte, 0, totalLen))
+			err = license.Execute(buf, data)
+			if err != nil {
+				return errors.Wrap(err, "failed to execute template")
+			}
+			// A bare LF here: CRLF would poison every generated workflow with
+			// carriage returns that git then has to normalize on checkin.
+			buf.WriteString("\n")
+			buf.WriteString(workflowYaml)
+			fileName := file.Join(os.Args[1], ".github/workflows", "dockers-"+data.Name+"-image.yaml")
+			_, err = file.OverWriteFile(egctx, fileName, buf, fs.ModePerm)
+			if err != nil {
+				return errors.Wrapf(err, "failed to writing workflow file for %s", fileName)
+			}
+			return nil
 		}))
 
 		eg.Go(safety.RecoverFunc(func() error {
