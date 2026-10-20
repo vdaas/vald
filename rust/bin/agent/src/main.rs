@@ -12,16 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use algorithm::{Error, MultiError};
+use algorithm::Error;
+#[cfg(feature = "qbg")]
+use algorithm::MultiError;
 use anyhow::Result;
+#[cfg(feature = "qbg")]
 use chrono::{Local, Timelike};
 use config::Config;
+#[cfg(feature = "qbg")]
 use proto::payload::v1::object::Distance;
 use proto::payload::v1::search;
-use qbg::index::Index;
-use qbg::property::Property;
+#[cfg(feature = "qbg")]
+use qbg::{index::Index, property::Property};
 use std::collections::HashMap;
+use std::sync::Arc;
 use std::time::Duration;
+#[cfg(feature = "zvec")]
+use zvec::Service as ZVecService;
 
 mod handler;
 mod middleware;
@@ -120,12 +127,14 @@ impl algorithm::ANN for _MockService {
     }
 }
 
+#[cfg(feature = "qbg")]
 struct QBGService {
     path: String,
     index: Index,
     property: Property,
 }
 
+#[cfg(feature = "qbg")]
 impl QBGService {
     fn new(settings: Config) -> Self {
         let path = settings
@@ -192,6 +201,7 @@ impl QBGService {
     }
 }
 
+#[cfg(feature = "qbg")]
 impl algorithm::ANN for QBGService {
     fn exists(&self, _uuid: String) -> bool {
         // convert uuid to id
@@ -401,15 +411,52 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .unwrap();
     let _logger =
         flexi_logger::Logger::try_with_str(settings.get::<String>("logging.level")?)?.start()?;
-    let service = QBGService::new(settings.clone());
-    let agent = handler::Agent::new(
+    let algorithm = settings
+        .get::<String>("algorithm")
+        .unwrap_or_else(|_| "qbg".to_string())
+        .to_lowercase();
+    let (service, agent_name): (Box<dyn algorithm::ANN>, &str) = match algorithm.as_str() {
+        #[cfg(feature = "zvec")]
+        "zvec" => {
+            let path = settings
+                .get::<String>("zvec.index_path")
+                .unwrap_or_else(|_| "/var/lib/vald/zvec".to_string());
+            let dimension = settings.get::<usize>("zvec.dimension").unwrap_or(784);
+            let fields = settings
+                .get_array("zvec.fields")
+                .unwrap_or_default()
+                .into_iter()
+                .filter_map(|value| value.into_string().ok())
+                .collect();
+            let fts_fields = settings
+                .get_array("zvec.fts_fields")
+                .unwrap_or_default()
+                .into_iter()
+                .filter_map(|value| value.into_string().ok())
+                .collect();
+            (
+                Box::new(ZVecService::new(&path, dimension, fields, fts_fields)?),
+                "agent-zvec",
+            )
+        }
+        #[cfg(feature = "qbg")]
+        "qbg" => (Box::new(QBGService::new(settings.clone())), "agent-qbg"),
+        #[cfg(not(feature = "zvec"))]
+        "zvec" => return Err("Rust agent was built without the zvec feature".into()),
+        #[cfg(not(feature = "qbg"))]
+        "qbg" => return Err("Rust agent was built without the qbg feature".into()),
+        name => {
+            return Err(format!("unsupported Rust agent algorithm: {name}").into());
+        }
+    };
+    let agent = Arc::new(handler::Agent::new(
         service,
-        "agent-qbg",
+        agent_name,
         "127.0.0.1",
         "vald/internal/core/algorithm",
         "vald-agent",
         10,
-    );
+    ));
 
     let mut grpc_key = String::new();
     for i in 0..settings.get_array("server_config.servers")?.len() {
@@ -456,6 +503,30 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .option_layer(metricinterceptor.map(|_| middleware::MetricMiddlewareLayer::default()))
         .into_inner();
 
+    // Go configuration uses zero to leave these limits at their defaults.
+    // Tonic treats an explicit zero as a hard limit, preventing RPCs entirely.
+    let max_header_list_size =
+        settings.get::<u32>(format!("{grpc_key}.grpc.max_header_list_size").as_str())?;
+    if max_header_list_size > 0 {
+        builder = builder.http2_max_header_list_size(max_header_list_size);
+    }
+    let max_concurrent_streams =
+        settings.get::<u32>(format!("{grpc_key}.grpc.max_concurrent_streams").as_str())?;
+    if max_concurrent_streams > 0 {
+        builder = builder.max_concurrent_streams(max_concurrent_streams);
+    }
+    let max_receive_message_size = match settings
+        .get::<usize>(format!("{grpc_key}.grpc.max_receive_message_size").as_str())?
+    {
+        0 => 4 * 1024 * 1024,
+        size => size,
+    };
+    let max_send_message_size =
+        match settings.get::<usize>(format!("{grpc_key}.grpc.max_send_message_size").as_str())? {
+            0 => usize::MAX,
+            size => size,
+        };
+
     builder
         .initial_stream_window_size(
             settings.get::<u32>(format!("{grpc_key}.grpc.initial_window_size").as_str())?,
@@ -473,24 +544,46 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .get::<String>(format!("{grpc_key}.grpc.keepalive.timeout").as_str())?
                 .as_str(),
         ))
-        .http2_max_header_list_size(
-            settings.get::<u32>(format!("{grpc_key}.grpc.max_header_list_size").as_str())?,
-        )
-        .max_concurrent_streams(
-            settings.get::<u32>(format!("{grpc_key}.grpc.max_concurrent_streams").as_str())?,
-        )
         .layer(layer)
         .add_service(
-            proto::core::v1::agent_server::AgentServer::new(agent)
-                .max_decoding_message_size(
-                    settings.get::<usize>(
-                        format!("{grpc_key}.grpc.max_receive_message_size").as_str(),
-                    )?,
-                )
-                .max_encoding_message_size(
-                    settings
-                        .get::<usize>(format!("{grpc_key}.grpc.max_send_message_size").as_str())?,
-                ),
+            proto::core::v1::agent_server::AgentServer::from_arc(Arc::clone(&agent))
+                .max_decoding_message_size(max_receive_message_size)
+                .max_encoding_message_size(max_send_message_size),
+        )
+        .add_service(
+            proto::vald::v1::index_server::IndexServer::from_arc(Arc::clone(&agent))
+                .max_decoding_message_size(max_receive_message_size)
+                .max_encoding_message_size(max_send_message_size),
+        )
+        .add_service(
+            proto::vald::v1::insert_server::InsertServer::from_arc(Arc::clone(&agent))
+                .max_decoding_message_size(max_receive_message_size)
+                .max_encoding_message_size(max_send_message_size),
+        )
+        .add_service(
+            proto::vald::v1::object_server::ObjectServer::from_arc(Arc::clone(&agent))
+                .max_decoding_message_size(max_receive_message_size)
+                .max_encoding_message_size(max_send_message_size),
+        )
+        .add_service(
+            proto::vald::v1::remove_server::RemoveServer::from_arc(Arc::clone(&agent))
+                .max_decoding_message_size(max_receive_message_size)
+                .max_encoding_message_size(max_send_message_size),
+        )
+        .add_service(
+            proto::vald::v1::search_server::SearchServer::from_arc(Arc::clone(&agent))
+                .max_decoding_message_size(max_receive_message_size)
+                .max_encoding_message_size(max_send_message_size),
+        )
+        .add_service(
+            proto::vald::v1::update_server::UpdateServer::from_arc(Arc::clone(&agent))
+                .max_decoding_message_size(max_receive_message_size)
+                .max_encoding_message_size(max_send_message_size),
+        )
+        .add_service(
+            proto::vald::v1::upsert_server::UpsertServer::from_arc(Arc::clone(&agent))
+                .max_decoding_message_size(max_receive_message_size)
+                .max_encoding_message_size(max_send_message_size),
         )
         .serve(addr)
         .await?;
