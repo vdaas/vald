@@ -101,3 +101,21 @@ CVE-2026-85731 exp:2026-12-06
 CVE-2026-78667 exp:2026-10-21
 CVE-2026-78669 exp:2026-10-21
 CVE-2026-97031 exp:2026-10-21
+
+# Bundled upstream development and CLI tools (including k9s, oapi-codegen,
+# helm-docs, pinact, ghalint, etc.) still embed vulnerable golang.org/x/text,
+# containerd, or kin-openapi releases.
+# Temporarily accept these findings only in the development image;
+# remove after upstream tool rebuilds and review by 2026-12-06.
+CVE-2026-56851 exp:2026-12-06
+CVE-2026-95837 exp:2026-12-06
+CVE-2026-63209 exp:2026-12-06
+
+# Bundled oapi-codegen embeds kin-openapi releases with unpatched
+# nil-pointer / denial-of-service vulnerabilities.
+# Review and remove after updating oapi-codegen by 2026-12-06.
+CVE-2026-100349 exp:2026-12-06
+CVE-2026-100352 exp:2026-12-06
+CVE-2026-100353 exp:2026-12-06
+CVE-2026-100354 exp:2026-12-06
+CVE-2026-97394 exp:2026-12-06
