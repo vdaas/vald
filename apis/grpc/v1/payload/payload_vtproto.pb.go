@@ -19,6 +19,7 @@ import (
 	fmt "fmt"
 	"maps"
 	math "math"
+	"slices"
 	unsafe "unsafe"
 
 	protohelpers "github.com/planetscale/vtprotobuf/protohelpers"
@@ -5405,8 +5406,8 @@ func (m *Search_Request) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		dAtA[i] = 0x12
 	}
 	if len(m.Vector) > 0 {
-		for iNdEx := len(m.Vector) - 1; iNdEx >= 0; iNdEx-- {
-			f1 := math.Float32bits(float32(m.Vector[iNdEx]))
+		for _, v := range slices.Backward(m.Vector) {
+			f1 := math.Float32bits(float32(v))
 			i -= 4
 			binary.LittleEndian.PutUint32(dAtA[i:], uint32(f1))
 		}
@@ -5448,8 +5449,8 @@ func (m *Search_MultiRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Requests) > 0 {
-		for iNdEx := len(m.Requests) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Requests[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+		for _, v := range slices.Backward(m.Requests) {
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -5543,8 +5544,8 @@ func (m *Search_MultiIDRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error)
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Requests) > 0 {
-		for iNdEx := len(m.Requests) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Requests[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+		for _, v := range slices.Backward(m.Requests) {
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -5648,8 +5649,8 @@ func (m *Search_MultiObjectRequest) MarshalToSizedBufferVT(dAtA []byte) (int, er
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Requests) > 0 {
-		for iNdEx := len(m.Requests) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Requests[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+		for _, v := range slices.Backward(m.Requests) {
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -5805,8 +5806,8 @@ func (m *Search_Response) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Results) > 0 {
-		for iNdEx := len(m.Results) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Results[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+		for _, v := range slices.Backward(m.Results) {
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -5857,8 +5858,8 @@ func (m *Search_Responses) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Responses) > 0 {
-		for iNdEx := len(m.Responses) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Responses[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+		for _, v := range slices.Backward(m.Responses) {
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -6074,8 +6075,8 @@ func (m *Filter_Config) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Targets) > 0 {
-		for iNdEx := len(m.Targets) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Targets[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+		for _, v := range slices.Backward(m.Targets) {
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -6205,8 +6206,8 @@ func (m *Insert_MultiRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Requests) > 0 {
-		for iNdEx := len(m.Requests) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Requests[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+		for _, v := range slices.Backward(m.Requests) {
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -6313,8 +6314,8 @@ func (m *Insert_MultiObjectRequest) MarshalToSizedBufferVT(dAtA []byte) (int, er
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Requests) > 0 {
-		for iNdEx := len(m.Requests) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Requests[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+		for _, v := range slices.Backward(m.Requests) {
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -6502,8 +6503,8 @@ func (m *Update_MultiRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Requests) > 0 {
-		for iNdEx := len(m.Requests) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Requests[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+		for _, v := range slices.Backward(m.Requests) {
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -6610,8 +6611,8 @@ func (m *Update_MultiObjectRequest) MarshalToSizedBufferVT(dAtA []byte) (int, er
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Requests) > 0 {
-		for iNdEx := len(m.Requests) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Requests[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+		for _, v := range slices.Backward(m.Requests) {
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -6864,8 +6865,8 @@ func (m *Upsert_MultiRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Requests) > 0 {
-		for iNdEx := len(m.Requests) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Requests[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+		for _, v := range slices.Backward(m.Requests) {
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -6972,8 +6973,8 @@ func (m *Upsert_MultiObjectRequest) MarshalToSizedBufferVT(dAtA []byte) (int, er
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Requests) > 0 {
-		for iNdEx := len(m.Requests) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Requests[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+		for _, v := range slices.Backward(m.Requests) {
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -7171,8 +7172,8 @@ func (m *Remove_MultiRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Requests) > 0 {
-		for iNdEx := len(m.Requests) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Requests[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+		for _, v := range slices.Backward(m.Requests) {
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -7216,8 +7217,8 @@ func (m *Remove_TimestampRequest) MarshalToSizedBufferVT(dAtA []byte) (int, erro
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Timestamps) > 0 {
-		for iNdEx := len(m.Timestamps) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Timestamps[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+		for _, v := range slices.Backward(m.Timestamps) {
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -7684,10 +7685,10 @@ func (m *Object_IDs) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Ids) > 0 {
-		for iNdEx := len(m.Ids) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.Ids[iNdEx])
-			copy(dAtA[i:], m.Ids[iNdEx])
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Ids[iNdEx])))
+		for _, v := range slices.Backward(m.Ids) {
+			i -= len(v)
+			copy(dAtA[i:], v)
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v)))
 			i--
 			dAtA[i] = 0xa
 		}
@@ -7731,8 +7732,8 @@ func (m *Object_Vector) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		dAtA[i] = 0x18
 	}
 	if len(m.Vector) > 0 {
-		for iNdEx := len(m.Vector) - 1; iNdEx >= 0; iNdEx-- {
-			f1 := math.Float32bits(float32(m.Vector[iNdEx]))
+		for _, v := range slices.Backward(m.Vector) {
+			f1 := math.Float32bits(float32(v))
 			i -= 4
 			binary.LittleEndian.PutUint32(dAtA[i:], uint32(f1))
 		}
@@ -7869,8 +7870,8 @@ func (m *Object_Vectors) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Vectors) > 0 {
-		for iNdEx := len(m.Vectors) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Vectors[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+		for _, v := range slices.Backward(m.Vectors) {
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -8210,10 +8211,10 @@ func (m *Object_Location) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Ips) > 0 {
-		for iNdEx := len(m.Ips) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.Ips[iNdEx])
-			copy(dAtA[i:], m.Ips[iNdEx])
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Ips[iNdEx])))
+		for _, v := range slices.Backward(m.Ips) {
+			i -= len(v)
+			copy(dAtA[i:], v)
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v)))
 			i--
 			dAtA[i] = 0x1a
 		}
@@ -8360,8 +8361,8 @@ func (m *Object_Locations) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Locations) > 0 {
-		for iNdEx := len(m.Locations) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Locations[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+		for _, v := range slices.Backward(m.Locations) {
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -10015,8 +10016,8 @@ func (m *Info_Service) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		dAtA[i] = 0x2a
 	}
 	if len(m.Ports) > 0 {
-		for iNdEx := len(m.Ports) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Ports[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+		for _, v := range slices.Backward(m.Ports) {
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -10027,10 +10028,10 @@ func (m *Info_Service) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		}
 	}
 	if len(m.ClusterIps) > 0 {
-		for iNdEx := len(m.ClusterIps) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.ClusterIps[iNdEx])
-			copy(dAtA[i:], m.ClusterIps[iNdEx])
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.ClusterIps[iNdEx])))
+		for _, v := range slices.Backward(m.ClusterIps) {
+			i -= len(v)
+			copy(dAtA[i:], v)
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v)))
 			i--
 			dAtA[i] = 0x1a
 		}
@@ -10334,8 +10335,8 @@ func (m *Info_Pods) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Pods) > 0 {
-		for iNdEx := len(m.Pods) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Pods[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+		for _, v := range slices.Backward(m.Pods) {
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -10379,8 +10380,8 @@ func (m *Info_Nodes) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Nodes) > 0 {
-		for iNdEx := len(m.Nodes) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Nodes[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+		for _, v := range slices.Backward(m.Nodes) {
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -10424,8 +10425,8 @@ func (m *Info_Services) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Services) > 0 {
-		for iNdEx := len(m.Services) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Services[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+		for _, v := range slices.Backward(m.Services) {
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -10469,10 +10470,10 @@ func (m *Info_IPs) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Ip) > 0 {
-		for iNdEx := len(m.Ip) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.Ip[iNdEx])
-			copy(dAtA[i:], m.Ip[iNdEx])
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Ip[iNdEx])))
+		for _, v := range slices.Backward(m.Ip) {
+			i -= len(v)
+			copy(dAtA[i:], v)
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v)))
 			i--
 			dAtA[i] = 0xa
 		}
@@ -10589,8 +10590,8 @@ func (m *Mirror_Targets) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Targets) > 0 {
-		for iNdEx := len(m.Targets) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Targets[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+		for _, v := range slices.Backward(m.Targets) {
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -10879,8 +10880,8 @@ func (m *Search_Request) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) 
 		dAtA[i] = 0x12
 	}
 	if len(m.Vector) > 0 {
-		for iNdEx := len(m.Vector) - 1; iNdEx >= 0; iNdEx-- {
-			f1 := math.Float32bits(float32(m.Vector[iNdEx]))
+		for _, v := range slices.Backward(m.Vector) {
+			f1 := math.Float32bits(float32(v))
 			i -= 4
 			binary.LittleEndian.PutUint32(dAtA[i:], uint32(f1))
 		}
@@ -10922,8 +10923,8 @@ func (m *Search_MultiRequest) MarshalToSizedBufferVTStrict(dAtA []byte) (int, er
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Requests) > 0 {
-		for iNdEx := len(m.Requests) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Requests[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+		for _, v := range slices.Backward(m.Requests) {
+			size, err := v.MarshalToSizedBufferVTStrict(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -11017,8 +11018,8 @@ func (m *Search_MultiIDRequest) MarshalToSizedBufferVTStrict(dAtA []byte) (int, 
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Requests) > 0 {
-		for iNdEx := len(m.Requests) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Requests[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+		for _, v := range slices.Backward(m.Requests) {
+			size, err := v.MarshalToSizedBufferVTStrict(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -11122,8 +11123,8 @@ func (m *Search_MultiObjectRequest) MarshalToSizedBufferVTStrict(dAtA []byte) (i
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Requests) > 0 {
-		for iNdEx := len(m.Requests) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Requests[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+		for _, v := range slices.Backward(m.Requests) {
+			size, err := v.MarshalToSizedBufferVTStrict(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -11279,8 +11280,8 @@ func (m *Search_Response) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error)
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Results) > 0 {
-		for iNdEx := len(m.Results) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Results[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+		for _, v := range slices.Backward(m.Results) {
+			size, err := v.MarshalToSizedBufferVTStrict(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -11331,8 +11332,8 @@ func (m *Search_Responses) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Responses) > 0 {
-		for iNdEx := len(m.Responses) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Responses[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+		for _, v := range slices.Backward(m.Responses) {
+			size, err := v.MarshalToSizedBufferVTStrict(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -11553,8 +11554,8 @@ func (m *Filter_Config) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Targets) > 0 {
-		for iNdEx := len(m.Targets) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Targets[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+		for _, v := range slices.Backward(m.Targets) {
+			size, err := v.MarshalToSizedBufferVTStrict(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -11684,8 +11685,8 @@ func (m *Insert_MultiRequest) MarshalToSizedBufferVTStrict(dAtA []byte) (int, er
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Requests) > 0 {
-		for iNdEx := len(m.Requests) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Requests[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+		for _, v := range slices.Backward(m.Requests) {
+			size, err := v.MarshalToSizedBufferVTStrict(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -11792,8 +11793,8 @@ func (m *Insert_MultiObjectRequest) MarshalToSizedBufferVTStrict(dAtA []byte) (i
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Requests) > 0 {
-		for iNdEx := len(m.Requests) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Requests[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+		for _, v := range slices.Backward(m.Requests) {
+			size, err := v.MarshalToSizedBufferVTStrict(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -11981,8 +11982,8 @@ func (m *Update_MultiRequest) MarshalToSizedBufferVTStrict(dAtA []byte) (int, er
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Requests) > 0 {
-		for iNdEx := len(m.Requests) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Requests[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+		for _, v := range slices.Backward(m.Requests) {
+			size, err := v.MarshalToSizedBufferVTStrict(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -12089,8 +12090,8 @@ func (m *Update_MultiObjectRequest) MarshalToSizedBufferVTStrict(dAtA []byte) (i
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Requests) > 0 {
-		for iNdEx := len(m.Requests) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Requests[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+		for _, v := range slices.Backward(m.Requests) {
+			size, err := v.MarshalToSizedBufferVTStrict(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -12343,8 +12344,8 @@ func (m *Upsert_MultiRequest) MarshalToSizedBufferVTStrict(dAtA []byte) (int, er
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Requests) > 0 {
-		for iNdEx := len(m.Requests) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Requests[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+		for _, v := range slices.Backward(m.Requests) {
+			size, err := v.MarshalToSizedBufferVTStrict(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -12451,8 +12452,8 @@ func (m *Upsert_MultiObjectRequest) MarshalToSizedBufferVTStrict(dAtA []byte) (i
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Requests) > 0 {
-		for iNdEx := len(m.Requests) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Requests[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+		for _, v := range slices.Backward(m.Requests) {
+			size, err := v.MarshalToSizedBufferVTStrict(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -12650,8 +12651,8 @@ func (m *Remove_MultiRequest) MarshalToSizedBufferVTStrict(dAtA []byte) (int, er
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Requests) > 0 {
-		for iNdEx := len(m.Requests) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Requests[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+		for _, v := range slices.Backward(m.Requests) {
+			size, err := v.MarshalToSizedBufferVTStrict(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -12695,8 +12696,8 @@ func (m *Remove_TimestampRequest) MarshalToSizedBufferVTStrict(dAtA []byte) (int
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Timestamps) > 0 {
-		for iNdEx := len(m.Timestamps) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Timestamps[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+		for _, v := range slices.Backward(m.Timestamps) {
+			size, err := v.MarshalToSizedBufferVTStrict(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -13168,10 +13169,10 @@ func (m *Object_IDs) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Ids) > 0 {
-		for iNdEx := len(m.Ids) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.Ids[iNdEx])
-			copy(dAtA[i:], m.Ids[iNdEx])
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Ids[iNdEx])))
+		for _, v := range slices.Backward(m.Ids) {
+			i -= len(v)
+			copy(dAtA[i:], v)
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v)))
 			i--
 			dAtA[i] = 0xa
 		}
@@ -13215,8 +13216,8 @@ func (m *Object_Vector) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		dAtA[i] = 0x18
 	}
 	if len(m.Vector) > 0 {
-		for iNdEx := len(m.Vector) - 1; iNdEx >= 0; iNdEx-- {
-			f1 := math.Float32bits(float32(m.Vector[iNdEx]))
+		for _, v := range slices.Backward(m.Vector) {
+			f1 := math.Float32bits(float32(v))
 			i -= 4
 			binary.LittleEndian.PutUint32(dAtA[i:], uint32(f1))
 		}
@@ -13353,8 +13354,8 @@ func (m *Object_Vectors) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) 
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Vectors) > 0 {
-		for iNdEx := len(m.Vectors) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Vectors[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+		for _, v := range slices.Backward(m.Vectors) {
+			size, err := v.MarshalToSizedBufferVTStrict(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -13704,10 +13705,10 @@ func (m *Object_Location) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error)
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Ips) > 0 {
-		for iNdEx := len(m.Ips) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.Ips[iNdEx])
-			copy(dAtA[i:], m.Ips[iNdEx])
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Ips[iNdEx])))
+		for _, v := range slices.Backward(m.Ips) {
+			i -= len(v)
+			copy(dAtA[i:], v)
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v)))
 			i--
 			dAtA[i] = 0x1a
 		}
@@ -13859,8 +13860,8 @@ func (m *Object_Locations) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Locations) > 0 {
-		for iNdEx := len(m.Locations) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Locations[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+		for _, v := range slices.Backward(m.Locations) {
+			size, err := v.MarshalToSizedBufferVTStrict(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -15519,8 +15520,8 @@ func (m *Info_Service) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		dAtA[i] = 0x2a
 	}
 	if len(m.Ports) > 0 {
-		for iNdEx := len(m.Ports) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Ports[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+		for _, v := range slices.Backward(m.Ports) {
+			size, err := v.MarshalToSizedBufferVTStrict(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -15531,10 +15532,10 @@ func (m *Info_Service) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		}
 	}
 	if len(m.ClusterIps) > 0 {
-		for iNdEx := len(m.ClusterIps) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.ClusterIps[iNdEx])
-			copy(dAtA[i:], m.ClusterIps[iNdEx])
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.ClusterIps[iNdEx])))
+		for _, v := range slices.Backward(m.ClusterIps) {
+			i -= len(v)
+			copy(dAtA[i:], v)
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v)))
 			i--
 			dAtA[i] = 0x1a
 		}
@@ -15838,8 +15839,8 @@ func (m *Info_Pods) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Pods) > 0 {
-		for iNdEx := len(m.Pods) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Pods[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+		for _, v := range slices.Backward(m.Pods) {
+			size, err := v.MarshalToSizedBufferVTStrict(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -15883,8 +15884,8 @@ func (m *Info_Nodes) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Nodes) > 0 {
-		for iNdEx := len(m.Nodes) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Nodes[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+		for _, v := range slices.Backward(m.Nodes) {
+			size, err := v.MarshalToSizedBufferVTStrict(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -15928,8 +15929,8 @@ func (m *Info_Services) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Services) > 0 {
-		for iNdEx := len(m.Services) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Services[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+		for _, v := range slices.Backward(m.Services) {
+			size, err := v.MarshalToSizedBufferVTStrict(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -15973,10 +15974,10 @@ func (m *Info_IPs) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Ip) > 0 {
-		for iNdEx := len(m.Ip) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.Ip[iNdEx])
-			copy(dAtA[i:], m.Ip[iNdEx])
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Ip[iNdEx])))
+		for _, v := range slices.Backward(m.Ip) {
+			i -= len(v)
+			copy(dAtA[i:], v)
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v)))
 			i--
 			dAtA[i] = 0xa
 		}
@@ -16093,8 +16094,8 @@ func (m *Mirror_Targets) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) 
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Targets) > 0 {
-		for iNdEx := len(m.Targets) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Targets[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+		for _, v := range slices.Backward(m.Targets) {
+			size, err := v.MarshalToSizedBufferVTStrict(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}

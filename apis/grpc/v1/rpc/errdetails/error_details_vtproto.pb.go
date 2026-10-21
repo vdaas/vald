@@ -18,6 +18,7 @@ package errdetails
 import (
 	fmt "fmt"
 	"maps"
+	"slices"
 	unsafe "unsafe"
 
 	protohelpers "github.com/planetscale/vtprotobuf/protohelpers"
@@ -855,10 +856,10 @@ func (m *DebugInfo) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		dAtA[i] = 0x12
 	}
 	if len(m.StackEntries) > 0 {
-		for iNdEx := len(m.StackEntries) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.StackEntries[iNdEx])
-			copy(dAtA[i:], m.StackEntries[iNdEx])
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.StackEntries[iNdEx])))
+		for _, v := range slices.Backward(m.StackEntries) {
+			i -= len(v)
+			copy(dAtA[i:], v)
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v)))
 			i--
 			dAtA[i] = 0xa
 		}
@@ -944,8 +945,8 @@ func (m *QuotaFailure) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Violations) > 0 {
-		for iNdEx := len(m.Violations) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Violations[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+		for _, v := range slices.Backward(m.Violations) {
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -1043,8 +1044,8 @@ func (m *PreconditionFailure) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Violations) > 0 {
-		for iNdEx := len(m.Violations) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Violations[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+		for _, v := range slices.Backward(m.Violations) {
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -1135,8 +1136,8 @@ func (m *BadRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.FieldViolations) > 0 {
-		for iNdEx := len(m.FieldViolations) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.FieldViolations[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+		for _, v := range slices.Backward(m.FieldViolations) {
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -1335,8 +1336,8 @@ func (m *Help) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Links) > 0 {
-		for iNdEx := len(m.Links) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Links[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+		for _, v := range slices.Backward(m.Links) {
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -1543,10 +1544,10 @@ func (m *DebugInfo) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		dAtA[i] = 0x12
 	}
 	if len(m.StackEntries) > 0 {
-		for iNdEx := len(m.StackEntries) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.StackEntries[iNdEx])
-			copy(dAtA[i:], m.StackEntries[iNdEx])
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.StackEntries[iNdEx])))
+		for _, v := range slices.Backward(m.StackEntries) {
+			i -= len(v)
+			copy(dAtA[i:], v)
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v)))
 			i--
 			dAtA[i] = 0xa
 		}
@@ -1632,8 +1633,8 @@ func (m *QuotaFailure) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Violations) > 0 {
-		for iNdEx := len(m.Violations) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Violations[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+		for _, v := range slices.Backward(m.Violations) {
+			size, err := v.MarshalToSizedBufferVTStrict(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -1731,8 +1732,8 @@ func (m *PreconditionFailure) MarshalToSizedBufferVTStrict(dAtA []byte) (int, er
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Violations) > 0 {
-		for iNdEx := len(m.Violations) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Violations[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+		for _, v := range slices.Backward(m.Violations) {
+			size, err := v.MarshalToSizedBufferVTStrict(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -1823,8 +1824,8 @@ func (m *BadRequest) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.FieldViolations) > 0 {
-		for iNdEx := len(m.FieldViolations) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.FieldViolations[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+		for _, v := range slices.Backward(m.FieldViolations) {
+			size, err := v.MarshalToSizedBufferVTStrict(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -2023,8 +2024,8 @@ func (m *Help) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Links) > 0 {
-		for iNdEx := len(m.Links) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Links[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+		for _, v := range slices.Backward(m.Links) {
+			size, err := v.MarshalToSizedBufferVTStrict(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
