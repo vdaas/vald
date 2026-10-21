@@ -16,6 +16,7 @@ package tikv
 
 import (
 	fmt "fmt"
+	"slices"
 	unsafe "unsafe"
 
 	protohelpers "github.com/planetscale/vtprotobuf/protohelpers"
@@ -1120,10 +1121,10 @@ func (m *BucketVersionNotMatch) MarshalToSizedBufferVT(dAtA []byte) (int, error)
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Keys) > 0 {
-		for iNdEx := len(m.Keys) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.Keys[iNdEx])
-			copy(dAtA[i:], m.Keys[iNdEx])
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Keys[iNdEx])))
+		for _, v := range slices.Backward(m.Keys) {
+			i -= len(v)
+			copy(dAtA[i:], v)
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v)))
 			i--
 			dAtA[i] = 0x12
 		}
@@ -2275,10 +2276,10 @@ func (m *BucketVersionNotMatch) MarshalToSizedBufferVTStrict(dAtA []byte) (int, 
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if len(m.Keys) > 0 {
-		for iNdEx := len(m.Keys) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.Keys[iNdEx])
-			copy(dAtA[i:], m.Keys[iNdEx])
-			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Keys[iNdEx])))
+		for _, v := range slices.Backward(m.Keys) {
+			i -= len(v)
+			copy(dAtA[i:], v)
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(v)))
 			i--
 			dAtA[i] = 0x12
 		}

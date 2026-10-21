@@ -23,7 +23,7 @@ type Counter interface {
 }
 
 type count struct {
-	ignores   int64
+	ignores   atomic.Int64
 	successes int64
 	failures  int64
 }
@@ -37,7 +37,7 @@ func (c *count) Fails() (n int64) {
 }
 
 func (c *count) Ignores() (n int64) {
-	return atomic.LoadInt64(&c.ignores)
+	return c.ignores.Load()
 }
 
 func (c *count) Total() (n int64) {
@@ -53,13 +53,13 @@ func (c *count) onFail() {
 }
 
 func (c *count) onIgnore() {
-	atomic.AddInt64(&c.ignores, 1)
+	c.ignores.Add(1)
 }
 
 func (c *count) reset() {
 	atomic.StoreInt64(&c.failures, 0)
 	atomic.StoreInt64(&c.successes, 0)
-	atomic.StoreInt64(&c.ignores, 0)
+	c.ignores.Store(0)
 }
 
 var _ Counter = (*count)(nil)
