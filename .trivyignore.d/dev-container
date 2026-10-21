@@ -97,7 +97,7 @@ CVE-2026-85731 exp:2026-12-06
 # Bundled upstream development tools (including Docker, Helm, kubectl,
 # buf, k9s and stern) still embed Go < 1.26.9 or x/net < v0.60.0.
 # Temporarily accept these DoS findings only in the development image;
-# remove after upstream tool rebuilds and review by 2026-10-21.
+# remove after upstream tool rebuilds and review by 2026-12-06.
 CVE-2026-78667 exp:2026-12-06
 CVE-2026-78669 exp:2026-12-06
 CVE-2026-97031 exp:2026-12-06
