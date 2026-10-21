@@ -76,6 +76,102 @@ func TestGetVector(t *testing.T) {
 	}
 }
 
+func TestGetVectorSameTimestampDeleteThenInsert(t *testing.T) {
+	vq, err := New()
+	require.NoError(t, err)
+
+	const uuid = "same-ns-uuid"
+	vec := []float32{1.0, 2.0, 3.0}
+	ts := time.Now().UnixNano()
+
+	require.NoError(t, vq.PushDelete(uuid, ts))
+	require.NoError(t, vq.PushInsert(uuid, vec, ts))
+
+	gotVec, gotTS, exists := vq.GetVector(uuid)
+	require.True(t, exists, "insert after delete at the same nanosecond must exist")
+	require.Equal(t, vec, gotVec)
+	require.Equal(t, ts, gotTS)
+
+	_, ivOK := vq.IVExists(uuid)
+	require.True(t, ivOK)
+	_, dvOK := vq.DVExists(uuid)
+	require.False(t, dvOK)
+
+	gotVec, gotITS, gotDTS, exists := vq.GetVectorWithTimestamp(uuid)
+	require.True(t, exists)
+	require.Equal(t, vec, gotVec)
+	require.Equal(t, ts, gotITS)
+	require.Equal(t, ts, gotDTS)
+}
+
+func TestGetVectorSameTimestampInsertThenDelete(t *testing.T) {
+	vq, err := New()
+	require.NoError(t, err)
+
+	const uuid = "same-ns-uuid"
+	vec := []float32{1.0, 2.0, 3.0}
+	ts := time.Now().UnixNano()
+
+	require.NoError(t, vq.PushInsert(uuid, vec, ts))
+	require.NoError(t, vq.PushDelete(uuid, ts))
+
+	_, _, exists := vq.GetVector(uuid)
+	require.False(t, exists, "delete after insert at the same nanosecond must not exist")
+
+	_, ivOK := vq.IVExists(uuid)
+	require.False(t, ivOK)
+	_, dvOK := vq.DVExists(uuid)
+	require.True(t, dvOK)
+}
+
+func TestRangePopSameTimestampDeleteThenInsert(t *testing.T) {
+	vq, err := New()
+	require.NoError(t, err)
+
+	const uuid = "same-ns-uuid"
+	vec := []float32{4.0, 5.0, 6.0}
+	ts := time.Now().UnixNano()
+
+	require.NoError(t, vq.PushDelete(uuid, ts))
+	require.NoError(t, vq.PushInsert(uuid, vec, ts))
+
+	now := ts + 1
+	deleted := make([]string, 0)
+	vq.RangePopDelete(t.Context(), now, func(id string) bool {
+		deleted = append(deleted, id)
+		return true
+	})
+	require.Equal(t, []string{uuid}, deleted)
+
+	inserted := make(map[string][]float32)
+	vq.RangePopInsert(t.Context(), now, func(id string, vector []float32, timestamp int64) bool {
+		inserted[id] = vector
+		require.Equal(t, ts, timestamp)
+		return true
+	})
+	require.Equal(t, map[string][]float32{uuid: vec}, inserted)
+}
+
+func TestRangeSameTimestampDeleteThenInsert(t *testing.T) {
+	vq, err := New()
+	require.NoError(t, err)
+
+	const uuid = "same-ns-uuid"
+	vec := []float32{7.0, 8.0, 9.0}
+	ts := time.Now().UnixNano()
+
+	require.NoError(t, vq.PushDelete(uuid, ts))
+	require.NoError(t, vq.PushInsert(uuid, vec, ts))
+
+	seen := make(map[string][]float32)
+	vq.Range(t.Context(), func(id string, vector []float32, timestamp int64) bool {
+		seen[id] = vector
+		require.Equal(t, ts, timestamp)
+		return true
+	})
+	require.Equal(t, map[string][]float32{uuid: vec}, seen)
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestNew(t *testing.T) {
