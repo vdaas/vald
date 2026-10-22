@@ -61,8 +61,8 @@ type index struct {
 	indexing               atomic.Bool
 	saving                 atomic.Bool
 	minUncommitted         uint32
-	uuidsCount             uint32
-	uncommittedUUIDsCount  uint32
+	uuidsCount             atomic.Uint32
+	uncommittedUUIDsCount  atomic.Uint32
 }
 
 func New(opts ...Option) (idx Indexer, err error) {
@@ -304,8 +304,8 @@ func (idx *index) loadInfos(ctx context.Context) (err error) {
 	if err != nil {
 		return err
 	}
-	atomic.StoreUint32(&idx.uuidsCount, atomic.LoadUint32(&u))
-	atomic.StoreUint32(&idx.uncommittedUUIDsCount, atomic.LoadUint32(&ucu))
+	idx.uuidsCount.Store(atomic.LoadUint32(&u))
+	idx.uncommittedUUIDsCount.Store(atomic.LoadUint32(&ucu))
 	idx.indexInfos.Range(func(addr string, _ *payload.Info_Index_Count) bool {
 		info, ok := infoMap.Load(addr)
 		if !ok {
@@ -331,11 +331,11 @@ func (idx *index) IsSaving() bool {
 }
 
 func (idx *index) NumberOfUUIDs() uint32 {
-	return atomic.LoadUint32(&idx.uuidsCount)
+	return idx.uuidsCount.Load()
 }
 
 func (idx *index) NumberOfUncommittedUUIDs() uint32 {
-	return atomic.LoadUint32(&idx.uncommittedUUIDsCount)
+	return idx.uncommittedUUIDsCount.Load()
 }
 
 func (idx *index) LoadIndexDetail() (detail *payload.Info_Index_Detail) {

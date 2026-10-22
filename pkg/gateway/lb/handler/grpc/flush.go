@@ -41,8 +41,8 @@ func (s *server) Flush(
 	defer trace.End(span)
 
 	var (
-		stored      uint32
-		uncommitted uint32
+		stored      atomic.Uint32
+		uncommitted atomic.Uint32
 		indexing    atomic.Value
 		saving      atomic.Value
 	)
@@ -75,8 +75,8 @@ func (s *server) Flush(
 			}
 			return nil
 		}
-		atomic.AddUint32(&stored, cnt.Stored)
-		atomic.AddUint32(&uncommitted, cnt.Uncommitted)
+		stored.Add(cnt.Stored)
+		uncommitted.Add(cnt.Uncommitted)
 		if cnt.Indexing {
 			indexing.Store(cnt.Indexing)
 		}
@@ -95,8 +95,8 @@ func (s *server) Flush(
 		return nil, err
 	}
 	cnts = &payload.Info_Index_Count{
-		Stored:      atomic.LoadUint32(&stored),
-		Uncommitted: atomic.LoadUint32(&uncommitted),
+		Stored:      stored.Load(),
+		Uncommitted: uncommitted.Load(),
 		Indexing:    indexing.Load().(bool),
 		Saving:      saving.Load().(bool),
 	}

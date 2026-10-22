@@ -333,9 +333,7 @@ func newRoot(schemas map[string]*Schema) *Root {
 	return &Root{
 		SchemaKeyword: "https://json-schema.org/draft-07/schema#",
 		Title:         "Values",
-		Schema: Schema{
-			Type:       objectType,
-			Properties: schemas,
-		},
+		Type:          objectType,
+		Properties:    schemas,
 	}
 }
