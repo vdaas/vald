@@ -170,6 +170,7 @@ k8s/vald/manifests:
 	--set manager.index.creator.image.repository=$(CRORG)/$(INDEX_CREATION_IMAGE) \
 	--set manager.index.saver.image.repository=$(CRORG)/$(INDEX_SAVE_IMAGE) \
 	--set manager.index.operator.image.repository=$(CRORG)/$(INDEX_OPERATOR_IMAGE) \
+	--set manager.index.corrector.image.repository=$(CRORG)/$(INDEX_CORRECTION_IMAGE) \
 	$(HELM_EXTRA_OPTIONS) \
 	--include-crds \
 	--output-dir $(TEMP_DIR) \
