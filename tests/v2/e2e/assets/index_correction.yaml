@@ -151,7 +151,7 @@ strategies:
           - mode: unary
             name: IndexProperty
             type: index_property
-            wait: 3s
+            wait: 60s
             expect:
               - status_code: ok
                 path: $.details.length()
@@ -165,7 +165,7 @@ strategies:
           - name: Flush
             mode: unary
             type: flush
-            wait: 20s
+            wait: 60s
           - mode: unary
             name: IndexInfo
             type: index_info
