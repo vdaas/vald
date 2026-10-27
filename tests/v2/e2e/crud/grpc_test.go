@@ -438,7 +438,7 @@ func stream[Q, R proto.Message, S grpc.TypedClientStream[Q, R]](
 	// send/receive pipeline self-paces from there.
 	//nolint:gosec // G115: plan.Parallelism is a small, config-bounded value, so int(...)*2 cannot realistically overflow int.
 	rchan := make(chan *metrics.RequestResult, max(int(plan.Parallelism)*2, 1))
-	var idx atomic.Uint64
+	var idx, received atomic.Uint64
 	// Use a bidirectional stream client to send requests and receive responses.
 	err = grpc.BidirectionalStreamClient(stream, int(plan.Parallelism), func() (query Q, ok bool) {
 		id := idx.Load()
@@ -506,6 +506,7 @@ func stream[Q, R proto.Message, S grpc.TypedClientStream[Q, R]](
 			// No real request identity to score a callback against.
 			return true
 		}
+		received.Add(1)
 
 		id, err := strconv.ParseUint(rr.RequestID, 10, 0)
 		if err != nil {
@@ -523,5 +524,8 @@ func stream[Q, R proto.Message, S grpc.TypedClientStream[Q, R]](
 	})
 	if err != nil {
 		t.Errorf("failed to complete stream: %v", err)
+	}
+	if plan.Search != nil && plan.Search.ExpectedIDs != nil && received.Load() != data.Len() {
+		t.Errorf("%s: received %d search responses, want %d", plan.Name, received.Load(), data.Len())
 	}
 }
