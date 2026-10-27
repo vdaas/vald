@@ -75,13 +75,13 @@ strategies:
             modification:
               skip_strict_exist_check: true
               options:
-                - '@type': type.googleapis.com/google.protobuf.StringValue
+                - "@type": type.googleapis.com/google.protobuf.StringValue
                   value: unrelated option before Zvec payload
-                - '@type': type.googleapis.com/payload.v1.ZVec.DocumentOptions
+                - "@type": type.googleapis.com/payload.v1.ZVec.DocumentOptions
                   fields:
                     category: news
                     content: galaxy telescope
-              id: '0'
+              id: "0"
           - name: Insert document 1 (stream)
             type: insert
             mode: stream
@@ -92,11 +92,11 @@ strategies:
             modification:
               skip_strict_exist_check: true
               options:
-                - '@type': type.googleapis.com/payload.v1.ZVec.DocumentOptions
+                - "@type": type.googleapis.com/payload.v1.ZVec.DocumentOptions
                   fields:
                     category: sports
                     content: football goal
-              id: '1'
+              id: "1"
           - name: Insert document 2 (multiple)
             type: insert
             mode: multiple
@@ -107,11 +107,11 @@ strategies:
             modification:
               skip_strict_exist_check: true
               options:
-                - '@type': type.googleapis.com/payload.v1.ZVec.DocumentOptions
+                - "@type": type.googleapis.com/payload.v1.ZVec.DocumentOptions
                   fields:
                     category: news
                     content: quantum photon
-              id: '2'
+              id: "2"
           - name: Insert document 3 (unary) without metadata
             type: insert
             mode: unary
@@ -121,7 +121,7 @@ strategies:
             bulk_size: 1
             modification:
               skip_strict_exist_check: true
-              id: '3'
+              id: "3"
           - name: Insert document 4 (unary)
             type: insert
             mode: unary
@@ -132,11 +132,11 @@ strategies:
             modification:
               skip_strict_exist_check: true
               options:
-                - '@type': type.googleapis.com/payload.v1.ZVec.DocumentOptions
+                - "@type": type.googleapis.com/payload.v1.ZVec.DocumentOptions
                   fields:
                     category: 日本語
                     content: galaxy tokyo
-              id: '4'
+              id: "4"
           - name: Unfiltered search proves all fixtures were stored
             type: search
             mode: unary
@@ -148,11 +148,11 @@ strategies:
               k: 10
               timeout: 3s
               expected_ids:
-                - '0'
-                - '1'
-                - '2'
-                - '3'
-                - '4'
+                - "0"
+                - "1"
+                - "2"
+                - "3"
+                - "4"
           - name: Scalar metadata includes only news
             type: search
             mode: unary
@@ -164,10 +164,10 @@ strategies:
               k: 10
               timeout: 3s
               expected_ids:
-                - '0'
-                - '2'
+                - "0"
+                - "2"
               options:
-                - '@type': type.googleapis.com/payload.v1.ZVec.SearchOptions
+                - "@type": type.googleapis.com/payload.v1.ZVec.SearchOptions
                   pre_filter: category = 'news'
           - name: Scalar metadata through StreamSearch
             type: search
@@ -180,9 +180,9 @@ strategies:
               k: 10
               timeout: 3s
               expected_ids:
-                - '1'
+                - "1"
               options:
-                - '@type': type.googleapis.com/payload.v1.ZVec.SearchOptions
+                - "@type": type.googleapis.com/payload.v1.ZVec.SearchOptions
                   pre_filter: category = 'sports'
           - name: Mixed Any options through MultiSearch
             type: search
@@ -195,11 +195,11 @@ strategies:
               k: 10
               timeout: 3s
               expected_ids:
-                - '1'
+                - "1"
               options:
-                - '@type': type.googleapis.com/google.protobuf.StringValue
+                - "@type": type.googleapis.com/google.protobuf.StringValue
                   value: unrelated option before Zvec payload
-                - '@type': type.googleapis.com/payload.v1.ZVec.SearchOptions
+                - "@type": type.googleapis.com/payload.v1.ZVec.SearchOptions
                   pre_filter: category = 'sports'
           - name: OR filter excludes unset and unrelated metadata
             type: search
@@ -212,11 +212,11 @@ strategies:
               k: 10
               timeout: 3s
               expected_ids:
-                - '0'
-                - '1'
-                - '2'
+                - "0"
+                - "1"
+                - "2"
               options:
-                - '@type': type.googleapis.com/payload.v1.ZVec.SearchOptions
+                - "@type": type.googleapis.com/payload.v1.ZVec.SearchOptions
                   pre_filter: category = 'news' OR category = 'sports'
           - name: Unicode metadata survives Any transport
             type: search
@@ -229,9 +229,9 @@ strategies:
               k: 10
               timeout: 3s
               expected_ids:
-                - '4'
+                - "4"
               options:
-                - '@type': type.googleapis.com/payload.v1.ZVec.SearchOptions
+                - "@type": type.googleapis.com/payload.v1.ZVec.SearchOptions
                   pre_filter: category = '日本語'
           - name: Not-equal filter excludes NULL metadata
             type: search
@@ -244,10 +244,10 @@ strategies:
               k: 10
               timeout: 3s
               expected_ids:
-                - '1'
-                - '4'
+                - "1"
+                - "4"
               options:
-                - '@type': type.googleapis.com/payload.v1.ZVec.SearchOptions
+                - "@type": type.googleapis.com/payload.v1.ZVec.SearchOptions
                   pre_filter: category != 'news'
           - name: No scalar match returns NotFound
             type: search
@@ -261,7 +261,7 @@ strategies:
               timeout: 3s
               expected_ids: []
               options:
-                - '@type': type.googleapis.com/payload.v1.ZVec.SearchOptions
+                - "@type": type.googleapis.com/payload.v1.ZVec.SearchOptions
                   pre_filter: category = 'missing'
             expect:
               - status_code: notfound
@@ -276,10 +276,10 @@ strategies:
               k: 10
               timeout: 3s
               expected_ids:
-                - '0'
-                - '4'
+                - "0"
+                - "4"
               options:
-                - '@type': type.googleapis.com/payload.v1.ZVec.SearchOptions
+                - "@type": type.googleapis.com/payload.v1.ZVec.SearchOptions
                   hybrid_queries:
                     - field_name: content
                       fts:
@@ -295,9 +295,9 @@ strategies:
               k: 10
               timeout: 3s
               expected_ids:
-                - '0'
+                - "0"
               options:
-                - '@type': type.googleapis.com/payload.v1.ZVec.SearchOptions
+                - "@type": type.googleapis.com/payload.v1.ZVec.SearchOptions
                   pre_filter: category = 'news'
                   hybrid_queries:
                     - field_name: content
@@ -315,7 +315,7 @@ strategies:
               timeout: 3s
               expected_ids: []
               options:
-                - '@type': type.googleapis.com/payload.v1.ZVec.SearchOptions
+                - "@type": type.googleapis.com/payload.v1.ZVec.SearchOptions
                   pre_filter: category = 'sports'
                   hybrid_queries:
                     - field_name: content
@@ -331,7 +331,7 @@ strategies:
             parallelism: 1
             modification:
               skip_strict_exist_check: true
-              id: '0'
+              id: "0"
           - name: Remove fixture 1
             type: remove
             mode: unary
@@ -340,7 +340,7 @@ strategies:
             parallelism: 1
             modification:
               skip_strict_exist_check: true
-              id: '1'
+              id: "1"
           - name: Remove fixture 2
             type: remove
             mode: unary
@@ -349,7 +349,7 @@ strategies:
             parallelism: 1
             modification:
               skip_strict_exist_check: true
-              id: '2'
+              id: "2"
           - name: Remove fixture 3
             type: remove
             mode: unary
@@ -358,7 +358,7 @@ strategies:
             parallelism: 1
             modification:
               skip_strict_exist_check: true
-              id: '3'
+              id: "3"
           - name: Remove fixture 4
             type: remove
             mode: unary
@@ -367,7 +367,7 @@ strategies:
             parallelism: 1
             modification:
               skip_strict_exist_check: true
-              id: '4'
+              id: "4"
           - name: Deleted text metadata no longer matches
             type: search
             mode: unary
@@ -380,7 +380,7 @@ strategies:
               timeout: 3s
               expected_ids: []
               options:
-                - '@type': type.googleapis.com/payload.v1.ZVec.SearchOptions
+                - "@type": type.googleapis.com/payload.v1.ZVec.SearchOptions
                   hybrid_queries:
                     - field_name: content
                       fts:

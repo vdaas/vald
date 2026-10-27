@@ -172,23 +172,23 @@ type BaseConfig struct {
 
 // SearchQuery represents the parameters for a search query.
 type SearchQuery struct {
-	Options         AlgorithmOptions                    `yaml:"options,omitempty" json:"options,omitempty"`
+	Options         AlgorithmOptions                    `yaml:"options,omitempty"      json:"options,omitempty"`
 	ExpectedIDs     *[]string                           `yaml:"expected_ids,omitempty" json:"expected_ids,omitempty"`
-	K               uint32                              `yaml:"k,omitempty"         json:"k,omitempty"`
-	Radius          float32                             `yaml:"radius,omitempty"    json:"radius,omitempty"`
-	Epsilon         float32                             `yaml:"epsilon,omitempty"   json:"epsilon,omitempty"`
-	AlgorithmString string                              `yaml:"algorithm,omitempty" json:"algorithm_string,omitempty"`
-	MinNum          uint32                              `yaml:"min_num,omitempty"   json:"min_num,omitempty"`
-	Ratio           float32                             `yaml:"ratio,omitempty"     json:"ratio,omitempty"`
-	Nprobe          uint32                              `yaml:"nprobe,omitempty"    json:"nprobe,omitempty"`
-	Timeout         timeutil.DurationString             `yaml:"timeout,omitempty"   json:"timeout,omitempty"`
-	Algorithm       payload.Search_AggregationAlgorithm `yaml:"-"                   json:"-"`
+	K               uint32                              `yaml:"k,omitempty"            json:"k,omitempty"`
+	Radius          float32                             `yaml:"radius,omitempty"       json:"radius,omitempty"`
+	Epsilon         float32                             `yaml:"epsilon,omitempty"      json:"epsilon,omitempty"`
+	AlgorithmString string                              `yaml:"algorithm,omitempty"    json:"algorithm_string,omitempty"`
+	MinNum          uint32                              `yaml:"min_num,omitempty"      json:"min_num,omitempty"`
+	Ratio           float32                             `yaml:"ratio,omitempty"        json:"ratio,omitempty"`
+	Nprobe          uint32                              `yaml:"nprobe,omitempty"       json:"nprobe,omitempty"`
+	Timeout         timeutil.DurationString             `yaml:"timeout,omitempty"      json:"timeout,omitempty"`
+	Algorithm       payload.Search_AggregationAlgorithm `yaml:"-"                      json:"-"`
 }
 
 // ModificationConfig represents settings for modifications like insert or update.
 type ModificationConfig struct {
-	ID                   string           `yaml:"id,omitempty" json:"id,omitempty"`
-	Options              AlgorithmOptions `yaml:"options,omitempty" json:"options,omitempty"`
+	ID                   string           `yaml:"id,omitempty"                      json:"id,omitempty"`
+	Options              AlgorithmOptions `yaml:"options,omitempty"                 json:"options,omitempty"`
 	SkipStrictExistCheck bool             `yaml:"skip_strict_exist_check,omitempty" json:"skip_strict_exist_check,omitempty"`
 	Timestamp            int64            `yaml:"timestamp,omitempty"               json:"timestamp,omitempty"`
 }

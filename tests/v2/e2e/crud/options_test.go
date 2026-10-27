@@ -113,7 +113,16 @@ func TestAlgorithmRequestBuilders(t *testing.T) {
 		}
 	})
 	t.Run("search forwards scalar and full text options", func(t *testing.T) {
-		query := &config.SearchQuery{K: 10, Options: config.AlgorithmOptions{{"@type": "type.googleapis.com/payload.v1.ZVec.SearchOptions", "pre_filter": "category = 'news'", "hybrid_queries": []any{map[string]any{"field_name": "content", "fts": map[string]any{"match_string": "galaxy"}}}}}}
+		query := &config.SearchQuery{
+			K: 10,
+			Options: config.AlgorithmOptions{
+				{
+					"@type":          "type.googleapis.com/payload.v1.ZVec.SearchOptions",
+					"pre_filter":     "category = 'news'",
+					"hybrid_queries": []any{map[string]any{"field_name": "content", "fts": map[string]any{"match_string": "galaxy"}}},
+				},
+			},
+		}
 		req := newSearchConfig(t, "fixture", query)
 		if len(req.Options) != 1 {
 			t.Fatal("search options were dropped")

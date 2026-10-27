@@ -32,7 +32,13 @@ func TestAlgorithmOptions(t *testing.T) {
 		{name: "empty"},
 		{name: "document", options: AlgorithmOptions{{"@type": "type.googleapis.com/payload.v1.ZVec.DocumentOptions", "fields": map[string]any{"category": "news"}}}},
 		{name: "search", options: AlgorithmOptions{{"@type": "type.googleapis.com/payload.v1.ZVec.SearchOptions", "pre_filter": "category = 'news'"}}},
-		{name: "mixed unrelated options", options: AlgorithmOptions{{"@type": "type.googleapis.com/google.protobuf.StringValue", "value": "unrelated"}, {"@type": "type.googleapis.com/payload.v1.ZVec.SearchOptions", "pre_filter": "category = 'news'"}}},
+		{
+			name: "mixed unrelated options",
+			options: AlgorithmOptions{
+				{"@type": "type.googleapis.com/google.protobuf.StringValue", "value": "unrelated"},
+				{"@type": "type.googleapis.com/payload.v1.ZVec.SearchOptions", "pre_filter": "category = 'news'"},
+			},
+		},
 		{name: "unknown type", options: AlgorithmOptions{{"@type": "type.googleapis.com/missing.Options"}}, wantError: true},
 		{name: "missing type", options: AlgorithmOptions{{"pre_filter": "category = 'news'"}}, wantError: true},
 		{name: "misspelled field", options: AlgorithmOptions{{"@type": "type.googleapis.com/payload.v1.ZVec.SearchOptions", "pre_filer": "category = 'news'"}}, wantError: true},
