@@ -17,10 +17,15 @@
 package crud
 
 import (
+	"context"
+	"slices"
+	"strconv"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/iter"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/tests/v2/e2e/config"
 	"google.golang.org/protobuf/types/known/anypb"
 )
@@ -135,4 +140,58 @@ func TestAlgorithmRequestBuilders(t *testing.T) {
 			t.Errorf("search options were lost: %v", options)
 		}
 	})
+}
+
+func TestMultiBatches(t *testing.T) {
+	for _, tt := range []struct {
+		name      string
+		num, bulk uint64
+		sizes     []int
+	}{
+		{name: "no requests", bulk: 10},
+		{name: "full batch without empty tail", num: 10, bulk: 10, sizes: []int{10}},
+		{name: "partial batch", num: 9, bulk: 10, sizes: []int{9}},
+		{name: "full and partial batches", num: 11, bulk: 10, sizes: []int{1, 10}},
+		{name: "explicit single-request batches", num: 3, bulk: 1, sizes: []int{1, 1, 1}},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			batches := make(chan []string, int(tt.num)+1)
+			call := func(_ context.Context, request *payload.Search_MultiRequest, _ ...grpc.CallOption) (*payload.Search_Responses, error) {
+				ids := make([]string, 0, len(request.Requests))
+				for _, query := range request.Requests {
+					ids = append(ids, query.GetConfig().GetRequestId())
+				}
+				batches <- ids
+				return &payload.Search_Responses{}, nil
+			}
+			plan := &config.Execution{
+				BaseConfig: &config.BaseConfig{Num: tt.num, BulkSize: tt.bulk, Parallelism: 2},
+				Search:     &config.SearchQuery{K: 1},
+			}
+			data := iter.NewCycle([][]float32{{1, 2}}, tt.num, 0, nil)
+			if err := multi(t, context.Background(), data, plan, call, searchRequest, searchMultiRequest); err != nil {
+				t.Fatal(err)
+			}
+			close(batches)
+			var sizes []int
+			var ids []string
+			for batch := range batches {
+				sizes = append(sizes, len(batch))
+				ids = append(ids, batch...)
+			}
+			slices.Sort(sizes)
+			if !slices.Equal(sizes, tt.sizes) {
+				t.Errorf("batch sizes=%v, want %v", sizes, tt.sizes)
+			}
+			slices.Sort(ids)
+			expected := make([]string, 0, tt.num)
+			for i := uint64(0); i < tt.num; i++ {
+				expected = append(expected, strconv.FormatUint(i, 10)+"-Unknown")
+			}
+			slices.Sort(expected)
+			if !slices.Equal(ids, expected) {
+				t.Errorf("request IDs=%v, want %v", ids, expected)
+			}
+		})
+	}
 }

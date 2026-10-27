@@ -376,12 +376,7 @@ func multi[Q, M, R proto.Message](
 	if plan != nil && plan.BaseConfig != nil && plan.Parallelism > 0 {
 		eg.SetLimit(int(plan.Parallelism))
 	}
-	var bulkSize uint64
-	if plan.BulkSize < 2 {
-		bulkSize = 10
-	} else {
-		bulkSize = plan.BulkSize
-	}
+	bulkSize := max(plan.BulkSize, 1)
 
 	// Initialize a slice to hold the bulk requests.
 	reqs := make([]Q, 0, bulkSize)
@@ -394,16 +389,18 @@ func multi[Q, M, R proto.Message](
 			// Capture the current batch.
 			batch := slices.Clone(reqs)
 			idx := i
-			// Meset the bulk request slice for the next batch.
+			// Reset the bulk request slice for the next batch.
 			reqs = reqs[:0]
 			eg.Go(func() error {
 				return single(t, ctx, idx, plan, toReq(t, batch...), call, callbacks...)
 			})
 		}
 	}
-	eg.Go(func() error {
-		return single(t, ctx, data.Len(), plan, toReq(t, reqs...), call, callbacks...)
-	})
+	if len(reqs) > 0 {
+		eg.Go(func() error {
+			return single(t, ctx, data.Len(), plan, toReq(t, reqs...), call, callbacks...)
+		})
+	}
 	return eg.Wait()
 }
 
