@@ -178,6 +178,9 @@ make test          # Run Go unit tests (with race detector)
 make test/rust     # Run Rust unit tests (cargo test)
 ```
 
+- **Metadata/filter fixtures:** Top-level E2E `metadata` carries gRPC headers. Send document/query metadata through protobuf `Any` options. Assert exact result IDs for filtered fixtures instead of unfiltered ANN ground-truth recall; an explicit empty list must reject any returned hit. Dataset `offset` changes vector selection, not request IDs; use `modification.id` with `num: 1` for distinct metadata fixtures.
+- **Rust search modes:** Implement linear search through the backend's exhaustive search mode. Do not route `LinearSearch` to approximate search merely to satisfy shared E2E scenarios. The gateway fans stream/multi requests out to unary Agent RPCs, so validate direct Agent transports separately when changing handlers.
+
 #### Level 2: E2E Testing (The Gold Standard)
 
 Vald's reliability relies on **E2E V2**. This creates a real cluster, deploys Vald, inserts vectors, and verifies search results.

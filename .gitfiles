@@ -2390,9 +2390,12 @@ tests/v2/e2e/assets/readreplica.yaml
 tests/v2/e2e/assets/rollout.yaml
 tests/v2/e2e/assets/stream_crud.yaml
 tests/v2/e2e/assets/unary_crud.yaml
+tests/v2/e2e/assets/zvec_metadata_filter.yaml
 tests/v2/e2e/config/config.go
 tests/v2/e2e/config/enums.go
 tests/v2/e2e/config/enums_test.go
+tests/v2/e2e/config/options.go
+tests/v2/e2e/config/options_test.go
 tests/v2/e2e/crud/agent_test.go
 tests/v2/e2e/crud/crud_test.go
 tests/v2/e2e/crud/dataset_test.go
@@ -2402,6 +2405,7 @@ tests/v2/e2e/crud/index_test.go
 tests/v2/e2e/crud/kubernetes_test.go
 tests/v2/e2e/crud/modification_test.go
 tests/v2/e2e/crud/object_test.go
+tests/v2/e2e/crud/options_test.go
 tests/v2/e2e/crud/recall_qps_test.go
 tests/v2/e2e/crud/search_test.go
 tests/v2/e2e/crud/strategy_test.go

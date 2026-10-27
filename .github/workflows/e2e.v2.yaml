@@ -76,6 +76,7 @@ jobs:
               { scenario: "unary_crud", deployment: "helm-chart", cluster: "k3d", environment: "zvec", values: "zvec" },
               { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "zvec", values: "zvec" },
               { scenario: "multi_crud", deployment: "helm-chart", cluster: "k3d", environment: "zvec", values: "zvec" },
+              { scenario: "zvec_metadata_filter", deployment: "helm-chart", cluster: "k3d", environment: "zvec", values: "zvec" },
               { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "failure" },
               { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "kill" },
               { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "partition" },

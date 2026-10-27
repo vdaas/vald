@@ -31,13 +31,18 @@ import (
 var (
 	insertRequest newRequest[*payload.Insert_Request] = func(t testing.TB, idx uint64, id string, vec []float32, plan *config.Execution) *payload.Insert_Request {
 		ts, skip := toModificationConfig(plan)
+		var options config.AlgorithmOptions
+		if plan != nil && plan.Modification != nil {
+			options = plan.Modification.Options
+		}
 		return &payload.Insert_Request{
 			Vector: &payload.Object_Vector{
-				Id:        id,
+				Id:        modificationID(id, plan),
 				Vector:    vec,
 				Timestamp: ts,
 			},
 			Config: &payload.Insert_Config{
+				Options:              algorithmOptions(t, options),
 				Timestamp:            ts,
 				SkipStrictExistCheck: skip,
 			},
@@ -52,7 +57,7 @@ var (
 		ts, skip := toModificationConfig(plan)
 		return &payload.Update_Request{
 			Vector: &payload.Object_Vector{
-				Id:        id,
+				Id:        modificationID(id, plan),
 				Vector:    vec,
 				Timestamp: ts,
 			},
@@ -71,7 +76,7 @@ var (
 		ts, skip := toModificationConfig(plan)
 		return &payload.Upsert_Request{
 			Vector: &payload.Object_Vector{
-				Id:        id,
+				Id:        modificationID(id, plan),
 				Vector:    vec,
 				Timestamp: ts,
 			},
@@ -90,7 +95,7 @@ var (
 		ts, skip := toModificationConfig(plan)
 		return &payload.Remove_Request{
 			Id: &payload.Object_ID{
-				Id: id,
+				Id: modificationID(id, plan),
 			},
 			Config: &payload.Remove_Config{
 				Timestamp:            ts,
@@ -179,4 +184,13 @@ func toModificationConfig(plan *config.Execution) (ts int64, skip bool) {
 		skip = plan.Modification.SkipStrictExistCheck
 	}
 	return ts, skip
+}
+
+// modificationID selects a stable ID for a single-document fixture. Dataset
+// offset selects vector contents and does not change the request's numeric ID.
+func modificationID(id string, plan *config.Execution) string {
+	if plan != nil && plan.Modification != nil && plan.Modification.ID != "" {
+		return plan.Modification.ID
+	}
+	return id
 }

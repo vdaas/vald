@@ -86,6 +86,7 @@ func newSearchConfig(t testing.TB, id string, query *config.SearchQuery) *payloa
 	}
 	return &payload.Search_Config{
 		// The RequestId is composed of the test ID and the name of the aggregation algorithm.
+		Options:   algorithmOptions(t, query.Options),
 		RequestId: id + "-" + payload.Search_AggregationAlgorithm_name[int32(query.Algorithm)],
 		Num:       query.K,
 		Radius:    query.Radius,
@@ -239,6 +240,14 @@ func checkUnarySearchResponse(
 			recordRecall(plan, 0)
 			return true
 		}
+		if plan.Search != nil && plan.Search.ExpectedIDs != nil {
+			// Filtered fixtures have exact result sets, rather than the dataset's
+			// unfiltered ANN ground truth used for recall benchmarks.
+			if err := validateSearchIDs(res, *plan.Search.ExpectedIDs); err != nil {
+				t.Errorf("%s request idx %d: %v", plan.Name, idx, err)
+			}
+			return true
+		}
 		rc := calculateRecall(t, idx, neighbors.At(idx), res)
 		t.Logf("request id %s searched recall: %f, payload %s", res.GetRequestId(), rc, res.String())
 		recordRecall(plan, rc)
@@ -251,6 +260,10 @@ func checkMultiSearchResponse(
 ) func(t testing.TB, idx uint64, res *payload.Search_Responses, err error) bool {
 	return func(t testing.TB, idx uint64, res *payload.Search_Responses, err error) bool {
 		t.Helper()
+		if res == nil || len(res.GetResponses()) == 0 {
+			t.Errorf("%s request idx %d returned no bulk search responses", plan.Name, idx)
+			return false
+		}
 		// For each response in the bulk response, log the recall.
 		for _, r := range res.GetResponses() {
 			if !checkUnarySearchResponse(neighbors, plan)(t, getIndexFromSearchResponse(t, r), r, err) {
