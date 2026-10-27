@@ -28,7 +28,7 @@ use super::insert::insert as insert_fn;
 use super::update::update as update_fn;
 
 async fn upsert(
-    s: Arc<RwLock<dyn algorithm::ANN>>,
+    s: Arc<RwLock<Box<dyn algorithm::ANN>>>,
     resource_type: &str,
     api_name: &str,
     name: &str,

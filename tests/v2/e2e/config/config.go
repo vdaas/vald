@@ -172,21 +172,25 @@ type BaseConfig struct {
 
 // SearchQuery represents the parameters for a search query.
 type SearchQuery struct {
-	K               uint32                              `yaml:"k,omitempty"         json:"k,omitempty"`
-	Radius          float32                             `yaml:"radius,omitempty"    json:"radius,omitempty"`
-	Epsilon         float32                             `yaml:"epsilon,omitempty"   json:"epsilon,omitempty"`
-	AlgorithmString string                              `yaml:"algorithm,omitempty" json:"algorithm_string,omitempty"`
-	MinNum          uint32                              `yaml:"min_num,omitempty"   json:"min_num,omitempty"`
-	Ratio           float32                             `yaml:"ratio,omitempty"     json:"ratio,omitempty"`
-	Nprobe          uint32                              `yaml:"nprobe,omitempty"    json:"nprobe,omitempty"`
-	Timeout         timeutil.DurationString             `yaml:"timeout,omitempty"   json:"timeout,omitempty"`
-	Algorithm       payload.Search_AggregationAlgorithm `yaml:"-"                   json:"-"`
+	Options         AlgorithmOptions                    `yaml:"options,omitempty"      json:"options,omitempty"`
+	ExpectedIDs     *[]string                           `yaml:"expected_ids,omitempty" json:"expected_ids,omitempty"`
+	K               uint32                              `yaml:"k,omitempty"            json:"k,omitempty"`
+	Radius          float32                             `yaml:"radius,omitempty"       json:"radius,omitempty"`
+	Epsilon         float32                             `yaml:"epsilon,omitempty"      json:"epsilon,omitempty"`
+	AlgorithmString string                              `yaml:"algorithm,omitempty"    json:"algorithm_string,omitempty"`
+	MinNum          uint32                              `yaml:"min_num,omitempty"      json:"min_num,omitempty"`
+	Ratio           float32                             `yaml:"ratio,omitempty"        json:"ratio,omitempty"`
+	Nprobe          uint32                              `yaml:"nprobe,omitempty"       json:"nprobe,omitempty"`
+	Timeout         timeutil.DurationString             `yaml:"timeout,omitempty"      json:"timeout,omitempty"`
+	Algorithm       payload.Search_AggregationAlgorithm `yaml:"-"                      json:"-"`
 }
 
 // ModificationConfig represents settings for modifications like insert or update.
 type ModificationConfig struct {
-	SkipStrictExistCheck bool  `yaml:"skip_strict_exist_check,omitempty" json:"skip_strict_exist_check,omitempty"`
-	Timestamp            int64 `yaml:"timestamp,omitempty"               json:"timestamp,omitempty"`
+	ID                   string           `yaml:"id,omitempty"                      json:"id,omitempty"`
+	Options              AlgorithmOptions `yaml:"options,omitempty"                 json:"options,omitempty"`
+	SkipStrictExistCheck bool             `yaml:"skip_strict_exist_check,omitempty" json:"skip_strict_exist_check,omitempty"`
+	Timestamp            int64            `yaml:"timestamp,omitempty"               json:"timestamp,omitempty"`
 }
 
 // AgentConfig represents settings for agent for createting index
@@ -534,6 +538,9 @@ func (e *Execution) Bind(parentMetrics *Metrics) (bound *Execution, err error) {
 			OpRemove,
 			OpRemoveByTimestamp:
 			if e.Modification != nil {
+				if e.Modification.ID != "" && e.Num != 1 {
+					return nil, errors.Errorf("explicit modification ID requires num: 1 for Execution %s", e.Name)
+				}
 				if m, err := e.Modification.Bind(); err != nil {
 					return nil, errors.Wrapf(err, "failed to bind ModificationConfig for Execution %s of type %s", e.Name, e.Type)
 				} else if m != nil {
@@ -599,6 +606,9 @@ func (sq *SearchQuery) Bind() (bound *SearchQuery, err error) {
 	if sq == nil {
 		return nil, errors.Wrap(errors.ErrInvalidConfig, "missing required fields on SearchQuery")
 	}
+	if _, err := sq.Options.Any(); err != nil {
+		return nil, err
+	}
 	sq.Timeout = config.GetActualValue(sq.Timeout)
 	dur, err := sq.Timeout.Duration()
 	if err != nil || dur < 0 {
@@ -628,6 +638,9 @@ func (sq *SearchQuery) Bind() (bound *SearchQuery, err error) {
 
 // Bind binds and validates the ModificationConfig.
 func (m *ModificationConfig) Bind() (bound *ModificationConfig, err error) {
+	if _, err := m.Options.Any(); err != nil {
+		return nil, err
+	}
 	if m.Timestamp < 0 {
 		m.Timestamp = 0
 	}

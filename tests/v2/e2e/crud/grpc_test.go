@@ -376,12 +376,7 @@ func multi[Q, M, R proto.Message](
 	if plan != nil && plan.BaseConfig != nil && plan.Parallelism > 0 {
 		eg.SetLimit(int(plan.Parallelism))
 	}
-	var bulkSize uint64
-	if plan.BulkSize < 2 {
-		bulkSize = 10
-	} else {
-		bulkSize = plan.BulkSize
-	}
+	bulkSize := max(plan.BulkSize, 1)
 
 	// Initialize a slice to hold the bulk requests.
 	reqs := make([]Q, 0, bulkSize)
@@ -394,16 +389,18 @@ func multi[Q, M, R proto.Message](
 			// Capture the current batch.
 			batch := slices.Clone(reqs)
 			idx := i
-			// Meset the bulk request slice for the next batch.
+			// Reset the bulk request slice for the next batch.
 			reqs = reqs[:0]
 			eg.Go(func() error {
 				return single(t, ctx, idx, plan, toReq(t, batch...), call, callbacks...)
 			})
 		}
 	}
-	eg.Go(func() error {
-		return single(t, ctx, data.Len(), plan, toReq(t, reqs...), call, callbacks...)
-	})
+	if len(reqs) > 0 {
+		eg.Go(func() error {
+			return single(t, ctx, data.Len(), plan, toReq(t, reqs...), call, callbacks...)
+		})
+	}
 	return eg.Wait()
 }
 
@@ -438,7 +435,7 @@ func stream[Q, R proto.Message, S grpc.TypedClientStream[Q, R]](
 	// send/receive pipeline self-paces from there.
 	//nolint:gosec // G115: plan.Parallelism is a small, config-bounded value, so int(...)*2 cannot realistically overflow int.
 	rchan := make(chan *metrics.RequestResult, max(int(plan.Parallelism)*2, 1))
-	var idx atomic.Uint64
+	var idx, received atomic.Uint64
 	// Use a bidirectional stream client to send requests and receive responses.
 	err = grpc.BidirectionalStreamClient(stream, int(plan.Parallelism), func() (query Q, ok bool) {
 		id := idx.Load()
@@ -506,6 +503,7 @@ func stream[Q, R proto.Message, S grpc.TypedClientStream[Q, R]](
 			// No real request identity to score a callback against.
 			return true
 		}
+		received.Add(1)
 
 		id, err := strconv.ParseUint(rr.RequestID, 10, 0)
 		if err != nil {
@@ -523,5 +521,8 @@ func stream[Q, R proto.Message, S grpc.TypedClientStream[Q, R]](
 	})
 	if err != nil {
 		t.Errorf("failed to complete stream: %v", err)
+	}
+	if plan.Search != nil && plan.Search.ExpectedIDs != nil && received.Load() != data.Len() {
+		t.Errorf("%s: received %d search responses, want %d", plan.Name, received.Load(), data.Len())
 	}
 }

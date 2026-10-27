@@ -73,6 +73,10 @@ jobs:
               { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "management" },
               { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "mirror" },
               { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "profile" },
+              { scenario: "unary_crud", deployment: "helm-chart", cluster: "k3d", environment: "zvec", values: "zvec" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "zvec", values: "zvec" },
+              { scenario: "multi_crud", deployment: "helm-chart", cluster: "k3d", environment: "zvec", values: "zvec" },
+              { scenario: "zvec_metadata_filter", deployment: "helm-chart", cluster: "k3d", environment: "zvec", values: "zvec" },
               { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "failure" },
               { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "kill" },
               { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "partition" },
@@ -109,6 +113,15 @@ jobs:
             } else {
               core.info('Matched ' + filtered.length + ' job(s).');
             }
+
+            filtered = filtered.map(function(o) {
+              const values = o.values || ((o.environment === 'profile' || o.environment === 'faiss') ? o.environment : 'lb');
+              return Object.assign({
+                values: values,
+                insert_count: '10000',
+                expected_index: '30000',
+              }, o);
+            });
 
             // Set output "result" as a JSON string
             const matrix = { include: filtered };
@@ -219,6 +232,7 @@ jobs:
           require_k3d: ${{ matrix.cluster == 'k3d' }}
           require_kind: ${{ matrix.cluster == 'kind' }}
           require_k0s: ${{ matrix.cluster == 'k0s' }}
+          target_images: "${{ matrix.environment == 'zvec' && 'vdaas/vald-agent' || matrix.environment == 'faiss' && 'vdaas/vald-agent-faiss' || 'vdaas/vald-agent-ngt' }} vdaas/vald-agent-sidecar vdaas/vald-discoverer-k8s vdaas/vald-lb-gateway vdaas/vald-filter-gateway vdaas/vald-mirror-gateway vdaas/vald-manager-index vdaas/vald-index-operator vdaas/vald-readreplica-rotate"
       - name: Set HELM_EXTRA_OPTIONS for index management jobs
         if: ${{ matrix.environment == 'management' }}
         run: |
@@ -232,9 +246,10 @@ jobs:
           # that override last so it wins over k8s/vald/manifests' own
           # `--set agent.image.repository=...-agent-ngt` (see Makefile.d/e2e.mk
           # e2e/v2/actions/run/faiss for the equivalent local dev target).
-          helm_extra_options: "${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}${{ matrix.environment == 'faiss' && ' --set agent.image.repository=vdaas/vald-agent-faiss' || '' }}"
-          values: .github/helm/values/values-${{ (matrix.environment == 'profile' || matrix.environment == 'faiss') && matrix.environment || 'lb' }}.yaml
+          helm_extra_options: "${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}${{ matrix.environment == 'faiss' && ' --set agent.image.repository=vdaas/vald-agent-faiss' || matrix.environment == 'zvec' && ' --set agent.image.repository=vdaas/vald-agent' || '' }}"
+          values: .github/helm/values/values-${{ matrix.values }}.yaml
           wait_for_selector: "app=vald-lb-gateway"
+          wait_for_timeout: ${{ matrix.environment == 'zvec' && '600s' || '6000s' }}
       - name: Deploy Vald Read Replica
         if: ${{ 'readreplica' == matrix.scenario }}
         id: deploy_vald_readreplica
@@ -327,8 +342,8 @@ jobs:
           kubectl get pods
           make e2e/v2 E2E_CONFIG=$(pwd)/tests/v2/e2e/assets/${{ matrix.scenario }}.yaml \
             E2E_PARALLELISM="4" \
-            E2E_INSERT_COUNT="10000" \
-            E2E_EXPECTED_INDEX="30000" \
+            E2E_INSERT_COUNT="${{ matrix.insert_count }}" \
+            E2E_EXPECTED_INDEX="${{ matrix.expected_index }}" \
             E2E_QPS="30" \
             E2E_SEARCH_COUNT="10" \
             E2E_UPDATE_COUNT="100" \

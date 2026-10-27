@@ -80,8 +80,8 @@
         },
         "algorithm": {
           "type": "string",
-          "description": "agent algorithm type. it should be `ngt` or `faiss`.",
-          "enum": ["ngt", "faiss"]
+          "description": "agent algorithm type. it should be `ngt`, `faiss` or `zvec`.",
+          "enum": ["ngt", "faiss", "zvec"]
         },
         "annotations": {
           "type": "object",
@@ -638,6 +638,34 @@
           "x-go-type-import": {
             "path": "github.com/vdaas/vald/internal/config",
             "name": "config"
+          }
+        },
+        "zvec": {
+          "type": "object",
+          "properties": {
+            "dimension": {
+              "type": "integer",
+              "description": "vector dimension",
+              "minimum": 1
+            },
+            "index_path": {
+              "type": "string",
+              "description": "Zvec collection storage path"
+            },
+            "fields": {
+              "type": "array",
+              "description": "string fields stored in the Zvec collection",
+              "items": {
+                "type": "string"
+              }
+            },
+            "fts_fields": {
+              "type": "array",
+              "description": "full-text indexed string fields stored in the Zvec collection",
+              "items": {
+                "type": "string"
+              }
+            }
           }
         },
         "persistentVolume": {

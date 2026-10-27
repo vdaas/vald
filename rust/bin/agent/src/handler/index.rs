@@ -185,6 +185,9 @@ impl index_server::Index for super::Agent {
         &self,
         _request: tonic::Request<Empty>,
     ) -> std::result::Result<tonic::Response<info::index::PropertyDetail>, tonic::Status> {
-        todo!()
+        let s = self.s.read().await;
+        Ok(tonic::Response::new(info::index::PropertyDetail {
+            details: HashMap::from([(self.name.clone(), s.index_property())]),
+        }))
     }
 }

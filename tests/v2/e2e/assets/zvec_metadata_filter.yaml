@@ -1,0 +1,389 @@
+#
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+time_zone: UTC
+logging:
+  format: raw
+  level: debug
+  logger: glg
+dataset:
+  dimension: 784
+kubernetes:
+  kube_config: _KUBECONFIG_
+  port_forward:
+    enabled: true
+    local_port: 8082
+    namespace: _E2E_TARGET_NAMESPACE_
+    service_name: _E2E_TARGET_NAME_
+    target_port: 8081
+target:
+  addrs:
+    - 127.0.0.1:8082
+  health_check_duration: 1s
+  connection_pool:
+    enable_dns_resolver: true
+    enable_rebalance: true
+    old_conn_close_duration: 2m
+    rebalance_duration: 30m
+    size: 3
+  backoff:
+    backoff_factor: 1.1
+    backoff_time_limit: 5s
+    enable_error_log: false
+    initial_duration: 5ms
+    jitter_limit: 100ms
+    maximum_duration: 5s
+    retry_count: 100
+  call_option:
+    wait_for_ready: true
+  dial_option:
+    insecure: true
+    min_connection_timeout: 20s
+    net:
+      network: tcp
+      socket_option:
+        reuse_addr: true
+        reuse_port: true
+metadata: {}
+metrics:
+  enabled: false
+strategies:
+  - name: Zvec document metadata and query filters
+    concurrency: 1
+    operations:
+      - name: Insert metadata, validate exact filtered IDs, and remove fixtures
+        executions:
+          - name: Insert document 0 (unary)
+            type: insert
+            mode: unary
+            num: 1
+            offset: 0
+            parallelism: 1
+            bulk_size: 1
+            modification:
+              skip_strict_exist_check: true
+              options:
+                - "@type": type.googleapis.com/google.protobuf.StringValue
+                  value: unrelated option before Zvec payload
+                - "@type": type.googleapis.com/payload.v1.ZVec.DocumentOptions
+                  fields:
+                    category: news
+                    content: galaxy telescope
+              id: "0"
+          - name: Insert document 1 (stream)
+            type: insert
+            mode: stream
+            num: 1
+            offset: 1
+            parallelism: 1
+            bulk_size: 1
+            modification:
+              skip_strict_exist_check: true
+              options:
+                - "@type": type.googleapis.com/payload.v1.ZVec.DocumentOptions
+                  fields:
+                    category: sports
+                    content: football goal
+              id: "1"
+          - name: Insert document 2 (multiple)
+            type: insert
+            mode: multiple
+            num: 1
+            offset: 2
+            parallelism: 1
+            bulk_size: 1
+            modification:
+              skip_strict_exist_check: true
+              options:
+                - "@type": type.googleapis.com/payload.v1.ZVec.DocumentOptions
+                  fields:
+                    category: news
+                    content: quantum photon
+              id: "2"
+          - name: Insert document 3 (unary) without metadata
+            type: insert
+            mode: unary
+            num: 1
+            offset: 3
+            parallelism: 1
+            bulk_size: 1
+            modification:
+              skip_strict_exist_check: true
+              id: "3"
+          - name: Insert document 4 (unary)
+            type: insert
+            mode: unary
+            num: 1
+            offset: 4
+            parallelism: 1
+            bulk_size: 1
+            modification:
+              skip_strict_exist_check: true
+              options:
+                - "@type": type.googleapis.com/payload.v1.ZVec.DocumentOptions
+                  fields:
+                    category: 日本語
+                    content: galaxy tokyo
+              id: "4"
+          - name: Unfiltered search proves all fixtures were stored
+            type: search
+            mode: unary
+            num: 1
+            offset: 0
+            parallelism: 1
+            bulk_size: 1
+            search:
+              k: 10
+              timeout: 3s
+              expected_ids:
+                - "0"
+                - "1"
+                - "2"
+                - "3"
+                - "4"
+          - name: Scalar metadata includes only news
+            type: search
+            mode: unary
+            num: 1
+            offset: 0
+            parallelism: 1
+            bulk_size: 1
+            search:
+              k: 10
+              timeout: 3s
+              expected_ids:
+                - "0"
+                - "2"
+              options:
+                - "@type": type.googleapis.com/payload.v1.ZVec.SearchOptions
+                  pre_filter: category = 'news'
+          - name: Scalar metadata through StreamSearch
+            type: search
+            mode: stream
+            num: 1
+            offset: 0
+            parallelism: 1
+            bulk_size: 1
+            search:
+              k: 10
+              timeout: 3s
+              expected_ids:
+                - "1"
+              options:
+                - "@type": type.googleapis.com/payload.v1.ZVec.SearchOptions
+                  pre_filter: category = 'sports'
+          - name: Mixed Any options through MultiSearch
+            type: search
+            mode: multiple
+            num: 1
+            offset: 0
+            parallelism: 1
+            bulk_size: 1
+            search:
+              k: 10
+              timeout: 3s
+              expected_ids:
+                - "1"
+              options:
+                - "@type": type.googleapis.com/google.protobuf.StringValue
+                  value: unrelated option before Zvec payload
+                - "@type": type.googleapis.com/payload.v1.ZVec.SearchOptions
+                  pre_filter: category = 'sports'
+          - name: OR filter excludes unset and unrelated metadata
+            type: search
+            mode: unary
+            num: 1
+            offset: 0
+            parallelism: 1
+            bulk_size: 1
+            search:
+              k: 10
+              timeout: 3s
+              expected_ids:
+                - "0"
+                - "1"
+                - "2"
+              options:
+                - "@type": type.googleapis.com/payload.v1.ZVec.SearchOptions
+                  pre_filter: category = 'news' OR category = 'sports'
+          - name: Unicode metadata survives Any transport
+            type: search
+            mode: unary
+            num: 1
+            offset: 0
+            parallelism: 1
+            bulk_size: 1
+            search:
+              k: 10
+              timeout: 3s
+              expected_ids:
+                - "4"
+              options:
+                - "@type": type.googleapis.com/payload.v1.ZVec.SearchOptions
+                  pre_filter: category = '日本語'
+          - name: Not-equal filter excludes NULL metadata
+            type: search
+            mode: unary
+            num: 1
+            offset: 0
+            parallelism: 1
+            bulk_size: 1
+            search:
+              k: 10
+              timeout: 3s
+              expected_ids:
+                - "1"
+                - "4"
+              options:
+                - "@type": type.googleapis.com/payload.v1.ZVec.SearchOptions
+                  pre_filter: category != 'news'
+          - name: No scalar match returns NotFound
+            type: search
+            mode: unary
+            num: 1
+            offset: 0
+            parallelism: 1
+            bulk_size: 1
+            search:
+              k: 10
+              timeout: 3s
+              expected_ids: []
+              options:
+                - "@type": type.googleapis.com/payload.v1.ZVec.SearchOptions
+                  pre_filter: category = 'missing'
+            expect:
+              - status_code: notfound
+          - name: Text metadata is searchable by content
+            type: search
+            mode: unary
+            num: 1
+            offset: 0
+            parallelism: 1
+            bulk_size: 1
+            search:
+              k: 10
+              timeout: 3s
+              expected_ids:
+                - "0"
+                - "4"
+              options:
+                - "@type": type.googleapis.com/payload.v1.ZVec.SearchOptions
+                  hybrid_queries:
+                    - field_name: content
+                      fts:
+                        match_string: galaxy
+          - name: Full-text and scalar filter intersect in MultiSearch
+            type: search
+            mode: multiple
+            num: 1
+            offset: 0
+            parallelism: 1
+            bulk_size: 1
+            search:
+              k: 10
+              timeout: 3s
+              expected_ids:
+                - "0"
+              options:
+                - "@type": type.googleapis.com/payload.v1.ZVec.SearchOptions
+                  pre_filter: category = 'news'
+                  hybrid_queries:
+                    - field_name: content
+                      fts:
+                        match_string: galaxy
+          - name: Full-text and nonmatching scalar filter return NotFound
+            type: search
+            mode: unary
+            num: 1
+            offset: 0
+            parallelism: 1
+            bulk_size: 1
+            search:
+              k: 10
+              timeout: 3s
+              expected_ids: []
+              options:
+                - "@type": type.googleapis.com/payload.v1.ZVec.SearchOptions
+                  pre_filter: category = 'sports'
+                  hybrid_queries:
+                    - field_name: content
+                      fts:
+                        match_string: galaxy
+            expect:
+              - status_code: notfound
+          - name: Remove fixture 0
+            type: remove
+            mode: unary
+            num: 1
+            offset: 0
+            parallelism: 1
+            modification:
+              skip_strict_exist_check: true
+              id: "0"
+          - name: Remove fixture 1
+            type: remove
+            mode: unary
+            num: 1
+            offset: 0
+            parallelism: 1
+            modification:
+              skip_strict_exist_check: true
+              id: "1"
+          - name: Remove fixture 2
+            type: remove
+            mode: unary
+            num: 1
+            offset: 0
+            parallelism: 1
+            modification:
+              skip_strict_exist_check: true
+              id: "2"
+          - name: Remove fixture 3
+            type: remove
+            mode: unary
+            num: 1
+            offset: 0
+            parallelism: 1
+            modification:
+              skip_strict_exist_check: true
+              id: "3"
+          - name: Remove fixture 4
+            type: remove
+            mode: unary
+            num: 1
+            offset: 0
+            parallelism: 1
+            modification:
+              skip_strict_exist_check: true
+              id: "4"
+          - name: Deleted text metadata no longer matches
+            type: search
+            mode: unary
+            num: 1
+            offset: 0
+            parallelism: 1
+            bulk_size: 1
+            search:
+              k: 10
+              timeout: 3s
+              expected_ids: []
+              options:
+                - "@type": type.googleapis.com/payload.v1.ZVec.SearchOptions
+                  hybrid_queries:
+                    - field_name: content
+                      fts:
+                        match_string: galaxy
+            expect:
+              - status_code: notfound

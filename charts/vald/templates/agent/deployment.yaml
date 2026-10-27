@@ -116,8 +116,8 @@ spec:
         - name: {{ $agent.name }}
           image: "{{ include "vald.image" (dict "registry" $agent.image.registry "globalRegistry" .Values.defaults.image.registry "repository" $agent.image.repository "tag" (default .Values.defaults.image.tag $agent.image.tag)) }}"
           imagePullPolicy: {{ $agent.image.pullPolicy }}
-          {{- $servers := dict "Values" $agent.server_config "default" .Values.defaults.server_config -}}
-          {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
+          {{- $servers := dict "Values" $agent.server_config "default" .Values.defaults.server_config "algorithm" $agent.algorithm -}}
+          {{- include "vald.agentContainerPorts" $servers | trim | nindent 10 }}
           resources:
             {{- toYaml $agent.resources | nindent 12 }}
           terminationMessagePath: /dev/termination-log
